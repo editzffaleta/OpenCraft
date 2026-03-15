@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DiscordAccountConfig } from "../../../src/config/types.discord.js";
 import {
   hasConfiguredSecretInput,
@@ -48,7 +48,7 @@ function inspectDiscordTokenValue(value: unknown): {
 }
 
 export function inspectDiscordAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   envToken?: string | null;
 }): InspectedDiscordAccount {

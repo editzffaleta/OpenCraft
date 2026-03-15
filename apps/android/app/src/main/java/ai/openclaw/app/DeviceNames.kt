@@ -1,4 +1,4 @@
-package ai.openclaw.app
+package ai.opencraft.app
 
 import android.content.Context
 import android.os.Build

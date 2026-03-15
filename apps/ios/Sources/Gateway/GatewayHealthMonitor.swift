@@ -1,5 +1,5 @@
 import Foundation
-import OpenClawKit
+import OpenCraftKit
 
 @MainActor
 final class GatewayHealthMonitor {

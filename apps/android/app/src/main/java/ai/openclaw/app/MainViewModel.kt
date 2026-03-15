@@ -1,13 +1,13 @@
-package ai.openclaw.app
+package ai.opencraft.app
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import ai.openclaw.app.gateway.GatewayEndpoint
-import ai.openclaw.app.chat.OutgoingAttachment
-import ai.openclaw.app.node.CameraCaptureManager
-import ai.openclaw.app.node.CanvasController
-import ai.openclaw.app.node.SmsManager
-import ai.openclaw.app.voice.VoiceConversationEntry
+import ai.opencraft.app.gateway.GatewayEndpoint
+import ai.opencraft.app.chat.OutgoingAttachment
+import ai.opencraft.app.node.CameraCaptureManager
+import ai.opencraft.app.node.CanvasController
+import ai.opencraft.app.node.SmsManager
+import ai.opencraft.app.voice.VoiceConversationEntry
 import kotlinx.coroutines.flow.StateFlow
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {

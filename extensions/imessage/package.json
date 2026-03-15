@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/imessage",
+  "name": "@opencraft/imessage",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw iMessage channel plugin",
+  "description": "OpenCraft iMessage channel plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

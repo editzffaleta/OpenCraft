@@ -1,4 +1,4 @@
-package ai.openclaw.app.voice
+package ai.opencraft.app.voice
 
 internal object TalkDefaults {
   const val defaultSilenceTimeoutMs = 700L

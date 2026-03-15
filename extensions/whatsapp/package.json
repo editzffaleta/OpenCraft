@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/whatsapp",
+  "name": "@opencraft/whatsapp",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw WhatsApp channel plugin",
+  "description": "OpenCraft WhatsApp channel plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

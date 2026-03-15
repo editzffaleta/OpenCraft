@@ -4,17 +4,17 @@
 
 #include "Config/Version.xcconfig"
 
-OPENCLAW_CODE_SIGN_STYLE = Manual
-OPENCLAW_DEVELOPMENT_TEAM = Y5PE65HELJ
+OPENCRAFT_CODE_SIGN_STYLE = Manual
+OPENCRAFT_DEVELOPMENT_TEAM = Y5PE65HELJ
 
-OPENCLAW_APP_BUNDLE_ID = ai.openclaw.client
-OPENCLAW_SHARE_BUNDLE_ID = ai.openclaw.client.share
-OPENCLAW_WATCH_APP_BUNDLE_ID = ai.openclaw.client.watchkitapp
-OPENCLAW_WATCH_EXTENSION_BUNDLE_ID = ai.openclaw.client.watchkitapp.extension
-OPENCLAW_ACTIVITY_WIDGET_BUNDLE_ID = ai.openclaw.client.activitywidget
+OPENCRAFT_APP_BUNDLE_ID = ai.opencraft.client
+OPENCRAFT_SHARE_BUNDLE_ID = ai.opencraft.client.share
+OPENCRAFT_WATCH_APP_BUNDLE_ID = ai.opencraft.client.watchkitapp
+OPENCRAFT_WATCH_EXTENSION_BUNDLE_ID = ai.opencraft.client.watchkitapp.extension
+OPENCRAFT_ACTIVITY_WIDGET_BUNDLE_ID = ai.opencraft.client.activitywidget
 
-OPENCLAW_APP_PROFILE = ai.openclaw.client Development
-OPENCLAW_SHARE_PROFILE = ai.openclaw.client.share Development
+OPENCRAFT_APP_PROFILE = ai.opencraft.client Development
+OPENCRAFT_SHARE_PROFILE = ai.opencraft.client.share Development
 
 // Keep local includes after defaults: xcconfig is evaluated top-to-bottom,
 // so later assignments in local files override the defaults above.

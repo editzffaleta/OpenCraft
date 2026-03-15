@@ -1,4 +1,4 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk/feishu";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/feishu";
 import { describe, expect, it, vi } from "vitest";
 
 const registerFeishuDocToolsMock = vi.hoisted(() => vi.fn());
@@ -51,7 +51,7 @@ describe("feishu plugin register", () => {
       registerChannel,
       on: vi.fn(),
       config: {},
-    } as unknown as OpenClawPluginApi;
+    } as unknown as OpenCraftPluginApi;
 
     plugin.register(api);
 

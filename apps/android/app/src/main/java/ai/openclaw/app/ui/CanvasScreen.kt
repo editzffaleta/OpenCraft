@@ -1,4 +1,4 @@
-package ai.openclaw.app.ui
+package ai.opencraft.app.ui
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import ai.openclaw.app.MainViewModel
+import ai.opencraft.app.MainViewModel
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -59,7 +59,7 @@ fun CanvasScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
           disableForceDarkIfSupported(settings)
         }
         if (isDebuggable) {
-          Log.d("OpenClawWebView", "userAgent: ${settings.userAgentString}")
+          Log.d("OpenCraftWebView", "userAgent: ${settings.userAgentString}")
         }
         isScrollContainer = true
         overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
@@ -73,7 +73,7 @@ fun CanvasScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
               error: WebResourceError,
             ) {
               if (!isDebuggable || !request.isForMainFrame) return
-              Log.e("OpenClawWebView", "onReceivedError: ${error.errorCode} ${error.description} ${request.url}")
+              Log.e("OpenCraftWebView", "onReceivedError: ${error.errorCode} ${error.description} ${request.url}")
             }
 
             override fun onReceivedHttpError(
@@ -83,14 +83,14 @@ fun CanvasScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ) {
               if (!isDebuggable || !request.isForMainFrame) return
               Log.e(
-                "OpenClawWebView",
+                "OpenCraftWebView",
                 "onReceivedHttpError: ${errorResponse.statusCode} ${errorResponse.reasonPhrase} ${request.url}",
               )
             }
 
             override fun onPageFinished(view: WebView, url: String?) {
               if (isDebuggable) {
-                Log.d("OpenClawWebView", "onPageFinished: $url")
+                Log.d("OpenCraftWebView", "onPageFinished: $url")
               }
               viewModel.canvas.onPageFinished()
             }
@@ -101,7 +101,7 @@ fun CanvasScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ): Boolean {
               if (isDebuggable) {
                 Log.e(
-                  "OpenClawWebView",
+                  "OpenCraftWebView",
                   "onRenderProcessGone didCrash=${detail.didCrash()} priorityAtExit=${detail.rendererPriorityAtExit()}",
                 )
               }
@@ -114,7 +114,7 @@ fun CanvasScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
               if (!isDebuggable) return false
               val msg = consoleMessage ?: return false
               Log.d(
-                "OpenClawWebView",
+                "OpenCraftWebView",
                 "console ${msg.messageLevel()} @ ${msg.sourceId()}:${msg.lineNumber()} ${msg.message()}",
               )
               return false
@@ -145,6 +145,6 @@ private class CanvasA2UIActionBridge(private val onMessage: (String) -> Unit) {
   }
 
   companion object {
-    const val interfaceName: String = "openclawCanvasA2UIAction"
+    const val interfaceName: String = "opencraftCanvasA2UIAction"
   }
 }

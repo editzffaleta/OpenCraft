@@ -1,4 +1,4 @@
-import type { ChannelAccountSnapshot } from "openclaw/plugin-sdk/zalo";
+import type { ChannelAccountSnapshot } from "opencraft/plugin-sdk/zalo";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   expectPendingUntilAbort,

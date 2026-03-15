@@ -1,5 +1,5 @@
-import { createPluginRuntimeStore } from "openclaw/plugin-sdk/compat";
-import type { PluginRuntime } from "openclaw/plugin-sdk/slack";
+import { createPluginRuntimeStore } from "opencraft/plugin-sdk/compat";
+import type { PluginRuntime } from "opencraft/plugin-sdk/slack";
 
 const { setRuntime: setSlackRuntime, getRuntime: getSlackRuntime } =
   createPluginRuntimeStore<PluginRuntime>("Slack runtime not initialized");

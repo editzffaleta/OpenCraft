@@ -1,4 +1,4 @@
-package ai.openclaw.app
+package ai.opencraft.app
 
 import android.content.Context
 import org.junit.Assert.assertEquals
@@ -12,7 +12,7 @@ class SecurePrefsTest {
   @Test
   fun loadLocationMode_migratesLegacyAlwaysValue() {
     val context = RuntimeEnvironment.getApplication()
-    val plainPrefs = context.getSharedPreferences("openclaw.node", Context.MODE_PRIVATE)
+    val plainPrefs = context.getSharedPreferences("opencraft.node", Context.MODE_PRIVATE)
     plainPrefs.edit().clear().putString("location.enabledMode", "always").commit()
 
     val prefs = SecurePrefs(context)
@@ -24,7 +24,7 @@ class SecurePrefsTest {
   @Test
   fun saveGatewayBootstrapToken_persistsSeparatelyFromSharedToken() {
     val context = RuntimeEnvironment.getApplication()
-    val securePrefs = context.getSharedPreferences("openclaw.node.secure.test", Context.MODE_PRIVATE)
+    val securePrefs = context.getSharedPreferences("opencraft.node.secure.test", Context.MODE_PRIVATE)
     securePrefs.edit().clear().commit()
     val prefs = SecurePrefs(context, securePrefsOverride = securePrefs)
 

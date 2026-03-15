@@ -1,4 +1,4 @@
-package ai.openclaw.app.ui.chat
+package ai.opencraft.app.ui.chat
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
@@ -45,19 +45,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ai.openclaw.app.ui.mobileAccent
-import ai.openclaw.app.ui.mobileAccentBorderStrong
-import ai.openclaw.app.ui.mobileAccentSoft
-import ai.openclaw.app.ui.mobileBorder
-import ai.openclaw.app.ui.mobileBorderStrong
-import ai.openclaw.app.ui.mobileCallout
-import ai.openclaw.app.ui.mobileCaption1
-import ai.openclaw.app.ui.mobileCardSurface
-import ai.openclaw.app.ui.mobileHeadline
-import ai.openclaw.app.ui.mobileSurface
-import ai.openclaw.app.ui.mobileText
-import ai.openclaw.app.ui.mobileTextSecondary
-import ai.openclaw.app.ui.mobileTextTertiary
+import ai.opencraft.app.ui.mobileAccent
+import ai.opencraft.app.ui.mobileAccentBorderStrong
+import ai.opencraft.app.ui.mobileAccentSoft
+import ai.opencraft.app.ui.mobileBorder
+import ai.opencraft.app.ui.mobileBorderStrong
+import ai.opencraft.app.ui.mobileCallout
+import ai.opencraft.app.ui.mobileCaption1
+import ai.opencraft.app.ui.mobileCardSurface
+import ai.opencraft.app.ui.mobileHeadline
+import ai.opencraft.app.ui.mobileSurface
+import ai.opencraft.app.ui.mobileText
+import ai.opencraft.app.ui.mobileTextSecondary
+import ai.opencraft.app.ui.mobileTextTertiary
 
 @Composable
 fun ChatComposer(
@@ -99,7 +99,7 @@ fun ChatComposer(
       Text(
         text = "Gateway is offline. Connect first in the Connect tab.",
         style = mobileCallout,
-        color = ai.openclaw.app.ui.mobileWarning,
+        color = ai.opencraft.app.ui.mobileWarning,
       )
     }
 
@@ -342,7 +342,7 @@ private fun chatTextFieldColors() =
 @Composable
 private fun mobileBodyStyle() =
   MaterialTheme.typography.bodyMedium.copy(
-    fontFamily = ai.openclaw.app.ui.mobileFontFamily,
+    fontFamily = ai.opencraft.app.ui.mobileFontFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 15.sp,
     lineHeight = 22.sp,

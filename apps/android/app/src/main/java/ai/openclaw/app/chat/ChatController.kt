@@ -1,6 +1,6 @@
-package ai.openclaw.app.chat
+package ai.opencraft.app.chat
 
-import ai.openclaw.app.gateway.GatewaySession
+import ai.opencraft.app.gateway.GatewaySession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope

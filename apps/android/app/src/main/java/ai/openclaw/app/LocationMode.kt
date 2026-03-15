@@ -1,4 +1,4 @@
-package ai.openclaw.app
+package ai.opencraft.app
 
 enum class LocationMode(val rawValue: String) {
   Off("off"),

@@ -1,4 +1,4 @@
-package ai.openclaw.app.node
+package ai.opencraft.app.node
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

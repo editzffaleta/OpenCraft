@@ -1,4 +1,4 @@
-package ai.openclaw.app.ui.chat
+package ai.opencraft.app.ui.chat
 
 import android.graphics.BitmapFactory
 import android.util.Base64

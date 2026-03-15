@@ -1,6 +1,6 @@
-# @openclaw/voice-call
+# @opencraft/voice-call
 
-Official Voice Call plugin for **OpenClaw**.
+Official Voice Call plugin for **OpenCraft**.
 
 Providers:
 
@@ -9,15 +9,15 @@ Providers:
 - **Plivo** (Voice API + XML transfer + GetInput speech)
 - **Mock** (dev/no network)
 
-Docs: `https://docs.openclaw.ai/plugins/voice-call`
-Plugin system: `https://docs.openclaw.ai/plugin`
+Docs: `https://docs.opencraft.ai/plugins/voice-call`
+Plugin system: `https://docs.opencraft.ai/plugin`
 
 ## Install (local dev)
 
-### Option A: install via OpenClaw (recommended)
+### Option A: install via OpenCraft (recommended)
 
 ```bash
-openclaw plugins install @openclaw/voice-call
+opencraft plugins install @opencraft/voice-call
 ```
 
 Restart the Gateway afterwards.
@@ -25,9 +25,9 @@ Restart the Gateway afterwards.
 ### Option B: copy into your global extensions folder (dev)
 
 ```bash
-mkdir -p ~/.openclaw/extensions
-cp -R extensions/voice-call ~/.openclaw/extensions/voice-call
-cd ~/.openclaw/extensions/voice-call && pnpm install
+mkdir -p ~/.opencraft/extensions
+cp -R extensions/voice-call ~/.opencraft/extensions/voice-call
+cd ~/.opencraft/extensions/voice-call && pnpm install
 ```
 
 ## Config
@@ -89,29 +89,29 @@ Notes:
 - Twilio/Telnyx/Plivo require a **publicly reachable** webhook URL.
 - `mock` is a local dev provider (no network calls).
 - Telnyx requires `telnyx.publicKey` (or `TELNYX_PUBLIC_KEY`) unless `skipSignatureVerification` is true.
-- advanced webhook, streaming, and tunnel notes: `https://docs.openclaw.ai/plugins/voice-call`
+- advanced webhook, streaming, and tunnel notes: `https://docs.opencraft.ai/plugins/voice-call`
 
 ## Stale call reaper
 
 See the plugin docs for recommended ranges and production examples:
-`https://docs.openclaw.ai/plugins/voice-call#stale-call-reaper`
+`https://docs.opencraft.ai/plugins/voice-call#stale-call-reaper`
 
 ## TTS for calls
 
 Voice Call uses the core `messages.tts` configuration (OpenAI or ElevenLabs) for
 streaming speech on calls. Override examples and provider caveats live here:
-`https://docs.openclaw.ai/plugins/voice-call#tts-for-calls`
+`https://docs.opencraft.ai/plugins/voice-call#tts-for-calls`
 
 ## CLI
 
 ```bash
-openclaw voicecall call --to "+15555550123" --message "Hello from OpenClaw"
-openclaw voicecall continue --call-id <id> --message "Any questions?"
-openclaw voicecall speak --call-id <id> --message "One moment"
-openclaw voicecall end --call-id <id>
-openclaw voicecall status --call-id <id>
-openclaw voicecall tail
-openclaw voicecall expose --mode funnel
+opencraft voicecall call --to "+15555550123" --message "Hello from OpenCraft"
+opencraft voicecall continue --call-id <id> --message "Any questions?"
+opencraft voicecall speak --call-id <id> --message "One moment"
+opencraft voicecall end --call-id <id>
+opencraft voicecall status --call-id <id>
+opencraft voicecall tail
+opencraft voicecall expose --mode funnel
 ```
 
 ## Tool

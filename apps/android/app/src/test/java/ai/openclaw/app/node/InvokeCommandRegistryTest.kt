@@ -1,17 +1,17 @@
-package ai.openclaw.app.node
+package ai.opencraft.app.node
 
-import ai.openclaw.app.protocol.OpenClawCalendarCommand
-import ai.openclaw.app.protocol.OpenClawCameraCommand
-import ai.openclaw.app.protocol.OpenClawCallLogCommand
-import ai.openclaw.app.protocol.OpenClawCapability
-import ai.openclaw.app.protocol.OpenClawContactsCommand
-import ai.openclaw.app.protocol.OpenClawDeviceCommand
-import ai.openclaw.app.protocol.OpenClawLocationCommand
-import ai.openclaw.app.protocol.OpenClawMotionCommand
-import ai.openclaw.app.protocol.OpenClawNotificationsCommand
-import ai.openclaw.app.protocol.OpenClawPhotosCommand
-import ai.openclaw.app.protocol.OpenClawSmsCommand
-import ai.openclaw.app.protocol.OpenClawSystemCommand
+import ai.opencraft.app.protocol.OpenCraftCalendarCommand
+import ai.opencraft.app.protocol.OpenCraftCameraCommand
+import ai.opencraft.app.protocol.OpenCraftCallLogCommand
+import ai.opencraft.app.protocol.OpenCraftCapability
+import ai.opencraft.app.protocol.OpenCraftContactsCommand
+import ai.opencraft.app.protocol.OpenCraftDeviceCommand
+import ai.opencraft.app.protocol.OpenCraftLocationCommand
+import ai.opencraft.app.protocol.OpenCraftMotionCommand
+import ai.opencraft.app.protocol.OpenCraftNotificationsCommand
+import ai.opencraft.app.protocol.OpenCraftPhotosCommand
+import ai.opencraft.app.protocol.OpenCraftSmsCommand
+import ai.opencraft.app.protocol.OpenCraftSystemCommand
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -19,51 +19,51 @@ import org.junit.Test
 class InvokeCommandRegistryTest {
   private val coreCapabilities =
     setOf(
-      OpenClawCapability.Canvas.rawValue,
-      OpenClawCapability.Device.rawValue,
-      OpenClawCapability.Notifications.rawValue,
-      OpenClawCapability.System.rawValue,
-      OpenClawCapability.Photos.rawValue,
-      OpenClawCapability.Contacts.rawValue,
-      OpenClawCapability.Calendar.rawValue,
-      OpenClawCapability.CallLog.rawValue,
+      OpenCraftCapability.Canvas.rawValue,
+      OpenCraftCapability.Device.rawValue,
+      OpenCraftCapability.Notifications.rawValue,
+      OpenCraftCapability.System.rawValue,
+      OpenCraftCapability.Photos.rawValue,
+      OpenCraftCapability.Contacts.rawValue,
+      OpenCraftCapability.Calendar.rawValue,
+      OpenCraftCapability.CallLog.rawValue,
     )
 
   private val optionalCapabilities =
     setOf(
-      OpenClawCapability.Camera.rawValue,
-      OpenClawCapability.Location.rawValue,
-      OpenClawCapability.Sms.rawValue,
-      OpenClawCapability.VoiceWake.rawValue,
-      OpenClawCapability.Motion.rawValue,
+      OpenCraftCapability.Camera.rawValue,
+      OpenCraftCapability.Location.rawValue,
+      OpenCraftCapability.Sms.rawValue,
+      OpenCraftCapability.VoiceWake.rawValue,
+      OpenCraftCapability.Motion.rawValue,
     )
 
   private val coreCommands =
     setOf(
-      OpenClawDeviceCommand.Status.rawValue,
-      OpenClawDeviceCommand.Info.rawValue,
-      OpenClawDeviceCommand.Permissions.rawValue,
-      OpenClawDeviceCommand.Health.rawValue,
-      OpenClawNotificationsCommand.List.rawValue,
-      OpenClawNotificationsCommand.Actions.rawValue,
-      OpenClawSystemCommand.Notify.rawValue,
-      OpenClawPhotosCommand.Latest.rawValue,
-      OpenClawContactsCommand.Search.rawValue,
-      OpenClawContactsCommand.Add.rawValue,
-      OpenClawCalendarCommand.Events.rawValue,
-      OpenClawCalendarCommand.Add.rawValue,
-      OpenClawCallLogCommand.Search.rawValue,
+      OpenCraftDeviceCommand.Status.rawValue,
+      OpenCraftDeviceCommand.Info.rawValue,
+      OpenCraftDeviceCommand.Permissions.rawValue,
+      OpenCraftDeviceCommand.Health.rawValue,
+      OpenCraftNotificationsCommand.List.rawValue,
+      OpenCraftNotificationsCommand.Actions.rawValue,
+      OpenCraftSystemCommand.Notify.rawValue,
+      OpenCraftPhotosCommand.Latest.rawValue,
+      OpenCraftContactsCommand.Search.rawValue,
+      OpenCraftContactsCommand.Add.rawValue,
+      OpenCraftCalendarCommand.Events.rawValue,
+      OpenCraftCalendarCommand.Add.rawValue,
+      OpenCraftCallLogCommand.Search.rawValue,
     )
 
   private val optionalCommands =
     setOf(
-      OpenClawCameraCommand.Snap.rawValue,
-      OpenClawCameraCommand.Clip.rawValue,
-      OpenClawCameraCommand.List.rawValue,
-      OpenClawLocationCommand.Get.rawValue,
-      OpenClawMotionCommand.Activity.rawValue,
-      OpenClawMotionCommand.Pedometer.rawValue,
-      OpenClawSmsCommand.Send.rawValue,
+      OpenCraftCameraCommand.Snap.rawValue,
+      OpenCraftCameraCommand.Clip.rawValue,
+      OpenCraftCameraCommand.List.rawValue,
+      OpenCraftLocationCommand.Get.rawValue,
+      OpenCraftMotionCommand.Activity.rawValue,
+      OpenCraftMotionCommand.Pedometer.rawValue,
+      OpenCraftSmsCommand.Send.rawValue,
     )
 
   private val debugCommands = setOf("debug.logs", "debug.ed25519")
@@ -133,8 +133,8 @@ class InvokeCommandRegistryTest {
         ),
       )
 
-    assertTrue(commands.contains(OpenClawMotionCommand.Activity.rawValue))
-    assertFalse(commands.contains(OpenClawMotionCommand.Pedometer.rawValue))
+    assertTrue(commands.contains(OpenCraftMotionCommand.Activity.rawValue))
+    assertFalse(commands.contains(OpenCraftMotionCommand.Pedometer.rawValue))
   }
 
   private fun defaultFlags(
