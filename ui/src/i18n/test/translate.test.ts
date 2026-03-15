@@ -35,10 +35,11 @@ describe("i18n", () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.stubGlobal("localStorage", createStorageMock());
-    vi.stubGlobal("navigator", { language: "en-US" } as Navigator);
+    // Use pt-BR so the module initializes without triggering a lazy load.
+    vi.stubGlobal("navigator", { language: "pt-BR" } as Navigator);
     translate = await import("../lib/translate.ts");
     localStorage.clear();
-    // Reset to English
+    // Reset to English for the English-specific assertions below.
     await translate.i18n.setLocale("en");
   });
 
@@ -82,7 +83,7 @@ describe("i18n", () => {
   it("loads saved non-English locale on startup", async () => {
     vi.resetModules();
     vi.stubGlobal("localStorage", createStorageMock());
-    vi.stubGlobal("navigator", { language: "en-US" } as Navigator);
+    vi.stubGlobal("navigator", { language: "pt-BR" } as Navigator);
     localStorage.setItem("opencraft.i18n.locale", "zh-CN");
     const fresh = await import("../lib/translate.ts");
     await vi.waitFor(() => {

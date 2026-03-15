@@ -1,4 +1,4 @@
-import { en } from "../locales/en.ts";
+import { pt_BR } from "../locales/pt-BR.ts";
 import {
   DEFAULT_LOCALE,
   SUPPORTED_LOCALES,
@@ -14,7 +14,7 @@ export { SUPPORTED_LOCALES, isSupportedLocale };
 
 class I18nManager {
   private locale: Locale = DEFAULT_LOCALE;
-  private translations: Partial<Record<Locale, TranslationMap>> = { [DEFAULT_LOCALE]: en };
+  private translations: Partial<Record<Locale, TranslationMap>> = { [DEFAULT_LOCALE]: pt_BR };
   private subscribers: Set<Subscriber> = new Set();
 
   constructor() {
