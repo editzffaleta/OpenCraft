@@ -2,6 +2,23 @@
 
 Docs: https://docs.openclaw.ai
 
+## OpenCraft — Fork Brasileiro
+
+Este repositório é um fork brasileiro do [OpenClaw](https://github.com/openclaw/openclaw).
+A partir deste ponto, novas entradas do changelog serão escritas em português brasileiro (pt-BR).
+
+### O que foi brasileirizado
+
+- Renomeação completa: OpenClaw → OpenCraft em toda a base de código
+- Interface da Control UI configurada para pt-BR como idioma padrão
+- Tradução completa do arquivo `ui/src/i18n/locales/pt-BR.ts` com todas as seções (cron, chat, overview, etc.)
+- Documentação principal traduzida para pt-BR (README, VISION, CONTRIBUTING, SECURITY)
+- Skills (habilidades) com descrições em pt-BR
+- Identificadores de bundle atualizados: `ai.opencraft.*`
+- Shim de compatibilidade retroativa: o binário `openclaw` continua funcionando e redireciona para `opencraft`
+
+---
+
 ## Unreleased
 
 ### Changes
