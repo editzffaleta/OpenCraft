@@ -1,10 +1,10 @@
 ---
 name: camsnap
-description: Capture frames or clips from RTSP/ONVIF cameras.
+description: Capture frames ou clipes de câmeras RTSP/ONVIF.
 homepage: https://camsnap.ai
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "📸",
         "requires": { "bins": ["camsnap"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/camsnap",
               "bins": ["camsnap"],
-              "label": "Install camsnap (brew)",
+              "label": "Instalar camsnap (brew)",
             },
           ],
       },
@@ -24,22 +24,22 @@ metadata:
 
 # camsnap
 
-Use `camsnap` to grab snapshots, clips, or motion events from configured cameras.
+Use `camsnap` para capturar snapshots, clipes ou eventos de movimento de câmeras configuradas.
 
-Setup
+Configuração
 
-- Config file: `~/.config/camsnap/config.yaml`
-- Add camera: `camsnap add --name kitchen --host 192.168.0.10 --user user --pass pass`
+- Arquivo de config: `~/.config/camsnap/config.yaml`
+- Adicionar câmera: `camsnap add --name cozinha --host 192.168.0.10 --user usuario --pass senha`
 
-Common commands
+Comandos comuns
 
-- Discover: `camsnap discover --info`
-- Snapshot: `camsnap snap kitchen --out shot.jpg`
-- Clip: `camsnap clip kitchen --dur 5s --out clip.mp4`
-- Motion watch: `camsnap watch kitchen --threshold 0.2 --action '...'`
-- Doctor: `camsnap doctor --probe`
+- Descobrir: `camsnap discover --info`
+- Snapshot: `camsnap snap cozinha --out foto.jpg`
+- Clipe: `camsnap clip cozinha --dur 5s --out clipe.mp4`
+- Monitorar movimento: `camsnap watch cozinha --threshold 0.2 --action '...'`
+- Diagnóstico: `camsnap doctor --probe`
 
-Notes
+Notas
 
-- Requires `ffmpeg` on PATH.
-- Prefer a short test capture before longer clips.
+- Requer `ffmpeg` no PATH.
+- Prefira uma captura de teste curta antes de clipes mais longos.

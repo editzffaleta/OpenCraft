@@ -1,10 +1,10 @@
 ---
 name: gemini
-description: Gemini CLI for one-shot Q&A, summaries, and generation.
+description: CLI do Gemini para perguntas rápidas, resumos e geração de conteúdo.
 homepage: https://ai.google.dev/
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "✨",
         "requires": { "bins": ["gemini"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "gemini-cli",
               "bins": ["gemini"],
-              "label": "Install Gemini CLI (brew)",
+              "label": "Instalar Gemini CLI (brew)",
             },
           ],
       },
@@ -24,20 +24,20 @@ metadata:
 
 # Gemini CLI
 
-Use Gemini in one-shot mode with a positional prompt (avoid interactive mode).
+Use o Gemini em modo de execução única com um prompt posicional (evite o modo interativo).
 
-Quick start
+Início rápido
 
-- `gemini "Answer this question..."`
-- `gemini --model <name> "Prompt..."`
-- `gemini --output-format json "Return JSON"`
+- `gemini "Responda esta pergunta..."`
+- `gemini --model <nome> "Prompt..."`
+- `gemini --output-format json "Retorne JSON"`
 
-Extensions
+Extensões
 
-- List: `gemini --list-extensions`
-- Manage: `gemini extensions <command>`
+- Listar: `gemini --list-extensions`
+- Gerenciar: `gemini extensions <comando>`
 
-Notes
+Notas
 
-- If auth is required, run `gemini` once interactively and follow the login flow.
-- Avoid `--yolo` for safety.
+- Se autenticação for necessária, execute `gemini` uma vez interativamente e siga o fluxo de login.
+- Evite `--yolo` por segurança.

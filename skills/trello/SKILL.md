@@ -1,95 +1,95 @@
 ---
 name: trello
-description: Manage Trello boards, lists, and cards via the Trello REST API.
+description: Gerencia quadros, listas e cartões do Trello via API REST do Trello.
 homepage: https://developer.atlassian.com/cloud/trello/rest/
 metadata:
   {
-    "openclaw":
+    "opencraft":
       { "emoji": "📋", "requires": { "bins": ["jq"], "env": ["TRELLO_API_KEY", "TRELLO_TOKEN"] } },
   }
 ---
 
-# Trello Skill
+# Habilidade Trello
 
-Manage Trello boards, lists, and cards directly from OpenClaw.
+Gerencie quadros, listas e cartões do Trello diretamente pelo OpenCraft.
 
-## Setup
+## Configuração
 
-1. Get your API key: https://trello.com/app-key
-2. Generate a token (click "Token" link on that page)
-3. Set environment variables:
+1. Obtenha sua chave de API: https://trello.com/app-key
+2. Gere um token (clique no link "Token" nessa página)
+3. Defina as variáveis de ambiente:
    ```bash
-   export TRELLO_API_KEY="your-api-key"
-   export TRELLO_TOKEN="your-token"
+   export TRELLO_API_KEY="sua-chave-de-api"
+   export TRELLO_TOKEN="seu-token"
    ```
 
-## Usage
+## Uso
 
-All commands use curl to hit the Trello REST API.
+Todos os comandos usam curl para acessar a API REST do Trello.
 
-### List boards
+### Listar quadros
 
 ```bash
 curl -s "https://api.trello.com/1/members/me/boards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | {name, id}'
 ```
 
-### List lists in a board
+### Listar listas em um quadro
 
 ```bash
 curl -s "https://api.trello.com/1/boards/{boardId}/lists?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | {name, id}'
 ```
 
-### List cards in a list
+### Listar cartões em uma lista
 
 ```bash
 curl -s "https://api.trello.com/1/lists/{listId}/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | {name, id, desc}'
 ```
 
-### Create a card
+### Criar um cartão
 
 ```bash
 curl -s -X POST "https://api.trello.com/1/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" \
   -d "idList={listId}" \
-  -d "name=Card Title" \
-  -d "desc=Card description"
+  -d "name=Título do Cartão" \
+  -d "desc=Descrição do cartão"
 ```
 
-### Move a card to another list
+### Mover um cartão para outra lista
 
 ```bash
 curl -s -X PUT "https://api.trello.com/1/cards/{cardId}?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" \
   -d "idList={newListId}"
 ```
 
-### Add a comment to a card
+### Adicionar um comentário a um cartão
 
 ```bash
 curl -s -X POST "https://api.trello.com/1/cards/{cardId}/actions/comments?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" \
-  -d "text=Your comment here"
+  -d "text=Seu comentário aqui"
 ```
 
-### Archive a card
+### Arquivar um cartão
 
 ```bash
 curl -s -X PUT "https://api.trello.com/1/cards/{cardId}?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" \
   -d "closed=true"
 ```
 
-## Notes
+## Notas
 
-- Board/List/Card IDs can be found in the Trello URL or via the list commands
-- The API key and token provide full access to your Trello account - keep them secret!
-- Rate limits: 300 requests per 10 seconds per API key; 100 requests per 10 seconds per token; `/1/members` endpoints are limited to 100 requests per 900 seconds
+- IDs de Quadro/Lista/Cartão podem ser encontrados na URL do Trello ou via comandos de listagem
+- A chave de API e o token fornecem acesso total à sua conta Trello — mantenha-os em segredo!
+- Limites de taxa: 300 requisições por 10 segundos por chave de API; 100 requisições por 10 segundos por token; endpoints `/1/members` são limitados a 100 requisições por 900 segundos
 
-## Examples
+## Exemplos
 
 ```bash
-# Get all boards
+# Obter todos os quadros
 curl -s "https://api.trello.com/1/members/me/boards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN&fields=name,id" | jq
 
-# Find a specific board by name
-curl -s "https://api.trello.com/1/members/me/boards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | select(.name | contains("Work"))'
+# Encontrar um quadro específico pelo nome
+curl -s "https://api.trello.com/1/members/me/boards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | select(.name | contains("Trabalho"))'
 
-# Get all cards on a board
+# Obter todos os cartões de um quadro
 curl -s "https://api.trello.com/1/boards/{boardId}/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | jq '.[] | {name, list: .idList}'
 ```

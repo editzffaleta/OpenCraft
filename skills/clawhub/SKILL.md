@@ -1,9 +1,9 @@
 ---
 name: clawhub
-description: Use the ClawHub CLI to search, install, update, and publish agent skills from clawhub.com. Use when you need to fetch new skills on the fly, sync installed skills to latest or a specific version, or publish new/updated skill folders with the npm-installed clawhub CLI.
+description: Use o CLI ClawHub para pesquisar, instalar, atualizar e publicar skills de agente do clawhub.com. Use quando precisar buscar novas skills dinamicamente, sincronizar skills instaladas para a versão mais recente ou específica, ou publicar pastas de skill novas/atualizadas com o CLI clawhub instalado via npm.
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "requires": { "bins": ["clawhub"] },
         "install":
@@ -13,7 +13,7 @@ metadata:
               "kind": "node",
               "package": "clawhub",
               "bins": ["clawhub"],
-              "label": "Install ClawHub CLI (npm)",
+              "label": "Instalar ClawHub CLI (npm)",
             },
           ],
       },
@@ -22,56 +22,56 @@ metadata:
 
 # ClawHub CLI
 
-Install
+Instalar
 
 ```bash
 npm i -g clawhub
 ```
 
-Auth (publish)
+Autenticação (publicar)
 
 ```bash
 clawhub login
 clawhub whoami
 ```
 
-Search
+Pesquisar
 
 ```bash
-clawhub search "postgres backups"
+clawhub search "backups postgres"
 ```
 
-Install
+Instalar
 
 ```bash
-clawhub install my-skill
-clawhub install my-skill --version 1.2.3
+clawhub install minha-skill
+clawhub install minha-skill --version 1.2.3
 ```
 
-Update (hash-based match + upgrade)
+Atualizar (correspondência por hash + upgrade)
 
 ```bash
-clawhub update my-skill
-clawhub update my-skill --version 1.2.3
+clawhub update minha-skill
+clawhub update minha-skill --version 1.2.3
 clawhub update --all
-clawhub update my-skill --force
+clawhub update minha-skill --force
 clawhub update --all --no-input --force
 ```
 
-List
+Listar
 
 ```bash
 clawhub list
 ```
 
-Publish
+Publicar
 
 ```bash
-clawhub publish ./my-skill --slug my-skill --name "My Skill" --version 1.2.0 --changelog "Fixes + docs"
+clawhub publish ./minha-skill --slug minha-skill --name "Minha Skill" --version 1.2.0 --changelog "Correções + docs"
 ```
 
-Notes
+Notas
 
-- Default registry: https://clawhub.com (override with CLAWHUB_REGISTRY or --registry)
-- Default workdir: cwd (falls back to OpenClaw workspace); install dir: ./skills (override with --workdir / --dir / CLAWHUB_WORKDIR)
-- Update command hashes local files, resolves matching version, and upgrades to latest unless --version is set
+- Registry padrão: https://clawhub.com (sobrescreva com CLAWHUB_REGISTRY ou --registry)
+- Workdir padrão: cwd (volta ao workspace OpenCraft); dir de instalação: ./skills (sobrescreva com --workdir / --dir / CLAWHUB_WORKDIR)
+- O comando update faz hash dos arquivos locais, resolve a versão correspondente e faz upgrade para a mais recente a menos que --version esteja definido

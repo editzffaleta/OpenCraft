@@ -1,90 +1,90 @@
 ---
 name: discord
-description: "Discord ops via the message tool (channel=discord)."
-metadata: { "openclaw": { "emoji": "🎮", "requires": { "config": ["channels.discord.token"] } } }
+description: "Operações no Discord via ferramenta message (channel=discord)."
+metadata: { "opencraft": { "emoji": "🎮", "requires": { "config": ["channels.discord.token"] } } }
 allowed-tools: ["message"]
 ---
 
 # Discord (Via `message`)
 
-Use the `message` tool. No provider-specific `discord` tool exposed to the agent.
+Use a ferramenta `message`. Nenhuma ferramenta `discord` específica do provedor é exposta ao agente.
 
-## Musts
+## Obrigatórios
 
-- Always: `channel: "discord"`.
-- Respect gating: `channels.discord.actions.*` (some default off: `roles`, `moderation`, `presence`, `channels`).
-- Prefer explicit ids: `guildId`, `channelId`, `messageId`, `userId`.
-- Multi-account: optional `accountId`.
+- Sempre: `channel: "discord"`.
+- Respeite o gating: `channels.discord.actions.*` (alguns estão desativados por padrão: `roles`, `moderation`, `presence`, `channels`).
+- Prefira ids explícitos: `guildId`, `channelId`, `messageId`, `userId`.
+- Multi-conta: `accountId` opcional.
 
-## Guidelines
+## Diretrizes
 
-- Avoid Markdown tables in outbound Discord messages.
-- Mention users as `<@USER_ID>`.
-- Prefer Discord components v2 (`components`) for rich UI; use legacy `embeds` only when you must.
+- Evite tabelas Markdown em mensagens de saída do Discord.
+- Mencione usuários como `<@USER_ID>`.
+- Prefira componentes Discord v2 (`components`) para UI rica; use `embeds` legado apenas quando necessário.
 
-## Targets
+## Alvos
 
-- Send-like actions: `to: "channel:<id>"` or `to: "user:<id>"`.
-- Message-specific actions: `channelId: "<id>"` (or `to`) + `messageId: "<id>"`.
+- Ações de envio: `to: "channel:<id>"` ou `to: "user:<id>"`.
+- Ações específicas de mensagem: `channelId: "<id>"` (ou `to`) + `messageId: "<id>"`.
 
-## Common Actions (Examples)
+## Ações Comuns (Exemplos)
 
-Send message:
+Enviar mensagem:
 
 ```json
 {
   "action": "send",
   "channel": "discord",
   "to": "channel:123",
-  "message": "hello",
+  "message": "olá",
   "silent": true
 }
 ```
 
-Send with media:
+Enviar com mídia:
 
 ```json
 {
   "action": "send",
   "channel": "discord",
   "to": "channel:123",
-  "message": "see attachment",
-  "media": "file:///tmp/example.png"
+  "message": "veja o anexo",
+  "media": "file:///tmp/exemplo.png"
 }
 ```
 
-- Optional `silent: true` to suppress Discord notifications.
+- `silent: true` opcional para suprimir notificações do Discord.
 
-Send with components v2 (recommended for rich UI):
+Enviar com componentes v2 (recomendado para UI rica):
 
 ```json
 {
   "action": "send",
   "channel": "discord",
   "to": "channel:123",
-  "message": "Status update",
-  "components": "[Carbon v2 components]"
+  "message": "Atualização de status",
+  "components": "[Componentes Carbon v2]"
 }
 ```
 
-- `components` expects Carbon component instances (Container, TextDisplay, etc.) from JS/TS integrations.
-- Do not combine `components` with `embeds` (Discord rejects v2 + embeds).
+- `components` espera instâncias de componentes Carbon (Container, TextDisplay, etc.) de integrações JS/TS.
+- Não combine `components` com `embeds` (Discord rejeita v2 + embeds).
 
-Legacy embeds (not recommended):
+Embeds legados (não recomendado):
 
 ```json
 {
   "action": "send",
   "channel": "discord",
   "to": "channel:123",
-  "message": "Status update",
-  "embeds": [{ "title": "Legacy", "description": "Embeds are legacy." }]
+  "message": "Atualização de status",
+  "embeds": [{ "title": "Legado", "description": "Embeds são legado." }]
 }
 ```
 
-- `embeds` are ignored when components v2 are present.
+- `embeds` são ignorados quando componentes v2 estão presentes.
 
-React:
+Reagir:
 
 ```json
 {
@@ -96,7 +96,7 @@ React:
 }
 ```
 
-Read:
+Ler:
 
 ```json
 {
@@ -107,7 +107,7 @@ Read:
 }
 ```
 
-Edit / delete:
+Editar / deletar:
 
 ```json
 {
@@ -115,7 +115,7 @@ Edit / delete:
   "channel": "discord",
   "channelId": "123",
   "messageId": "456",
-  "message": "fixed typo"
+  "message": "erro corrigido"
 }
 ```
 
@@ -128,21 +128,21 @@ Edit / delete:
 }
 ```
 
-Poll:
+Enquete:
 
 ```json
 {
   "action": "poll",
   "channel": "discord",
   "to": "channel:123",
-  "pollQuestion": "Lunch?",
-  "pollOption": ["Pizza", "Sushi", "Salad"],
+  "pollQuestion": "Almoço?",
+  "pollOption": ["Pizza", "Sushi", "Salada"],
   "pollMulti": false,
   "pollDurationHours": 24
 }
 ```
 
-Pins:
+Fixar mensagens:
 
 ```json
 {
@@ -161,37 +161,37 @@ Threads:
   "channel": "discord",
   "channelId": "123",
   "messageId": "456",
-  "threadName": "bug triage"
+  "threadName": "triagem de bug"
 }
 ```
 
-Search:
+Pesquisar:
 
 ```json
 {
   "action": "search",
   "channel": "discord",
   "guildId": "999",
-  "query": "release notes",
+  "query": "notas de release",
   "channelIds": ["123", "456"],
   "limit": 10
 }
 ```
 
-Presence (often gated):
+Presença (frequentemente com gating):
 
 ```json
 {
   "action": "set-presence",
   "channel": "discord",
   "activityType": "playing",
-  "activityName": "with fire",
+  "activityName": "com fogo",
   "status": "online"
 }
 ```
 
-## Writing Style (Discord)
+## Estilo de Escrita (Discord)
 
-- Short, conversational, low ceremony.
-- No markdown tables.
-- Mention users as `<@USER_ID>`.
+- Curto, conversacional, pouca cerimônia.
+- Sem tabelas markdown.
+- Mencione usuários como `<@USER_ID>`.

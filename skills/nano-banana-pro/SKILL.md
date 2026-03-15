@@ -1,10 +1,10 @@
 ---
 name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image (Nano Banana Pro).
+description: Gere ou edite imagens via Gemini 3 Pro Image (Nano Banana Pro).
 homepage: https://ai.google.dev/
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "🍌",
         "requires": { "bins": ["uv"], "env": ["GEMINI_API_KEY"] },
@@ -16,7 +16,7 @@ metadata:
               "kind": "brew",
               "formula": "uv",
               "bins": ["uv"],
-              "label": "Install uv (brew)",
+              "label": "Instalar uv (brew)",
             },
           ],
       },
@@ -25,41 +25,41 @@ metadata:
 
 # Nano Banana Pro (Gemini 3 Pro Image)
 
-Use the bundled script to generate or edit images.
+Use o script incluído para gerar ou editar imagens.
 
-Generate
-
-```bash
-uv run {baseDir}/scripts/generate_image.py --prompt "your image description" --filename "output.png" --resolution 1K
-```
-
-Edit (single image)
+Gerar
 
 ```bash
-uv run {baseDir}/scripts/generate_image.py --prompt "edit instructions" --filename "output.png" -i "/path/in.png" --resolution 2K
+uv run {baseDir}/scripts/generate_image.py --prompt "sua descrição de imagem" --filename "saida.png" --resolution 1K
 ```
 
-Multi-image composition (up to 14 images)
+Editar (imagem única)
 
 ```bash
-uv run {baseDir}/scripts/generate_image.py --prompt "combine these into one scene" --filename "output.png" -i img1.png -i img2.png -i img3.png
+uv run {baseDir}/scripts/generate_image.py --prompt "instruções de edição" --filename "saida.png" -i "/caminho/entrada.png" --resolution 2K
 ```
 
-API key
-
-- `GEMINI_API_KEY` env var
-- Or set `skills."nano-banana-pro".apiKey` / `skills."nano-banana-pro".env.GEMINI_API_KEY` in `~/.openclaw/openclaw.json`
-
-Specific aspect ratio (optional)
+Composição multi-imagem (até 14 imagens)
 
 ```bash
-uv run {baseDir}/scripts/generate_image.py --prompt "portrait photo" --filename "output.png" --aspect-ratio 9:16
+uv run {baseDir}/scripts/generate_image.py --prompt "combine estas em uma cena" --filename "saida.png" -i img1.png -i img2.png -i img3.png
 ```
 
-Notes
+Chave de API
 
-- Resolutions: `1K` (default), `2K`, `4K`.
-- Aspect ratios: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`. Without `--aspect-ratio` / `-a`, the model picks freely - use this flag for avatars, profile pics, or consistent batch generation.
-- Use timestamps in filenames: `yyyy-mm-dd-hh-mm-ss-name.png`.
-- The script prints a `MEDIA:` line for OpenClaw to auto-attach on supported chat providers.
-- Do not read the image back; report the saved path only.
+- Variável de ambiente `GEMINI_API_KEY`
+- Ou defina `skills."nano-banana-pro".apiKey` / `skills."nano-banana-pro".env.GEMINI_API_KEY` em `~/.opencraft/opencraft.json`
+
+Proporção específica (opcional)
+
+```bash
+uv run {baseDir}/scripts/generate_image.py --prompt "foto retrato" --filename "saida.png" --aspect-ratio 9:16
+```
+
+Notas
+
+- Resoluções: `1K` (padrão), `2K`, `4K`.
+- Proporções: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`. Sem `--aspect-ratio` / `-a`, o modelo escolhe livremente — use esta flag para avatares, fotos de perfil ou geração em lote consistente.
+- Use timestamps nos nomes de arquivo: `yyyy-mm-dd-hh-mm-ss-nome.png`.
+- O script imprime uma linha `MEDIA:` para o OpenCraft anexar automaticamente em provedores de chat suportados.
+- Não releia a imagem de volta; reporte apenas o caminho salvo.

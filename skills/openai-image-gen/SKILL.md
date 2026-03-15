@@ -1,10 +1,10 @@
 ---
 name: openai-image-gen
-description: Batch-generate images via OpenAI Images API. Random prompt sampler + `index.html` gallery.
+description: Gera imagens em lote via API de Imagens da OpenAI. Amostrador de prompts aleatórios + galeria `index.html`.
 homepage: https://platform.openai.com/docs/api-reference/images
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "🎨",
         "requires": { "bins": ["python3"], "env": ["OPENAI_API_KEY"] },
@@ -16,7 +16,7 @@ metadata:
               "kind": "brew",
               "formula": "python",
               "bins": ["python3"],
-              "label": "Install Python (brew)",
+              "label": "Instalar Python (brew)",
             },
           ],
       },
@@ -25,68 +25,68 @@ metadata:
 
 # OpenAI Image Gen
 
-Generate a handful of “random but structured” prompts and render them via the OpenAI Images API.
+Gere um conjunto de prompts "aleatórios mas estruturados" e renderize-os via API de Imagens da OpenAI.
 
-## Run
+## Executar
 
-Note: Image generation can take longer than common exec timeouts (for example 30 seconds).
-When invoking this skill via OpenClaw’s exec tool, set a higher timeout to avoid premature termination/retries (e.g., exec timeout=300).
+Nota: A geração de imagens pode demorar mais que os timeouts comuns de execução (por exemplo, 30 segundos).
+Ao invocar esta skill via ferramenta exec do OpenCraft, defina um timeout maior para evitar cancelamentos prematuros/retentativas (ex: exec timeout=300).
 
 ```bash
 python3 {baseDir}/scripts/gen.py
-open ~/Projects/tmp/openai-image-gen-*/index.html  # if ~/Projects/tmp exists; else ./tmp/...
+open ~/Projects/tmp/openai-image-gen-*/index.html  # se ~/Projects/tmp existir; senão ./tmp/...
 ```
 
-Useful flags:
+Flags úteis:
 
 ```bash
-# GPT image models with various options
+# Modelos de imagem GPT com várias opções
 python3 {baseDir}/scripts/gen.py --count 16 --model gpt-image-1
-python3 {baseDir}/scripts/gen.py --prompt "ultra-detailed studio photo of a lobster astronaut" --count 4
+python3 {baseDir}/scripts/gen.py --prompt "foto de estúdio ultra-detalhada de um lagostim astronauta" --count 4
 python3 {baseDir}/scripts/gen.py --size 1536x1024 --quality high --out-dir ./out/images
 python3 {baseDir}/scripts/gen.py --model gpt-image-1.5 --background transparent --output-format webp
 
-# DALL-E 3 (note: count is automatically limited to 1)
+# DALL-E 3 (nota: count é automaticamente limitado a 1)
 python3 {baseDir}/scripts/gen.py --model dall-e-3 --quality hd --size 1792x1024 --style vivid
-python3 {baseDir}/scripts/gen.py --model dall-e-3 --style natural --prompt "serene mountain landscape"
+python3 {baseDir}/scripts/gen.py --model dall-e-3 --style natural --prompt "paisagem serena de montanha"
 
 # DALL-E 2
 python3 {baseDir}/scripts/gen.py --model dall-e-2 --size 512x512 --count 4
 ```
 
-## Model-Specific Parameters
+## Parâmetros por Modelo
 
-Different models support different parameter values. The script automatically selects appropriate defaults based on the model.
+Modelos diferentes suportam valores de parâmetros diferentes. O script seleciona automaticamente os padrões adequados com base no modelo.
 
-### Size
+### Tamanho
 
-- **GPT image models** (`gpt-image-1`, `gpt-image-1-mini`, `gpt-image-1.5`): `1024x1024`, `1536x1024` (landscape), `1024x1536` (portrait), or `auto`
-  - Default: `1024x1024`
-- **dall-e-3**: `1024x1024`, `1792x1024`, or `1024x1792`
-  - Default: `1024x1024`
-- **dall-e-2**: `256x256`, `512x512`, or `1024x1024`
-  - Default: `1024x1024`
+- **Modelos de imagem GPT** (`gpt-image-1`, `gpt-image-1-mini`, `gpt-image-1.5`): `1024x1024`, `1536x1024` (paisagem), `1024x1536` (retrato), ou `auto`
+  - Padrão: `1024x1024`
+- **dall-e-3**: `1024x1024`, `1792x1024`, ou `1024x1792`
+  - Padrão: `1024x1024`
+- **dall-e-2**: `256x256`, `512x512`, ou `1024x1024`
+  - Padrão: `1024x1024`
 
-### Quality
+### Qualidade
 
-- **GPT image models**: `auto`, `high`, `medium`, or `low`
-  - Default: `high`
-- **dall-e-3**: `hd` or `standard`
-  - Default: `standard`
-- **dall-e-2**: `standard` only
-  - Default: `standard`
+- **Modelos de imagem GPT**: `auto`, `high`, `medium`, ou `low`
+  - Padrão: `high`
+- **dall-e-3**: `hd` ou `standard`
+  - Padrão: `standard`
+- **dall-e-2**: apenas `standard`
+  - Padrão: `standard`
 
-### Other Notable Differences
+### Outras Diferenças Notáveis
 
-- **dall-e-3** only supports generating 1 image at a time (`n=1`). The script automatically limits count to 1 when using this model.
-- **GPT image models** support additional parameters:
-  - `--background`: `transparent`, `opaque`, or `auto` (default)
-  - `--output-format`: `png` (default), `jpeg`, or `webp`
-  - Note: `stream` and `moderation` are available via API but not yet implemented in this script
-- **dall-e-3** has a `--style` parameter: `vivid` (hyper-real, dramatic) or `natural` (more natural looking)
+- **dall-e-3** suporta apenas geração de 1 imagem por vez (`n=1`). O script limita automaticamente o count a 1 ao usar este modelo.
+- **Modelos de imagem GPT** suportam parâmetros adicionais:
+  - `--background`: `transparent`, `opaque`, ou `auto` (padrão)
+  - `--output-format`: `png` (padrão), `jpeg`, ou `webp`
+  - Nota: `stream` e `moderation` estão disponíveis via API mas ainda não implementados neste script
+- **dall-e-3** tem um parâmetro `--style`: `vivid` (hiper-real, dramático) ou `natural` (mais natural)
 
-## Output
+## Saída
 
-- `*.png`, `*.jpeg`, or `*.webp` images (output format depends on model + `--output-format`)
-- `prompts.json` (prompt → file mapping)
-- `index.html` (thumbnail gallery)
+- Imagens `*.png`, `*.jpeg`, ou `*.webp` (formato de saída depende do modelo + `--output-format`)
+- `prompts.json` (mapeamento prompt → arquivo)
+- `index.html` (galeria de miniaturas)

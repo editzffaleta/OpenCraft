@@ -1,10 +1,10 @@
 ---
 name: imsg
-description: iMessage/SMS CLI for listing chats, history, and sending messages via Messages.app.
+description: CLI de iMessage/SMS para listar chats, histórico e enviar mensagens via Messages.app.
 homepage: https://imsg.to
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "📨",
         "os": ["darwin"],
@@ -16,7 +16,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/imsg",
               "bins": ["imsg"],
-              "label": "Install imsg (brew)",
+              "label": "Instalar imsg (brew)",
             },
           ],
       },
@@ -25,98 +25,98 @@ metadata:
 
 # imsg
 
-Use `imsg` to read and send iMessage/SMS via macOS Messages.app.
+Use `imsg` para ler e enviar iMessage/SMS via Messages.app do macOS.
 
-## When to Use
+## Quando Usar
 
-✅ **USE this skill when:**
+✅ **USE esta skill quando:**
 
-- User explicitly asks to send iMessage or SMS
-- Reading iMessage conversation history
-- Checking recent Messages.app chats
-- Sending to phone numbers or Apple IDs
+- Usuário pede explicitamente para enviar iMessage ou SMS
+- Lendo histórico de conversa iMessage
+- Verificando chats recentes no Messages.app
+- Enviando para números de telefone ou Apple IDs
 
-## When NOT to Use
+## Quando NÃO Usar
 
-❌ **DON'T use this skill when:**
+❌ **NÃO use esta skill quando:**
 
-- Telegram messages → use `message` tool with `channel:telegram`
-- Signal messages → use Signal channel if configured
-- WhatsApp messages → use WhatsApp channel if configured
-- Discord messages → use `message` tool with `channel:discord`
-- Slack messages → use `slack` skill
-- Group chat management (adding/removing members) → not supported
-- Bulk/mass messaging → always confirm with user first
-- Replying in current conversation → just reply normally (OpenClaw routes automatically)
+- Mensagens do Telegram → use ferramenta `message` com `channel:telegram`
+- Mensagens do Signal → use canal Signal se configurado
+- Mensagens do WhatsApp → use canal WhatsApp se configurado
+- Mensagens do Discord → use ferramenta `message` com `channel:discord`
+- Mensagens do Slack → use skill `slack`
+- Gerenciamento de chat em grupo (adicionar/remover membros) → não suportado
+- Envio em massa → sempre confirme com o usuário primeiro
+- Responder na conversa atual → apenas responda normalmente (OpenCraft roteia automaticamente)
 
-## Requirements
+## Requisitos
 
-- macOS with Messages.app signed in
-- Full Disk Access for terminal
-- Automation permission for Messages.app (for sending)
+- macOS com Messages.app conectado
+- Acesso Total ao Disco para o terminal
+- Permissão de Automação para Messages.app (para envio)
 
-## Common Commands
+## Comandos Comuns
 
-### List Chats
+### Listar Chats
 
 ```bash
 imsg chats --limit 10 --json
 ```
 
-### View History
+### Ver Histórico
 
 ```bash
-# By chat ID
+# Por ID de chat
 imsg history --chat-id 1 --limit 20 --json
 
-# With attachments info
+# Com informações de anexos
 imsg history --chat-id 1 --limit 20 --attachments --json
 ```
 
-### Watch for New Messages
+### Monitorar Novas Mensagens
 
 ```bash
 imsg watch --chat-id 1 --attachments
 ```
 
-### Send Messages
+### Enviar Mensagens
 
 ```bash
-# Text only
-imsg send --to "+14155551212" --text "Hello!"
+# Apenas texto
+imsg send --to "+5511999999999" --text "Olá!"
 
-# With attachment
-imsg send --to "+14155551212" --text "Check this out" --file /path/to/image.jpg
+# Com anexo
+imsg send --to "+5511999999999" --text "Veja isso" --file /caminho/para/imagem.jpg
 
-# Specify service
-imsg send --to "+14155551212" --text "Hi" --service imessage
-imsg send --to "+14155551212" --text "Hi" --service sms
+# Especificar serviço
+imsg send --to "+5511999999999" --text "Oi" --service imessage
+imsg send --to "+5511999999999" --text "Oi" --service sms
 ```
 
-## Service Options
+## Opções de Serviço
 
-- `--service imessage` — Force iMessage (requires recipient has iMessage)
-- `--service sms` — Force SMS (green bubble)
-- `--service auto` — Let Messages.app decide (default)
+- `--service imessage` — Forçar iMessage (requer que destinatário tenha iMessage)
+- `--service sms` — Forçar SMS (bolha verde)
+- `--service auto` — Deixar Messages.app decidir (padrão)
 
-## Safety Rules
+## Regras de Segurança
 
-1. **Always confirm recipient and message content** before sending
-2. **Never send to unknown numbers** without explicit user approval
-3. **Be careful with attachments** — confirm file path exists
-4. **Rate limit yourself** — don't spam
+1. **Sempre confirme destinatário e conteúdo** antes de enviar
+2. **Nunca envie para números desconhecidos** sem aprovação explícita do usuário
+3. **Cuidado com anexos** — confirme que o caminho do arquivo existe
+4. **Limite a frequência** — não envie spam
 
-## Example Workflow
+## Fluxo de Exemplo
 
-User: "Text mom that I'll be late"
+Usuário: "Manda mensagem pra minha mãe que vou me atrasar"
 
 ```bash
-# 1. Find mom's chat
-imsg chats --limit 20 --json | jq '.[] | select(.displayName | contains("Mom"))'
+# 1. Encontrar chat da mãe
+imsg chats --limit 20 --json | jq '.[] | select(.displayName | contains("Mãe"))'
 
-# 2. Confirm with user
-# "Found Mom at +1555123456. Send 'I'll be late' via iMessage?"
+# 2. Confirmar com usuário
+# "Encontrei Mãe no +5511999123456. Enviar 'Vou me atrasar' via iMessage?"
 
-# 3. Send after confirmation
-imsg send --to "+1555123456" --text "I'll be late"
+# 3. Enviar após confirmação
+imsg send --to "+5511999123456" --text "Vou me atrasar"
 ```

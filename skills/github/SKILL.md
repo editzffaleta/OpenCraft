@@ -1,9 +1,9 @@
 ---
 name: github
-description: "GitHub operations via `gh` CLI: issues, PRs, CI runs, code review, API queries. Use when: (1) checking PR status or CI, (2) creating/commenting on issues, (3) listing/filtering PRs or issues, (4) viewing run logs. NOT for: complex web UI interactions requiring manual browser flows (use browser tooling when available), bulk operations across many repos (script with gh api), or when gh auth is not configured."
+description: "Operações no GitHub via CLI `gh`: issues, PRs, execuções de CI, revisão de código, consultas à API. Use quando: (1) verificar status de PR ou CI, (2) criar/comentar em issues, (3) listar/filtrar PRs ou issues, (4) visualizar logs de execução. NÃO use para: interações complexas com a UI web que exigem fluxos manuais de browser (use ferramentas de browser quando disponível), operações em massa em muitos repos (script com gh api), ou quando gh auth não estiver configurado."
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "🐙",
         "requires": { "bins": ["gh"] },
@@ -14,121 +14,121 @@ metadata:
               "kind": "brew",
               "formula": "gh",
               "bins": ["gh"],
-              "label": "Install GitHub CLI (brew)",
+              "label": "Instalar GitHub CLI (brew)",
             },
             {
               "id": "apt",
               "kind": "apt",
               "package": "gh",
               "bins": ["gh"],
-              "label": "Install GitHub CLI (apt)",
+              "label": "Instalar GitHub CLI (apt)",
             },
           ],
       },
   }
 ---
 
-# GitHub Skill
+# Habilidade GitHub
 
-Use the `gh` CLI to interact with GitHub repositories, issues, PRs, and CI.
+Use o CLI `gh` para interagir com repositórios, issues, PRs e CI do GitHub.
 
-## When to Use
+## Quando Usar
 
-✅ **USE this skill when:**
+✅ **USE esta habilidade quando:**
 
-- Checking PR status, reviews, or merge readiness
-- Viewing CI/workflow run status and logs
-- Creating, closing, or commenting on issues
-- Creating or merging pull requests
-- Querying GitHub API for repository data
-- Listing repos, releases, or collaborators
+- Verificar status de PR, revisões ou prontidão para merge
+- Visualizar status e logs de execuções de CI/workflow
+- Criar, fechar ou comentar em issues
+- Criar ou fazer merge de pull requests
+- Consultar a API do GitHub para dados de repositório
+- Listar repos, releases ou colaboradores
 
-## When NOT to Use
+## Quando NÃO Usar
 
-❌ **DON'T use this skill when:**
+❌ **NÃO use esta habilidade quando:**
 
-- Local git operations (commit, push, pull, branch) → use `git` directly
-- Non-GitHub repos (GitLab, Bitbucket, self-hosted) → different CLIs
-- Cloning repositories → use `git clone`
-- Reviewing actual code changes → use `coding-agent` skill
-- Complex multi-file diffs → use `coding-agent` or read files directly
+- Operações git locais (commit, push, pull, branch) → use `git` diretamente
+- Repos não-GitHub (GitLab, Bitbucket, self-hosted) → CLIs diferentes
+- Clonar repositórios → use `git clone`
+- Revisar mudanças de código → use a habilidade `coding-agent`
+- Diffs complexos de múltiplos arquivos → use `coding-agent` ou leia os arquivos diretamente
 
-## Setup
+## Configuração
 
 ```bash
-# Authenticate (one-time)
+# Autenticar (uma vez)
 gh auth login
 
-# Verify
+# Verificar
 gh auth status
 ```
 
-## Common Commands
+## Comandos Comuns
 
 ### Pull Requests
 
 ```bash
-# List PRs
+# Listar PRs
 gh pr list --repo owner/repo
 
-# Check CI status
+# Verificar status do CI
 gh pr checks 55 --repo owner/repo
 
-# View PR details
+# Ver detalhes do PR
 gh pr view 55 --repo owner/repo
 
-# Create PR
-gh pr create --title "feat: add feature" --body "Description"
+# Criar PR
+gh pr create --title "feat: adicionar funcionalidade" --body "Descrição"
 
-# Merge PR
+# Fazer merge do PR
 gh pr merge 55 --squash --repo owner/repo
 ```
 
 ### Issues
 
 ```bash
-# List issues
+# Listar issues
 gh issue list --repo owner/repo --state open
 
-# Create issue
-gh issue create --title "Bug: something broken" --body "Details..."
+# Criar issue
+gh issue create --title "Bug: algo quebrado" --body "Detalhes..."
 
-# Close issue
+# Fechar issue
 gh issue close 42 --repo owner/repo
 ```
 
-### CI/Workflow Runs
+### Execuções de CI/Workflow
 
 ```bash
-# List recent runs
+# Listar execuções recentes
 gh run list --repo owner/repo --limit 10
 
-# View specific run
+# Ver execução específica
 gh run view <run-id> --repo owner/repo
 
-# View failed step logs only
+# Ver apenas logs de etapas com falha
 gh run view <run-id> --repo owner/repo --log-failed
 
-# Re-run failed jobs
+# Re-executar jobs com falha
 gh run rerun <run-id> --failed --repo owner/repo
 ```
 
-### API Queries
+### Consultas à API
 
 ```bash
-# Get PR with specific fields
+# Obter PR com campos específicos
 gh api repos/owner/repo/pulls/55 --jq '.title, .state, .user.login'
 
-# List all labels
+# Listar todas as labels
 gh api repos/owner/repo/labels --jq '.[].name'
 
-# Get repo stats
-gh api repos/owner/repo --jq '{stars: .stargazers_count, forks: .forks_count}'
+# Obter stats do repo
+gh api repos/owner/repo --jq '{estrelas: .stargazers_count, forks: .forks_count}'
 ```
 
-## JSON Output
+## Saída JSON
 
-Most commands support `--json` for structured output with `--jq` filtering:
+A maioria dos comandos suporta `--json` para saída estruturada com filtragem `--jq`:
 
 ```bash
 gh issue list --repo owner/repo --json number,title --jq '.[] | "\(.number): \(.title)"'
@@ -137,27 +137,27 @@ gh pr list --json number,title,state,mergeable --jq '.[] | select(.mergeable == 
 
 ## Templates
 
-### PR Review Summary
+### Resumo de Revisão de PR
 
 ```bash
-# Get PR overview for review
+# Obter visão geral do PR para revisão
 PR=55 REPO=owner/repo
-echo "## PR #$PR Summary"
+echo "## Resumo do PR #$PR"
 gh pr view $PR --repo $REPO --json title,body,author,additions,deletions,changedFiles \
-  --jq '"**\(.title)** by @\(.author.login)\n\n\(.body)\n\n📊 +\(.additions) -\(.deletions) across \(.changedFiles) files"'
+  --jq '"**\(.title)** por @\(.author.login)\n\n\(.body)\n\n📊 +\(.additions) -\(.deletions) em \(.changedFiles) arquivos"'
 gh pr checks $PR --repo $REPO
 ```
 
-### Issue Triage
+### Triagem de Issues
 
 ```bash
-# Quick issue triage view
+# Visão rápida de triagem de issues
 gh issue list --repo owner/repo --state open --json number,title,labels,createdAt \
   --jq '.[] | "[\(.number)] \(.title) - \([.labels[].name] | join(", ")) (\(.createdAt[:10]))"'
 ```
 
-## Notes
+## Notas
 
-- Always specify `--repo owner/repo` when not in a git directory
-- Use URLs directly: `gh pr view https://github.com/owner/repo/pull/55`
-- Rate limits apply; use `gh api --cache 1h` for repeated queries
+- Sempre especifique `--repo owner/repo` quando não estiver num diretório git
+- Use URLs diretamente: `gh pr view https://github.com/owner/repo/pull/55`
+- Limites de taxa se aplicam; use `gh api --cache 1h` para consultas repetidas

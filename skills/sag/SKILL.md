@@ -1,10 +1,10 @@
 ---
 name: sag
-description: ElevenLabs text-to-speech with mac-style say UX.
+description: Síntese de voz ElevenLabs com UX estilo say do Mac.
 homepage: https://sag.sh
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "🔊",
         "requires": { "bins": ["sag"], "env": ["ELEVENLABS_API_KEY"] },
@@ -16,7 +16,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/sag",
               "bins": ["sag"],
-              "label": "Install sag (brew)",
+              "label": "Instalar sag (brew)",
             },
           ],
       },
@@ -25,63 +25,63 @@ metadata:
 
 # sag
 
-Use `sag` for ElevenLabs TTS with local playback.
+Use `sag` para TTS da ElevenLabs com reprodução local.
 
-API key (required)
+Chave de API (obrigatória)
 
-- `ELEVENLABS_API_KEY` (preferred)
-- `SAG_API_KEY` also supported by the CLI
+- `ELEVENLABS_API_KEY` (preferido)
+- `SAG_API_KEY` também suportado pelo CLI
 
-Quick start
+Início rápido
 
-- `sag "Hello there"`
-- `sag speak -v "Roger" "Hello"`
+- `sag "Olá a todos"`
+- `sag speak -v "Roger" "Olá"`
 - `sag voices`
-- `sag prompting` (model-specific tips)
+- `sag prompting` (dicas específicas do modelo)
 
-Model notes
+Notas sobre modelos
 
-- Default: `eleven_v3` (expressive)
-- Stable: `eleven_multilingual_v2`
-- Fast: `eleven_flash_v2_5`
+- Padrão: `eleven_v3` (expressivo)
+- Estável: `eleven_multilingual_v2`
+- Rápido: `eleven_flash_v2_5`
 
-Pronunciation + delivery rules
+Regras de pronúncia + entrega
 
-- First fix: respell (e.g. "key-note"), add hyphens, adjust casing.
-- Numbers/units/URLs: `--normalize auto` (or `off` if it harms names).
-- Language bias: `--lang en|de|fr|...` to guide normalization.
-- v3: SSML `<break>` not supported; use `[pause]`, `[short pause]`, `[long pause]`.
-- v2/v2.5: SSML `<break time="1.5s" />` supported; `<phoneme>` not exposed in `sag`.
+- Primeira correção: reescreva (ex: "key-note"), adicione hífens, ajuste maiúsculas.
+- Números/unidades/URLs: `--normalize auto` (ou `off` se prejudicar nomes).
+- Viés de idioma: `--lang pt|en|de|fr|...` para guiar a normalização.
+- v3: SSML `<break>` não suportado; use `[pause]`, `[short pause]`, `[long pause]`.
+- v2/v2.5: SSML `<break time="1.5s" />` suportado; `<phoneme>` não exposto no `sag`.
 
-v3 audio tags (put at the entrance of a line)
+Tags de áudio v3 (coloque no início de uma linha)
 
 - `[whispers]`, `[shouts]`, `[sings]`
 - `[laughs]`, `[starts laughing]`, `[sighs]`, `[exhales]`
 - `[sarcastic]`, `[curious]`, `[excited]`, `[crying]`, `[mischievously]`
-- Example: `sag "[whispers] keep this quiet. [short pause] ok?"`
+- Exemplo: `sag "[whispers] mantenha isso quieto. [short pause] ok?"`
 
-Voice defaults
+Padrões de voz
 
-- `ELEVENLABS_VOICE_ID` or `SAG_VOICE_ID`
+- `ELEVENLABS_VOICE_ID` ou `SAG_VOICE_ID`
 
-Confirm voice + speaker before long output.
+Confirme a voz + locutor antes de saídas longas.
 
-## Chat voice responses
+## Respostas de voz no chat
 
-When Peter asks for a "voice" reply (e.g., "crazy scientist voice", "explain in voice"), generate audio and send it:
+Quando o usuário pedir uma resposta em "voz" (ex: "voz de cientista louco", "explique em voz"), gere o áudio e envie:
 
 ```bash
-# Generate audio file
-sag -v Clawd -o /tmp/voice-reply.mp3 "Your message here"
+# Gerar arquivo de áudio
+sag -v Clawd -o /tmp/voice-reply.mp3 "Sua mensagem aqui"
 
-# Then include in reply:
+# Depois inclua na resposta:
 # MEDIA:/tmp/voice-reply.mp3
 ```
 
-Voice character tips:
+Dicas de personagem de voz:
 
-- Crazy scientist: Use `[excited]` tags, dramatic pauses `[short pause]`, vary intensity
-- Calm: Use `[whispers]` or slower pacing
-- Dramatic: Use `[sings]` or `[shouts]` sparingly
+- Cientista louco: use tags `[excited]`, pausas dramáticas `[short pause]`, varie a intensidade
+- Calmo: use `[whispers]` ou ritmo mais lento
+- Dramático: use `[sings]` ou `[shouts]` com parcimônia
 
-Default voice for Clawd: `lj2rcrvANS3gaWWnczSX` (or just `-v Clawd`)
+Voz padrão para Clawd: `lj2rcrvANS3gaWWnczSX` (ou apenas `-v Clawd`)

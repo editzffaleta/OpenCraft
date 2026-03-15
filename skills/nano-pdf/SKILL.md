@@ -1,10 +1,10 @@
 ---
 name: nano-pdf
-description: Edit PDFs with natural-language instructions using the nano-pdf CLI.
+description: Edite PDFs com instruções em linguagem natural usando o CLI nano-pdf.
 homepage: https://pypi.org/project/nano-pdf/
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "📄",
         "requires": { "bins": ["nano-pdf"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "uv",
               "package": "nano-pdf",
               "bins": ["nano-pdf"],
-              "label": "Install nano-pdf (uv)",
+              "label": "Instalar nano-pdf (uv)",
             },
           ],
       },
@@ -24,15 +24,15 @@ metadata:
 
 # nano-pdf
 
-Use `nano-pdf` to apply edits to a specific page in a PDF using a natural-language instruction.
+Use `nano-pdf` para aplicar edições em uma página específica de um PDF usando uma instrução em linguagem natural.
 
-## Quick start
+## Início rápido
 
 ```bash
-nano-pdf edit deck.pdf 1 "Change the title to 'Q3 Results' and fix the typo in the subtitle"
+nano-pdf edit apresentacao.pdf 1 "Altere o título para 'Resultados do 3º Trimestre' e corrija o erro de digitação no subtítulo"
 ```
 
-Notes:
+Notas:
 
-- Page numbers are 0-based or 1-based depending on the tool’s version/config; if the result looks off by one, retry with the other.
-- Always sanity-check the output PDF before sending it out.
+- Os números de página podem ser baseados em 0 ou 1 dependendo da versão/config da ferramenta; se o resultado parecer errado por um, tente novamente com o outro.
+- Sempre verifique o PDF de saída antes de enviá-lo.

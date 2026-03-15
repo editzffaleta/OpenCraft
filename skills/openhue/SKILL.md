@@ -1,10 +1,10 @@
 ---
 name: openhue
-description: Control Philips Hue lights and scenes via the OpenHue CLI.
+description: Controle luzes e cenas Philips Hue via CLI OpenHue.
 homepage: https://www.openhue.io/cli
 metadata:
   {
-    "openclaw":
+    "opencraft":
       {
         "emoji": "💡",
         "requires": { "bins": ["openhue"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "openhue/cli/openhue-cli",
               "bins": ["openhue"],
-              "label": "Install OpenHue CLI (brew)",
+              "label": "Instalar OpenHue CLI (brew)",
             },
           ],
       },
@@ -24,89 +24,89 @@ metadata:
 
 # OpenHue CLI
 
-Use `openhue` to control Philips Hue lights and scenes via a Hue Bridge.
+Use `openhue` para controlar luzes e cenas Philips Hue via uma Hue Bridge.
 
-## When to Use
+## Quando Usar
 
-✅ **USE this skill when:**
+✅ **USE esta skill quando:**
 
-- "Turn on/off the lights"
-- "Dim the living room lights"
-- "Set a scene" or "movie mode"
-- Controlling specific Hue rooms or zones
-- Adjusting brightness, color, or color temperature
+- "Acender/apagar as luzes"
+- "Diminuir as luzes da sala"
+- "Definir uma cena" ou "modo cinema"
+- Controlar quartos ou zonas Hue específicos
+- Ajustar brilho, cor ou temperatura de cor
 
-## When NOT to Use
+## Quando NÃO Usar
 
-❌ **DON'T use this skill when:**
+❌ **NÃO use esta skill quando:**
 
-- Non-Hue smart devices (other brands) → not supported
-- HomeKit scenes or Shortcuts → use Apple's ecosystem
-- TV or entertainment system control
-- Thermostat or HVAC
-- Smart plugs (unless Hue smart plugs)
+- Dispositivos inteligentes não-Hue (outras marcas) → não suportado
+- Cenas HomeKit ou Atalhos → use o ecossistema Apple
+- Controle de TV ou sistema de entretenimento
+- Termostato ou HVAC
+- Tomadas inteligentes (exceto tomadas Hue)
 
-## Common Commands
+## Comandos Comuns
 
-### List Resources
-
-```bash
-openhue get light       # List all lights
-openhue get room        # List all rooms
-openhue get scene       # List all scenes
-```
-
-### Control Lights
+### Listar Recursos
 
 ```bash
-# Turn on/off
-openhue set light "Bedroom Lamp" --on
-openhue set light "Bedroom Lamp" --off
-
-# Brightness (0-100)
-openhue set light "Bedroom Lamp" --on --brightness 50
-
-# Color temperature (warm to cool: 153-500 mirek)
-openhue set light "Bedroom Lamp" --on --temperature 300
-
-# Color (by name or hex)
-openhue set light "Bedroom Lamp" --on --color red
-openhue set light "Bedroom Lamp" --on --rgb "#FF5500"
+openhue get light       # Listar todas as luzes
+openhue get room        # Listar todos os quartos
+openhue get scene       # Listar todas as cenas
 ```
 
-### Control Rooms
+### Controlar Luzes
 
 ```bash
-# Turn off entire room
-openhue set room "Bedroom" --off
+# Acender/apagar
+openhue set light "Abajur do Quarto" --on
+openhue set light "Abajur do Quarto" --off
 
-# Set room brightness
-openhue set room "Bedroom" --on --brightness 30
+# Brilho (0-100)
+openhue set light "Abajur do Quarto" --on --brightness 50
+
+# Temperatura de cor (quente a frio: 153-500 mirek)
+openhue set light "Abajur do Quarto" --on --temperature 300
+
+# Cor (por nome ou hex)
+openhue set light "Abajur do Quarto" --on --color red
+openhue set light "Abajur do Quarto" --on --rgb "#FF5500"
 ```
 
-### Scenes
+### Controlar Quartos
 
 ```bash
-# Activate scene
-openhue set scene "Relax" --room "Bedroom"
-openhue set scene "Concentrate" --room "Office"
+# Apagar quarto inteiro
+openhue set room "Quarto" --off
+
+# Definir brilho do quarto
+openhue set room "Quarto" --on --brightness 30
 ```
 
-## Quick Presets
+### Cenas
 
 ```bash
-# Bedtime (dim warm)
-openhue set room "Bedroom" --on --brightness 20 --temperature 450
-
-# Work mode (bright cool)
-openhue set room "Office" --on --brightness 100 --temperature 250
-
-# Movie mode (dim)
-openhue set room "Living Room" --on --brightness 10
+# Ativar cena
+openhue set scene "Relaxar" --room "Quarto"
+openhue set scene "Concentrar" --room "Escritório"
 ```
 
-## Notes
+## Presets Rápidos
 
-- Bridge must be on local network
-- First run requires button press on Hue bridge to pair
-- Colors only work on color-capable bulbs (not white-only)
+```bash
+# Hora de dormir (dim quente)
+openhue set room "Quarto" --on --brightness 20 --temperature 450
+
+# Modo trabalho (brilhante frio)
+openhue set room "Escritório" --on --brightness 100 --temperature 250
+
+# Modo cinema (dim)
+openhue set room "Sala" --on --brightness 10
+```
+
+## Notas
+
+- Bridge deve estar na rede local
+- Primeira execução requer pressionar o botão na Hue Bridge para parear
+- Cores funcionam apenas em lâmpadas com suporte a cor (não apenas branco)

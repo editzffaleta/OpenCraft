@@ -1,70 +1,70 @@
-# Canvas Skill
+# Habilidade Canvas
 
-Display HTML content on connected OpenClaw nodes (Mac app, iOS, Android).
+Exibe conteúdo HTML em nodes OpenCraft conectados (app Mac, iOS, Android).
 
-## Overview
+## Visão Geral
 
-The canvas tool lets you present web content on any connected node's canvas view. Great for:
+A ferramenta canvas permite apresentar conteúdo web na visualização de canvas de qualquer node conectado. Ótima para:
 
-- Displaying games, visualizations, dashboards
-- Showing generated HTML content
-- Interactive demos
+- Exibir jogos, visualizações, dashboards
+- Mostrar conteúdo HTML gerado
+- Demos interativas
 
-## How It Works
+## Como Funciona
 
-### Architecture
+### Arquitetura
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐
 │  Canvas Host    │────▶│   Node Bridge    │────▶│  Node App   │
 │  (HTTP Server)  │     │  (TCP Server)    │     │ (Mac/iOS/   │
-│  Port 18793     │     │  Port 18790      │     │  Android)   │
+│  Porta 18793    │     │  Porta 18790     │     │  Android)   │
 └─────────────────┘     └──────────────────┘     └─────────────┘
 ```
 
-1. **Canvas Host Server**: Serves static HTML/CSS/JS files from `canvasHost.root` directory
-2. **Node Bridge**: Communicates canvas URLs to connected nodes
-3. **Node Apps**: Render the content in a WebView
+1. **Servidor Canvas Host**: Serve arquivos HTML/CSS/JS estáticos do diretório `canvasHost.root`
+2. **Node Bridge**: Comunica URLs de canvas para os nodes conectados
+3. **Apps de Node**: Renderizam o conteúdo numa WebView
 
-### Tailscale Integration
+### Integração com Tailscale
 
-The canvas host server binds based on `gateway.bind` setting:
+O servidor canvas host faz bind baseado na configuração `gateway.bind`:
 
-| Bind Mode  | Server Binds To     | Canvas URL Uses            |
-| ---------- | ------------------- | -------------------------- |
-| `loopback` | 127.0.0.1           | localhost (local only)     |
-| `lan`      | LAN interface       | LAN IP address             |
-| `tailnet`  | Tailscale interface | Tailscale hostname         |
-| `auto`     | Best available      | Tailscale > LAN > loopback |
+| Modo de Bind | Servidor faz bind em | URL do Canvas usa            |
+| ------------ | -------------------- | ---------------------------- |
+| `loopback`   | 127.0.0.1            | localhost (apenas local)     |
+| `lan`        | Interface LAN        | Endereço IP da LAN           |
+| `tailnet`    | Interface Tailscale  | Hostname do Tailscale        |
+| `auto`       | Melhor disponível    | Tailscale > LAN > loopback   |
 
-**Key insight:** The `canvasHostHostForBridge` is derived from `bridgeHost`. When bound to Tailscale, nodes receive URLs like:
+**Ponto chave:** O `canvasHostHostForBridge` é derivado do `bridgeHost`. Quando vinculado ao Tailscale, os nodes recebem URLs como:
 
 ```
-http://<tailscale-hostname>:18793/__openclaw__/canvas/<file>.html
+http://<hostname-tailscale>:18793/__opencraft__/canvas/<arquivo>.html
 ```
 
-This is why localhost URLs don't work - the node receives the Tailscale hostname from the bridge!
+Por isso URLs de localhost não funcionam — o node recebe o hostname do Tailscale pela bridge!
 
-## Actions
+## Ações
 
-| Action     | Description                          |
-| ---------- | ------------------------------------ |
-| `present`  | Show canvas with optional target URL |
-| `hide`     | Hide the canvas                      |
-| `navigate` | Navigate to a new URL                |
-| `eval`     | Execute JavaScript in the canvas     |
-| `snapshot` | Capture screenshot of canvas         |
+| Ação       | Descrição                                     |
+| ---------- | --------------------------------------------- |
+| `present`  | Exibir canvas com URL alvo opcional           |
+| `hide`     | Ocultar o canvas                              |
+| `navigate` | Navegar para uma nova URL                     |
+| `eval`     | Executar JavaScript no canvas                 |
+| `snapshot` | Capturar screenshot do canvas                 |
 
-## Configuration
+## Configuração
 
-In `~/.openclaw/openclaw.json`:
+Em `~/.opencraft/opencraft.json`:
 
 ```json
 {
   "canvasHost": {
     "enabled": true,
     "port": 18793,
-    "root": "/Users/you/clawd/canvas",
+    "root": "/Users/voce/opencraft/canvas",
     "liveReload": true
   },
   "gateway": {
@@ -75,124 +75,124 @@ In `~/.openclaw/openclaw.json`:
 
 ### Live Reload
 
-When `liveReload: true` (default), the canvas host:
+Com `liveReload: true` (padrão), o canvas host:
 
-- Watches the root directory for changes (via chokidar)
-- Injects a WebSocket client into HTML files
-- Automatically reloads connected canvases when files change
+- Monitora o diretório raiz por mudanças (via chokidar)
+- Injeta um cliente WebSocket nos arquivos HTML
+- Recarrega automaticamente os canvases conectados quando os arquivos mudam
 
-Great for development!
+Ótimo para desenvolvimento!
 
-## Workflow
+## Fluxo de Trabalho
 
-### 1. Create HTML content
+### 1. Criar conteúdo HTML
 
-Place files in the canvas root directory (default `~/clawd/canvas/`):
+Coloque os arquivos no diretório raiz do canvas (padrão `~/opencraft/canvas/`):
 
 ```bash
-cat > ~/clawd/canvas/my-game.html << 'HTML'
+cat > ~/opencraft/canvas/meu-jogo.html << 'HTML'
 <!DOCTYPE html>
 <html>
-<head><title>My Game</title></head>
+<head><title>Meu Jogo</title></head>
 <body>
-  <h1>Hello Canvas!</h1>
+  <h1>Olá Canvas!</h1>
 </body>
 </html>
 HTML
 ```
 
-### 2. Find your canvas host URL
+### 2. Encontrar a URL do canvas host
 
-Check how your gateway is bound:
+Verifique como seu gateway está vinculado:
 
 ```bash
-cat ~/.openclaw/openclaw.json | jq '.gateway.bind'
+cat ~/.opencraft/opencraft.json | jq '.gateway.bind'
 ```
 
-Then construct the URL:
+Depois construa a URL:
 
-- **loopback**: `http://127.0.0.1:18793/__openclaw__/canvas/<file>.html`
-- **lan/tailnet/auto**: `http://<hostname>:18793/__openclaw__/canvas/<file>.html`
+- **loopback**: `http://127.0.0.1:18793/__opencraft__/canvas/<arquivo>.html`
+- **lan/tailnet/auto**: `http://<hostname>:18793/__opencraft__/canvas/<arquivo>.html`
 
-Find your Tailscale hostname:
+Encontre seu hostname do Tailscale:
 
 ```bash
 tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//'
 ```
 
-### 3. Find connected nodes
+### 3. Encontrar nodes conectados
 
 ```bash
-openclaw nodes list
+opencraft nodes list
 ```
 
-Look for Mac/iOS/Android nodes with canvas capability.
+Procure nodes Mac/iOS/Android com capacidade de canvas.
 
-### 4. Present content
-
-```
-canvas action:present node:<node-id> target:<full-url>
-```
-
-**Example:**
+### 4. Apresentar conteúdo
 
 ```
-canvas action:present node:mac-63599bc4-b54d-4392-9048-b97abd58343a target:http://peters-mac-studio-1.sheep-coho.ts.net:18793/__openclaw__/canvas/snake.html
+canvas action:present node:<node-id> target:<url-completa>
 ```
 
-### 5. Navigate, snapshot, or hide
+**Exemplo:**
 
 ```
-canvas action:navigate node:<node-id> url:<new-url>
+canvas action:present node:mac-63599bc4-b54d-4392-9048-b97abd58343a target:http://meu-mac.sheep-coho.ts.net:18793/__opencraft__/canvas/snake.html
+```
+
+### 5. Navegar, capturar screenshot ou ocultar
+
+```
+canvas action:navigate node:<node-id> url:<nova-url>
 canvas action:snapshot node:<node-id>
 canvas action:hide node:<node-id>
 ```
 
-## Debugging
+## Depuração
 
-### White screen / content not loading
+### Tela branca / conteúdo não carrega
 
-**Cause:** URL mismatch between server bind and node expectation.
+**Causa:** Incompatibilidade de URL entre o bind do servidor e a expectativa do node.
 
-**Debug steps:**
+**Passos de depuração:**
 
-1. Check server bind: `cat ~/.openclaw/openclaw.json | jq '.gateway.bind'`
-2. Check what port canvas is on: `lsof -i :18793`
-3. Test URL directly: `curl http://<hostname>:18793/__openclaw__/canvas/<file>.html`
+1. Verificar bind do servidor: `cat ~/.opencraft/opencraft.json | jq '.gateway.bind'`
+2. Verificar em qual porta o canvas está: `lsof -i :18793`
+3. Testar URL diretamente: `curl http://<hostname>:18793/__opencraft__/canvas/<arquivo>.html`
 
-**Solution:** Use the full hostname matching your bind mode, not localhost.
+**Solução:** Use o hostname completo correspondente ao seu modo de bind, não localhost.
 
-### "node required" error
+### Erro "node required"
 
-Always specify `node:<node-id>` parameter.
+Sempre especifique o parâmetro `node:<node-id>`.
 
-### "node not connected" error
+### Erro "node not connected"
 
-Node is offline. Use `openclaw nodes list` to find online nodes.
+O node está offline. Use `opencraft nodes list` para encontrar nodes online.
 
-### Content not updating
+### Conteúdo não atualiza
 
-If live reload isn't working:
+Se o live reload não estiver funcionando:
 
-1. Check `liveReload: true` in config
-2. Ensure file is in the canvas root directory
-3. Check for watcher errors in logs
+1. Verifique `liveReload: true` na configuração
+2. Certifique-se de que o arquivo está no diretório raiz do canvas
+3. Verifique erros do watcher nos logs
 
-## URL Path Structure
+## Estrutura do Caminho de URL
 
-The canvas host serves from `/__openclaw__/canvas/` prefix:
+O canvas host serve com o prefixo `/__opencraft__/canvas/`:
 
 ```
-http://<host>:18793/__openclaw__/canvas/index.html  → ~/clawd/canvas/index.html
-http://<host>:18793/__openclaw__/canvas/games/snake.html → ~/clawd/canvas/games/snake.html
+http://<host>:18793/__opencraft__/canvas/index.html  → ~/opencraft/canvas/index.html
+http://<host>:18793/__opencraft__/canvas/jogos/snake.html → ~/opencraft/canvas/jogos/snake.html
 ```
 
-The `/__openclaw__/canvas/` prefix is defined by `CANVAS_HOST_PATH` constant.
+O prefixo `/__opencraft__/canvas/` é definido pela constante `CANVAS_HOST_PATH`.
 
-## Tips
+## Dicas
 
-- Keep HTML self-contained (inline CSS/JS) for best results
-- Use the default index.html as a test page (has bridge diagnostics)
-- The canvas persists until you `hide` it or navigate away
-- Live reload makes development fast - just save and it updates!
-- A2UI JSON push is WIP - use HTML files for now
+- Mantenha o HTML autocontido (CSS/JS inline) para melhores resultados
+- Use o index.html padrão como página de teste (tem diagnósticos da bridge)
+- O canvas persiste até você ocultá-lo com `hide` ou navegar para outro lugar
+- O live reload torna o desenvolvimento rápido — só salve e ele atualiza!
+- Push de JSON A2UI está em desenvolvimento — use arquivos HTML por enquanto
