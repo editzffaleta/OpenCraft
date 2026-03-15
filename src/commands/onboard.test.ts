@@ -22,7 +22,7 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("./onboard-helpers.js", () => ({
-  DEFAULT_WORKSPACE: "~/.openclaw/workspace",
+  DEFAULT_WORKSPACE: "~/.opencraft/workspace",
   handleReset: mocks.handleReset,
 }));
 
@@ -72,7 +72,7 @@ describe("onboardCommand", () => {
           "Windows detected - OpenClaw runs great on WSL2!",
           "Native Windows might be trickier.",
           "Quick setup: wsl --install (one command, one reboot)",
-          "Guide: https://docs.openclaw.ai/windows",
+          "Guide: https://docs.opencraft.ai/windows",
         ].join("\n"),
       );
     } finally {

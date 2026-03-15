@@ -24,7 +24,7 @@ export const FIELD_HELP: Record<string, string> = {
   "wizard.lastRunAt":
     "ISO timestamp for when the setup wizard most recently completed on this host. Use this to confirm onboarding recency during support and operational audits.",
   "wizard.lastRunVersion":
-    "OpenClaw version recorded at the time of the most recent wizard run on this config. Use this when diagnosing behavior differences across version-to-version onboarding changes.",
+    "OpenCraft version recorded at the time of the most recent wizard run on this config. Use this when diagnosing behavior differences across version-to-version onboarding changes.",
   "wizard.lastRunCommit":
     "Source commit identifier recorded for the last wizard execution in development builds. Use this to correlate onboarding behavior with exact source state during debugging.",
   "wizard.lastRunCommand":
@@ -263,7 +263,7 @@ export const FIELD_HELP: Record<string, string> = {
   "browser.profiles.*.cdpUrl":
     "Per-profile CDP websocket URL used for explicit remote browser routing by profile name. Use this when profile connections terminate on remote hosts or tunnels.",
   "browser.profiles.*.driver":
-    'Per-profile browser driver mode: "openclaw" (or legacy "clawd") or "extension" depending on connection/runtime strategy. Use the driver that matches your browser control stack to avoid protocol mismatches.',
+    'Per-profile browser driver mode: "opencraft" (or legacy "clawd") or "extension" depending on connection/runtime strategy. Use the driver that matches your browser control stack to avoid protocol mismatches.',
   "browser.profiles.*.attachOnly":
     "Per-profile attach-only override that skips local browser launch and only attaches to an existing CDP endpoint. Useful when one profile is externally managed but others are locally launched.",
   "browser.profiles.*.color":
@@ -431,7 +431,7 @@ export const FIELD_HELP: Record<string, string> = {
     'Node browser routing ("auto" = pick single connected browser node, "manual" = require node param, "off" = disable).',
   "gateway.nodes.browser.node": "Pin browser routing to a specific node id or name (optional).",
   "gateway.nodes.allowCommands":
-    "Extra node.invoke commands to allow beyond the gateway defaults (array of command strings). Enabling dangerous commands here is a security-sensitive override and is flagged by `openclaw security audit`.",
+    "Extra node.invoke commands to allow beyond the gateway defaults (array of command strings). Enabling dangerous commands here is a security-sensitive override and is flagged by `opencraft security audit`.",
   "gateway.nodes.denyCommands":
     "Node command names to block even if present in node claims or default allowlist (exact command-name matching only, e.g. `system.run`; does not inspect shell text inside that command).",
   nodeHost:
@@ -832,7 +832,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.memorySearch.fallback":
     'Backup provider used when primary embeddings fail: "openai", "gemini", "voyage", "mistral", "ollama", "local", or "none". Set a real fallback for production reliability; use "none" only if you prefer explicit failures.',
   "agents.defaults.memorySearch.store.path":
-    "Sets where the SQLite memory index is stored on disk for each agent. Keep the default `~/.openclaw/memory/{agentId}.sqlite` unless you need custom storage placement or backup policy alignment.",
+    "Sets where the SQLite memory index is stored on disk for each agent. Keep the default `~/.opencraft/memory/{agentId}.sqlite` unless you need custom storage placement or backup policy alignment.",
   "agents.defaults.memorySearch.store.vector.enabled":
     "Enables the sqlite-vec extension used for vector similarity queries in memory search (default: true). Keep this enabled for normal semantic recall; disable only for debugging or fallback-only operation.",
   "agents.defaults.memorySearch.store.vector.extensionPath":
@@ -980,12 +980,12 @@ export const FIELD_HELP: Record<string, string> = {
   "plugins.entries.*.config":
     "Plugin-defined configuration payload interpreted by that plugin's own schema and validation rules. Use only documented fields from the plugin to prevent ignored or invalid settings.",
   "plugins.installs":
-    "CLI-managed install metadata (used by `openclaw plugins update` to locate install sources).",
+    "CLI-managed install metadata (used by `opencraft plugins update` to locate install sources).",
   "plugins.installs.*.source": 'Install source ("npm", "archive", or "path").',
   "plugins.installs.*.spec": "Original npm spec used for install (if source is npm).",
   "plugins.installs.*.sourcePath": "Original archive/path used for install (if any).",
   "plugins.installs.*.installPath":
-    "Resolved install directory (usually ~/.openclaw/extensions/<id>).",
+    "Resolved install directory (usually ~/.opencraft/extensions/<id>).",
   "plugins.installs.*.version": "Version recorded at install time (if available).",
   "plugins.installs.*.resolvedName": "Resolved npm package name from the fetched artifact.",
   "plugins.installs.*.resolvedVersion":

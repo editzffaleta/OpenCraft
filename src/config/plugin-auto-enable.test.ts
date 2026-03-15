@@ -252,7 +252,7 @@ describe("applyPluginAutoEnable", () => {
       JSON.stringify({
         entries: [
           {
-            name: "@openclaw/env-secondary",
+            name: "@opencraft/env-secondary",
             openclaw: {
               channel: {
                 id: "env-secondary",
@@ -263,7 +263,7 @@ describe("applyPluginAutoEnable", () => {
                 preferOver: ["env-primary"],
               },
               install: {
-                npmSpec: "@openclaw/env-secondary",
+                npmSpec: "@opencraft/env-secondary",
               },
             },
           },

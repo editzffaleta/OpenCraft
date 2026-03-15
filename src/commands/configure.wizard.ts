@@ -109,8 +109,8 @@ async function runGatewayHealthCheck(params: {
     note(
       [
         "Docs:",
-        "https://docs.openclaw.ai/gateway/health",
-        "https://docs.openclaw.ai/gateway/troubleshooting",
+        "https://docs.opencraft.ai/gateway/health",
+        "https://docs.opencraft.ai/gateway/troubleshooting",
       ].join("\n"),
       "Health check help",
     );
@@ -198,7 +198,7 @@ async function promptWebToolsConfig(
     [
       "Web search lets your agent look things up online using the `web_search` tool.",
       "Choose a provider and paste your API key.",
-      "Docs: https://docs.openclaw.ai/tools/web",
+      "Docs: https://docs.opencraft.ai/tools/web",
     ].join("\n"),
     "Web search",
   );
@@ -270,7 +270,7 @@ async function promptWebToolsConfig(
           "No key stored yet — web_search won't work until a key is available.",
           `Store a key here or set ${envVarNames} in the Gateway environment.`,
           `Get your API key at: ${entry.signupUrl}`,
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -309,7 +309,7 @@ export async function runConfigureWizard(
 ) {
   try {
     printWizardHeader(runtime);
-    intro(opts.command === "update" ? "OpenClaw update wizard" : "OpenClaw configure");
+    intro(opts.command === "update" ? "OpenCraft update wizard" : "OpenCraft configure");
     const prompter = createClackPrompter();
 
     const snapshot = await readConfigFileSnapshot();
@@ -323,14 +323,14 @@ export async function runConfigureWizard(
           [
             ...snapshot.issues.map((iss) => `- ${iss.path}: ${iss.message}`),
             "",
-            "Docs: https://docs.openclaw.ai/gateway/configuration",
+            "Docs: https://docs.opencraft.ai/gateway/configuration",
           ].join("\n"),
           "Config issues",
         );
       }
       if (!snapshot.valid) {
         outro(
-          `Config invalid. Run \`${formatCliCommand("openclaw doctor")}\` to repair it, then re-run configure.`,
+          `Config invalid. Run \`${formatCliCommand("opencraft doctor")}\` to repair it, then re-run configure.`,
         );
         runtime.exit(1);
         return;
@@ -689,7 +689,7 @@ export async function runConfigureWizard(
         `Web UI: ${links.httpUrl}`,
         `Gateway WS: ${links.wsUrl}`,
         gatewayStatusLine,
-        "Docs: https://docs.openclaw.ai/web/control-ui",
+        "Docs: https://docs.opencraft.ai/web/control-ui",
       ].join("\n"),
       "Control UI",
     );

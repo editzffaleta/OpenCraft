@@ -361,7 +361,7 @@ export const OpenClawSchema = z
                 cdpUrl: z.string().optional(),
                 driver: z
                   .union([
-                    z.literal("openclaw"),
+                    z.literal("opencraft"),
                     z.literal("clawd"),
                     z.literal("extension"),
                     z.literal("existing-session"),

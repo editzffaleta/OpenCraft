@@ -36,7 +36,7 @@ const defaultProgramArguments = ["node", "-e", "process.exit(0)"];
 
 function expectLaunchctlEnableBootstrapOrder(env: Record<string, string | undefined>) {
   const domain = typeof process.getuid === "function" ? `gui/${process.getuid()}` : "gui/501";
-  const label = "ai.openclaw.gateway";
+  const label = "ai.opencraft.gateway";
   const plistPath = resolveLaunchAgentPlistPath(env);
   const serviceId = `${domain}/${label}`;
   const enableIndex = state.launchctlCalls.findIndex(
@@ -347,7 +347,7 @@ describe("launchd install", () => {
     });
 
     const domain = typeof process.getuid === "function" ? `gui/${process.getuid()}` : "gui/501";
-    const label = "ai.openclaw.gateway";
+    const label = "ai.opencraft.gateway";
     const serviceId = `${domain}/${label}`;
     expect(result).toEqual({ outcome: "completed" });
     expect(cleanStaleGatewayProcessesSync).toHaveBeenCalledWith(18789);
@@ -451,7 +451,7 @@ describe("launchd install", () => {
     }
     expect(message).toContain("logged-in macOS GUI session");
     expect(message).toContain("wrong user (including sudo)");
-    expect(message).toContain("https://docs.openclaw.ai/gateway");
+    expect(message).toContain("https://docs.opencraft.ai/gateway");
   });
 
   it("surfaces generic bootstrap failures without GUI-specific guidance", async () => {

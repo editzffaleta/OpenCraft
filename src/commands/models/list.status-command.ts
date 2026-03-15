@@ -538,8 +538,8 @@ export async function modelsStatusCommand(
     for (const provider of missingProvidersInUse) {
       const hint =
         provider === "anthropic"
-          ? `Run \`claude setup-token\`, then \`${formatCliCommand("openclaw models auth setup-token")}\` or \`${formatCliCommand("openclaw configure")}\`.`
-          : `Run \`${formatCliCommand("openclaw configure")}\` or set an API key env var.`;
+          ? `Run \`claude setup-token\`, then \`${formatCliCommand("opencraft models auth setup-token")}\` or \`${formatCliCommand("opencraft configure")}\`.`
+          : `Run \`${formatCliCommand("opencraft configure")}\` or set an API key env var.`;
       runtime.log(`- ${theme.heading(provider)} ${hint}`);
     }
   }

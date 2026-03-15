@@ -221,8 +221,8 @@ export function formatControlUiSshHint(params: {
     localUrl,
     authedUrl,
     "Docs:",
-    "https://docs.openclaw.ai/gateway/remote",
-    "https://docs.openclaw.ai/web/control-ui",
+    "https://docs.opencraft.ai/gateway/remote",
+    "https://docs.opencraft.ai/web/control-ui",
   ]
     .filter(Boolean)
     .join("\n");

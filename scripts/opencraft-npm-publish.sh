@@ -5,7 +5,7 @@ set -euo pipefail
 mode="${1:-}"
 
 if [[ "${mode}" != "--dry-run" && "${mode}" != "--publish" ]]; then
-  echo "usage: bash scripts/openclaw-npm-publish.sh [--dry-run|--publish]" >&2
+  echo "usage: bash scripts/opencraft-npm-publish.sh [--dry-run|--publish]" >&2
   exit 2
 fi
 

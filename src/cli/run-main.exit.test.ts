@@ -55,9 +55,9 @@ describe("runCli exit behavior", () => {
       throw new Error(`unexpected process.exit(${String(code)})`);
     }) as typeof process.exit);
 
-    await runCli(["node", "openclaw", "status"]);
+    await runCli(["node", "opencraft", "status"]);
 
-    expect(tryRouteCliMock).toHaveBeenCalledWith(["node", "openclaw", "status"]);
+    expect(tryRouteCliMock).toHaveBeenCalledWith(["node", "opencraft", "status"]);
     expect(closeAllMemorySearchManagersMock).toHaveBeenCalledTimes(1);
     expect(exitSpy).not.toHaveBeenCalled();
     exitSpy.mockRestore();
@@ -68,7 +68,7 @@ describe("runCli exit behavior", () => {
       throw new Error(`unexpected process.exit(${String(code)})`);
     }) as typeof process.exit);
 
-    await runCli(["node", "openclaw", "--help"]);
+    await runCli(["node", "opencraft", "--help"]);
 
     expect(tryRouteCliMock).not.toHaveBeenCalled();
     expect(outputRootHelpMock).toHaveBeenCalledTimes(1);

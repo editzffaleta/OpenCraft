@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Render the macOS .icon bundle to a padded .icns like Trimmy's pipeline.
-# Defaults target the OpenClaw assets so you can just run the script from repo root.
+# Defaults target the OpenCraft assets so you can just run the script from repo root.
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 

@@ -33,7 +33,7 @@ const modelRegistryState = {
 let previousExitCode: typeof process.exitCode;
 
 vi.mock("../config/config.js", () => ({
-  CONFIG_PATH: "/tmp/openclaw.json",
+  CONFIG_PATH: "/tmp/opencraft.json",
   STATE_DIR: "/tmp/openclaw-state",
   loadConfig,
   readConfigFileSnapshotForWrite,

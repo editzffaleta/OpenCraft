@@ -111,6 +111,6 @@ describe("printDaemonStatus", () => {
     expect(runtime.error).toHaveBeenCalledWith(
       expect.stringContaining("Gateway runtime PID does not own the listening port"),
     );
-    expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining("openclaw gateway restart"));
+    expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining("opencraft gateway restart"));
   });
 });

@@ -447,7 +447,7 @@ describe("statusCommand", () => {
   it("prints formatted lines otherwise", async () => {
     const logs = await runStatusAndGetLogs();
     for (const token of [
-      "OpenClaw status",
+      "OpenCraft status",
       "Overview",
       "Security audit",
       "Summary:",
@@ -472,8 +472,8 @@ describe("statusCommand", () => {
     expect(
       logs.some(
         (line) =>
-          line.includes("openclaw status --all") ||
-          line.includes("openclaw --profile isolated status --all"),
+          line.includes("opencraft status --all") ||
+          line.includes("opencraft --profile isolated status --all"),
       ),
     ).toBe(true);
   });

@@ -82,7 +82,7 @@ async function withOnboardEnv(
   run: (ctx: OnboardEnv) => Promise<void>,
 ): Promise<void> {
   const tempHome = await makeTempWorkspace(prefix);
-  const configPath = path.join(tempHome, "openclaw.json");
+  const configPath = path.join(tempHome, "opencraft.json");
   const runtime = createThrowingRuntime();
 
   try {

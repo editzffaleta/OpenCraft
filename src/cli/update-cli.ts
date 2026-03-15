@@ -44,16 +44,16 @@ export function registerUpdateCli(program: Command) {
     .option("--yes", "Skip confirmation prompts (non-interactive)", false)
     .addHelpText("after", () => {
       const examples = [
-        ["openclaw update", "Update a source checkout (git)"],
-        ["openclaw update --channel beta", "Switch to beta channel (git + npm)"],
-        ["openclaw update --channel dev", "Switch to dev channel (git + npm)"],
-        ["openclaw update --tag beta", "One-off update to a dist-tag or version"],
-        ["openclaw update --dry-run", "Preview actions without changing anything"],
-        ["openclaw update --no-restart", "Update without restarting the service"],
-        ["openclaw update --json", "Output result as JSON"],
-        ["openclaw update --yes", "Non-interactive (accept downgrade prompts)"],
-        ["openclaw update wizard", "Interactive update wizard"],
-        ["openclaw --update", "Shorthand for openclaw update"],
+        ["opencraft update", "Update a source checkout (git)"],
+        ["opencraft update --channel beta", "Switch to beta channel (git + npm)"],
+        ["opencraft update --channel dev", "Switch to dev channel (git + npm)"],
+        ["opencraft update --tag beta", "One-off update to a dist-tag or version"],
+        ["opencraft update --dry-run", "Preview actions without changing anything"],
+        ["opencraft update --no-restart", "Update without restarting the service"],
+        ["opencraft update --json", "Output result as JSON"],
+        ["opencraft update --yes", "Non-interactive (accept downgrade prompts)"],
+        ["opencraft update wizard", "Interactive update wizard"],
+        ["opencraft --update", "Shorthand for openclaw update"],
       ] as const;
       const fmtExamples = examples
         .map(([cmd, desc]) => `  ${theme.command(cmd)} ${theme.muted(`# ${desc}`)}`)
@@ -82,7 +82,7 @@ ${theme.heading("Notes:")}
   - Downgrades require confirmation (can break configuration)
   - Skips update if the working directory has uncommitted changes
 
-${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/update")}`;
+${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.opencraft.ai/cli/update")}`;
     })
     .action(async (opts) => {
       try {
@@ -107,7 +107,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
     .option("--timeout <seconds>", "Timeout for each update step in seconds (default: 1200)")
     .addHelpText(
       "after",
-      `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/update")}\n`,
+      `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.opencraft.ai/cli/update")}\n`,
     )
     .action(async (opts, command) => {
       try {
@@ -129,14 +129,14 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw update status", "Show channel + version status."],
-          ["openclaw update status --json", "JSON output."],
-          ["openclaw update status --timeout 10", "Custom timeout."],
+          ["opencraft update status", "Show channel + version status."],
+          ["opencraft update status --json", "JSON output."],
+          ["opencraft update status --timeout 10", "Custom timeout."],
         ])}\n\n${theme.heading("Notes:")}\n${theme.muted(
           "- Shows current update channel (stable/beta/dev) and source",
         )}\n${theme.muted("- Includes git tag/branch/SHA for source checkouts")}\n\n${theme.muted(
           "Docs:",
-        )} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/update")}`,
+        )} ${formatDocsLink("/cli/update", "docs.opencraft.ai/cli/update")}`,
     )
     .action(async (opts, command) => {
       try {

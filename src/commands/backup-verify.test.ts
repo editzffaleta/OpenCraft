@@ -27,7 +27,7 @@ function createBackupManifest(assetArchivePath: string) {
     assets: [
       {
         kind: "state",
-        sourcePath: "/tmp/.openclaw",
+        sourcePath: "/tmp/.opencraft",
         archivePath: assetArchivePath,
       },
     ],
@@ -106,10 +106,10 @@ describe("backupVerifyCommand", () => {
   });
 
   it("verifies an archive created by backup create", async () => {
-    const stateDir = path.join(tempHome.home, ".openclaw");
+    const stateDir = path.join(tempHome.home, ".opencraft");
     const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-verify-out-"));
     try {
-      await fs.writeFile(path.join(stateDir, "openclaw.json"), JSON.stringify({}), "utf8");
+      await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
       await fs.writeFile(path.join(stateDir, "state.txt"), "hello\n", "utf8");
 
       const runtime = createBackupVerifyRuntime();
@@ -160,8 +160,8 @@ describe("backupVerifyCommand", () => {
         assets: [
           {
             kind: "state",
-            sourcePath: "/tmp/.openclaw",
-            archivePath: `${rootName}/payload/posix/tmp/.openclaw`,
+            sourcePath: "/tmp/.opencraft",
+            archivePath: `${rootName}/payload/posix/tmp/.opencraft`,
           },
         ],
       };
@@ -215,7 +215,7 @@ describe("backupVerifyCommand", () => {
   });
 
   it("ignores payload manifest.json files when locating the backup manifest", async () => {
-    const stateDir = path.join(tempHome.home, ".openclaw");
+    const stateDir = path.join(tempHome.home, ".opencraft");
     const externalWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
     const configPath = path.join(tempHome.home, "custom-config.json");
     const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-verify-out-"));
@@ -232,7 +232,7 @@ describe("backupVerifyCommand", () => {
         }),
         "utf8",
       );
-      await fs.writeFile(path.join(stateDir, "openclaw.json"), JSON.stringify({}), "utf8");
+      await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
       await fs.writeFile(path.join(stateDir, "state.txt"), "hello\n", "utf8");
       await fs.writeFile(
         path.join(externalWorkspace, "manifest.json"),
@@ -258,7 +258,7 @@ describe("backupVerifyCommand", () => {
   });
 
   it("fails when the archive contains duplicate root manifest entries", async () => {
-    const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.openclaw/payload.txt`;
+    const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.opencraft/payload.txt`;
     await withBrokenArchiveFixture(
       {
         tempPrefix: "openclaw-backup-duplicate-manifest-",
@@ -280,7 +280,7 @@ describe("backupVerifyCommand", () => {
   });
 
   it("fails when the archive contains duplicate payload entries", async () => {
-    const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.openclaw/payload.txt`;
+    const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.opencraft/payload.txt`;
     await withBrokenArchiveFixture(
       {
         tempPrefix: "openclaw-backup-duplicate-payload-",

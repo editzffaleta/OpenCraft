@@ -32,7 +32,7 @@ describe("models/shared", () => {
   it("throws formatted issues when snapshot is invalid", async () => {
     mocks.readConfigFileSnapshot.mockResolvedValue({
       valid: false,
-      path: "/tmp/openclaw.json",
+      path: "/tmp/opencraft.json",
       issues: [{ path: "providers.openai.apiKey", message: "Required" }],
     });
 

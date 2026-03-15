@@ -11,34 +11,34 @@ import {
 describe("npm-resolution helpers", () => {
   it("keeps original spec when pin is disabled", () => {
     const result = resolvePinnedNpmSpec({
-      rawSpec: "@openclaw/plugin-alpha@latest",
+      rawSpec: "@opencraft/plugin-alpha@latest",
       pin: false,
-      resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+      resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
     });
     expect(result).toEqual({
-      recordSpec: "@openclaw/plugin-alpha@latest",
+      recordSpec: "@opencraft/plugin-alpha@latest",
     });
   });
 
   it("warns when pin is enabled but resolved spec is missing", () => {
     const result = resolvePinnedNpmSpec({
-      rawSpec: "@openclaw/plugin-alpha@latest",
+      rawSpec: "@opencraft/plugin-alpha@latest",
       pin: true,
     });
     expect(result).toEqual({
-      recordSpec: "@openclaw/plugin-alpha@latest",
+      recordSpec: "@opencraft/plugin-alpha@latest",
       pinWarning: "Could not resolve exact npm version for --pin; storing original npm spec.",
     });
   });
 
   it("returns pinned spec notice when resolved spec is available", () => {
     const result = resolvePinnedNpmSpec({
-      rawSpec: "@openclaw/plugin-alpha@latest",
+      rawSpec: "@opencraft/plugin-alpha@latest",
       pin: true,
-      resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+      resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
     });
     expect(result).toEqual({
-      recordSpec: "@openclaw/plugin-alpha@1.2.3",
+      recordSpec: "@opencraft/plugin-alpha@1.2.3",
       pinNotice: "Pinned npm install record to @openclaw/plugin-alpha@1.2.3.",
     });
   });
@@ -46,17 +46,17 @@ describe("npm-resolution helpers", () => {
   it("maps npm resolution metadata to install fields", () => {
     expect(
       mapNpmResolutionMetadata({
-        name: "@openclaw/plugin-alpha",
+        name: "@opencraft/plugin-alpha",
         version: "1.2.3",
-        resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+        resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
         integrity: "sha512-abc",
         shasum: "deadbeef",
         resolvedAt: "2026-02-21T00:00:00.000Z",
       }),
     ).toEqual({
-      resolvedName: "@openclaw/plugin-alpha",
+      resolvedName: "@opencraft/plugin-alpha",
       resolvedVersion: "1.2.3",
-      resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+      resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
       integrity: "sha512-abc",
       shasum: "deadbeef",
       resolvedAt: "2026-02-21T00:00:00.000Z",
@@ -66,24 +66,24 @@ describe("npm-resolution helpers", () => {
   it("builds common npm install record fields", () => {
     expect(
       buildNpmInstallRecordFields({
-        spec: "@openclaw/plugin-alpha@1.2.3",
+        spec: "@opencraft/plugin-alpha@1.2.3",
         installPath: "/tmp/openclaw/extensions/alpha",
         version: "1.2.3",
         resolution: {
-          name: "@openclaw/plugin-alpha",
+          name: "@opencraft/plugin-alpha",
           version: "1.2.3",
-          resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+          resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
           integrity: "sha512-abc",
         },
       }),
     ).toEqual({
       source: "npm",
-      spec: "@openclaw/plugin-alpha@1.2.3",
+      spec: "@opencraft/plugin-alpha@1.2.3",
       installPath: "/tmp/openclaw/extensions/alpha",
       version: "1.2.3",
-      resolvedName: "@openclaw/plugin-alpha",
+      resolvedName: "@opencraft/plugin-alpha",
       resolvedVersion: "1.2.3",
-      resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+      resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
       integrity: "sha512-abc",
       shasum: undefined,
       resolvedAt: undefined,
@@ -110,14 +110,14 @@ describe("npm-resolution helpers", () => {
     const logs: string[] = [];
     const warns: string[] = [];
     const record = resolvePinnedNpmInstallRecord({
-      rawSpec: "@openclaw/plugin-alpha@latest",
+      rawSpec: "@opencraft/plugin-alpha@latest",
       pin: true,
       installPath: "/tmp/openclaw/extensions/alpha",
       version: "1.2.3",
       resolution: {
-        name: "@openclaw/plugin-alpha",
+        name: "@opencraft/plugin-alpha",
         version: "1.2.3",
-        resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+        resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
       },
       log: (message) => logs.push(message),
       warn: (message) => warns.push(message),
@@ -125,12 +125,12 @@ describe("npm-resolution helpers", () => {
 
     expect(record).toEqual({
       source: "npm",
-      spec: "@openclaw/plugin-alpha@1.2.3",
+      spec: "@opencraft/plugin-alpha@1.2.3",
       installPath: "/tmp/openclaw/extensions/alpha",
       version: "1.2.3",
-      resolvedName: "@openclaw/plugin-alpha",
+      resolvedName: "@opencraft/plugin-alpha",
       resolvedVersion: "1.2.3",
-      resolvedSpec: "@openclaw/plugin-alpha@1.2.3",
+      resolvedSpec: "@opencraft/plugin-alpha@1.2.3",
       integrity: undefined,
       shasum: undefined,
       resolvedAt: undefined,
@@ -142,7 +142,7 @@ describe("npm-resolution helpers", () => {
   it("resolves pinned install record for CLI and formats warning output", () => {
     const logs: string[] = [];
     const record = resolvePinnedNpmInstallRecordForCli(
-      "@openclaw/plugin-alpha@latest",
+      "@opencraft/plugin-alpha@latest",
       true,
       "/tmp/openclaw/extensions/alpha",
       "1.2.3",
@@ -153,7 +153,7 @@ describe("npm-resolution helpers", () => {
 
     expect(record).toEqual({
       source: "npm",
-      spec: "@openclaw/plugin-alpha@latest",
+      spec: "@opencraft/plugin-alpha@latest",
       installPath: "/tmp/openclaw/extensions/alpha",
       version: "1.2.3",
       resolvedName: undefined,

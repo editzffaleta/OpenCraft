@@ -14,7 +14,8 @@
     "url": "git+https://github.com/editzffaleta/OpenCraft.git"
   },
   "bin": {
-    "opencraft": "opencraft.mjs"
+    "opencraft": "opencraft.mjs",
+    "openclaw": "openclaw.mjs"
   },
   "directories": {
     "doc": "docs",
@@ -24,6 +25,7 @@
     "CHANGELOG.md",
     "LICENSE",
     "opencraft.mjs",
+    "openclaw.mjs",
     "README-header.png",
     "README.md",
     "assets/",

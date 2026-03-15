@@ -25,10 +25,10 @@ describe("config identity defaults", () => {
   });
 
   const writeAndLoadConfig = async (home: string, config: Record<string, unknown>) => {
-    const configDir = path.join(home, ".openclaw");
+    const configDir = path.join(home, ".opencraft");
     await fs.mkdir(configDir, { recursive: true });
     await fs.writeFile(
-      path.join(configDir, "openclaw.json"),
+      path.join(configDir, "opencraft.json"),
       JSON.stringify(config, null, 2),
       "utf-8",
     );
@@ -91,7 +91,7 @@ describe("config identity defaults", () => {
     await withTempHome("openclaw-config-identity-", async (home) => {
       const cfg = await writeAndLoadConfig(home, {
         messages: {
-          messagePrefix: "[openclaw]",
+          messagePrefix: "[opencraft]",
           responsePrefix: "🦞",
         },
         channels: {

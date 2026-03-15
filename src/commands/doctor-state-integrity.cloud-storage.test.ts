@@ -12,8 +12,8 @@ describe("detectMacCloudSyncedStateDir", () => {
       "Library",
       "Mobile Documents",
       "com~apple~CloudDocs",
-      "OpenClaw",
-      ".openclaw",
+      "OpenCraft",
+      ".opencraft",
     );
 
     const result = detectMacCloudSyncedStateDir(stateDir, {
@@ -28,7 +28,7 @@ describe("detectMacCloudSyncedStateDir", () => {
   });
 
   it("detects state dir under Library/CloudStorage", () => {
-    const stateDir = path.join(home, "Library", "CloudStorage", "Dropbox", "OpenClaw", ".openclaw");
+    const stateDir = path.join(home, "Library", "CloudStorage", "Dropbox", "OpenCraft", ".opencraft");
 
     const result = detectMacCloudSyncedStateDir(stateDir, {
       platform: "darwin",
@@ -48,8 +48,8 @@ describe("detectMacCloudSyncedStateDir", () => {
       "Library",
       "CloudStorage",
       "OneDrive-Personal",
-      "OpenClaw",
-      ".openclaw",
+      "OpenCraft",
+      ".opencraft",
     );
 
     const result = detectMacCloudSyncedStateDir(symlinkPath, {
@@ -70,10 +70,10 @@ describe("detectMacCloudSyncedStateDir", () => {
       "Library",
       "CloudStorage",
       "OneDrive-Personal",
-      "OpenClaw",
-      ".openclaw",
+      "OpenCraft",
+      ".opencraft",
     );
-    const resolvedLocalPath = path.join(home, ".openclaw");
+    const resolvedLocalPath = path.join(home, ".opencraft");
 
     const result = detectMacCloudSyncedStateDir(symlinkPath, {
       platform: "darwin",
@@ -85,7 +85,7 @@ describe("detectMacCloudSyncedStateDir", () => {
   });
 
   it("anchors cloud detection to OS homedir when OPENCLAW_HOME is overridden", () => {
-    const stateDir = path.join(home, "Library", "CloudStorage", "iCloud Drive", ".openclaw");
+    const stateDir = path.join(home, "Library", "CloudStorage", "iCloud Drive", ".opencraft");
     const originalOpenClawHome = process.env.OPENCLAW_HOME;
     process.env.OPENCLAW_HOME = "/tmp/openclaw-home-override";
     const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(home);
@@ -114,8 +114,8 @@ describe("detectMacCloudSyncedStateDir", () => {
       "Library",
       "Mobile Documents",
       "com~apple~CloudDocs",
-      "OpenClaw",
-      ".openclaw",
+      "OpenCraft",
+      ".opencraft",
     );
 
     const result = detectMacCloudSyncedStateDir(stateDir, {

@@ -67,10 +67,10 @@ describe("Nix integration (U3, U5, U9)", () => {
       const customHome = path.join(path.sep, "custom", "home");
       expect(
         resolveStateDir(envWith({ OPENCLAW_HOME: customHome, OPENCLAW_STATE_DIR: undefined })),
-      ).toBe(path.join(path.resolve(customHome), ".openclaw"));
+      ).toBe(path.join(path.resolve(customHome), ".opencraft"));
     });
 
-    it("CONFIG_PATH defaults to OPENCLAW_HOME/.openclaw/openclaw.json", () => {
+    it("CONFIG_PATH defaults to OPENCLAW_HOME/.opencraft/opencraft.json", () => {
       const customHome = path.join(path.sep, "custom", "home");
       expect(
         resolveConfigPathCandidate(
@@ -80,10 +80,10 @@ describe("Nix integration (U3, U5, U9)", () => {
             OPENCLAW_STATE_DIR: undefined,
           }),
         ),
-      ).toBe(path.join(path.resolve(customHome), ".openclaw", "openclaw.json"));
+      ).toBe(path.join(path.resolve(customHome), ".opencraft", "opencraft.json"));
     });
 
-    it("CONFIG_PATH defaults to ~/.openclaw/openclaw.json when env not set", () => {
+    it("CONFIG_PATH defaults to ~/.opencraft/openclaw.json when env not set", () => {
       expect(
         resolveConfigPathCandidate(
           envWith({ OPENCLAW_CONFIG_PATH: undefined, OPENCLAW_STATE_DIR: undefined }),
@@ -94,19 +94,19 @@ describe("Nix integration (U3, U5, U9)", () => {
     it("CONFIG_PATH respects OPENCLAW_CONFIG_PATH override", () => {
       expect(
         resolveConfigPathCandidate(
-          envWith({ OPENCLAW_CONFIG_PATH: "/nix/store/abc/openclaw.json" }),
+          envWith({ OPENCLAW_CONFIG_PATH: "/nix/store/abc/opencraft.json" }),
         ),
-      ).toBe(path.resolve("/nix/store/abc/openclaw.json"));
+      ).toBe(path.resolve("/nix/store/abc/opencraft.json"));
     });
 
     it("CONFIG_PATH expands ~ in OPENCLAW_CONFIG_PATH override", async () => {
       await withTempHome(async (home) => {
         expect(
           resolveConfigPathCandidate(
-            envWith({ OPENCLAW_HOME: home, OPENCLAW_CONFIG_PATH: "~/.openclaw/custom.json" }),
+            envWith({ OPENCLAW_HOME: home, OPENCLAW_CONFIG_PATH: "~/.opencraft/custom.json" }),
             () => home,
           ),
-        ).toBe(path.join(home, ".openclaw", "custom.json"));
+        ).toBe(path.join(home, ".opencraft", "custom.json"));
       });
     });
 
@@ -116,14 +116,14 @@ describe("Nix integration (U3, U5, U9)", () => {
           envWith({ OPENCLAW_STATE_DIR: "/custom/state", OPENCLAW_TEST_FAST: "1" }),
           () => path.join(path.sep, "tmp", "openclaw-config-home"),
         ),
-      ).toBe(path.join(path.resolve("/custom/state"), "openclaw.json"));
+      ).toBe(path.join(path.resolve("/custom/state"), "opencraft.json"));
     });
   });
 
   describe("U5b: tilde expansion for config paths", () => {
     it("expands ~ in common path-ish config fields", async () => {
       await withTempHome(async (home) => {
-        const configDir = path.join(home, ".openclaw");
+        const configDir = path.join(home, ".opencraft");
         await fs.mkdir(configDir, { recursive: true });
         const pluginDir = path.join(home, "plugins", "demo-plugin");
         await fs.mkdir(pluginDir, { recursive: true });
@@ -145,7 +145,7 @@ describe("Nix integration (U3, U5, U9)", () => {
           "utf-8",
         );
         await fs.writeFile(
-          path.join(configDir, "openclaw.json"),
+          path.join(configDir, "opencraft.json"),
           JSON.stringify(
             {
               plugins: {
@@ -159,7 +159,7 @@ describe("Nix integration (U3, U5, U9)", () => {
                   {
                     id: "main",
                     workspace: "~/ws-agent",
-                    agentDir: "~/.openclaw/agents/main",
+                    agentDir: "~/.opencraft/agents/main",
                     sandbox: { workspaceRoot: "~/sandbox-root" },
                   },
                 ],
@@ -168,7 +168,7 @@ describe("Nix integration (U3, U5, U9)", () => {
                 whatsapp: {
                   accounts: {
                     personal: {
-                      authDir: "~/.openclaw/credentials/wa-personal",
+                      authDir: "~/.opencraft/credentials/wa-personal",
                     },
                   },
                 },
@@ -186,11 +186,11 @@ describe("Nix integration (U3, U5, U9)", () => {
         expect(cfg.agents?.defaults?.workspace).toBe(path.join(home, "ws-default"));
         expect(cfg.agents?.list?.[0]?.workspace).toBe(path.join(home, "ws-agent"));
         expect(cfg.agents?.list?.[0]?.agentDir).toBe(
-          path.join(home, ".openclaw", "agents", "main"),
+          path.join(home, ".opencraft", "agents", "main"),
         );
         expect(cfg.agents?.list?.[0]?.sandbox?.workspaceRoot).toBe(path.join(home, "sandbox-root"));
         expect(cfg.channels?.whatsapp?.accounts?.personal?.authDir).toBe(
-          path.join(home, ".openclaw", "credentials", "wa-personal"),
+          path.join(home, ".opencraft", "credentials", "wa-personal"),
         );
       });
     });

@@ -40,7 +40,7 @@ function createAcpEnabledConfig(home: string, storePath: string): OpenClawConfig
       defaults: {
         model: { primary: "openai/gpt-5.3-codex" },
         models: { "openai/gpt-5.3-codex": {} },
-        workspace: path.join(home, "openclaw"),
+        workspace: path.join(home, "opencraft"),
       },
     },
     session: { store: storePath, mainKey: "main" },

@@ -36,7 +36,7 @@ const serviceReadCommand = vi.fn<
   programArguments: ["/bin/node", "cli", "gateway", "--port", "19001"],
   environment: {
     OPENCLAW_STATE_DIR: "/tmp/openclaw-daemon",
-    OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon/openclaw.json",
+    OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon/opencraft.json",
   },
 }));
 const resolveGatewayBindHost = vi.fn(
@@ -48,7 +48,7 @@ const resolveStateDir = vi.fn(
   (env: NodeJS.ProcessEnv) => env.OPENCLAW_STATE_DIR ?? "/tmp/openclaw-cli",
 );
 const resolveConfigPath = vi.fn((env: NodeJS.ProcessEnv, stateDir: string) => {
-  return env.OPENCLAW_CONFIG_PATH ?? `${stateDir}/openclaw.json`;
+  return env.OPENCLAW_CONFIG_PATH ?? `${stateDir}/opencraft.json`;
 });
 let daemonLoadedConfig: Record<string, unknown> = {
   gateway: {
@@ -145,7 +145,7 @@ describe("gatherDaemonStatus", () => {
       "DAEMON_GATEWAY_PASSWORD",
     ]);
     process.env.OPENCLAW_STATE_DIR = "/tmp/openclaw-cli";
-    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli/openclaw.json";
+    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli/opencraft.json";
     delete process.env.OPENCLAW_GATEWAY_TOKEN;
     delete process.env.OPENCLAW_GATEWAY_PASSWORD;
     delete process.env.DAEMON_GATEWAY_TOKEN;
@@ -214,7 +214,7 @@ describe("gatherDaemonStatus", () => {
       programArguments: ["/bin/node", "cli", "gateway", "--port", "19001"],
       environment: {
         OPENCLAW_GATEWAY_PORT: "19001",
-        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon/openclaw.json",
+        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon/opencraft.json",
         OPENCLAW_STATE_DIR: "/tmp/openclaw-daemon",
       } as Record<string, string>,
     });
@@ -383,7 +383,7 @@ describe("gatherDaemonStatus", () => {
       portUsage: {
         port: 19001,
         status: "busy",
-        listeners: [{ pid: 9000, ppid: 8999, commandLine: "openclaw-gateway" }],
+        listeners: [{ pid: 9000, ppid: 8999, commandLine: "opencraft-gateway" }],
         hints: [],
       },
       healthy: false,

@@ -291,7 +291,7 @@ resolve_head_push_url() {
 # File bytes are read from git objects (not the working tree) to avoid
 # symlink/special-file dereference risks from untrusted fork content.
 graphql_push_to_fork() {
-  local repo_nwo="$1"   # e.g. Oncomatic/openclaw
+  local repo_nwo="$1"   # e.g. Oncomatic/opencraft
   local branch="$2"     # e.g. fix/memory-flush-not-executing
   local expected_oid="$3"
   local max_blob_bytes=$((5 * 1024 * 1024))

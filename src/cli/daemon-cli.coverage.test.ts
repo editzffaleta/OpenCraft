@@ -129,7 +129,7 @@ describe("daemon-cli coverage", () => {
       "OPENCLAW_PROFILE",
     ]);
     process.env.OPENCLAW_STATE_DIR = "/tmp/openclaw-cli-state";
-    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli-state/openclaw.json";
+    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli-state/opencraft.json";
     delete process.env.OPENCLAW_GATEWAY_PORT;
     delete process.env.OPENCLAW_PROFILE;
     serviceReadCommand.mockResolvedValue(null);
@@ -163,7 +163,7 @@ describe("daemon-cli coverage", () => {
       environment: {
         OPENCLAW_PROFILE: "dev",
         OPENCLAW_STATE_DIR: "/tmp/openclaw-daemon-state",
-        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon-state/openclaw.json",
+        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon-state/opencraft.json",
         OPENCLAW_GATEWAY_PORT: "19001",
       },
       sourcePath: "/tmp/ai.openclaw.gateway.plist",

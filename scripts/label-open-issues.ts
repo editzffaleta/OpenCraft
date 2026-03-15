@@ -15,7 +15,7 @@ const WORK_BATCH_SIZE = 500;
 const STATE_VERSION = 1;
 const STATE_FILE_NAME = "issue-labeler-state.json";
 const CONFIG_BASE_DIR = process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config");
-const STATE_FILE_PATH = join(CONFIG_BASE_DIR, "openclaw", STATE_FILE_NAME);
+const STATE_FILE_PATH = join(CONFIG_BASE_DIR, "opencraft", STATE_FILE_NAME);
 
 const ISSUE_QUERY = `
   query($owner: String!, $name: String!, $after: String, $pageSize: Int!) {
@@ -696,7 +696,7 @@ async function main() {
     throw new Error("OPENAI_API_KEY is required to classify issues and pull requests.");
   }
 
-  logHeader("OpenClaw Issue Label Audit");
+  logHeader("OpenCraft Issue Label Audit");
   logStep(`Mode: ${dryRun ? "dry-run" : "apply labels"}`);
   logStep(`Model: ${model}`);
   logStep(`Issue limit: ${Number.isFinite(limit) ? limit : "unlimited"}`);

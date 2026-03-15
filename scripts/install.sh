@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# OpenClaw Installer for macOS and Linux
-# Usage: curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash
+# OpenCraft Installer for macOS and Linux
+# Usage: curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash
 
 BOLD='\033[1m'
 ACCENT='\033[38;2;255;77;77m'       # coral-bright  #ff4d4d
@@ -236,7 +236,7 @@ print_gum_status() {
 print_installer_banner() {
     if [[ -n "$GUM" ]]; then
         local title tagline hint card
-        title="$("$GUM" style --foreground "#ff4d4d" --bold "🦞 OpenClaw Installer")"
+        title="$("$GUM" style --foreground "#ff4d4d" --bold "🦞 OpenCraft Installer")"
         tagline="$("$GUM" style --foreground "#8892b0" "$TAGLINE")"
         hint="$("$GUM" style --foreground "#5a6480" "modern installer mode")"
         card="$(printf '%s\n%s\n%s' "$title" "$tagline" "$hint")"
@@ -246,7 +246,7 @@ print_installer_banner() {
     fi
 
     echo -e "${ACCENT}${BOLD}"
-    echo "  🦞 OpenClaw Installer"
+    echo "  🦞 OpenCraft Installer"
     echo -e "${NC}${INFO}  ${TAGLINE}${NC}"
     echo ""
 }
@@ -262,7 +262,7 @@ detect_os_or_die() {
     if [[ "$OS" == "unknown" ]]; then
         ui_error "Unsupported operating system"
         echo "This installer supports macOS and Linux (including WSL)."
-        echo "For Windows, use: iwr -useb https://openclaw.ai/install.ps1 | iex"
+        echo "For Windows, use: iwr -useb https://opencraft.ai/install.ps1 | iex"
         exit 1
     fi
 
@@ -374,7 +374,7 @@ show_install_plan() {
 }
 
 show_footer_links() {
-    local faq_url="https://docs.openclaw.ai/start/faq"
+    local faq_url="https://docs.opencraft.ai/start/faq"
     if [[ -n "$GUM" ]]; then
         local content
         content="$(printf '%s\n%s' "Need help?" "FAQ: ${faq_url}")"
@@ -475,16 +475,16 @@ cleanup_legacy_submodules() {
     fi
 }
 
-cleanup_npm_openclaw_paths() {
+cleanup_npm_opencraft_paths() {
     local npm_root=""
     npm_root="$(npm root -g 2>/dev/null || true)"
     if [[ -z "$npm_root" || "$npm_root" != *node_modules* ]]; then
         return 1
     fi
-    rm -rf "$npm_root"/.openclaw-* "$npm_root"/openclaw 2>/dev/null || true
+    rm -rf "$npm_root"/.opencraft-* "$npm_root"/opencraft 2>/dev/null || true
 }
 
-extract_openclaw_conflict_path() {
+extract_opencraft_conflict_path() {
     local log="$1"
     local path=""
     path="$(sed -n 's/.*File exists: //p' "$log" | head -n1)"
@@ -498,16 +498,16 @@ extract_openclaw_conflict_path() {
     return 1
 }
 
-cleanup_openclaw_bin_conflict() {
+cleanup_opencraft_bin_conflict() {
     local bin_path="$1"
     if [[ -z "$bin_path" || ( ! -e "$bin_path" && ! -L "$bin_path" ) ]]; then
         return 1
     fi
     local npm_bin=""
     npm_bin="$(npm_global_bin_dir 2>/dev/null || true)"
-    if [[ -n "$npm_bin" && "$bin_path" != "$npm_bin/openclaw" ]]; then
+    if [[ -n "$npm_bin" && "$bin_path" != "$npm_bin/opencraft" ]]; then
         case "$bin_path" in
-            "/opt/homebrew/bin/openclaw"|"/usr/local/bin/openclaw")
+            "/opt/homebrew/bin/opencraft"|"/usr/local/bin/opencraft")
                 ;;
             *)
                 return 1
@@ -517,9 +517,9 @@ cleanup_openclaw_bin_conflict() {
     if [[ -L "$bin_path" ]]; then
         local target=""
         target="$(readlink "$bin_path" 2>/dev/null || true)"
-        if [[ "$target" == *"/node_modules/openclaw/"* ]]; then
+        if [[ "$target" == *"/node_modules/opencraft/"* ]]; then
             rm -f "$bin_path"
-            ui_info "Removed stale openclaw symlink at ${bin_path}"
+            ui_info "Removed stale opencraft symlink at ${bin_path}"
             return 0
         fi
         return 1
@@ -527,7 +527,7 @@ cleanup_openclaw_bin_conflict() {
     local backup=""
     backup="${bin_path}.bak-$(date +%Y%m%d-%H%M%S)"
     if mv "$bin_path" "$backup"; then
-        ui_info "Moved existing openclaw binary to ${backup}"
+        ui_info "Moved existing opencraft binary to ${backup}"
         return 0
     fi
     return 1
@@ -696,7 +696,7 @@ run_npm_global_install() {
         local log_quoted=""
         printf -v cmd_quoted '%q ' "${cmd[@]}"
         printf -v log_quoted '%q' "$log"
-        run_with_spinner "Installing OpenClaw package" bash -c "${cmd_quoted}>${log_quoted} 2>&1"
+        run_with_spinner "Installing OpenCraft package" bash -c "${cmd_quoted}>${log_quoted} 2>&1"
         return $?
     fi
 
@@ -782,7 +782,7 @@ print_npm_failure_diagnostics() {
     fi
 }
 
-install_openclaw_npm() {
+install_opencraft_npm() {
     local spec="$1"
     local log
     log="$(mktempfile)"
@@ -792,7 +792,7 @@ install_openclaw_npm() {
             attempted_build_tool_fix=true
             ui_info "Retrying npm install after build tools setup"
             if run_npm_global_install "$spec" "$log"; then
-                ui_success "OpenClaw npm package installed"
+                ui_success "OpenCraft npm package installed"
                 return 0
             fi
         fi
@@ -808,26 +808,26 @@ install_openclaw_npm() {
             tail -n 80 "$log" >&2 || true
         fi
 
-        if grep -q "ENOTEMPTY: directory not empty, rename .*openclaw" "$log"; then
+        if grep -q "ENOTEMPTY: directory not empty, rename .*opencraft" "$log"; then
             ui_warn "npm left stale directory; cleaning and retrying"
-            cleanup_npm_openclaw_paths
+            cleanup_npm_opencraft_paths
             if run_npm_global_install "$spec" "$log"; then
-                ui_success "OpenClaw npm package installed"
+                ui_success "OpenCraft npm package installed"
                 return 0
             fi
             return 1
         fi
         if grep -q "EEXIST" "$log"; then
             local conflict=""
-            conflict="$(extract_openclaw_conflict_path "$log" || true)"
-            if [[ -n "$conflict" ]] && cleanup_openclaw_bin_conflict "$conflict"; then
+            conflict="$(extract_opencraft_conflict_path "$log" || true)"
+            if [[ -n "$conflict" ]] && cleanup_opencraft_bin_conflict "$conflict"; then
                 if run_npm_global_install "$spec" "$log"; then
-                    ui_success "OpenClaw npm package installed"
+                    ui_success "OpenCraft npm package installed"
                     return 0
                 fi
                 return 1
             fi
-            ui_error "npm failed because an openclaw binary already exists"
+            ui_error "npm failed because an opencraft binary already exists"
             if [[ -n "$conflict" ]]; then
                 ui_info "Remove or move ${conflict}, then retry"
             fi
@@ -835,7 +835,7 @@ install_openclaw_npm() {
         fi
         return 1
     fi
-    ui_success "OpenClaw npm package installed"
+    ui_success "OpenCraft npm package installed"
     return 0
 }
 
@@ -988,7 +988,7 @@ DRY_RUN=${OPENCLAW_DRY_RUN:-0}
 INSTALL_METHOD=${OPENCLAW_INSTALL_METHOD:-}
 OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
 USE_BETA=${OPENCLAW_BETA:-0}
-GIT_DIR_DEFAULT="${HOME}/openclaw"
+GIT_DIR_DEFAULT="${HOME}/opencraft"
 GIT_DIR=${OPENCLAW_GIT_DIR:-$GIT_DIR_DEFAULT}
 GIT_UPDATE=${OPENCLAW_GIT_UPDATE:-1}
 SHARP_IGNORE_GLOBAL_LIBVIPS="${SHARP_IGNORE_GLOBAL_LIBVIPS:-1}"
@@ -1002,10 +1002,10 @@ HELP=0
 
 print_usage() {
     cat <<EOF
-OpenClaw installer (macOS + Linux)
+OpenCraft installer (macOS + Linux)
 
 Usage:
-  curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- [options]
+  curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- [options]
 
 Options:
   --install-method, --method npm|git   Install via npm (default) or from a git checkout
@@ -1013,7 +1013,7 @@ Options:
   --git, --github                     Shortcut for --install-method git
   --version <version|dist-tag>         npm install: version (default: latest)
   --beta                               Use beta if available, else latest
-  --git-dir, --dir <path>             Checkout directory (default: ~/openclaw)
+  --git-dir, --dir <path>             Checkout directory (default: ~/opencraft)
   --no-git-update                      Skip git pull for existing checkout
   --no-onboard                          Skip onboarding (non-interactive)
   --no-prompt                           Disable prompts (required in CI/automation)
@@ -1037,10 +1037,10 @@ Environment variables:
   SHARP_IGNORE_GLOBAL_LIBVIPS=0|1    Default: 1 (avoid sharp building against global libvips)
 
 Examples:
-  curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash
-  curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard
-  curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --verify
-  curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --no-onboard
+  curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash
+  curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --no-onboard
+  curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --no-onboard --verify
+  curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --install-method git --no-onboard
 EOF
 }
 
@@ -1151,7 +1151,7 @@ choose_install_method_interactive() {
 
     if [[ -n "$GUM" ]] && gum_is_tty; then
         local header selection
-        header="Detected OpenClaw checkout in: ${detected_checkout}
+        header="Detected OpenCraft checkout in: ${detected_checkout}
 Choose install method"
         selection="$("$GUM" choose \
             --header "$header" \
@@ -1174,7 +1174,7 @@ Choose install method"
 
     local choice=""
     choice="$(prompt_choice "$(cat <<EOF
-${WARN}→${NC} Detected a OpenClaw source checkout in: ${INFO}${detected_checkout}${NC}
+${WARN}→${NC} Detected a OpenCraft source checkout in: ${INFO}${detected_checkout}${NC}
 Choose install method:
   1) Update this checkout (git) and use it
   2) Install global via npm (migrate away from git)
@@ -1196,7 +1196,7 @@ EOF
     return 1
 }
 
-detect_openclaw_checkout() {
+detect_opencraft_checkout() {
     local dir="$1"
     if [[ ! -f "$dir/package.json" ]]; then
         return 1
@@ -1204,7 +1204,7 @@ detect_openclaw_checkout() {
     if [[ ! -f "$dir/pnpm-workspace.yaml" ]]; then
         return 1
     fi
-    if ! grep -q '"name"[[:space:]]*:[[:space:]]*"openclaw"' "$dir/package.json" 2>/dev/null; then
+    if ! grep -q '"name"[[:space:]]*:[[:space:]]*"opencraft"' "$dir/package.json" 2>/dev/null; then
         return 1
     fi
     echo "$dir"
@@ -1232,7 +1232,7 @@ print_homebrew_admin_fix() {
     echo "  2) Ask an Administrator to grant admin rights, then sign out/in:"
     echo "     sudo dseditgroup -o edit -a ${current_user} -t user admin"
     echo "Then retry:"
-    echo "  curl -fsSL https://openclaw.ai/install.sh | bash"
+    echo "  curl -fsSL https://opencraft.ai/install.sh | bash"
 }
 
 install_homebrew() {
@@ -1386,7 +1386,7 @@ ensure_default_node_active_shell() {
         echo "  nvm use ${NODE_DEFAULT_MAJOR}"
         echo "  nvm alias default ${NODE_DEFAULT_MAJOR}"
         echo "Then open a new shell and rerun:"
-        echo "  curl -fsSL https://openclaw.ai/install.sh | bash"
+        echo "  curl -fsSL https://opencraft.ai/install.sh | bash"
     else
         echo "Install/select Node.js ${NODE_DEFAULT_MAJOR} (or Node ${NODE_MIN_VERSION}+ minimum) and ensure it is first on PATH, then rerun installer."
     fi
@@ -1611,10 +1611,10 @@ fix_npm_permissions() {
     ui_success "npm configured for user installs"
 }
 
-ensure_openclaw_bin_link() {
+ensure_opencraft_bin_link() {
     local npm_root=""
     npm_root="$(npm root -g 2>/dev/null || true)"
-    if [[ -z "$npm_root" || ! -d "$npm_root/openclaw" ]]; then
+    if [[ -z "$npm_root" || ! -d "$npm_root/opencraft" ]]; then
         return 1
     fi
     local npm_bin=""
@@ -1623,17 +1623,17 @@ ensure_openclaw_bin_link() {
         return 1
     fi
     mkdir -p "$npm_bin"
-    if [[ ! -x "${npm_bin}/openclaw" ]]; then
-        ln -sf "$npm_root/openclaw/dist/entry.js" "${npm_bin}/openclaw"
-        ui_info "Created openclaw bin link at ${npm_bin}/openclaw"
+    if [[ ! -x "${npm_bin}/opencraft" ]]; then
+        ln -sf "$npm_root/opencraft/dist/entry.js" "${npm_bin}/opencraft"
+        ui_info "Created opencraft bin link at ${npm_bin}/opencraft"
     fi
     return 0
 }
 
-# Check for existing OpenClaw installation
-check_existing_openclaw() {
-    if [[ -n "$(type -P openclaw 2>/dev/null || true)" ]]; then
-        ui_info "Existing OpenClaw installation detected, upgrading"
+# Check for existing OpenCraft installation
+check_existing_opencraft() {
+    if [[ -n "$(type -P opencraft 2>/dev/null || true)" ]]; then
+        ui_info "Existing OpenCraft installation detected, upgrading"
         return 0
     fi
     return 1
@@ -1818,7 +1818,7 @@ warn_shell_path_missing_dir() {
 
     echo ""
     ui_warn "PATH missing ${label}: ${dir}"
-    echo "  This can make openclaw show as \"command not found\" in new terminals."
+    echo "  This can make opencraft show as \"command not found\" in new terminals."
     echo "  Fix (zsh: ~/.zshrc, bash: ~/.bashrc):"
     echo "    export PATH=\"${dir}:\$PATH\""
 }
@@ -1837,13 +1837,13 @@ maybe_nodenv_rehash() {
     fi
 }
 
-warn_openclaw_not_found() {
-    ui_warn "Installed, but openclaw is not discoverable on PATH in this shell"
+warn_opencraft_not_found() {
+    ui_warn "Installed, but opencraft is not discoverable on PATH in this shell"
     echo "  Try: hash -r (bash) or rehash (zsh), then retry."
     local t=""
-    t="$(type -t openclaw 2>/dev/null || true)"
+    t="$(type -t opencraft 2>/dev/null || true)"
     if [[ "$t" == "alias" || "$t" == "function" ]]; then
-        ui_warn "Found a shell ${t} named openclaw; it may shadow the real binary"
+        ui_warn "Found a shell ${t} named opencraft; it may shadow the real binary"
     fi
     if command -v nodenv &> /dev/null; then
         echo -e "Using nodenv? Run: ${INFO}nodenv rehash${NC}"
@@ -1862,10 +1862,10 @@ warn_openclaw_not_found() {
     fi
 }
 
-resolve_openclaw_bin() {
+resolve_opencraft_bin() {
     refresh_shell_command_cache
     local resolved=""
-    resolved="$(type -P openclaw 2>/dev/null || true)"
+    resolved="$(type -P opencraft 2>/dev/null || true)"
     if [[ -n "$resolved" && -x "$resolved" ]]; then
         echo "$resolved"
         return 0
@@ -1873,7 +1873,7 @@ resolve_openclaw_bin() {
 
     ensure_npm_global_bin_on_path
     refresh_shell_command_cache
-    resolved="$(type -P openclaw 2>/dev/null || true)"
+    resolved="$(type -P opencraft 2>/dev/null || true)"
     if [[ -n "$resolved" && -x "$resolved" ]]; then
         echo "$resolved"
         return 0
@@ -1881,21 +1881,21 @@ resolve_openclaw_bin() {
 
     local npm_bin=""
     npm_bin="$(npm_global_bin_dir || true)"
-    if [[ -n "$npm_bin" && -x "${npm_bin}/openclaw" ]]; then
-        echo "${npm_bin}/openclaw"
+    if [[ -n "$npm_bin" && -x "${npm_bin}/opencraft" ]]; then
+        echo "${npm_bin}/opencraft"
         return 0
     fi
 
     maybe_nodenv_rehash
     refresh_shell_command_cache
-    resolved="$(type -P openclaw 2>/dev/null || true)"
+    resolved="$(type -P opencraft 2>/dev/null || true)"
     if [[ -n "$resolved" && -x "$resolved" ]]; then
         echo "$resolved"
         return 0
     fi
 
-    if [[ -n "$npm_bin" && -x "${npm_bin}/openclaw" ]]; then
-        echo "${npm_bin}/openclaw"
+    if [[ -n "$npm_bin" && -x "${npm_bin}/opencraft" ]]; then
+        echo "${npm_bin}/opencraft"
         return 0
     fi
 
@@ -1903,14 +1903,14 @@ resolve_openclaw_bin() {
     return 1
 }
 
-install_openclaw_from_git() {
+install_opencraft_from_git() {
     local repo_dir="$1"
-    local repo_url="https://github.com/openclaw/openclaw.git"
+    local repo_url="https://github.com/editzffaleta/OpenCraft.git"
 
     if [[ -d "$repo_dir/.git" ]]; then
-        ui_info "Installing OpenClaw from git checkout: ${repo_dir}"
+        ui_info "Installing OpenCraft from git checkout: ${repo_dir}"
     else
-        ui_info "Installing OpenClaw from GitHub (${repo_url})"
+        ui_info "Installing OpenCraft from GitHub (${repo_url})"
     fi
 
     if ! check_git; then
@@ -1943,35 +1943,35 @@ install_openclaw_from_git() {
 
     ensure_user_local_bin_on_path
 
-    cat > "$HOME/.local/bin/openclaw" <<EOF
+    cat > "$HOME/.local/bin/opencraft" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 exec node "${repo_dir}/dist/entry.js" "\$@"
 EOF
-    chmod +x "$HOME/.local/bin/openclaw"
-    ui_success "OpenClaw wrapper installed to \$HOME/.local/bin/openclaw"
+    chmod +x "$HOME/.local/bin/opencraft"
+    ui_success "OpenCraft wrapper installed to \$HOME/.local/bin/opencraft"
     ui_info "This checkout uses pnpm — run pnpm install (or corepack pnpm install) for deps"
 }
 
 # Install OpenClaw
 resolve_beta_version() {
     local beta=""
-    beta="$(npm view openclaw dist-tags.beta 2>/dev/null || true)"
+    beta="$(npm view opencraft dist-tags.beta 2>/dev/null || true)"
     if [[ -z "$beta" || "$beta" == "undefined" || "$beta" == "null" ]]; then
         return 1
     fi
     echo "$beta"
 }
 
-install_openclaw() {
-    local package_name="openclaw"
+install_opencraft() {
+    local package_name="opencraft"
     if [[ "$USE_BETA" == "1" ]]; then
         local beta_version=""
         beta_version="$(resolve_beta_version || true)"
         if [[ -n "$beta_version" ]]; then
             OPENCLAW_VERSION="$beta_version"
             ui_info "Beta tag detected (${beta_version})"
-            package_name="openclaw"
+            package_name="opencraft"
         else
             OPENCLAW_VERSION="latest"
             ui_info "No beta tag found; using latest"
@@ -1985,9 +1985,9 @@ install_openclaw() {
     local resolved_version=""
     resolved_version="$(npm view "${package_name}@${OPENCLAW_VERSION}" version 2>/dev/null || true)"
     if [[ -n "$resolved_version" ]]; then
-        ui_info "Installing OpenClaw v${resolved_version}"
+        ui_info "Installing OpenCraft v${resolved_version}"
     else
-        ui_info "Installing OpenClaw (${OPENCLAW_VERSION})"
+        ui_info "Installing OpenCraft (${OPENCLAW_VERSION})"
     fi
     local install_spec=""
     if [[ "${OPENCLAW_VERSION}" == "latest" ]]; then
@@ -1996,23 +1996,23 @@ install_openclaw() {
         install_spec="${package_name}@${OPENCLAW_VERSION}"
     fi
 
-    if ! install_openclaw_npm "${install_spec}"; then
+    if ! install_opencraft_npm "${install_spec}"; then
         ui_warn "npm install failed; retrying"
-        cleanup_npm_openclaw_paths
-        install_openclaw_npm "${install_spec}"
+        cleanup_npm_opencraft_paths
+        install_opencraft_npm "${install_spec}"
     fi
 
-    if [[ "${OPENCLAW_VERSION}" == "latest" && "${package_name}" == "openclaw" ]]; then
-        if ! resolve_openclaw_bin &> /dev/null; then
-            ui_warn "npm install openclaw@latest failed; retrying openclaw@next"
-            cleanup_npm_openclaw_paths
-            install_openclaw_npm "openclaw@next"
+    if [[ "${OPENCLAW_VERSION}" == "latest" && "${package_name}" == "opencraft" ]]; then
+        if ! resolve_opencraft_bin &> /dev/null; then
+            ui_warn "npm install opencraft@latest failed; retrying opencraft@next"
+            cleanup_npm_opencraft_paths
+            install_opencraft_npm "opencraft@next"
         fi
     fi
 
-    ensure_openclaw_bin_link || true
+    ensure_opencraft_bin_link || true
 
-    ui_success "OpenClaw installed"
+    ui_success "OpenCraft installed"
 }
 
 # Run doctor for migrations (safe, non-interactive)
@@ -2020,11 +2020,11 @@ run_doctor() {
     ui_info "Running doctor to migrate settings"
     local claw="${OPENCLAW_BIN:-}"
     if [[ -z "$claw" ]]; then
-        claw="$(resolve_openclaw_bin || true)"
+        claw="$(resolve_opencraft_bin || true)"
     fi
     if [[ -z "$claw" ]]; then
-        ui_info "Skipping doctor (openclaw not on PATH yet)"
-        warn_openclaw_not_found
+        ui_info "Skipping doctor (opencraft not on PATH yet)"
+        warn_opencraft_not_found
         return 0
     fi
     run_quiet_step "Running doctor" "$claw" doctor --non-interactive || true
@@ -2034,7 +2034,7 @@ run_doctor() {
 maybe_open_dashboard() {
     local claw="${OPENCLAW_BIN:-}"
     if [[ -z "$claw" ]]; then
-        claw="$(resolve_openclaw_bin || true)"
+        claw="$(resolve_opencraft_bin || true)"
     fi
     if [[ -z "$claw" ]]; then
         return 0
@@ -2048,9 +2048,9 @@ maybe_open_dashboard() {
 resolve_workspace_dir() {
     local profile="${OPENCLAW_PROFILE:-default}"
     if [[ "${profile}" != "default" ]]; then
-        echo "${HOME}/.openclaw/workspace-${profile}"
+        echo "${HOME}/.opencraft/workspace-${profile}"
     else
-        echo "${HOME}/.openclaw/workspace"
+        echo "${HOME}/.opencraft/workspace"
     fi
 }
 
@@ -2059,7 +2059,7 @@ run_bootstrap_onboarding_if_needed() {
         return
     fi
 
-    local config_path="${OPENCLAW_CONFIG_PATH:-$HOME/.openclaw/openclaw.json}"
+    local config_path="${OPENCLAW_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json}"
     if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
         return
     fi
@@ -2073,23 +2073,23 @@ run_bootstrap_onboarding_if_needed() {
     fi
 
     if [[ ! -r /dev/tty || ! -w /dev/tty ]]; then
-        ui_info "BOOTSTRAP.md found but no TTY; run openclaw onboard to finish setup"
+        ui_info "BOOTSTRAP.md found but no TTY; run opencraft onboard to finish setup"
         return
     fi
 
     ui_info "BOOTSTRAP.md found; starting onboarding"
     local claw="${OPENCLAW_BIN:-}"
     if [[ -z "$claw" ]]; then
-        claw="$(resolve_openclaw_bin || true)"
+        claw="$(resolve_opencraft_bin || true)"
     fi
     if [[ -z "$claw" ]]; then
-        ui_info "BOOTSTRAP.md found but openclaw not on PATH; skipping onboarding"
-        warn_openclaw_not_found
+        ui_info "BOOTSTRAP.md found but opencraft not on PATH; skipping onboarding"
+        warn_opencraft_not_found
         return
     fi
 
     "$claw" onboard || {
-        ui_error "Onboarding failed; run openclaw onboard to retry"
+        ui_error "Onboarding failed; run opencraft onboard to retry"
         return
     }
 }
@@ -2111,9 +2111,9 @@ load_install_version_helpers() {
 
 load_install_version_helpers
 
-if ! declare -F extract_openclaw_semver >/dev/null 2>&1; then
+if ! declare -F extract_opencraft_semver >/dev/null 2>&1; then
 # Inline fallback when version-parse.sh could not be sourced (for example, stdin install).
-extract_openclaw_semver() {
+extract_opencraft_semver() {
     local raw="${1:-}"
     local parsed=""
     parsed="$(
@@ -2127,16 +2127,16 @@ extract_openclaw_semver() {
 }
 fi
 
-resolve_openclaw_version() {
+resolve_opencraft_version() {
     local version=""
     local raw_version_output=""
     local claw="${OPENCLAW_BIN:-}"
-    if [[ -z "$claw" ]] && command -v openclaw &> /dev/null; then
-        claw="$(command -v openclaw)"
+    if [[ -z "$claw" ]] && command -v opencraft &> /dev/null; then
+        claw="$(command -v opencraft)"
     fi
     if [[ -n "$claw" ]]; then
         raw_version_output=$("$claw" --version 2>/dev/null | head -n 1 | tr -d '\r')
-        version="$(extract_openclaw_semver "$raw_version_output")"
+        version="$(extract_opencraft_semver "$raw_version_output")"
         if [[ -z "$version" ]]; then
             version="$raw_version_output"
         fi
@@ -2144,8 +2144,8 @@ resolve_openclaw_version() {
     if [[ -z "$version" ]]; then
         local npm_root=""
         npm_root=$(npm root -g 2>/dev/null || true)
-        if [[ -n "$npm_root" && -f "$npm_root/openclaw/package.json" ]]; then
-            version=$(node -e "console.log(require('${npm_root}/openclaw/package.json').version)" 2>/dev/null || true)
+        if [[ -n "$npm_root" && -f "$npm_root/opencraft/package.json" ]]; then
+            version=$(node -e "console.log(require('${npm_root}/opencraft/package.json').version)" 2>/dev/null || true)
         fi
     fi
     echo "$version"
@@ -2179,7 +2179,7 @@ try {
 refresh_gateway_service_if_loaded() {
     local claw="${OPENCLAW_BIN:-}"
     if [[ -z "$claw" ]]; then
-        claw="$(resolve_openclaw_bin || true)"
+        claw="$(resolve_opencraft_bin || true)"
     fi
     if [[ -z "$claw" ]]; then
         return 0
@@ -2215,20 +2215,20 @@ verify_installation() {
     ui_stage "Verifying installation"
     local claw="${OPENCLAW_BIN:-}"
     if [[ -z "$claw" ]]; then
-        claw="$(resolve_openclaw_bin || true)"
+        claw="$(resolve_opencraft_bin || true)"
     fi
     if [[ -z "$claw" ]]; then
-        ui_error "Install verify failed: openclaw not on PATH yet"
-        warn_openclaw_not_found
+        ui_error "Install verify failed: opencraft not on PATH yet"
+        warn_opencraft_not_found
         return 1
     fi
 
-    run_quiet_step "Checking OpenClaw version" "$claw" --version || return 1
+    run_quiet_step "Checking OpenCraft version" "$claw" --version || return 1
 
     if is_gateway_daemon_loaded "$claw"; then
         run_quiet_step "Checking gateway service" "$claw" gateway status --deep || {
             ui_error "Install verify failed: gateway service unhealthy"
-            ui_info "Run: openclaw gateway status --deep"
+            ui_info "Run: opencraft gateway status --deep"
             return 1
         }
     else
@@ -2251,11 +2251,11 @@ main() {
     detect_os_or_die
 
     local detected_checkout=""
-    detected_checkout="$(detect_openclaw_checkout "$PWD" || true)"
+    detected_checkout="$(detect_opencraft_checkout "$PWD" || true)"
 
     if [[ -z "$INSTALL_METHOD" && -n "$detected_checkout" ]]; then
         if ! is_promptable; then
-            ui_info "Found OpenClaw checkout but no TTY; defaulting to npm install"
+            ui_info "Found OpenCraft checkout but no TTY; defaulting to npm install"
             INSTALL_METHOD="npm"
         else
             local selected_method=""
@@ -2292,7 +2292,7 @@ main() {
 
     # Check for existing installation
     local is_upgrade=false
-    if check_existing_openclaw; then
+    if check_existing_opencraft; then
         is_upgrade=true
     fi
     local should_open_dashboard=false
@@ -2316,9 +2316,9 @@ main() {
     local final_git_dir=""
     if [[ "$INSTALL_METHOD" == "git" ]]; then
         # Clean up npm global install if switching to git
-        if npm list -g openclaw &>/dev/null; then
+        if npm list -g opencraft &>/dev/null; then
             ui_info "Removing npm global install (switching to git)"
-            npm uninstall -g openclaw 2>/dev/null || true
+            npm uninstall -g opencraft 2>/dev/null || true
             ui_success "npm global install removed"
         fi
 
@@ -2327,12 +2327,12 @@ main() {
             repo_dir="$detected_checkout"
         fi
         final_git_dir="$repo_dir"
-        install_openclaw_from_git "$repo_dir"
+        install_opencraft_from_git "$repo_dir"
     else
         # Clean up git wrapper if switching to npm
-        if [[ -x "$HOME/.local/bin/openclaw" ]]; then
+        if [[ -x "$HOME/.local/bin/opencraft" ]]; then
             ui_info "Removing git wrapper (switching to npm)"
-            rm -f "$HOME/.local/bin/openclaw"
+            rm -f "$HOME/.local/bin/opencraft"
             ui_success "git wrapper removed"
         fi
 
@@ -2345,12 +2345,12 @@ main() {
         fix_npm_permissions
 
         # Step 5: OpenClaw
-        install_openclaw
+        install_opencraft
     fi
 
     ui_stage "Finalizing setup"
 
-    OPENCLAW_BIN="$(resolve_openclaw_bin || true)"
+    OPENCLAW_BIN="$(resolve_opencraft_bin || true)"
 
     # PATH warning: installs can succeed while the user's login shell still lacks npm's global bin dir.
     local npm_bin=""
@@ -2359,7 +2359,7 @@ main() {
         warn_shell_path_missing_dir "$npm_bin" "npm global bin dir"
     fi
     if [[ "$INSTALL_METHOD" == "git" ]]; then
-        if [[ -x "$HOME/.local/bin/openclaw" ]]; then
+        if [[ -x "$HOME/.local/bin/opencraft" ]]; then
             warn_shell_path_missing_dir "$HOME/.local/bin" "user-local bin dir (~/.local/bin)"
         fi
     fi
@@ -2380,13 +2380,13 @@ main() {
     run_bootstrap_onboarding_if_needed
 
     local installed_version
-    installed_version=$(resolve_openclaw_version)
+    installed_version=$(resolve_opencraft_version)
 
     echo ""
     if [[ -n "$installed_version" ]]; then
-        ui_celebrate "🦞 OpenClaw installed successfully (${installed_version})!"
+        ui_celebrate "🦞 OpenCraft installed successfully (${installed_version})!"
     else
-        ui_celebrate "🦞 OpenClaw installed successfully!"
+        ui_celebrate "🦞 OpenCraft installed successfully!"
     fi
     if [[ "$is_upgrade" == "true" ]]; then
         local update_messages=(
@@ -2436,19 +2436,19 @@ main() {
     if [[ "$INSTALL_METHOD" == "git" && -n "$final_git_dir" ]]; then
         ui_section "Source install details"
         ui_kv "Checkout" "$final_git_dir"
-        ui_kv "Wrapper" "$HOME/.local/bin/openclaw"
-        ui_kv "Update command" "openclaw update --restart"
-        ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method npm"
+        ui_kv "Wrapper" "$HOME/.local/bin/opencraft"
+        ui_kv "Update command" "opencraft update --restart"
+        ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --install-method npm"
     elif [[ "$is_upgrade" == "true" ]]; then
         ui_info "Upgrade complete"
         if [[ -r /dev/tty && -w /dev/tty ]]; then
             local claw="${OPENCLAW_BIN:-}"
             if [[ -z "$claw" ]]; then
-                claw="$(resolve_openclaw_bin || true)"
+                claw="$(resolve_opencraft_bin || true)"
             fi
             if [[ -z "$claw" ]]; then
-                ui_info "Skipping doctor (openclaw not on PATH yet)"
-                warn_openclaw_not_found
+                ui_info "Skipping doctor (opencraft not on PATH yet)"
+                warn_opencraft_not_found
                 return 0
             fi
             local -a doctor_args=()
@@ -2457,7 +2457,7 @@ main() {
                     doctor_args+=("--non-interactive")
                 fi
             fi
-            ui_info "Running openclaw doctor"
+            ui_info "Running opencraft doctor"
             local doctor_ok=0
             if (( ${#doctor_args[@]} )); then
                 OPENCLAW_UPDATE_IN_PROGRESS=1 "$claw" doctor "${doctor_args[@]}" </dev/tty && doctor_ok=1
@@ -2471,13 +2471,13 @@ main() {
                 ui_warn "Doctor failed; skipping plugin updates"
             fi
         else
-            ui_info "No TTY; run openclaw doctor and openclaw plugins update --all manually"
+            ui_info "No TTY; run opencraft doctor and opencraft plugins update --all manually"
         fi
     else
         if [[ "$NO_ONBOARD" == "1" || "$skip_onboard" == "true" ]]; then
-            ui_info "Skipping onboard (requested); run openclaw onboard later"
+            ui_info "Skipping onboard (requested); run opencraft onboard later"
         else
-            local config_path="${OPENCLAW_CONFIG_PATH:-$HOME/.openclaw/openclaw.json}"
+            local config_path="${OPENCLAW_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json}"
             if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
                 ui_info "Config already present; running doctor"
                 run_doctor
@@ -2490,35 +2490,35 @@ main() {
             if [[ -r /dev/tty && -w /dev/tty ]]; then
                 local claw="${OPENCLAW_BIN:-}"
                 if [[ -z "$claw" ]]; then
-                    claw="$(resolve_openclaw_bin || true)"
+                    claw="$(resolve_opencraft_bin || true)"
                 fi
                 if [[ -z "$claw" ]]; then
-                    ui_info "Skipping onboarding (openclaw not on PATH yet)"
-                    warn_openclaw_not_found
+                    ui_info "Skipping onboarding (opencraft not on PATH yet)"
+                    warn_opencraft_not_found
                     return 0
                 fi
                 exec </dev/tty
                 exec "$claw" onboard
             fi
-            ui_info "No TTY; run openclaw onboard to finish setup"
+            ui_info "No TTY; run opencraft onboard to finish setup"
             return 0
         fi
     fi
 
-    if command -v openclaw &> /dev/null; then
+    if command -v opencraft &> /dev/null; then
         local claw="${OPENCLAW_BIN:-}"
         if [[ -z "$claw" ]]; then
-            claw="$(resolve_openclaw_bin || true)"
+            claw="$(resolve_opencraft_bin || true)"
         fi
         if [[ -n "$claw" ]] && is_gateway_daemon_loaded "$claw"; then
             if [[ "$DRY_RUN" == "1" ]]; then
-                ui_info "Gateway daemon detected; would restart (openclaw daemon restart)"
+                ui_info "Gateway daemon detected; would restart (opencraft daemon restart)"
             else
                 ui_info "Gateway daemon detected; restarting"
                 if OPENCLAW_UPDATE_IN_PROGRESS=1 "$claw" daemon restart >/dev/null 2>&1; then
                     ui_success "Gateway restarted"
                 else
-                    ui_warn "Gateway restart failed; try: openclaw daemon restart"
+                    ui_warn "Gateway restart failed; try: opencraft daemon restart"
                 fi
             fi
         fi

@@ -20,47 +20,47 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "help flag",
-      argv: ["node", "openclaw", "--help"],
+      argv: ["node", "opencraft", "--help"],
       expected: true,
     },
     {
       name: "version flag",
-      argv: ["node", "openclaw", "-V"],
+      argv: ["node", "opencraft", "-V"],
       expected: true,
     },
     {
       name: "normal command",
-      argv: ["node", "openclaw", "status"],
+      argv: ["node", "opencraft", "status"],
       expected: false,
     },
     {
       name: "root -v alias",
-      argv: ["node", "openclaw", "-v"],
+      argv: ["node", "opencraft", "-v"],
       expected: true,
     },
     {
       name: "root -v alias with profile",
-      argv: ["node", "openclaw", "--profile", "work", "-v"],
+      argv: ["node", "opencraft", "--profile", "work", "-v"],
       expected: true,
     },
     {
       name: "root -v alias with log-level",
-      argv: ["node", "openclaw", "--log-level", "debug", "-v"],
+      argv: ["node", "opencraft", "--log-level", "debug", "-v"],
       expected: true,
     },
     {
       name: "subcommand -v should not be treated as version",
-      argv: ["node", "openclaw", "acp", "-v"],
+      argv: ["node", "opencraft", "acp", "-v"],
       expected: false,
     },
     {
       name: "root -v alias with equals profile",
-      argv: ["node", "openclaw", "--profile=work", "-v"],
+      argv: ["node", "opencraft", "--profile=work", "-v"],
       expected: true,
     },
     {
       name: "subcommand path after global root flags should not be treated as version",
-      argv: ["node", "openclaw", "--dev", "skills", "list", "-v"],
+      argv: ["node", "opencraft", "--dev", "skills", "list", "-v"],
       expected: false,
     },
   ])("detects help/version flags: $name", ({ argv, expected }) => {
@@ -70,27 +70,27 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "root --version",
-      argv: ["node", "openclaw", "--version"],
+      argv: ["node", "opencraft", "--version"],
       expected: true,
     },
     {
       name: "root -V",
-      argv: ["node", "openclaw", "-V"],
+      argv: ["node", "opencraft", "-V"],
       expected: true,
     },
     {
       name: "root -v alias with profile",
-      argv: ["node", "openclaw", "--profile", "work", "-v"],
+      argv: ["node", "opencraft", "--profile", "work", "-v"],
       expected: true,
     },
     {
       name: "subcommand version flag",
-      argv: ["node", "openclaw", "status", "--version"],
+      argv: ["node", "opencraft", "status", "--version"],
       expected: false,
     },
     {
       name: "unknown root flag with version",
-      argv: ["node", "openclaw", "--unknown", "--version"],
+      argv: ["node", "opencraft", "--unknown", "--version"],
       expected: false,
     },
   ])("detects root-only version invocations: $name", ({ argv, expected }) => {
@@ -100,42 +100,42 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "root --help",
-      argv: ["node", "openclaw", "--help"],
+      argv: ["node", "opencraft", "--help"],
       expected: true,
     },
     {
       name: "root -h",
-      argv: ["node", "openclaw", "-h"],
+      argv: ["node", "opencraft", "-h"],
       expected: true,
     },
     {
       name: "root --help with profile",
-      argv: ["node", "openclaw", "--profile", "work", "--help"],
+      argv: ["node", "opencraft", "--profile", "work", "--help"],
       expected: true,
     },
     {
       name: "subcommand --help",
-      argv: ["node", "openclaw", "status", "--help"],
+      argv: ["node", "opencraft", "status", "--help"],
       expected: false,
     },
     {
       name: "help before subcommand token",
-      argv: ["node", "openclaw", "--help", "status"],
+      argv: ["node", "opencraft", "--help", "status"],
       expected: false,
     },
     {
       name: "help after -- terminator",
-      argv: ["node", "openclaw", "nodes", "run", "--", "git", "--help"],
+      argv: ["node", "opencraft", "nodes", "run", "--", "git", "--help"],
       expected: false,
     },
     {
       name: "unknown root flag before help",
-      argv: ["node", "openclaw", "--unknown", "--help"],
+      argv: ["node", "opencraft", "--unknown", "--help"],
       expected: false,
     },
     {
       name: "unknown root flag after help",
-      argv: ["node", "openclaw", "--help", "--unknown"],
+      argv: ["node", "opencraft", "--help", "--unknown"],
       expected: false,
     },
   ])("detects root-only help invocations: $name", ({ argv, expected }) => {
@@ -145,17 +145,17 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "single command with trailing flag",
-      argv: ["node", "openclaw", "status", "--json"],
+      argv: ["node", "opencraft", "status", "--json"],
       expected: ["status"],
     },
     {
       name: "two-part command",
-      argv: ["node", "openclaw", "agents", "list"],
+      argv: ["node", "opencraft", "agents", "list"],
       expected: ["agents", "list"],
     },
     {
       name: "terminator cuts parsing",
-      argv: ["node", "openclaw", "status", "--", "ignored"],
+      argv: ["node", "opencraft", "status", "--", "ignored"],
       expected: ["status"],
     },
   ])("extracts command path: $name", ({ argv, expected }) => {
@@ -165,7 +165,7 @@ describe("argv helpers", () => {
   it("extracts command path while skipping known root option values", () => {
     expect(
       getCommandPathWithRootOptions(
-        ["node", "openclaw", "--profile", "work", "--no-color", "config", "validate"],
+        ["node", "opencraft", "--profile", "work", "--no-color", "config", "validate"],
         2,
       ),
     ).toEqual(["config", "validate"]);
@@ -174,7 +174,7 @@ describe("argv helpers", () => {
   it("extracts routed config get positionals with interleaved root options", () => {
     expect(
       getCommandPositionalsWithRootOptions(
-        ["node", "openclaw", "config", "get", "--log-level", "debug", "update.channel", "--json"],
+        ["node", "opencraft", "config", "get", "--log-level", "debug", "update.channel", "--json"],
         {
           commandPath: ["config", "get"],
           booleanFlags: ["--json"],
@@ -186,7 +186,7 @@ describe("argv helpers", () => {
   it("extracts routed config unset positionals with interleaved root options", () => {
     expect(
       getCommandPositionalsWithRootOptions(
-        ["node", "openclaw", "config", "unset", "--profile", "work", "update.channel"],
+        ["node", "opencraft", "config", "unset", "--profile", "work", "update.channel"],
         {
           commandPath: ["config", "unset"],
         },
@@ -197,7 +197,7 @@ describe("argv helpers", () => {
   it("returns null when routed command sees unknown options", () => {
     expect(
       getCommandPositionalsWithRootOptions(
-        ["node", "openclaw", "config", "get", "--mystery", "value", "update.channel"],
+        ["node", "opencraft", "config", "get", "--mystery", "value", "update.channel"],
         {
           commandPath: ["config", "get"],
           booleanFlags: ["--json"],
@@ -209,17 +209,17 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "returns first command token",
-      argv: ["node", "openclaw", "agents", "list"],
+      argv: ["node", "opencraft", "agents", "list"],
       expected: "agents",
     },
     {
       name: "returns null when no command exists",
-      argv: ["node", "openclaw"],
+      argv: ["node", "opencraft"],
       expected: null,
     },
     {
       name: "skips known root option values",
-      argv: ["node", "openclaw", "--log-level", "debug", "status"],
+      argv: ["node", "opencraft", "--log-level", "debug", "status"],
       expected: "status",
     },
   ])("returns primary command: $name", ({ argv, expected }) => {
@@ -229,13 +229,13 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "detects flag before terminator",
-      argv: ["node", "openclaw", "status", "--json"],
+      argv: ["node", "opencraft", "status", "--json"],
       flag: "--json",
       expected: true,
     },
     {
       name: "ignores flag after terminator",
-      argv: ["node", "openclaw", "--", "--json"],
+      argv: ["node", "opencraft", "--", "--json"],
       flag: "--json",
       expected: false,
     },
@@ -246,27 +246,27 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "value in next token",
-      argv: ["node", "openclaw", "status", "--timeout", "5000"],
+      argv: ["node", "opencraft", "status", "--timeout", "5000"],
       expected: "5000",
     },
     {
       name: "value in equals form",
-      argv: ["node", "openclaw", "status", "--timeout=2500"],
+      argv: ["node", "opencraft", "status", "--timeout=2500"],
       expected: "2500",
     },
     {
       name: "missing value",
-      argv: ["node", "openclaw", "status", "--timeout"],
+      argv: ["node", "opencraft", "status", "--timeout"],
       expected: null,
     },
     {
       name: "next token is another flag",
-      argv: ["node", "openclaw", "status", "--timeout", "--json"],
+      argv: ["node", "opencraft", "status", "--timeout", "--json"],
       expected: null,
     },
     {
       name: "flag appears after terminator",
-      argv: ["node", "openclaw", "--", "--timeout=99"],
+      argv: ["node", "opencraft", "--", "--timeout=99"],
       expected: undefined,
     },
   ])("extracts flag values: $name", ({ argv, expected }) => {
@@ -274,9 +274,9 @@ describe("argv helpers", () => {
   });
 
   it("parses verbose flags", () => {
-    expect(getVerboseFlag(["node", "openclaw", "status", "--verbose"])).toBe(true);
-    expect(getVerboseFlag(["node", "openclaw", "status", "--debug"])).toBe(false);
-    expect(getVerboseFlag(["node", "openclaw", "status", "--debug"], { includeDebug: true })).toBe(
+    expect(getVerboseFlag(["node", "opencraft", "status", "--verbose"])).toBe(true);
+    expect(getVerboseFlag(["node", "opencraft", "status", "--debug"])).toBe(false);
+    expect(getVerboseFlag(["node", "opencraft", "status", "--debug"], { includeDebug: true })).toBe(
       true,
     );
   });
@@ -284,22 +284,22 @@ describe("argv helpers", () => {
   it.each([
     {
       name: "missing flag",
-      argv: ["node", "openclaw", "status"],
+      argv: ["node", "opencraft", "status"],
       expected: undefined,
     },
     {
       name: "missing value",
-      argv: ["node", "openclaw", "status", "--timeout"],
+      argv: ["node", "opencraft", "status", "--timeout"],
       expected: null,
     },
     {
       name: "valid positive integer",
-      argv: ["node", "openclaw", "status", "--timeout", "5000"],
+      argv: ["node", "opencraft", "status", "--timeout", "5000"],
       expected: 5000,
     },
     {
       name: "invalid integer",
-      argv: ["node", "openclaw", "status", "--timeout", "nope"],
+      argv: ["node", "opencraft", "status", "--timeout", "nope"],
       expected: undefined,
     },
   ])("parses positive integer flag values: $name", ({ argv, expected }) => {
@@ -309,52 +309,52 @@ describe("argv helpers", () => {
   it("builds parse argv from raw args", () => {
     const cases = [
       {
-        rawArgs: ["node", "openclaw", "status"],
-        expected: ["node", "openclaw", "status"],
+        rawArgs: ["node", "opencraft", "status"],
+        expected: ["node", "opencraft", "status"],
       },
       {
-        rawArgs: ["node-22", "openclaw", "status"],
-        expected: ["node-22", "openclaw", "status"],
+        rawArgs: ["node-22", "opencraft", "status"],
+        expected: ["node-22", "opencraft", "status"],
       },
       {
-        rawArgs: ["node-22.2.0.exe", "openclaw", "status"],
-        expected: ["node-22.2.0.exe", "openclaw", "status"],
+        rawArgs: ["node-22.2.0.exe", "opencraft", "status"],
+        expected: ["node-22.2.0.exe", "opencraft", "status"],
       },
       {
-        rawArgs: ["node-22.2", "openclaw", "status"],
-        expected: ["node-22.2", "openclaw", "status"],
+        rawArgs: ["node-22.2", "opencraft", "status"],
+        expected: ["node-22.2", "opencraft", "status"],
       },
       {
-        rawArgs: ["node-22.2.exe", "openclaw", "status"],
-        expected: ["node-22.2.exe", "openclaw", "status"],
+        rawArgs: ["node-22.2.exe", "opencraft", "status"],
+        expected: ["node-22.2.exe", "opencraft", "status"],
       },
       {
-        rawArgs: ["/usr/bin/node-22.2.0", "openclaw", "status"],
-        expected: ["/usr/bin/node-22.2.0", "openclaw", "status"],
+        rawArgs: ["/usr/bin/node-22.2.0", "opencraft", "status"],
+        expected: ["/usr/bin/node-22.2.0", "opencraft", "status"],
       },
       {
-        rawArgs: ["node24", "openclaw", "status"],
-        expected: ["node24", "openclaw", "status"],
+        rawArgs: ["node24", "opencraft", "status"],
+        expected: ["node24", "opencraft", "status"],
       },
       {
-        rawArgs: ["/usr/bin/node24", "openclaw", "status"],
-        expected: ["/usr/bin/node24", "openclaw", "status"],
+        rawArgs: ["/usr/bin/node24", "opencraft", "status"],
+        expected: ["/usr/bin/node24", "opencraft", "status"],
       },
       {
-        rawArgs: ["node24.exe", "openclaw", "status"],
-        expected: ["node24.exe", "openclaw", "status"],
+        rawArgs: ["node24.exe", "opencraft", "status"],
+        expected: ["node24.exe", "opencraft", "status"],
       },
       {
-        rawArgs: ["nodejs", "openclaw", "status"],
-        expected: ["nodejs", "openclaw", "status"],
+        rawArgs: ["nodejs", "opencraft", "status"],
+        expected: ["nodejs", "opencraft", "status"],
       },
       {
-        rawArgs: ["node-dev", "openclaw", "status"],
-        expected: ["node", "openclaw", "node-dev", "openclaw", "status"],
+        rawArgs: ["node-dev", "opencraft", "status"],
+        expected: ["node", "opencraft", "node-dev", "opencraft", "status"],
       },
       {
-        rawArgs: ["openclaw", "status"],
-        expected: ["node", "openclaw", "status"],
+        rawArgs: ["opencraft", "status"],
+        expected: ["node", "opencraft", "status"],
       },
       {
         rawArgs: ["bun", "src/entry.ts", "status"],
@@ -364,7 +364,7 @@ describe("argv helpers", () => {
 
     for (const testCase of cases) {
       const parsed = buildParseArgv({
-        programName: "openclaw",
+        programName: "opencraft",
         rawArgs: [...testCase.rawArgs],
       });
       expect(parsed).toEqual([...testCase.expected]);
@@ -373,27 +373,27 @@ describe("argv helpers", () => {
 
   it("builds parse argv from fallback args", () => {
     const fallbackArgv = buildParseArgv({
-      programName: "openclaw",
+      programName: "opencraft",
       fallbackArgv: ["status"],
     });
-    expect(fallbackArgv).toEqual(["node", "openclaw", "status"]);
+    expect(fallbackArgv).toEqual(["node", "opencraft", "status"]);
   });
 
   it("decides when to migrate state", () => {
     const nonMutatingArgv = [
-      ["node", "openclaw", "status"],
-      ["node", "openclaw", "health"],
-      ["node", "openclaw", "sessions"],
-      ["node", "openclaw", "config", "get", "update"],
-      ["node", "openclaw", "config", "unset", "update"],
-      ["node", "openclaw", "models", "list"],
-      ["node", "openclaw", "models", "status"],
-      ["node", "openclaw", "memory", "status"],
-      ["node", "openclaw", "agent", "--message", "hi"],
+      ["node", "opencraft", "status"],
+      ["node", "opencraft", "health"],
+      ["node", "opencraft", "sessions"],
+      ["node", "opencraft", "config", "get", "update"],
+      ["node", "opencraft", "config", "unset", "update"],
+      ["node", "opencraft", "models", "list"],
+      ["node", "opencraft", "models", "status"],
+      ["node", "opencraft", "memory", "status"],
+      ["node", "opencraft", "agent", "--message", "hi"],
     ] as const;
     const mutatingArgv = [
-      ["node", "openclaw", "agents", "list"],
-      ["node", "openclaw", "message", "send"],
+      ["node", "opencraft", "agents", "list"],
+      ["node", "opencraft", "message", "send"],
     ] as const;
 
     for (const argv of nonMutatingArgv) {

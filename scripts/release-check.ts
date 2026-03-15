@@ -141,7 +141,7 @@ export function collectBundledExtensionRootDependencyGapErrors(params: {
     }
 
     const missing = Object.keys(extension.packageJson.dependencies ?? {})
-      .filter((dep) => dep !== "openclaw" && !rootDeps[dep])
+      .filter((dep) => dep !== "opencraft" && !rootDeps[dep])
       .toSorted();
     const allowlisted = extension.rootDependencyMirrorAllowlist.toSorted();
     if (missing.join("\n") !== allowlisted.join("\n")) {
@@ -353,7 +353,7 @@ function checkAppcastSparkleVersions() {
   }
 }
 
-// Critical functions that channel extension plugins import from openclaw/plugin-sdk.
+// Critical functions that channel extension plugins import from opencraft/plugin-sdk.
 // If any are missing from the compiled output, plugins crash at runtime (#27569).
 const requiredPluginSdkExports = [
   "isDangerousNameMatchingEnabled",

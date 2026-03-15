@@ -302,7 +302,7 @@ describe("update-cli", () => {
       killed: false,
       termination: "exit",
     });
-    readPackageName.mockResolvedValue("openclaw");
+    readPackageName.mockResolvedValue("opencraft");
     readPackageVersion.mockResolvedValue("1.0.0");
     resolveGlobalManager.mockResolvedValue("npm");
     serviceLoaded.mockResolvedValue(false);
@@ -316,7 +316,7 @@ describe("update-cli", () => {
     inspectPortUsage.mockResolvedValue({
       port: 18789,
       status: "busy",
-      listeners: [{ pid: 4242, command: "openclaw-gateway" }],
+      listeners: [{ pid: 4242, command: "opencraft-gateway" }],
       hints: [],
     });
     classifyPortListener.mockReturnValue("gateway");
@@ -368,7 +368,7 @@ describe("update-cli", () => {
     await updateStatusCommand({ json: false });
 
     const logs = vi.mocked(defaultRuntime.log).mock.calls.map((call) => call[0]);
-    expect(logs.join("\n")).toContain("OpenClaw update status");
+    expect(logs.join("\n")).toContain("OpenCraft update status");
   });
 
   it("updateStatusCommand emits JSON", async () => {
@@ -430,7 +430,7 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@latest", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@latest", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
@@ -451,7 +451,7 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@latest", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@latest", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
@@ -465,7 +465,7 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@next", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@next", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
@@ -476,7 +476,7 @@ describe("update-cli", () => {
     const localAppData = createCaseDir("openclaw-localappdata");
     const portableGitMingw = path.join(
       localAppData,
-      "OpenClaw",
+      "OpenCraft",
       "deps",
       "portable-git",
       "mingw64",
@@ -484,7 +484,7 @@ describe("update-cli", () => {
     );
     const portableGitUsr = path.join(
       localAppData,
-      "OpenClaw",
+      "OpenCraft",
       "deps",
       "portable-git",
       "usr",
@@ -647,7 +647,7 @@ describe("update-cli", () => {
     await withEnvAsync(
       {
         OPENCLAW_STATE_DIR: "./state",
-        OPENCLAW_CONFIG_PATH: "./config/openclaw.json",
+        OPENCLAW_CONFIG_PATH: "./config/opencraft.json",
       },
       async () => {
         await updateCommand({});
@@ -660,7 +660,7 @@ describe("update-cli", () => {
         cwd: root,
         env: expect.objectContaining({
           OPENCLAW_STATE_DIR: path.resolve("./state"),
-          OPENCLAW_CONFIG_PATH: path.resolve("./config/openclaw.json"),
+          OPENCLAW_CONFIG_PATH: path.resolve("./config/opencraft.json"),
         }),
         timeoutMs: 60_000,
       }),

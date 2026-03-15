@@ -439,24 +439,24 @@ describe("splitArgsPreservingQuotes", () => {
 
   it("supports systemd-style backslash escaping", () => {
     expect(
-      splitArgsPreservingQuotes('openclaw --name "My \\"Bot\\"" --foo bar', {
+      splitArgsPreservingQuotes('opencraft --name "My \\"Bot\\"" --foo bar', {
         escapeMode: "backslash",
       }),
-    ).toEqual(["openclaw", "--name", 'My "Bot"', "--foo", "bar"]);
+    ).toEqual(["opencraft", "--name", 'My "Bot"', "--foo", "bar"]);
   });
 
   it("supports schtasks-style escaped quotes while preserving other backslashes", () => {
     expect(
-      splitArgsPreservingQuotes('openclaw --path "C:\\\\Program Files\\\\OpenClaw"', {
+      splitArgsPreservingQuotes('opencraft --path "C:\\\\Program Files\\\\OpenClaw"', {
         escapeMode: "backslash-quote-only",
       }),
-    ).toEqual(["openclaw", "--path", "C:\\\\Program Files\\\\OpenClaw"]);
+    ).toEqual(["opencraft", "--path", "C:\\\\Program Files\\\\OpenClaw"]);
 
     expect(
-      splitArgsPreservingQuotes('openclaw --label "My \\"Quoted\\" Name"', {
+      splitArgsPreservingQuotes('opencraft --label "My \\"Quoted\\" Name"', {
         escapeMode: "backslash-quote-only",
       }),
-    ).toEqual(["openclaw", "--label", 'My "Quoted" Name']);
+    ).toEqual(["opencraft", "--label", 'My "Quoted" Name']);
   });
 });
 
@@ -480,8 +480,8 @@ describe("readSystemdServiceExecStart", () => {
 
   it("loads OPENCLAW_GATEWAY_TOKEN from EnvironmentFile", async () => {
     const readFileSpy = mockReadGatewayServiceFile(
-      ["[Service]", "ExecStart=/usr/bin/openclaw gateway run", "EnvironmentFile=%h/.openclaw/.env"],
-      { [`${TEST_SERVICE_HOME}/.openclaw/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
+      ["[Service]", "ExecStart=/usr/bin/openclaw gateway run", "EnvironmentFile=%h/.opencraft/.env"],
+      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
     );
 
     const command = await readSystemdServiceExecStart({ HOME: TEST_SERVICE_HOME });
@@ -494,10 +494,10 @@ describe("readSystemdServiceExecStart", () => {
       [
         "[Service]",
         "ExecStart=/usr/bin/openclaw gateway run",
-        "EnvironmentFile=%h/.openclaw/.env",
+        "EnvironmentFile=%h/.opencraft/.env",
         'Environment="OPENCLAW_GATEWAY_TOKEN=inline-token"',
       ],
-      { [`${TEST_SERVICE_HOME}/.openclaw/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
+      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
     );
 
     const command = await readSystemdServiceExecStart({ HOME: TEST_SERVICE_HOME });
@@ -506,11 +506,11 @@ describe("readSystemdServiceExecStart", () => {
   });
 
   it("ignores missing optional EnvironmentFile entries", async () => {
-    await expectExecStartWithoutEnvironment("EnvironmentFile=-%h/.openclaw/missing.env");
+    await expectExecStartWithoutEnvironment("EnvironmentFile=-%h/.opencraft/missing.env");
   });
 
   it("keeps parsing when non-optional EnvironmentFile entries are missing", async () => {
-    await expectExecStartWithoutEnvironment("EnvironmentFile=%h/.openclaw/missing.env");
+    await expectExecStartWithoutEnvironment("EnvironmentFile=%h/.opencraft/missing.env");
   });
 
   it("supports multiple EnvironmentFile entries and quoted paths", async () => {
@@ -520,13 +520,13 @@ describe("readSystemdServiceExecStart", () => {
         return [
           "[Service]",
           "ExecStart=/usr/bin/openclaw gateway run",
-          'EnvironmentFile=%h/.openclaw/first.env "%h/.openclaw/second env.env"',
+          'EnvironmentFile=%h/.opencraft/first.env "%h/.opencraft/second env.env"',
         ].join("\n");
       }
-      if (pathValue === "/home/test/.openclaw/first.env") {
+      if (pathValue === "/home/test/.opencraft/first.env") {
         return "OPENCLAW_GATEWAY_TOKEN=first-token\n"; // pragma: allowlist secret
       }
-      if (pathValue === "/home/test/.openclaw/second env.env") {
+      if (pathValue === "/home/test/.opencraft/second env.env") {
         return 'OPENCLAW_GATEWAY_PASSWORD="second password"\n'; // pragma: allowlist secret
       }
       throw new Error(`unexpected readFile path: ${pathValue}`);
@@ -575,10 +575,10 @@ describe("readSystemdServiceExecStart", () => {
         return [
           "[Service]",
           "ExecStart=/usr/bin/openclaw gateway run",
-          "EnvironmentFile=%h/.openclaw/gateway.env",
+          "EnvironmentFile=%h/.opencraft/gateway.env",
         ].join("\n");
       }
-      if (pathValue === "/home/test/.openclaw/gateway.env") {
+      if (pathValue === "/home/test/.opencraft/gateway.env") {
         return [
           "# comment",
           "; another comment",
@@ -650,7 +650,7 @@ describe("systemd service control", () => {
     execFileMock
       .mockImplementationOnce((_cmd, _args, _opts, cb) => cb(null, "", ""))
       .mockImplementationOnce((_cmd, args, _opts, cb) => {
-        assertUserSystemctlArgs(args, "restart", "openclaw-gateway-work.service");
+        assertUserSystemctlArgs(args, "restart", "opencraft-gateway-work.service");
         cb(null, "", "");
       });
     await assertRestartSuccess({ OPENCLAW_PROFILE: "work" });

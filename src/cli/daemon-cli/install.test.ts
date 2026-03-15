@@ -22,7 +22,7 @@ const resolveSecretRefValuesMock = vi.hoisted(() => vi.fn());
 const randomTokenMock = vi.hoisted(() => vi.fn(() => "generated-token"));
 const buildGatewayInstallPlanMock = vi.hoisted(() =>
   vi.fn(async () => ({
-    programArguments: ["openclaw", "gateway", "run"],
+    programArguments: ["opencraft", "gateway", "run"],
     workingDirectory: "/tmp",
     environment: {},
   })),
@@ -183,7 +183,7 @@ describe("runDaemonInstall", () => {
     resolveSecretRefValuesMock.mockResolvedValue(new Map());
     randomTokenMock.mockReturnValue("generated-token");
     buildGatewayInstallPlanMock.mockResolvedValue({
-      programArguments: ["openclaw", "gateway", "run"],
+      programArguments: ["opencraft", "gateway", "run"],
       workingDirectory: "/tmp",
       environment: {},
     });

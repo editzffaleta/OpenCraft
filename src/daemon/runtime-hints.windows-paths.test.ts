@@ -19,8 +19,8 @@ describe("buildPlatformRuntimeLogHints", () => {
     expect(
       buildPlatformRuntimeLogHints({
         platform: "darwin",
-        systemdServiceName: "openclaw-gateway",
-        windowsTaskName: "OpenClaw Gateway",
+        systemdServiceName: "opencraft-gateway",
+        windowsTaskName: "OpenCraft Gateway",
       }),
     ).toEqual([
       "Launchd stdout (if installed): /tmp/openclaw-state/logs/gateway.log",

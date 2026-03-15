@@ -125,8 +125,8 @@ describe("restart-helper", () => {
       });
       expect(scriptPath.endsWith(".bat")).toBe(true);
       expect(content).toContain("@echo off");
-      expect(content).toContain('schtasks /End /TN "OpenClaw Gateway"');
-      expect(content).toContain('schtasks /Run /TN "OpenClaw Gateway"');
+      expect(content).toContain('schtasks /End /TN "OpenCraft Gateway"');
+      expect(content).toContain('schtasks /Run /TN "OpenCraft Gateway"');
       expectWindowsRestartWaitOrdering(content);
       // Batch self-cleanup
       expect(content).toContain('del "%~f0"');
@@ -138,10 +138,10 @@ describe("restart-helper", () => {
 
       const { scriptPath, content } = await prepareAndReadScript({
         OPENCLAW_PROFILE: "default",
-        OPENCLAW_WINDOWS_TASK_NAME: "OpenClaw Gateway (custom)",
+        OPENCLAW_WINDOWS_TASK_NAME: "OpenCraft Gateway (custom)",
       });
-      expect(content).toContain('schtasks /End /TN "OpenClaw Gateway (custom)"');
-      expect(content).toContain('schtasks /Run /TN "OpenClaw Gateway (custom)"');
+      expect(content).toContain('schtasks /End /TN "OpenCraft Gateway (custom)"');
+      expect(content).toContain('schtasks /Run /TN "OpenCraft Gateway (custom)"');
       expectWindowsRestartWaitOrdering(content);
       await cleanupScript(scriptPath);
     });
@@ -169,7 +169,7 @@ describe("restart-helper", () => {
       const { scriptPath, content } = await prepareAndReadScript({
         OPENCLAW_PROFILE: "production",
       });
-      expect(content).toContain("openclaw-gateway-production.service");
+      expect(content).toContain("opencraft-gateway-production.service");
       await cleanupScript(scriptPath);
     });
 
@@ -190,7 +190,7 @@ describe("restart-helper", () => {
       const { scriptPath, content } = await prepareAndReadScript({
         OPENCLAW_PROFILE: "production",
       });
-      expect(content).toContain('schtasks /End /TN "OpenClaw Gateway (production)"');
+      expect(content).toContain('schtasks /End /TN "OpenCraft Gateway (production)"');
       expectWindowsRestartWaitOrdering(content);
       await cleanupScript(scriptPath);
     });
@@ -258,10 +258,10 @@ describe("restart-helper", () => {
 
       const { scriptPath, content } = await prepareAndReadScript({
         HOME: "/Users/testuser",
-        OPENCLAW_LAUNCHD_LABEL: "ai.openclaw.it's-a-test",
+        OPENCLAW_LAUNCHD_LABEL: "ai.opencraft.it's-a-test",
       });
       // The plist path must also shell-escape the label to prevent injection
-      expect(content).toContain("ai.openclaw.it'\\''s-a-test.plist");
+      expect(content).toContain("ai.opencraft.it'\\''s-a-test.plist");
       await cleanupScript(scriptPath);
     });
 
