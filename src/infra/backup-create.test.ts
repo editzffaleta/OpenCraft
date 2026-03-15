@@ -4,8 +4,8 @@ import { formatBackupCreateSummary, type BackupCreateResult } from "./backup-cre
 function makeResult(overrides: Partial<BackupCreateResult> = {}): BackupCreateResult {
   return {
     createdAt: "2026-01-01T00:00:00.000Z",
-    archiveRoot: "openclaw-backup-2026-01-01",
-    archivePath: "/tmp/openclaw-backup.tar.gz",
+    archiveRoot: "opencraft-backup-2026-01-01",
+    archivePath: "/tmp/opencraft-backup.tar.gz",
     dryRun: false,
     includeWorkspace: true,
     onlyConfig: false,
@@ -26,28 +26,28 @@ describe("formatBackupCreateSummary", () => {
             kind: "state",
             sourcePath: "/state",
             archivePath: "archive/state",
-            displayPath: "~/.openclaw",
+            displayPath: "~/.opencraft",
           },
         ],
         skipped: [
           {
             kind: "workspace",
             sourcePath: "/workspace",
-            displayPath: "~/Projects/openclaw",
+            displayPath: "~/Projects/opencraft",
             reason: "covered",
-            coveredBy: "~/.openclaw",
+            coveredBy: "~/.opencraft",
           },
         ],
       }),
     );
 
     expect(lines).toEqual([
-      "Backup archive: /tmp/openclaw-backup.tar.gz",
+      "Backup archive: /tmp/opencraft-backup.tar.gz",
       "Included 1 path:",
-      "- state: ~/.openclaw",
+      "- state: ~/.opencraft",
       "Skipped 1 path:",
-      "- workspace: ~/Projects/openclaw (covered by ~/.openclaw)",
-      "Created /tmp/openclaw-backup.tar.gz",
+      "- workspace: ~/Projects/opencraft (covered by ~/.opencraft)",
+      "Created /tmp/opencraft-backup.tar.gz",
       "Archive verification: passed",
     ]);
   });
@@ -61,23 +61,23 @@ describe("formatBackupCreateSummary", () => {
             kind: "config",
             sourcePath: "/config",
             archivePath: "archive/config",
-            displayPath: "~/.openclaw/config.json",
+            displayPath: "~/.opencraft/config.json",
           },
           {
             kind: "credentials",
             sourcePath: "/oauth",
             archivePath: "archive/oauth",
-            displayPath: "~/.openclaw/oauth",
+            displayPath: "~/.opencraft/oauth",
           },
         ],
       }),
     );
 
     expect(lines).toEqual([
-      "Backup archive: /tmp/openclaw-backup.tar.gz",
+      "Backup archive: /tmp/opencraft-backup.tar.gz",
       "Included 2 paths:",
-      "- config: ~/.openclaw/config.json",
-      "- credentials: ~/.openclaw/oauth",
+      "- config: ~/.opencraft/config.json",
+      "- credentials: ~/.opencraft/oauth",
       "Dry run only; archive was not written.",
     ]);
   });

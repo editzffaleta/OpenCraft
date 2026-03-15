@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import {
   activateSecretsRuntimeSnapshot,
   clearSecretsRuntimeSnapshot,
   prepareSecretsRuntimeSnapshot,
 } from "../secrets/runtime.js";
 import { withFetchPreconnect } from "../test-utils/fetch-mock.js";
-import { createOpenClawTools } from "./openclaw-tools.js";
+import { createOpenCraftTools } from "./opencraft-tools.js";
 
 vi.mock("../plugins/tools.js", () => ({
   resolvePluginTools: () => [],
 }));
 
-function asConfig(value: unknown): OpenClawConfig {
-  return value as OpenClawConfig;
+function asConfig(value: unknown): OpenCraftConfig {
+  return value as OpenCraftConfig;
 }
 
-function findTool(name: string, config: OpenClawConfig) {
-  const allTools = createOpenClawTools({ config, sandboxed: true });
+function findTool(name: string, config: OpenCraftConfig) {
+  const allTools = createOpenCraftTools({ config, sandboxed: true });
   const tool = allTools.find((candidate) => candidate.name === name);
   expect(tool).toBeDefined();
   if (!tool) {
@@ -32,18 +32,18 @@ function makeHeaders(map: Record<string, string>): { get: (key: string) => strin
   };
 }
 
-async function prepareAndActivate(params: { config: OpenClawConfig; env?: NodeJS.ProcessEnv }) {
+async function prepareAndActivate(params: { config: OpenCraftConfig; env?: NodeJS.ProcessEnv }) {
   const snapshot = await prepareSecretsRuntimeSnapshot({
     config: params.config,
     env: params.env,
-    agentDirs: ["/tmp/openclaw-agent-main"],
+    agentDirs: ["/tmp/opencraft-agent-main"],
     loadAuthStore: () => ({ version: 1, profiles: {} }),
   });
   activateSecretsRuntimeSnapshot(snapshot);
   return snapshot;
 }
 
-describe("openclaw tools runtime web metadata wiring", () => {
+describe("opencraft tools runtime web metadata wiring", () => {
   const priorFetch = global.fetch;
 
   afterEach(() => {

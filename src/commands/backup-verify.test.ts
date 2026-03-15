@@ -8,7 +8,7 @@ import { buildBackupArchiveRoot } from "./backup-shared.js";
 import { backupVerifyCommand } from "./backup-verify.js";
 import { backupCreateCommand } from "./backup.js";
 
-const TEST_ARCHIVE_ROOT = "2026-03-09T00-00-00.000Z-openclaw-backup";
+const TEST_ARCHIVE_ROOT = "2026-03-09T00-00-00.000Z-opencraft-backup";
 
 const createBackupVerifyRuntime = () => ({
   log: vi.fn(),
@@ -98,7 +98,7 @@ describe("backupVerifyCommand", () => {
   let tempHome: TempHomeEnv;
 
   beforeEach(async () => {
-    tempHome = await createTempHomeEnv("openclaw-backup-verify-test-");
+    tempHome = await createTempHomeEnv("opencraft-backup-verify-test-");
   });
 
   afterEach(async () => {
@@ -107,7 +107,7 @@ describe("backupVerifyCommand", () => {
 
   it("verifies an archive created by backup create", async () => {
     const stateDir = path.join(tempHome.home, ".opencraft");
-    const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-verify-out-"));
+    const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-verify-out-"));
     try {
       await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
       await fs.writeFile(path.join(stateDir, "state.txt"), "hello\n", "utf8");
@@ -126,7 +126,7 @@ describe("backupVerifyCommand", () => {
   });
 
   it("fails when the archive does not contain a manifest", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-no-manifest-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-no-manifest-"));
     const archivePath = path.join(tempDir, "broken.tar.gz");
     try {
       const root = path.join(tempDir, "root");
@@ -144,10 +144,10 @@ describe("backupVerifyCommand", () => {
   });
 
   it("fails when the manifest references a missing asset payload", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-missing-asset-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-missing-asset-"));
     const archivePath = path.join(tempDir, "broken.tar.gz");
     try {
-      const rootName = "2026-03-09T00-00-00.000Z-openclaw-backup";
+      const rootName = "2026-03-09T00-00-00.000Z-opencraft-backup";
       const root = path.join(tempDir, rootName);
       await fs.mkdir(root, { recursive: true });
       const manifest = {
@@ -184,7 +184,7 @@ describe("backupVerifyCommand", () => {
     const traversalPath = `${TEST_ARCHIVE_ROOT}/payload/../escaped.txt`;
     await withBrokenArchiveFixture(
       {
-        tempPrefix: "openclaw-backup-traversal-",
+        tempPrefix: "opencraft-backup-traversal-",
         manifestAssetArchivePath: traversalPath,
         payloads: [{ fileName: "payload.txt", contents: "payload\n", archivePath: traversalPath }],
       },
@@ -201,7 +201,7 @@ describe("backupVerifyCommand", () => {
     const invalidPath = `${TEST_ARCHIVE_ROOT}/payload\\..\\escaped.txt`;
     await withBrokenArchiveFixture(
       {
-        tempPrefix: "openclaw-backup-backslash-",
+        tempPrefix: "opencraft-backup-backslash-",
         manifestAssetArchivePath: invalidPath,
         payloads: [{ fileName: "payload.txt", contents: "payload\n", archivePath: invalidPath }],
       },
@@ -216,11 +216,11 @@ describe("backupVerifyCommand", () => {
 
   it("ignores payload manifest.json files when locating the backup manifest", async () => {
     const stateDir = path.join(tempHome.home, ".opencraft");
-    const externalWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
+    const externalWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
     const configPath = path.join(tempHome.home, "custom-config.json");
-    const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-verify-out-"));
+    const archiveDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-verify-out-"));
     try {
-      process.env.OPENCLAW_CONFIG_PATH = configPath;
+      process.env.OPENCRAFT_CONFIG_PATH = configPath;
       await fs.writeFile(
         configPath,
         JSON.stringify({
@@ -251,7 +251,7 @@ describe("backupVerifyCommand", () => {
       expect(verified.ok).toBe(true);
       expect(verified.assetCount).toBeGreaterThanOrEqual(2);
     } finally {
-      delete process.env.OPENCLAW_CONFIG_PATH;
+      delete process.env.OPENCRAFT_CONFIG_PATH;
       await fs.rm(externalWorkspace, { recursive: true, force: true });
       await fs.rm(archiveDir, { recursive: true, force: true });
     }
@@ -261,7 +261,7 @@ describe("backupVerifyCommand", () => {
     const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.opencraft/payload.txt`;
     await withBrokenArchiveFixture(
       {
-        tempPrefix: "openclaw-backup-duplicate-manifest-",
+        tempPrefix: "opencraft-backup-duplicate-manifest-",
         manifestAssetArchivePath: payloadArchivePath,
         payloads: [{ fileName: "payload.txt", contents: "payload\n" }],
         buildTarEntries: ({ manifestPath, payloadPaths }) => [
@@ -283,7 +283,7 @@ describe("backupVerifyCommand", () => {
     const payloadArchivePath = `${TEST_ARCHIVE_ROOT}/payload/posix/tmp/.opencraft/payload.txt`;
     await withBrokenArchiveFixture(
       {
-        tempPrefix: "openclaw-backup-duplicate-payload-",
+        tempPrefix: "opencraft-backup-duplicate-payload-",
         manifestAssetArchivePath: payloadArchivePath,
         payloads: [
           { fileName: "payload-a.txt", contents: "payload-a\n", archivePath: payloadArchivePath },

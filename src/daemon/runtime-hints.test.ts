@@ -7,15 +7,15 @@ describe("buildPlatformRuntimeLogHints", () => {
       buildPlatformRuntimeLogHints({
         platform: "darwin",
         env: {
-          OPENCLAW_STATE_DIR: "/tmp/openclaw-state",
-          OPENCLAW_LOG_PREFIX: "gateway",
+          OPENCRAFT_STATE_DIR: "/tmp/opencraft-state",
+          OPENCRAFT_LOG_PREFIX: "gateway",
         },
         systemdServiceName: "opencraft-gateway",
         windowsTaskName: "OpenCraft Gateway",
       }),
     ).toEqual([
-      "Launchd stdout (if installed): /tmp/openclaw-state/logs/gateway.log",
-      "Launchd stderr (if installed): /tmp/openclaw-state/logs/gateway.err.log",
+      "Launchd stdout (if installed): /tmp/opencraft-state/logs/gateway.log",
+      "Launchd stderr (if installed): /tmp/opencraft-state/logs/gateway.err.log",
     ]);
   });
 
@@ -26,7 +26,7 @@ describe("buildPlatformRuntimeLogHints", () => {
         systemdServiceName: "opencraft-gateway",
         windowsTaskName: "OpenCraft Gateway",
       }),
-    ).toEqual(["Logs: journalctl --user -u openclaw-gateway.service -n 200 --no-pager"]);
+    ).toEqual(["Logs: journalctl --user -u opencraft-gateway.service -n 200 --no-pager"]);
     expect(
       buildPlatformRuntimeLogHints({
         platform: "win32",
@@ -44,28 +44,28 @@ describe("buildPlatformServiceStartHints", () => {
         platform: "darwin",
         installCommand: "opencraft gateway install",
         startCommand: "opencraft gateway",
-        launchAgentPlistPath: "~/Library/LaunchAgents/com.openclaw.gateway.plist",
+        launchAgentPlistPath: "~/Library/LaunchAgents/com.opencraft.gateway.plist",
         systemdServiceName: "opencraft-gateway",
         windowsTaskName: "OpenCraft Gateway",
       }),
     ).toEqual([
       "opencraft gateway install",
       "opencraft gateway",
-      "launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.openclaw.gateway.plist",
+      "launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.opencraft.gateway.plist",
     ]);
     expect(
       buildPlatformServiceStartHints({
         platform: "linux",
         installCommand: "opencraft gateway install",
         startCommand: "opencraft gateway",
-        launchAgentPlistPath: "~/Library/LaunchAgents/com.openclaw.gateway.plist",
+        launchAgentPlistPath: "~/Library/LaunchAgents/com.opencraft.gateway.plist",
         systemdServiceName: "opencraft-gateway",
         windowsTaskName: "OpenCraft Gateway",
       }),
     ).toEqual([
       "opencraft gateway install",
       "opencraft gateway",
-      "systemctl --user start openclaw-gateway.service",
+      "systemctl --user start opencraft-gateway.service",
     ]);
   });
 });

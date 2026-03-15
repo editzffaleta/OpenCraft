@@ -55,7 +55,7 @@ const browserConfigMocks = vi.hoisted(() => ({
     enabled: true,
     controlPort: 18791,
     profiles: {},
-    defaultProfile: "openclaw",
+    defaultProfile: "opencraft",
   })),
   resolveProfile: vi.fn((resolved: Record<string, unknown>, name: string) => {
     const profile = (resolved.profiles as Record<string, Record<string, unknown>> | undefined)?.[
@@ -69,7 +69,7 @@ const browserConfigMocks = vi.hoisted(() => ({
         ? "extension"
         : profile.driver === "existing-session"
           ? "existing-session"
-          : "openclaw";
+          : "opencraft";
     if (driver === "existing-session") {
       return {
         name,
@@ -159,14 +159,14 @@ function resetBrowserToolMocks() {
     enabled: true,
     controlPort: 18791,
     profiles: {},
-    defaultProfile: "openclaw",
+    defaultProfile: "opencraft",
   });
   nodesUtilsMocks.listNodes.mockResolvedValue([]);
 }
 
 function setResolvedBrowserProfiles(
   profiles: Record<string, Record<string, unknown>>,
-  defaultProfile = "openclaw",
+  defaultProfile = "opencraft",
 ) {
   browserConfigMocks.resolveBrowserConfig.mockReturnValue({
     enabled: true,

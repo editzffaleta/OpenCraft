@@ -4,9 +4,9 @@ import { expect } from "vitest";
 export const IS_WINDOWS = process.platform === "win32";
 
 export function resolveConfigPathFromTempState(fileName = "opencraft.json"): string {
-  const stateDir = process.env.OPENCLAW_STATE_DIR?.trim();
+  const stateDir = process.env.OPENCRAFT_STATE_DIR?.trim();
   if (!stateDir) {
-    throw new Error("Expected OPENCLAW_STATE_DIR to be set by withTempHome");
+    throw new Error("Expected OPENCRAFT_STATE_DIR to be set by withTempHome");
   }
   return path.join(stateDir, fileName);
 }

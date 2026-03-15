@@ -7,12 +7,12 @@ describe("openrouter-model-capabilities", () => {
   afterEach(() => {
     vi.resetModules();
     vi.unstubAllGlobals();
-    delete process.env.OPENCLAW_STATE_DIR;
+    delete process.env.OPENCRAFT_STATE_DIR;
   });
 
   it("uses top-level OpenRouter max token fields when top_provider is absent", async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), "openclaw-openrouter-capabilities-"));
-    process.env.OPENCLAW_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), "opencraft-openrouter-capabilities-"));
+    process.env.OPENCRAFT_STATE_DIR = stateDir;
 
     vi.stubGlobal(
       "fetch",
@@ -71,8 +71,8 @@ describe("openrouter-model-capabilities", () => {
   });
 
   it("does not refetch immediately after an awaited miss for the same model id", async () => {
-    const stateDir = mkdtempSync(join(tmpdir(), "openclaw-openrouter-capabilities-"));
-    process.env.OPENCLAW_STATE_DIR = stateDir;
+    const stateDir = mkdtempSync(join(tmpdir(), "opencraft-openrouter-capabilities-"));
+    process.env.OPENCRAFT_STATE_DIR = stateDir;
 
     const fetchSpy = vi.fn(
       async () =>

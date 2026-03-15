@@ -7,7 +7,7 @@ describe("shortenText", () => {
   });
 
   it("truncates and appends ellipsis when over limit", () => {
-    expect(shortenText("openclaw-status-output", 10)).toBe("openclaw-…");
+    expect(shortenText("opencraft-status-output", 10)).toBe("opencraft-…");
   });
 
   it("counts multi-byte characters correctly", () => {

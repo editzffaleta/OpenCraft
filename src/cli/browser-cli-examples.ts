@@ -24,7 +24,7 @@ export const browserActionExamples = [
   "opencraft browser hover 44",
   "opencraft browser drag 10 11",
   "opencraft browser select 9 OptionA OptionB",
-  "opencraft browser upload /tmp/openclaw/uploads/file.pdf",
+  "opencraft browser upload /tmp/opencraft/uploads/file.pdf",
   'opencraft browser fill --fields \'[{"ref":"1","value":"Ada"}]\'',
   "opencraft browser dialog --accept",
   'opencraft browser wait --text "Done"',

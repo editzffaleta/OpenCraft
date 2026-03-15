@@ -24,19 +24,19 @@ describe("update global helpers", () => {
   });
 
   it("prefers explicit package spec overrides", () => {
-    envSnapshot = captureEnv(["OPENCLAW_UPDATE_PACKAGE_SPEC"]);
-    process.env.OPENCLAW_UPDATE_PACKAGE_SPEC = "file:/tmp/openclaw.tgz";
+    envSnapshot = captureEnv(["OPENCRAFT_UPDATE_PACKAGE_SPEC"]);
+    process.env.OPENCRAFT_UPDATE_PACKAGE_SPEC = "file:/tmp/opencraft.tgz";
 
-    expect(resolveGlobalInstallSpec({ packageName: "openclaw", tag: "latest" })).toBe(
-      "file:/tmp/openclaw.tgz",
+    expect(resolveGlobalInstallSpec({ packageName: "opencraft", tag: "latest" })).toBe(
+      "file:/tmp/opencraft.tgz",
     );
     expect(
       resolveGlobalInstallSpec({
-        packageName: "openclaw",
+        packageName: "opencraft",
         tag: "beta",
-        env: { OPENCLAW_UPDATE_PACKAGE_SPEC: "openclaw@next" },
+        env: { OPENCRAFT_UPDATE_PACKAGE_SPEC: "opencraft@next" },
       }),
-    ).toBe("openclaw@next");
+    ).toBe("opencraft@next");
   });
 
   it("resolves global roots and package roots from runner output", async () => {
@@ -56,19 +56,19 @@ describe("update global helpers", () => {
       path.join(".bun", "install", "global", "node_modules"),
     );
     await expect(resolveGlobalPackageRoot("npm", runCommand, 1000)).resolves.toBe(
-      path.join("/tmp/npm-root", "openclaw"),
+      path.join("/tmp/npm-root", "opencraft"),
     );
   });
 
   it("detects install managers from resolved roots and on-disk presence", async () => {
-    const base = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-update-global-"));
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-update-global-"));
     const npmRoot = path.join(base, "npm-root");
     const pnpmRoot = path.join(base, "pnpm-root");
     const bunRoot = path.join(base, ".bun", "install", "global", "node_modules");
-    const pkgRoot = path.join(pnpmRoot, "openclaw");
+    const pkgRoot = path.join(pnpmRoot, "opencraft");
     await fs.mkdir(pkgRoot, { recursive: true });
-    await fs.mkdir(path.join(npmRoot, "openclaw"), { recursive: true });
-    await fs.mkdir(path.join(bunRoot, "openclaw"), { recursive: true });
+    await fs.mkdir(path.join(npmRoot, "opencraft"), { recursive: true });
+    await fs.mkdir(path.join(bunRoot, "opencraft"), { recursive: true });
 
     envSnapshot = captureEnv(["BUN_INSTALL"]);
     process.env.BUN_INSTALL = path.join(base, ".bun");
@@ -88,63 +88,63 @@ describe("update global helpers", () => {
     );
     await expect(detectGlobalInstallManagerByPresence(runCommand, 1000)).resolves.toBe("npm");
 
-    await fs.rm(path.join(npmRoot, "openclaw"), { recursive: true, force: true });
-    await fs.rm(path.join(pnpmRoot, "openclaw"), { recursive: true, force: true });
+    await fs.rm(path.join(npmRoot, "opencraft"), { recursive: true, force: true });
+    await fs.rm(path.join(pnpmRoot, "opencraft"), { recursive: true, force: true });
     await expect(detectGlobalInstallManagerByPresence(runCommand, 1000)).resolves.toBe("bun");
   });
 
   it("builds install argv and npm fallback argv", () => {
-    expect(globalInstallArgs("npm", "openclaw@latest")).toEqual([
+    expect(globalInstallArgs("npm", "opencraft@latest")).toEqual([
       "npm",
       "i",
       "-g",
-      "openclaw@latest",
+      "opencraft@latest",
       "--no-fund",
       "--no-audit",
       "--loglevel=error",
     ]);
-    expect(globalInstallArgs("pnpm", "openclaw@latest")).toEqual([
+    expect(globalInstallArgs("pnpm", "opencraft@latest")).toEqual([
       "pnpm",
       "add",
       "-g",
-      "openclaw@latest",
+      "opencraft@latest",
     ]);
-    expect(globalInstallArgs("bun", "openclaw@latest")).toEqual([
+    expect(globalInstallArgs("bun", "opencraft@latest")).toEqual([
       "bun",
       "add",
       "-g",
-      "openclaw@latest",
+      "opencraft@latest",
     ]);
 
-    expect(globalInstallFallbackArgs("npm", "openclaw@latest")).toEqual([
+    expect(globalInstallFallbackArgs("npm", "opencraft@latest")).toEqual([
       "npm",
       "i",
       "-g",
-      "openclaw@latest",
+      "opencraft@latest",
       "--omit=optional",
       "--no-fund",
       "--no-audit",
       "--loglevel=error",
     ]);
-    expect(globalInstallFallbackArgs("pnpm", "openclaw@latest")).toBeNull();
+    expect(globalInstallFallbackArgs("pnpm", "opencraft@latest")).toBeNull();
   });
 
   it("cleans only renamed package directories", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-update-cleanup-"));
-    await fs.mkdir(path.join(root, ".openclaw-123"), { recursive: true });
-    await fs.mkdir(path.join(root, ".openclaw-456"), { recursive: true });
-    await fs.writeFile(path.join(root, ".openclaw-file"), "nope", "utf8");
-    await fs.mkdir(path.join(root, "openclaw"), { recursive: true });
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-update-cleanup-"));
+    await fs.mkdir(path.join(root, ".opencraft-123"), { recursive: true });
+    await fs.mkdir(path.join(root, ".opencraft-456"), { recursive: true });
+    await fs.writeFile(path.join(root, ".opencraft-file"), "nope", "utf8");
+    await fs.mkdir(path.join(root, "opencraft"), { recursive: true });
 
     await expect(
       cleanupGlobalRenameDirs({
         globalRoot: root,
-        packageName: "openclaw",
+        packageName: "opencraft",
       }),
     ).resolves.toEqual({
-      removed: [".openclaw-123", ".openclaw-456"],
+      removed: [".opencraft-123", ".opencraft-456"],
     });
-    await expect(fs.stat(path.join(root, "openclaw"))).resolves.toBeDefined();
-    await expect(fs.stat(path.join(root, ".openclaw-file"))).resolves.toBeDefined();
+    await expect(fs.stat(path.join(root, "opencraft"))).resolves.toBeDefined();
+    await expect(fs.stat(path.join(root, ".opencraft-file"))).resolves.toBeDefined();
   });
 });

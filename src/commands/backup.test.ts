@@ -23,7 +23,7 @@ describe("backup commands", () => {
   let previousCwd: string;
 
   beforeEach(async () => {
-    tempHome = await createTempHomeEnv("openclaw-backup-test-");
+    tempHome = await createTempHomeEnv("opencraft-backup-test-");
     previousCwd = process.cwd();
     backupVerifyCommandMock.mockReset();
     backupVerifyCommandMock.mockResolvedValue({
@@ -53,7 +53,7 @@ describe("backup commands", () => {
   async function withInvalidWorkspaceBackupConfig<T>(fn: (runtime: RuntimeEnv) => Promise<T>) {
     const stateDir = path.join(tempHome.home, ".opencraft");
     const configPath = path.join(tempHome.home, "custom-config.json");
-    process.env.OPENCLAW_CONFIG_PATH = configPath;
+    process.env.OPENCRAFT_CONFIG_PATH = configPath;
     await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
     await fs.writeFile(configPath, '{"agents": { defaults: { workspace: ', "utf8");
     const runtime = createRuntime();
@@ -61,7 +61,7 @@ describe("backup commands", () => {
     try {
       return await fn(runtime);
     } finally {
-      delete process.env.OPENCLAW_CONFIG_PATH;
+      delete process.env.OPENCRAFT_CONFIG_PATH;
     }
   }
 
@@ -94,7 +94,7 @@ describe("backup commands", () => {
 
     const stateDir = path.join(tempHome.home, ".opencraft");
     const workspaceDir = path.join(stateDir, "workspace");
-    const symlinkDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-link-"));
+    const symlinkDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-link-"));
     const workspaceLink = path.join(symlinkDir, "ws-link");
     try {
       await fs.mkdir(workspaceDir, { recursive: true });
@@ -121,11 +121,11 @@ describe("backup commands", () => {
 
   it("creates an archive with a manifest and external workspace payload", async () => {
     const stateDir = path.join(tempHome.home, ".opencraft");
-    const externalWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
+    const externalWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
     const configPath = path.join(tempHome.home, "custom-config.json");
-    const backupDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backups-"));
+    const backupDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backups-"));
     try {
-      process.env.OPENCLAW_CONFIG_PATH = configPath;
+      process.env.OPENCRAFT_CONFIG_PATH = configPath;
       await fs.writeFile(
         configPath,
         JSON.stringify({
@@ -153,7 +153,7 @@ describe("backup commands", () => {
         path.join(backupDir, `${buildBackupArchiveRoot(nowMs)}.tar.gz`),
       );
 
-      const extractDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-extract-"));
+      const extractDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-extract-"));
       try {
         await tar.x({ file: result.archivePath, cwd: extractDir, gzip: true });
         const archiveRoot = path.join(extractDir, buildBackupArchiveRoot(nowMs));
@@ -194,7 +194,7 @@ describe("backup commands", () => {
         await fs.rm(extractDir, { recursive: true, force: true });
       }
     } finally {
-      delete process.env.OPENCLAW_CONFIG_PATH;
+      delete process.env.OPENCRAFT_CONFIG_PATH;
       await fs.rm(externalWorkspace, { recursive: true, force: true });
       await fs.rm(backupDir, { recursive: true, force: true });
     }
@@ -203,7 +203,7 @@ describe("backup commands", () => {
   it("optionally verifies the archive after writing it", async () => {
     const stateDir = path.join(tempHome.home, ".opencraft");
     const archiveDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "openclaw-backup-verify-on-create-"),
+      path.join(os.tmpdir(), "opencraft-backup-verify-on-create-"),
     );
     try {
       await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
@@ -245,7 +245,7 @@ describe("backup commands", () => {
     }
 
     const stateDir = path.join(tempHome.home, ".opencraft");
-    const symlinkDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-link-"));
+    const symlinkDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-link-"));
     const symlinkPath = path.join(symlinkDir, "linked-state");
     try {
       await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
@@ -289,7 +289,7 @@ describe("backup commands", () => {
 
     const stateDir = path.join(tempHome.home, ".opencraft");
     const workspaceDir = path.join(stateDir, "workspace");
-    const linkParent = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-backup-cwd-link-"));
+    const linkParent = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-backup-cwd-link-"));
     const workspaceLink = path.join(linkParent, "workspace-link");
     try {
       await fs.writeFile(path.join(stateDir, "opencraft.json"), JSON.stringify({}), "utf8");
@@ -374,7 +374,7 @@ describe("backup commands", () => {
 
   it("allows config-only backups even when the config file is invalid", async () => {
     const configPath = path.join(tempHome.home, "custom-config.json");
-    process.env.OPENCLAW_CONFIG_PATH = configPath;
+    process.env.OPENCRAFT_CONFIG_PATH = configPath;
     await fs.writeFile(configPath, '{"agents": { defaults: { workspace: ', "utf8");
 
     const runtime = createRuntime();
@@ -388,7 +388,7 @@ describe("backup commands", () => {
       expect(result.assets).toHaveLength(1);
       expect(result.assets[0]?.kind).toBe("config");
     } finally {
-      delete process.env.OPENCLAW_CONFIG_PATH;
+      delete process.env.OPENCRAFT_CONFIG_PATH;
     }
   });
 });

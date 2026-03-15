@@ -72,14 +72,14 @@ describe("detectLinuxSdBackedStateDir", () => {
       "30 24 179:5 / /mnt/slow rw,relatime - ext4 /dev/mmcblk1p1 rw",
     ].join("\n");
 
-    const result = detectLinuxSdBackedStateDir("/tmp/openclaw-state", {
+    const result = detectLinuxSdBackedStateDir("/tmp/opencraft-state", {
       platform: "linux",
       mountInfo,
-      resolveRealPath: () => "/mnt/slow/openclaw/.opencraft",
+      resolveRealPath: () => "/mnt/slow/opencraft/.opencraft",
     });
 
     expect(result).toEqual({
-      path: "/mnt/slow/openclaw/.opencraft",
+      path: "/mnt/slow/opencraft/.opencraft",
       mountPoint: "/mnt/slow",
       fsType: "ext4",
       source: "/dev/mmcblk1p1",

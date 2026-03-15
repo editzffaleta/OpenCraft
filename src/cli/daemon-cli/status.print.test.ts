@@ -38,7 +38,7 @@ vi.mock("../../infra/wsl.js", () => ({
 }));
 
 vi.mock("../../logging.js", () => ({
-  getResolvedLoggerSettings: () => ({ file: "/tmp/openclaw.log" }),
+  getResolvedLoggerSettings: () => ({ file: "/tmp/opencraft.log" }),
 }));
 
 vi.mock("./shared.js", () => ({

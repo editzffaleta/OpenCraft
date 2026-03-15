@@ -1,5 +1,5 @@
 import { inspectSlackAccount } from "../../../extensions/slack/src/account-inspect.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import {
   resolveChannelGroupRequireMention,
   resolveChannelGroupToolsPolicy,
@@ -41,7 +41,7 @@ function parseTelegramGroupId(value?: string | null) {
 }
 
 function resolveTelegramRequireMention(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   chatId?: string;
   topicId?: string;
 }): boolean | undefined {

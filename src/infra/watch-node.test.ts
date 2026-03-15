@@ -28,7 +28,7 @@ describe("watch-node script", () => {
 
     const runPromise = runWatchMain({
       args: ["gateway", "--force"],
-      cwd: "/tmp/openclaw",
+      cwd: "/tmp/opencraft",
       createWatcher,
       env: { PATH: "/usr/bin" },
       now: () => 1700000000000,
@@ -56,13 +56,13 @@ describe("watch-node script", () => {
       "/usr/local/bin/node",
       ["scripts/run-node.mjs", "gateway", "--force"],
       expect.objectContaining({
-        cwd: "/tmp/openclaw",
+        cwd: "/tmp/opencraft",
         stdio: "inherit",
         env: expect.objectContaining({
           PATH: "/usr/bin",
-          OPENCLAW_WATCH_MODE: "1",
-          OPENCLAW_WATCH_SESSION: "1700000000000-4242",
-          OPENCLAW_WATCH_COMMAND: "gateway --force",
+          OPENCRAFT_WATCH_MODE: "1",
+          OPENCRAFT_WATCH_SESSION: "1700000000000-4242",
+          OPENCRAFT_WATCH_COMMAND: "gateway --force",
         }),
       }),
     );

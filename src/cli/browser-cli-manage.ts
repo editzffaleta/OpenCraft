@@ -457,7 +457,7 @@ export function registerBrowserManageCommands(
     .option("--cdp-url <url>", "CDP URL for remote Chrome (http/https)")
     .option(
       "--driver <driver>",
-      "Profile driver (openclaw|extension|existing-session). Default: opencraft",
+      "Profile driver (opencraft|extension|existing-session). Default: opencraft",
     )
     .action(
       async (opts: { name: string; color?: string; cdpUrl?: string; driver?: string }, cmd) => {

@@ -18,7 +18,7 @@ export function isGatewayArgv(args: string[], opts?: { allowGatewayBinary?: bool
   const entryCandidates = [
     "dist/index.js",
     "dist/entry.js",
-    "openclaw.mjs",
+    "opencraft.mjs",
     "scripts/run-node.mjs",
     "src/index.ts",
   ];
@@ -28,8 +28,8 @@ export function isGatewayArgv(args: string[], opts?: { allowGatewayBinary?: bool
 
   const exe = (normalized[0] ?? "").replace(/\.(bat|cmd|exe)$/i, "");
   return (
-    exe.endsWith("/openclaw") ||
-    exe === "openclaw" ||
-    (opts?.allowGatewayBinary === true && exe.endsWith("/openclaw-gateway"))
+    exe.endsWith("/opencraft") ||
+    exe === "opencraft" ||
+    (opts?.allowGatewayBinary === true && exe.endsWith("/opencraft-gateway"))
   );
 }

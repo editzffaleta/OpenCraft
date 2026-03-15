@@ -1,16 +1,16 @@
-export const OPENCLAW_CLI_ENV_VAR = "OPENCLAW_CLI";
-export const OPENCLAW_CLI_ENV_VALUE = "1";
+export const OPENCRAFT_CLI_ENV_VAR = "OPENCRAFT_CLI";
+export const OPENCRAFT_CLI_ENV_VALUE = "1";
 
-export function markOpenClawExecEnv<T extends Record<string, string | undefined>>(env: T): T {
+export function markOpenCraftExecEnv<T extends Record<string, string | undefined>>(env: T): T {
   return {
     ...env,
-    [OPENCLAW_CLI_ENV_VAR]: OPENCLAW_CLI_ENV_VALUE,
+    [OPENCRAFT_CLI_ENV_VAR]: OPENCRAFT_CLI_ENV_VALUE,
   };
 }
 
-export function ensureOpenClawExecMarkerOnProcess(
+export function ensureOpenCraftExecMarkerOnProcess(
   env: NodeJS.ProcessEnv = process.env,
 ): NodeJS.ProcessEnv {
-  env[OPENCLAW_CLI_ENV_VAR] = OPENCLAW_CLI_ENV_VALUE;
+  env[OPENCRAFT_CLI_ENV_VAR] = OPENCRAFT_CLI_ENV_VALUE;
   return env;
 }

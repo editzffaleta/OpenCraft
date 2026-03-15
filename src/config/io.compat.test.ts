@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createConfigIO } from "./io.js";
 
 async function withTempHome(run: (home: string) => Promise<void>): Promise<void> {
-  const home = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-config-"));
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-config-"));
   try {
     await run(home);
   } finally {
@@ -34,7 +34,7 @@ function createIoForHome(home: string, env: NodeJS.ProcessEnv = {} as NodeJS.Pro
 }
 
 describe("config io paths", () => {
-  it("uses ~/.opencraft/openclaw.json when config exists", async () => {
+  it("uses ~/.opencraft/opencraft.json when config exists", async () => {
     await withTempHome(async (home) => {
       const configPath = await writeConfig(home, ".opencraft", 19001);
       const io = createIoForHome(home);
@@ -43,27 +43,27 @@ describe("config io paths", () => {
     });
   });
 
-  it("defaults to ~/.opencraft/openclaw.json when config is missing", async () => {
+  it("defaults to ~/.opencraft/opencraft.json when config is missing", async () => {
     await withTempHome(async (home) => {
       const io = createIoForHome(home);
       expect(io.configPath).toBe(path.join(home, ".opencraft", "opencraft.json"));
     });
   });
 
-  it("uses OPENCLAW_HOME for default config path", async () => {
+  it("uses OPENCRAFT_HOME for default config path", async () => {
     await withTempHome(async (home) => {
       const io = createConfigIO({
-        env: { OPENCLAW_HOME: path.join(home, "svc-home") } as NodeJS.ProcessEnv,
+        env: { OPENCRAFT_HOME: path.join(home, "svc-home") } as NodeJS.ProcessEnv,
         homedir: () => path.join(home, "ignored-home"),
       });
       expect(io.configPath).toBe(path.join(home, "svc-home", ".opencraft", "opencraft.json"));
     });
   });
 
-  it("honors explicit OPENCLAW_CONFIG_PATH override", async () => {
+  it("honors explicit OPENCRAFT_CONFIG_PATH override", async () => {
     await withTempHome(async (home) => {
       const customPath = await writeConfig(home, ".opencraft", 20002, "custom.json");
-      const io = createIoForHome(home, { OPENCLAW_CONFIG_PATH: customPath } as NodeJS.ProcessEnv);
+      const io = createIoForHome(home, { OPENCRAFT_CONFIG_PATH: customPath } as NodeJS.ProcessEnv);
       expect(io.configPath).toBe(customPath);
       expect(io.loadConfig().gateway?.port).toBe(20002);
     });

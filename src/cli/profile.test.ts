@@ -59,31 +59,31 @@ describe("applyCliProfileEnv", () => {
       env,
       homedir: () => "/home/peter",
     });
-    const expectedStateDir = path.join(path.resolve("/home/peter"), ".openclaw-dev");
-    expect(env.OPENCLAW_PROFILE).toBe("dev");
-    expect(env.OPENCLAW_STATE_DIR).toBe(expectedStateDir);
-    expect(env.OPENCLAW_CONFIG_PATH).toBe(path.join(expectedStateDir, "opencraft.json"));
-    expect(env.OPENCLAW_GATEWAY_PORT).toBe("19001");
+    const expectedStateDir = path.join(path.resolve("/home/peter"), ".opencraft-dev");
+    expect(env.OPENCRAFT_PROFILE).toBe("dev");
+    expect(env.OPENCRAFT_STATE_DIR).toBe(expectedStateDir);
+    expect(env.OPENCRAFT_CONFIG_PATH).toBe(path.join(expectedStateDir, "opencraft.json"));
+    expect(env.OPENCRAFT_GATEWAY_PORT).toBe("19001");
   });
 
   it("does not override explicit env values", () => {
     const env: Record<string, string | undefined> = {
-      OPENCLAW_STATE_DIR: "/custom",
-      OPENCLAW_GATEWAY_PORT: "19099",
+      OPENCRAFT_STATE_DIR: "/custom",
+      OPENCRAFT_GATEWAY_PORT: "19099",
     };
     applyCliProfileEnv({
       profile: "dev",
       env,
       homedir: () => "/home/peter",
     });
-    expect(env.OPENCLAW_STATE_DIR).toBe("/custom");
-    expect(env.OPENCLAW_GATEWAY_PORT).toBe("19099");
-    expect(env.OPENCLAW_CONFIG_PATH).toBe(path.join("/custom", "opencraft.json"));
+    expect(env.OPENCRAFT_STATE_DIR).toBe("/custom");
+    expect(env.OPENCRAFT_GATEWAY_PORT).toBe("19099");
+    expect(env.OPENCRAFT_CONFIG_PATH).toBe(path.join("/custom", "opencraft.json"));
   });
 
-  it("uses OPENCLAW_HOME when deriving profile state dir", () => {
+  it("uses OPENCRAFT_HOME when deriving profile state dir", () => {
     const env: Record<string, string | undefined> = {
-      OPENCLAW_HOME: "/srv/openclaw-home",
+      OPENCRAFT_HOME: "/srv/opencraft-home",
       HOME: "/home/other",
     };
     applyCliProfileEnv({
@@ -92,10 +92,10 @@ describe("applyCliProfileEnv", () => {
       homedir: () => "/home/fallback",
     });
 
-    const resolvedHome = path.resolve("/srv/openclaw-home");
-    expect(env.OPENCLAW_STATE_DIR).toBe(path.join(resolvedHome, ".openclaw-work"));
-    expect(env.OPENCLAW_CONFIG_PATH).toBe(
-      path.join(resolvedHome, ".openclaw-work", "opencraft.json"),
+    const resolvedHome = path.resolve("/srv/opencraft-home");
+    expect(env.OPENCRAFT_STATE_DIR).toBe(path.join(resolvedHome, ".opencraft-work"));
+    expect(env.OPENCRAFT_CONFIG_PATH).toBe(
+      path.join(resolvedHome, ".opencraft-work", "opencraft.json"),
     );
   });
 });
@@ -111,31 +111,31 @@ describe("formatCliCommand", () => {
     {
       name: "profile is default",
       cmd: "opencraft doctor --fix",
-      env: { OPENCLAW_PROFILE: "default" },
+      env: { OPENCRAFT_PROFILE: "default" },
       expected: "opencraft doctor --fix",
     },
     {
       name: "profile is Default (case-insensitive)",
       cmd: "opencraft doctor --fix",
-      env: { OPENCLAW_PROFILE: "Default" },
+      env: { OPENCRAFT_PROFILE: "Default" },
       expected: "opencraft doctor --fix",
     },
     {
       name: "profile is invalid",
       cmd: "opencraft doctor --fix",
-      env: { OPENCLAW_PROFILE: "bad profile" },
+      env: { OPENCRAFT_PROFILE: "bad profile" },
       expected: "opencraft doctor --fix",
     },
     {
       name: "--profile is already present",
       cmd: "opencraft --profile work doctor --fix",
-      env: { OPENCLAW_PROFILE: "work" },
+      env: { OPENCRAFT_PROFILE: "work" },
       expected: "opencraft --profile work doctor --fix",
     },
     {
       name: "--dev is already present",
       cmd: "opencraft --dev doctor",
-      env: { OPENCLAW_PROFILE: "dev" },
+      env: { OPENCRAFT_PROFILE: "dev" },
       expected: "opencraft --dev doctor",
     },
   ])("returns command unchanged when $name", ({ cmd, env, expected }) => {
@@ -143,25 +143,25 @@ describe("formatCliCommand", () => {
   });
 
   it("inserts --profile flag when profile is set", () => {
-    expect(formatCliCommand("opencraft doctor --fix", { OPENCLAW_PROFILE: "work" })).toBe(
+    expect(formatCliCommand("opencraft doctor --fix", { OPENCRAFT_PROFILE: "work" })).toBe(
       "opencraft --profile work doctor --fix",
     );
   });
 
   it("trims whitespace from profile", () => {
-    expect(formatCliCommand("opencraft doctor --fix", { OPENCLAW_PROFILE: "  jbopenclaw  " })).toBe(
-      "opencraft --profile jbopenclaw doctor --fix",
+    expect(formatCliCommand("opencraft doctor --fix", { OPENCRAFT_PROFILE: "  jbopencraft  " })).toBe(
+      "opencraft --profile jbopencraft doctor --fix",
     );
   });
 
   it("handles command with no args after opencraft", () => {
-    expect(formatCliCommand("opencraft", { OPENCLAW_PROFILE: "test" })).toBe(
+    expect(formatCliCommand("opencraft", { OPENCRAFT_PROFILE: "test" })).toBe(
       "opencraft --profile test",
     );
   });
 
   it("handles pnpm wrapper", () => {
-    expect(formatCliCommand("pnpm opencraft doctor", { OPENCLAW_PROFILE: "work" })).toBe(
+    expect(formatCliCommand("pnpm opencraft doctor", { OPENCRAFT_PROFILE: "work" })).toBe(
       "pnpm opencraft --profile work doctor",
     );
   });
