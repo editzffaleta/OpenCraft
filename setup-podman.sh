@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time host setup for rootless OpenClaw in Podman: creates the openclaw
+# One-time host setup for rootless OpenCraft in Podman: creates the opencraft
 # user, builds the image, loads it into that user's Podman store, and installs
 # the launch script. Run from repo root with sudo capability.
 #
@@ -9,16 +9,16 @@
 #   Or set OPENCLAW_PODMAN_QUADLET=1 (or 0) to choose without a flag.
 #
 # After this, start the gateway manually:
-#   ./scripts/run-openclaw-podman.sh launch
-#   ./scripts/run-openclaw-podman.sh launch setup   # onboarding wizard
-# Or as the openclaw user: sudo -u openclaw /home/openclaw/run-openclaw-podman.sh
-# If you used --quadlet, you can also: sudo systemctl --machine openclaw@ --user start openclaw.service
+#   ./scripts/run-opencraft-podman.sh launch
+#   ./scripts/run-opencraft-podman.sh launch setup   # onboarding wizard
+# Or as the opencraft user: sudo -u opencraft /home/opencraft/run-opencraft-podman.sh
+# If you used --quadlet, you can also: sudo systemctl --machine opencraft@ --user start opencraft.service
 set -euo pipefail
 
-OPENCLAW_USER="${OPENCLAW_PODMAN_USER:-openclaw}"
+OPENCLAW_USER="${OPENCLAW_PODMAN_USER:-opencraft}"
 REPO_PATH="${OPENCLAW_REPO_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-RUN_SCRIPT_SRC="$REPO_PATH/scripts/run-openclaw-podman.sh"
-QUADLET_TEMPLATE="$REPO_PATH/scripts/podman/openclaw.container.in"
+RUN_SCRIPT_SRC="$REPO_PATH/scripts/run-opencraft-podman.sh"
+QUADLET_TEMPLATE="$REPO_PATH/scripts/podman/opencraft.container.in"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -97,7 +97,7 @@ run_as_user() {
   fi
 }
 
-run_as_openclaw() {
+run_as_opencraft() {
   # Avoid root writes into $OPENCLAW_HOME (symlink/hardlink/TOCTOU footguns).
   # Anything under the target user's home should be created/modified as that user.
   run_as_user "$OPENCLAW_USER" env HOME="$OPENCLAW_HOME" "$@"
@@ -190,7 +190,7 @@ resolve_nologin_shell() {
   printf '%s' "/usr/sbin/nologin"
 }
 
-# Create openclaw user (non-login, with home) if missing
+# Create opencraft user (non-login, with home) if missing
 if ! user_exists "$OPENCLAW_USER"; then
   NOLOGIN_SHELL="$(resolve_nologin_shell)"
   echo "Creating user $OPENCLAW_USER ($NOLOGIN_SHELL, with home)..."
@@ -228,30 +228,30 @@ if ! grep -q "^${OPENCLAW_USER}:" /etc/subuid 2>/dev/null; then
 fi
 
 echo "Creating $OPENCLAW_CONFIG and workspace..."
-run_as_openclaw mkdir -p "$OPENCLAW_CONFIG/workspace"
-run_as_openclaw chmod 700 "$OPENCLAW_CONFIG" "$OPENCLAW_CONFIG/workspace" 2>/dev/null || true
+run_as_opencraft mkdir -p "$OPENCLAW_CONFIG/workspace"
+run_as_opencraft chmod 700 "$OPENCLAW_CONFIG" "$OPENCLAW_CONFIG/workspace" 2>/dev/null || true
 
 ENV_FILE="$OPENCLAW_CONFIG/.env"
-if run_as_openclaw test -f "$ENV_FILE"; then
-  if ! run_as_openclaw grep -q '^OPENCLAW_GATEWAY_TOKEN=' "$ENV_FILE" 2>/dev/null; then
+if run_as_opencraft test -f "$ENV_FILE"; then
+  if ! run_as_opencraft grep -q '^OPENCLAW_GATEWAY_TOKEN=' "$ENV_FILE" 2>/dev/null; then
     TOKEN="$(generate_token_hex_32)"
-    printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_openclaw tee -a "$ENV_FILE" >/dev/null
+    printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee -a "$ENV_FILE" >/dev/null
     echo "Added OPENCLAW_GATEWAY_TOKEN to $ENV_FILE."
   fi
-  run_as_openclaw chmod 600 "$ENV_FILE" 2>/dev/null || true
+  run_as_opencraft chmod 600 "$ENV_FILE" 2>/dev/null || true
 else
   TOKEN="$(generate_token_hex_32)"
-  printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_openclaw tee "$ENV_FILE" >/dev/null
-  run_as_openclaw chmod 600 "$ENV_FILE" 2>/dev/null || true
+  printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee "$ENV_FILE" >/dev/null
+  run_as_opencraft chmod 600 "$ENV_FILE" 2>/dev/null || true
   echo "Created $ENV_FILE with new token."
 fi
 
 # The gateway refuses to start unless gateway.mode=local is set in config.
 # Make first-run non-interactive; users can run the wizard later to configure channels/providers.
 OPENCLAW_JSON="$OPENCLAW_CONFIG/openclaw.json"
-if ! run_as_openclaw test -f "$OPENCLAW_JSON"; then
-  printf '%s\n' '{ gateway: { mode: "local" } }' | run_as_openclaw tee "$OPENCLAW_JSON" >/dev/null
-  run_as_openclaw chmod 600 "$OPENCLAW_JSON" 2>/dev/null || true
+if ! run_as_opencraft test -f "$OPENCLAW_JSON"; then
+  printf '%s\n' '{ gateway: { mode: "local" } }' | run_as_opencraft tee "$OPENCLAW_JSON" >/dev/null
+  run_as_opencraft chmod 600 "$OPENCLAW_JSON" 2>/dev/null || true
   echo "Created $OPENCLAW_JSON (minimal gateway.mode=local)."
 fi
 
@@ -259,16 +259,16 @@ echo "Building image from $REPO_PATH..."
 BUILD_ARGS=()
 [[ -n "${OPENCLAW_DOCKER_APT_PACKAGES:-}" ]] && BUILD_ARGS+=(--build-arg "OPENCLAW_DOCKER_APT_PACKAGES=${OPENCLAW_DOCKER_APT_PACKAGES}")
 [[ -n "${OPENCLAW_EXTENSIONS:-}" ]] && BUILD_ARGS+=(--build-arg "OPENCLAW_EXTENSIONS=${OPENCLAW_EXTENSIONS}")
-podman build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} -t openclaw:local -f "$REPO_PATH/Dockerfile" "$REPO_PATH"
+podman build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} -t opencraft:local -f "$REPO_PATH/Dockerfile" "$REPO_PATH"
 
 echo "Loading image into $OPENCLAW_USER's Podman store..."
 TMP_IMAGE_DIR="$(resolve_image_tmp_dir)"
 echo "Using temporary image dir: $TMP_IMAGE_DIR"
-TMP_STAGE_DIR="$(mktemp -d -p "$TMP_IMAGE_DIR" openclaw-image.XXXXXX)"
+TMP_STAGE_DIR="$(mktemp -d -p "$TMP_IMAGE_DIR" opencraft-image.XXXXXX)"
 TMP_IMAGE="$TMP_STAGE_DIR/image.tar"
 chmod 700 "$TMP_STAGE_DIR"
 trap 'rm -rf "$TMP_STAGE_DIR"' EXIT
-podman save openclaw:local -o "$TMP_IMAGE"
+podman save opencraft:local -o "$TMP_IMAGE"
 chmod 600 "$TMP_IMAGE"
 # Stream the image into the target user's podman load so private temp directories
 # do not need to be traversable by $OPENCLAW_USER.
@@ -277,22 +277,22 @@ rm -rf "$TMP_STAGE_DIR"
 trap - EXIT
 
 echo "Copying launch script to $LAUNCH_SCRIPT_DST..."
-run_root cat "$RUN_SCRIPT_SRC" | run_as_openclaw tee "$LAUNCH_SCRIPT_DST" >/dev/null
-run_as_openclaw chmod 755 "$LAUNCH_SCRIPT_DST"
+run_root cat "$RUN_SCRIPT_SRC" | run_as_opencraft tee "$LAUNCH_SCRIPT_DST" >/dev/null
+run_as_opencraft chmod 755 "$LAUNCH_SCRIPT_DST"
 
-# Optionally install systemd quadlet for openclaw user (rootless Podman + systemd)
+# Optionally install systemd quadlet for opencraft user (rootless Podman + systemd)
 QUADLET_DIR="$OPENCLAW_HOME/.config/containers/systemd"
 if [[ "$INSTALL_QUADLET" == true && -f "$QUADLET_TEMPLATE" ]]; then
   echo "Installing systemd quadlet for $OPENCLAW_USER..."
-  run_as_openclaw mkdir -p "$QUADLET_DIR"
+  run_as_opencraft mkdir -p "$QUADLET_DIR"
   OPENCLAW_HOME_SED="$(escape_sed_replacement_pipe_delim "$OPENCLAW_HOME")"
-  sed "s|{{OPENCLAW_HOME}}|$OPENCLAW_HOME_SED|g" "$QUADLET_TEMPLATE" | run_as_openclaw tee "$QUADLET_DIR/openclaw.container" >/dev/null
-  run_as_openclaw chmod 700 "$OPENCLAW_HOME/.config" "$OPENCLAW_HOME/.config/containers" "$QUADLET_DIR" 2>/dev/null || true
-  run_as_openclaw chmod 600 "$QUADLET_DIR/openclaw.container" 2>/dev/null || true
+  sed "s|{{OPENCLAW_HOME}}|$OPENCLAW_HOME_SED|g" "$QUADLET_TEMPLATE" | run_as_opencraft tee "$QUADLET_DIR/opencraft.container" >/dev/null
+  run_as_opencraft chmod 700 "$OPENCLAW_HOME/.config" "$OPENCLAW_HOME/.config/containers" "$QUADLET_DIR" 2>/dev/null || true
+  run_as_opencraft chmod 600 "$QUADLET_DIR/opencraft.container" 2>/dev/null || true
   if command -v systemctl &>/dev/null; then
     run_root systemctl --machine "${OPENCLAW_USER}@" --user daemon-reload 2>/dev/null || true
     run_root systemctl --machine "${OPENCLAW_USER}@" --user enable openclaw.service 2>/dev/null || true
-    run_root systemctl --machine "${OPENCLAW_USER}@" --user start openclaw.service 2>/dev/null || true
+    run_root systemctl --machine "${OPENCLAW_USER}@" --user start opencraft.service 2>/dev/null || true
   fi
 fi
 
@@ -305,7 +305,7 @@ echo "  sudo -u $OPENCLAW_USER $LAUNCH_SCRIPT_DST"
 echo "  sudo -u $OPENCLAW_USER $LAUNCH_SCRIPT_DST setup"
 if [[ "$INSTALL_QUADLET" == true ]]; then
   echo "Or use systemd (quadlet):"
-  echo "  sudo systemctl --machine ${OPENCLAW_USER}@ --user start openclaw.service"
+  echo "  sudo systemctl --machine ${OPENCLAW_USER}@ --user start opencraft.service"
   echo "  sudo systemctl --machine ${OPENCLAW_USER}@ --user status openclaw.service"
 else
   echo "To install systemd quadlet later: $0 --quadlet"

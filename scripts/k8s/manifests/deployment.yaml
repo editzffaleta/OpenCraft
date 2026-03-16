@@ -29,7 +29,7 @@ spec:
             - sh
             - -c
             - |
-              cp /config/opencraft.json /home/node/.opencraft/openclaw.json
+              cp /config/opencraft.json /home/node/.opencraft/opencraft.json
               mkdir -p /home/node/.opencraft/workspace
               cp /config/AGENTS.md /home/node/.opencraft/workspace/AGENTS.md
           securityContext:
@@ -138,9 +138,9 @@ spec:
       volumes:
         - name: opencraft-home
           persistentVolumeClaim:
-            claimName: openclaw-home-pvc
+            claimName: opencraft-home-pvc
         - name: config
           configMap:
-            name: openclaw-config
+            name: opencraft-config
         - name: tmp-volume
           emptyDir: {}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ClawDock - Docker helpers for OpenClaw
+# ClawDock - Docker helpers for OpenCraft
 # Inspired by Simon Willison's "Running OpenCraft in Docker"
 # https://til.simonwillison.net/llms/opencraft-docker
 #
@@ -38,7 +38,7 @@ _cmd() {
 # =============================================================================
 CLAWDOCK_CONFIG="${HOME}/.clawdock/config"
 
-# Common paths to check for OpenClaw
+# Common paths to check for OpenCraft
 CLAWDOCK_COMMON_PATHS=(
   "${HOME}/opencraft"
   "${HOME}/workspace/opencraft"
@@ -354,7 +354,7 @@ clawdock-approve() {
 
 # Show all available clawdock helper commands
 clawdock-help() {
-  echo -e "\n${_CLR_BOLD}${_CLR_CYAN}🦞 ClawDock - Docker Helpers for OpenClaw${_CLR_RESET}\n"
+  echo -e "\n${_CLR_BOLD}${_CLR_CYAN}🦞 ClawDock - Docker Helpers for OpenCraft${_CLR_RESET}\n"
 
   echo -e "${_CLR_BOLD}${_CLR_MAGENTA}⚡ Basic Operations${_CLR_RESET}"
   echo -e "  $(_cmd clawdock-start)       ${_CLR_DIM}Start the gateway${_CLR_RESET}"

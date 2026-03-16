@@ -34,7 +34,7 @@ is_truthy_value() {
 }
 
 read_config_gateway_token() {
-  local config_path="$OPENCLAW_CONFIG_DIR/openclaw.json"
+  local config_path="$OPENCLAW_CONFIG_DIR/opencraft.json"
   if [[ ! -f "$config_path" ]]; then
     return 0
   fi
@@ -190,8 +190,8 @@ if is_truthy_value "$RAW_SANDBOX_SETTING"; then
   SANDBOX_ENABLED="1"
 fi
 
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$HOME/.openclaw}"
-OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$HOME/.openclaw/workspace}"
+OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$HOME/.opencraft}"
+OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$HOME/.opencraft/workspace}"
 
 validate_mount_path_value "OPENCLAW_CONFIG_DIR" "$OPENCLAW_CONFIG_DIR"
 validate_mount_path_value "OPENCLAW_WORKSPACE_DIR" "$OPENCLAW_WORKSPACE_DIR"
@@ -254,7 +254,7 @@ if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
   EXISTING_CONFIG_TOKEN="$(read_config_gateway_token || true)"
   if [[ -n "$EXISTING_CONFIG_TOKEN" ]]; then
     OPENCLAW_GATEWAY_TOKEN="$EXISTING_CONFIG_TOKEN"
-    echo "Reusing gateway token from $OPENCLAW_CONFIG_DIR/openclaw.json"
+    echo "Reusing gateway token from $OPENCLAW_CONFIG_DIR/opencraft.json"
   else
     DOTENV_GATEWAY_TOKEN="$(read_env_gateway_token "$ROOT_DIR/.env" || true)"
     if [[ -n "$DOTENV_GATEWAY_TOKEN" ]]; then
@@ -292,8 +292,8 @@ YAML
 
   if [[ -n "$home_volume" ]]; then
     gateway_home_mount="${home_volume}:/home/node"
-    gateway_config_mount="${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw"
-    gateway_workspace_mount="${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace"
+    gateway_config_mount="${OPENCLAW_CONFIG_DIR}:/home/node/.opencraft"
+    gateway_workspace_mount="${OPENCLAW_WORKSPACE_DIR}:/home/node/.opencraft/workspace"
     validate_mount_spec "$gateway_home_mount"
     validate_mount_spec "$gateway_config_mount"
     validate_mount_spec "$gateway_workspace_mount"
@@ -456,11 +456,11 @@ echo "==> Fixing data-directory permissions"
 # Use -xdev to restrict chown to the config-dir mount only — without it,
 # the recursive chown would cross into the workspace bind mount and rewrite
 # ownership of all user project files on Linux hosts.
-# After fixing the config dir, only the OpenClaw metadata subdirectory
-# (.openclaw/) inside the workspace gets chowned, not the user's project files.
+# After fixing the config dir, only the OpenCraft metadata subdirectory
+# (.opencraft/) inside the workspace gets chowned, not the user's project files.
 docker compose "${COMPOSE_ARGS[@]}" run --rm --user root --entrypoint sh opencraft-cli -c \
-  'find /home/node/.openclaw -xdev -exec chown node:node {} +; \
-   [ -d /home/node/.openclaw/workspace/.openclaw ] && chown -R node:node /home/node/.openclaw/workspace/.openclaw || true'
+  'find /home/node/.opencraft -xdev -exec chown node:node {} +; \
+   [ -d /home/node/.opencraft/workspace/.opencraft ] && chown -R node:node /home/node/.opencraft/workspace/.opencraft || true'
 
 echo ""
 echo "==> Onboarding (interactive)"
@@ -489,7 +489,7 @@ echo "Telegram (bot token):"
 echo "  ${COMPOSE_HINT} run --rm opencraft-cli channels add --channel telegram --token <token>"
 echo "Discord (bot token):"
 echo "  ${COMPOSE_HINT} run --rm opencraft-cli channels add --channel discord --token <token>"
-echo "Docs: https://docs.openclaw.ai/channels"
+echo "Docs: https://docs.opencraft.ai/channels"
 
 echo ""
 echo "==> Starting gateway"
@@ -553,7 +553,7 @@ YAML
 fi
 
 if [[ -n "$SANDBOX_ENABLED" ]]; then
-  # Enable sandbox in OpenClaw config.
+  # Enable sandbox in OpenCraft config.
   sandbox_config_ok=true
   if ! docker compose "${COMPOSE_ARGS[@]}" run --rm --no-deps opencraft-cli \
     config set agents.defaults.sandbox.mode "non-main" >/dev/null; then
@@ -573,7 +573,7 @@ if [[ -n "$SANDBOX_ENABLED" ]]; then
 
   if [[ "$sandbox_config_ok" == true ]]; then
     echo "Sandbox enabled: mode=non-main, scope=agent, workspaceAccess=none"
-    echo "Docs: https://docs.openclaw.ai/gateway/sandboxing"
+    echo "Docs: https://docs.opencraft.ai/gateway/sandboxing"
     # Restart gateway with sandbox compose overlay to pick up socket mount + config.
     docker compose "${COMPOSE_ARGS[@]}" up -d opencraft-gateway
   else

@@ -15,7 +15,7 @@ ERROR='\033[38;2;230;57;70m'        # coral-mid     #e63946
 MUTED='\033[38;2;90;100;128m'       # text-muted    #5a6480
 NC='\033[0m' # No Color
 
-DEFAULT_TAGLINE="All your chats, one OpenClaw."
+DEFAULT_TAGLINE="All your chats, one OpenCraft."
 NODE_DEFAULT_MAJOR=24
 NODE_MIN_MAJOR=22
 NODE_MIN_MINOR=16
@@ -1921,7 +1921,7 @@ install_opencraft_from_git() {
     ensure_pnpm_binary_for_scripts
 
     if [[ ! -d "$repo_dir" ]]; then
-        run_quiet_step "Cloning OpenClaw" git clone "$repo_url" "$repo_dir"
+        run_quiet_step "Cloning OpenCraft" git clone "$repo_url" "$repo_dir"
     fi
 
     if [[ "$GIT_UPDATE" == "1" ]]; then
@@ -1939,7 +1939,7 @@ install_opencraft_from_git() {
     if ! run_quiet_step "Building UI" run_pnpm -C "$repo_dir" ui:build; then
         ui_warn "UI build failed; continuing (CLI may still work)"
     fi
-    run_quiet_step "Building OpenClaw" run_pnpm -C "$repo_dir" build
+    run_quiet_step "Building OpenCraft" run_pnpm -C "$repo_dir" build
 
     ensure_user_local_bin_on_path
 
@@ -1953,7 +1953,7 @@ EOF
     ui_info "This checkout uses pnpm — run pnpm install (or corepack pnpm install) for deps"
 }
 
-# Install OpenClaw
+# Install OpenCraft
 resolve_beta_version() {
     local beta=""
     beta="$(npm view opencraft dist-tags.beta 2>/dev/null || true)"
@@ -2311,7 +2311,7 @@ main() {
         exit 1
     fi
 
-    ui_stage "Installing OpenClaw"
+    ui_stage "Installing OpenCraft"
 
     local final_git_dir=""
     if [[ "$INSTALL_METHOD" == "git" ]]; then
@@ -2344,7 +2344,7 @@ main() {
         # Step 4: npm permissions (Linux)
         fix_npm_permissions
 
-        # Step 5: OpenClaw
+        # Step 5: OpenCraft
         install_opencraft
     fi
 

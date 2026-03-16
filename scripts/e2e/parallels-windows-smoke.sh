@@ -579,12 +579,12 @@ ensure_guest_git() {
   if guest_exec cmd.exe /d /s /c "where git.exe >nul 2>nul && git.exe --version"; then
     return
   fi
-  guest_exec cmd.exe /d /s /c "if exist \"%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\" rmdir /s /q \"%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\""
-  guest_exec cmd.exe /d /s /c "if not exist \"%LOCALAPPDATA%\\OpenClaw\\deps\" mkdir \"%LOCALAPPDATA%\\OpenClaw\\deps\""
-  guest_exec cmd.exe /d /s /c "mkdir \"%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\""
+  guest_exec cmd.exe /d /s /c "if exist \"%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\" rmdir /s /q \"%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\""
+  guest_exec cmd.exe /d /s /c "if not exist \"%LOCALAPPDATA%\\OpenCraft\\deps\" mkdir \"%LOCALAPPDATA%\\OpenCraft\\deps\""
+  guest_exec cmd.exe /d /s /c "mkdir \"%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\""
   guest_exec cmd.exe /d /s /c "curl.exe -fsSL \"$mingit_url\" -o \"%TEMP%\\$MINGIT_ZIP_NAME\""
-  guest_exec cmd.exe /d /s /c "tar.exe -xf \"%TEMP%\\$MINGIT_ZIP_NAME\" -C \"%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\""
-  guest_exec cmd.exe /d /s /c "del /q \"%TEMP%\\$MINGIT_ZIP_NAME\" & set \"PATH=%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\cmd;%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\mingw64\\bin;%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\usr\\bin;%PATH%\" && git.exe --version"
+  guest_exec cmd.exe /d /s /c "tar.exe -xf \"%TEMP%\\$MINGIT_ZIP_NAME\" -C \"%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\""
+  guest_exec cmd.exe /d /s /c "del /q \"%TEMP%\\$MINGIT_ZIP_NAME\" & set \"PATH=%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\cmd;%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\mingw64\\bin;%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\usr\\bin;%PATH%\" && git.exe --version"
 }
 
 pack_main_tgz() {
@@ -690,7 +690,7 @@ install_main_tgz() {
   local temp_name="$2"
   local tgz_url
   tgz_url="http://$host_ip:$HOST_PORT/$(basename "$MAIN_TGZ_PATH")"
-  guest_exec cmd.exe /d /s /c "set \"PATH=%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\cmd;%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\mingw64\\bin;%LOCALAPPDATA%\\OpenClaw\\deps\\portable-git\\usr\\bin;%PATH%\" && curl.exe -fsSL \"$tgz_url\" -o \"%TEMP%\\$temp_name\" && npm.cmd install -g \"%TEMP%\\$temp_name\" --no-fund --no-audit && \"%APPDATA%\\npm\\opencraft.cmd\" --version"
+  guest_exec cmd.exe /d /s /c "set \"PATH=%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\cmd;%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\mingw64\\bin;%LOCALAPPDATA%\\OpenCraft\\deps\\portable-git\\usr\\bin;%PATH%\" && curl.exe -fsSL \"$tgz_url\" -o \"%TEMP%\\$temp_name\" && npm.cmd install -g \"%TEMP%\\$temp_name\" --no-fund --no-audit && \"%APPDATA%\\npm\\opencraft.cmd\" --version"
 }
 
 verify_version_contains() {

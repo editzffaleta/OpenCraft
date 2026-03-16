@@ -794,7 +794,7 @@ async function run(): Promise<SuccessResult | FailureResult> {
         ok: false,
         stage: "wait-ack",
         smokeId,
-        error: `Thread bound (${threadId}) but timed out waiting for ACK token "${ackToken}" from OpenClaw.`,
+        error: `Thread bound (${threadId}) but timed out waiting for ACK token "${ackToken}" from OpenCraft.`,
         diagnostics: {
           bindingCandidates: [
             {

@@ -227,7 +227,7 @@ export async function runNodeMain(params = {}) {
   deps.configFiles = [path.join(deps.cwd, "tsconfig.json"), path.join(deps.cwd, "package.json")];
 
   if (!shouldBuild(deps)) {
-    return await runOpenClaw(deps);
+    return await runOpenCraft(deps);
   }
 
   logRunner("Building TypeScript (dist is stale).", deps);
@@ -250,7 +250,7 @@ export async function runNodeMain(params = {}) {
     return buildRes.exitCode;
   }
   writeBuildStamp(deps);
-  return await runOpenClaw(deps);
+  return await runOpenCraft(deps);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {

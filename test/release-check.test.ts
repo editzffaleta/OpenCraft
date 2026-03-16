@@ -42,7 +42,7 @@ describe("collectBundledExtensionRootDependencyGapErrors", () => {
             id: "googlechat",
             packageJson: {
               dependencies: { "google-auth-library": "^1.0.0" },
-              openclaw: {
+              opencraft: {
                 install: { npmSpec: "@openclaw/googlechat" },
                 releaseChecks: {
                   rootDependencyMirrorAllowlist: ["google-auth-library"],
@@ -54,7 +54,7 @@ describe("collectBundledExtensionRootDependencyGapErrors", () => {
             id: "feishu",
             packageJson: {
               dependencies: { "@larksuiteoapi/node-sdk": "^1.59.0" },
-              openclaw: { install: { npmSpec: "@openclaw/feishu" } },
+              opencraft: { install: { npmSpec: "@openclaw/feishu" } },
             },
           },
         ],
@@ -73,7 +73,7 @@ describe("collectBundledExtensionRootDependencyGapErrors", () => {
             id: "googlechat",
             packageJson: {
               dependencies: { "google-auth-library": "^1.0.0", undici: "^7.0.0" },
-              openclaw: {
+              opencraft: {
                 install: { npmSpec: "@openclaw/googlechat" },
                 releaseChecks: {
                   rootDependencyMirrorAllowlist: ["google-auth-library"],
@@ -97,7 +97,7 @@ describe("collectBundledExtensionRootDependencyGapErrors", () => {
             id: "googlechat",
             packageJson: {
               dependencies: { "google-auth-library": "^1.0.0" },
-              openclaw: {
+              opencraft: {
                 install: { npmSpec: "@openclaw/googlechat" },
                 releaseChecks: {
                   rootDependencyMirrorAllowlist: ["google-auth-library"],
@@ -120,14 +120,14 @@ describe("collectBundledExtensionManifestErrors", () => {
         {
           id: "broken",
           packageJson: {
-            openclaw: {
+            opencraft: {
               install: { npmSpec: "   " },
             },
           },
         },
       ]),
     ).toEqual([
-      "bundled extension 'broken' manifest invalid | openclaw.install.npmSpec must be a non-empty string",
+      "bundled extension 'broken' manifest invalid | opencraft.install.npmSpec must be a non-empty string",
     ]);
   });
 
@@ -137,7 +137,7 @@ describe("collectBundledExtensionManifestErrors", () => {
         {
           id: "broken",
           packageJson: {
-            openclaw: {
+            opencraft: {
               install: { npmSpec: "@openclaw/broken" },
               releaseChecks: {
                 rootDependencyMirrorAllowlist: ["ok", ""],
@@ -147,7 +147,7 @@ describe("collectBundledExtensionManifestErrors", () => {
         },
       ]),
     ).toEqual([
-      "bundled extension 'broken' manifest invalid | openclaw.releaseChecks.rootDependencyMirrorAllowlist must contain only non-empty strings",
+      "bundled extension 'broken' manifest invalid | opencraft.releaseChecks.rootDependencyMirrorAllowlist must contain only non-empty strings",
     ]);
   });
 });
