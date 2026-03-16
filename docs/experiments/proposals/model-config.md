@@ -1,36 +1,36 @@
 ---
-summary: "Exploration: model config, auth profiles, and fallback behavior"
+summary: "Exploração: configuração de modelo, perfis de autenticação e comportamento de fallback"
 read_when:
-  - Exploring future model selection + auth profile ideas
-title: "Model Config Exploration"
+  - Explorando ideias futuras de seleção de modelo + perfis de autenticação
+title: "Exploração de Configuração de Modelo"
 ---
 
-# Model Config (Exploration)
+# Configuração de Modelo (Exploração)
 
-This document captures **ideas** for future model configuration. It is not a
-shipping spec. For current behavior, see:
+Este documento captura **ideias** para configuração futura de modelo. Não é uma
+especificação para publicação. Para o comportamento atual, veja:
 
-- [Models](/concepts/models)
-- [Model failover](/concepts/model-failover)
-- [OAuth + profiles](/concepts/oauth)
+- [Modelos](/concepts/models)
+- [Failover de modelo](/concepts/model-failover)
+- [OAuth + perfis](/concepts/oauth)
 
-## Motivation
+## Motivação
 
-Operators want:
+Os operadores querem:
 
-- Multiple auth profiles per provider (personal vs work).
-- Simple `/model` selection with predictable fallbacks.
-- Clear separation between text models and image-capable models.
+- Múltiplos perfis de autenticação por provedor (pessoal vs trabalho).
+- Seleção simples de `/model` com fallbacks previsíveis.
+- Separação clara entre modelos de texto e modelos com capacidade de imagem.
 
-## Possible direction (high level)
+## Direção possível (visão geral)
 
-- Keep model selection simple: `provider/model` with optional aliases.
-- Let providers have multiple auth profiles, with an explicit order.
-- Use a global fallback list so all sessions fail over consistently.
-- Only override image routing when explicitly configured.
+- Manter a seleção de modelo simples: `provider/model` com aliases opcionais.
+- Permitir que provedores tenham múltiplos perfis de autenticação, com ordem explícita.
+- Usar uma lista de fallback global para que todas as sessões façam failover de forma consistente.
+- Substituir roteamento de imagem apenas quando explicitamente configurado.
 
-## Open questions
+## Questões em aberto
 
-- Should profile rotation be per-provider or per-model?
-- How should the UI surface profile selection for a session?
-- What is the safest migration path from legacy config keys?
+- A rotação de perfil deve ser por provedor ou por modelo?
+- Como a interface deve apresentar a seleção de perfil para uma sessão?
+- Qual é o caminho de migração mais seguro a partir das chaves de configuração legadas?

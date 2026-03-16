@@ -1,43 +1,43 @@
 ---
-summary: "RPC protocol notes for onboarding wizard and config schema"
-read_when: "Changing onboarding wizard steps or config schema endpoints"
-title: "Onboarding and Config Protocol"
+summary: "Notas do protocolo RPC para o assistente de onboarding e esquema de configuração"
+read_when: "Alterando etapas do assistente de onboarding ou endpoints do esquema de configuração"
+title: "Protocolo de Onboarding e Configuração"
 ---
 
-# Onboarding + Config Protocol
+# Protocolo de Onboarding + Configuração
 
-Purpose: shared onboarding + config surfaces across CLI, macOS app, and Web UI.
+Objetivo: superfícies compartilhadas de onboarding + configuração entre CLI, aplicativo macOS e interface Web.
 
-## Components
+## Componentes
 
-- Wizard engine (shared session + prompts + onboarding state).
-- CLI onboarding uses the same wizard flow as the UI clients.
-- Gateway RPC exposes wizard + config schema endpoints.
-- macOS onboarding uses the wizard step model.
-- Web UI renders config forms from JSON Schema + UI hints.
+- Motor do assistente (sessão compartilhada + prompts + estado de onboarding).
+- O onboarding via CLI usa o mesmo fluxo do assistente que os clientes de interface.
+- O RPC do gateway expõe endpoints do assistente + esquema de configuração.
+- O onboarding no macOS usa o modelo de etapas do assistente.
+- A interface Web renderiza formulários de configuração a partir do JSON Schema + dicas de interface.
 
-## Gateway RPC
+## RPC do Gateway
 
-- `wizard.start` params: `{ mode?: "local"|"remote", workspace?: string }`
-- `wizard.next` params: `{ sessionId, answer?: { stepId, value? } }`
-- `wizard.cancel` params: `{ sessionId }`
-- `wizard.status` params: `{ sessionId }`
-- `config.schema` params: `{}`
-- `config.schema.lookup` params: `{ path }`
-  - `path` accepts standard config segments plus slash-delimited plugin ids, for example `plugins.entries.pack/one.config`.
+- `wizard.start` parâmetros: `{ mode?: "local"|"remote", workspace?: string }`
+- `wizard.next` parâmetros: `{ sessionId, answer?: { stepId, value? } }`
+- `wizard.cancel` parâmetros: `{ sessionId }`
+- `wizard.status` parâmetros: `{ sessionId }`
+- `config.schema` parâmetros: `{}`
+- `config.schema.lookup` parâmetros: `{ path }`
+  - `path` aceita segmentos de configuração padrão mais IDs de plugin delimitados por barra, por exemplo `plugins.entries.pack/one.config`.
 
-Responses (shape)
+Respostas (formato)
 
-- Wizard: `{ sessionId, done, step?, status?, error? }`
-- Config schema: `{ schema, uiHints, version, generatedAt }`
-- Config schema lookup: `{ path, schema, hint?, hintPath?, children[] }`
+- Assistente: `{ sessionId, done, step?, status?, error? }`
+- Esquema de configuração: `{ schema, uiHints, version, generatedAt }`
+- Lookup de esquema de configuração: `{ path, schema, hint?, hintPath?, children[] }`
 
-## UI Hints
+## Dicas de Interface
 
-- `uiHints` keyed by path; optional metadata (label/help/group/order/advanced/sensitive/placeholder).
-- Sensitive fields render as password inputs; no redaction layer.
-- Unsupported schema nodes fall back to the raw JSON editor.
+- `uiHints` com chave por caminho; metadados opcionais (label/help/group/order/advanced/sensitive/placeholder).
+- Campos sensíveis são renderizados como entradas de senha; sem camada de redação.
+- Nós de esquema não suportados recorrem ao editor JSON bruto.
 
-## Notes
+## Notas
 
-- This doc is the single place to track protocol refactors for onboarding/config.
+- Este documento é o único lugar para rastrear refatorações de protocolo para onboarding/configuração.

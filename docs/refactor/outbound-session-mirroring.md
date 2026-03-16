@@ -1,89 +1,89 @@
 ---
-title: Outbound Session Mirroring Refactor (Issue #1520)
-description: Track outbound session mirroring refactor notes, decisions, tests, and open items.
-summary: "Refactor notes for mirroring outbound sends into target channel sessions"
+title: Refatoração de Espelhamento de Sessão de Saída (Issue #1520)
+description: Acompanhar notas, decisões, testes e itens em aberto da refatoração de espelhamento de sessão de saída.
+summary: "Notas de refatoração para espelhamento de envios de saída em sessões do canal alvo"
 read_when:
-  - Working on outbound transcript/session mirroring behavior
-  - Debugging sessionKey derivation for send/message tool paths
+  - Trabalhando no comportamento de espelhamento de transcrição/sessão de saída
+  - Depurando derivação de sessionKey para caminhos de ferramentas send/message
 ---
 
-# Outbound Session Mirroring Refactor (Issue #1520)
+# Refatoração de Espelhamento de Sessão de Saída (Issue #1520)
 
 ## Status
 
-- In progress.
-- Core + plugin channel routing updated for outbound mirroring.
-- Gateway send now derives target session when sessionKey is omitted.
+- Em andamento.
+- Roteamento do canal de núcleo + plugin atualizado para espelhamento de saída.
+- O envio do gateway agora deriva a sessão alvo quando sessionKey é omitido.
 
-## Context
+## Contexto
 
-Outbound sends were mirrored into the _current_ agent session (tool session key) rather than the target channel session. Inbound routing uses channel/peer session keys, so outbound responses landed in the wrong session and first-contact targets often lacked session entries.
+Envios de saída eram espelhados na sessão do agente _atual_ (chave de sessão da ferramenta) em vez da sessão do canal alvo. O roteamento de entrada usa chaves de sessão de canal/peer, então as respostas de saída chegavam na sessão errada e alvos de primeiro contato frequentemente não tinham entradas de sessão.
 
-## Goals
+## Objetivos
 
-- Mirror outbound messages into the target channel session key.
-- Create session entries on outbound when missing.
-- Keep thread/topic scoping aligned with inbound session keys.
-- Cover core channels plus bundled extensions.
+- Espelhar mensagens de saída na chave de sessão do canal alvo.
+- Criar entradas de sessão na saída quando ausentes.
+- Manter o escopo de thread/tópico alinhado com as chaves de sessão de entrada.
+- Cobrir os canais centrais mais as extensões incluídas.
 
-## Implementation Summary
+## Resumo de Implementação
 
-- New outbound session routing helper:
+- Novo helper de roteamento de sessão de saída:
   - `src/infra/outbound/outbound-session.ts`
-  - `resolveOutboundSessionRoute` builds target sessionKey using `buildAgentSessionKey` (dmScope + identityLinks).
-  - `ensureOutboundSessionEntry` writes minimal `MsgContext` via `recordSessionMetaFromInbound`.
-- `runMessageAction` (send) derives target sessionKey and passes it to `executeSendAction` for mirroring.
-- `message-tool` no longer mirrors directly; it only resolves agentId from the current session key.
-- Plugin send path mirrors via `appendAssistantMessageToSessionTranscript` using the derived sessionKey.
-- Gateway send derives a target session key when none is provided (default agent), and ensures a session entry.
+  - `resolveOutboundSessionRoute` constrói sessionKey alvo usando `buildAgentSessionKey` (dmScope + identityLinks).
+  - `ensureOutboundSessionEntry` escreve `MsgContext` mínimo via `recordSessionMetaFromInbound`.
+- `runMessageAction` (send) deriva sessionKey alvo e passa para `executeSendAction` para espelhamento.
+- `message-tool` não espelha mais diretamente; apenas resolve agentId a partir da chave de sessão atual.
+- O caminho de envio do plugin espelha via `appendAssistantMessageToSessionTranscript` usando a sessionKey derivada.
+- O envio do gateway deriva uma chave de sessão alvo quando nenhuma é fornecida (agente padrão) e garante uma entrada de sessão.
 
-## Thread/Topic Handling
+## Tratamento de Thread/Tópico
 
-- Slack: replyTo/threadId -> `resolveThreadSessionKeys` (suffix).
-- Discord: threadId/replyTo -> `resolveThreadSessionKeys` with `useSuffix=false` to match inbound (thread channel id already scopes session).
-- Telegram: topic IDs map to `chatId:topic:<id>` via `buildTelegramGroupPeerId`.
+- Slack: replyTo/threadId -> `resolveThreadSessionKeys` (sufixo).
+- Discord: threadId/replyTo -> `resolveThreadSessionKeys` com `useSuffix=false` para corresponder à entrada (id do canal da thread já escopa a sessão).
+- Telegram: IDs de tópico mapeiam para `chatId:topic:<id>` via `buildTelegramGroupPeerId`.
 
-## Extensions Covered
+## Extensões Cobertas
 
 - Matrix, MS Teams, Mattermost, BlueBubbles, Nextcloud Talk, Zalo, Zalo Personal, Nostr, Tlon.
-- Notes:
-  - Mattermost targets now strip `@` for DM session key routing.
-  - Zalo Personal uses DM peer kind for 1:1 targets (group only when `group:` is present).
-  - BlueBubbles group targets strip `chat_*` prefixes to match inbound session keys.
-  - Slack auto-thread mirroring matches channel ids case-insensitively.
-  - Gateway send lowercases provided session keys before mirroring.
+- Notas:
+  - Alvos do Mattermost agora removem `@` para roteamento de chave de sessão DM.
+  - Zalo Personal usa tipo de peer DM para alvos 1:1 (group apenas quando `group:` está presente).
+  - Alvos de grupo do BlueBubbles removem prefixos `chat_*` para corresponder às chaves de sessão de entrada.
+  - Espelhamento de auto-thread do Slack corresponde ids de canal sem distinção de maiúsculas/minúsculas.
+  - O envio do gateway converte para minúsculas as chaves de sessão fornecidas antes do espelhamento.
 
-## Decisions
+## Decisões
 
-- **Gateway send session derivation**: if `sessionKey` is provided, use it. If omitted, derive a sessionKey from target + default agent and mirror there.
-- **Session entry creation**: always use `recordSessionMetaFromInbound` with `Provider/From/To/ChatType/AccountId/Originating*` aligned to inbound formats.
-- **Target normalization**: outbound routing uses resolved targets (post `resolveChannelTarget`) when available.
-- **Session key casing**: canonicalize session keys to lowercase on write and during migrations.
+- **Derivação de sessão de envio do gateway**: se `sessionKey` for fornecido, usá-lo. Se omitido, derivar uma sessionKey a partir do alvo + agente padrão e espelhar lá.
+- **Criação de entrada de sessão**: sempre usar `recordSessionMetaFromInbound` com `Provider/From/To/ChatType/AccountId/Originating*` alinhados aos formatos de entrada.
+- **Normalização do alvo**: o roteamento de saída usa alvos resolvidos (pós `resolveChannelTarget`) quando disponíveis.
+- **Caixa da chave de sessão**: canonicalizar chaves de sessão para minúsculas na escrita e durante migrações.
 
-## Tests Added/Updated
+## Testes Adicionados/Atualizados
 
 - `src/infra/outbound/outbound.test.ts`
-  - Slack thread session key.
-  - Telegram topic session key.
-  - dmScope identityLinks with Discord.
+  - Chave de sessão de thread do Slack.
+  - Chave de sessão de tópico do Telegram.
+  - dmScope identityLinks com Discord.
 - `src/agents/tools/message-tool.test.ts`
-  - Derives agentId from session key (no sessionKey passed through).
+  - Deriva agentId a partir da chave de sessão (sem sessionKey passado).
 - `src/gateway/server-methods/send.test.ts`
-  - Derives session key when omitted and creates session entry.
+  - Deriva chave de sessão quando omitida e cria entrada de sessão.
 
-## Open Items / Follow-ups
+## Itens em Aberto / Acompanhamentos
 
-- Voice-call plugin uses custom `voice:<phone>` session keys. Outbound mapping is not standardized here; if message-tool should support voice-call sends, add explicit mapping.
-- Confirm if any external plugin uses non-standard `From/To` formats beyond the bundled set.
+- O plugin voice-call usa chaves de sessão `voice:<phone>` personalizadas. O mapeamento de saída não está padronizado aqui; se message-tool deve suportar envios via voice-call, adicionar mapeamento explícito.
+- Confirmar se algum plugin externo usa formatos `From/To` não padrão além do conjunto incluído.
 
-## Files Touched
+## Arquivos Tocados
 
 - `src/infra/outbound/outbound-session.ts`
 - `src/infra/outbound/outbound-send-service.ts`
 - `src/infra/outbound/message-action-runner.ts`
 - `src/agents/tools/message-tool.ts`
 - `src/gateway/server-methods/send.ts`
-- Tests in:
+- Testes em:
   - `src/infra/outbound/outbound.test.ts`
   - `src/agents/tools/message-tool.test.ts`
   - `src/gateway/server-methods/send.test.ts`

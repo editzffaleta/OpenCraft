@@ -1,48 +1,48 @@
 ---
-summary: "Plan: one clean plugin SDK + runtime for all messaging connectors"
+summary: "Plano: um Plugin SDK + runtime limpo para todos os conectores de mensagens"
 read_when:
-  - Defining or refactoring the plugin architecture
-  - Migrating channel connectors to the plugin SDK/runtime
-title: "Plugin SDK Refactor"
+  - Definindo ou refatorando a arquitetura de plugins
+  - Migrando conectores de canal para o Plugin SDK/runtime
+title: "Refatoração do Plugin SDK"
 ---
 
-# Plugin SDK + Runtime Refactor Plan
+# Plano de Refatoração do Plugin SDK + Runtime
 
-Goal: every messaging connector is a plugin (bundled or external) using one stable API.
-No plugin imports from `src/**` directly. All dependencies go through the SDK or runtime.
+Objetivo: cada conector de mensagens é um plugin (embutido ou externo) usando uma API estável única.
+Nenhum plugin importa diretamente de `src/**`. Todas as dependências passam pelo SDK ou runtime.
 
-## Why now
+## Por que agora
 
-- Current connectors mix patterns: direct core imports, dist-only bridges, and custom helpers.
-- This makes upgrades brittle and blocks a clean external plugin surface.
+- Os conectores atuais misturam padrões: importações diretas do core, bridges apenas de dist e helpers personalizados.
+- Isso torna as atualizações frágeis e bloqueia uma superfície limpa de plugin externo.
 
-## Target architecture (two layers)
+## Arquitetura alvo (duas camadas)
 
-### 1) Plugin SDK (compile-time, stable, publishable)
+### 1) Plugin SDK (tempo de compilação, estável, publicável)
 
-Scope: types, helpers, and config utilities. No runtime state, no side effects.
+Escopo: tipos, helpers e utilitários de configuração. Sem estado de runtime, sem efeitos colaterais.
 
-Contents (examples):
+Conteúdo (exemplos):
 
-- Types: `ChannelPlugin`, adapters, `ChannelMeta`, `ChannelCapabilities`, `ChannelDirectoryEntry`.
-- Config helpers: `buildChannelConfigSchema`, `setAccountEnabledInConfigSection`, `deleteAccountFromConfigSection`,
+- Tipos: `ChannelPlugin`, adapters, `ChannelMeta`, `ChannelCapabilities`, `ChannelDirectoryEntry`.
+- Helpers de configuração: `buildChannelConfigSchema`, `setAccountEnabledInConfigSection`, `deleteAccountFromConfigSection`,
   `applyAccountNameToChannelSection`.
-- Pairing helpers: `PAIRING_APPROVED_MESSAGE`, `formatPairingApproveHint`.
-- Onboarding helpers: `promptChannelAccessConfig`, `addWildcardAllowFrom`, onboarding types.
-- Tool param helpers: `createActionGate`, `readStringParam`, `readNumberParam`, `readReactionParams`, `jsonResult`.
-- Docs link helper: `formatDocsLink`.
+- Helpers de pareamento: `PAIRING_APPROVED_MESSAGE`, `formatPairingApproveHint`.
+- Helpers de onboarding: `promptChannelAccessConfig`, `addWildcardAllowFrom`, tipos de onboarding.
+- Helpers de parâmetros de ferramenta: `createActionGate`, `readStringParam`, `readNumberParam`, `readReactionParams`, `jsonResult`.
+- Helper de link de docs: `formatDocsLink`.
 
-Delivery:
+Entrega:
 
-- Publish as `openclaw/plugin-sdk` (or export from core under `openclaw/plugin-sdk`).
-- Semver with explicit stability guarantees.
+- Publicar como `opencraft/plugin-sdk` (ou exportar do core sob `opencraft/plugin-sdk`).
+- Semver com garantias explícitas de estabilidade.
 
-### 2) Plugin Runtime (execution surface, injected)
+### 2) Plugin Runtime (superfície de execução, injetada)
 
-Scope: everything that touches core runtime behavior.
-Accessed via `OpenClawPluginApi.runtime` so plugins never import `src/**`.
+Escopo: tudo que toca o comportamento de runtime do core.
+Acessado via `OpenClawPluginApi.runtime` para que plugins nunca importem de `src/**`.
 
-Proposed surface (minimal but complete):
+Superfície proposta (mínima mas completa):
 
 ```ts
 export type PluginRuntime = {
@@ -144,71 +144,71 @@ export type PluginRuntime = {
 };
 ```
 
-Notes:
+Notas:
 
-- Runtime is the only way to access core behavior.
-- SDK is intentionally small and stable.
-- Each runtime method maps to an existing core implementation (no duplication).
+- O runtime é a única forma de acessar o comportamento do core.
+- O SDK é intencionalmente pequeno e estável.
+- Cada método do runtime mapeia para uma implementação existente no core (sem duplicação).
 
-## Migration plan (phased, safe)
+## Plano de migração (faseado, seguro)
 
-### Phase 0: scaffolding
+### Fase 0: scaffolding
 
-- Introduce `openclaw/plugin-sdk`.
-- Add `api.runtime` to `OpenClawPluginApi` with the surface above.
-- Maintain existing imports during a transition window (deprecation warnings).
+- Introduzir `opencraft/plugin-sdk`.
+- Adicionar `api.runtime` a `OpenClawPluginApi` com a superfície acima.
+- Manter as importações existentes durante uma janela de transição (avisos de deprecação).
 
-### Phase 1: bridge cleanup (low risk)
+### Fase 1: limpeza de bridge (baixo risco)
 
-- Replace per-extension `core-bridge.ts` with `api.runtime`.
-- Migrate BlueBubbles, Zalo, Zalo Personal first (already close).
-- Remove duplicated bridge code.
+- Substituir `core-bridge.ts` por extensão com `api.runtime`.
+- Migrar BlueBubbles, Zalo, Zalo Personal primeiro (já próximos).
+- Remover código de bridge duplicado.
 
-### Phase 2: light direct-import plugins
+### Fase 2: plugins com importações diretas leves
 
-- Migrate Matrix to SDK + runtime.
-- Validate onboarding, directory, group mention logic.
+- Migrar Matrix para SDK + runtime.
+- Validar lógica de onboarding, diretório e menção de grupo.
 
-### Phase 3: heavy direct-import plugins
+### Fase 3: plugins com importações diretas pesadas
 
-- Migrate MS Teams (largest set of runtime helpers).
-- Ensure reply/typing semantics match current behavior.
+- Migrar MS Teams (maior conjunto de helpers de runtime).
+- Garantir que a semântica de reply/typing corresponda ao comportamento atual.
 
-### Phase 4: iMessage pluginization
+### Fase 4: pluginização do iMessage
 
-- Move iMessage into `extensions/imessage`.
-- Replace direct core calls with `api.runtime`.
-- Keep config keys, CLI behavior, and docs intact.
+- Mover iMessage para `extensions/imessage`.
+- Substituir chamadas diretas ao core por `api.runtime`.
+- Manter chaves de configuração, comportamento da CLI e documentação intactos.
 
-### Phase 5: enforcement
+### Fase 5: aplicação
 
-- Add lint rule / CI check: no `extensions/**` imports from `src/**`.
-- Add plugin SDK/version compatibility checks (runtime + SDK semver).
+- Adicionar regra de lint / verificação de CI: nenhum `extensions/**` importa de `src/**`.
+- Adicionar verificações de compatibilidade de versão do plugin SDK/runtime (semver de runtime + SDK).
 
-## Compatibility and versioning
+## Compatibilidade e versionamento
 
-- SDK: semver, published, documented changes.
-- Runtime: versioned per core release. Add `api.runtime.version`.
-- Plugins declare a required runtime range (e.g., `openclawRuntime: ">=2026.2.0"`).
+- SDK: semver, publicado, mudanças documentadas.
+- Runtime: versionado por release do core. Adicionar `api.runtime.version`.
+- Plugins declaram um intervalo de runtime necessário (ex.: `openclawRuntime: ">=2026.2.0"`).
 
-## Testing strategy
+## Estratégia de testes
 
-- Adapter-level unit tests (runtime functions exercised with real core implementation).
-- Golden tests per plugin: ensure no behavior drift (routing, pairing, allowlist, mention gating).
-- A single end-to-end plugin sample used in CI (install + run + smoke).
+- Testes unitários de nível de adapter (funções de runtime exercidas com implementação real do core).
+- Testes golden por plugin: garantir que não haja desvio de comportamento (roteamento, pareamento, allowlist, filtragem de menção).
+- Um único plugin de exemplo end-to-end usado em CI (instalar + executar + smoke).
 
-## Open questions
+## Questões em aberto
 
-- Where to host SDK types: separate package or core export?
-- Runtime type distribution: in SDK (types only) or in core?
-- How to expose docs links for bundled vs external plugins?
-- Do we allow limited direct core imports for in-repo plugins during transition?
+- Onde hospedar os tipos do SDK: pacote separado ou export do core?
+- Distribuição de tipos do runtime: no SDK (apenas tipos) ou no core?
+- Como expor links de docs para plugins embutidos vs externos?
+- Permitimos importações diretas limitadas do core para plugins dentro do repo durante a transição?
 
-## Success criteria
+## Critérios de sucesso
 
-- All channel connectors are plugins using SDK + runtime.
-- No `extensions/**` imports from `src/**`.
-- New connector templates depend only on SDK + runtime.
-- External plugins can be developed and updated without core source access.
+- Todos os conectores de canal são plugins usando SDK + runtime.
+- Nenhum `extensions/**` importa de `src/**`.
+- Novos templates de conector dependem apenas do SDK + runtime.
+- Plugins externos podem ser desenvolvidos e atualizados sem acesso ao código-fonte do core.
 
-Related docs: [Plugins](/tools/plugin), [Channels](/channels/index), [Configuration](/gateway/configuration).
+Docs relacionados: [Plugins](/tools/plugin), [Canais](/channels/index), [Configuração](/gateway/configuration).

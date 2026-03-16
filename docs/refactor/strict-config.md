@@ -1,93 +1,93 @@
 ---
-summary: "Strict config validation + doctor-only migrations"
+summary: "Validação estrita de configuração + migrações apenas via doctor"
 read_when:
-  - Designing or implementing config validation behavior
-  - Working on config migrations or doctor workflows
-  - Handling plugin config schemas or plugin load gating
-title: "Strict Config Validation"
+  - Projetando ou implementando comportamento de validação de configuração
+  - Trabalhando em migrações de configuração ou fluxos de trabalho do doctor
+  - Tratando esquemas de configuração de plugin ou controle de carregamento de plugin
+title: "Validação Estrita de Configuração"
 ---
 
-# Strict config validation (doctor-only migrations)
+# Validação estrita de configuração (migrações apenas via doctor)
 
-## Goals
+## Objetivos
 
-- **Reject unknown config keys everywhere** (root + nested), except root `$schema` metadata.
-- **Reject plugin config without a schema**; don’t load that plugin.
-- **Remove legacy auto-migration on load**; migrations run via doctor only.
-- **Auto-run doctor (dry-run) on startup**; if invalid, block non-diagnostic commands.
+- **Rejeitar chaves de configuração desconhecidas em todo lugar** (raiz + aninhadas), exceto metadados `$schema` na raiz.
+- **Rejeitar configuração de plugin sem esquema**; não carregar esse plugin.
+- **Remover auto-migração legada no carregamento**; migrações executam apenas via doctor.
+- **Executar automaticamente o doctor (dry-run) na inicialização**; se inválido, bloquear comandos não diagnósticos.
 
-## Non-goals
+## Não-Objetivos
 
-- Backward compatibility on load (legacy keys do not auto-migrate).
-- Silent drops of unrecognized keys.
+- Compatibilidade retroativa no carregamento (chaves legadas não migram automaticamente).
+- Descarte silencioso de chaves não reconhecidas.
 
-## Strict validation rules
+## Regras de validação estrita
 
-- Config must match the schema exactly at every level.
-- Unknown keys are validation errors (no passthrough at root or nested), except root `$schema` when it is a string.
-- `plugins.entries.<id>.config` must be validated by the plugin’s schema.
-  - If a plugin lacks a schema, **reject plugin load** and surface a clear error.
-- Unknown `channels.<id>` keys are errors unless a plugin manifest declares the channel id.
-- Plugin manifests (`openclaw.plugin.json`) are required for all plugins.
+- A configuração deve corresponder exatamente ao esquema em todos os níveis.
+- Chaves desconhecidas são erros de validação (sem passagem na raiz ou aninhadas), exceto `$schema` na raiz quando for uma string.
+- `plugins.entries.<id>.config` deve ser validado pelo esquema do plugin.
+  - Se um plugin não tiver esquema, **rejeitar carregamento do plugin** e exibir um erro claro.
+- Chaves `channels.<id>` desconhecidas são erros a menos que um manifesto de plugin declare o id do canal.
+- Manifestos de plugin (`opencraft.plugin.json`) são obrigatórios para todos os plugins.
 
-## Plugin schema enforcement
+## Aplicação do esquema de plugin
 
-- Each plugin provides a strict JSON Schema for its config (inline in the manifest).
-- Plugin load flow:
-  1. Resolve plugin manifest + schema (`openclaw.plugin.json`).
-  2. Validate config against the schema.
-  3. If missing schema or invalid config: block plugin load, record error.
-- Error message includes:
-  - Plugin id
-  - Reason (missing schema / invalid config)
-  - Path(s) that failed validation
-- Disabled plugins keep their config, but Doctor + logs surface a warning.
+- Cada plugin fornece um JSON Schema estrito para sua configuração (inline no manifesto).
+- Fluxo de carregamento do plugin:
+  1. Resolver manifesto do plugin + esquema (`opencraft.plugin.json`).
+  2. Validar configuração contra o esquema.
+  3. Se esquema ausente ou configuração inválida: bloquear carregamento do plugin, registrar erro.
+- A mensagem de erro inclui:
+  - ID do plugin
+  - Motivo (esquema ausente / configuração inválida)
+  - Caminho(s) que falharam na validação
+- Plugins desabilitados mantêm sua configuração, mas Doctor + logs exibem um aviso.
 
-## Doctor flow
+## Fluxo do Doctor
 
-- Doctor runs **every time** config is loaded (dry-run by default).
-- If config invalid:
-  - Print a summary + actionable errors.
-  - Instruct: `openclaw doctor --fix`.
-- `openclaw doctor --fix`:
-  - Applies migrations.
-  - Removes unknown keys.
-  - Writes updated config.
+- O Doctor executa **toda vez** que a configuração é carregada (dry-run por padrão).
+- Se a configuração for inválida:
+  - Imprimir um resumo + erros acionáveis.
+  - Instruir: `opencraft doctor --fix`.
+- `opencraft doctor --fix`:
+  - Aplica migrações.
+  - Remove chaves desconhecidas.
+  - Escreve configuração atualizada.
 
-## Command gating (when config is invalid)
+## Controle de comandos (quando a configuração é inválida)
 
-Allowed (diagnostic-only):
+Permitido (apenas diagnóstico):
 
-- `openclaw doctor`
-- `openclaw logs`
-- `openclaw health`
-- `openclaw help`
-- `openclaw status`
-- `openclaw gateway status`
+- `opencraft doctor`
+- `opencraft logs`
+- `opencraft health`
+- `opencraft help`
+- `opencraft status`
+- `opencraft gateway status`
 
-Everything else must hard-fail with: “Config invalid. Run `openclaw doctor --fix`.”
+Todo o resto deve falhar com: "Configuração inválida. Execute `opencraft doctor --fix`."
 
-## Error UX format
+## Formato de UX de erro
 
-- Single summary header.
-- Grouped sections:
-  - Unknown keys (full paths)
-  - Legacy keys / migrations needed
-  - Plugin load failures (plugin id + reason + path)
+- Cabeçalho de resumo único.
+- Seções agrupadas:
+  - Chaves desconhecidas (caminhos completos)
+  - Chaves legadas / migrações necessárias
+  - Falhas de carregamento de plugin (id do plugin + motivo + caminho)
 
-## Implementation touchpoints
+## Pontos de contato de implementação
 
-- `src/config/zod-schema.ts`: remove root passthrough; strict objects everywhere.
-- `src/config/zod-schema.providers.ts`: ensure strict channel schemas.
-- `src/config/validation.ts`: fail on unknown keys; do not apply legacy migrations.
-- `src/config/io.ts`: remove legacy auto-migrations; always run doctor dry-run.
-- `src/config/legacy*.ts`: move usage to doctor only.
-- `src/plugins/*`: add schema registry + gating.
-- CLI command gating in `src/cli`.
+- `src/config/zod-schema.ts`: remover passagem na raiz; objetos estritos em todo lugar.
+- `src/config/zod-schema.providers.ts`: garantir esquemas de canal estritos.
+- `src/config/validation.ts`: falhar em chaves desconhecidas; não aplicar migrações legadas.
+- `src/config/io.ts`: remover auto-migrações legadas; sempre executar dry-run do doctor.
+- `src/config/legacy*.ts`: mover uso apenas para o doctor.
+- `src/plugins/*`: adicionar registry de esquema + controle.
+- Controle de comandos CLI em `src/cli`.
 
-## Tests
+## Testes
 
-- Unknown key rejection (root + nested).
-- Plugin missing schema → plugin load blocked with clear error.
-- Invalid config → gateway startup blocked except diagnostic commands.
-- Doctor dry-run auto; `doctor --fix` writes corrected config.
+- Rejeição de chave desconhecida (raiz + aninhada).
+- Plugin com esquema ausente → carregamento do plugin bloqueado com erro claro.
+- Configuração inválida → inicialização do gateway bloqueada exceto comandos diagnósticos.
+- Doctor dry-run automático; `doctor --fix` escreve configuração corrigida.

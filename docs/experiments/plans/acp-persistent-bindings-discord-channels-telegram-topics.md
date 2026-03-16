@@ -1,65 +1,65 @@
-# ACP Persistent Bindings for Discord Channels and Telegram Topics
+# Vinculações Persistentes ACP para Canais Discord e Tópicos Telegram
 
-Status: Draft
+Status: Rascunho
 
-## Summary
+## Resumo
 
-Introduce persistent ACP bindings that map:
+Introduzir vinculações ACP persistentes que mapeiam:
 
-- Discord channels (and existing threads, where needed), and
-- Telegram forum topics in groups/supergroups (`chatId:topic:topicId`)
+- canais Discord (e threads existentes, quando necessário), e
+- tópicos de fórum Telegram em grupos/supergrupos (`chatId:topic:topicId`)
 
-to long-lived ACP sessions, with binding state stored in top-level `bindings[]` entries using explicit binding types.
+para sessões ACP de longa duração, com estado de vinculação armazenado em entradas `bindings[]` de nível superior usando tipos de vinculação explícitos.
 
-This makes ACP usage in high-traffic messaging channels predictable and durable, so users can create dedicated channels/topics such as `codex`, `claude-1`, or `claude-myrepo`.
+Isso torna o uso do ACP em canais de mensagens com alto tráfego previsível e durável, para que os usuários possam criar canais/tópicos dedicados como `codex`, `claude-1` ou `claude-meurepositorio`.
 
-## Why
+## Por Que
 
-Current thread-bound ACP behavior is optimized for ephemeral Discord thread workflows. Telegram does not have the same thread model; it has forum topics in groups/supergroups. Users want stable, always-on ACP “workspaces” in chat surfaces, not only temporary thread sessions.
+O comportamento atual de ACP vinculado a threads é otimizado para fluxos de trabalho efêmeros com threads no Discord. O Telegram não tem o mesmo modelo de thread; ele tem tópicos de fórum em grupos/supergrupos. Os usuários querem "espaços de trabalho" ACP estáveis e sempre ativos em superfícies de chat, não apenas sessões de thread temporárias.
 
-## Goals
+## Objetivos
 
-- Support durable ACP binding for:
-  - Discord channels/threads
-  - Telegram forum topics (groups/supergroups)
-- Make binding source-of-truth config-driven.
-- Keep `/acp`, `/new`, `/reset`, `/focus`, and delivery behavior consistent across Discord and Telegram.
-- Preserve existing temporary binding flows for ad-hoc usage.
+- Suportar vinculação ACP durável para:
+  - canais/threads Discord
+  - tópicos de fórum Telegram (grupos/supergrupos)
+- Tornar a configuração de vinculação a fonte da verdade.
+- Manter `/acp`, `/new`, `/reset`, `/focus` e comportamento de entrega consistentes entre Discord e Telegram.
+- Preservar fluxos de vinculação temporária existentes para uso ad-hoc.
 
-## Non-Goals
+## Não-Objetivos
 
-- Full redesign of ACP runtime/session internals.
-- Removing existing ephemeral binding flows.
-- Expanding to every channel in the first iteration.
-- Implementing Telegram channel direct-messages topics (`direct_messages_topic_id`) in this phase.
-- Implementing Telegram private-chat topic variants in this phase.
+- Redesenho completo do runtime/internos de sessão ACP.
+- Remoção dos fluxos de vinculação efêmera existentes.
+- Expansão para todos os canais na primeira iteração.
+- Implementar tópicos de mensagens diretas do Telegram (`direct_messages_topic_id`) nesta fase.
+- Implementar variantes de tópicos de chat privado do Telegram nesta fase.
 
-## UX Direction
+## Direção de UX
 
-### 1) Two binding types
+### 1) Dois tipos de vinculação
 
-- **Persistent binding**: saved in config, reconciled on startup, intended for “named workspace” channels/topics.
-- **Temporary binding**: runtime-only, expires by idle/max-age policy.
+- **Vinculação persistente**: salva na configuração, reconciliada na inicialização, destinada a canais/tópicos de "espaço de trabalho nomeado".
+- **Vinculação temporária**: somente em runtime, expira por política de ociosidade/idade máxima.
 
-### 2) Command behavior
+### 2) Comportamento dos comandos
 
-- `/acp spawn ... --thread here|auto|off` remains available.
-- Add explicit bind lifecycle controls:
+- `/acp spawn ... --thread here|auto|off` permanece disponível.
+- Adicionar controles explícitos de ciclo de vida de vinculação:
   - `/acp bind [session|agent] [--persist]`
   - `/acp unbind [--persist]`
-  - `/acp status` includes whether binding is `persistent` or `temporary`.
-- In bound conversations, `/new` and `/reset` reset the bound ACP session in place and keep the binding attached.
+  - `/acp status` inclui se a vinculação é `persistent` (persistente) ou `temporary` (temporária).
+- Em conversas vinculadas, `/new` e `/reset` reiniciam a sessão ACP vinculada no lugar e mantêm a vinculação anexada.
 
-### 3) Conversation identity
+### 3) Identidade da conversa
 
-- Use canonical conversation IDs:
-  - Discord: channel/thread ID.
-  - Telegram topic: `chatId:topic:topicId`.
-- Never key Telegram bindings by bare topic ID alone.
+- Usar IDs de conversa canônicos:
+  - Discord: ID do canal/thread.
+  - Tópico Telegram: `chatId:topic:topicId`.
+- Nunca usar chave de vinculação Telegram apenas pelo ID do tópico isolado.
 
-## Config Model (Proposed)
+## Modelo de Configuração (Proposto)
 
-Unify routing and persistent ACP binding configuration in top-level `bindings[]` with explicit `type` discriminator:
+Unificar configuração de roteamento e vinculação ACP persistente em `bindings[]` de nível superior com discriminador `type` explícito:
 
 ```jsonc
 {
@@ -68,12 +68,12 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
       {
         "id": "main",
         "default": true,
-        "workspace": "~/.openclaw/workspace-main",
+        "workspace": "~/.opencraft/workspace-main",
         "runtime": { "type": "embedded" },
       },
       {
         "id": "codex",
-        "workspace": "~/.openclaw/workspace-codex",
+        "workspace": "~/.opencraft/workspace-codex",
         "runtime": {
           "type": "acp",
           "acp": {
@@ -86,7 +86,7 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
       },
       {
         "id": "claude",
-        "workspace": "~/.openclaw/workspace-claude",
+        "workspace": "~/.opencraft/workspace-claude",
         "runtime": {
           "type": "acp",
           "acp": {
@@ -105,7 +105,7 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
     "allowedAgents": ["codex", "claude"],
   },
   "bindings": [
-    // Route bindings (existing behavior)
+    // Vinculações de rota (comportamento existente)
     {
       "type": "route",
       "agentId": "main",
@@ -116,7 +116,7 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
       "agentId": "main",
       "match": { "channel": "telegram", "accountId": "default" },
     },
-    // Persistent ACP conversation bindings
+    // Vinculações de conversa ACP persistentes
     {
       "type": "acp",
       "agentId": "codex",
@@ -192,7 +192,7 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
 }
 ```
 
-### Minimal Example (No Per-Binding ACP Overrides)
+### Exemplo Mínimo (Sem Substituições ACP por Vinculação)
 
 ```jsonc
 {
@@ -259,117 +259,117 @@ Unify routing and persistent ACP binding configuration in top-level `bindings[]`
 }
 ```
 
-Notes:
+Notas:
 
-- `bindings[].type` is explicit:
-  - `route`: normal agent routing.
-  - `acp`: persistent ACP harness binding for a matched conversation.
-- For `type: "acp"`, `match.peer.id` is the canonical conversation key:
-  - Discord channel/thread: raw channel/thread ID.
-  - Telegram topic: `chatId:topic:topicId`.
-- `bindings[].acp.backend` is optional. Backend fallback order:
+- `bindings[].type` é explícito:
+  - `route`: roteamento normal de agente.
+  - `acp`: vinculação persistente de harness ACP para uma conversa correspondente.
+- Para `type: "acp"`, `match.peer.id` é a chave canônica de conversa:
+  - Canal/thread Discord: ID bruto do canal/thread.
+  - Tópico Telegram: `chatId:topic:topicId`.
+- `bindings[].acp.backend` é opcional. Ordem de fallback do backend:
   1. `bindings[].acp.backend`
   2. `agents.list[].runtime.acp.backend`
-  3. global `acp.backend`
-- `mode`, `cwd`, and `label` follow the same override pattern (`binding override -> agent runtime default -> global/default behavior`).
-- Keep existing `session.threadBindings.*` and `channels.discord.threadBindings.*` for temporary binding policies.
-- Persistent entries declare desired state; runtime reconciles to actual ACP sessions/bindings.
-- One active ACP binding per conversation node is the intended model.
-- Backward compatibility: missing `type` is interpreted as `route` for legacy entries.
+  3. `acp.backend` global
+- `mode`, `cwd` e `label` seguem o mesmo padrão de substituição (`substituição de vinculação -> padrão do runtime do agente -> comportamento global/padrão`).
+- Manter `session.threadBindings.*` e `channels.discord.threadBindings.*` existentes para políticas de vinculação temporária.
+- Entradas persistentes declaram o estado desejado; o runtime reconcilia com as sessões/vinculações ACP reais.
+- Um vinculação ACP ativa por nó de conversa é o modelo pretendido.
+- Compatibilidade retroativa: `type` ausente é interpretado como `route` para entradas legadas.
 
-### Backend Selection
+### Seleção de Backend
 
-- ACP session initialization already uses configured backend selection during spawn (`acp.backend` today).
-- This proposal extends spawn/reconcile logic to prefer typed ACP binding overrides:
-  - `bindings[].acp.backend` for conversation-local override.
-  - `agents.list[].runtime.acp.backend` for per-agent defaults.
-- If no override exists, keep current behavior (`acp.backend` default).
+- A inicialização de sessão ACP já usa seleção de backend configurada durante o spawn (`acp.backend` hoje).
+- Esta proposta estende a lógica de spawn/reconciliação para preferir substituições de vinculação ACP tipadas:
+  - `bindings[].acp.backend` para substituição local de conversa.
+  - `agents.list[].runtime.acp.backend` para padrões por agente.
+- Se não houver substituição, manter o comportamento atual (padrão `acp.backend`).
 
-## Architecture Fit in Current System
+## Adequação à Arquitetura do Sistema Atual
 
-### Reuse existing components
+### Reutilizar componentes existentes
 
-- `SessionBindingService` already supports channel-agnostic conversation references.
-- ACP spawn/bind flows already support binding through service APIs.
-- Telegram already carries topic/thread context via `MessageThreadId` and `chatId`.
+- `SessionBindingService` já suporta referências de conversa agnósticas ao canal.
+- Fluxos de spawn/bind ACP já suportam vinculação por APIs de serviço.
+- O Telegram já carrega contexto de tópico/thread via `MessageThreadId` e `chatId`.
 
-### New/extended components
+### Componentes novos/estendidos
 
-- **Telegram binding adapter** (parallel to Discord adapter):
-  - register adapter per Telegram account,
-  - resolve/list/bind/unbind/touch by canonical conversation ID.
-- **Typed binding resolver/index**:
-  - split `bindings[]` into `route` and `acp` views,
-  - keep `resolveAgentRoute` on `route` bindings only,
-  - resolve persistent ACP intent from `acp` bindings only.
-- **Inbound binding resolution for Telegram**:
-  - resolve bound session before route finalization (Discord already does this).
-- **Persistent binding reconciler**:
-  - on startup: load configured top-level `type: "acp"` bindings, ensure ACP sessions exist, ensure bindings exist.
-  - on config change: apply deltas safely.
-- **Cutover model**:
-  - no channel-local ACP binding fallback is read,
-  - persistent ACP bindings are sourced only from top-level `bindings[].type="acp"` entries.
+- **Adaptador de vinculação Telegram** (paralelo ao adaptador Discord):
+  - registrar adaptador por conta Telegram,
+  - resolver/listar/vincular/desvincular/atualizar por ID canônico de conversa.
+- **Resolvedor/índice de vinculação tipada**:
+  - dividir `bindings[]` em visões `route` e `acp`,
+  - manter `resolveAgentRoute` apenas em vinculações `route`,
+  - resolver intenção ACP persistente apenas de vinculações `acp`.
+- **Resolução de vinculação de entrada para Telegram**:
+  - resolver sessão vinculada antes da finalização da rota (o Discord já faz isso).
+- **Reconciliador de vinculação persistente**:
+  - na inicialização: carregar vinculações `type: "acp"` configuradas de nível superior, garantir que sessões ACP existam, garantir que vinculações existam.
+  - na mudança de configuração: aplicar deltas com segurança.
+- **Modelo de transição**:
+  - nenhum fallback de vinculação ACP local do canal é lido,
+  - vinculações ACP persistentes são originadas apenas de entradas `bindings[].type="acp"` de nível superior.
 
-## Phased Delivery
+## Entrega em Fases
 
-### Phase 1: Typed binding schema foundation
+### Fase 1: Fundação do esquema de vinculação tipada
 
-- Extend config schema to support `bindings[].type` discriminator:
+- Estender esquema de configuração para suportar discriminador `bindings[].type`:
   - `route`,
-  - `acp` with optional `acp` override object (`mode`, `backend`, `cwd`, `label`).
-- Extend agent schema with runtime descriptor to mark ACP-native agents (`agents.list[].runtime.type`).
-- Add parser/indexer split for route vs ACP bindings.
+  - `acp` com objeto de substituição `acp` opcional (`mode`, `backend`, `cwd`, `label`).
+- Estender esquema de agente com descritor de runtime para marcar agentes nativos ACP (`agents.list[].runtime.type`).
+- Adicionar divisão parser/indexador para vinculações de rota vs ACP.
 
-### Phase 2: Runtime resolution + Discord/Telegram parity
+### Fase 2: Resolução em runtime + paridade Discord/Telegram
 
-- Resolve persistent ACP bindings from top-level `type: "acp"` entries for:
-  - Discord channels/threads,
-  - Telegram forum topics (`chatId:topic:topicId` canonical IDs).
-- Implement Telegram binding adapter and inbound bound-session override parity with Discord.
-- Do not include Telegram direct/private topic variants in this phase.
+- Resolver vinculações ACP persistentes de entradas `type: "acp"` de nível superior para:
+  - canais/threads Discord,
+  - tópicos de fórum Telegram (IDs canônicos `chatId:topic:topicId`).
+- Implementar adaptador de vinculação Telegram e paridade de substituição de sessão vinculada de entrada com Discord.
+- Não incluir variantes de tópico direto/privado do Telegram nesta fase.
 
-### Phase 3: Command parity and resets
+### Fase 3: Paridade de comandos e resets
 
-- Align `/acp`, `/new`, `/reset`, and `/focus` behavior in bound Telegram/Discord conversations.
-- Ensure binding survives reset flows as configured.
+- Alinhar comportamento de `/acp`, `/new`, `/reset` e `/focus` em conversas vinculadas Telegram/Discord.
+- Garantir que a vinculação sobreviva a fluxos de reset conforme configurado.
 
-### Phase 4: Hardening
+### Fase 4: Consolidação
 
-- Better diagnostics (`/acp status`, startup reconciliation logs).
-- Conflict handling and health checks.
+- Melhores diagnósticos (`/acp status`, logs de reconciliação na inicialização).
+- Tratamento de conflitos e verificações de saúde.
 
-## Guardrails and Policy
+## Proteções e Políticas
 
-- Respect ACP enablement and sandbox restrictions exactly as today.
-- Keep explicit account scoping (`accountId`) to avoid cross-account bleed.
-- Fail closed on ambiguous routing.
-- Keep mention/access policy behavior explicit per channel config.
+- Respeitar habilitação de ACP e restrições de sandbox exatamente como hoje.
+- Manter escopo explícito de conta (`accountId`) para evitar vazamento entre contas.
+- Falhar de forma fechada em roteamento ambíguo.
+- Manter comportamento de política de menção/acesso explícito por configuração de canal.
 
-## Testing Plan
+## Plano de Testes
 
-- Unit:
-  - conversation ID normalization (especially Telegram topic IDs),
-  - reconciler create/update/delete paths,
-  - `/acp bind --persist` and unbind flows.
-- Integration:
-  - inbound Telegram topic -> bound ACP session resolution,
-  - inbound Discord channel/thread -> persistent binding precedence.
-- Regression:
-  - temporary bindings continue to work,
-  - unbound channels/topics keep current routing behavior.
+- Unitário:
+  - normalização de ID de conversa (especialmente IDs de tópico Telegram),
+  - caminhos de criação/atualização/exclusão do reconciliador,
+  - fluxos de `/acp bind --persist` e unbind.
+- Integração:
+  - resolução de tópico Telegram de entrada -> sessão ACP vinculada,
+  - precedência de vinculação persistente de canal/thread Discord de entrada.
+- Regressão:
+  - vinculações temporárias continuam funcionando,
+  - canais/tópicos não vinculados mantêm comportamento de roteamento atual.
 
-## Open Questions
+## Questões em Aberto
 
-- Should `/acp spawn --thread auto` in Telegram topic default to `here`?
-- Should persistent bindings always bypass mention-gating in bound conversations, or require explicit `requireMention=false`?
-- Should `/focus` gain `--persist` as an alias for `/acp bind --persist`?
+- `/acp spawn --thread auto` em tópico Telegram deve usar `here` por padrão?
+- Vinculações persistentes devem sempre ignorar controle de menção em conversas vinculadas, ou exigir `requireMention=false` explícito?
+- `/focus` deve ganhar `--persist` como alias para `/acp bind --persist`?
 
-## Rollout
+## Implantação
 
-- Ship as opt-in per conversation (`bindings[].type="acp"` entry present).
-- Start with Discord + Telegram only.
-- Add docs with examples for:
-  - “one channel/topic per agent”
-  - “multiple channels/topics per same agent with different `cwd`”
-  - “team naming patterns (`codex-1`, `claude-repo-x`)".
+- Lançar como opt-in por conversa (entrada `bindings[].type="acp"` presente).
+- Começar apenas com Discord + Telegram.
+- Adicionar documentação com exemplos para:
+  - "um canal/tópico por agente"
+  - "múltiplos canais/tópicos para o mesmo agente com `cwd` diferentes"
+  - "padrões de nomenclatura de equipe (`codex-1`, `claude-repo-x`)".

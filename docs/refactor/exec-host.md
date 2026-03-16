@@ -1,95 +1,95 @@
 ---
-summary: "Refactor plan: exec host routing, node approvals, and headless runner"
+summary: "Plano de refatoração: roteamento do exec host, aprovações de node e runner headless"
 read_when:
-  - Designing exec host routing or exec approvals
-  - Implementing node runner + UI IPC
-  - Adding exec host security modes and slash commands
-title: "Exec Host Refactor"
+  - Projetando roteamento do exec host ou aprovações de exec
+  - Implementando node runner + IPC de UI
+  - Adicionando modos de segurança do exec host e slash commands
+title: "Refatoração do Exec Host"
 ---
 
-# Exec host refactor plan
+# Plano de refatoração do exec host
 
-## Goals
+## Objetivos
 
-- Add `exec.host` + `exec.security` to route execution across **sandbox**, **gateway**, and **node**.
-- Keep defaults **safe**: no cross-host execution unless explicitly enabled.
-- Split execution into a **headless runner service** with optional UI (macOS app) via local IPC.
-- Provide **per-agent** policy, allowlist, ask mode, and node binding.
-- Support **ask modes** that work _with_ or _without_ allowlists.
-- Cross-platform: Unix socket + token auth (macOS/Linux/Windows parity).
+- Adicionar `exec.host` + `exec.security` para rotear a execução entre **sandbox**, **gateway** e **node**.
+- Manter os padrões **seguros**: sem execução entre hosts a menos que explicitamente habilitado.
+- Dividir a execução em um **serviço runner headless** com UI opcional (app macOS) via IPC local.
+- Fornecer política **por agente**, allowlist, modo de pergunta e vinculação de node.
+- Suportar **modos de pergunta** que funcionem _com_ ou _sem_ allowlists.
+- Multiplataforma: socket Unix + autenticação por token (paridade macOS/Linux/Windows).
 
-## Non-goals
+## Não-objetivos
 
-- No legacy allowlist migration or legacy schema support.
-- No PTY/streaming for node exec (aggregated output only).
-- No new network layer beyond the existing Bridge + Gateway.
+- Sem migração de allowlist legada ou suporte a schema legado.
+- Sem PTY/streaming para exec de node (apenas saída agregada).
+- Sem nova camada de rede além do Bridge + Gateway existentes.
 
-## Decisions (locked)
+## Decisões (bloqueadas)
 
-- **Config keys:** `exec.host` + `exec.security` (per-agent override allowed).
-- **Elevation:** keep `/elevated` as an alias for gateway full access.
-- **Ask default:** `on-miss`.
-- **Approvals store:** `~/.openclaw/exec-approvals.json` (JSON, no legacy migration).
-- **Runner:** headless system service; UI app hosts a Unix socket for approvals.
-- **Node identity:** use existing `nodeId`.
-- **Socket auth:** Unix socket + token (cross-platform); split later if needed.
-- **Node host state:** `~/.openclaw/node.json` (node id + pairing token).
-- **macOS exec host:** run `system.run` inside the macOS app; node host service forwards requests over local IPC.
-- **No XPC helper:** stick to Unix socket + token + peer checks.
+- **Chaves de configuração:** `exec.host` + `exec.security` (sobrescrita por agente permitida).
+- **Elevação:** manter `/elevated` como alias para acesso completo ao gateway.
+- **Padrão de pergunta:** `on-miss`.
+- **Store de aprovações:** `~/.opencraft/exec-approvals.json` (JSON, sem migração legada).
+- **Runner:** serviço de sistema headless; app de UI hospeda um socket Unix para aprovações.
+- **Identidade do node:** usar `nodeId` existente.
+- **Autenticação de socket:** socket Unix + token (multiplataforma); separar depois se necessário.
+- **Estado do host do node:** `~/.opencraft/node.json` (id do node + token de pareamento).
+- **Exec host macOS:** executar `system.run` dentro do app macOS; serviço de host do node encaminha requisições via IPC local.
+- **Sem helper XPC:** manter socket Unix + token + verificações de peer.
 
-## Key concepts
+## Conceitos-chave
 
 ### Host
 
-- `sandbox`: Docker exec (current behavior).
-- `gateway`: exec on gateway host.
-- `node`: exec on node runner via Bridge (`system.run`).
+- `sandbox`: exec Docker (comportamento atual).
+- `gateway`: exec no host do gateway.
+- `node`: exec no node runner via Bridge (`system.run`).
 
-### Security mode
+### Modo de segurança
 
-- `deny`: always block.
-- `allowlist`: allow only matches.
-- `full`: allow everything (equivalent to elevated).
+- `deny`: sempre bloquear.
+- `allowlist`: permitir apenas correspondências.
+- `full`: permitir tudo (equivalente a elevated).
 
-### Ask mode
+### Modo de pergunta
 
-- `off`: never ask.
-- `on-miss`: ask only when allowlist does not match.
-- `always`: ask every time.
+- `off`: nunca perguntar.
+- `on-miss`: perguntar apenas quando a allowlist não corresponde.
+- `always`: perguntar sempre.
 
-Ask is **independent** of allowlist; allowlist can be used with `always` or `on-miss`.
+O modo de pergunta é **independente** da allowlist; a allowlist pode ser usada com `always` ou `on-miss`.
 
-### Policy resolution (per exec)
+### Resolução de política (por exec)
 
-1. Resolve `exec.host` (tool param → agent override → global default).
-2. Resolve `exec.security` and `exec.ask` (same precedence).
-3. If host is `sandbox`, proceed with local sandbox exec.
-4. If host is `gateway` or `node`, apply security + ask policy on that host.
+1. Resolver `exec.host` (parâmetro de ferramenta → sobrescrita de agente → padrão global).
+2. Resolver `exec.security` e `exec.ask` (mesma precedência).
+3. Se o host for `sandbox`, prosseguir com exec local em sandbox.
+4. Se o host for `gateway` ou `node`, aplicar política de segurança + pergunta naquele host.
 
-## Default safety
+## Segurança padrão
 
-- Default `exec.host = sandbox`.
-- Default `exec.security = deny` for `gateway` and `node`.
-- Default `exec.ask = on-miss` (only relevant if security allows).
-- If no node binding is set, **agent may target any node**, but only if policy allows it.
+- Padrão `exec.host = sandbox`.
+- Padrão `exec.security = deny` para `gateway` e `node`.
+- Padrão `exec.ask = on-miss` (relevante apenas se a segurança permitir).
+- Se nenhuma vinculação de node estiver definida, **o agente pode ter como alvo qualquer node**, mas apenas se a política permitir.
 
-## Config surface
+## Superfície de configuração
 
-### Tool parameters
+### Parâmetros de ferramenta
 
-- `exec.host` (optional): `sandbox | gateway | node`.
-- `exec.security` (optional): `deny | allowlist | full`.
-- `exec.ask` (optional): `off | on-miss | always`.
-- `exec.node` (optional): node id/name to use when `host=node`.
+- `exec.host` (opcional): `sandbox | gateway | node`.
+- `exec.security` (opcional): `deny | allowlist | full`.
+- `exec.ask` (opcional): `off | on-miss | always`.
+- `exec.node` (opcional): id/nome do node a usar quando `host=node`.
 
-### Config keys (global)
+### Chaves de configuração (global)
 
 - `tools.exec.host`
 - `tools.exec.security`
 - `tools.exec.ask`
-- `tools.exec.node` (default node binding)
+- `tools.exec.node` (vinculação padrão de node)
 
-### Config keys (per agent)
+### Chaves de configuração (por agente)
 
 - `agents.list[].tools.exec.host`
 - `agents.list[].tools.exec.security`
@@ -98,26 +98,26 @@ Ask is **independent** of allowlist; allowlist can be used with `always` or `on-
 
 ### Alias
 
-- `/elevated on` = set `tools.exec.host=gateway`, `tools.exec.security=full` for the agent session.
-- `/elevated off` = restore previous exec settings for the agent session.
+- `/elevated on` = definir `tools.exec.host=gateway`, `tools.exec.security=full` para a sessão do agente.
+- `/elevated off` = restaurar configurações anteriores de exec para a sessão do agente.
 
-## Approvals store (JSON)
+## Store de aprovações (JSON)
 
-Path: `~/.openclaw/exec-approvals.json`
+Caminho: `~/.opencraft/exec-approvals.json`
 
-Purpose:
+Propósito:
 
-- Local policy + allowlists for the **execution host** (gateway or node runner).
-- Ask fallback when no UI is available.
-- IPC credentials for UI clients.
+- Política local + allowlists para o **host de execução** (gateway ou node runner).
+- Fallback de pergunta quando nenhuma UI está disponível.
+- Credenciais IPC para clientes de UI.
 
-Proposed schema (v1):
+Schema proposto (v1):
 
 ```json
 {
   "version": 1,
   "socket": {
-    "path": "~/.openclaw/exec-approvals.sock",
+    "path": "~/.opencraft/exec-approvals.sock",
     "token": "base64-opaque-token"
   },
   "defaults": {
@@ -142,49 +142,49 @@ Proposed schema (v1):
 }
 ```
 
-Notes:
+Notas:
 
-- No legacy allowlist formats.
-- `askFallback` applies only when `ask` is required and no UI is reachable.
-- File permissions: `0600`.
+- Sem formatos de allowlist legados.
+- `askFallback` se aplica apenas quando `ask` é necessário e nenhuma UI está acessível.
+- Permissões de arquivo: `0600`.
 
-## Runner service (headless)
+## Serviço runner (headless)
 
-### Role
+### Papel
 
-- Enforce `exec.security` + `exec.ask` locally.
-- Execute system commands and return output.
-- Emit Bridge events for exec lifecycle (optional but recommended).
+- Aplicar `exec.security` + `exec.ask` localmente.
+- Executar comandos do sistema e retornar a saída.
+- Emitir eventos Bridge para o ciclo de vida do exec (opcional, mas recomendado).
 
-### Service lifecycle
+### Ciclo de vida do serviço
 
-- Launchd/daemon on macOS; system service on Linux/Windows.
-- Approvals JSON is local to the execution host.
-- UI hosts a local Unix socket; runners connect on demand.
+- Launchd/daemon no macOS; serviço de sistema no Linux/Windows.
+- O JSON de aprovações é local ao host de execução.
+- A UI hospeda um socket Unix local; runners se conectam sob demanda.
 
-## UI integration (macOS app)
+## Integração com UI (app macOS)
 
 ### IPC
 
-- Unix socket at `~/.openclaw/exec-approvals.sock` (0600).
-- Token stored in `exec-approvals.json` (0600).
-- Peer checks: same-UID only.
-- Challenge/response: nonce + HMAC(token, request-hash) to prevent replay.
-- Short TTL (e.g., 10s) + max payload + rate limit.
+- Socket Unix em `~/.opencraft/exec-approvals.sock` (0600).
+- Token armazenado em `exec-approvals.json` (0600).
+- Verificações de peer: apenas mesmo UID.
+- Challenge/response: nonce + HMAC(token, request-hash) para prevenir replay.
+- TTL curto (ex.: 10s) + payload máximo + rate limit.
 
-### Ask flow (macOS app exec host)
+### Fluxo de pergunta (exec host app macOS)
 
-1. Node service receives `system.run` from gateway.
-2. Node service connects to the local socket and sends the prompt/exec request.
-3. App validates peer + token + HMAC + TTL, then shows dialog if needed.
-4. App executes the command in UI context and returns output.
-5. Node service returns output to gateway.
+1. Serviço do node recebe `system.run` do gateway.
+2. Serviço do node conecta ao socket local e envia o prompt/requisição de exec.
+3. App valida peer + token + HMAC + TTL e exibe diálogo se necessário.
+4. App executa o comando no contexto de UI e retorna a saída.
+5. Serviço do node retorna a saída ao gateway.
 
-If UI missing:
+Se a UI estiver ausente:
 
-- Apply `askFallback` (`deny|allowlist|full`).
+- Aplicar `askFallback` (`deny|allowlist|full`).
 
-### Diagram (SCI)
+### Diagrama (SCI)
 
 ```
 Agent -> Gateway -> Bridge -> Node Service (TS)
@@ -193,124 +193,124 @@ Agent -> Gateway -> Bridge -> Node Service (TS)
                      Mac App (UI + TCC + system.run)
 ```
 
-## Node identity + binding
+## Identidade + vinculação do node
 
-- Use existing `nodeId` from Bridge pairing.
-- Binding model:
-  - `tools.exec.node` restricts the agent to a specific node.
-  - If unset, agent can pick any node (policy still enforces defaults).
-- Node selection resolution:
-  - `nodeId` exact match
-  - `displayName` (normalized)
+- Usar `nodeId` existente do pareamento Bridge.
+- Modelo de vinculação:
+  - `tools.exec.node` restringe o agente a um node específico.
+  - Se não definido, o agente pode escolher qualquer node (a política ainda aplica os padrões).
+- Resolução de seleção do node:
+  - correspondência exata de `nodeId`
+  - `displayName` (normalizado)
   - `remoteIp`
-  - `nodeId` prefix (>= 6 chars)
+  - prefixo de `nodeId` (>= 6 chars)
 
-## Eventing
+## Eventos
 
-### Who sees events
+### Quem vê os eventos
 
-- System events are **per session** and shown to the agent on the next prompt.
-- Stored in the gateway in-memory queue (`enqueueSystemEvent`).
+- Eventos do sistema são **por sessão** e mostrados ao agente no próximo prompt.
+- Armazenados na fila em memória do gateway (`enqueueSystemEvent`).
 
-### Event text
+### Texto do evento
 
 - `Exec started (node=<id>, id=<runId>)`
-- `Exec finished (node=<id>, id=<runId>, code=<code>)` + optional output tail
+- `Exec finished (node=<id>, id=<runId>, code=<code>)` + cauda de saída opcional
 - `Exec denied (node=<id>, id=<runId>, <reason>)`
 
-### Transport
+### Transporte
 
-Option A (recommended):
+Opção A (recomendada):
 
-- Runner sends Bridge `event` frames `exec.started` / `exec.finished`.
-- Gateway `handleBridgeEvent` maps these into `enqueueSystemEvent`.
+- Runner envia frames Bridge de `event` `exec.started` / `exec.finished`.
+- `handleBridgeEvent` do gateway mapeia para `enqueueSystemEvent`.
 
-Option B:
+Opção B:
 
-- Gateway `exec` tool handles lifecycle directly (synchronous only).
+- Ferramenta `exec` do gateway lida com o ciclo de vida diretamente (apenas síncrono).
 
-## Exec flows
+## Fluxos de exec
 
-### Sandbox host
+### Host sandbox
 
-- Existing `exec` behavior (Docker or host when unsandboxed).
-- PTY supported in non-sandbox mode only.
+- Comportamento `exec` existente (Docker ou host quando sem sandbox).
+- PTY suportado apenas no modo sem sandbox.
 
-### Gateway host
+### Host gateway
 
-- Gateway process executes on its own machine.
-- Enforces local `exec-approvals.json` (security/ask/allowlist).
+- Processo do gateway executa na sua própria máquina.
+- Aplica `exec-approvals.json` local (segurança/pergunta/allowlist).
 
-### Node host
+### Host node
 
-- Gateway calls `node.invoke` with `system.run`.
-- Runner enforces local approvals.
-- Runner returns aggregated stdout/stderr.
-- Optional Bridge events for start/finish/deny.
+- Gateway chama `node.invoke` com `system.run`.
+- Runner aplica aprovações locais.
+- Runner retorna stdout/stderr agregados.
+- Eventos Bridge opcionais para início/fim/negação.
 
-## Output caps
+## Limites de saída
 
-- Cap combined stdout+stderr at **200k**; keep **tail 20k** for events.
-- Truncate with a clear suffix (e.g., `"… (truncated)"`).
+- Limitar stdout+stderr combinados em **200k**; manter **cauda de 20k** para eventos.
+- Truncar com sufixo claro (ex.: `"… (truncated)"`).
 
 ## Slash commands
 
 - `/exec host=<sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>`
-- Per-agent, per-session overrides; non-persistent unless saved via config.
-- `/elevated on|off|ask|full` remains a shortcut for `host=gateway security=full` (with `full` skipping approvals).
+- Sobrescritas por agente, por sessão; não persistentes a menos que salvas via configuração.
+- `/elevated on|off|ask|full` permanece como atalho para `host=gateway security=full` (com `full` ignorando aprovações).
 
-## Cross-platform story
+## História multiplataforma
 
-- The runner service is the portable execution target.
-- UI is optional; if missing, `askFallback` applies.
-- Windows/Linux support the same approvals JSON + socket protocol.
+- O serviço runner é o alvo de execução portátil.
+- A UI é opcional; se ausente, `askFallback` se aplica.
+- Windows/Linux suportam o mesmo JSON de aprovações + protocolo de socket.
 
-## Implementation phases
+## Fases de implementação
 
-### Phase 1: config + exec routing
+### Fase 1: configuração + roteamento de exec
 
-- Add config schema for `exec.host`, `exec.security`, `exec.ask`, `exec.node`.
-- Update tool plumbing to respect `exec.host`.
-- Add `/exec` slash command and keep `/elevated` alias.
+- Adicionar schema de configuração para `exec.host`, `exec.security`, `exec.ask`, `exec.node`.
+- Atualizar o plumbing da ferramenta para respeitar `exec.host`.
+- Adicionar slash command `/exec` e manter alias `/elevated`.
 
-### Phase 2: approvals store + gateway enforcement
+### Fase 2: store de aprovações + aplicação no gateway
 
-- Implement `exec-approvals.json` reader/writer.
-- Enforce allowlist + ask modes for `gateway` host.
-- Add output caps.
+- Implementar leitor/escritor de `exec-approvals.json`.
+- Aplicar allowlist + modos de pergunta para host `gateway`.
+- Adicionar limites de saída.
 
-### Phase 3: node runner enforcement
+### Fase 3: aplicação no node runner
 
-- Update node runner to enforce allowlist + ask.
-- Add Unix socket prompt bridge to macOS app UI.
-- Wire `askFallback`.
+- Atualizar node runner para aplicar allowlist + pergunta.
+- Adicionar bridge de prompt via socket Unix ao app macOS de UI.
+- Conectar `askFallback`.
 
-### Phase 4: events
+### Fase 4: eventos
 
-- Add node → gateway Bridge events for exec lifecycle.
-- Map to `enqueueSystemEvent` for agent prompts.
+- Adicionar eventos Bridge de node → gateway para ciclo de vida do exec.
+- Mapear para `enqueueSystemEvent` para prompts do agente.
 
-### Phase 5: UI polish
+### Fase 5: polish de UI
 
-- Mac app: allowlist editor, per-agent switcher, ask policy UI.
-- Node binding controls (optional).
+- App Mac: editor de allowlist, seletor por agente, UI de política de pergunta.
+- Controles de vinculação de node (opcional).
 
-## Testing plan
+## Plano de testes
 
-- Unit tests: allowlist matching (glob + case-insensitive).
-- Unit tests: policy resolution precedence (tool param → agent override → global).
-- Integration tests: node runner deny/allow/ask flows.
-- Bridge event tests: node event → system event routing.
+- Testes unitários: correspondência de allowlist (glob + sem distinção de maiúsculas/minúsculas).
+- Testes unitários: precedência de resolução de política (parâmetro de ferramenta → sobrescrita de agente → global).
+- Testes de integração: fluxos de deny/allow/ask do node runner.
+- Testes de evento Bridge: roteamento de evento do node → evento do sistema.
 
-## Open risks
+## Riscos em aberto
 
-- UI unavailability: ensure `askFallback` is respected.
-- Long-running commands: rely on timeout + output caps.
-- Multi-node ambiguity: error unless node binding or explicit node param.
+- Indisponibilidade de UI: garantir que `askFallback` seja respeitado.
+- Comandos de longa duração: depender de timeout + limites de saída.
+- Ambiguidade de múltiplos nodes: erro a menos que vinculação de node ou parâmetro de node explícito esteja presente.
 
-## Related docs
+## Docs relacionados
 
-- [Exec tool](/tools/exec)
-- [Exec approvals](/tools/exec-approvals)
+- [Ferramenta Exec](/tools/exec)
+- [Aprovações de Exec](/tools/exec-approvals)
 - [Nodes](/nodes)
-- [Elevated mode](/tools/elevated)
+- [Modo Elevated](/tools/elevated)

@@ -1,24 +1,24 @@
 ---
-summary: "Diagnostics flags for targeted debug logs"
+summary: "Flags de diagnóstico para logs de depuração direcionados"
 read_when:
-  - You need targeted debug logs without raising global logging levels
-  - You need to capture subsystem-specific logs for support
-title: "Diagnostics Flags"
+  - Você precisa de logs de depuração direcionados sem elevar os níveis globais de logging
+  - Você precisa capturar logs específicos de subsistema para suporte
+title: "Flags de Diagnóstico"
 ---
 
-# Diagnostics Flags
+# Flags de Diagnóstico
 
-Diagnostics flags let you enable targeted debug logs without turning on verbose logging everywhere. Flags are opt-in and have no effect unless a subsystem checks them.
+As flags de diagnóstico permitem habilitar logs de depuração direcionados sem ativar o logging verboso em toda parte. As flags são opcionais e não têm efeito a menos que um subsistema as verifique.
 
-## How it works
+## Como funciona
 
-- Flags are strings (case-insensitive).
-- You can enable flags in config or via an env override.
-- Wildcards are supported:
-  - `telegram.*` matches `telegram.http`
-  - `*` enables all flags
+- As flags são strings (insensíveis a maiúsculas/minúsculas).
+- Você pode habilitar flags via configuração ou por meio de uma variável de ambiente.
+- Curingas são suportados:
+  - `telegram.*` corresponde a `telegram.http`
+  - `*` habilita todas as flags
 
-## Enable via config
+## Habilitar via configuração
 
 ```json
 {
@@ -28,7 +28,7 @@ Diagnostics flags let you enable targeted debug logs without turning on verbose 
 }
 ```
 
-Multiple flags:
+Múltiplas flags:
 
 ```json
 {
@@ -38,54 +38,54 @@ Multiple flags:
 }
 ```
 
-Restart the gateway after changing flags.
+Reinicie o gateway após alterar as flags.
 
-## Env override (one-off)
+## Substituição por variável de ambiente (uso pontual)
 
 ```bash
 OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
-Disable all flags:
+Desativar todas as flags:
 
 ```bash
 OPENCLAW_DIAGNOSTICS=0
 ```
 
-## Where logs go
+## Para onde vão os logs
 
-Flags emit logs into the standard diagnostics log file. By default:
+As flags emitem logs no arquivo de log de diagnóstico padrão. Por padrão:
 
 ```
-/tmp/openclaw/openclaw-YYYY-MM-DD.log
+/tmp/opencraft/opencraft-YYYY-MM-DD.log
 ```
 
-If you set `logging.file`, use that path instead. Logs are JSONL (one JSON object per line). Redaction still applies based on `logging.redactSensitive`.
+Se você definiu `logging.file`, use esse caminho. Os logs estão em formato JSONL (um objeto JSON por linha). A redação ainda se aplica com base em `logging.redactSensitive`.
 
-## Extract logs
+## Extrair logs
 
-Pick the latest log file:
+Obter o arquivo de log mais recente:
 
 ```bash
-ls -t /tmp/openclaw/openclaw-*.log | head -n 1
+ls -t /tmp/opencraft/opencraft-*.log | head -n 1
 ```
 
-Filter for Telegram HTTP diagnostics:
+Filtrar por diagnósticos HTTP do Telegram:
 
 ```bash
-rg "telegram http error" /tmp/openclaw/openclaw-*.log
+rg "telegram http error" /tmp/opencraft/opencraft-*.log
 ```
 
-Or tail while reproducing:
+Ou monitorar em tempo real enquanto reproduz o problema:
 
 ```bash
-tail -f /tmp/openclaw/openclaw-$(date +%F).log | rg "telegram http error"
+tail -f /tmp/opencraft/opencraft-$(date +%F).log | rg "telegram http error"
 ```
 
-For remote gateways, you can also use `openclaw logs --follow` (see [/cli/logs](/cli/logs)).
+Para gateways remotos, você também pode usar `opencraft logs --follow` (veja [/cli/logs](/cli/logs)).
 
-## Notes
+## Notas
 
-- If `logging.level` is set higher than `warn`, these logs may be suppressed. Default `info` is fine.
-- Flags are safe to leave enabled; they only affect log volume for the specific subsystem.
-- Use [/logging](/logging) to change log destinations, levels, and redaction.
+- Se `logging.level` estiver definido acima de `warn`, esses logs podem ser suprimidos. O padrão `info` funciona bem.
+- As flags podem ser deixadas habilitadas sem problemas; elas afetam apenas o volume de logs do subsistema específico.
+- Use [/logging](/logging) para alterar destinos de log, níveis e configurações de redação.

@@ -1,136 +1,136 @@
 ---
-summary: "Integrate ACP coding agents via a first-class ACP control plane in core and plugin-backed runtimes (acpx first)"
+summary: "Integrar agentes de codificação ACP via um plano de controle ACP de primeira classe no núcleo e runtimes com suporte de plugin (acpx primeiro)"
 owner: "onutc"
 status: "draft"
 last_updated: "2026-02-25"
-title: "ACP Thread Bound Agents"
+title: "Agentes ACP Vinculados a Thread"
 ---
 
-# ACP Thread Bound Agents
+# Agentes ACP Vinculados a Thread
 
-## Overview
+## Visão Geral
 
-This plan defines how OpenClaw should support ACP coding agents in thread-capable channels (Discord first) with production-level lifecycle and recovery.
+Este plano define como o OpenCraft deve suportar agentes de codificação ACP em canais com capacidade de thread (Discord primeiro) com ciclo de vida e recuperação de nível de produção.
 
-Related document:
+Documento relacionado:
 
-- [Unified Runtime Streaming Refactor Plan](/experiments/plans/acp-unified-streaming-refactor)
+- [Plano de Refatoração de Streaming Unificado de Runtime](/experiments/plans/acp-unified-streaming-refactor)
 
-Target user experience:
+Experiência do usuário alvo:
 
-- a user spawns or focuses an ACP session into a thread
-- user messages in that thread route to the bound ACP session
-- agent output streams back to the same thread persona
-- session can be persistent or one shot with explicit cleanup controls
+- um usuário cria ou foca uma sessão ACP em uma thread
+- mensagens do usuário naquela thread são roteadas para a sessão ACP vinculada
+- a saída do agente é transmitida de volta para a mesma persona de thread
+- a sessão pode ser persistente ou de uso único com controles de limpeza explícitos
 
-## Decision summary
+## Resumo de decisão
 
-Long term recommendation is a hybrid architecture:
+A recomendação de longo prazo é uma arquitetura híbrida:
 
-- OpenClaw core owns ACP control plane concerns
-  - session identity and metadata
-  - thread binding and routing decisions
-  - delivery invariants and duplicate suppression
-  - lifecycle cleanup and recovery semantics
-- ACP runtime backend is pluggable
-  - first backend is an acpx-backed plugin service
-  - runtime does ACP transport, queueing, cancel, reconnect
+- O núcleo do OpenCraft possui preocupações do plano de controle ACP
+  - identidade e metadados de sessão
+  - decisões de vinculação a thread e roteamento
+  - invariantes de entrega e supressão de duplicatas
+  - semântica de limpeza e recuperação do ciclo de vida
+- O backend do runtime ACP é plugável
+  - primeiro backend é um serviço de plugin suportado pelo acpx
+  - o runtime faz transporte ACP, enfileiramento, cancelamento, reconexão
 
-OpenClaw should not reimplement ACP transport internals in core.
-OpenClaw should not rely on a pure plugin-only interception path for routing.
+O OpenCraft não deve reimplementar internos de transporte ACP no núcleo.
+O OpenCraft não deve depender de um caminho de interceptação somente por plugin para roteamento.
 
-## North-star architecture (holy grail)
+## Arquitetura norte-estrela (santo graal)
 
-Treat ACP as a first-class control plane in OpenClaw, with pluggable runtime adapters.
+Tratar ACP como um plano de controle de primeira classe no OpenCraft, com adaptadores de runtime plugáveis.
 
-Non-negotiable invariants:
+Invariantes inegociáveis:
 
-- every ACP thread binding references a valid ACP session record
-- every ACP session has explicit lifecycle state (`creating`, `idle`, `running`, `cancelling`, `closed`, `error`)
-- every ACP run has explicit run state (`queued`, `running`, `completed`, `failed`, `cancelled`)
-- spawn, bind, and initial enqueue are atomic
-- command retries are idempotent (no duplicate runs or duplicate Discord outputs)
-- bound-thread channel output is a projection of ACP run events, never ad-hoc side effects
+- toda vinculação de thread ACP referencia um registro de sessão ACP válido
+- toda sessão ACP tem estado explícito de ciclo de vida (`creating`, `idle`, `running`, `cancelling`, `closed`, `error`)
+- toda execução ACP tem estado explícito de execução (`queued`, `running`, `completed`, `failed`, `cancelled`)
+- spawn, bind e enfileiramento inicial são atômicos
+- retentativas de comando são idempotentes (sem execuções duplicadas ou saídas Discord duplicadas)
+- a saída do canal de thread vinculado é uma projeção de eventos de execução ACP, nunca efeitos colaterais ad-hoc
 
-Long-term ownership model:
+Modelo de propriedade de longo prazo:
 
-- `AcpSessionManager` is the single ACP writer and orchestrator
-- manager lives in gateway process first; can be moved to a dedicated sidecar later behind the same interface
-- per ACP session key, manager owns one in-memory actor (serialized command execution)
-- adapters (`acpx`, future backends) are transport/runtime implementations only
+- `AcpSessionManager` é o único escritor e orquestrador ACP
+- o manager vive no processo do gateway primeiro; pode ser movido para um sidecar dedicado mais tarde atrás da mesma interface
+- por chave de sessão ACP, o manager possui um ator em memória (execução de comando serializada)
+- adaptadores (`acpx`, backends futuros) são implementações de transporte/runtime apenas
 
-Long-term persistence model:
+Modelo de persistência de longo prazo:
 
-- move ACP control-plane state to a dedicated SQLite store (WAL mode) under OpenClaw state dir
-- keep `SessionEntry.acp` as compatibility projection during migration, not source-of-truth
-- store ACP events append-only to support replay, crash recovery, and deterministic delivery
+- mover estado do plano de controle ACP para um armazenamento SQLite dedicado (modo WAL) no diretório de estado do OpenCraft
+- manter `SessionEntry.acp` como projeção de compatibilidade durante migração, não como fonte da verdade
+- armazenar eventos ACP de forma append-only para suportar replay, recuperação de falhas e entrega determinística
 
-### Delivery strategy (bridge to holy-grail)
+### Estratégia de entrega (ponte para o santo graal)
 
-- short-term bridge
-  - keep current thread binding mechanics and existing ACP config surface
-  - fix metadata-gap bugs and route ACP turns through a single core ACP branch
-  - add idempotency keys and fail-closed routing checks immediately
-- long-term cutover
-  - move ACP source-of-truth to control-plane DB + actors
-  - make bound-thread delivery purely event-projection based
-  - remove legacy fallback behavior that depends on opportunistic session-entry metadata
+- ponte de curto prazo
+  - manter mecânica atual de vinculação a thread e superfície de configuração ACP existente
+  - corrigir bugs de lacuna de metadados e rotear turnos ACP por um único branch ACP central
+  - adicionar chaves de idempotência e verificações de roteamento fail-closed imediatamente
+- transição de longo prazo
+  - mover fonte da verdade ACP para DB do plano de controle + atores
+  - fazer entrega de thread vinculado puramente baseada em projeção de eventos
+  - remover comportamento de fallback legado que depende de metadados de entrada de sessão oportunistas
 
-## Why not pure plugin only
+## Por que não somente plugin
 
-Current plugin hooks are not sufficient for end to end ACP session routing without core changes.
+Os hooks de plugin atuais não são suficientes para roteamento de sessão ACP ponta a ponta sem mudanças no núcleo.
 
-- inbound routing from thread binding resolves to a session key in core dispatch first
-- message hooks are fire-and-forget and cannot short-circuit the main reply path
-- plugin commands are good for control operations but not for replacing core per-turn dispatch flow
+- o roteamento de entrada de vinculação a thread resolve para uma chave de sessão no dispatch central primeiro
+- hooks de mensagem são fire-and-forget e não podem curto-circuitar o caminho principal de resposta
+- comandos de plugin são bons para operações de controle, mas não para substituir o fluxo de dispatch por turno do núcleo
 
-Result:
+Resultado:
 
-- ACP runtime can be pluginized
-- ACP routing branch must exist in core
+- o runtime ACP pode ser pluginizado
+- o branch de roteamento ACP deve existir no núcleo
 
-## Existing foundation to reuse
+## Fundação existente para reutilizar
 
-Already implemented and should remain canonical:
+Já implementado e deve permanecer canônico:
 
-- thread binding target supports `subagent` and `acp`
-- inbound thread routing override resolves by binding before normal dispatch
-- outbound thread identity via webhook in reply delivery
-- `/focus` and `/unfocus` flow with ACP target compatibility
-- persistent binding store with restore on startup
-- unbind lifecycle on archive, delete, unfocus, reset, and delete
+- alvo de vinculação a thread suporta `subagent` e `acp`
+- substituição de roteamento de thread de entrada resolve por vinculação antes do dispatch normal
+- identidade de thread de saída via webhook na entrega de resposta
+- fluxo `/focus` e `/unfocus` com compatibilidade de alvo ACP
+- armazenamento de vinculação persistente com restauração na inicialização
+- ciclo de vida de desvinculação em archive, delete, unfocus, reset e delete
 
-This plan extends that foundation rather than replacing it.
+Este plano estende essa fundação em vez de substituí-la.
 
-## Architecture
+## Arquitetura
 
-### Boundary model
+### Modelo de limite
 
-Core (must be in OpenClaw core):
+Núcleo (deve estar no núcleo do OpenCraft):
 
-- ACP session-mode dispatch branch in the reply pipeline
-- delivery arbitration to avoid parent plus thread duplication
-- ACP control-plane persistence (with `SessionEntry.acp` compatibility projection during migration)
-- lifecycle unbind and runtime detach semantics tied to session reset/delete
+- branch de dispatch em modo sessão ACP no pipeline de resposta
+- arbitragem de entrega para evitar duplicação no canal pai mais thread
+- persistência do plano de controle ACP (com projeção de compatibilidade de `SessionEntry.acp` durante migração)
+- semântica de desvinculação de ciclo de vida e desanexação de runtime vinculada a reset/delete de sessão
 
-Plugin backend (acpx implementation):
+Backend de plugin (implementação acpx):
 
-- ACP runtime worker supervision
-- acpx process invocation and event parsing
-- ACP command handlers (`/acp ...`) and operator UX
-- backend-specific config defaults and diagnostics
+- supervisão de worker do runtime ACP
+- invocação do processo acpx e análise de eventos
+- handlers de comando ACP (`/acp ...`) e UX do operador
+- padrões de configuração específicos do backend e diagnósticos
 
-### Runtime ownership model
+### Modelo de propriedade do runtime
 
-- one gateway process owns ACP orchestration state
-- ACP execution runs in supervised child processes via acpx backend
-- process strategy is long lived per active ACP session key, not per message
+- um processo gateway possui estado de orquestração ACP
+- a execução ACP roda em processos filhos supervisionados via backend acpx
+- a estratégia de processo é de longa duração por chave de sessão ACP ativa, não por mensagem
 
-This avoids startup cost on every prompt and keeps cancel and reconnect semantics reliable.
+Isso evita o custo de inicialização a cada prompt e mantém semântica de cancelamento e reconexão confiável.
 
-### Core runtime contract
+### Contrato de runtime central
 
-Add a core ACP runtime contract so routing code does not depend on CLI details and can switch backends without changing dispatch logic:
+Adicionar um contrato de runtime ACP central para que o código de roteamento não dependa de detalhes da CLI e possa trocar de backends sem mudar a lógica de dispatch:
 
 ```ts
 export type AcpRuntimePromptMode = "prompt" | "steer";
@@ -184,14 +184,14 @@ export interface AcpRuntime {
 }
 ```
 
-Implementation detail:
+Detalhe de implementação:
 
-- first backend: `AcpxRuntime` shipped as a plugin service
-- core resolves runtime via registry and fails with explicit operator error when no ACP runtime backend is available
+- primeiro backend: `AcpxRuntime` fornecido como serviço de plugin
+- o núcleo resolve o runtime via registry e falha com erro explícito de operador quando nenhum backend de runtime ACP está disponível
 
-### Control-plane data model and persistence
+### Modelo de dados do plano de controle e persistência
 
-Long-term source-of-truth is a dedicated ACP SQLite database (WAL mode), for transactional updates and crash-safe recovery:
+A fonte da verdade de longo prazo é um banco de dados ACP SQLite dedicado (modo WAL), para atualizações transacionais e recuperação segura após falhas:
 
 - `acp_sessions`
   - `session_key` (pk), `backend`, `agent`, `mode`, `cwd`, `state`, `created_at`, `updated_at`, `last_error`
@@ -204,7 +204,7 @@ Long-term source-of-truth is a dedicated ACP SQLite database (WAL mode), for tra
 - `acp_delivery_checkpoint`
   - `run_id` (pk/fk), `last_event_seq`, `last_discord_message_id`, `updated_at`
 - `acp_idempotency`
-  - `scope`, `idempotency_key`, `result_json`, `created_at`, unique `(scope, idempotency_key)`
+  - `scope`, `idempotency_key`, `result_json`, `created_at`, único `(scope, idempotency_key)`
 
 ```ts
 export type AcpSessionMeta = {
@@ -219,141 +219,141 @@ export type AcpSessionMeta = {
 };
 ```
 
-Storage rules:
+Regras de armazenamento:
 
-- keep `SessionEntry.acp` as a compatibility projection during migration
-- process ids and sockets stay in memory only
-- durable lifecycle and run status live in ACP DB, not generic session JSON
-- if runtime owner dies, gateway rehydrates from ACP DB and resumes from checkpoints
+- manter `SessionEntry.acp` como projeção de compatibilidade durante migração
+- IDs de processo e sockets ficam apenas em memória
+- ciclo de vida durável e status de execução vivem no DB ACP, não em JSON de sessão genérico
+- se o proprietário do runtime morrer, o gateway reidrata do DB ACP e retoma a partir dos checkpoints
 
-### Routing and delivery
+### Roteamento e entrega
 
-Inbound:
+Entrada:
 
-- keep current thread binding lookup as first routing step
-- if bound target is ACP session, route to ACP runtime branch instead of `getReplyFromConfig`
-- explicit `/acp steer` command uses `mode: "steer"`
+- manter busca de vinculação a thread atual como primeiro passo de roteamento
+- se o alvo vinculado for sessão ACP, rotear para o branch de runtime ACP em vez de `getReplyFromConfig`
+- comando explícito `/acp steer` usa `mode: "steer"`
 
-Outbound:
+Saída:
 
-- ACP event stream is normalized to OpenClaw reply chunks
-- delivery target is resolved through existing bound destination path
-- when a bound thread is active for that session turn, parent channel completion is suppressed
+- stream de eventos ACP é normalizado para chunks de resposta do OpenCraft
+- o alvo de entrega é resolvido pelo caminho de destino vinculado existente
+- quando uma thread vinculada está ativa para aquele turno de sessão, a conclusão do canal pai é suprimida
 
-Streaming policy:
+Política de streaming:
 
-- stream partial output with coalescing window
-- configurable min interval and max chunk bytes to stay under Discord rate limits
-- final message always emitted on completion or failure
+- transmitir saída parcial com janela de coalescência
+- intervalo mínimo configurável e bytes máximos de chunk para ficar abaixo dos limites de taxa do Discord
+- mensagem final sempre emitida na conclusão ou falha
 
-### State machines and transaction boundaries
+### Máquinas de estado e limites de transação
 
-Session state machine:
+Máquina de estado de sessão:
 
 - `creating -> idle -> running -> idle`
 - `running -> cancelling -> idle | error`
 - `idle -> closed`
 - `error -> idle | closed`
 
-Run state machine:
+Máquina de estado de execução:
 
 - `queued -> running -> completed`
 - `running -> failed | cancelled`
 - `queued -> cancelled`
 
-Required transaction boundaries:
+Limites de transação necessários:
 
-- spawn transaction
-  - create ACP session row
-  - create/update ACP thread binding row
-  - enqueue initial run row
-- close transaction
-  - mark session closed
-  - delete/expire binding rows
-  - write final close event
-- cancel transaction
-  - mark target run cancelling/cancelled with idempotency key
+- transação de spawn
+  - criar linha de sessão ACP
+  - criar/atualizar linha de vinculação a thread ACP
+  - enfileirar linha de execução inicial
+- transação de close
+  - marcar sessão como closed
+  - deletar/expirar linhas de vinculação
+  - escrever evento final de close
+- transação de cancel
+  - marcar execução alvo como cancelling/cancelled com chave de idempotência
 
-No partial success is allowed across these boundaries.
+Nenhum sucesso parcial é permitido através desses limites.
 
-### Per-session actor model
+### Modelo de ator por sessão
 
-`AcpSessionManager` runs one actor per ACP session key:
+`AcpSessionManager` executa um ator por chave de sessão ACP:
 
-- actor mailbox serializes `submit`, `cancel`, `close`, and `stream` side effects
-- actor owns runtime handle hydration and runtime adapter process lifecycle for that session
-- actor writes run events in-order (`seq`) before any Discord delivery
-- actor updates delivery checkpoints after successful outbound send
+- o mailbox do ator serializa efeitos colaterais de `submit`, `cancel`, `close` e `stream`
+- o ator possui hidratação do handle de runtime e ciclo de vida do processo do adaptador de runtime para aquela sessão
+- o ator escreve eventos de execução em ordem (`seq`) antes de qualquer entrega no Discord
+- o ator atualiza checkpoints de entrega após envio de saída bem-sucedido
 
-This removes cross-turn races and prevents duplicate or out-of-order thread output.
+Isso remove corridas entre turnos e previne saída de thread duplicada ou fora de ordem.
 
-### Idempotency and delivery projection
+### Idempotência e projeção de entrega
 
-All external ACP actions must carry idempotency keys:
+Todas as ações ACP externas devem carregar chaves de idempotência:
 
-- spawn idempotency key
-- prompt/steer idempotency key
-- cancel idempotency key
-- close idempotency key
+- chave de idempotência de spawn
+- chave de idempotência de prompt/steer
+- chave de idempotência de cancel
+- chave de idempotência de close
 
-Delivery rules:
+Regras de entrega:
 
-- Discord messages are derived from `acp_events` plus `acp_delivery_checkpoint`
-- retries resume from checkpoint without re-sending already delivered chunks
-- final reply emission is exactly-once per run from projection logic
+- mensagens Discord são derivadas de `acp_events` mais `acp_delivery_checkpoint`
+- retentativas retomam a partir do checkpoint sem reenviar chunks já entregues
+- emissão de resposta final é exatamente uma vez por execução pela lógica de projeção
 
-### Recovery and self-healing
+### Recuperação e auto-recuperação
 
-On gateway start:
+Na inicialização do gateway:
 
-- load non-terminal ACP sessions (`creating`, `idle`, `running`, `cancelling`, `error`)
-- recreate actors lazily on first inbound event or eagerly under configured cap
-- reconcile any `running` runs missing heartbeats and mark `failed` or recover via adapter
+- carregar sessões ACP não terminais (`creating`, `idle`, `running`, `cancelling`, `error`)
+- recriar atores preguiçosamente no primeiro evento de entrada ou avidamente sob capacidade configurada
+- reconciliar execuções `running` com heartbeats ausentes e marcar como `failed` ou recuperar via adaptador
 
-On inbound Discord thread message:
+Em mensagem de thread Discord de entrada:
 
-- if binding exists but ACP session is missing, fail closed with explicit stale-binding message
-- optionally auto-unbind stale binding after operator-safe validation
-- never silently route stale ACP bindings to normal LLM path
+- se a vinculação existir mas a sessão ACP estiver ausente, falhar fechado com mensagem explícita de vinculação obsoleta
+- opcionalmente desvincular automaticamente vinculação obsoleta após validação segura para o operador
+- nunca rotear silenciosamente vinculações ACP obsoletas para o caminho normal de LLM
 
-### Lifecycle and safety
+### Ciclo de vida e segurança
 
-Supported operations:
+Operações suportadas:
 
-- cancel current run: `/acp cancel`
-- unbind thread: `/unfocus`
-- close ACP session: `/acp close`
-- auto close idle sessions by effective TTL
+- cancelar execução atual: `/acp cancel`
+- desvincular thread: `/unfocus`
+- fechar sessão ACP: `/acp close`
+- fechar automaticamente sessões ociosas por TTL efetivo
 
-TTL policy:
+Política de TTL:
 
-- effective TTL is minimum of
-  - global/session TTL
-  - Discord thread binding TTL
-  - ACP runtime owner TTL
+- TTL efetivo é o mínimo de
+  - TTL global/sessão
+  - TTL de vinculação a thread Discord
+  - TTL do proprietário do runtime ACP
 
-Safety controls:
+Controles de segurança:
 
-- allowlist ACP agents by name
-- restrict workspace roots for ACP sessions
-- env allowlist passthrough
-- max concurrent ACP sessions per account and globally
-- bounded restart backoff for runtime crashes
+- lista de permissões de agentes ACP por nome
+- restringir raízes de workspace para sessões ACP
+- passagem de lista de permissões de env
+- máximo de sessões ACP concorrentes por conta e globalmente
+- backoff de reinicialização limitado para falhas de runtime
 
-## Config surface
+## Superfície de configuração
 
-Core keys:
+Chaves centrais:
 
 - `acp.enabled`
-- `acp.dispatch.enabled` (independent ACP routing kill switch)
-- `acp.backend` (default `acpx`)
+- `acp.dispatch.enabled` (chave kill de roteamento ACP independente)
+- `acp.backend` (padrão `acpx`)
 - `acp.defaultAgent`
 - `acp.allowedAgents[]`
 - `acp.maxConcurrentSessions`
 - `acp.stream.coalesceIdleMs`
 - `acp.stream.maxChunkChars`
 - `acp.runtime.ttlMinutes`
-- `acp.controlPlane.store` (`sqlite` default)
+- `acp.controlPlane.store` (padrão `sqlite`)
 - `acp.controlPlane.storePath`
 - `acp.controlPlane.recovery.eagerActors`
 - `acp.controlPlane.recovery.reconcileRunningAfterMs`
@@ -362,84 +362,84 @@ Core keys:
 - `acp.idempotency.ttlHours`
 - `channels.discord.threadBindings.spawnAcpSessions`
 
-Plugin/backend keys (acpx plugin section):
+Chaves de plugin/backend (seção de plugin acpx):
 
-- backend command/path overrides
-- backend env allowlist
-- backend per-agent presets
-- backend startup/stop timeouts
-- backend max inflight runs per session
+- substituições de comando/caminho do backend
+- lista de permissões de env do backend
+- presets por agente do backend
+- timeouts de inicialização/parada do backend
+- máximo de execuções em andamento por sessão do backend
 
-## Implementation specification
+## Especificação de implementação
 
-### Control-plane modules (new)
+### Módulos do plano de controle (novos)
 
-Add dedicated ACP control-plane modules in core:
+Adicionar módulos dedicados do plano de controle ACP no núcleo:
 
 - `src/acp/control-plane/manager.ts`
-  - owns ACP actors, lifecycle transitions, command serialization
+  - possui atores ACP, transições de ciclo de vida, serialização de comandos
 - `src/acp/control-plane/store.ts`
-  - SQLite schema management, transactions, query helpers
+  - gerenciamento de esquema SQLite, transações, helpers de consulta
 - `src/acp/control-plane/events.ts`
-  - typed ACP event definitions and serialization
+  - definições tipadas de eventos ACP e serialização
 - `src/acp/control-plane/checkpoint.ts`
-  - durable delivery checkpoints and replay cursors
+  - checkpoints de entrega duráveis e cursores de replay
 - `src/acp/control-plane/idempotency.ts`
-  - idempotency key reservation and response replay
+  - reserva de chave de idempotência e replay de resposta
 - `src/acp/control-plane/recovery.ts`
-  - boot-time reconciliation and actor rehydrate plan
+  - reconciliação no boot e plano de reidratação de atores
 
-Compatibility bridge modules:
+Módulos de bridge de compatibilidade:
 
 - `src/acp/runtime/session-meta.ts`
-  - remains temporarily for projection into `SessionEntry.acp`
-  - must stop being source-of-truth after migration cutover
+  - permanece temporariamente para projeção em `SessionEntry.acp`
+  - deve parar de ser fonte da verdade após transição de migração
 
-### Required invariants (must enforce in code)
+### Invariantes necessários (devem ser aplicados em código)
 
-- ACP session creation and thread bind are atomic (single transaction)
-- there is at most one active run per ACP session actor at a time
-- event `seq` is strictly increasing per run
-- delivery checkpoint never advances past last committed event
-- idempotency replay returns previous success payload for duplicate command keys
-- stale/missing ACP metadata cannot route into normal non-ACP reply path
+- criação de sessão ACP e vinculação a thread são atômicas (transação única)
+- há no máximo uma execução ativa por ator de sessão ACP por vez
+- `seq` de evento é estritamente crescente por execução
+- checkpoint de entrega nunca avança além do último evento confirmado
+- replay de idempotência retorna payload de sucesso anterior para chaves de comando duplicadas
+- metadados ACP obsoletos/ausentes não podem rotear para o caminho de resposta não-ACP normal
 
-### Core touchpoints
+### Pontos de contato do núcleo
 
-Core files to change:
+Arquivos do núcleo a alterar:
 
 - `src/auto-reply/reply/dispatch-from-config.ts`
-  - ACP branch calls `AcpSessionManager.submit` and event-projection delivery
-  - remove direct ACP fallback that bypasses control-plane invariants
-- `src/auto-reply/reply/inbound-context.ts` (or nearest normalized context boundary)
-  - expose normalized routing keys and idempotency seeds for ACP control plane
+  - branch ACP chama `AcpSessionManager.submit` e entrega de projeção de eventos
+  - remover fallback ACP direto que contorna invariantes do plano de controle
+- `src/auto-reply/reply/inbound-context.ts` (ou limite de contexto normalizado mais próximo)
+  - expor chaves de roteamento normalizadas e sementes de idempotência para o plano de controle ACP
 - `src/config/sessions/types.ts`
-  - keep `SessionEntry.acp` as projection-only compatibility field
+  - manter `SessionEntry.acp` como campo de compatibilidade somente de projeção
 - `src/gateway/server-methods/sessions.ts`
-  - reset/delete/archive must call ACP manager close/unbind transaction path
+  - reset/delete/archive devem chamar o caminho de transação close/unbind do manager ACP
 - `src/infra/outbound/bound-delivery-router.ts`
-  - enforce fail-closed destination behavior for ACP bound session turns
+  - aplicar comportamento fail-closed de destino para turnos de sessão ACP vinculada
 - `src/discord/monitor/thread-bindings.ts`
-  - add ACP stale-binding validation helpers wired to control-plane lookups
+  - adicionar helpers de validação de vinculação ACP obsoleta conectados a buscas do plano de controle
 - `src/auto-reply/reply/commands-acp.ts`
-  - route spawn/cancel/close/steer through ACP manager APIs
+  - rotear spawn/cancel/close/steer pelas APIs do manager ACP
 - `src/agents/acp-spawn.ts`
-  - stop ad-hoc metadata writes; call ACP manager spawn transaction
-- `src/plugin-sdk/**` and plugin runtime bridge
-  - expose ACP backend registration and health semantics cleanly
+  - parar escritas ad-hoc de metadados; chamar transação de spawn do manager ACP
+- `src/plugin-sdk/**` e bridge de runtime de plugin
+  - expor registro de backend ACP e semântica de saúde de forma limpa
 
-Core files explicitly not replaced:
+Arquivos do núcleo explicitamente não substituídos:
 
 - `src/discord/monitor/message-handler.preflight.ts`
-  - keep thread binding override behavior as the canonical session-key resolver
+  - manter comportamento de substituição de vinculação a thread como resolvedor canônico de chave de sessão
 
-### ACP runtime registry API
+### API do registry de runtime ACP
 
-Add a core registry module:
+Adicionar um módulo de registry central:
 
 - `src/acp/runtime/registry.ts`
 
-Required API:
+API necessária:
 
 ```ts
 export type AcpRuntimeBackend = {
@@ -454,49 +454,49 @@ export function getAcpRuntimeBackend(id?: string): AcpRuntimeBackend | null;
 export function requireAcpRuntimeBackend(id?: string): AcpRuntimeBackend;
 ```
 
-Behavior:
+Comportamento:
 
-- `requireAcpRuntimeBackend` throws a typed ACP backend missing error when unavailable
-- plugin service registers backend on `start` and unregisters on `stop`
-- runtime lookups are read-only and process-local
+- `requireAcpRuntimeBackend` lança um erro tipado de backend ACP ausente quando indisponível
+- o serviço de plugin registra o backend no `start` e cancela o registro no `stop`
+- buscas de runtime são somente leitura e locais ao processo
 
-### acpx runtime plugin contract (implementation detail)
+### Contrato do plugin de runtime acpx (detalhe de implementação)
 
-For the first production backend (`extensions/acpx`), OpenClaw and acpx are
-connected with a strict command contract:
+Para o primeiro backend de produção (`extensions/acpx`), OpenCraft e acpx são
+conectados com um contrato de comando estrito:
 
-- backend id: `acpx`
-- plugin service id: `acpx-runtime`
-- runtime handle encoding: `runtimeSessionName = acpx:v1:<base64url(json)>`
-- encoded payload fields:
-  - `name` (acpx named session; uses OpenClaw `sessionKey`)
-  - `agent` (acpx agent command)
-  - `cwd` (session workspace root)
+- id do backend: `acpx`
+- id do serviço de plugin: `acpx-runtime`
+- codificação do handle de runtime: `runtimeSessionName = acpx:v1:<base64url(json)>`
+- campos do payload codificado:
+  - `name` (sessão nomeada acpx; usa `sessionKey` do OpenCraft)
+  - `agent` (comando de agente acpx)
+  - `cwd` (raiz do workspace da sessão)
   - `mode` (`persistent | oneshot`)
 
-Command mapping:
+Mapeamento de comandos:
 
-- ensure session:
+- garantir sessão:
   - `acpx --format json --json-strict --cwd <cwd> <agent> sessions ensure --name <name>`
-- prompt turn:
+- turno de prompt:
   - `acpx --format json --json-strict --cwd <cwd> <agent> prompt --session <name> --file -`
-- cancel:
+- cancelar:
   - `acpx --format json --json-strict --cwd <cwd> <agent> cancel --session <name>`
-- close:
+- fechar:
   - `acpx --format json --json-strict --cwd <cwd> <agent> sessions close <name>`
 
 Streaming:
 
-- OpenClaw consumes ndjson events from `acpx --format json --json-strict`
+- OpenCraft consome eventos ndjson de `acpx --format json --json-strict`
 - `text` => `text_delta/output`
 - `thought` => `text_delta/thought`
 - `tool_call` => `tool_call`
 - `done` => `done`
 - `error` => `error`
 
-### Session schema patch
+### Patch do esquema de sessão
 
-Patch `SessionEntry` in `src/config/sessions/types.ts`:
+Patch de `SessionEntry` em `src/config/sessions/types.ts`:
 
 ```ts
 type SessionAcpMeta = {
@@ -511,122 +511,122 @@ type SessionAcpMeta = {
 };
 ```
 
-Persisted field:
+Campo persistido:
 
 - `SessionEntry.acp?: SessionAcpMeta`
 
-Migration rules:
+Regras de migração:
 
-- phase A: dual-write (`acp` projection + ACP SQLite source-of-truth)
-- phase B: read-primary from ACP SQLite, fallback-read from legacy `SessionEntry.acp`
-- phase C: migration command backfills missing ACP rows from valid legacy entries
-- phase D: remove fallback-read and keep projection optional for UX only
-- legacy fields (`cliSessionIds`, `claudeCliSessionId`) remain untouched
+- fase A: escrita dupla (projeção `acp` + fonte da verdade ACP SQLite)
+- fase B: leitura primária do ACP SQLite, fallback de leitura do `SessionEntry.acp` legado
+- fase C: comando de migração preenche linhas ACP ausentes a partir de entradas legadas válidas
+- fase D: remover fallback de leitura e manter projeção opcional apenas para UX
+- campos legados (`cliSessionIds`, `claudeCliSessionId`) permanecem intocados
 
-### Error contract
+### Contrato de erro
 
-Add stable ACP error codes and user-facing messages:
+Adicionar códigos de erro ACP estáveis e mensagens voltadas ao usuário:
 
 - `ACP_BACKEND_MISSING`
-  - message: `ACP runtime backend is not configured. Install and enable the acpx runtime plugin.`
+  - mensagem: `O backend de runtime ACP não está configurado. Instale e habilite o plugin de runtime acpx.`
 - `ACP_BACKEND_UNAVAILABLE`
-  - message: `ACP runtime backend is currently unavailable. Try again in a moment.`
+  - mensagem: `O backend de runtime ACP está indisponível no momento. Tente novamente em instantes.`
 - `ACP_SESSION_INIT_FAILED`
-  - message: `Could not initialize ACP session runtime.`
+  - mensagem: `Não foi possível inicializar o runtime da sessão ACP.`
 - `ACP_TURN_FAILED`
-  - message: `ACP turn failed before completion.`
+  - mensagem: `O turno ACP falhou antes da conclusão.`
 
-Rules:
+Regras:
 
-- return actionable user-safe message in-thread
-- log detailed backend/system error only in runtime logs
-- never silently fall back to normal LLM path when ACP routing was explicitly selected
+- retornar mensagem acionável e segura para o usuário na thread
+- registrar erro detalhado do backend/sistema apenas nos logs de runtime
+- nunca recorrer silenciosamente ao caminho normal de LLM quando o roteamento ACP foi explicitamente selecionado
 
-### Duplicate delivery arbitration
+### Arbitragem de entrega duplicada
 
-Single routing rule for ACP bound turns:
+Regra de roteamento única para turnos vinculados ACP:
 
-- if an active thread binding exists for the target ACP session and requester context, deliver only to that bound thread
-- do not also send to parent channel for the same turn
-- if bound destination selection is ambiguous, fail closed with explicit error (no implicit parent fallback)
-- if no active binding exists, use normal session destination behavior
+- se uma vinculação de thread ativa existir para a sessão ACP alvo e o contexto do solicitante, entregar apenas para aquela thread vinculada
+- não enviar também para o canal pai no mesmo turno
+- se a seleção do destino vinculado for ambígua, falhar fechado com erro explícito (sem fallback implícito para o pai)
+- se nenhuma vinculação ativa existir, usar comportamento normal de destino de sessão
 
-### Observability and operational readiness
+### Observabilidade e prontidão operacional
 
-Required metrics:
+Métricas necessárias:
 
-- ACP spawn success/failure count by backend and error code
-- ACP run latency percentiles (queue wait, runtime turn time, delivery projection time)
-- ACP actor restart count and restart reason
-- stale-binding detection count
-- idempotency replay hit rate
-- Discord delivery retry and rate-limit counters
+- contagem de sucesso/falha de spawn ACP por backend e código de erro
+- percentis de latência de execução ACP (espera na fila, tempo de turno do runtime, tempo de projeção de entrega)
+- contagem de reinicialização de ator ACP e motivo de reinicialização
+- contagem de detecção de vinculação obsoleta
+- taxa de acerto de replay de idempotência
+- contadores de retry de entrega Discord e limite de taxa
 
-Required logs:
+Logs necessários:
 
-- structured logs keyed by `sessionKey`, `runId`, `backend`, `threadId`, `idempotencyKey`
-- explicit state transition logs for session and run state machines
-- adapter command logs with redaction-safe arguments and exit summary
+- logs estruturados com chave por `sessionKey`, `runId`, `backend`, `threadId`, `idempotencyKey`
+- logs explícitos de transição de estado para máquinas de estado de sessão e execução
+- logs de comando do adaptador com argumentos seguros para redação e resumo de saída
 
-Required diagnostics:
+Diagnósticos necessários:
 
-- `/acp sessions` includes state, active run, last error, and binding status
-- `/acp doctor` (or equivalent) validates backend registration, store health, and stale bindings
+- `/acp sessions` inclui estado, execução ativa, último erro e status de vinculação
+- `/acp doctor` (ou equivalente) valida registro do backend, saúde do armazenamento e vinculações obsoletas
 
-### Config precedence and effective values
+### Precedência de configuração e valores efetivos
 
-ACP enablement precedence:
+Precedência de habilitação ACP:
 
-- account override: `channels.discord.accounts.<id>.threadBindings.spawnAcpSessions`
-- channel override: `channels.discord.threadBindings.spawnAcpSessions`
-- global ACP gate: `acp.enabled`
-- dispatch gate: `acp.dispatch.enabled`
-- backend availability: registered backend for `acp.backend`
+- substituição de conta: `channels.discord.accounts.<id>.threadBindings.spawnAcpSessions`
+- substituição de canal: `channels.discord.threadBindings.spawnAcpSessions`
+- portão ACP global: `acp.enabled`
+- portão de dispatch: `acp.dispatch.enabled`
+- disponibilidade do backend: backend registrado para `acp.backend`
 
-Auto-enable behavior:
+Comportamento de habilitação automática:
 
-- when ACP is configured (`acp.enabled=true`, `acp.dispatch.enabled=true`, or
-  `acp.backend=acpx`), plugin auto-enable marks `plugins.entries.acpx.enabled=true`
-  unless denylisted or explicitly disabled
+- quando ACP está configurado (`acp.enabled=true`, `acp.dispatch.enabled=true` ou
+  `acp.backend=acpx`), a habilitação automática do plugin marca `plugins.entries.acpx.enabled=true`
+  a menos que esteja na lista de negação ou explicitamente desabilitado
 
-TTL effective value:
+Valor efetivo de TTL:
 
 - `min(session ttl, discord thread binding ttl, acp runtime ttl)`
 
-### Test map
+### Mapa de testes
 
-Unit tests:
+Testes unitários:
 
-- `src/acp/runtime/registry.test.ts` (new)
-- `src/auto-reply/reply/dispatch-from-config.acp.test.ts` (new)
-- `src/infra/outbound/bound-delivery-router.test.ts` (extend ACP fail-closed cases)
-- `src/config/sessions/types.test.ts` or nearest session-store tests (ACP metadata persistence)
+- `src/acp/runtime/registry.test.ts` (novo)
+- `src/auto-reply/reply/dispatch-from-config.acp.test.ts` (novo)
+- `src/infra/outbound/bound-delivery-router.test.ts` (estender casos fail-closed ACP)
+- `src/config/sessions/types.test.ts` ou testes de armazenamento de sessão mais próximos (persistência de metadados ACP)
 
-Integration tests:
+Testes de integração:
 
-- `src/discord/monitor/reply-delivery.test.ts` (bound ACP delivery target behavior)
-- `src/discord/monitor/message-handler.preflight*.test.ts` (bound ACP session-key routing continuity)
-- acpx plugin runtime tests in backend package (service register/start/stop + event normalization)
+- `src/discord/monitor/reply-delivery.test.ts` (comportamento do alvo de entrega ACP vinculado)
+- `src/discord/monitor/message-handler.preflight*.test.ts` (continuidade de roteamento de chave de sessão ACP vinculada)
+- testes de runtime de plugin acpx no pacote de backend (register/start/stop de serviço + normalização de eventos)
 
-Gateway e2e tests:
+Testes e2e do gateway:
 
-- `src/gateway/server.sessions.gateway-server-sessions-a.e2e.test.ts` (extend ACP reset/delete lifecycle coverage)
-- ACP thread turn roundtrip e2e for spawn, message, stream, cancel, unfocus, restart recovery
+- `src/gateway/server.sessions.gateway-server-sessions-a.e2e.test.ts` (estender cobertura do ciclo de vida ACP reset/delete)
+- roundtrip e2e de turno ACP em thread para spawn, mensagem, stream, cancel, unfocus, recuperação de reinicialização
 
-### Rollout guard
+### Guarda de implantação
 
-Add independent ACP dispatch kill switch:
+Adicionar chave kill de dispatch ACP independente:
 
-- `acp.dispatch.enabled` default `false` for first release
-- when disabled:
-  - ACP spawn/focus control commands may still bind sessions
-  - ACP dispatch path does not activate
-  - user receives explicit message that ACP dispatch is disabled by policy
-- after canary validation, default can be flipped to `true` in a later release
+- `acp.dispatch.enabled` padrão `false` para o primeiro lançamento
+- quando desabilitado:
+  - comandos de controle ACP spawn/focus ainda podem vincular sessões
+  - o caminho de dispatch ACP não é ativado
+  - o usuário recebe mensagem explícita de que o dispatch ACP está desabilitado por política
+- após validação canário, o padrão pode ser alterado para `true` em um lançamento posterior
 
-## Command and UX plan
+## Plano de comandos e UX
 
-### New commands
+### Novos comandos
 
 - `/acp spawn <agent-id> [--mode persistent|oneshot] [--thread auto|here|off]`
 - `/acp cancel [session]`
@@ -634,167 +634,167 @@ Add independent ACP dispatch kill switch:
 - `/acp close [session]`
 - `/acp sessions`
 
-### Existing command compatibility
+### Compatibilidade de comandos existentes
 
-- `/focus <sessionKey>` continues to support ACP targets
-- `/unfocus` keeps current semantics
-- `/session idle` and `/session max-age` replace the old TTL override
+- `/focus <sessionKey>` continua a suportar alvos ACP
+- `/unfocus` mantém a semântica atual
+- `/session idle` e `/session max-age` substituem a substituição antiga de TTL
 
-## Phased rollout
+## Implantação em fases
 
-### Phase 0 ADR and schema freeze
+### Fase 0 ADR e congelamento de esquema
 
-- ship ADR for ACP control-plane ownership and adapter boundaries
-- freeze DB schema (`acp_sessions`, `acp_runs`, `acp_bindings`, `acp_events`, `acp_delivery_checkpoint`, `acp_idempotency`)
-- define stable ACP error codes, event contract, and state-transition guards
+- publicar ADR para propriedade do plano de controle ACP e limites do adaptador
+- congelar esquema DB (`acp_sessions`, `acp_runs`, `acp_bindings`, `acp_events`, `acp_delivery_checkpoint`, `acp_idempotency`)
+- definir códigos de erro ACP estáveis, contrato de eventos e guardas de transição de estado
 
-### Phase 1 Control-plane foundation in core
+### Fase 1 Fundação do plano de controle no núcleo
 
-- implement `AcpSessionManager` and per-session actor runtime
-- implement ACP SQLite store and transaction helpers
-- implement idempotency store and replay helpers
-- implement event append + delivery checkpoint modules
-- wire spawn/cancel/close APIs to manager with transactional guarantees
+- implementar `AcpSessionManager` e runtime de ator por sessão
+- implementar armazenamento SQLite ACP e helpers de transação
+- implementar armazenamento de idempotência e helpers de replay
+- implementar módulos de append de eventos + checkpoint de entrega
+- conectar APIs de spawn/cancel/close ao manager com garantias transacionais
 
-### Phase 2 Core routing and lifecycle integration
+### Fase 2 Roteamento central e integração do ciclo de vida
 
-- route thread-bound ACP turns from dispatch pipeline into ACP manager
-- enforce fail-closed routing when ACP binding/session invariants fail
-- integrate reset/delete/archive/unfocus lifecycle with ACP close/unbind transactions
-- add stale-binding detection and optional auto-unbind policy
+- rotear turnos ACP vinculados a thread do pipeline de dispatch para o manager ACP
+- aplicar roteamento fail-closed quando invariantes de vinculação/sessão ACP falham
+- integrar ciclo de vida de reset/delete/archive/unfocus com transações de close/unbind ACP
+- adicionar detecção de vinculação obsoleta e política opcional de desvinculação automática
 
-### Phase 3 acpx backend adapter/plugin
+### Fase 3 Adaptador/plugin de backend acpx
 
-- implement `acpx` adapter against runtime contract (`ensureSession`, `submit`, `stream`, `cancel`, `close`)
-- add backend health checks and startup/teardown registration
-- normalize acpx ndjson events into ACP runtime events
-- enforce backend timeouts, process supervision, and restart/backoff policy
+- implementar adaptador `acpx` contra contrato de runtime (`ensureSession`, `submit`, `stream`, `cancel`, `close`)
+- adicionar verificações de saúde do backend e registro de inicialização/teardown
+- normalizar eventos ndjson do acpx em eventos de runtime ACP
+- aplicar timeouts do backend, supervisão de processo e política de reinicialização/backoff
 
-### Phase 4 Delivery projection and channel UX (Discord first)
+### Fase 4 Projeção de entrega e UX do canal (Discord primeiro)
 
-- implement event-driven channel projection with checkpoint resume (Discord first)
-- coalesce streaming chunks with rate-limit aware flush policy
-- guarantee exactly-once final completion message per run
-- ship `/acp spawn`, `/acp cancel`, `/acp steer`, `/acp close`, `/acp sessions`
+- implementar projeção de canal orientada a eventos com retomada de checkpoint (Discord primeiro)
+- coalescência de chunks de streaming com política de flush ciente de limite de taxa
+- garantir exatamente uma mensagem de conclusão final por execução
+- publicar `/acp spawn`, `/acp cancel`, `/acp steer`, `/acp close`, `/acp sessions`
 
-### Phase 5 Migration and cutover
+### Fase 5 Migração e transição
 
-- introduce dual-write to `SessionEntry.acp` projection plus ACP SQLite source-of-truth
-- add migration utility for legacy ACP metadata rows
-- flip read path to ACP SQLite primary
-- remove legacy fallback routing that depends on missing `SessionEntry.acp`
+- introduzir escrita dupla para projeção `SessionEntry.acp` mais fonte da verdade ACP SQLite
+- adicionar utilitário de migração para linhas de metadados ACP legadas
+- alternar caminho de leitura para ACP SQLite como primário
+- remover roteamento de fallback legado que depende de `SessionEntry.acp` ausente
 
-### Phase 6 Hardening, SLOs, and scale limits
+### Fase 6 Consolidação, SLOs e limites de escala
 
-- enforce concurrency limits (global/account/session), queue policies, and timeout budgets
-- add full telemetry, dashboards, and alert thresholds
-- chaos-test crash recovery and duplicate-delivery suppression
-- publish runbook for backend outage, DB corruption, and stale-binding remediation
+- aplicar limites de concorrência (global/conta/sessão), políticas de fila e orçamentos de timeout
+- adicionar telemetria completa, dashboards e limiares de alerta
+- testar caos para recuperação de falhas e supressão de entrega duplicada
+- publicar runbook para indisponibilidade de backend, corrupção de DB e remediação de vinculação obsoleta
 
-### Full implementation checklist
+### Checklist de implementação completo
 
-- core control-plane modules and tests
-- DB migrations and rollback plan
-- ACP manager API integration across dispatch and commands
-- adapter registration interface in plugin runtime bridge
-- acpx adapter implementation and tests
-- thread-capable channel delivery projection logic with checkpoint replay (Discord first)
-- lifecycle hooks for reset/delete/archive/unfocus
-- stale-binding detector and operator-facing diagnostics
-- config validation and precedence tests for all new ACP keys
-- operational docs and troubleshooting runbook
+- módulos do plano de controle central e testes
+- migrações de DB e plano de rollback
+- integração da API do manager ACP em dispatch e comandos
+- interface de registro do adaptador na bridge de runtime de plugin
+- implementação e testes do adaptador acpx
+- lógica de projeção de entrega de canal com capacidade de thread com replay de checkpoint (Discord primeiro)
+- hooks de ciclo de vida para reset/delete/archive/unfocus
+- detector de vinculação obsoleta e diagnósticos voltados ao operador
+- validação de configuração e testes de precedência para todas as novas chaves ACP
+- docs operacionais e runbook de resolução de problemas
 
-## Test plan
+## Plano de testes
 
-Unit tests:
+Testes unitários:
 
-- ACP DB transaction boundaries (spawn/bind/enqueue atomicity, cancel, close)
-- ACP state-machine transition guards for sessions and runs
-- idempotency reservation/replay semantics across all ACP commands
-- per-session actor serialization and queue ordering
-- acpx event parser and chunk coalescer
-- runtime supervisor restart and backoff policy
-- config precedence and effective TTL calculation
-- core ACP routing branch selection and fail-closed behavior when backend/session is invalid
+- limites de transação de DB ACP (atomicidade de spawn/bind/enqueue, cancel, close)
+- guardas de transição de máquina de estado ACP para sessões e execuções
+- semântica de reserva/replay de idempotência em todos os comandos ACP
+- serialização e ordenação de fila do ator por sessão
+- parser de eventos acpx e coalescedor de chunk
+- política de reinicialização e backoff do supervisor de runtime
+- precedência de configuração e cálculo de TTL efetivo
+- seleção do branch de roteamento ACP central e comportamento fail-closed quando backend/sessão é inválido
 
-Integration tests:
+Testes de integração:
 
-- fake ACP adapter process for deterministic streaming and cancel behavior
-- ACP manager + dispatch integration with transactional persistence
-- thread-bound inbound routing to ACP session key
-- thread-bound outbound delivery suppresses parent channel duplication
-- checkpoint replay recovers after delivery failure and resumes from last event
-- plugin service registration and teardown of ACP runtime backend
+- processo adaptador ACP falso para streaming determinístico e comportamento de cancel
+- integração do manager ACP + dispatch com persistência transacional
+- roteamento de entrada vinculado a thread para chave de sessão ACP
+- entrega de saída vinculada a thread suprime duplicação no canal pai
+- replay de checkpoint recupera após falha de entrega e retoma do último evento
+- registro e teardown do serviço de plugin do backend de runtime ACP
 
-Gateway e2e tests:
+Testes e2e do gateway:
 
-- spawn ACP with thread, exchange multi-turn prompts, unfocus
-- gateway restart with persisted ACP DB and bindings, then continue same session
-- concurrent ACP sessions in multiple threads have no cross-talk
-- duplicate command retries (same idempotency key) do not create duplicate runs or replies
-- stale-binding scenario yields explicit error and optional auto-clean behavior
+- spawn ACP com thread, trocar prompts multi-turno, unfocus
+- reinicialização do gateway com DB ACP e vinculações persistidos, depois continuar mesma sessão
+- sessões ACP concorrentes em múltiplas threads não têm interferência cruzada
+- retentativas de comando duplicadas (mesma chave de idempotência) não criam execuções ou respostas duplicadas
+- cenário de vinculação obsoleta produz erro explícito e comportamento opcional de limpeza automática
 
-## Risks and mitigations
+## Riscos e mitigações
 
-- Duplicate deliveries during transition
-  - Mitigation: single destination resolver and idempotent event checkpoint
-- Runtime process churn under load
-  - Mitigation: long lived per session owners + concurrency caps + backoff
-- Plugin absent or misconfigured
-  - Mitigation: explicit operator-facing error and fail-closed ACP routing (no implicit fallback to normal session path)
-- Config confusion between subagent and ACP gates
-  - Mitigation: explicit ACP keys and command feedback that includes effective policy source
-- Control-plane store corruption or migration bugs
-  - Mitigation: WAL mode, backup/restore hooks, migration smoke tests, and read-only fallback diagnostics
-- Actor deadlocks or mailbox starvation
-  - Mitigation: watchdog timers, actor health probes, and bounded mailbox depth with rejection telemetry
+- Entregas duplicadas durante transição
+  - Mitigação: resolvedor de destino único e checkpoint de eventos idempotente
+- Rotatividade de processo de runtime sob carga
+  - Mitigação: proprietários de longa duração por sessão + limites de concorrência + backoff
+- Plugin ausente ou mal configurado
+  - Mitigação: erro explícito voltado ao operador e roteamento ACP fail-closed (sem fallback implícito para caminho de sessão normal)
+- Confusão de configuração entre portões de subagent e ACP
+  - Mitigação: chaves ACP explícitas e feedback de comando que inclui a fonte de política efetiva
+- Corrupção do armazenamento do plano de controle ou bugs de migração
+  - Mitigação: modo WAL, hooks de backup/restauração, testes de smoke de migração e diagnósticos de fallback somente leitura
+- Deadlocks de ator ou privação de mailbox
+  - Mitigação: timers watchdog, probes de saúde do ator e profundidade de mailbox limitada com telemetria de rejeição
 
-## Acceptance checklist
+## Checklist de aceitação
 
-- ACP session spawn can create or bind a thread in a supported channel adapter (currently Discord)
-- all thread messages route to bound ACP session only
-- ACP outputs appear in the same thread identity with streaming or batches
-- no duplicate output in parent channel for bound turns
-- spawn+bind+initial enqueue are atomic in persistent store
-- ACP command retries are idempotent and do not duplicate runs or outputs
-- cancel, close, unfocus, archive, reset, and delete perform deterministic cleanup
-- crash restart preserves mapping and resumes multi turn continuity
-- concurrent thread bound ACP sessions work independently
-- ACP backend missing state produces clear actionable error
-- stale bindings are detected and surfaced explicitly (with optional safe auto-clean)
-- control-plane metrics and diagnostics are available for operators
-- new unit, integration, and e2e coverage passes
+- spawn de sessão ACP pode criar ou vincular uma thread em um adaptador de canal suportado (atualmente Discord)
+- todas as mensagens de thread roteiam apenas para a sessão ACP vinculada
+- saídas ACP aparecem na mesma identidade de thread com streaming ou em lotes
+- sem saída duplicada no canal pai para turnos vinculados
+- spawn+bind+enqueue inicial são atômicos no armazenamento persistente
+- retentativas de comando ACP são idempotentes e não duplicam execuções ou saídas
+- cancel, close, unfocus, archive, reset e delete realizam limpeza determinística
+- reinicialização após falha preserva mapeamento e retoma continuidade multi-turno
+- sessões ACP vinculadas a thread concorrentes funcionam de forma independente
+- estado de backend ACP ausente produz erro claro e acionável
+- vinculações obsoletas são detectadas e surfacadas explicitamente (com limpeza automática segura opcional)
+- métricas e diagnósticos do plano de controle estão disponíveis para operadores
+- nova cobertura de testes unitários, integração e e2e passa
 
-## Addendum: targeted refactors for current implementation (status)
+## Adendo: refatorações direcionadas para implementação atual (status)
 
-These are non-blocking follow-ups to keep the ACP path maintainable after the current feature set lands.
+Estes são acompanhamentos não bloqueantes para manter o caminho ACP sustentável após o conjunto de recursos atual ser publicado.
 
-### 1) Centralize ACP dispatch policy evaluation (completed)
+### 1) Centralizar avaliação de política de dispatch ACP (concluído)
 
-- implemented via shared ACP policy helpers in `src/acp/policy.ts`
-- dispatch, ACP command lifecycle handlers, and ACP spawn path now consume shared policy logic
+- implementado via helpers de política ACP compartilhados em `src/acp/policy.ts`
+- dispatch, handlers de ciclo de vida de comando ACP e caminho de spawn ACP agora consomem lógica de política compartilhada
 
-### 2) Split ACP command handler by subcommand domain (completed)
+### 2) Dividir handler de comando ACP por domínio de subcomando (concluído)
 
-- `src/auto-reply/reply/commands-acp.ts` is now a thin router
-- subcommand behavior is split into:
+- `src/auto-reply/reply/commands-acp.ts` agora é um roteador fino
+- comportamento de subcomando está dividido em:
   - `src/auto-reply/reply/commands-acp/lifecycle.ts`
   - `src/auto-reply/reply/commands-acp/runtime-options.ts`
   - `src/auto-reply/reply/commands-acp/diagnostics.ts`
-  - shared helpers in `src/auto-reply/reply/commands-acp/shared.ts`
+  - helpers compartilhados em `src/auto-reply/reply/commands-acp/shared.ts`
 
-### 3) Split ACP session manager by responsibility (completed)
+### 3) Dividir manager de sessão ACP por responsabilidade (concluído)
 
-- manager is split into:
-  - `src/acp/control-plane/manager.ts` (public facade + singleton)
-  - `src/acp/control-plane/manager.core.ts` (manager implementation)
-  - `src/acp/control-plane/manager.types.ts` (manager types/deps)
-  - `src/acp/control-plane/manager.utils.ts` (normalization + helper functions)
+- o manager está dividido em:
+  - `src/acp/control-plane/manager.ts` (fachada pública + singleton)
+  - `src/acp/control-plane/manager.core.ts` (implementação do manager)
+  - `src/acp/control-plane/manager.types.ts` (tipos/deps do manager)
+  - `src/acp/control-plane/manager.utils.ts` (funções de normalização + helper)
 
-### 4) Optional acpx runtime adapter cleanup
+### 4) Limpeza opcional do adaptador de runtime acpx
 
-- `extensions/acpx/src/runtime.ts` can be split into:
-- process execution/supervision
-- ndjson event parsing/normalization
-- runtime API surface (`submit`, `cancel`, `close`, etc.)
-- improves testability and makes backend behavior easier to audit
+- `extensions/acpx/src/runtime.ts` pode ser dividido em:
+- execução/supervisão de processo
+- análise/normalização de eventos ndjson
+- superfície de API de runtime (`submit`, `cancel`, `close`, etc.)
+- melhora a testabilidade e facilita a auditoria do comportamento do backend

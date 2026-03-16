@@ -1,240 +1,240 @@
 ---
-summary: "Status and next steps for decoupling Discord gateway listeners from long-running agent turns with a Discord-specific inbound worker"
-owner: "openclaw"
+summary: "Status e próximos passos para desacoplar listeners do gateway Discord de turnos de agente de longa duração com um worker de entrada assíncrono específico do Discord"
+owner: "opencraft"
 status: "in_progress"
 last_updated: "2026-03-05"
-title: "Discord Async Inbound Worker Plan"
+title: "Plano do Worker de Entrada Assíncrono do Discord"
 ---
 
-# Discord Async Inbound Worker Plan
+# Plano do Worker de Entrada Assíncrono do Discord
 
-## Objective
+## Objetivo
 
-Remove Discord listener timeout as a user-facing failure mode by making inbound Discord turns asynchronous:
+Remover o timeout do listener Discord como modo de falha visível ao usuário, tornando os turnos de entrada Discord assíncronos:
 
-1. Gateway listener accepts and normalizes inbound events quickly.
-2. A Discord run queue stores serialized jobs keyed by the same ordering boundary we use today.
-3. A worker executes the actual agent turn outside the Carbon listener lifetime.
-4. Replies are delivered back to the originating channel or thread after the run completes.
+1. O listener do gateway aceita e normaliza eventos de entrada rapidamente.
+2. Uma fila de execução Discord armazena jobs serializados com chave pelo mesmo limite de ordenação que usamos hoje.
+3. Um worker executa o turno real do agente fora do tempo de vida do listener Carbon.
+4. As respostas são entregues de volta ao canal ou thread de origem após a conclusão da execução.
 
-This is the long-term fix for queued Discord runs timing out at `channels.discord.eventQueue.listenerTimeout` while the agent run itself is still making progress.
+Esta é a correção de longo prazo para execuções Discord enfileiradas que atingem timeout em `channels.discord.eventQueue.listenerTimeout` enquanto a execução do agente em si ainda está progredindo.
 
-## Current status
+## Status atual
 
-This plan is partially implemented.
+Este plano está parcialmente implementado.
 
-Already done:
+Já concluído:
 
-- Discord listener timeout and Discord run timeout are now separate settings.
-- Accepted inbound Discord turns are enqueued into `src/discord/monitor/inbound-worker.ts`.
-- The worker now owns the long-running turn instead of the Carbon listener.
-- Existing per-route ordering is preserved by queue key.
-- Timeout regression coverage exists for the Discord worker path.
+- O timeout do listener Discord e o timeout de execução Discord agora são configurações separadas.
+- Turnos Discord de entrada aceitos são enfileirados em `src/discord/monitor/inbound-worker.ts`.
+- O worker agora possui o turno de longa duração em vez do listener Carbon.
+- A ordenação por rota existente é preservada pela chave da fila.
+- Cobertura de regressão de timeout existe para o caminho do worker Discord.
 
-What this means in plain language:
+O que isso significa em linguagem simples:
 
-- the production timeout bug is fixed
-- the long-running turn no longer dies just because the Discord listener budget expires
-- the worker architecture is not finished yet
+- o bug de timeout de produção está corrigido
+- o turno de longa duração não morre mais apenas porque o orçamento do listener Discord expira
+- a arquitetura do worker ainda não está terminada
 
-What is still missing:
+O que ainda está faltando:
 
-- `DiscordInboundJob` is still only partially normalized and still carries live runtime references
-- command semantics (`stop`, `new`, `reset`, future session controls) are not yet fully worker-native
-- worker observability and operator status are still minimal
-- there is still no restart durability
+- `DiscordInboundJob` ainda está apenas parcialmente normalizado e ainda carrega referências de runtime ao vivo
+- semântica de comandos (`stop`, `new`, `reset`, controles de sessão futuros) ainda não são totalmente nativas do worker
+- observabilidade e status do operador do worker ainda são mínimos
+- ainda não há durabilidade de reinicialização
 
-## Why this exists
+## Por Que Existe
 
-Current behavior ties the full agent turn to the listener lifetime:
+O comportamento atual vincula o turno completo do agente ao tempo de vida do listener:
 
-- `src/discord/monitor/listeners.ts` applies the timeout and abort boundary.
-- `src/discord/monitor/message-handler.ts` keeps the queued run inside that boundary.
-- `src/discord/monitor/message-handler.process.ts` performs media loading, routing, dispatch, typing, draft streaming, and final reply delivery inline.
+- `src/discord/monitor/listeners.ts` aplica o timeout e o limite de abort.
+- `src/discord/monitor/message-handler.ts` mantém a execução enfileirada dentro desse limite.
+- `src/discord/monitor/message-handler.process.ts` realiza carregamento de mídia, roteamento, dispatch, digitação, streaming de rascunho e entrega de resposta final inline.
 
-That architecture has two bad properties:
+Essa arquitetura tem duas propriedades ruins:
 
-- long but healthy turns can be aborted by the listener watchdog
-- users can see no reply even when the downstream runtime would have produced one
+- turnos longos mas saudáveis podem ser abortados pelo watchdog do listener
+- usuários podem não receber resposta mesmo quando o runtime downstream teria produzido uma
 
-Raising the timeout helps but does not change the failure mode.
+Aumentar o timeout ajuda, mas não muda o modo de falha.
 
-## Non-goals
+## Não-Objetivos
 
-- Do not redesign non-Discord channels in this pass.
-- Do not broaden this into a generic all-channel worker framework in the first implementation.
-- Do not extract a shared cross-channel inbound worker abstraction yet; only share low-level primitives when duplication is obvious.
-- Do not add durable crash recovery in the first pass unless needed to land safely.
-- Do not change route selection, binding semantics, or ACP policy in this plan.
+- Não redesenhar canais não Discord nesta passagem.
+- Não ampliar isso para um framework de worker genérico de todos os canais na primeira implementação.
+- Não extrair ainda uma abstração de worker de entrada compartilhada entre canais; apenas compartilhar primitivas de baixo nível quando a duplicação for óbvia.
+- Não adicionar recuperação durável de falhas na primeira passagem a menos que necessário para publicar com segurança.
+- Não mudar seleção de rota, semântica de vinculação ou política ACP neste plano.
 
-## Current constraints
+## Restrições Atuais
 
-The current Discord processing path still depends on some live runtime objects that should not stay inside the long-term job payload:
+O caminho de processamento Discord atual ainda depende de alguns objetos de runtime ao vivo que não devem permanecer dentro do payload do job de longo prazo:
 
 - Carbon `Client`
-- raw Discord event shapes
-- in-memory guild history map
-- thread binding manager callbacks
-- live typing and draft stream state
+- formatos de evento Discord brutos
+- mapa de histórico de guild em memória
+- callbacks do gerenciador de vinculação a thread
+- estado de digitação ao vivo e de stream de rascunho
 
-We already moved execution onto a worker queue, but the normalization boundary is still incomplete. Right now the worker is "run later in the same process with some of the same live objects," not a fully data-only job boundary.
+Já movemos a execução para uma fila de worker, mas o limite de normalização ainda está incompleto. Agora o worker é "executar mais tarde no mesmo processo com alguns dos mesmos objetos ao vivo", não um limite de job estritamente baseado em dados.
 
-## Target architecture
+## Arquitetura Alvo
 
-### 1. Listener stage
+### 1. Estágio do listener
 
-`DiscordMessageListener` remains the ingress point, but its job becomes:
+`DiscordMessageListener` permanece como ponto de entrada, mas seu trabalho torna-se:
 
-- run preflight and policy checks
-- normalize accepted input into a serializable `DiscordInboundJob`
-- enqueue the job into a per-session or per-channel async queue
-- return immediately to Carbon once the enqueue succeeds
+- executar verificações de preflight e política
+- normalizar entrada aceita em um `DiscordInboundJob` serializável
+- enfileirar o job em uma fila assíncrona por sessão ou por canal
+- retornar imediatamente ao Carbon assim que o enfileiramento for bem-sucedido
 
-The listener should no longer own the end-to-end LLM turn lifetime.
+O listener não deve mais possuir o tempo de vida do turno LLM de ponta a ponta.
 
-### 2. Normalized job payload
+### 2. Payload normalizado do job
 
-Introduce a serializable job descriptor that contains only the data needed to run the turn later.
+Introduzir um descritor de job serializável que contenha apenas os dados necessários para executar o turno mais tarde.
 
-Minimum shape:
+Formato mínimo:
 
-- route identity
+- identidade de rota
   - `agentId`
   - `sessionKey`
   - `accountId`
   - `channel`
-- delivery identity
-  - destination channel id
-  - reply target message id
-  - thread id if present
-- sender identity
-  - sender id, label, username, tag
-- channel context
-  - guild id
-  - channel name or slug
-  - thread metadata
-  - resolved system prompt override
-- normalized message body
-  - base text
-  - effective message text
-  - attachment descriptors or resolved media references
-- gating decisions
-  - mention requirement outcome
-  - command authorization outcome
-  - bound session or agent metadata if applicable
+- identidade de entrega
+  - id do canal de destino
+  - id da mensagem alvo de resposta
+  - id da thread se presente
+- identidade do remetente
+  - id do remetente, label, username, tag
+- contexto do canal
+  - id do guild
+  - nome ou slug do canal
+  - metadados da thread
+  - substituição do prompt de sistema resolvida
+- corpo normalizado da mensagem
+  - texto base
+  - texto efetivo da mensagem
+  - descritores de anexo ou referências de mídia resolvidas
+- decisões de controle
+  - resultado de requisito de menção
+  - resultado de autorização de comando
+  - metadados de sessão ou agente vinculado, se aplicável
 
-The job payload must not contain live Carbon objects or mutable closures.
+O payload do job não deve conter objetos Carbon ao vivo ou closures mutáveis.
 
-Current implementation status:
+Status atual de implementação:
 
-- partially done
-- `src/discord/monitor/inbound-job.ts` exists and defines the worker handoff
-- the payload still contains live Discord runtime context and should be reduced further
+- parcialmente concluído
+- `src/discord/monitor/inbound-job.ts` existe e define o handoff para o worker
+- o payload ainda contém contexto de runtime Discord ao vivo e deve ser reduzido
 
-### 3. Worker stage
+### 3. Estágio do worker
 
-Add a Discord-specific worker runner responsible for:
+Adicionar um runner de worker específico do Discord responsável por:
 
-- reconstructing the turn context from `DiscordInboundJob`
-- loading media and any additional channel metadata needed for the run
-- dispatching the agent turn
-- delivering final reply payloads
-- updating status and diagnostics
+- reconstruir o contexto de turno a partir de `DiscordInboundJob`
+- carregar mídia e quaisquer metadados adicionais do canal necessários para a execução
+- despachar o turno do agente
+- entregar payloads de resposta final
+- atualizar status e diagnósticos
 
-Recommended location:
+Localização recomendada:
 
 - `src/discord/monitor/inbound-worker.ts`
 - `src/discord/monitor/inbound-job.ts`
 
-### 4. Ordering model
+### 4. Modelo de ordenação
 
-Ordering must remain equivalent to today for a given route boundary.
+A ordenação deve permanecer equivalente a hoje para um dado limite de rota.
 
-Recommended key:
+Chave recomendada:
 
-- use the same queue key logic as `resolveDiscordRunQueueKey(...)`
+- usar a mesma lógica de chave de fila de `resolveDiscordRunQueueKey(...)`
 
-This preserves existing behavior:
+Isso preserva o comportamento existente:
 
-- one bound agent conversation does not interleave with itself
-- different Discord channels can still progress independently
+- uma conversa de agente vinculado não se intercala consigo mesma
+- canais Discord diferentes ainda podem progredir de forma independente
 
-### 5. Timeout model
+### 5. Modelo de timeout
 
-After cutover, there are two separate timeout classes:
+Após a transição, há duas classes de timeout separadas:
 
-- listener timeout
-  - only covers normalization and enqueue
-  - should be short
-- run timeout
-  - optional, worker-owned, explicit, and user-visible
-  - should not be inherited accidentally from Carbon listener settings
+- timeout do listener
+  - cobre apenas normalização e enfileiramento
+  - deve ser curto
+- timeout de execução
+  - opcional, pertencente ao worker, explícito e visível ao usuário
+  - não deve ser herdado acidentalmente das configurações do listener Carbon
 
-This removes the current accidental coupling between "Discord gateway listener stayed alive" and "agent run is healthy."
+Isso remove o acoplamento acidental atual entre "listener do gateway Discord permaneceu ativo" e "execução do agente está saudável".
 
-## Recommended implementation phases
+## Fases de implementação recomendadas
 
-### Phase 1: normalization boundary
+### Fase 1: limite de normalização
 
-- Status: partially implemented
-- Done:
-  - extracted `buildDiscordInboundJob(...)`
-  - added worker handoff tests
-- Remaining:
-  - make `DiscordInboundJob` plain data only
-  - move live runtime dependencies to worker-owned services instead of per-job payload
-  - stop rebuilding process context by stitching live listener refs back into the job
+- Status: parcialmente implementado
+- Concluído:
+  - extraído `buildDiscordInboundJob(...)`
+  - adicionados testes de handoff do worker
+- Restante:
+  - tornar `DiscordInboundJob` somente dados simples
+  - mover dependências de runtime ao vivo para serviços de propriedade do worker em vez de payload por job
+  - parar de reconstruir contexto de processo costurando de volta refs do listener ao vivo no job
 
-### Phase 2: in-memory worker queue
+### Fase 2: fila de worker em memória
 
-- Status: implemented
-- Done:
-  - added `DiscordInboundWorkerQueue` keyed by resolved run queue key
-  - listener enqueues jobs instead of directly awaiting `processDiscordMessage(...)`
-  - worker executes jobs in-process, in memory only
+- Status: implementado
+- Concluído:
+  - adicionado `DiscordInboundWorkerQueue` com chave pela chave de fila de execução resolvida
+  - listener enfileira jobs em vez de aguardar diretamente `processDiscordMessage(...)`
+  - worker executa jobs em-processo, somente em memória
 
-This is the first functional cutover.
+Esta é a primeira transição funcional.
 
-### Phase 3: process split
+### Fase 3: separação de processo
 
-- Status: not started
-- Move delivery, typing, and draft streaming ownership behind worker-facing adapters.
-- Replace direct use of live preflight context with worker context reconstruction.
-- Keep `processDiscordMessage(...)` temporarily as a facade if needed, then split it.
+- Status: não iniciado
+- Mover propriedade de entrega, digitação e streaming de rascunho para adaptadores voltados ao worker.
+- Substituir uso direto de contexto de preflight ao vivo com reconstrução de contexto do worker.
+- Manter `processDiscordMessage(...)` temporariamente como fachada se necessário, depois dividir.
 
-### Phase 4: command semantics
+### Fase 4: semântica de comandos
 
-- Status: not started
-  Make sure native Discord commands still behave correctly when work is queued:
+- Status: não iniciado
+  Garantir que comandos Discord nativos ainda se comportem corretamente quando o trabalho está enfileirado:
 
 - `stop`
 - `new`
 - `reset`
-- any future session-control commands
+- quaisquer comandos de controle de sessão futuros
 
-The worker queue must expose enough run state for commands to target the active or queued turn.
+A fila do worker deve expor estado de execução suficiente para que os comandos possam atingir o turno ativo ou enfileirado.
 
-### Phase 5: observability and operator UX
+### Fase 5: observabilidade e UX do operador
 
-- Status: not started
-- emit queue depth and active worker counts into monitor status
-- record enqueue time, start time, finish time, and timeout or cancellation reason
-- surface worker-owned timeout or delivery failures clearly in logs
+- Status: não iniciado
+- emitir profundidade de fila e contagens de worker ativo no status do monitor
+- registrar tempo de enfileiramento, tempo de início, tempo de conclusão e timeout ou motivo de cancelamento
+- surfaçar timeouts de propriedade do worker ou falhas de entrega claramente nos logs
 
-### Phase 6: optional durability follow-up
+### Fase 6: acompanhamento de durabilidade opcional
 
-- Status: not started
-  Only after the in-memory version is stable:
+- Status: não iniciado
+  Somente após a versão em memória estar estável:
 
-- decide whether queued Discord jobs should survive gateway restart
-- if yes, persist job descriptors and delivery checkpoints
-- if no, document the explicit in-memory boundary
+- decidir se jobs Discord enfileirados devem sobreviver a reinicializações do gateway
+- se sim, persistir descritores de job e checkpoints de entrega
+- se não, documentar o limite explícito em memória
 
-This should be a separate follow-up unless restart recovery is required to land.
+Este deve ser um acompanhamento separado a menos que a recuperação de reinicialização seja necessária para publicar.
 
-## File impact
+## Impacto em arquivos
 
-Current primary files:
+Arquivos primários atuais:
 
 - `src/discord/monitor/listeners.ts`
 - `src/discord/monitor/message-handler.ts`
@@ -242,96 +242,96 @@ Current primary files:
 - `src/discord/monitor/message-handler.process.ts`
 - `src/discord/monitor/status.ts`
 
-Current worker files:
+Arquivos de worker atuais:
 
 - `src/discord/monitor/inbound-job.ts`
 - `src/discord/monitor/inbound-worker.ts`
 - `src/discord/monitor/inbound-job.test.ts`
 - `src/discord/monitor/message-handler.queue.test.ts`
 
-Likely next touch points:
+Próximos pontos de contato prováveis:
 
 - `src/auto-reply/dispatch.ts`
 - `src/discord/monitor/reply-delivery.ts`
 - `src/discord/monitor/thread-bindings.ts`
 - `src/discord/monitor/native-command.ts`
 
-## Next step now
+## Próximo passo agora
 
-The next step is to make the worker boundary real instead of partial.
+O próximo passo é tornar o limite do worker real em vez de parcial.
 
-Do this next:
+Fazer isso agora:
 
-1. Move live runtime dependencies out of `DiscordInboundJob`
-2. Keep those dependencies on the Discord worker instance instead
-3. Reduce queued jobs to plain Discord-specific data:
-   - route identity
-   - delivery target
-   - sender info
-   - normalized message snapshot
-   - gating and binding decisions
-4. Reconstruct worker execution context from that plain data inside the worker
+1. Mover dependências de runtime ao vivo para fora de `DiscordInboundJob`
+2. Manter essas dependências na instância do worker Discord em vez disso
+3. Reduzir jobs enfileirados a dados simples específicos do Discord:
+   - identidade de rota
+   - alvo de entrega
+   - informações do remetente
+   - snapshot normalizado de mensagem
+   - decisões de controle e vinculação
+4. Reconstruir contexto de execução do worker a partir desses dados simples dentro do worker
 
-In practice, that means:
+Na prática, isso significa que:
 
 - `client`
 - `threadBindings`
 - `guildHistories`
 - `discordRestFetch`
-- other mutable runtime-only handles
+- outros handles mutáveis somente de runtime
 
-should stop living on each queued job and instead live on the worker itself or behind worker-owned adapters.
+devem parar de viver em cada job enfileirado e em vez disso viver no próprio worker ou atrás de adaptadores de propriedade do worker.
 
-After that lands, the next follow-up should be command-state cleanup for `stop`, `new`, and `reset`.
+Após isso ser publicado, o próximo acompanhamento deve ser a limpeza de estado de comando para `stop`, `new` e `reset`.
 
-## Testing plan
+## Plano de testes
 
-Keep the existing timeout repro coverage in:
+Manter a cobertura de repro de timeout existente em:
 
 - `src/discord/monitor/message-handler.queue.test.ts`
 
-Add new tests for:
+Adicionar novos testes para:
 
-1. listener returns after enqueue without awaiting full turn
-2. per-route ordering is preserved
-3. different channels still run concurrently
-4. replies are delivered to the original message destination
-5. `stop` cancels the active worker-owned run
-6. worker failure produces visible diagnostics without blocking later jobs
-7. ACP-bound Discord channels still route correctly under worker execution
+1. listener retorna após enfileiramento sem aguardar o turno completo
+2. ordenação por rota é preservada
+3. canais diferentes ainda executam de forma concorrente
+4. respostas são entregues ao destino de mensagem original
+5. `stop` cancela a execução de propriedade do worker ativo
+6. falha do worker produz diagnósticos visíveis sem bloquear jobs posteriores
+7. canais Discord vinculados a ACP ainda roteiam corretamente sob execução do worker
 
-## Risks and mitigations
+## Riscos e mitigações
 
-- Risk: command semantics drift from current synchronous behavior
-  Mitigation: land command-state plumbing in the same cutover, not later
+- Risco: semântica de comandos diverge do comportamento síncrono atual
+  Mitigação: publicar plumbing de estado de comando na mesma transição, não depois
 
-- Risk: reply delivery loses thread or reply-to context
-  Mitigation: make delivery identity first-class in `DiscordInboundJob`
+- Risco: entrega de resposta perde thread ou contexto de reply-to
+  Mitigação: tornar identidade de entrega de primeira classe em `DiscordInboundJob`
 
-- Risk: duplicate sends during retries or queue restarts
-  Mitigation: keep first pass in-memory only, or add explicit delivery idempotency before persistence
+- Risco: envios duplicados durante retentativas ou reinicializações de fila
+  Mitigação: manter primeira passagem somente em memória, ou adicionar idempotência explícita de entrega antes da persistência
 
-- Risk: `message-handler.process.ts` becomes harder to reason about during migration
-  Mitigation: split into normalization, execution, and delivery helpers before or during worker cutover
+- Risco: `message-handler.process.ts` torna-se mais difícil de raciocinar durante migração
+  Mitigação: dividir em helpers de normalização, execução e entrega antes ou durante a transição do worker
 
-## Acceptance criteria
+## Critérios de aceitação
 
-The plan is complete when:
+O plano está completo quando:
 
-1. Discord listener timeout no longer aborts healthy long-running turns.
-2. Listener lifetime and agent-turn lifetime are separate concepts in code.
-3. Existing per-session ordering is preserved.
-4. ACP-bound Discord channels work through the same worker path.
-5. `stop` targets the worker-owned run instead of the old listener-owned call stack.
-6. Timeout and delivery failures become explicit worker outcomes, not silent listener drops.
+1. O timeout do listener Discord não aborta mais turnos saudáveis de longa duração.
+2. O tempo de vida do listener e o tempo de vida do turno do agente são conceitos separados no código.
+3. A ordenação por sessão existente é preservada.
+4. Canais Discord vinculados a ACP funcionam pelo mesmo caminho do worker.
+5. `stop` tem como alvo a execução de propriedade do worker em vez da pilha de chamadas antiga de propriedade do listener.
+6. Timeouts e falhas de entrega tornam-se resultados explícitos do worker, não drops silenciosos do listener.
 
-## Remaining landing strategy
+## Estratégia de publicação restante
 
-Finish this in follow-up PRs:
+Concluir em PRs de acompanhamento:
 
-1. make `DiscordInboundJob` plain-data only and move live runtime refs onto the worker
-2. clean up command-state ownership for `stop`, `new`, and `reset`
-3. add worker observability and operator status
-4. decide whether durability is needed or explicitly document the in-memory boundary
+1. tornar `DiscordInboundJob` somente dados simples e mover refs de runtime ao vivo para o worker
+2. limpar propriedade de estado de comando para `stop`, `new` e `reset`
+3. adicionar observabilidade do worker e status do operador
+4. decidir se durabilidade é necessária ou documentar explicitamente o limite em memória
 
-This is still a bounded follow-up if kept Discord-only and if we continue to avoid a premature cross-channel worker abstraction.
+Este ainda é um acompanhamento limitado se mantido somente Discord e se continuarmos evitando uma abstração prematura de worker entre canais.
