@@ -1,29 +1,29 @@
 ---
-summary: "CLI reference for `openclaw setup` (initialize config + workspace)"
+summary: "Referência do CLI para `opencraft setup` (inicializar config + workspace)"
 read_when:
-  - You’re doing first-run setup without the full onboarding wizard
-  - You want to set the default workspace path
+  - Você está fazendo setup inicial sem o wizard de onboarding completo
+  - Você quer definir o path do workspace padrão
 title: "setup"
 ---
 
-# `openclaw setup`
+# `opencraft setup`
 
-Initialize `~/.openclaw/openclaw.json` and the agent workspace.
+Inicializar `~/.opencraft/opencraft.json` e o workspace do agente.
 
-Related:
+Relacionado:
 
-- Getting started: [Getting started](/start/getting-started)
+- Primeiros passos: [Getting started](/start/getting-started)
 - Wizard: [Onboarding](/start/onboarding)
 
-## Examples
+## Exemplos
 
 ```bash
-openclaw setup
-openclaw setup --workspace ~/.openclaw/workspace
+opencraft setup
+opencraft setup --workspace ~/.opencraft/workspace
 ```
 
-To run the wizard via setup:
+Para rodar o wizard via setup:
 
 ```bash
-openclaw setup --wizard
+opencraft setup --wizard
 ```

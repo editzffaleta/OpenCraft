@@ -1,123 +1,123 @@
 ---
-summary: "Node discovery and transports (Bonjour, Tailscale, SSH) for finding the gateway"
+summary: "Descoberta de node e transportes (Bonjour, Tailscale, SSH) para encontrar o gateway"
 read_when:
-  - Implementing or changing Bonjour discovery/advertising
-  - Adjusting remote connection modes (direct vs SSH)
-  - Designing node discovery + pairing for remote nodes
+  - Implementando ou mudando descoberta/advertising Bonjour
+  - Ajustando modos de conexão remota (direto vs SSH)
+  - Projetando descoberta de node + pareamento para nodes remotos
 title: "Discovery and Transports"
 ---
 
-# Discovery & transports
+# Descoberta e transportes
 
-OpenClaw has two distinct problems that look similar on the surface:
+OpenCraft tem dois problemas distintos que parecem similares na superfície:
 
-1. **Operator remote control**: the macOS menu bar app controlling a gateway running elsewhere.
-2. **Node pairing**: iOS/Android (and future nodes) finding a gateway and pairing securely.
+1. **Controle remoto do operador**: o app da barra de menus macOS controlando um gateway rodando em outro lugar.
+2. **Pareamento de node**: iOS/Android (e futuros nodes) encontrando um gateway e pareando com segurança.
 
-The design goal is to keep all network discovery/advertising in the **Node Gateway** (`openclaw gateway`) and keep clients (mac app, iOS) as consumers.
+O objetivo do design é manter toda a descoberta/advertising de rede no **Node Gateway** (`opencraft gateway`) e manter clientes (app mac, iOS) como consumidores.
 
-## Terms
+## Termos
 
-- **Gateway**: a single long-running gateway process that owns state (sessions, pairing, node registry) and runs channels. Most setups use one per host; isolated multi-gateway setups are possible.
-- **Gateway WS (control plane)**: the WebSocket endpoint on `127.0.0.1:18789` by default; can be bound to LAN/tailnet via `gateway.bind`.
-- **Direct WS transport**: a LAN/tailnet-facing Gateway WS endpoint (no SSH).
-- **SSH transport (fallback)**: remote control by forwarding `127.0.0.1:18789` over SSH.
-- **Legacy TCP bridge (deprecated/removed)**: older node transport (see [Bridge protocol](/gateway/bridge-protocol)); no longer advertised for discovery.
+- **Gateway**: um único processo gateway de longa duração que possui estado (sessões, pareamento, registro de node) e roda canais. A maioria dos setups usa um por host; setups multi-gateway isolados são possíveis.
+- **Gateway WS (plano de controle)**: o endpoint WebSocket em `127.0.0.1:18789` por padrão; pode ser vinculado a LAN/tailnet via `gateway.bind`.
+- **Transporte WS direto**: um endpoint Gateway WS voltado para LAN/tailnet (sem SSH).
+- **Transporte SSH (fallback)**: controle remoto encaminhando `127.0.0.1:18789` via SSH.
+- **Bridge TCP legado (depreciado/removido)**: transporte de node mais antigo (veja [Bridge protocol](/gateway/bridge-protocol)); não mais anunciado para descoberta.
 
-Protocol details:
+Detalhes do protocolo:
 
-- [Gateway protocol](/gateway/protocol)
-- [Bridge protocol (legacy)](/gateway/bridge-protocol)
+- [Protocolo do Gateway](/gateway/protocol)
+- [Protocolo Bridge (legado)](/gateway/bridge-protocol)
 
-## Why we keep both “direct” and SSH
+## Por que mantemos "direto" e SSH
 
-- **Direct WS** is the best UX on the same network and within a tailnet:
-  - auto-discovery on LAN via Bonjour
-  - pairing tokens + ACLs owned by the gateway
-  - no shell access required; protocol surface can stay tight and auditable
-- **SSH** remains the universal fallback:
-  - works anywhere you have SSH access (even across unrelated networks)
-  - survives multicast/mDNS issues
-  - requires no new inbound ports besides SSH
+- **WS direto** é a melhor UX na mesma rede e dentro de um tailnet:
+  - auto-descoberta na LAN via Bonjour
+  - tokens de pareamento + ACLs de propriedade do gateway
+  - sem acesso shell necessário; superfície do protocolo pode permanecer restrita e auditável
+- **SSH** permanece o fallback universal:
+  - funciona em qualquer lugar onde você tem acesso SSH (mesmo entre redes não relacionadas)
+  - sobrevive a problemas de multicast/mDNS
+  - não requer novas portas de entrada além do SSH
 
-## Discovery inputs (how clients learn where the gateway is)
+## Entradas de descoberta (como clientes aprendem onde está o gateway)
 
-### 1) Bonjour / mDNS (LAN only)
+### 1) Bonjour / mDNS (apenas LAN)
 
-Bonjour is best-effort and does not cross networks. It is only used for “same LAN” convenience.
+Bonjour é best-effort e não cruza redes. É usado apenas para conveniência de "mesma LAN".
 
-Target direction:
+Direção de alvo:
 
-- The **gateway** advertises its WS endpoint via Bonjour.
-- Clients browse and show a “pick a gateway” list, then store the chosen endpoint.
+- O **gateway** anuncia seu endpoint WS via Bonjour.
+- Clientes navegam e mostram uma lista "escolha um gateway", depois armazenam o endpoint escolhido.
 
-Troubleshooting and beacon details: [Bonjour](/gateway/bonjour).
+Resolução de problemas e detalhes do beacon: [Bonjour](/gateway/bonjour).
 
-#### Service beacon details
+#### Detalhes do beacon de serviço
 
-- Service types:
-  - `_openclaw-gw._tcp` (gateway transport beacon)
-- TXT keys (non-secret):
+- Tipos de serviço:
+  - `_openclaw-gw._tcp` (beacon de transporte do gateway)
+- Chaves TXT (não secretas):
   - `role=gateway`
   - `lanHost=<hostname>.local`
-  - `sshPort=22` (or whatever is advertised)
+  - `sshPort=22` (ou o que for anunciado)
   - `gatewayPort=18789` (Gateway WS + HTTP)
-  - `gatewayTls=1` (only when TLS is enabled)
-  - `gatewayTlsSha256=<sha256>` (only when TLS is enabled and fingerprint is available)
-  - `canvasPort=<port>` (canvas host port; currently the same as `gatewayPort` when the canvas host is enabled)
-  - `cliPath=<path>` (optional; absolute path to a runnable `openclaw` entrypoint or binary)
-  - `tailnetDns=<magicdns>` (optional hint; auto-detected when Tailscale is available)
+  - `gatewayTls=1` (apenas quando TLS está habilitado)
+  - `gatewayTlsSha256=<sha256>` (apenas quando TLS está habilitado e o fingerprint está disponível)
+  - `canvasPort=<port>` (porta do host canvas; atualmente o mesmo que `gatewayPort` quando o host canvas está habilitado)
+  - `cliPath=<path>` (opcional; path absoluto para um entrypoint ou binário `opencraft` executável)
+  - `tailnetDns=<magicdns>` (hint opcional; auto-detectado quando Tailscale está disponível)
 
-Security notes:
+Notas de segurança:
 
-- Bonjour/mDNS TXT records are **unauthenticated**. Clients must treat TXT values as UX hints only.
-- Routing (host/port) should prefer the **resolved service endpoint** (SRV + A/AAAA) over TXT-provided `lanHost`, `tailnetDns`, or `gatewayPort`.
-- TLS pinning must never allow an advertised `gatewayTlsSha256` to override a previously stored pin.
-- iOS/Android nodes should treat discovery-based direct connects as **TLS-only** and require an explicit “trust this fingerprint” confirmation before storing a first-time pin (out-of-band verification).
+- Registros TXT Bonjour/mDNS são **não autenticados**. Clientes devem tratar valores TXT apenas como hints de UX.
+- Roteamento (host/porta) deve preferir o **endpoint de serviço resolvido** (SRV + A/AAAA) em vez de `lanHost`, `tailnetDns` ou `gatewayPort` fornecidos via TXT.
+- Pinning TLS nunca deve permitir que um `gatewayTlsSha256` anunciado sobrescreva um pin armazenado anteriormente.
+- Nodes iOS/Android devem tratar conexões diretas baseadas em descoberta como **apenas TLS** e requerem uma confirmação explícita de "confiar neste fingerprint" antes de armazenar um pin pela primeira vez (verificação fora de banda).
 
-Disable/override:
+Desabilitar/sobrescrever:
 
-- `OPENCLAW_DISABLE_BONJOUR=1` disables advertising.
-- `gateway.bind` in `~/.openclaw/openclaw.json` controls the Gateway bind mode.
-- `OPENCLAW_SSH_PORT` overrides the SSH port advertised in TXT (defaults to 22).
-- `OPENCLAW_TAILNET_DNS` publishes a `tailnetDns` hint (MagicDNS).
-- `OPENCLAW_CLI_PATH` overrides the advertised CLI path.
+- `OPENCLAW_DISABLE_BONJOUR=1` desabilita o advertising.
+- `gateway.bind` em `~/.opencraft/opencraft.json` controla o modo de bind do Gateway.
+- `OPENCLAW_SSH_PORT` sobrescreve a porta SSH anunciada no TXT (padrão 22).
+- `OPENCLAW_TAILNET_DNS` publica um hint `tailnetDns` (MagicDNS).
+- `OPENCLAW_CLI_PATH` sobrescreve o path do CLI anunciado.
 
-### 2) Tailnet (cross-network)
+### 2) Tailnet (entre redes)
 
-For London/Vienna style setups, Bonjour won’t help. The recommended “direct” target is:
+Para setups de estilo Londres/Viena, Bonjour não vai ajudar. O alvo "direto" recomendado é:
 
-- Tailscale MagicDNS name (preferred) or a stable tailnet IP.
+- Nome MagicDNS do Tailscale (preferido) ou um IP tailnet estável.
 
-If the gateway can detect it is running under Tailscale, it publishes `tailnetDns` as an optional hint for clients (including wide-area beacons).
+Se o gateway pode detectar que está rodando sob Tailscale, ele publica `tailnetDns` como um hint opcional para clientes (incluindo beacons wide-area).
 
-### 3) Manual / SSH target
+### 3) Alvo manual / SSH
 
-When there is no direct route (or direct is disabled), clients can always connect via SSH by forwarding the loopback gateway port.
+Quando não há rota direta (ou direta está desabilitada), clientes sempre podem conectar via SSH encaminhando a porta do gateway de loopback.
 
-See [Remote access](/gateway/remote).
+Veja [Remote access](/gateway/remote).
 
-## Transport selection (client policy)
+## Seleção de transporte (política do cliente)
 
-Recommended client behavior:
+Comportamento recomendado do cliente:
 
-1. If a paired direct endpoint is configured and reachable, use it.
-2. Else, if Bonjour finds a gateway on LAN, offer a one-tap “Use this gateway” choice and save it as the direct endpoint.
-3. Else, if a tailnet DNS/IP is configured, try direct.
-4. Else, fall back to SSH.
+1. Se um endpoint direto pareado estiver configurado e acessível, use-o.
+2. Caso contrário, se Bonjour encontrar um gateway na LAN, ofereça uma escolha "Usar este gateway" com um toque e salve-o como endpoint direto.
+3. Caso contrário, se um DNS/IP tailnet estiver configurado, tente direto.
+4. Caso contrário, faça fallback para SSH.
 
-## Pairing + auth (direct transport)
+## Pareamento + auth (transporte direto)
 
-The gateway is the source of truth for node/client admission.
+O gateway é a fonte de verdade para admissão de node/cliente.
 
-- Pairing requests are created/approved/rejected in the gateway (see [Gateway pairing](/gateway/pairing)).
-- The gateway enforces:
+- Solicitações de pareamento são criadas/aprovadas/rejeitadas no gateway (veja [Gateway pairing](/gateway/pairing)).
+- O gateway aplica:
   - auth (token / keypair)
-  - scopes/ACLs (the gateway is not a raw proxy to every method)
+  - escopos/ACLs (o gateway não é um proxy raw para todos os métodos)
   - rate limits
 
-## Responsibilities by component
+## Responsabilidades por componente
 
-- **Gateway**: advertises discovery beacons, owns pairing decisions, and hosts the WS endpoint.
-- **macOS app**: helps you pick a gateway, shows pairing prompts, and uses SSH only as a fallback.
-- **iOS/Android nodes**: browse Bonjour as a convenience and connect to the paired Gateway WS.
+- **Gateway**: anuncia beacons de descoberta, possui decisões de pareamento e hospeda o endpoint WS.
+- **App macOS**: ajuda você a escolher um gateway, mostra prompts de pareamento e usa SSH apenas como fallback.
+- **Nodes iOS/Android**: navegam Bonjour como conveniência e conectam ao Gateway WS pareado.

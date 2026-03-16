@@ -1,150 +1,148 @@
 ---
-summary: "Chrome extension: let OpenClaw drive your existing Chrome tab"
+summary: "Extensão Chrome: deixe o OpenCraft controlar sua aba Chrome existente"
 read_when:
-  - You want the agent to drive an existing Chrome tab (toolbar button)
-  - You need remote Gateway + local browser automation via Tailscale
-  - You want to understand the security implications of browser takeover
-title: "Chrome Extension"
+  - Você quer que o agente controle uma aba Chrome existente (botão da barra de ferramentas)
+  - Você precisa de Gateway remoto + automação de browser local via Tailscale
+  - Você quer entender as implicações de segurança do controle de browser
+title: "Extensão Chrome"
 ---
 
-# Chrome extension (browser relay)
+# Extensão Chrome (relay de browser)
 
-The OpenClaw Chrome extension lets the agent control your **existing Chrome tabs** (your normal Chrome window) instead of launching a separate openclaw-managed Chrome profile.
+A extensão Chrome do OpenCraft permite que o agente controle suas **abas Chrome existentes** (sua janela Chrome normal) em vez de iniciar um perfil Chrome separado gerenciado pelo opencraft.
 
-Attach/detach happens via a **single Chrome toolbar button**.
+A conexão/desconexão acontece via um **único botão na barra de ferramentas do Chrome**.
 
-If you want Chrome’s official DevTools MCP attach flow instead of the OpenClaw
-extension relay, use an `existing-session` browser profile instead. See
-[Browser](/tools/browser#chrome-existing-session-via-mcp). For Chrome’s own
-setup docs, see [Chrome for Developers: Use Chrome DevTools MCP with your
+Se você quer o fluxo de conexão MCP oficial do DevTools do Chrome em vez do relay de extensão do OpenCraft, use um perfil de browser `existing-session`. Veja
+[Browser](/tools/browser#chrome-existing-session-via-mcp). Para a documentação de configuração do Chrome, veja [Chrome for Developers: Use Chrome DevTools MCP with your
 browser session](https://developer.chrome.com/blog/chrome-devtools-mcp-debug-your-browser-session)
-and the [Chrome DevTools MCP README](https://github.com/ChromeDevTools/chrome-devtools-mcp).
+e o [Chrome DevTools MCP README](https://github.com/ChromeDevTools/chrome-devtools-mcp).
 
-## What it is (concept)
+## O que é (conceito)
 
-There are three parts:
+Há três partes:
 
-- **Browser control service** (Gateway or node): the API the agent/tool calls (via the Gateway)
-- **Local relay server** (loopback CDP): bridges between the control server and the extension (`http://127.0.0.1:18792` by default)
-- **Chrome MV3 extension**: attaches to the active tab using `chrome.debugger` and pipes CDP messages to the relay
+- **Serviço de controle de browser** (Gateway ou node): a API que o agente/tool chama (via Gateway)
+- **Servidor relay local** (CDP loopback): faz a ponte entre o servidor de controle e a extensão (`http://127.0.0.1:18792` por padrão)
+- **Extensão Chrome MV3**: conecta-se à aba ativa usando `chrome.debugger` e encaminha mensagens CDP para o relay
 
-OpenClaw then controls the attached tab through the normal `browser` tool surface (selecting the right profile).
+O OpenCraft então controla a aba conectada através da superfície normal da tool `browser` (selecionando o perfil correto).
 
-## Install / load (unpacked)
+## Instalar / carregar (descompactado)
 
-1. Install the extension to a stable local path:
+1. Instale a extensão em um caminho local estável:
 
 ```bash
-openclaw browser extension install
+opencraft browser extension install
 ```
 
-2. Print the installed extension directory path:
+2. Imprima o caminho do diretório da extensão instalada:
 
 ```bash
-openclaw browser extension path
+opencraft browser extension path
 ```
 
 3. Chrome → `chrome://extensions`
 
-- Enable “Developer mode”
-- “Load unpacked” → select the directory printed above
+- Habilite "Modo do desenvolvedor"
+- "Carregar sem compactação" → selecione o diretório impresso acima
 
-4. Pin the extension.
+4. Fixe a extensão.
 
-## Updates (no build step)
+## Atualizações (sem etapa de build)
 
-The extension ships inside the OpenClaw release (npm package) as static files. There is no separate “build” step.
+A extensão é incluída no lançamento do OpenCraft (pacote npm) como arquivos estáticos. Não há etapa de "build" separada.
 
-After upgrading OpenClaw:
+Após atualizar o OpenCraft:
 
-- Re-run `openclaw browser extension install` to refresh the installed files under your OpenClaw state directory.
-- Chrome → `chrome://extensions` → click “Reload” on the extension.
+- Re-execute `opencraft browser extension install` para atualizar os arquivos instalados no diretório de estado do OpenCraft.
+- Chrome → `chrome://extensions` → clique em "Recarregar" na extensão.
 
-## Use it (set gateway token once)
+## Usar (definir token do gateway uma vez)
 
-To use the extension relay, create a browser profile for it:
+Para usar o relay de extensão, crie um perfil de browser para ele:
 
-Before first attach, open extension Options and set:
+Antes da primeira conexão, abra as Opções da extensão e defina:
 
-- `Port` (default `18792`)
-- `Gateway token` (must match `gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN`)
+- `Port` (padrão `18792`)
+- `Gateway token` (deve corresponder a `gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN`)
 
-Then create a profile:
+Então crie um perfil:
 
 ```bash
-openclaw browser create-profile \
-  --name my-chrome \
+opencraft browser create-profile \
+  --name meu-chrome \
   --driver extension \
   --cdp-url http://127.0.0.1:18792 \
   --color "#00AA00"
 ```
 
-Use it:
+Use-o:
 
-- CLI: `openclaw browser --browser-profile my-chrome tabs`
-- Agent tool: `browser` with `profile="my-chrome"`
+- CLI: `opencraft browser --browser-profile meu-chrome tabs`
+- Tool de agente: `browser` com `profile="meu-chrome"`
 
-### Custom Gateway ports
+### Portas de gateway personalizadas
 
-If you're using a custom gateway port, the extension relay port is automatically derived:
+Se você estiver usando uma porta de gateway personalizada, a porta do relay de extensão é derivada automaticamente:
 
-**Extension Relay Port = Gateway Port + 3**
+**Porta do Relay de Extensão = Porta do Gateway + 3**
 
-Example: if `gateway.port: 19001`, then:
+Exemplo: se `gateway.port: 19001`, então:
 
-- Extension relay port: `19004` (gateway + 3)
+- Porta do relay de extensão: `19004` (gateway + 3)
 
-Configure the extension to use the derived relay port in the extension Options page.
+Configure a extensão para usar a porta de relay derivada na página de Opções da extensão.
 
-## Attach / detach (toolbar button)
+## Conectar / desconectar (botão da barra de ferramentas)
 
-- Open the tab you want OpenClaw to control.
-- Click the extension icon.
-  - Badge shows `ON` when attached.
-- Click again to detach.
+- Abra a aba que você quer que o OpenCraft controle.
+- Clique no ícone da extensão.
+  - O badge mostra `ON` quando conectado.
+- Clique novamente para desconectar.
 
-## Which tab does it control?
+## Qual aba ela controla?
 
-- It does **not** automatically control “whatever tab you’re looking at”.
-- It controls **only the tab(s) you explicitly attached** by clicking the toolbar button.
-- To switch: open the other tab and click the extension icon there.
+- Ela **não** controla automaticamente "qualquer aba que você esteja olhando".
+- Ela controla **apenas a(s) aba(s) que você explicitamente conectou** clicando no botão da barra de ferramentas.
+- Para trocar: abra a outra aba e clique no ícone da extensão lá.
 
-## Badge + common errors
+## Badge + erros comuns
 
-- `ON`: attached; OpenClaw can drive that tab.
-- `…`: connecting to the local relay.
-- `!`: relay not reachable/authenticated (most common: relay server not running, or gateway token missing/wrong).
+- `ON`: conectado; o OpenCraft pode controlar aquela aba.
+- `…`: conectando ao relay local.
+- `!`: relay não acessível/autenticado (mais comum: servidor relay não rodando, ou token do gateway ausente/errado).
 
-If you see `!`:
+Se você ver `!`:
 
-- Make sure the Gateway is running locally (default setup), or run a node host on this machine if the Gateway runs elsewhere.
-- Open the extension Options page; it validates relay reachability + gateway-token auth.
+- Certifique-se de que o Gateway está rodando localmente (configuração padrão), ou execute um node host nesta máquina se o Gateway rodar em outro lugar.
+- Abra a página de Opções da extensão; ela valida a acessibilidade do relay + autenticação por gateway-token.
 
-## Remote Gateway (use a node host)
+## Gateway remoto (use um node host)
 
-### Local Gateway (same machine as Chrome) — usually **no extra steps**
+### Gateway local (mesma máquina que o Chrome) — geralmente **sem etapas extras**
 
-If the Gateway runs on the same machine as Chrome, it starts the browser control service on loopback
-and auto-starts the relay server. The extension talks to the local relay; the CLI/tool calls go to the Gateway.
+Se o Gateway roda na mesma máquina que o Chrome, ele inicia o serviço de controle de browser no loopback
+e inicia automaticamente o servidor relay. A extensão fala com o relay local; as chamadas CLI/tool vão para o Gateway.
 
-### Remote Gateway (Gateway runs elsewhere) — **run a node host**
+### Gateway remoto (Gateway roda em outro lugar) — **execute um node host**
 
-If your Gateway runs on another machine, start a node host on the machine that runs Chrome.
-The Gateway will proxy browser actions to that node; the extension + relay stay local to the browser machine.
+Se seu Gateway roda em outra máquina, inicie um node host na máquina que roda o Chrome.
+O Gateway fará proxy das ações de browser para aquele node; a extensão + relay ficam locais na máquina do browser.
 
-If multiple nodes are connected, pin one with `gateway.nodes.browser.node` or set `gateway.nodes.browser.mode`.
+Se vários nodes estiverem conectados, fixe um com `gateway.nodes.browser.node` ou defina `gateway.nodes.browser.mode`.
 
-## Sandboxing (tool containers)
+## Sandboxing (containers de tool)
 
-If your agent session is sandboxed (`agents.defaults.sandbox.mode != "off"`), the `browser` tool can be restricted:
+Se sua sessão de agente está em sandbox (`agents.defaults.sandbox.mode != "off"`), a tool `browser` pode ser restrita:
 
-- By default, sandboxed sessions often target the **sandbox browser** (`target="sandbox"`), not your host Chrome.
-- Chrome extension relay takeover requires controlling the **host** browser control server.
+- Por padrão, sessões em sandbox frequentemente apontam para o **browser sandbox** (`target="sandbox"`), não para o Chrome do host.
+- O controle via relay de extensão Chrome requer controlar o servidor de controle do browser do **host**.
 
-Options:
+Opções:
 
-- Easiest: use the extension from a **non-sandboxed** session/agent.
-- Or allow host browser control for sandboxed sessions:
+- Mais fácil: use a extensão de uma sessão/agente **não sandboxado**.
+- Ou permita controle do browser do host para sessões em sandbox:
 
 ```json5
 {
@@ -160,44 +158,44 @@ Options:
 }
 ```
 
-Then ensure the tool isn’t denied by tool policy, and (if needed) call `browser` with `target="host"`.
+Então certifique-se de que a tool não é negada pela política de tool e (se necessário) chame `browser` com `target="host"`.
 
-Debugging: `openclaw sandbox explain`
+Depuração: `opencraft sandbox explain`
 
-## Remote access tips
+## Dicas de acesso remoto
 
-- Keep the Gateway and node host on the same tailnet; avoid exposing relay ports to LAN or public Internet.
-- Pair nodes intentionally; disable browser proxy routing if you don’t want remote control (`gateway.nodes.browser.mode="off"`).
-- Leave the relay on loopback unless you have a real cross-namespace need. For WSL2 or similar split-host setups, set `browser.relayBindHost` to an explicit bind address such as `0.0.0.0`, then keep access constrained with Gateway auth, node pairing, and a private network.
+- Mantenha o Gateway e o node host na mesma tailnet; evite expor portas de relay para LAN ou Internet pública.
+- Pareie nodes intencionalmente; desabilite o roteamento de proxy de browser se você não quer controle remoto (`gateway.nodes.browser.mode="off"`).
+- Deixe o relay no loopback a menos que você tenha uma necessidade real entre namespaces. Para WSL2 ou configurações similares de host dividido, defina `browser.relayBindHost` para um endereço de bind explícito como `0.0.0.0`, então mantenha o acesso restrito com autenticação do Gateway, pareamento de node e uma rede privada.
 
-## How “extension path” works
+## Como "extension path" funciona
 
-`openclaw browser extension path` prints the **installed** on-disk directory containing the extension files.
+`opencraft browser extension path` imprime o diretório em disco **instalado** contendo os arquivos da extensão.
 
-The CLI intentionally does **not** print a `node_modules` path. Always run `openclaw browser extension install` first to copy the extension to a stable location under your OpenClaw state directory.
+O CLI intencionalmente **não** imprime um caminho `node_modules`. Sempre execute `opencraft browser extension install` primeiro para copiar a extensão para um local estável sob o diretório de estado do OpenCraft.
 
-If you move or delete that install directory, Chrome will mark the extension as broken until you reload it from a valid path.
+Se você mover ou excluir esse diretório de instalação, o Chrome marcará a extensão como quebrada até que você a recarregue de um caminho válido.
 
-## Security implications (read this)
+## Implicações de segurança (leia isto)
 
-This is powerful and risky. Treat it like giving the model “hands on your browser”.
+Isso é poderoso e arriscado. Trate como dar ao modelo "mãos no seu browser".
 
-- The extension uses Chrome’s debugger API (`chrome.debugger`). When attached, the model can:
-  - click/type/navigate in that tab
-  - read page content
-  - access whatever the tab’s logged-in session can access
-- **This is not isolated** like the dedicated openclaw-managed profile.
-  - If you attach to your daily-driver profile/tab, you’re granting access to that account state.
+- A extensão usa a API de depuração do Chrome (`chrome.debugger`). Quando conectado, o modelo pode:
+  - clicar/digitar/navegar naquela aba
+  - ler conteúdo da página
+  - acessar o que a sessão com login da aba pode acessar
+- **Isso não é isolado** como o perfil dedicado gerenciado pelo opencraft.
+  - Se você conectar ao seu perfil/aba de uso diário, está concedendo acesso ao estado daquela conta.
 
-Recommendations:
+Recomendações:
 
-- Prefer a dedicated Chrome profile (separate from your personal browsing) for extension relay usage.
-- Keep the Gateway and any node hosts tailnet-only; rely on Gateway auth + node pairing.
-- Avoid exposing relay ports over LAN (`0.0.0.0`) and avoid Funnel (public).
-- The relay blocks non-extension origins and requires gateway-token auth for both `/cdp` and `/extension`.
+- Prefira um perfil Chrome dedicado (separado do seu navegador pessoal) para uso do relay de extensão.
+- Mantenha o Gateway e quaisquer node hosts somente na tailnet; dependa da autenticação do Gateway + pareamento de node.
+- Evite expor portas de relay pela LAN (`0.0.0.0`) e evite o Funnel (público).
+- O relay bloqueia origens que não sejam da extensão e requer autenticação por gateway-token tanto para `/cdp` quanto para `/extension`.
 
-Related:
+Relacionado:
 
-- Browser tool overview: [Browser](/tools/browser)
-- Security audit: [Security](/gateway/security)
-- Tailscale setup: [Tailscale](/gateway/tailscale)
+- Visão geral da tool de browser: [Browser](/tools/browser)
+- Auditoria de segurança: [Segurança](/gateway/security)
+- Configuração do Tailscale: [Tailscale](/gateway/tailscale)

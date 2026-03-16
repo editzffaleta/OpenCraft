@@ -1,32 +1,32 @@
 ---
-summary: "CLI reference for `openclaw pairing` (approve/list pairing requests)"
+summary: "Referência do CLI para `opencraft pairing` (aprovar/listar solicitações de pareamento)"
 read_when:
-  - You’re using pairing-mode DMs and need to approve senders
+  - Você está usando DMs em modo pairing e precisa aprovar remetentes
 title: "pairing"
 ---
 
-# `openclaw pairing`
+# `opencraft pairing`
 
-Approve or inspect DM pairing requests (for channels that support pairing).
+Aprovar ou inspecionar solicitações de pareamento de DM (para canais que suportam pareamento).
 
-Related:
+Relacionado:
 
-- Pairing flow: [Pairing](/channels/pairing)
+- Fluxo de pareamento: [Pairing](/channels/pairing)
 
-## Commands
+## Comandos
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing list --channel telegram --account work
-openclaw pairing list telegram --json
+opencraft pairing list telegram
+opencraft pairing list --channel telegram --account work
+opencraft pairing list telegram --json
 
-openclaw pairing approve telegram <code>
-openclaw pairing approve --channel telegram --account work <code> --notify
+opencraft pairing approve telegram <code>
+opencraft pairing approve --channel telegram --account work <code> --notify
 ```
 
-## Notes
+## Notas
 
-- Channel input: pass it positionally (`pairing list telegram`) or with `--channel <channel>`.
-- `pairing list` supports `--account <accountId>` for multi-account channels.
-- `pairing approve` supports `--account <accountId>` and `--notify`.
-- If only one pairing-capable channel is configured, `pairing approve <code>` is allowed.
+- Entrada de canal: passe posicionalmente (`pairing list telegram`) ou com `--channel <channel>`.
+- `pairing list` suporta `--account <accountId>` para canais multi-conta.
+- `pairing approve` suporta `--account <accountId>` e `--notify`.
+- Se apenas um canal com capacidade de pareamento estiver configurado, `pairing approve <code>` é permitido.

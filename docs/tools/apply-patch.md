@@ -1,47 +1,46 @@
 ---
-summary: "Apply multi-file patches with the apply_patch tool"
+summary: "Aplicar patches em múltiplos arquivos com a ferramenta apply_patch"
 read_when:
-  - You need structured file edits across multiple files
-  - You want to document or debug patch-based edits
-title: "apply_patch Tool"
+  - Você precisa de edições estruturadas em múltiplos arquivos
+  - Você quer documentar ou depurar edições baseadas em patch
+title: "Ferramenta apply_patch"
 ---
 
-# apply_patch tool
+# Ferramenta apply_patch
 
-Apply file changes using a structured patch format. This is ideal for multi-file
-or multi-hunk edits where a single `edit` call would be brittle.
+Aplica alterações em arquivos usando um formato de patch estruturado. Ideal para edições
+em múltiplos arquivos ou múltiplos hunks onde uma única chamada `edit` seria frágil.
 
-The tool accepts a single `input` string that wraps one or more file operations:
+A ferramenta aceita uma única string `input` que encapsula uma ou mais operações de arquivo:
 
 ```
 *** Begin Patch
 *** Add File: path/to/file.txt
-+line 1
-+line 2
++linha 1
++linha 2
 *** Update File: src/app.ts
 @@
--old line
-+new line
-*** Delete File: obsolete.txt
+-linha antiga
++nova linha
+*** Delete File: obsoleto.txt
 *** End Patch
 ```
 
-## Parameters
+## Parâmetros
 
-- `input` (required): Full patch contents including `*** Begin Patch` and `*** End Patch`.
+- `input` (obrigatório): Conteúdo completo do patch, incluindo `*** Begin Patch` e `*** End Patch`.
 
-## Notes
+## Notas
 
-- Patch paths support relative paths (from the workspace directory) and absolute paths.
-- `tools.exec.applyPatch.workspaceOnly` defaults to `true` (workspace-contained). Set it to `false` only if you intentionally want `apply_patch` to write/delete outside the workspace directory.
-- Use `*** Move to:` within an `*** Update File:` hunk to rename files.
-- `*** End of File` marks an EOF-only insert when needed.
-- Experimental and disabled by default. Enable with `tools.exec.applyPatch.enabled`.
-- OpenAI-only (including OpenAI Codex). Optionally gate by model via
-  `tools.exec.applyPatch.allowModels`.
-- Config is only under `tools.exec`.
+- Caminhos no patch suportam caminhos relativos (a partir do diretório do workspace) e caminhos absolutos.
+- `tools.exec.applyPatch.workspaceOnly` padrão é `true` (contido no workspace). Defina como `false` apenas se você intencionalmente quiser que `apply_patch` escreva/delete fora do diretório do workspace.
+- Use `*** Move to:` dentro de um hunk `*** Update File:` para renomear arquivos.
+- `*** End of File` marca uma inserção somente no final do arquivo quando necessário.
+- Experimental e desativado por padrão. Ative com `tools.exec.applyPatch.enabled`.
+- Exclusivo para OpenAI (incluindo OpenAI Codex). Opcionalmente restrinja por modelo via `tools.exec.applyPatch.allowModels`.
+- A configuração fica apenas em `tools.exec`.
 
-## Example
+## Exemplo
 
 ```json
 {

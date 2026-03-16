@@ -1,40 +1,40 @@
 ---
-summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
+summary: "Configuração e comportamento em runtime do Slack (Socket Mode + HTTP Events API)"
 read_when:
-  - Setting up Slack or debugging Slack socket/HTTP mode
+  - Configurando o Slack ou depurando o modo socket/HTTP do Slack
 title: "Slack"
 ---
 
 # Slack
 
-Status: production-ready for DMs + channels via Slack app integrations. Default mode is Socket Mode; HTTP Events API mode is also supported.
+Status: pronto para produção para DMs + canais via integrações de app Slack. O modo padrão é Socket Mode; o modo HTTP Events API também é suportado.
 
 <CardGroup cols={3}>
-  <Card title="Pairing" icon="link" href="/channels/pairing">
-    Slack DMs default to pairing mode.
+  <Card title="Pareamento" icon="link" href="/channels/pairing">
+    DMs do Slack usam modo de pareamento por padrão.
   </Card>
-  <Card title="Slash commands" icon="terminal" href="/tools/slash-commands">
-    Native command behavior and command catalog.
+  <Card title="Comandos slash" icon="terminal" href="/tools/slash-commands">
+    Comportamento de comando nativo e catálogo de comandos.
   </Card>
-  <Card title="Channel troubleshooting" icon="wrench" href="/channels/troubleshooting">
-    Cross-channel diagnostics and repair playbooks.
+  <Card title="Solução de problemas de canal" icon="wrench" href="/channels/troubleshooting">
+    Diagnósticos e playbooks de reparo entre canais.
   </Card>
 </CardGroup>
 
-## Quick setup
+## Configuração rápida
 
 <Tabs>
-  <Tab title="Socket Mode (default)">
+  <Tab title="Socket Mode (padrão)">
     <Steps>
-      <Step title="Create Slack app and tokens">
-        In Slack app settings:
+      <Step title="Criar app Slack e tokens">
+        Nas configurações do app Slack:
 
-        - enable **Socket Mode**
-        - create **App Token** (`xapp-...`) with `connections:write`
-        - install app and copy **Bot Token** (`xoxb-...`)
+        - habilite **Socket Mode**
+        - crie **App Token** (`xapp-...`) com `connections:write`
+        - instale o app e copie o **Bot Token** (`xoxb-...`)
       </Step>
 
-      <Step title="Configure OpenClaw">
+      <Step title="Configurar o OpenCraft">
 
 ```json5
 {
@@ -49,7 +49,7 @@ Status: production-ready for DMs + channels via Slack app integrations. Default 
 }
 ```
 
-        Env fallback (default account only):
+        Fallback de env (apenas conta padrão):
 
 ```bash
 SLACK_APP_TOKEN=xapp-...
@@ -58,8 +58,8 @@ SLACK_BOT_TOKEN=xoxb-...
 
       </Step>
 
-      <Step title="Subscribe app events">
-        Subscribe bot events for:
+      <Step title="Assinar eventos do app">
+        Assine eventos de bot para:
 
         - `app_mention`
         - `message.channels`, `message.groups`, `message.im`, `message.mpim`
@@ -68,13 +68,13 @@ SLACK_BOT_TOKEN=xoxb-...
         - `channel_rename`
         - `pin_added`, `pin_removed`
 
-        Also enable App Home **Messages Tab** for DMs.
+        Também habilite a **Messages Tab** do App Home para DMs.
       </Step>
 
-      <Step title="Start gateway">
+      <Step title="Iniciar gateway">
 
 ```bash
-openclaw gateway
+opencraft gateway
 ```
 
       </Step>
@@ -82,17 +82,17 @@ openclaw gateway
 
   </Tab>
 
-  <Tab title="HTTP Events API mode">
+  <Tab title="Modo HTTP Events API">
     <Steps>
-      <Step title="Configure Slack app for HTTP">
+      <Step title="Configurar app Slack para HTTP">
 
-        - set mode to HTTP (`channels.slack.mode="http"`)
-        - copy Slack **Signing Secret**
-        - set Event Subscriptions + Interactivity + Slash command Request URL to the same webhook path (default `/slack/events`)
+        - defina o modo como HTTP (`channels.slack.mode="http"`)
+        - copie o **Signing Secret** do Slack
+        - defina Event Subscriptions + Interactivity + Request URL de Slash command para o mesmo caminho de webhook (padrão `/slack/events`)
 
       </Step>
 
-      <Step title="Configure OpenClaw HTTP mode">
+      <Step title="Configurar o modo HTTP do OpenCraft">
 
 ```json5
 {
@@ -101,7 +101,7 @@ openclaw gateway
       enabled: true,
       mode: "http",
       botToken: "xoxb-...",
-      signingSecret: "your-signing-secret",
+      signingSecret: "seu-signing-secret",
       webhookPath: "/slack/events",
     },
   },
@@ -110,119 +110,119 @@ openclaw gateway
 
       </Step>
 
-      <Step title="Use unique webhook paths for multi-account HTTP">
-        Per-account HTTP mode is supported.
+      <Step title="Usar caminhos de webhook únicos para múltiplas contas HTTP">
+        O modo HTTP por conta é suportado.
 
-        Give each account a distinct `webhookPath` so registrations do not collide.
+        Dê a cada conta um `webhookPath` distinto para que os registros não colidam.
       </Step>
     </Steps>
 
   </Tab>
 </Tabs>
 
-## Token model
+## Modelo de token
 
-- `botToken` + `appToken` are required for Socket Mode.
-- HTTP mode requires `botToken` + `signingSecret`.
-- Config tokens override env fallback.
-- `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` env fallback applies only to the default account.
-- `userToken` (`xoxp-...`) is config-only (no env fallback) and defaults to read-only behavior (`userTokenReadOnly: true`).
-- Optional: add `chat:write.customize` if you want outgoing messages to use the active agent identity (custom `username` and icon). `icon_emoji` uses `:emoji_name:` syntax.
+- `botToken` + `appToken` são obrigatórios para Socket Mode.
+- O modo HTTP requer `botToken` + `signingSecret`.
+- Os tokens na config substituem o fallback de env.
+- O fallback de env `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` se aplica apenas à conta padrão.
+- `userToken` (`xoxp-...`) é apenas config (sem fallback de env) e usa comportamento somente leitura por padrão (`userTokenReadOnly: true`).
+- Opcional: adicione `chat:write.customize` se quiser que as mensagens de saída usem a identidade do agente ativo (`username` e ícone personalizados). `icon_emoji` usa a sintaxe `:nome_do_emoji:`.
 
 <Tip>
-For actions/directory reads, user token can be preferred when configured. For writes, bot token remains preferred; user-token writes are only allowed when `userTokenReadOnly: false` and bot token is unavailable.
+Para leituras de ações/diretório, o token de usuário pode ser preferido quando configurado. Para escritas, o token de bot permanece preferido; escritas com token de usuário são permitidas apenas quando `userTokenReadOnly: false` e o token de bot está indisponível.
 </Tip>
 
-## Access control and routing
+## Controle de acesso e roteamento
 
 <Tabs>
-  <Tab title="DM policy">
-    `channels.slack.dmPolicy` controls DM access (legacy: `channels.slack.dm.policy`):
+  <Tab title="Política de DM">
+    `channels.slack.dmPolicy` controla o acesso a DM (legado: `channels.slack.dm.policy`):
 
-    - `pairing` (default)
+    - `pairing` (padrão)
     - `allowlist`
-    - `open` (requires `channels.slack.allowFrom` to include `"*"`; legacy: `channels.slack.dm.allowFrom`)
+    - `open` (requer que `channels.slack.allowFrom` inclua `"*"`; legado: `channels.slack.dm.allowFrom`)
     - `disabled`
 
-    DM flags:
+    Flags de DM:
 
-    - `dm.enabled` (default true)
-    - `channels.slack.allowFrom` (preferred)
-    - `dm.allowFrom` (legacy)
-    - `dm.groupEnabled` (group DMs default false)
-    - `dm.groupChannels` (optional MPIM allowlist)
+    - `dm.enabled` (padrão true)
+    - `channels.slack.allowFrom` (preferido)
+    - `dm.allowFrom` (legado)
+    - `dm.groupEnabled` (DMs de grupo padrão false)
+    - `dm.groupChannels` (lista de permissão MPIM opcional)
 
-    Multi-account precedence:
+    Precedência de múltiplas contas:
 
-    - `channels.slack.accounts.default.allowFrom` applies only to the `default` account.
-    - Named accounts inherit `channels.slack.allowFrom` when their own `allowFrom` is unset.
-    - Named accounts do not inherit `channels.slack.accounts.default.allowFrom`.
+    - `channels.slack.accounts.default.allowFrom` se aplica apenas à conta `default`.
+    - Contas nomeadas herdam `channels.slack.allowFrom` quando seu próprio `allowFrom` não estiver definido.
+    - Contas nomeadas não herdam `channels.slack.accounts.default.allowFrom`.
 
-    Pairing in DMs uses `openclaw pairing approve slack <code>`.
+    O pareamento em DMs usa `opencraft pairing approve slack <código>`.
 
   </Tab>
 
-  <Tab title="Channel policy">
-    `channels.slack.groupPolicy` controls channel handling:
+  <Tab title="Política de canal">
+    `channels.slack.groupPolicy` controla o tratamento de canais:
 
     - `open`
     - `allowlist`
     - `disabled`
 
-    Channel allowlist lives under `channels.slack.channels` and should use stable channel IDs.
+    A lista de permissão de canais fica em `channels.slack.channels` e deve usar IDs de canal estáveis.
 
-    Runtime note: if `channels.slack` is completely missing (env-only setup), runtime falls back to `groupPolicy="allowlist"` and logs a warning (even if `channels.defaults.groupPolicy` is set).
+    Nota de runtime: se `channels.slack` estiver completamente ausente (configuração apenas com env), o runtime recorre a `groupPolicy="allowlist"` e registra um aviso (mesmo que `channels.defaults.groupPolicy` esteja definido).
 
-    Name/ID resolution:
+    Resolução de nome/ID:
 
-    - channel allowlist entries and DM allowlist entries are resolved at startup when token access allows
-    - unresolved channel-name entries are kept as configured but ignored for routing by default
-    - inbound authorization and channel routing are ID-first by default; direct username/slug matching requires `channels.slack.dangerouslyAllowNameMatching: true`
+    - entradas de lista de permissão de canal e entradas de lista de permissão de DM são resolvidas na inicialização quando o acesso por token permite
+    - entradas de nome de canal não resolvidas são mantidas conforme configurado mas ignoradas para roteamento por padrão
+    - autorização de entrada e roteamento de canal são ID-first por padrão; correspondência direta por username/slug requer `channels.slack.dangerouslyAllowNameMatching: true`
 
   </Tab>
 
-  <Tab title="Mentions and channel users">
-    Channel messages are mention-gated by default.
+  <Tab title="Menções e usuários de canal">
+    Mensagens de canal são controladas por menção por padrão.
 
-    Mention sources:
+    Fontes de menção:
 
-    - explicit app mention (`<@botId>`)
-    - mention regex patterns (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
-    - implicit reply-to-bot thread behavior
+    - menção explícita do app (`<@botId>`)
+    - padrões de regex de menção (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
+    - comportamento implícito de thread de resposta ao bot
 
-    Per-channel controls (`channels.slack.channels.<id>`; names only via startup resolution or `dangerouslyAllowNameMatching`):
+    Controles por canal (`channels.slack.channels.<id>`; nomes apenas via resolução na inicialização ou `dangerouslyAllowNameMatching`):
 
     - `requireMention`
-    - `users` (allowlist)
+    - `users` (lista de permissão)
     - `allowBots`
     - `skills`
     - `systemPrompt`
     - `tools`, `toolsBySender`
-    - `toolsBySender` key format: `id:`, `e164:`, `username:`, `name:`, or `"*"` wildcard
-      (legacy unprefixed keys still map to `id:` only)
+    - Formato da chave `toolsBySender`: `id:`, `e164:`, `username:`, `name:`, ou o curinga `"*"`
+      (chaves legadas sem prefixo ainda mapeiam apenas para `id:`)
 
   </Tab>
 </Tabs>
 
-## Commands and slash behavior
+## Comandos e comportamento slash
 
-- Native command auto-mode is **off** for Slack (`commands.native: "auto"` does not enable Slack native commands).
-- Enable native Slack command handlers with `channels.slack.commands.native: true` (or global `commands.native: true`).
-- When native commands are enabled, register matching slash commands in Slack (`/<command>` names), with one exception:
-  - register `/agentstatus` for the status command (Slack reserves `/status`)
-- If native commands are not enabled, you can run a single configured slash command via `channels.slack.slashCommand`.
-- Native arg menus now adapt their rendering strategy:
-  - up to 5 options: button blocks
-  - 6-100 options: static select menu
-  - more than 100 options: external select with async option filtering when interactivity options handlers are available
-  - if encoded option values exceed Slack limits, the flow falls back to buttons
-- For long option payloads, Slash command argument menus use a confirm dialog before dispatching a selected value.
+- O modo automático de comando nativo está **desligado** para o Slack (`commands.native: "auto"` não habilita comandos nativos do Slack).
+- Habilite handlers de comando Slack nativos com `channels.slack.commands.native: true` (ou global `commands.native: true`).
+- Quando os comandos nativos estão habilitados, registre comandos slash correspondentes no Slack (nomes `/<comando>`), com uma exceção:
+  - registre `/agentstatus` para o comando de status (o Slack reserva `/status`)
+- Se os comandos nativos não estiverem habilitados, você pode executar um único comando slash configurado via `channels.slack.slashCommand`.
+- Os menus de arg nativos agora adaptam sua estratégia de renderização:
+  - até 5 opções: blocos de botões
+  - 6-100 opções: menu de seleção estática
+  - mais de 100 opções: seleção externa com filtragem assíncrona de opções quando handlers de opções de interatividade estão disponíveis
+  - se os valores de opção codificados excederem os limites do Slack, o fluxo recorre a botões
+- Para payloads de opções longos, os menus de argumento de comandos Slash usam um diálogo de confirmação antes de despachar um valor selecionado.
 
-## Interactive replies
+## Respostas interativas
 
-Slack can render agent-authored interactive reply controls, but this feature is disabled by default.
+O Slack pode renderizar controles de resposta interativos de autoria do agente, mas este recurso está desabilitado por padrão.
 
-Enable it globally:
+Habilitar globalmente:
 
 ```json5
 {
@@ -236,7 +236,7 @@ Enable it globally:
 }
 ```
 
-Or enable it for one Slack account only:
+Ou habilitar apenas para uma conta Slack:
 
 ```json5
 {
@@ -254,152 +254,152 @@ Or enable it for one Slack account only:
 }
 ```
 
-When enabled, agents can emit Slack-only reply directives:
+Quando habilitado, os agentes podem emitir diretivas de resposta exclusivas do Slack:
 
-- `[[slack_buttons: Approve:approve, Reject:reject]]`
-- `[[slack_select: Choose a target | Canary:canary, Production:production]]`
+- `[[slack_buttons: Aprovar:approve, Rejeitar:reject]]`
+- `[[slack_select: Escolha um alvo | Canário:canary, Produção:production]]`
 
-These directives compile into Slack Block Kit and route clicks or selections back through the existing Slack interaction event path.
+Essas diretivas são compiladas em Slack Block Kit e roteiam cliques ou seleções de volta pelo caminho de evento de interação Slack existente.
 
-Notes:
+Notas:
 
-- This is Slack-specific UI. Other channels do not translate Slack Block Kit directives into their own button systems.
-- The interactive callback values are OpenClaw-generated opaque tokens, not raw agent-authored values.
-- If generated interactive blocks would exceed Slack Block Kit limits, OpenClaw falls back to the original text reply instead of sending an invalid blocks payload.
+- Esta é UI específica do Slack. Outros canais não traduzem diretivas Slack Block Kit para seus próprios sistemas de botão.
+- Os valores de callback interativos são tokens opacos gerados pelo OpenCraft, não valores brutos de autoria do agente.
+- Se os blocos interativos gerados excederem os limites do Slack Block Kit, o OpenCraft recorre à resposta de texto original em vez de enviar um payload de blocos inválido.
 
-Default slash command settings:
+Configurações padrão de comandos slash:
 
 - `enabled: false`
-- `name: "openclaw"`
+- `name: "opencraft"`
 - `sessionPrefix: "slack:slash"`
 - `ephemeral: true`
 
-Slash sessions use isolated keys:
+Sessões slash usam chaves isoladas:
 
 - `agent:<agentId>:slack:slash:<userId>`
 
-and still route command execution against the target conversation session (`CommandTargetSessionKey`).
+e ainda roteiam a execução do comando em relação à sessão de conversa alvo (`CommandTargetSessionKey`).
 
-## Threading, sessions, and reply tags
+## Threading, sessões e tags de resposta
 
-- DMs route as `direct`; channels as `channel`; MPIMs as `group`.
-- With default `session.dmScope=main`, Slack DMs collapse to agent main session.
-- Channel sessions: `agent:<agentId>:slack:channel:<channelId>`.
-- Thread replies can create thread session suffixes (`:thread:<threadTs>`) when applicable.
-- `channels.slack.thread.historyScope` default is `thread`; `thread.inheritParent` default is `false`.
-- `channels.slack.thread.initialHistoryLimit` controls how many existing thread messages are fetched when a new thread session starts (default `20`; set `0` to disable).
+- DMs roteiam como `direct`; canais como `channel`; MPIMs como `group`.
+- Com o padrão `session.dmScope=main`, DMs do Slack recolhem para a sessão principal do agente.
+- Sessões de canal: `agent:<agentId>:slack:channel:<channelId>`.
+- Respostas em thread podem criar sufixos de sessão de thread (`:thread:<threadTs>`) quando aplicável.
+- O padrão de `channels.slack.thread.historyScope` é `thread`; o padrão de `thread.inheritParent` é `false`.
+- `channels.slack.thread.initialHistoryLimit` controla quantas mensagens de thread existentes são obtidas quando uma nova sessão de thread começa (padrão `20`; defina `0` para desabilitar).
 
-Reply threading controls:
+Controles de threading de resposta:
 
-- `channels.slack.replyToMode`: `off|first|all` (default `off`)
-- `channels.slack.replyToModeByChatType`: per `direct|group|channel`
-- legacy fallback for direct chats: `channels.slack.dm.replyToMode`
+- `channels.slack.replyToMode`: `off|first|all` (padrão `off`)
+- `channels.slack.replyToModeByChatType`: por `direct|group|channel`
+- fallback legado para chats diretos: `channels.slack.dm.replyToMode`
 
-Manual reply tags are supported:
+Tags de resposta manuais são suportadas:
 
 - `[[reply_to_current]]`
 - `[[reply_to:<id>]]`
 
-Note: `replyToMode="off"` disables **all** reply threading in Slack, including explicit `[[reply_to_*]]` tags. This differs from Telegram, where explicit tags are still honored in `"off"` mode. The difference reflects the platform threading models: Slack threads hide messages from the channel, while Telegram replies remain visible in the main chat flow.
+Nota: `replyToMode="off"` desabilita **todo** threading de resposta no Slack, incluindo tags explícitas `[[reply_to_*]]`. Isso difere do Telegram, onde tags explícitas ainda são respeitadas no modo `"off"`. A diferença reflete os modelos de threading da plataforma: threads do Slack ocultam mensagens do canal, enquanto respostas do Telegram permanecem visíveis no fluxo principal do chat.
 
-## Media, chunking, and delivery
+## Mídia, chunking e entrega
 
 <AccordionGroup>
-  <Accordion title="Inbound attachments">
-    Slack file attachments are downloaded from Slack-hosted private URLs (token-authenticated request flow) and written to the media store when fetch succeeds and size limits permit.
+  <Accordion title="Anexos de entrada">
+    Os anexos de arquivo do Slack são baixados de URLs privadas hospedadas pelo Slack (fluxo de requisição autenticado por token) e escritos no store de mídia quando a busca é bem-sucedida e os limites de tamanho permitem.
 
-    Runtime inbound size cap defaults to `20MB` unless overridden by `channels.slack.mediaMaxMb`.
+    O cap de tamanho de entrada em runtime padrão é `20MB` a menos que seja substituído por `channels.slack.mediaMaxMb`.
 
   </Accordion>
 
-  <Accordion title="Outbound text and files">
-    - text chunks use `channels.slack.textChunkLimit` (default 4000)
-    - `channels.slack.chunkMode="newline"` enables paragraph-first splitting
-    - file sends use Slack upload APIs and can include thread replies (`thread_ts`)
-    - outbound media cap follows `channels.slack.mediaMaxMb` when configured; otherwise channel sends use MIME-kind defaults from media pipeline
+  <Accordion title="Texto e arquivos de saída">
+    - blocos de texto usam `channels.slack.textChunkLimit` (padrão 4000)
+    - `channels.slack.chunkMode="newline"` habilita divisão com parágrafo primeiro
+    - envios de arquivo usam APIs de upload do Slack e podem incluir respostas de thread (`thread_ts`)
+    - o cap de mídia de saída segue `channels.slack.mediaMaxMb` quando configurado; caso contrário, envios de canal usam padrões de tipo MIME do pipeline de mídia
   </Accordion>
 
-  <Accordion title="Delivery targets">
-    Preferred explicit targets:
+  <Accordion title="Alvos de entrega">
+    Alvos explícitos preferidos:
 
-    - `user:<id>` for DMs
-    - `channel:<id>` for channels
+    - `user:<id>` para DMs
+    - `channel:<id>` para canais
 
-    Slack DMs are opened via Slack conversation APIs when sending to user targets.
+    DMs do Slack são abertos via APIs de conversa do Slack ao enviar para alvos de usuário.
 
   </Accordion>
 </AccordionGroup>
 
-## Actions and gates
+## Ações e controles
 
-Slack actions are controlled by `channels.slack.actions.*`.
+As ações do Slack são controladas por `channels.slack.actions.*`.
 
-Available action groups in current Slack tooling:
+Grupos de ação disponíveis nas ferramentas Slack atuais:
 
-| Group      | Default |
-| ---------- | ------- |
-| messages   | enabled |
-| reactions  | enabled |
-| pins       | enabled |
-| memberInfo | enabled |
-| emojiList  | enabled |
+| Grupo      | Padrão      |
+| ---------- | ----------- |
+| messages   | habilitado  |
+| reactions  | habilitado  |
+| pins       | habilitado  |
+| memberInfo | habilitado  |
+| emojiList  | habilitado  |
 
-## Events and operational behavior
+## Eventos e comportamento operacional
 
-- Message edits/deletes/thread broadcasts are mapped into system events.
-- Reaction add/remove events are mapped into system events.
-- Member join/leave, channel created/renamed, and pin add/remove events are mapped into system events.
-- Assistant thread status updates (for "is typing..." indicators in threads) use `assistant.threads.setStatus` and require bot scope `assistant:write`.
-- `channel_id_changed` can migrate channel config keys when `configWrites` is enabled.
-- Channel topic/purpose metadata is treated as untrusted context and can be injected into routing context.
-- Block actions and modal interactions emit structured `Slack interaction: ...` system events with rich payload fields:
-  - block actions: selected values, labels, picker values, and `workflow_*` metadata
-  - modal `view_submission` and `view_closed` events with routed channel metadata and form inputs
+- Edições/exclusões/broadcasts de thread de mensagens são mapeados em eventos de sistema.
+- Eventos de adicionar/remover reação são mapeados em eventos de sistema.
+- Eventos de entrada/saída de membro, criação/renomeação de canal e adicionar/remover pino são mapeados em eventos de sistema.
+- Atualizações de status de thread do assistente (para indicadores "está digitando..." em threads) usam `assistant.threads.setStatus` e requerem o escopo de bot `assistant:write`.
+- `channel_id_changed` pode migrar chaves de config de canal quando `configWrites` está habilitado.
+- Metadados de tópico/propósito do canal são tratados como contexto não confiável e podem ser injetados no contexto de roteamento.
+- Ações de bloco e interações de modal emitem eventos de sistema estruturados `Slack interaction: ...` com campos de payload ricos:
+  - ações de bloco: valores selecionados, rótulos, valores de seletor e metadados `workflow_*`
+  - eventos `view_submission` e `view_closed` de modal com metadados de canal roteado e entradas de formulário
 
-## Ack reactions
+## Reações de ack
 
-`ackReaction` sends an acknowledgement emoji while OpenClaw is processing an inbound message.
+`ackReaction` envia um emoji de confirmação enquanto o OpenCraft está processando uma mensagem de entrada.
 
-Resolution order:
+Ordem de resolução:
 
 - `channels.slack.accounts.<accountId>.ackReaction`
 - `channels.slack.ackReaction`
 - `messages.ackReaction`
-- agent identity emoji fallback (`agents.list[].identity.emoji`, else "👀")
+- fallback de emoji de identidade do agente (`agents.list[].identity.emoji`, caso contrário "👀")
 
-Notes:
+Notas:
 
-- Slack expects shortcodes (for example `"eyes"`).
-- Use `""` to disable the reaction for the Slack account or globally.
+- O Slack espera shortcodes (por exemplo `"eyes"`).
+- Use `""` para desabilitar a reação para a conta Slack ou globalmente.
 
-## Typing reaction fallback
+## Fallback de reação de digitação
 
-`typingReaction` adds a temporary reaction to the inbound Slack message while OpenClaw is processing a reply, then removes it when the run finishes. This is a useful fallback when Slack native assistant typing is unavailable, especially in DMs.
+`typingReaction` adiciona uma reação temporária à mensagem Slack de entrada enquanto o OpenCraft está processando uma resposta, depois a remove quando a execução termina. Isso é um fallback útil quando a digitação nativa do assistente do Slack está indisponível, especialmente em DMs.
 
-Resolution order:
+Ordem de resolução:
 
 - `channels.slack.accounts.<accountId>.typingReaction`
 - `channels.slack.typingReaction`
 
-Notes:
+Notas:
 
-- Slack expects shortcodes (for example `"hourglass_flowing_sand"`).
-- The reaction is best-effort and cleanup is attempted automatically after the reply or failure path completes.
+- O Slack espera shortcodes (por exemplo `"hourglass_flowing_sand"`).
+- A reação é de melhor esforço e a limpeza é tentada automaticamente após a resposta ou o caminho de falha ser concluído.
 
-## Manifest and scope checklist
+## Manifesto e checklist de escopos
 
 <AccordionGroup>
-  <Accordion title="Slack app manifest example">
+  <Accordion title="Exemplo de manifesto do app Slack">
 
 ```json
 {
   "display_information": {
-    "name": "OpenClaw",
-    "description": "Slack connector for OpenClaw"
+    "name": "OpenCraft",
+    "description": "Conector Slack para OpenCraft"
   },
   "features": {
     "bot_user": {
-      "display_name": "OpenClaw",
+      "display_name": "OpenCraft",
       "always_online": false
     },
     "app_home": {
@@ -408,8 +408,8 @@ Notes:
     },
     "slash_commands": [
       {
-        "command": "/openclaw",
-        "description": "Send a message to OpenClaw",
+        "command": "/opencraft",
+        "description": "Enviar uma mensagem para o OpenCraft",
         "should_escape": false
       }
     ]
@@ -465,8 +465,8 @@ Notes:
 
   </Accordion>
 
-  <Accordion title="Optional user-token scopes (read operations)">
-    If you configure `channels.slack.userToken`, typical read scopes are:
+  <Accordion title="Escopos de token de usuário opcionais (operações de leitura)">
+    Se você configurar `channels.slack.userToken`, os escopos de leitura típicos são:
 
     - `channels:history`, `groups:history`, `im:history`, `mpim:history`
     - `channels:read`, `groups:read`, `im:read`, `mpim:read`
@@ -474,84 +474,84 @@ Notes:
     - `reactions:read`
     - `pins:read`
     - `emoji:read`
-    - `search:read` (if you depend on Slack search reads)
+    - `search:read` (se depender de leituras de busca do Slack)
 
   </Accordion>
 </AccordionGroup>
 
-## Troubleshooting
+## Solução de problemas
 
 <AccordionGroup>
-  <Accordion title="No replies in channels">
-    Check, in order:
+  <Accordion title="Sem respostas em canais">
+    Verifique, em ordem:
 
     - `groupPolicy`
-    - channel allowlist (`channels.slack.channels`)
+    - lista de permissão de canal (`channels.slack.channels`)
     - `requireMention`
-    - per-channel `users` allowlist
+    - lista de permissão `users` por canal
 
-    Useful commands:
+    Comandos úteis:
 
 ```bash
-openclaw channels status --probe
-openclaw logs --follow
-openclaw doctor
+opencraft channels status --probe
+opencraft logs --follow
+opencraft doctor
 ```
 
   </Accordion>
 
-  <Accordion title="DM messages ignored">
-    Check:
+  <Accordion title="Mensagens de DM ignoradas">
+    Verifique:
 
     - `channels.slack.dm.enabled`
-    - `channels.slack.dmPolicy` (or legacy `channels.slack.dm.policy`)
-    - pairing approvals / allowlist entries
+    - `channels.slack.dmPolicy` (ou legado `channels.slack.dm.policy`)
+    - aprovações de pareamento / entradas de lista de permissão
 
 ```bash
-openclaw pairing list slack
+opencraft pairing list slack
 ```
 
   </Accordion>
 
-  <Accordion title="Socket mode not connecting">
-    Validate bot + app tokens and Socket Mode enablement in Slack app settings.
+  <Accordion title="Socket mode não conectando">
+    Valide tokens de bot + app e habilitação do Socket Mode nas configurações do app Slack.
   </Accordion>
 
-  <Accordion title="HTTP mode not receiving events">
-    Validate:
+  <Accordion title="Modo HTTP não recebendo eventos">
+    Valide:
 
     - signing secret
-    - webhook path
-    - Slack Request URLs (Events + Interactivity + Slash Commands)
-    - unique `webhookPath` per HTTP account
+    - caminho do webhook
+    - Request URLs do Slack (Events + Interactivity + Slash Commands)
+    - `webhookPath` único por conta HTTP
 
   </Accordion>
 
-  <Accordion title="Native/slash commands not firing">
-    Verify whether you intended:
+  <Accordion title="Comandos nativos/slash não disparando">
+    Verifique se você pretendia:
 
-    - native command mode (`channels.slack.commands.native: true`) with matching slash commands registered in Slack
-    - or single slash command mode (`channels.slack.slashCommand.enabled: true`)
+    - modo de comando nativo (`channels.slack.commands.native: true`) com comandos slash correspondentes registrados no Slack
+    - ou modo de comando slash único (`channels.slack.slashCommand.enabled: true`)
 
-    Also check `commands.useAccessGroups` and channel/user allowlists.
+    Também verifique `commands.useAccessGroups` e listas de permissão de canal/usuário.
 
   </Accordion>
 </AccordionGroup>
 
-## Text streaming
+## Streaming de texto
 
-OpenClaw supports Slack native text streaming via the Agents and AI Apps API.
+O OpenCraft suporta streaming de texto nativo do Slack via API de Agentes e Apps de IA.
 
-`channels.slack.streaming` controls live preview behavior:
+`channels.slack.streaming` controla o comportamento de prévia ao vivo:
 
-- `off`: disable live preview streaming.
-- `partial` (default): replace preview text with the latest partial output.
-- `block`: append chunked preview updates.
-- `progress`: show progress status text while generating, then send final text.
+- `off`: desabilitar streaming de prévia ao vivo.
+- `partial` (padrão): substituir o texto de prévia pela última saída parcial.
+- `block`: anexar atualizações de prévia em chunks.
+- `progress`: mostrar texto de status de progresso enquanto gera, depois enviar o texto final.
 
-`channels.slack.nativeStreaming` controls Slack's native streaming API (`chat.startStream` / `chat.appendStream` / `chat.stopStream`) when `streaming` is `partial` (default: `true`).
+`channels.slack.nativeStreaming` controla a API de streaming nativo do Slack (`chat.startStream` / `chat.appendStream` / `chat.stopStream`) quando `streaming` é `partial` (padrão: `true`).
 
-Disable native Slack streaming (keep draft preview behavior):
+Desabilitar o streaming nativo do Slack (manter comportamento de prévia de rascunho):
 
 ```yaml
 channels:
@@ -560,44 +560,44 @@ channels:
     nativeStreaming: false
 ```
 
-Legacy keys:
+Chaves legadas:
 
-- `channels.slack.streamMode` (`replace | status_final | append`) is auto-migrated to `channels.slack.streaming`.
-- boolean `channels.slack.streaming` is auto-migrated to `channels.slack.nativeStreaming`.
+- `channels.slack.streamMode` (`replace | status_final | append`) é migrado automaticamente para `channels.slack.streaming`.
+- booleano `channels.slack.streaming` é migrado automaticamente para `channels.slack.nativeStreaming`.
 
-### Requirements
+### Requisitos
 
-1. Enable **Agents and AI Apps** in your Slack app settings.
-2. Ensure the app has the `assistant:write` scope.
-3. A reply thread must be available for that message. Thread selection still follows `replyToMode`.
+1. Habilite **Agents and AI Apps** nas configurações do seu app Slack.
+2. Certifique-se de que o app tem o escopo `assistant:write`.
+3. Um thread de resposta deve estar disponível para aquela mensagem. A seleção de thread ainda segue `replyToMode`.
 
-### Behavior
+### Comportamento
 
-- First text chunk starts a stream (`chat.startStream`).
-- Later text chunks append to the same stream (`chat.appendStream`).
-- End of reply finalizes stream (`chat.stopStream`).
-- Media and non-text payloads fall back to normal delivery.
-- If streaming fails mid-reply, OpenClaw falls back to normal delivery for remaining payloads.
+- O primeiro chunk de texto inicia um stream (`chat.startStream`).
+- Chunks de texto posteriores são anexados ao mesmo stream (`chat.appendStream`).
+- O fim da resposta finaliza o stream (`chat.stopStream`).
+- Payloads de mídia e não-texto recorrem à entrega normal.
+- Se o streaming falhar no meio da resposta, o OpenCraft recorre à entrega normal para os payloads restantes.
 
-## Configuration reference pointers
+## Referências de configuração
 
-Primary reference:
+Referência principal:
 
-- [Configuration reference - Slack](/gateway/configuration-reference#slack)
+- [Referência de configuração - Slack](/gateway/configuration-reference#slack)
 
-  High-signal Slack fields:
-  - mode/auth: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
-  - DM access: `dm.enabled`, `dmPolicy`, `allowFrom` (legacy: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
-  - compatibility toggle: `dangerouslyAllowNameMatching` (break-glass; keep off unless needed)
-  - channel access: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
-  - threading/history: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
-  - delivery: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`
-  - ops/features: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
+  Campos de alto valor do Slack:
+  - modo/auth: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
+  - acesso a DM: `dm.enabled`, `dmPolicy`, `allowFrom` (legado: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
+  - toggle de compatibilidade: `dangerouslyAllowNameMatching` (emergencial; mantenha desligado a menos que necessário)
+  - acesso a canal: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
+  - threading/histórico: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
+  - entrega: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`
+  - ops/recursos: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
 
-## Related
+## Relacionados
 
-- [Pairing](/channels/pairing)
-- [Channel routing](/channels/channel-routing)
-- [Troubleshooting](/channels/troubleshooting)
-- [Configuration](/gateway/configuration)
-- [Slash commands](/tools/slash-commands)
+- [Pareamento](/channels/pairing)
+- [Roteamento de canal](/channels/channel-routing)
+- [Solução de problemas](/channels/troubleshooting)
+- [Configuração](/gateway/configuration)
+- [Comandos slash](/tools/slash-commands)

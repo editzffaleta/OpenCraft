@@ -1,98 +1,98 @@
 ---
-summary: "End-to-end guide for running OpenClaw as a personal assistant with safety cautions"
+summary: "Guia completo para configurar o OpenCraft como assistente pessoal, com precauções de segurança"
 read_when:
-  - Onboarding a new assistant instance
-  - Reviewing safety/permission implications
-title: "Personal Assistant Setup"
+  - Configurando uma nova instância de assistente
+  - Revisando implicações de segurança/permissão
+title: "Configuração de Assistente Pessoal"
 ---
 
-# Building a personal assistant with OpenClaw
+# Construindo um assistente pessoal com OpenCraft
 
-OpenClaw is a WhatsApp + Telegram + Discord + iMessage gateway for **Pi** agents. Plugins add Mattermost. This guide is the "personal assistant" setup: one dedicated WhatsApp number that behaves like your always-on agent.
+O OpenCraft é um gateway de WhatsApp + Telegram + Discord + iMessage para agentes **Pi**. Plugins adicionam o Mattermost. Este guia é a configuração de "assistente pessoal": um número de WhatsApp dedicado que se comporta como seu agente sempre ativo.
 
-## ⚠️ Safety first
+## ⚠️ Segurança primeiro
 
-You’re putting an agent in a position to:
+Você está colocando um agente em posição de:
 
-- run commands on your machine (depending on your Pi tool setup)
-- read/write files in your workspace
-- send messages back out via WhatsApp/Telegram/Discord/Mattermost (plugin)
+- executar comandos na sua máquina (dependendo da configuração de ferramentas do Pi)
+- ler/escrever arquivos no seu workspace
+- enviar mensagens de volta via WhatsApp/Telegram/Discord/Mattermost (plugin)
 
-Start conservative:
+Comece de forma conservadora:
 
-- Always set `channels.whatsapp.allowFrom` (never run open-to-the-world on your personal Mac).
-- Use a dedicated WhatsApp number for the assistant.
-- Heartbeats now default to every 30 minutes. Disable until you trust the setup by setting `agents.defaults.heartbeat.every: "0m"`.
+- Sempre defina `channels.whatsapp.allowFrom` (nunca rode aberto para o mundo no seu Mac pessoal).
+- Use um número de WhatsApp dedicado para o assistente.
+- Heartbeats agora padrão a cada 30 minutos. Desabilite até confiar na configuração definindo `agents.defaults.heartbeat.every: "0m"`.
 
-## Prerequisites
+## Pré-requisitos
 
-- OpenClaw installed and onboarded — see [Getting Started](/start/getting-started) if you haven't done this yet
-- A second phone number (SIM/eSIM/prepaid) for the assistant
+- OpenCraft instalado e configurado — veja [Primeiros Passos](/start/getting-started) se ainda não fez isso
+- Um segundo número de telefone (SIM/eSIM/pré-pago) para o assistente
 
-## The two-phone setup (recommended)
+## A configuração de dois celulares (recomendada)
 
-You want this:
+Você quer isso:
 
 ```mermaid
 flowchart TB
-    A["<b>Your Phone (personal)<br></b><br>Your WhatsApp<br>+1-555-YOU"] -- message --> B["<b>Second Phone (assistant)<br></b><br>Assistant WA<br>+1-555-ASSIST"]
-    B -- linked via QR --> C["<b>Your Mac (openclaw)<br></b><br>Pi agent"]
+    A["<b>Seu celular (pessoal)<br></b><br>Seu WhatsApp<br>+55-11-99999-0001"] -- mensagem --> B["<b>Segundo celular (assistente)<br></b><br>WA do assistente<br>+55-11-99999-0002"]
+    B -- vinculado via QR --> C["<b>Seu Mac (opencraft)<br></b><br>Agente Pi"]
 ```
 
-If you link your personal WhatsApp to OpenClaw, every message to you becomes “agent input”. That’s rarely what you want.
+Se você vincular seu WhatsApp pessoal ao OpenCraft, cada mensagem para você se torna "entrada para o agente". Raramente é isso que você quer.
 
-## 5-minute quick start
+## Início rápido em 5 minutos
 
-1. Pair WhatsApp Web (shows QR; scan with the assistant phone):
+1. Parear o WhatsApp Web (exibe QR; escaneie com o celular do assistente):
 
 ```bash
-openclaw channels login
+opencraft channels login
 ```
 
-2. Start the Gateway (leave it running):
+2. Iniciar o Gateway (deixe rodando):
 
 ```bash
-openclaw gateway --port 18789
+opencraft gateway --port 18789
 ```
 
-3. Put a minimal config in `~/.openclaw/openclaw.json`:
+3. Coloque uma configuração mínima em `~/.opencraft/opencraft.json`:
 
 ```json5
 {
-  channels: { whatsapp: { allowFrom: ["+15555550123"] } },
+  channels: { whatsapp: { allowFrom: ["+5511999999999"] } },
 }
 ```
 
-Now message the assistant number from your allowlisted phone.
+Agora envie mensagem para o número do assistente a partir do seu celular na lista de permissões.
 
-When onboarding finishes, we auto-open the dashboard and print a clean (non-tokenized) link. If it prompts for auth, paste the token from `gateway.auth.token` into Control UI settings. To reopen later: `openclaw dashboard`.
+Quando o onboarding terminar, abrimos automaticamente o dashboard e imprimimos um link limpo (sem token). Se solicitar auth, cole o token de `gateway.auth.token` nas configurações da UI de controle. Para reabrir depois: `opencraft dashboard`.
 
-## Give the agent a workspace (AGENTS)
+## Dê um workspace ao agente (AGENTS)
 
-OpenClaw reads operating instructions and “memory” from its workspace directory.
+O OpenCraft lê instruções de operação e "memória" do diretório do workspace.
 
-By default, OpenClaw uses `~/.openclaw/workspace` as the agent workspace, and will create it (plus starter `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`) automatically on setup/first agent run. `BOOTSTRAP.md` is only created when the workspace is brand new (it should not come back after you delete it). `MEMORY.md` is optional (not auto-created); when present, it is loaded for normal sessions. Subagent sessions only inject `AGENTS.md` and `TOOLS.md`.
+Por padrão, o OpenCraft usa `~/.opencraft/workspace` como workspace do agente e o criará (mais os arquivos iniciais `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`) automaticamente na configuração/primeira execução do agente. `BOOTSTRAP.md` só é criado quando o workspace é totalmente novo (não deve voltar após ser deletado). `MEMORY.md` é opcional (não criado automaticamente); quando presente, é carregado para sessões normais. Sessões de sub-agentes só injetam `AGENTS.md` e `TOOLS.md`.
 
-Tip: treat this folder like OpenClaw’s “memory” and make it a git repo (ideally private) so your `AGENTS.md` + memory files are backed up. If git is installed, brand-new workspaces are auto-initialized.
+Dica: trate esta pasta como a "memória" do OpenCraft e transforme-a em um repositório git (idealmente privado) para que seus arquivos `AGENTS.md` + memória fiquem com backup. Se o git estiver instalado, workspaces novos são inicializados automaticamente.
 
 ```bash
-openclaw setup
+opencraft setup
 ```
 
-Full workspace layout + backup guide: [Agent workspace](/concepts/agent-workspace)
-Memory workflow: [Memory](/concepts/memory)
+Layout completo do workspace + guia de backup: [Workspace do agente](/concepts/agent-workspace)
+Fluxo de memória: [Memória](/concepts/memory)
 
-Optional: choose a different workspace with `agents.defaults.workspace` (supports `~`).
+Opcional: escolha um workspace diferente com `agents.defaults.workspace` (suporta `~`).
 
 ```json5
 {
   agent: {
-    workspace: "~/.openclaw/workspace",
+    workspace: "~/.opencraft/workspace",
   },
 }
 ```
 
-If you already ship your own workspace files from a repo, you can disable bootstrap file creation entirely:
+Se você já distribui seus próprios arquivos de workspace a partir de um repositório, pode desabilitar completamente a criação de arquivos de bootstrap:
 
 ```json5
 {
@@ -102,30 +102,30 @@ If you already ship your own workspace files from a repo, you can disable bootst
 }
 ```
 
-## The config that turns it into “an assistant”
+## A configuração que o transforma em "um assistente"
 
-OpenClaw defaults to a good assistant setup, but you’ll usually want to tune:
+O OpenCraft tem bons padrões para assistente, mas você geralmente vai querer ajustar:
 
-- persona/instructions in `SOUL.md`
-- thinking defaults (if desired)
-- heartbeats (once you trust it)
+- persona/instruções em `SOUL.md`
+- padrões de thinking (se desejado)
+- heartbeats (quando confiar nele)
 
-Example:
+Exemplo:
 
 ```json5
 {
   logging: { level: "info" },
   agent: {
     model: "anthropic/claude-opus-4-6",
-    workspace: "~/.openclaw/workspace",
+    workspace: "~/.opencraft/workspace",
     thinkingDefault: "high",
     timeoutSeconds: 1800,
-    // Start with 0; enable later.
+    // Comece com 0; habilite depois.
     heartbeat: { every: "0m" },
   },
   channels: {
     whatsapp: {
-      allowFrom: ["+15555550123"],
+      allowFrom: ["+5511999999999"],
       groups: {
         "*": { requireMention: true },
       },
@@ -133,7 +133,7 @@ Example:
   },
   routing: {
     groupChat: {
-      mentionPatterns: ["@openclaw", "openclaw"],
+      mentionPatterns: ["@opencraft", "opencraft"],
     },
   },
   session: {
@@ -148,24 +148,24 @@ Example:
 }
 ```
 
-## Sessions and memory
+## Sessões e memória
 
-- Session files: `~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
-- Session metadata (token usage, last route, etc): `~/.openclaw/agents/<agentId>/sessions/sessions.json` (legacy: `~/.openclaw/sessions/sessions.json`)
-- `/new` or `/reset` starts a fresh session for that chat (configurable via `resetTriggers`). If sent alone, the agent replies with a short hello to confirm the reset.
-- `/compact [instructions]` compacts the session context and reports the remaining context budget.
+- Arquivos de sessão: `~/.opencraft/agents/<agentId>/sessions/{{SessionId}}.jsonl`
+- Metadados de sessão (uso de tokens, última rota, etc): `~/.opencraft/agents/<agentId>/sessions/sessions.json` (legado: `~/.opencraft/sessions/sessions.json`)
+- `/new` ou `/reset` inicia uma nova sessão para aquele chat (configurável via `resetTriggers`). Se enviado sozinho, o agente responde com uma saudação curta para confirmar o reset.
+- `/compact [instruções]` compacta o contexto da sessão e reporta o orçamento de contexto restante.
 
-## Heartbeats (proactive mode)
+## Heartbeats (modo proativo)
 
-By default, OpenClaw runs a heartbeat every 30 minutes with the prompt:
-`Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
-Set `agents.defaults.heartbeat.every: "0m"` to disable.
+Por padrão, o OpenCraft executa um heartbeat a cada 30 minutos com o prompt:
+`Leia HEARTBEAT.md se existir (contexto do workspace). Siga-o estritamente. Não infira ou repita tarefas antigas de chats anteriores. Se nada precisar de atenção, responda HEARTBEAT_OK.`
+Defina `agents.defaults.heartbeat.every: "0m"` para desabilitar.
 
-- If `HEARTBEAT.md` exists but is effectively empty (only blank lines and markdown headers like `# Heading`), OpenClaw skips the heartbeat run to save API calls.
-- If the file is missing, the heartbeat still runs and the model decides what to do.
-- If the agent replies with `HEARTBEAT_OK` (optionally with short padding; see `agents.defaults.heartbeat.ackMaxChars`), OpenClaw suppresses outbound delivery for that heartbeat.
-- By default, heartbeat delivery to DM-style `user:<id>` targets is allowed. Set `agents.defaults.heartbeat.directPolicy: "block"` to suppress direct-target delivery while keeping heartbeat runs active.
-- Heartbeats run full agent turns — shorter intervals burn more tokens.
+- Se `HEARTBEAT.md` existir mas estiver efetivamente vazio (apenas linhas em branco e cabeçalhos markdown como `# Título`), o OpenCraft pula a execução do heartbeat para economizar chamadas de API.
+- Se o arquivo estiver ausente, o heartbeat ainda roda e o modelo decide o que fazer.
+- Se o agente responder com `HEARTBEAT_OK` (opcionalmente com padding curto; veja `agents.defaults.heartbeat.ackMaxChars`), o OpenCraft suprime a entrega de saída para aquele heartbeat.
+- Por padrão, a entrega de heartbeat para targets DM-style `user:<id>` é permitida. Defina `agents.defaults.heartbeat.directPolicy: "block"` para suprimir a entrega para targets diretos enquanto mantém as execuções de heartbeat ativas.
+- Heartbeats executam turnos completos do agente — intervalos menores gastam mais tokens.
 
 ```json5
 {
@@ -175,42 +175,42 @@ Set `agents.defaults.heartbeat.every: "0m"` to disable.
 }
 ```
 
-## Media in and out
+## Mídia de entrada e saída
 
-Inbound attachments (images/audio/docs) can be surfaced to your command via templates:
+Anexos de entrada (imagens/áudio/documentos) podem ser expostos ao seu comando via templates:
 
-- `{{MediaPath}}` (local temp file path)
+- `{{MediaPath}}` (caminho de arquivo temporário local)
 - `{{MediaUrl}}` (pseudo-URL)
-- `{{Transcript}}` (if audio transcription is enabled)
+- `{{Transcript}}` (se a transcrição de áudio estiver habilitada)
 
-Outbound attachments from the agent: include `MEDIA:<path-or-url>` on its own line (no spaces). Example:
+Anexos de saída do agente: inclua `MEDIA:<caminho-ou-url>` em sua própria linha (sem espaços). Exemplo:
 
 ```
-Here’s the screenshot.
+Aqui está a captura de tela.
 MEDIA:https://example.com/screenshot.png
 ```
 
-OpenClaw extracts these and sends them as media alongside the text.
+O OpenCraft extrai estes e os envia como mídia junto com o texto.
 
-## Operations checklist
+## Checklist de operações
 
 ```bash
-openclaw status          # local status (creds, sessions, queued events)
-openclaw status --all    # full diagnosis (read-only, pasteable)
-openclaw status --deep   # adds gateway health probes (Telegram + Discord)
-openclaw health --json   # gateway health snapshot (WS)
+opencraft status          # status local (credenciais, sessões, eventos na fila)
+opencraft status --all    # diagnóstico completo (somente leitura, copiável)
+opencraft status --deep   # adiciona probes de saúde do gateway (Telegram + Discord)
+opencraft health --json   # snapshot de saúde do gateway (WS)
 ```
 
-Logs live under `/tmp/openclaw/` (default: `openclaw-YYYY-MM-DD.log`).
+Logs ficam em `/tmp/openclaw/` (padrão: `openclaw-YYYY-MM-DD.log`).
 
-## Next steps
+## Próximos passos
 
 - WebChat: [WebChat](/web/webchat)
-- Gateway ops: [Gateway runbook](/gateway)
-- Cron + wakeups: [Cron jobs](/automation/cron-jobs)
-- macOS menu bar companion: [OpenClaw macOS app](/platforms/macos)
-- iOS node app: [iOS app](/platforms/ios)
-- Android node app: [Android app](/platforms/android)
-- Windows status: [Windows (WSL2)](/platforms/windows)
-- Linux status: [Linux app](/platforms/linux)
-- Security: [Security](/gateway/security)
+- Operações do gateway: [Runbook do Gateway](/gateway)
+- Cron + wakeups: [Tarefas agendadas](/automation/cron-jobs)
+- App complementar macOS: [App macOS OpenCraft](/platforms/macos)
+- App de nó iOS: [App iOS](/platforms/ios)
+- App de nó Android: [App Android](/platforms/android)
+- Status Windows: [Windows (WSL2)](/platforms/windows)
+- Status Linux: [App Linux](/platforms/linux)
+- Segurança: [Segurança](/gateway/security)

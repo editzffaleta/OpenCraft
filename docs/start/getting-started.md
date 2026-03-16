@@ -1,34 +1,34 @@
 ---
-summary: "Get OpenClaw installed and run your first chat in minutes."
+summary: "Instale o OpenCraft e faça seu primeiro chat em minutos."
 read_when:
-  - First time setup from zero
-  - You want the fastest path to a working chat
-title: "Getting Started"
+  - Configuração inicial do zero
+  - Você quer o caminho mais rápido para um chat funcionando
+title: "Primeiros Passos"
 ---
 
-# Getting Started
+# Primeiros Passos
 
-Goal: go from zero to a first working chat with minimal setup.
+Objetivo: ir do zero ao primeiro chat funcionando com configuração mínima.
 
 <Info>
-Fastest chat: open the Control UI (no channel setup needed). Run `openclaw dashboard`
-and chat in the browser, or open `http://127.0.0.1:18789/` on the
-<Tooltip headline="Gateway host" tip="The machine running the OpenClaw gateway service.">gateway host</Tooltip>.
-Docs: [Dashboard](/web/dashboard) and [Control UI](/web/control-ui).
+Chat mais rápido: abra a UI de controle (sem precisar configurar canais). Execute `opencraft dashboard`
+e converse no navegador, ou abra `http://127.0.0.1:18789/` no
+<Tooltip headline="Host do gateway" tip="A máquina que executa o serviço de gateway do OpenCraft.">host do gateway</Tooltip>.
+Docs: [Dashboard](/web/dashboard) e [UI de controle](/web/control-ui).
 </Info>
 
-## Prereqs
+## Pré-requisitos
 
-- Node 24 recommended (Node 22 LTS, currently `22.16+`, still supported for compatibility)
+- Node 24 recomendado (Node 22 LTS, atualmente `22.16+`, ainda suportado para compatibilidade)
 
 <Tip>
-Check your Node version with `node --version` if you are unsure.
+Verifique sua versão do Node com `node --version` se não tiver certeza.
 </Tip>
 
-## Quick setup (CLI)
+## Configuração rápida (CLI)
 
 <Steps>
-  <Step title="Install OpenClaw (recommended)">
+  <Step title="Instalar o OpenCraft (recomendado)">
     <Tabs>
       <Tab title="macOS/Linux">
         ```bash
@@ -36,7 +36,7 @@ Check your Node version with `node --version` if you are unsure.
         ```
         <img
   src="/assets/install-script.svg"
-  alt="Install Script Process"
+  alt="Processo do Script de Instalação"
   className="rounded-lg"
 />
       </Tab>
@@ -48,88 +48,89 @@ Check your Node version with `node --version` if you are unsure.
     </Tabs>
 
     <Note>
-    Other install methods and requirements: [Install](/install).
+    Outros métodos de instalação e requisitos: [Instalação](/install).
     </Note>
 
   </Step>
-  <Step title="Run the onboarding wizard">
+  <Step title="Executar o assistente de onboarding">
     ```bash
-    openclaw onboard --install-daemon
+    opencraft onboard --install-daemon
     ```
 
-    The wizard configures auth, gateway settings, and optional channels.
-    See [Onboarding Wizard](/start/wizard) for details.
+    O assistente configura autenticação, configurações do gateway e canais opcionais.
+    Veja [Assistente de Onboarding](/start/wizard) para detalhes.
 
   </Step>
-  <Step title="Check the Gateway">
-    If you installed the service, it should already be running:
+  <Step title="Verificar o Gateway">
+    Se você instalou o serviço, ele já deve estar em execução:
 
     ```bash
-    openclaw gateway status
+    opencraft gateway status
     ```
 
   </Step>
-  <Step title="Open the Control UI">
+  <Step title="Abrir a UI de controle">
     ```bash
-    openclaw dashboard
+    opencraft dashboard
     ```
   </Step>
 </Steps>
 
 <Check>
-If the Control UI loads, your Gateway is ready for use.
+Se a UI de controle carregar, seu Gateway está pronto para uso.
 </Check>
 
-## Optional checks and extras
+## Verificações e extras opcionais
 
 <AccordionGroup>
-  <Accordion title="Run the Gateway in the foreground">
-    Useful for quick tests or troubleshooting.
+  <Accordion title="Executar o Gateway em primeiro plano">
+    Útil para testes rápidos ou solução de problemas.
 
     ```bash
-    openclaw gateway --port 18789
+    opencraft gateway --port 18789
     ```
 
   </Accordion>
-  <Accordion title="Send a test message">
-    Requires a configured channel.
+  <Accordion title="Enviar uma mensagem de teste">
+    Requer um canal configurado.
 
     ```bash
-    openclaw message send --target +15555550123 --message "Hello from OpenClaw"
+    opencraft message send --target +5511999999999 --message "Olá do OpenCraft"
     ```
 
   </Accordion>
 </AccordionGroup>
 
-## Useful environment variables
+## Variáveis de ambiente úteis
 
-If you run OpenClaw as a service account or want custom config/state locations:
+Se você executa o OpenCraft como conta de serviço ou quer locais personalizados
+para configuração/estado:
 
-- `OPENCLAW_HOME` sets the home directory used for internal path resolution.
-- `OPENCLAW_STATE_DIR` overrides the state directory.
-- `OPENCLAW_CONFIG_PATH` overrides the config file path.
+- `OPENCLAW_HOME` define o diretório home usado para resolução de caminhos internos.
+- `OPENCLAW_STATE_DIR` sobrescreve o diretório de estado.
+- `OPENCLAW_CONFIG_PATH` sobrescreve o caminho do arquivo de configuração.
 
-Full environment variable reference: [Environment vars](/help/environment).
+Referência completa de variáveis de ambiente: [Variáveis de ambiente](/help/environment).
 
-## Go deeper
+## Avançar
 
 <Columns>
-  <Card title="Onboarding Wizard (details)" href="/start/wizard">
-    Full CLI wizard reference and advanced options.
+  <Card title="Assistente de Onboarding (detalhes)" href="/start/wizard">
+    Referência completa do assistente CLI e opções avançadas.
   </Card>
-  <Card title="macOS app onboarding" href="/start/onboarding">
-    First run flow for the macOS app.
+  <Card title="Onboarding do app macOS" href="/start/onboarding">
+    Fluxo de primeira execução para o app macOS.
   </Card>
 </Columns>
 
-## What you will have
+## O que você terá
 
-- A running Gateway
-- Auth configured
-- Control UI access or a connected channel
+- Um Gateway em execução
+- Autenticação configurada
+- Acesso à UI de controle ou um canal conectado
 
-## Next steps
+## Próximos passos
 
-- DM safety and approvals: [Pairing](/channels/pairing)
-- Connect more channels: [Channels](/channels)
-- Advanced workflows and from source: [Setup](/start/setup)
+- Segurança em DMs e aprovações: [Pareamento](/channels/pairing)
+- Conectar mais canais: [Canais](/channels)
+- Fluxos avançados e a partir do código-fonte: [Configuração](/start/setup)

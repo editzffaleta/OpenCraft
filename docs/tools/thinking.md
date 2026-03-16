@@ -1,93 +1,93 @@
 ---
-summary: "Directive syntax for /think, /fast, /verbose, and reasoning visibility"
+summary: "Sintaxe de diretivas para /think, /fast, /verbose e visibilidade de raciocínio"
 read_when:
-  - Adjusting thinking, fast-mode, or verbose directive parsing or defaults
-title: "Thinking Levels"
+  - Ajustando thinking, modo rápido ou análise de diretivas verbose
+title: "Níveis de Thinking"
 ---
 
-# Thinking Levels (/think directives)
+# Níveis de Thinking (diretivas /think)
 
-## What it does
+## O que faz
 
-- Inline directive in any inbound body: `/t <level>`, `/think:<level>`, or `/thinking <level>`.
-- Levels (aliases): `off | minimal | low | medium | high | xhigh | adaptive`
-  - minimal → “think”
-  - low → “think hard”
-  - medium → “think harder”
-  - high → “ultrathink” (max budget)
-  - xhigh → “ultrathink+” (GPT-5.2 + Codex models only)
-  - adaptive → provider-managed adaptive reasoning budget (supported for Anthropic Claude 4.6 model family)
-  - `x-high`, `x_high`, `extra-high`, `extra high`, and `extra_high` map to `xhigh`.
-  - `highest`, `max` map to `high`.
-- Provider notes:
-  - Anthropic Claude 4.6 models default to `adaptive` when no explicit thinking level is set.
-  - Z.AI (`zai/*`) only supports binary thinking (`on`/`off`). Any non-`off` level is treated as `on` (mapped to `low`).
-  - Moonshot (`moonshot/*`) maps `/think off` to `thinking: { type: "disabled" }` and any non-`off` level to `thinking: { type: "enabled" }`. When thinking is enabled, Moonshot only accepts `tool_choice` `auto|none`; OpenClaw normalizes incompatible values to `auto`.
+- Diretiva inline em qualquer corpo de mensagem recebida: `/t <nível>`, `/think:<nível>`, ou `/thinking <nível>`.
+- Níveis (aliases): `off | minimal | low | medium | high | xhigh | adaptive`
+  - minimal → "think"
+  - low → "think hard"
+  - medium → "think harder"
+  - high → "ultrathink" (orçamento máximo)
+  - xhigh → "ultrathink+" (apenas modelos GPT-5.2 + Codex)
+  - adaptive → orçamento de raciocínio adaptativo gerenciado pelo provedor (suportado para a família de modelos Anthropic Claude 4.6)
+  - `x-high`, `x_high`, `extra-high`, `extra high` e `extra_high` mapeiam para `xhigh`.
+  - `highest`, `max` mapeiam para `high`.
+- Notas por provedor:
+  - Os modelos Anthropic Claude 4.6 padrão para `adaptive` quando nenhum nível explícito é definido.
+  - Z.AI (`zai/*`) suporta apenas thinking binário (`on`/`off`). Qualquer nível não-`off` é tratado como `on` (mapeado para `low`).
+  - Moonshot (`moonshot/*`) mapeia `/think off` para `thinking: { type: "disabled" }` e qualquer nível não-`off` para `thinking: { type: "enabled" }`. Com thinking ativo, o Moonshot aceita apenas `tool_choice` `auto|none`; o OpenCraft normaliza valores incompatíveis para `auto`.
 
-## Resolution order
+## Ordem de resolução
 
-1. Inline directive on the message (applies only to that message).
-2. Session override (set by sending a directive-only message).
-3. Global default (`agents.defaults.thinkingDefault` in config).
-4. Fallback: `adaptive` for Anthropic Claude 4.6 models, `low` for other reasoning-capable models, `off` otherwise.
+1. Diretiva inline na mensagem (aplica-se apenas àquela mensagem).
+2. Override de sessão (definido enviando uma mensagem somente com a diretiva).
+3. Padrão global (`agents.defaults.thinkingDefault` na configuração).
+4. Fallback: `adaptive` para modelos Anthropic Claude 4.6, `low` para outros modelos com capacidade de raciocínio, `off` caso contrário.
 
-## Setting a session default
+## Definindo um padrão de sessão
 
-- Send a message that is **only** the directive (whitespace allowed), e.g. `/think:medium` or `/t high`.
-- That sticks for the current session (per-sender by default); cleared by `/think:off` or session idle reset.
-- Confirmation reply is sent (`Thinking level set to high.` / `Thinking disabled.`). If the level is invalid (e.g. `/thinking big`), the command is rejected with a hint and the session state is left unchanged.
-- Send `/think` (or `/think:`) with no argument to see the current thinking level.
+- Envie uma mensagem que seja **apenas** a diretiva (espaços permitidos), ex.: `/think:medium` ou `/t high`.
+- Isso persiste para a sessão atual (por remetente, por padrão); limpo por `/think:off` ou reset por inatividade da sessão.
+- Uma resposta de confirmação é enviada (`Nível de thinking definido como high.` / `Thinking desativado.`). Se o nível for inválido (ex.: `/thinking absurdo`), o comando é rejeitado com uma dica e o estado da sessão não é alterado.
+- Envie `/think` (ou `/think:`) sem argumento para ver o nível de thinking atual.
 
-## Application by agent
+## Aplicação por agente
 
-- **Embedded Pi**: the resolved level is passed to the in-process Pi agent runtime.
+- **Pi embarcado**: o nível resolvido é passado para o runtime do agente Pi em processo.
 
-## Fast mode (/fast)
+## Modo rápido (/fast)
 
-- Levels: `on|off`.
-- Directive-only message toggles a session fast-mode override and replies `Fast mode enabled.` / `Fast mode disabled.`.
-- Send `/fast` (or `/fast status`) with no mode to see the current effective fast-mode state.
-- OpenClaw resolves fast mode in this order:
-  1. Inline/directive-only `/fast on|off`
-  2. Session override
-  3. Per-model config: `agents.defaults.models["<provider>/<model>"].params.fastMode`
+- Níveis: `on|off`.
+- Mensagem somente com diretiva alterna o override de modo rápido da sessão e responde `Modo rápido ativado.` / `Modo rápido desativado.`.
+- Envie `/fast` (ou `/fast status`) sem modo para ver o estado efetivo atual do modo rápido.
+- O OpenCraft resolve o modo rápido nesta ordem:
+  1. Inline/somente diretiva `/fast on|off`
+  2. Override de sessão
+  3. Configuração por modelo: `agents.defaults.models["<provedor>/<modelo>"].params.fastMode`
   4. Fallback: `off`
-- For `openai/*`, fast mode applies the OpenAI fast profile: `service_tier=priority` when supported, plus low reasoning effort and low text verbosity.
-- For `openai-codex/*`, fast mode applies the same low-latency profile on Codex Responses. OpenClaw keeps one shared `/fast` toggle across both auth paths.
-- For direct `anthropic/*` API-key requests, fast mode maps to Anthropic service tiers: `/fast on` sets `service_tier=auto`, `/fast off` sets `service_tier=standard_only`.
-- Anthropic fast mode is API-key only. OpenClaw skips Anthropic service-tier injection for Claude setup-token / OAuth auth and for non-Anthropic proxy base URLs.
+- Para `openai/*`, o modo rápido aplica o perfil rápido OpenAI: `service_tier=priority` quando suportado, mais baixo esforço de raciocínio e baixa verbosidade de texto.
+- Para `openai-codex/*`, o modo rápido aplica o mesmo perfil de baixa latência nas Respostas Codex. O OpenCraft mantém um único toggle `/fast` compartilhado entre ambos os caminhos de autenticação.
+- Para requisições diretas via API `anthropic/*`, o modo rápido mapeia para camadas de serviço Anthropic: `/fast on` define `service_tier=auto`, `/fast off` define `service_tier=standard_only`.
+- O modo rápido Anthropic é exclusivo para chave de API. O OpenCraft pula a injeção de camada de serviço Anthropic para setup-token / autenticação OAuth do Claude e para URLs base de proxy não-Anthropic.
 
-## Verbose directives (/verbose or /v)
+## Diretivas verbose (/verbose ou /v)
 
-- Levels: `on` (minimal) | `full` | `off` (default).
-- Directive-only message toggles session verbose and replies `Verbose logging enabled.` / `Verbose logging disabled.`; invalid levels return a hint without changing state.
-- `/verbose off` stores an explicit session override; clear it via the Sessions UI by choosing `inherit`.
-- Inline directive affects only that message; session/global defaults apply otherwise.
-- Send `/verbose` (or `/verbose:`) with no argument to see the current verbose level.
-- When verbose is on, agents that emit structured tool results (Pi, other JSON agents) send each tool call back as its own metadata-only message, prefixed with `<emoji> <tool-name>: <arg>` when available (path/command). These tool summaries are sent as soon as each tool starts (separate bubbles), not as streaming deltas.
-- Tool failure summaries remain visible in normal mode, but raw error detail suffixes are hidden unless verbose is `on` or `full`.
-- When verbose is `full`, tool outputs are also forwarded after completion (separate bubble, truncated to a safe length). If you toggle `/verbose on|full|off` while a run is in-flight, subsequent tool bubbles honor the new setting.
+- Níveis: `on` (mínimo) | `full` | `off` (padrão).
+- Mensagem somente com diretiva alterna o verbose da sessão e responde `Logging verbose ativado.` / `Logging verbose desativado.`; níveis inválidos retornam uma dica sem alterar o estado.
+- `/verbose off` armazena um override explícito de sessão; limpe-o pela UI de Sessões escolhendo `inherit`.
+- Diretiva inline afeta apenas aquela mensagem; padrões de sessão/global se aplicam caso contrário.
+- Envie `/verbose` (ou `/verbose:`) sem argumento para ver o nível verbose atual.
+- Com verbose ativo, agentes que emitem resultados de ferramentas estruturados (Pi, outros agentes JSON) enviam cada chamada de ferramenta de volta como sua própria mensagem somente de metadados, prefixada com `<emoji> <nome-da-ferramenta>: <arg>` quando disponível (caminho/comando). Esses resumos de ferramentas são enviados assim que cada ferramenta inicia (bolhas separadas), não como deltas de streaming.
+- Resumos de falha de ferramenta permanecem visíveis no modo normal, mas sufixos com detalhes de erro brutos são ocultados a menos que verbose seja `on` ou `full`.
+- Com verbose `full`, as saídas de ferramentas também são encaminhadas após a conclusão (bolha separada, truncada em tamanho seguro). Se você alternar `/verbose on|full|off` enquanto uma execução está em andamento, as bolhas de ferramentas subsequentes respeitam a nova configuração.
 
-## Reasoning visibility (/reasoning)
+## Visibilidade do raciocínio (/reasoning)
 
-- Levels: `on|off|stream`.
-- Directive-only message toggles whether thinking blocks are shown in replies.
-- When enabled, reasoning is sent as a **separate message** prefixed with `Reasoning:`.
-- `stream` (Telegram only): streams reasoning into the Telegram draft bubble while the reply is generating, then sends the final answer without reasoning.
+- Níveis: `on|off|stream`.
+- Mensagem somente com diretiva alterna se os blocos de thinking são mostrados nas respostas.
+- Quando ativado, o raciocínio é enviado como uma **mensagem separada** prefixada com `Reasoning:`.
+- `stream` (somente Telegram): transmite o raciocínio para a bolha de rascunho do Telegram enquanto a resposta é gerada, depois envia a resposta final sem o raciocínio.
 - Alias: `/reason`.
-- Send `/reasoning` (or `/reasoning:`) with no argument to see the current reasoning level.
+- Envie `/reasoning` (ou `/reasoning:`) sem argumento para ver o nível de raciocínio atual.
 
-## Related
+## Relacionado
 
-- Elevated mode docs live in [Elevated mode](/tools/elevated).
+- Documentação do modo elevado em [Modo Elevado](/tools/elevated).
 
 ## Heartbeats
 
-- Heartbeat probe body is the configured heartbeat prompt (default: `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`). Inline directives in a heartbeat message apply as usual (but avoid changing session defaults from heartbeats).
-- Heartbeat delivery defaults to the final payload only. To also send the separate `Reasoning:` message (when available), set `agents.defaults.heartbeat.includeReasoning: true` or per-agent `agents.list[].heartbeat.includeReasoning: true`.
+- O corpo do probe de heartbeat é o prompt de heartbeat configurado (padrão: `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`). Diretivas inline em uma mensagem de heartbeat se aplicam normalmente (mas evite alterar padrões de sessão a partir de heartbeats).
+- A entrega do heartbeat padrão é apenas o payload final. Para também enviar a mensagem separada `Reasoning:` (quando disponível), defina `agents.defaults.heartbeat.includeReasoning: true` ou por agente `agents.list[].heartbeat.includeReasoning: true`.
 
-## Web chat UI
+## Interface web de chat
 
-- The web chat thinking selector mirrors the session's stored level from the inbound session store/config when the page loads.
-- Picking another level applies only to the next message (`thinkingOnce`); after sending, the selector snaps back to the stored session level.
-- To change the session default, send a `/think:<level>` directive (as before); the selector will reflect it after the next reload.
+- O seletor de thinking na interface de chat web espelha o nível armazenado da sessão no armazenamento/configuração da sessão de entrada quando a página carrega.
+- Escolher outro nível aplica-se apenas à próxima mensagem (`thinkingOnce`); após enviar, o seletor volta para o nível de sessão armazenado.
+- Para alterar o padrão da sessão, envie uma diretiva `/think:<nível>` (como antes); o seletor refletirá a mudança após o próximo recarregamento.

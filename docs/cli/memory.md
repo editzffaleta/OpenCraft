@@ -1,66 +1,66 @@
 ---
-summary: "CLI reference for `openclaw memory` (status/index/search)"
+summary: "Referência do CLI para `opencraft memory` (status/index/search)"
 read_when:
-  - You want to index or search semantic memory
-  - You’re debugging memory availability or indexing
+  - Você quer indexar ou pesquisar memória semântica
+  - Você está depurando disponibilidade ou indexação de memória
 title: "memory"
 ---
 
-# `openclaw memory`
+# `opencraft memory`
 
-Manage semantic memory indexing and search.
-Provided by the active memory plugin (default: `memory-core`; set `plugins.slots.memory = "none"` to disable).
+Gerenciar indexação e busca de memória semântica.
+Fornecido pelo plugin de memória ativo (padrão: `memory-core`; defina `plugins.slots.memory = "none"` para desabilitar).
 
-Related:
+Relacionado:
 
-- Memory concept: [Memory](/concepts/memory)
+- Conceito de memória: [Memory](/concepts/memory)
 - Plugins: [Plugins](/tools/plugin)
 
-## Examples
+## Exemplos
 
 ```bash
-openclaw memory status
-openclaw memory status --deep
-openclaw memory index --force
-openclaw memory search "meeting notes"
-openclaw memory search --query "deployment" --max-results 20
-openclaw memory status --json
-openclaw memory status --deep --index
-openclaw memory status --deep --index --verbose
-openclaw memory status --agent main
-openclaw memory index --agent main --verbose
+opencraft memory status
+opencraft memory status --deep
+opencraft memory index --force
+opencraft memory search "meeting notes"
+opencraft memory search --query "deployment" --max-results 20
+opencraft memory status --json
+opencraft memory status --deep --index
+opencraft memory status --deep --index --verbose
+opencraft memory status --agent main
+opencraft memory index --agent main --verbose
 ```
 
-## Options
+## Opções
 
-`memory status` and `memory index`:
+`memory status` e `memory index`:
 
-- `--agent <id>`: scope to a single agent. Without it, these commands run for each configured agent; if no agent list is configured, they fall back to the default agent.
-- `--verbose`: emit detailed logs during probes and indexing.
+- `--agent <id>`: escopo para um único agente. Sem ele, esses comandos rodam para cada agente configurado; se nenhuma lista de agentes estiver configurada, fazem fallback para o agente padrão.
+- `--verbose`: emitir logs detalhados durante probes e indexação.
 
 `memory status`:
 
-- `--deep`: probe vector + embedding availability.
-- `--index`: run a reindex if the store is dirty (implies `--deep`).
-- `--json`: print JSON output.
+- `--deep`: fazer probe de disponibilidade de vetor + embedding.
+- `--index`: rodar uma reindexação se o store estiver sujo (implica `--deep`).
+- `--json`: imprimir saída JSON.
 
 `memory index`:
 
-- `--force`: force a full reindex.
+- `--force`: forçar uma reindexação completa.
 
 `memory search`:
 
-- Query input: pass either positional `[query]` or `--query <text>`.
-- If both are provided, `--query` wins.
-- If neither is provided, the command exits with an error.
-- `--agent <id>`: scope to a single agent (default: the default agent).
-- `--max-results <n>`: limit the number of results returned.
-- `--min-score <n>`: filter out low-score matches.
-- `--json`: print JSON results.
+- Entrada de query: passe `[query]` posicional ou `--query <text>`.
+- Se ambos forem fornecidos, `--query` vence.
+- Se nenhum for fornecido, o comando sai com um erro.
+- `--agent <id>`: escopo para um único agente (padrão: o agente padrão).
+- `--max-results <n>`: limitar o número de resultados retornados.
+- `--min-score <n>`: filtrar correspondências de baixa pontuação.
+- `--json`: imprimir resultados JSON.
 
-Notes:
+Notas:
 
-- `memory index --verbose` prints per-phase details (provider, model, sources, batch activity).
-- `memory status` includes any extra paths configured via `memorySearch.extraPaths`.
-- If effectively active memory remote API key fields are configured as SecretRefs, the command resolves those values from the active gateway snapshot. If gateway is unavailable, the command fails fast.
-- Gateway version skew note: this command path requires a gateway that supports `secrets.resolve`; older gateways return an unknown-method error.
+- `memory index --verbose` imprime detalhes por fase (provedor, modelo, fontes, atividade de batch).
+- `memory status` inclui quaisquer paths extras configurados via `memorySearch.extraPaths`.
+- Se campos de chave de API remota de memória efetivamente ativos estiverem configurados como SecretRefs, o comando resolve esses valores do snapshot ativo do gateway. Se o gateway não estiver disponível, o comando falha rapidamente.
+- Nota de skew de versão do Gateway: este path de comando requer um gateway que suporte `secrets.resolve`; gateways mais antigos retornam um erro de método desconhecido.

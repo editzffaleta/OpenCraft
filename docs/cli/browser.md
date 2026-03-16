@@ -1,108 +1,108 @@
 ---
-summary: "CLI reference for `openclaw browser` (profiles, tabs, actions, extension relay)"
+summary: "Referência do CLI para `opencraft browser` (perfis, tabs, ações, relay de extensão)"
 read_when:
-  - You use `openclaw browser` and want examples for common tasks
-  - You want to control a browser running on another machine via a node host
-  - You want to use the Chrome extension relay (attach/detach via toolbar button)
+  - Você usa `opencraft browser` e quer exemplos para tarefas comuns
+  - Você quer controlar um browser rodando em outra máquina via host de node
+  - Você quer usar o relay de extensão Chrome (anexar/desanexar via botão da barra de ferramentas)
 title: "browser"
 ---
 
-# `openclaw browser`
+# `opencraft browser`
 
-Manage OpenClaw’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+Gerenciar o servidor de controle de browser do OpenCraft e rodar ações de browser (tabs, snapshots, screenshots, navegação, cliques, digitação).
 
-Related:
+Relacionado:
 
-- Browser tool + API: [Browser tool](/tools/browser)
-- Chrome extension relay: [Chrome extension](/tools/chrome-extension)
+- Ferramenta Browser + API: [Browser tool](/tools/browser)
+- Relay de extensão Chrome: [Chrome extension](/tools/chrome-extension)
 
-## Common flags
+## Flags comuns
 
-- `--url <gatewayWsUrl>`: Gateway WebSocket URL (defaults to config).
-- `--token <token>`: Gateway token (if required).
-- `--timeout <ms>`: request timeout (ms).
-- `--browser-profile <name>`: choose a browser profile (default from config).
-- `--json`: machine-readable output (where supported).
+- `--url <gatewayWsUrl>`: URL WebSocket do Gateway (padrão da config).
+- `--token <token>`: token do Gateway (se necessário).
+- `--timeout <ms>`: timeout de requisição (ms).
+- `--browser-profile <name>`: escolher um perfil de browser (padrão da config).
+- `--json`: saída legível por máquina (onde suportado).
 
-## Quick start (local)
+## Início rápido (local)
 
 ```bash
-openclaw browser profiles
-openclaw browser --browser-profile openclaw start
-openclaw browser --browser-profile openclaw open https://example.com
-openclaw browser --browser-profile openclaw snapshot
+opencraft browser profiles
+opencraft browser --browser-profile opencraft start
+opencraft browser --browser-profile opencraft open https://example.com
+opencraft browser --browser-profile opencraft snapshot
 ```
 
-## Profiles
+## Perfis
 
-Profiles are named browser routing configs. In practice:
+Perfis são configs de roteamento de browser nomeadas. Na prática:
 
-- `openclaw`: launches/attaches to a dedicated OpenClaw-managed Chrome instance (isolated user data dir).
-- `user`: controls your existing signed-in Chrome session via Chrome DevTools MCP.
-- `chrome-relay`: controls your existing Chrome tab(s) via the Chrome extension relay.
+- `opencraft`: inicia/anexa a uma instância Chrome dedicada gerenciada pelo OpenCraft (diretório de dados de usuário isolado).
+- `user`: controla sua sessão Chrome logada existente via Chrome DevTools MCP.
+- `chrome-relay`: controla sua(s) tab(s) Chrome existente(s) via relay de extensão Chrome.
 
 ```bash
-openclaw browser profiles
-openclaw browser create-profile --name work --color "#FF5A36"
-openclaw browser delete-profile --name work
+opencraft browser profiles
+opencraft browser create-profile --name work --color "#FF5A36"
+opencraft browser delete-profile --name work
 ```
 
-Use a specific profile:
+Usar um perfil específico:
 
 ```bash
-openclaw browser --browser-profile work tabs
+opencraft browser --browser-profile work tabs
 ```
 
 ## Tabs
 
 ```bash
-openclaw browser tabs
-openclaw browser open https://docs.openclaw.ai
-openclaw browser focus <targetId>
-openclaw browser close <targetId>
+opencraft browser tabs
+opencraft browser open https://docs.openclaw.ai
+opencraft browser focus <targetId>
+opencraft browser close <targetId>
 ```
 
-## Snapshot / screenshot / actions
+## Snapshot / screenshot / ações
 
 Snapshot:
 
 ```bash
-openclaw browser snapshot
+opencraft browser snapshot
 ```
 
 Screenshot:
 
 ```bash
-openclaw browser screenshot
+opencraft browser screenshot
 ```
 
-Navigate/click/type (ref-based UI automation):
+Navegar/clicar/digitar (automação de UI baseada em ref):
 
 ```bash
-openclaw browser navigate https://example.com
-openclaw browser click <ref>
-openclaw browser type <ref> "hello"
+opencraft browser navigate https://example.com
+opencraft browser click <ref>
+opencraft browser type <ref> "olá"
 ```
 
-## Chrome extension relay (attach via toolbar button)
+## Relay de extensão Chrome (anexar via botão da barra de ferramentas)
 
-This mode lets the agent control an existing Chrome tab that you attach manually (it does not auto-attach).
+Este modo permite que o agente controle uma tab Chrome existente que você anexa manualmente (não anexa automaticamente).
 
-Install the unpacked extension to a stable path:
+Instalar a extensão desempacotada em um path estável:
 
 ```bash
-openclaw browser extension install
-openclaw browser extension path
+opencraft browser extension install
+opencraft browser extension path
 ```
 
-Then Chrome → `chrome://extensions` → enable “Developer mode” → “Load unpacked” → select the printed folder.
+Depois Chrome → `chrome://extensions` → habilitar "Modo desenvolvedor" → "Carregar sem compactação" → selecionar a pasta impressa.
 
-Full guide: [Chrome extension](/tools/chrome-extension)
+Guia completo: [Chrome extension](/tools/chrome-extension)
 
-## Remote browser control (node host proxy)
+## Controle remoto de browser (proxy de host de node)
 
-If the Gateway runs on a different machine than the browser, run a **node host** on the machine that has Chrome/Brave/Edge/Chromium. The Gateway will proxy browser actions to that node (no separate browser control server required).
+Se o Gateway roda em uma máquina diferente da que tem o browser, rode um **host de node** na máquina que tem Chrome/Brave/Edge/Chromium. O Gateway fará proxy de ações de browser para esse node (sem servidor de controle de browser separado necessário).
 
-Use `gateway.nodes.browser.mode` to control auto-routing and `gateway.nodes.browser.node` to pin a specific node if multiple are connected.
+Use `gateway.nodes.browser.mode` para controlar roteamento automático e `gateway.nodes.browser.node` para fixar um node específico se múltiplos estiverem conectados.
 
-Security + remote setup: [Browser tool](/tools/browser), [Remote access](/gateway/remote), [Tailscale](/gateway/tailscale), [Security](/gateway/security)
+Segurança + setup remoto: [Browser tool](/tools/browser), [Acesso remoto](/gateway/remote), [Tailscale](/gateway/tailscale), [Segurança](/gateway/security)

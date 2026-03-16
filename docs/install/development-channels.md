@@ -1,77 +1,77 @@
 ---
-summary: "Stable, beta, and dev channels: semantics, switching, and tagging"
+summary: "Canais stable, beta e dev: semântica, troca e tagging"
 read_when:
-  - You want to switch between stable/beta/dev
-  - You are tagging or publishing prereleases
-title: "Development Channels"
+  - Você quer trocar entre stable/beta/dev
+  - Você está fazendo tagging ou publicando pré-lançamentos
+title: "Canais de Desenvolvimento"
 ---
 
-# Development channels
+# Canais de desenvolvimento
 
-Last updated: 2026-01-21
+Última atualização: 2026-01-21
 
-OpenClaw ships three update channels:
+O OpenCraft distribui três canais de atualização:
 
-- **stable**: npm dist-tag `latest`.
-- **beta**: npm dist-tag `beta` (builds under test).
-- **dev**: moving head of `main` (git). npm dist-tag: `dev` (when published).
+- **stable**: dist-tag npm `latest`.
+- **beta**: dist-tag npm `beta` (builds em teste).
+- **dev**: head móvel de `main` (git). dist-tag npm: `dev` (quando publicado).
 
-We ship builds to **beta**, test them, then **promote a vetted build to `latest`**
-without changing the version number — dist-tags are the source of truth for npm installs.
+Distribuímos builds para **beta**, testamos e depois **promovemos um build aprovado para `latest`**
+sem mudar o número de versão — dist-tags são a fonte da verdade para instalações npm.
 
-## Switching channels
+## Trocando de canal
 
-Git checkout:
-
-```bash
-openclaw update --channel stable
-openclaw update --channel beta
-openclaw update --channel dev
-```
-
-- `stable`/`beta` check out the latest matching tag (often the same tag).
-- `dev` switches to `main` and rebases on the upstream.
-
-npm/pnpm global install:
+Checkout via Git:
 
 ```bash
-openclaw update --channel stable
-openclaw update --channel beta
-openclaw update --channel dev
+opencraft update --channel stable
+opencraft update --channel beta
+opencraft update --channel dev
 ```
 
-This updates via the corresponding npm dist-tag (`latest`, `beta`, `dev`).
+- `stable`/`beta` fazem checkout da tag correspondente mais recente (frequentemente a mesma tag).
+- `dev` muda para `main` e faz rebase no upstream.
 
-When you **explicitly** switch channels with `--channel`, OpenClaw also aligns
-the install method:
+Instalação global via npm/pnpm:
 
-- `dev` ensures a git checkout (default `~/openclaw`, override with `OPENCLAW_GIT_DIR`),
-  updates it, and installs the global CLI from that checkout.
-- `stable`/`beta` installs from npm using the matching dist-tag.
+```bash
+opencraft update --channel stable
+opencraft update --channel beta
+opencraft update --channel dev
+```
 
-Tip: if you want stable + dev in parallel, keep two clones and point your gateway at the stable one.
+Isso atualiza via o dist-tag npm correspondente (`latest`, `beta`, `dev`).
 
-## Plugins and channels
+Quando você **explicitamente** troca de canal com `--channel`, o OpenCraft também alinha
+o método de instalação:
 
-When you switch channels with `openclaw update`, OpenClaw also syncs plugin sources:
+- `dev` garante um checkout git (padrão `~/opencraft`, sobrescreva com `OPENCLAW_GIT_DIR`),
+  atualiza e instala o CLI global a partir desse checkout.
+- `stable`/`beta` instala do npm usando o dist-tag correspondente.
 
-- `dev` prefers bundled plugins from the git checkout.
-- `stable` and `beta` restore npm-installed plugin packages.
+Dica: se você quiser stable + dev em paralelo, mantenha dois clones e aponte seu gateway para o stable.
 
-## Tagging best practices
+## Plugins e canais
 
-- Tag releases you want git checkouts to land on (`vYYYY.M.D` for stable, `vYYYY.M.D-beta.N` for beta).
-- `vYYYY.M.D.beta.N` is also recognized for compatibility, but prefer `-beta.N`.
-- Legacy `vYYYY.M.D-<patch>` tags are still recognized as stable (non-beta).
-- Keep tags immutable: never move or reuse a tag.
-- npm dist-tags remain the source of truth for npm installs:
+Quando você troca de canal com `opencraft update`, o OpenCraft também sincroniza fontes de plugins:
+
+- `dev` prefere plugins embutidos do checkout git.
+- `stable` e `beta` restauram pacotes de plugins instalados via npm.
+
+## Boas práticas de tagging
+
+- Marque com tags os releases que você quer que checkouts git usem (`vYYYY.M.D` para stable, `vYYYY.M.D-beta.N` para beta).
+- `vYYYY.M.D.beta.N` também é reconhecido por compatibilidade, mas prefira `-beta.N`.
+- Tags legadas `vYYYY.M.D-<patch>` ainda são reconhecidas como stable (não-beta).
+- Mantenha tags imutáveis: nunca mova ou reutilize uma tag.
+- dist-tags npm continuam sendo a fonte da verdade para instalações npm:
   - `latest` → stable
-  - `beta` → candidate build
-  - `dev` → main snapshot (optional)
+  - `beta` → build candidato
+  - `dev` → snapshot de main (opcional)
 
-## macOS app availability
+## Disponibilidade do app macOS
 
-Beta and dev builds may **not** include a macOS app release. That’s OK:
+Builds beta e dev podem **não** incluir um release do app macOS. Isso é normal:
 
-- The git tag and npm dist-tag can still be published.
-- Call out “no macOS build for this beta” in release notes or changelog.
+- A tag git e o dist-tag npm ainda podem ser publicados.
+- Mencione "sem build macOS para este beta" nas notas de release ou changelog.

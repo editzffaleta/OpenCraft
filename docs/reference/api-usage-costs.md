@@ -1,142 +1,142 @@
 ---
-summary: "Audit what can spend money, which keys are used, and how to view usage"
+summary: "Auditar o que pode gastar dinheiro, quais chaves são usadas e como ver o uso"
 read_when:
-  - You want to understand which features may call paid APIs
-  - You need to audit keys, costs, and usage visibility
-  - You’re explaining /status or /usage cost reporting
-title: "API Usage and Costs"
+  - Você quer entender quais recursos podem chamar APIs pagas
+  - Você precisa auditar chaves, custos e visibilidade de uso
+  - Você está explicando relatórios de /status ou /usage cost
+title: "Uso de API e Custos"
 ---
 
-# API usage & costs
+# Uso de API e custos
 
-This doc lists **features that can invoke API keys** and where their costs show up. It focuses on
-OpenClaw features that can generate provider usage or paid API calls.
+Este doc lista **recursos que podem invocar chaves de API** e onde seus custos aparecem. Foca em
+recursos do OpenCraft que podem gerar uso do provedor ou chamadas de API pagas.
 
-## Where costs show up (chat + CLI)
+## Onde os custos aparecem (chat + CLI)
 
-**Per-session cost snapshot**
+**Snapshot de custo por sessão**
 
-- `/status` shows the current session model, context usage, and last response tokens.
-- If the model uses **API-key auth**, `/status` also shows **estimated cost** for the last reply.
+- `/status` mostra o modelo de sessão atual, uso do contexto e tokens da última resposta.
+- Se o modelo usa **auth por chave de API**, `/status` também mostra **custo estimado** para a última resposta.
 
-**Per-message cost footer**
+**Rodapé de custo por mensagem**
 
-- `/usage full` appends a usage footer to every reply, including **estimated cost** (API-key only).
-- `/usage tokens` shows tokens only; OAuth flows hide dollar cost.
+- `/usage full` adiciona um rodapé de uso a cada resposta, incluindo **custo estimado** (somente chave de API).
+- `/usage tokens` mostra apenas tokens; fluxos OAuth ocultam o custo em dólar.
 
-**CLI usage windows (provider quotas)**
+**Janelas de uso CLI (cotas do provedor)**
 
-- `openclaw status --usage` and `openclaw channels list` show provider **usage windows**
-  (quota snapshots, not per-message costs).
+- `opencraft status --usage` e `opencraft channels list` mostram **janelas de uso** do provedor
+  (snapshots de cota, não custos por mensagem).
 
-See [Token use & costs](/reference/token-use) for details and examples.
+Veja [Uso de tokens e custos](/reference/token-use) para detalhes e exemplos.
 
-## How keys are discovered
+## Como as chaves são descobertas
 
-OpenClaw can pick up credentials from:
+O OpenCraft pode capturar credenciais de:
 
-- **Auth profiles** (per-agent, stored in `auth-profiles.json`).
-- **Environment variables** (e.g. `OPENAI_API_KEY`, `BRAVE_API_KEY`, `FIRECRAWL_API_KEY`).
+- **Perfis de auth** (por agente, armazenados em `auth-profiles.json`).
+- **Variáveis de ambiente** (ex: `OPENAI_API_KEY`, `BRAVE_API_KEY`, `FIRECRAWL_API_KEY`).
 - **Config** (`models.providers.*.apiKey`, `tools.web.search.*`, `tools.web.fetch.firecrawl.*`,
   `memorySearch.*`, `talk.apiKey`).
-- **Skills** (`skills.entries.<name>.apiKey`) which may export keys to the skill process env.
+- **Skills** (`skills.entries.<nome>.apiKey`) que podem exportar chaves para o ambiente do processo de skill.
 
-## Features that can spend keys
+## Recursos que podem gastar chaves
 
-### 1) Core model responses (chat + tools)
+### 1) Respostas do modelo principal (chat + tools)
 
-Every reply or tool call uses the **current model provider** (OpenAI, Anthropic, etc). This is the
-primary source of usage and cost.
+Cada resposta ou tool call usa o **provedor de modelo atual** (OpenAI, Anthropic, etc). Esta é a
+principal fonte de uso e custo.
 
-See [Models](/providers/models) for pricing config and [Token use & costs](/reference/token-use) for display.
+Veja [Modelos](/providers/models) para configuração de preços e [Uso de tokens e custos](/reference/token-use) para exibição.
 
-### 2) Media understanding (audio/image/video)
+### 2) Compreensão de mídia (áudio/imagem/vídeo)
 
-Inbound media can be summarized/transcribed before the reply runs. This uses model/provider APIs.
+Mídia de entrada pode ser resumida/transcrita antes da resposta ser executada. Isso usa APIs do modelo/provedor.
 
-- Audio: OpenAI / Groq / Deepgram (now **auto-enabled** when keys exist).
-- Image: OpenAI / Anthropic / Google.
-- Video: Google.
+- Áudio: OpenAI / Groq / Deepgram (agora **habilitado automaticamente** quando as chaves existem).
+- Imagem: OpenAI / Anthropic / Google.
+- Vídeo: Google.
 
-See [Media understanding](/nodes/media-understanding).
+Veja [Compreensão de mídia](/nodes/media-understanding).
 
-### 3) Memory embeddings + semantic search
+### 3) Embeddings de memória + pesquisa semântica
 
-Semantic memory search uses **embedding APIs** when configured for remote providers:
+A pesquisa semântica de memória usa **APIs de embedding** quando configurada para provedores remotos:
 
-- `memorySearch.provider = "openai"` → OpenAI embeddings
-- `memorySearch.provider = "gemini"` → Gemini embeddings
-- `memorySearch.provider = "voyage"` → Voyage embeddings
-- `memorySearch.provider = "mistral"` → Mistral embeddings
-- `memorySearch.provider = "ollama"` → Ollama embeddings (local/self-hosted; typically no hosted API billing)
-- Optional fallback to a remote provider if local embeddings fail
+- `memorySearch.provider = "openai"` → embeddings OpenAI
+- `memorySearch.provider = "gemini"` → embeddings Gemini
+- `memorySearch.provider = "voyage"` → embeddings Voyage
+- `memorySearch.provider = "mistral"` → embeddings Mistral
+- `memorySearch.provider = "ollama"` → embeddings Ollama (local/self-hosted; geralmente sem cobrança de API hospedada)
+- Fallback opcional para um provedor remoto se os embeddings locais falharem
 
-You can keep it local with `memorySearch.provider = "local"` (no API usage).
+Você pode mantê-lo local com `memorySearch.provider = "local"` (sem uso de API).
 
-See [Memory](/concepts/memory).
+Veja [Memória](/concepts/memory).
 
-### 4) Web search tool
+### 4) Tool de pesquisa web
 
-`web_search` uses API keys and may incur usage charges depending on your provider:
+`web_search` usa chaves de API e pode incorrer em cobranças de uso dependendo do seu provedor:
 
-- **Brave Search API**: `BRAVE_API_KEY` or `tools.web.search.apiKey`
-- **Gemini (Google Search)**: `GEMINI_API_KEY` or `tools.web.search.gemini.apiKey`
-- **Grok (xAI)**: `XAI_API_KEY` or `tools.web.search.grok.apiKey`
-- **Kimi (Moonshot)**: `KIMI_API_KEY`, `MOONSHOT_API_KEY`, or `tools.web.search.kimi.apiKey`
-- **Perplexity Search API**: `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, or `tools.web.search.perplexity.apiKey`
+- **Brave Search API**: `BRAVE_API_KEY` ou `tools.web.search.apiKey`
+- **Gemini (Google Search)**: `GEMINI_API_KEY` ou `tools.web.search.gemini.apiKey`
+- **Grok (xAI)**: `XAI_API_KEY` ou `tools.web.search.grok.apiKey`
+- **Kimi (Moonshot)**: `KIMI_API_KEY`, `MOONSHOT_API_KEY` ou `tools.web.search.kimi.apiKey`
+- **Perplexity Search API**: `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY` ou `tools.web.search.perplexity.apiKey`
 
-**Brave Search free credit:** Each Brave plan includes \$5/month in renewing
-free credit. The Search plan costs \$5 per 1,000 requests, so the credit covers
-1,000 requests/month at no charge. Set your usage limit in the Brave dashboard
-to avoid unexpected charges.
+**Crédito gratuito do Brave Search:** Cada plano Brave inclui \$5/mês em
+crédito gratuito recorrente. O plano Search custa \$5 por 1.000 requisições, então o crédito cobre
+1.000 requisições/mês sem custo. Defina seu limite de uso no painel do Brave
+para evitar cobranças inesperadas.
 
-See [Web tools](/tools/web).
+Veja [Ferramentas web](/tools/web).
 
-### 5) Web fetch tool (Firecrawl)
+### 5) Tool de fetch web (Firecrawl)
 
-`web_fetch` can call **Firecrawl** when an API key is present:
+`web_fetch` pode chamar o **Firecrawl** quando uma chave de API estiver presente:
 
-- `FIRECRAWL_API_KEY` or `tools.web.fetch.firecrawl.apiKey`
+- `FIRECRAWL_API_KEY` ou `tools.web.fetch.firecrawl.apiKey`
 
-If Firecrawl isn’t configured, the tool falls back to direct fetch + readability (no paid API).
+Se o Firecrawl não estiver configurado, a tool faz fallback para fetch direto + readability (sem API paga).
 
-See [Web tools](/tools/web).
+Veja [Ferramentas web](/tools/web).
 
-### 6) Provider usage snapshots (status/health)
+### 6) Snapshots de uso do provedor (status/saúde)
 
-Some status commands call **provider usage endpoints** to display quota windows or auth health.
-These are typically low-volume calls but still hit provider APIs:
+Alguns comandos de status chamam **endpoints de uso do provedor** para exibir janelas de cota ou saúde de auth.
+Geralmente são chamadas de baixo volume, mas ainda atingem APIs do provedor:
 
-- `openclaw status --usage`
-- `openclaw models status --json`
+- `opencraft status --usage`
+- `opencraft models status --json`
 
-See [Models CLI](/cli/models).
+Veja [CLI de Modelos](/cli/models).
 
-### 7) Compaction safeguard summarization
+### 7) Sumarização de proteção de compactação
 
-The compaction safeguard can summarize session history using the **current model**, which
-invokes provider APIs when it runs.
+A proteção de compactação pode resumir o histórico de sessão usando o **modelo atual**, o que
+invoca APIs do provedor quando é executado.
 
-See [Session management + compaction](/reference/session-management-compaction).
+Veja [Gerenciamento de sessão + compactação](/reference/session-management-compaction).
 
-### 8) Model scan / probe
+### 8) Scan / probe de modelo
 
-`openclaw models scan` can probe OpenRouter models and uses `OPENROUTER_API_KEY` when
-probing is enabled.
+`opencraft models scan` pode sondar modelos do OpenRouter e usa `OPENROUTER_API_KEY` quando
+a sondagem está habilitada.
 
-See [Models CLI](/cli/models).
+Veja [CLI de Modelos](/cli/models).
 
-### 9) Talk (speech)
+### 9) Talk (voz)
 
-Talk mode can invoke **ElevenLabs** when configured:
+O modo Talk pode invocar o **ElevenLabs** quando configurado:
 
-- `ELEVENLABS_API_KEY` or `talk.apiKey`
+- `ELEVENLABS_API_KEY` ou `talk.apiKey`
 
-See [Talk mode](/nodes/talk).
+Veja [Modo Talk](/nodes/talk).
 
-### 10) Skills (third-party APIs)
+### 10) Skills (APIs de terceiros)
 
-Skills can store `apiKey` in `skills.entries.<name>.apiKey`. If a skill uses that key for external
-APIs, it can incur costs according to the skill’s provider.
+As Skills podem armazenar `apiKey` em `skills.entries.<nome>.apiKey`. Se uma skill usar essa chave para APIs
+externas, pode incorrer em custos de acordo com o provedor da skill.
 
-See [Skills](/tools/skills).
+Veja [Skills](/tools/skills).

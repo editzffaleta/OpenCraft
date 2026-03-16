@@ -1,22 +1,22 @@
 ---
-summary: "JSON-only LLM tasks for workflows (optional plugin tool)"
+summary: "Tasks LLM somente JSON para workflows (tool de plugin opcional)"
 read_when:
-  - You want a JSON-only LLM step inside workflows
-  - You need schema-validated LLM output for automation
+  - Você quer uma etapa LLM somente JSON dentro de workflows
+  - Você precisa de saída LLM validada por schema para automação
 title: "LLM Task"
 ---
 
 # LLM Task
 
-`llm-task` is an **optional plugin tool** that runs a JSON-only LLM task and
-returns structured output (optionally validated against JSON Schema).
+`llm-task` é uma **tool de plugin opcional** que executa uma task LLM somente JSON e
+retorna saída estruturada (opcionalmente validada contra JSON Schema).
 
-This is ideal for workflow engines like Lobster: you can add a single LLM step
-without writing custom OpenClaw code for each workflow.
+É ideal para motores de workflow como o Lobster: você pode adicionar uma única etapa LLM
+sem escrever código OpenCraft personalizado para cada workflow.
 
-## Enable the plugin
+## Habilitar o plugin
 
-1. Enable the plugin:
+1. Habilite o plugin:
 
 ```json
 {
@@ -28,7 +28,7 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-2. Allowlist the tool (it is registered with `optional: true`):
+2. Coloque a tool na allowlist (ela é registrada com `optional: true`):
 
 ```json
 {
@@ -43,7 +43,7 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-## Config (optional)
+## Config (opcional)
 
 ```json
 {
@@ -65,38 +65,38 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-`allowedModels` is an allowlist of `provider/model` strings. If set, any request
-outside the list is rejected.
+`allowedModels` é uma allowlist de strings `provedor/modelo`. Se definido, qualquer requisição
+fora da lista é rejeitada.
 
-## Tool parameters
+## Parâmetros da tool
 
-- `prompt` (string, required)
-- `input` (any, optional)
-- `schema` (object, optional JSON Schema)
-- `provider` (string, optional)
-- `model` (string, optional)
-- `thinking` (string, optional)
-- `authProfileId` (string, optional)
-- `temperature` (number, optional)
-- `maxTokens` (number, optional)
-- `timeoutMs` (number, optional)
+- `prompt` (string, obrigatório)
+- `input` (qualquer tipo, opcional)
+- `schema` (object, JSON Schema opcional)
+- `provider` (string, opcional)
+- `model` (string, opcional)
+- `thinking` (string, opcional)
+- `authProfileId` (string, opcional)
+- `temperature` (number, opcional)
+- `maxTokens` (number, opcional)
+- `timeoutMs` (number, opcional)
 
-`thinking` accepts the standard OpenClaw reasoning presets, such as `low` or `medium`.
+`thinking` aceita os presets padrão de raciocínio do OpenCraft, como `low` ou `medium`.
 
-## Output
+## Saída
 
-Returns `details.json` containing the parsed JSON (and validates against
-`schema` when provided).
+Retorna `details.json` contendo o JSON analisado (e valida contra
+`schema` quando fornecido).
 
-## Example: Lobster workflow step
+## Exemplo: etapa de workflow Lobster
 
 ```lobster
 openclaw.invoke --tool llm-task --action json --args-json '{
-  "prompt": "Given the input email, return intent and draft.",
+  "prompt": "Dado o email de entrada, retorne intenção e rascunho.",
   "thinking": "low",
   "input": {
-    "subject": "Hello",
-    "body": "Can you help?"
+    "subject": "Olá",
+    "body": "Você pode ajudar?"
   },
   "schema": {
     "type": "object",
@@ -110,10 +110,10 @@ openclaw.invoke --tool llm-task --action json --args-json '{
 }'
 ```
 
-## Safety notes
+## Notas de segurança
 
-- The tool is **JSON-only** and instructs the model to output only JSON (no
-  code fences, no commentary).
-- No tools are exposed to the model for this run.
-- Treat output as untrusted unless you validate with `schema`.
-- Put approvals before any side-effecting step (send, post, exec).
+- A tool é **somente JSON** e instrui o modelo a produzir apenas JSON (sem
+  code fences, sem comentários).
+- Nenhuma tool é exposta ao modelo para esta execução.
+- Trate a saída como não confiável a menos que você valide com `schema`.
+- Coloque aprovações antes de qualquer etapa com efeitos colaterais (enviar, postar, exec).

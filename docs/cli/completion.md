@@ -1,35 +1,35 @@
 ---
-summary: "CLI reference for `openclaw completion` (generate/install shell completion scripts)"
+summary: "Referência do CLI para `opencraft completion` (gerar/instalar scripts de completion de shell)"
 read_when:
-  - You want shell completions for zsh/bash/fish/PowerShell
-  - You need to cache completion scripts under OpenClaw state
+  - Você quer completions de shell para zsh/bash/fish/PowerShell
+  - Você precisa fazer cache de scripts de completion no estado do OpenCraft
 title: "completion"
 ---
 
-# `openclaw completion`
+# `opencraft completion`
 
-Generate shell completion scripts and optionally install them into your shell profile.
+Gerar scripts de completion de shell e opcionalmente instalá-los no seu perfil de shell.
 
-## Usage
+## Uso
 
 ```bash
-openclaw completion
-openclaw completion --shell zsh
-openclaw completion --install
-openclaw completion --shell fish --install
-openclaw completion --write-state
-openclaw completion --shell bash --write-state
+opencraft completion
+opencraft completion --shell zsh
+opencraft completion --install
+opencraft completion --shell fish --install
+opencraft completion --write-state
+opencraft completion --shell bash --write-state
 ```
 
-## Options
+## Opções
 
-- `-s, --shell <shell>`: shell target (`zsh`, `bash`, `powershell`, `fish`; default: `zsh`)
-- `-i, --install`: install completion by adding a source line to your shell profile
-- `--write-state`: write completion script(s) to `$OPENCLAW_STATE_DIR/completions` without printing to stdout
-- `-y, --yes`: skip install confirmation prompts
+- `-s, --shell <shell>`: alvo de shell (`zsh`, `bash`, `powershell`, `fish`; padrão: `zsh`)
+- `-i, --install`: instalar completion adicionando uma linha de source ao seu perfil de shell
+- `--write-state`: escrever script(s) de completion em `$OPENCLAW_STATE_DIR/completions` sem imprimir no stdout
+- `-y, --yes`: pular prompts de confirmação de instalação
 
-## Notes
+## Notas
 
-- `--install` writes a small "OpenClaw Completion" block into your shell profile and points it at the cached script.
-- Without `--install` or `--write-state`, the command prints the script to stdout.
-- Completion generation eagerly loads command trees so nested subcommands are included.
+- `--install` escreve um pequeno bloco "OpenCraft Completion" no seu perfil de shell e aponta para o script em cache.
+- Sem `--install` ou `--write-state`, o comando imprime o script no stdout.
+- Geração de completion carrega ansiosamente árvores de comando para que subcomandos aninhados sejam incluídos.

@@ -1,148 +1,148 @@
 ---
-title: "Release Checklist"
-summary: "Step-by-step release checklist for npm + macOS app"
+title: "Checklist de Release"
+summary: "Checklist de release passo a passo para npm + app macOS"
 read_when:
-  - Cutting a new npm release
-  - Cutting a new macOS app release
-  - Verifying metadata before publishing
+  - Criando um novo release npm
+  - Criando um novo release do app macOS
+  - Verificando metadados antes de publicar
 ---
 
-# Release Checklist (npm + macOS)
+# Checklist de Release (npm + macOS)
 
-Use `pnpm` from the repo root with Node 24 by default. Node 22 LTS, currently `22.16+`, remains supported for compatibility. Keep the working tree clean before tagging/publishing.
+Use `pnpm` da raiz do repositório com Node 24 por padrão. Node 22 LTS, atualmente `22.16+`, permanece suportado para compatibilidade. Mantenha a árvore de trabalho limpa antes de criar tags/publicar.
 
-## Operator trigger
+## Gatilho do operador
 
-When the operator says “release”, immediately do this preflight (no extra questions unless blocked):
+Quando o operador disser "release", faça imediatamente este preflight (sem perguntas extras a menos que esteja bloqueado):
 
-- Read this doc and `docs/platforms/mac/release.md`.
-- Load env from `~/.profile` and confirm `SPARKLE_PRIVATE_KEY_FILE` + App Store Connect vars are set (SPARKLE_PRIVATE_KEY_FILE should live in `~/.profile`).
-- Use Sparkle keys from `~/Library/CloudStorage/Dropbox/Backup/Sparkle` if needed.
+- Leia este doc e `docs/platforms/mac/release.md`.
+- Carregue env de `~/.profile` e confirme que `SPARKLE_PRIVATE_KEY_FILE` + variáveis do App Store Connect estão definidas (SPARKLE_PRIVATE_KEY_FILE deve estar em `~/.profile`).
+- Use chaves Sparkle de `~/Library/CloudStorage/Dropbox/Backup/Sparkle` se necessário.
 
-## Versioning
+## Versionamento
 
-Current OpenClaw releases use date-based versioning.
+Os releases atuais do OpenCraft usam versionamento baseado em data.
 
-- Stable release version: `YYYY.M.D`
-  - Git tag: `vYYYY.M.D`
-  - Examples from repo history: `v2026.2.26`, `v2026.3.8`
-- Beta prerelease version: `YYYY.M.D-beta.N`
-  - Git tag: `vYYYY.M.D-beta.N`
-  - Examples from repo history: `v2026.2.15-beta.1`, `v2026.3.8-beta.1`
-- Fallback correction tag: `vYYYY.M.D-N`
-  - Use only as a last-resort recovery tag when a published immutable release burned the original stable tag and you cannot reuse it.
-  - The npm package version stays `YYYY.M.D`; the `-N` suffix is only for the git tag and GitHub release.
-  - Prefer betas for normal pre-release iteration, then cut a clean stable tag once ready.
-- Use the same version string everywhere, minus the leading `v` where Git tags are not used:
+- Versão de release estável: `YYYY.M.D`
+  - Tag Git: `vYYYY.M.D`
+  - Exemplos do histórico do repositório: `v2026.2.26`, `v2026.3.8`
+- Versão de pré-release beta: `YYYY.M.D-beta.N`
+  - Tag Git: `vYYYY.M.D-beta.N`
+  - Exemplos do histórico do repositório: `v2026.2.15-beta.1`, `v2026.3.8-beta.1`
+- Tag de correção de fallback: `vYYYY.M.D-N`
+  - Use apenas como tag de recuperação de último recurso quando um release imutável publicado queimou a tag estável original e você não pode reutilizá-la.
+  - A versão do pacote npm permanece `YYYY.M.D`; o sufixo `-N` é apenas para a tag git e o release GitHub.
+  - Prefira betas para iteração de pré-release normal, depois corte uma tag estável limpa quando estiver pronto.
+- Use a mesma string de versão em todos os lugares, menos o `v` inicial onde as tags Git não são usadas:
   - `package.json`: `2026.3.8`
-  - Git tag: `v2026.3.8`
-  - GitHub release title: `openclaw 2026.3.8`
-- Do not zero-pad month or day. Use `2026.3.8`, not `2026.03.08`.
-- Stable and beta are npm dist-tags, not separate release lines:
-  - `latest` = stable
-  - `beta` = prerelease/testing
-- Dev is the moving head of `main`, not a normal git-tagged release.
-- The tag-triggered preview run accepts stable, beta, and fallback correction tags, and rejects versions whose CalVer date is more than 2 UTC calendar days away from the release date.
+  - Tag Git: `v2026.3.8`
+  - Título do release GitHub: `opencraft 2026.3.8`
+- Não preencha mês ou dia com zero. Use `2026.3.8`, não `2026.03.08`.
+- Estável e beta são dist-tags do npm, não linhas de release separadas:
+  - `latest` = estável
+  - `beta` = pré-release/teste
+- Dev é a head em movimento do `main`, não um release com tag git normal.
+- A execução de preview acionada por tag aceita tags de estável, beta e correção de fallback, e rejeita versões cuja data CalVer está mais de 2 dias de calendário UTC distante da data do release.
 
-Historical note:
+Nota histórica:
 
-- Older tags such as `v2026.1.11-1`, `v2026.2.6-3`, and `v2.0.0-beta2` exist in repo history.
-- Treat correction tags as a fallback-only escape hatch. New releases should still use `vYYYY.M.D` for stable and `vYYYY.M.D-beta.N` for beta.
+- Tags mais antigas como `v2026.1.11-1`, `v2026.2.6-3` e `v2.0.0-beta2` existem no histórico do repositório.
+- Trate as tags de correção como uma saída de emergência somente fallback. Novos releases ainda devem usar `vYYYY.M.D` para estável e `vYYYY.M.D-beta.N` para beta.
 
-1. **Version & metadata**
+1. **Versão e metadados**
 
-- [ ] Bump `package.json` version (e.g., `2026.1.29`).
-- [ ] Run `pnpm plugins:sync` to align extension package versions + changelogs.
-- [ ] Update CLI/version strings in [`src/version.ts`](https://github.com/openclaw/openclaw/blob/main/src/version.ts) and the Baileys user agent in [`src/web/session.ts`](https://github.com/openclaw/openclaw/blob/main/src/web/session.ts).
-- [ ] Confirm package metadata (name, description, repository, keywords, license) and `bin` map points to [`openclaw.mjs`](https://github.com/openclaw/openclaw/blob/main/openclaw.mjs) for `openclaw`.
-- [ ] If dependencies changed, run `pnpm install` so `pnpm-lock.yaml` is current.
+- [ ] Atualizar versão no `package.json` (ex: `2026.1.29`).
+- [ ] Executar `pnpm plugins:sync` para alinhar versões de pacotes de extensão + changelogs.
+- [ ] Atualizar strings CLI/versão em [`src/version.ts`](https://github.com/openclaw/openclaw/blob/main/src/version.ts) e o user agent do Baileys em [`src/web/session.ts`](https://github.com/openclaw/openclaw/blob/main/src/web/session.ts).
+- [ ] Confirmar metadados do pacote (name, description, repository, keywords, license) e que o mapa `bin` aponta para [`opencraft.mjs`](https://github.com/openclaw/openclaw/blob/main/opencraft.mjs) para `opencraft`.
+- [ ] Se as dependências mudaram, execute `pnpm install` para que `pnpm-lock.yaml` esteja atualizado.
 
-2. **Build & artifacts**
+2. **Build e artefatos**
 
-- [ ] If A2UI inputs changed, run `pnpm canvas:a2ui:bundle` and commit any updated [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/openclaw/openclaw/blob/main/src/canvas-host/a2ui/a2ui.bundle.js).
-- [ ] `pnpm run build` (regenerates `dist/`).
-- [ ] Verify npm package `files` includes all required `dist/*` folders (notably `dist/node-host/**` and `dist/acp/**` for headless node + ACP CLI).
-- [ ] Confirm `dist/build-info.json` exists and includes the expected `commit` hash (CLI banner uses this for npm installs).
-- [ ] Optional: `npm pack --pack-destination /tmp` after the build; inspect the tarball contents and keep it handy for the GitHub release (do **not** commit it).
+- [ ] Se as entradas A2UI mudaram, execute `pnpm canvas:a2ui:bundle` e faça commit de qualquer [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/openclaw/openclaw/blob/main/src/canvas-host/a2ui/a2ui.bundle.js) atualizado.
+- [ ] `pnpm run build` (regenera `dist/`).
+- [ ] Verificar que os `files` do pacote npm incluem todas as pastas `dist/*` necessárias (notavelmente `dist/node-host/**` e `dist/acp/**` para node headless + CLI ACP).
+- [ ] Confirmar que `dist/build-info.json` existe e inclui o hash `commit` esperado (o banner CLI usa isso para instalações npm).
+- [ ] Opcional: `npm pack --pack-destination /tmp` após o build; inspecione o conteúdo do tarball e mantenha-o à mão para o release GitHub (não faça **commit** dele).
 
-3. **Changelog & docs**
+3. **Changelog e docs**
 
-- [ ] Update `CHANGELOG.md` with user-facing highlights (create the file if missing); keep entries strictly descending by version.
-- [ ] Ensure README examples/flags match current CLI behavior (notably new commands or options).
+- [ ] Atualizar `CHANGELOG.md` com destaques voltados ao usuário (crie o arquivo se estiver ausente); mantenha as entradas estritamente em ordem decrescente por versão.
+- [ ] Garantir que exemplos/flags do README correspondam ao comportamento atual do CLI (notavelmente novos comandos ou opções).
 
-4. **Validation**
+4. **Validação**
 
 - [ ] `pnpm build`
 - [ ] `pnpm check`
-- [ ] `pnpm test` (or `pnpm test:coverage` if you need coverage output)
-- [ ] `pnpm release:check` (verifies npm pack contents)
-- [ ] If `pnpm config:docs:check` fails as part of release validation and the config-surface change is intentional, run `pnpm config:docs:gen`, review `docs/.generated/config-baseline.json` and `docs/.generated/config-baseline.jsonl`, commit the updated baselines, then rerun `pnpm release:check`.
-- [ ] `OPENCLAW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` (Docker install smoke test, fast path; required before release)
-  - If the immediate previous npm release is known broken, set `OPENCLAW_INSTALL_SMOKE_PREVIOUS=<last-good-version>` or `OPENCLAW_INSTALL_SMOKE_SKIP_PREVIOUS=1` for the preinstall step.
-- [ ] (Optional) Full installer smoke (adds non-root + CLI coverage): `pnpm test:install:smoke`
-- [ ] (Optional) Installer E2E (Docker, runs `curl -fsSL https://openclaw.ai/install.sh | bash`, onboards, then runs real tool calls):
-  - `pnpm test:install:e2e:openai` (requires `OPENAI_API_KEY`)
-  - `pnpm test:install:e2e:anthropic` (requires `ANTHROPIC_API_KEY`)
-  - `pnpm test:install:e2e` (requires both keys; runs both providers)
-- [ ] (Optional) Spot-check the web gateway if your changes affect send/receive paths.
+- [ ] `pnpm test` (ou `pnpm test:coverage` se precisar de saída de cobertura)
+- [ ] `pnpm release:check` (verifica conteúdo do npm pack)
+- [ ] Se `pnpm config:docs:check` falhar como parte da validação do release e a mudança na superfície de config for intencional, execute `pnpm config:docs:gen`, revise `docs/.generated/config-baseline.json` e `docs/.generated/config-baseline.jsonl`, faça commit das baselines atualizadas, depois execute novamente `pnpm release:check`.
+- [ ] `OPENCLAW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` (teste de smoke de instalação Docker, caminho rápido; necessário antes do release)
+  - Se o release npm imediatamente anterior for sabidamente quebrado, defina `OPENCLAW_INSTALL_SMOKE_PREVIOUS=<last-good-version>` ou `OPENCLAW_INSTALL_SMOKE_SKIP_PREVIOUS=1` para a etapa de pré-instalação.
+- [ ] (Opcional) Smoke completo do instalador (adiciona cobertura de não-root + CLI): `pnpm test:install:smoke`
+- [ ] (Opcional) E2E do instalador (Docker, executa `curl -fsSL https://opencraft.ai/install.sh | bash`, onboarding e depois executa chamadas de tool reais):
+  - `pnpm test:install:e2e:openai` (requer `OPENAI_API_KEY`)
+  - `pnpm test:install:e2e:anthropic` (requer `ANTHROPIC_API_KEY`)
+  - `pnpm test:install:e2e` (requer ambas as chaves; executa ambos os provedores)
+- [ ] (Opcional) Verificação pontual do gateway web se suas mudanças afetarem caminhos de envio/recebimento.
 
-5. **macOS app (Sparkle)**
+5. **App macOS (Sparkle)**
 
-- [ ] Build + sign the macOS app, then zip it for distribution.
-- [ ] Generate the Sparkle appcast (HTML notes via [`scripts/make_appcast.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/make_appcast.sh)) and update `appcast.xml`.
-- [ ] Keep the app zip (and optional dSYM zip) ready to attach to the GitHub release.
-- [ ] Follow [macOS release](/platforms/mac/release) for the exact commands and required env vars.
-  - `APP_BUILD` must be numeric + monotonic (no `-beta`) so Sparkle compares versions correctly.
-  - If notarizing, use the `openclaw-notary` keychain profile created from App Store Connect API env vars (see [macOS release](/platforms/mac/release)).
+- [ ] Compilar + assinar o app macOS, depois compactá-lo em zip para distribuição.
+- [ ] Gerar o appcast Sparkle (notas HTML via [`scripts/make_appcast.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/make_appcast.sh)) e atualizar `appcast.xml`.
+- [ ] Manter o zip do app (e zip de dSYM opcional) pronto para anexar ao release GitHub.
+- [ ] Seguir [release macOS](/platforms/mac/release) para os comandos exatos e variáveis de ambiente necessárias.
+  - `APP_BUILD` deve ser numérico + monotônico (sem `-beta`) para que o Sparkle compare versões corretamente.
+  - Se notarizando, use o perfil keychain `openclaw-notary` criado a partir das variáveis de env da API do App Store Connect (veja [release macOS](/platforms/mac/release)).
 
-6. **Publish (npm)**
+6. **Publicar (npm)**
 
-- [ ] Confirm git status is clean; commit and push as needed.
-- [ ] Confirm npm trusted publishing is configured for the `openclaw` package.
-- [ ] Do not rely on an `NPM_TOKEN` secret for this workflow; the publish job uses GitHub OIDC trusted publishing.
-- [ ] Push the matching git tag to trigger the preview run in `.github/workflows/openclaw-npm-release.yml`.
-- [ ] Run `OpenClaw NPM Release` manually with the same tag to publish after `npm-release` environment approval.
-  - Stable tags publish to npm `latest`.
-  - Beta tags publish to npm `beta`.
-  - Fallback correction tags like `v2026.3.13-1` map to npm version `2026.3.13`.
-  - Both the preview run and the manual publish run reject tags that do not map back to `package.json`, are not on `main`, or whose CalVer date is more than 2 UTC calendar days away from the release date.
-  - If `openclaw@YYYY.M.D` is already published, a fallback correction tag is still useful for GitHub release and Docker recovery, but npm publish will not republish that version.
-- [ ] Verify the registry: `npm view openclaw version`, `npm view openclaw dist-tags`, and `npx -y openclaw@X.Y.Z --version` (or `--help`).
+- [ ] Confirmar que o status do git está limpo; faça commit e push conforme necessário.
+- [ ] Confirmar que a publicação confiável do npm está configurada para o pacote `opencraft`.
+- [ ] Não dependa de um segredo `NPM_TOKEN` para este workflow; o job de publicação usa a publicação confiável OIDC do GitHub.
+- [ ] Faça push da tag git correspondente para acionar a execução de preview em `.github/workflows/openclaw-npm-release.yml`.
+- [ ] Execute `OpenCraft NPM Release` manualmente com a mesma tag para publicar após a aprovação do ambiente `npm-release`.
+  - Tags estáveis publicam no npm `latest`.
+  - Tags beta publicam no npm `beta`.
+  - Tags de correção de fallback como `v2026.3.13-1` mapeiam para a versão npm `2026.3.13`.
+  - Tanto a execução de preview quanto a execução de publicação manual rejeitam tags que não mapeiam de volta para `package.json`, não estão em `main`, ou cuja data CalVer está mais de 2 dias de calendário UTC distante da data do release.
+  - Se `opencraft@YYYY.M.D` já foi publicado, uma tag de correção de fallback ainda é útil para o release GitHub e recuperação do Docker, mas o npm publish não republicará essa versão.
+- [ ] Verificar o registro: `npm view opencraft version`, `npm view opencraft dist-tags` e `npx -y opencraft@X.Y.Z --version` (ou `--help`).
 
-### Troubleshooting (notes from 2.0.0-beta2 release)
+### Troubleshooting (notas do release 2.0.0-beta2)
 
-- **npm pack/publish hangs or produces huge tarball**: the macOS app bundle in `dist/OpenClaw.app` (and release zips) get swept into the package. Fix by whitelisting publish contents via `package.json` `files` (include dist subdirs, docs, skills; exclude app bundles). Confirm with `npm pack --dry-run` that `dist/OpenClaw.app` is not listed.
-- **npm auth web loop for dist-tags**: use legacy auth to get an OTP prompt:
-  - `NPM_CONFIG_AUTH_TYPE=legacy npm dist-tag add openclaw@X.Y.Z latest`
-- **`npx` verification fails with `ECOMPROMISED: Lock compromised`**: retry with a fresh cache:
-  - `NPM_CONFIG_CACHE=/tmp/npm-cache-$(date +%s) npx -y openclaw@X.Y.Z --version`
-- **Tag needs recovery after a late fix**: if the original stable tag is tied to an immutable GitHub release, mint a fallback correction tag like `vX.Y.Z-1` instead of trying to force-update `vX.Y.Z`.
-  - Keep the npm package version at `X.Y.Z`; the correction suffix is for the git tag and GitHub release only.
-  - Use this only as a last resort. For normal iteration, prefer beta tags and then cut a clean stable release.
+- **npm pack/publish trava ou produz tarball enorme**: o bundle do app macOS em `dist/OpenCraft.app` (e zips de release) são varridos para o pacote. Corrija colocando em whitelist o conteúdo de publicação via `files` no `package.json` (inclua subdiretórios de dist, docs, skills; exclua bundles de app). Confirme com `npm pack --dry-run` que `dist/OpenCraft.app` não está listado.
+- **Loop de auth web npm para dist-tags**: use auth legado para obter um prompt de OTP:
+  - `NPM_CONFIG_AUTH_TYPE=legacy npm dist-tag add opencraft@X.Y.Z latest`
+- **Verificação `npx` falha com `ECOMPROMISED: Lock compromised`**: tente novamente com um cache fresco:
+  - `NPM_CONFIG_CACHE=/tmp/npm-cache-$(date +%s) npx -y opencraft@X.Y.Z --version`
+- **Tag precisa de recuperação após uma correção tardia**: se a tag estável original estiver vinculada a um release GitHub imutável, crie uma tag de correção de fallback como `vX.Y.Z-1` em vez de tentar atualizar à força `vX.Y.Z`.
+  - Mantenha a versão do pacote npm em `X.Y.Z`; o sufixo de correção é apenas para a tag git e o release GitHub.
+  - Use isso apenas como último recurso. Para iteração normal, prefira tags beta e depois corte um release estável limpo.
 
-7. **GitHub release + appcast**
+7. **Release GitHub + appcast**
 
-- [ ] Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` (or `git push --tags`).
-  - Pushing the tag also triggers the npm release workflow.
-- [ ] Create/refresh the GitHub release for `vX.Y.Z` with **title `openclaw X.Y.Z`** (not just the tag); body should include the **full** changelog section for that version (Highlights + Changes + Fixes), inline (no bare links), and **must not repeat the title inside the body**.
-- [ ] Attach artifacts: `npm pack` tarball (optional), `OpenClaw-X.Y.Z.zip`, and `OpenClaw-X.Y.Z.dSYM.zip` (if generated).
-- [ ] Commit the updated `appcast.xml` and push it (Sparkle feeds from main).
-- [ ] From a clean temp directory (no `package.json`), run `npx -y openclaw@X.Y.Z send --help` to confirm install/CLI entrypoints work.
-- [ ] Announce/share release notes.
+- [ ] Criar tag e fazer push: `git tag vX.Y.Z && git push origin vX.Y.Z` (ou `git push --tags`).
+  - Fazer push da tag também aciona o workflow de release npm.
+- [ ] Criar/atualizar o release GitHub para `vX.Y.Z` com **título `opencraft X.Y.Z`** (não apenas a tag); o corpo deve incluir a seção **completa** do changelog para aquela versão (Destaques + Mudanças + Correções), inline (sem links simples), e **não deve repetir o título dentro do corpo**.
+- [ ] Anexar artefatos: tarball `npm pack` (opcional), `OpenCraft-X.Y.Z.zip` e `OpenCraft-X.Y.Z.dSYM.zip` (se gerado).
+- [ ] Fazer commit do `appcast.xml` atualizado e fazer push (o Sparkle alimenta a partir do main).
+- [ ] De um diretório temporário limpo (sem `package.json`), execute `npx -y opencraft@X.Y.Z send --help` para confirmar que os entrypoints de instalação/CLI funcionam.
+- [ ] Anunciar/compartilhar notas de release.
 
-## Plugin publish scope (npm)
+## Escopo de publicação de plugin (npm)
 
-We only publish **existing npm plugins** under the `@openclaw/*` scope. Bundled
-plugins that are not on npm stay **disk-tree only** (still shipped in
+Publicamos apenas **plugins npm existentes** sob o escopo `@openclaw/*`. Plugins
+embutidos que não estão no npm permanecem **somente na árvore de disco** (ainda enviados em
 `extensions/**`).
 
-Process to derive the list:
+Processo para derivar a lista:
 
-1. `npm search @openclaw --json` and capture the package names.
-2. Compare with `extensions/*/package.json` names.
-3. Publish only the **intersection** (already on npm).
+1. `npm search @openclaw --json` e capture os nomes dos pacotes.
+2. Compare com nomes de `extensions/*/package.json`.
+3. Publique apenas a **interseção** (já no npm).
 
-Current npm plugin list (update as needed):
+Lista atual de plugins npm (atualize conforme necessário):
 
 - @openclaw/bluebubbles
 - @openclaw/diagnostics-otel
@@ -157,5 +157,5 @@ Current npm plugin list (update as needed):
 - @openclaw/zalo
 - @openclaw/zalouser
 
-Release notes must also call out **new optional bundled plugins** that are **not
-on by default** (example: `tlon`).
+As notas de release também devem destacar **novos plugins embutidos opcionais** que **não estão
+habilitados por padrão** (exemplo: `tlon`).

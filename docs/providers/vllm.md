@@ -1,32 +1,32 @@
 ---
-summary: "Run OpenClaw with vLLM (OpenAI-compatible local server)"
+summary: "Rodar o OpenCraft com vLLM (servidor local compatível com OpenAI)"
 read_when:
-  - You want to run OpenClaw against a local vLLM server
-  - You want OpenAI-compatible /v1 endpoints with your own models
+  - Você quer rodar o OpenCraft contra um servidor vLLM local
+  - Você quer endpoints /v1 compatíveis com OpenAI com seus próprios modelos
 title: "vLLM"
 ---
 
 # vLLM
 
-vLLM can serve open-source (and some custom) models via an **OpenAI-compatible** HTTP API. OpenClaw can connect to vLLM using the `openai-completions` API.
+O vLLM pode servir modelos open-source (e alguns personalizados) via uma API HTTP **compatível com OpenAI**. O OpenCraft pode conectar ao vLLM usando a API `openai-completions`.
 
-OpenClaw can also **auto-discover** available models from vLLM when you opt in with `VLLM_API_KEY` (any value works if your server doesn’t enforce auth) and you do not define an explicit `models.providers.vllm` entry.
+O OpenCraft também pode **auto-descobrir** modelos disponíveis no vLLM quando você opta com `VLLM_API_KEY` (qualquer valor funciona se seu servidor não enforça auth) e não define uma entrada explícita `models.providers.vllm`.
 
-## Quick start
+## Início rápido
 
-1. Start vLLM with an OpenAI-compatible server.
+1. Inicie o vLLM com um servidor compatível com OpenAI.
 
-Your base URL should expose `/v1` endpoints (e.g. `/v1/models`, `/v1/chat/completions`). vLLM commonly runs on:
+Sua URL base deve expor endpoints `/v1` (ex: `/v1/models`, `/v1/chat/completions`). O vLLM geralmente roda em:
 
 - `http://127.0.0.1:8000/v1`
 
-2. Opt in (any value works if no auth is configured):
+2. Opte pelo provedor (qualquer valor funciona se nenhuma auth estiver configurada):
 
 ```bash
 export VLLM_API_KEY="vllm-local"
 ```
 
-3. Select a model (replace with one of your vLLM model IDs):
+3. Selecione um modelo (substitua por um dos IDs de modelo do seu vLLM):
 
 ```json5
 {
@@ -38,23 +38,23 @@ export VLLM_API_KEY="vllm-local"
 }
 ```
 
-## Model discovery (implicit provider)
+## Descoberta de modelos (provedor implícito)
 
-When `VLLM_API_KEY` is set (or an auth profile exists) and you **do not** define `models.providers.vllm`, OpenClaw will query:
+Quando `VLLM_API_KEY` está definido (ou um perfil de auth existe) e você **não** define `models.providers.vllm`, o OpenCraft consultará:
 
 - `GET http://127.0.0.1:8000/v1/models`
 
-…and convert the returned IDs into model entries.
+...e converterá os IDs retornados em entradas de modelo.
 
-If you set `models.providers.vllm` explicitly, auto-discovery is skipped and you must define models manually.
+Se você definir `models.providers.vllm` explicitamente, a auto-descoberta é pulada e você deve definir modelos manualmente.
 
-## Explicit configuration (manual models)
+## Configuração explícita (modelos manuais)
 
-Use explicit config when:
+Use config explícita quando:
 
-- vLLM runs on a different host/port.
-- You want to pin `contextWindow`/`maxTokens` values.
-- Your server requires a real API key (or you want to control headers).
+- O vLLM roda em outro host/porta.
+- Você quer fixar valores de `contextWindow`/`maxTokens`.
+- Seu servidor requer uma chave de API real (ou você quer controlar headers).
 
 ```json5
 {
@@ -67,7 +67,7 @@ Use explicit config when:
         models: [
           {
             id: "your-model-id",
-            name: "Local vLLM Model",
+            name: "Modelo vLLM Local",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -83,10 +83,10 @@ Use explicit config when:
 
 ## Troubleshooting
 
-- Check the server is reachable:
+- Verifique se o servidor está acessível:
 
 ```bash
 curl http://127.0.0.1:8000/v1/models
 ```
 
-- If requests fail with auth errors, set a real `VLLM_API_KEY` that matches your server configuration, or configure the provider explicitly under `models.providers.vllm`.
+- Se as requisições falharem com erros de auth, defina um `VLLM_API_KEY` real que corresponda à sua configuração de servidor, ou configure o provedor explicitamente em `models.providers.vllm`.

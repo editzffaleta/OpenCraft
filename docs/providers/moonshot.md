@@ -1,19 +1,19 @@
 ---
-summary: "Configure Moonshot K2 vs Kimi Coding (separate providers + keys)"
+summary: "Configurar Moonshot K2 vs Kimi Coding (provedores e chaves separados)"
 read_when:
-  - You want Moonshot K2 (Moonshot Open Platform) vs Kimi Coding setup
-  - You need to understand separate endpoints, keys, and model refs
-  - You want copy/paste config for either provider
+  - Você quer configuração de Moonshot K2 (Moonshot Open Platform) vs Kimi Coding
+  - Você precisa entender endpoints, chaves e refs de modelo separados
+  - Você quer config de copiar/colar para qualquer provedor
 title: "Moonshot AI"
 ---
 
 # Moonshot AI (Kimi)
 
-Moonshot provides the Kimi API with OpenAI-compatible endpoints. Configure the
-provider and set the default model to `moonshot/kimi-k2.5`, or use
-Kimi Coding with `kimi-coding/k2p5`.
+O Moonshot fornece a API Kimi com endpoints compatíveis com OpenAI. Configure o
+provedor e defina o modelo padrão como `moonshot/kimi-k2.5`, ou use
+Kimi Coding com `kimi-coding/k2p5`.
 
-Current Kimi K2 model IDs:
+IDs de modelo Kimi K2 atuais:
 
 [//]: # "moonshot-kimi-k2-ids:start"
 
@@ -26,18 +26,18 @@ Current Kimi K2 model IDs:
 [//]: # "moonshot-kimi-k2-ids:end"
 
 ```bash
-openclaw onboard --auth-choice moonshot-api-key
+opencraft onboard --auth-choice moonshot-api-key
 ```
 
 Kimi Coding:
 
 ```bash
-openclaw onboard --auth-choice kimi-code-api-key
+opencraft onboard --auth-choice kimi-code-api-key
 ```
 
-Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangeable, endpoints differ, and model refs differ (Moonshot uses `moonshot/...`, Kimi Coding uses `kimi-coding/...`).
+Nota: Moonshot e Kimi Coding são provedores separados. As chaves não são intercambiáveis, os endpoints diferem, e as refs de modelo diferem (Moonshot usa `moonshot/...`, Kimi Coding usa `kimi-coding/...`).
 
-## Config snippet (Moonshot API)
+## Trecho de config (API Moonshot)
 
 ```json5
 {
@@ -134,22 +134,22 @@ Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangea
 }
 ```
 
-## Notes
+## Notas
 
-- Moonshot model refs use `moonshot/<modelId>`. Kimi Coding model refs use `kimi-coding/<modelId>`.
-- Override pricing and context metadata in `models.providers` if needed.
-- If Moonshot publishes different context limits for a model, adjust
-  `contextWindow` accordingly.
-- Use `https://api.moonshot.ai/v1` for the international endpoint, and `https://api.moonshot.cn/v1` for the China endpoint.
+- Refs de modelo Moonshot usam `moonshot/<modelId>`. Refs de modelo Kimi Coding usam `kimi-coding/<modelId>`.
+- Sobrescreva preços e metadados de contexto em `models.providers` se necessário.
+- Se o Moonshot publicar limites de contexto diferentes para um modelo, ajuste
+  `contextWindow` adequadamente.
+- Use `https://api.moonshot.ai/v1` para o endpoint internacional e `https://api.moonshot.cn/v1` para o endpoint da China.
 
-## Native thinking mode (Moonshot)
+## Modo de thinking nativo (Moonshot)
 
-Moonshot Kimi supports binary native thinking:
+O Moonshot Kimi suporta thinking nativo binário:
 
 - `thinking: { type: "enabled" }`
 - `thinking: { type: "disabled" }`
 
-Configure it per model via `agents.defaults.models.<provider/model>.params`:
+Configure por modelo via `agents.defaults.models.<provider/model>.params`:
 
 ```json5
 {
@@ -167,9 +167,9 @@ Configure it per model via `agents.defaults.models.<provider/model>.params`:
 }
 ```
 
-OpenClaw also maps runtime `/think` levels for Moonshot:
+O OpenCraft também mapeia os níveis de `/think` em runtime para o Moonshot:
 
 - `/think off` -> `thinking.type=disabled`
-- any non-off thinking level -> `thinking.type=enabled`
+- qualquer nível de thinking diferente de off -> `thinking.type=enabled`
 
-When Moonshot thinking is enabled, `tool_choice` must be `auto` or `none`. OpenClaw normalizes incompatible `tool_choice` values to `auto` for compatibility.
+Quando o thinking do Moonshot está habilitado, `tool_choice` deve ser `auto` ou `none`. O OpenCraft normaliza valores incompatíveis de `tool_choice` para `auto` por compatibilidade.

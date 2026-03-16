@@ -1,61 +1,61 @@
 ---
-summary: "Sign in to GitHub Copilot from OpenClaw using the device flow"
+summary: "Fazer login no GitHub Copilot pelo OpenCraft usando o fluxo de dispositivo"
 read_when:
-  - You want to use GitHub Copilot as a model provider
-  - You need the `openclaw models auth login-github-copilot` flow
+  - Você quer usar GitHub Copilot como provedor de modelo
+  - Você precisa do fluxo `opencraft models auth login-github-copilot`
 title: "GitHub Copilot"
 ---
 
 # GitHub Copilot
 
-## What is GitHub Copilot?
+## O que é GitHub Copilot?
 
-GitHub Copilot is GitHub's AI coding assistant. It provides access to Copilot
-models for your GitHub account and plan. OpenClaw can use Copilot as a model
-provider in two different ways.
+O GitHub Copilot é o assistente de código de IA do GitHub. Fornece acesso a modelos
+Copilot para sua conta e plano do GitHub. O OpenCraft pode usar o Copilot como provedor
+de modelo de duas formas diferentes.
 
-## Two ways to use Copilot in OpenClaw
+## Duas formas de usar o Copilot no OpenCraft
 
-### 1) Built-in GitHub Copilot provider (`github-copilot`)
+### 1) Provedor GitHub Copilot nativo (`github-copilot`)
 
-Use the native device-login flow to obtain a GitHub token, then exchange it for
-Copilot API tokens when OpenClaw runs. This is the **default** and simplest path
-because it does not require VS Code.
+Use o fluxo de login de dispositivo nativo para obter um token GitHub, depois troque-o por
+tokens da API Copilot quando o OpenCraft rodar. Este é o caminho **padrão** e mais simples
+porque não requer VS Code.
 
-### 2) Copilot Proxy plugin (`copilot-proxy`)
+### 2) Plugin Copilot Proxy (`copilot-proxy`)
 
-Use the **Copilot Proxy** VS Code extension as a local bridge. OpenClaw talks to
-the proxy’s `/v1` endpoint and uses the model list you configure there. Choose
-this when you already run Copilot Proxy in VS Code or need to route through it.
-You must enable the plugin and keep the VS Code extension running.
+Use a extensão VS Code **Copilot Proxy** como uma ponte local. O OpenCraft fala com o
+endpoint `/v1` do proxy e usa a lista de modelos que você configura lá. Escolha esta opção
+quando já rodar o Copilot Proxy no VS Code ou precisar rotear por ele.
+Você deve habilitar o plugin e manter a extensão VS Code rodando.
 
-Use GitHub Copilot as a model provider (`github-copilot`). The login command runs
-the GitHub device flow, saves an auth profile, and updates your config to use that
-profile.
+Use o GitHub Copilot como provedor de modelo (`github-copilot`). O comando de login executa
+o fluxo de dispositivo do GitHub, salva um perfil de auth e atualiza sua config para usar
+esse perfil.
 
-## CLI setup
-
-```bash
-openclaw models auth login-github-copilot
-```
-
-You'll be prompted to visit a URL and enter a one-time code. Keep the terminal
-open until it completes.
-
-### Optional flags
+## Configuração CLI
 
 ```bash
-openclaw models auth login-github-copilot --profile-id github-copilot:work
-openclaw models auth login-github-copilot --yes
+opencraft models auth login-github-copilot
 ```
 
-## Set a default model
+Você será solicitado a visitar uma URL e inserir um código de uso único. Mantenha o terminal
+aberto até concluir.
+
+### Flags opcionais
 
 ```bash
-openclaw models set github-copilot/gpt-4o
+opencraft models auth login-github-copilot --profile-id github-copilot:work
+opencraft models auth login-github-copilot --yes
 ```
 
-### Config snippet
+## Definir um modelo padrão
+
+```bash
+opencraft models set github-copilot/gpt-4o
+```
+
+### Trecho de config
 
 ```json5
 {
@@ -63,10 +63,10 @@ openclaw models set github-copilot/gpt-4o
 }
 ```
 
-## Notes
+## Notas
 
-- Requires an interactive TTY; run it directly in a terminal.
-- Copilot model availability depends on your plan; if a model is rejected, try
-  another ID (for example `github-copilot/gpt-4.1`).
-- The login stores a GitHub token in the auth profile store and exchanges it for a
-  Copilot API token when OpenClaw runs.
+- Requer um TTY interativo; execute diretamente em um terminal.
+- A disponibilidade de modelos Copilot depende do seu plano; se um modelo for rejeitado, tente
+  outro ID (por exemplo `github-copilot/gpt-4.1`).
+- O login armazena um token GitHub no store de perfis de auth e o troca por um token da API
+  Copilot quando o OpenCraft roda.

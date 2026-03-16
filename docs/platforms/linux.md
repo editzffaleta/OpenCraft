@@ -1,85 +1,85 @@
 ---
-summary: "Linux support + companion app status"
+summary: "Suporte Linux + status do app companion"
 read_when:
-  - Looking for Linux companion app status
-  - Planning platform coverage or contributions
-title: "Linux App"
+  - Procurando status do app companion Linux
+  - Planejando cobertura de plataformas ou contribuições
+title: "App Linux"
 ---
 
-# Linux App
+# App Linux
 
-The Gateway is fully supported on Linux. **Node is the recommended runtime**.
-Bun is not recommended for the Gateway (WhatsApp/Telegram bugs).
+O Gateway é totalmente suportado no Linux. **Node é o runtime recomendado**.
+Bun não é recomendado para o Gateway (bugs no WhatsApp/Telegram).
 
-Native Linux companion apps are planned. Contributions are welcome if you want to help build one.
+Apps companion nativos Linux estão planejados. Contribuições são bem-vindas se quiser ajudar a construir um.
 
-## Beginner quick path (VPS)
+## Caminho rápido para iniciantes (VPS)
 
-1. Install Node 24 (recommended; Node 22 LTS, currently `22.16+`, still works for compatibility)
-2. `npm i -g openclaw@latest`
-3. `openclaw onboard --install-daemon`
-4. From your laptop: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
-5. Open `http://127.0.0.1:18789/` and paste your token
+1. Instale o Node 24 (recomendado; Node 22 LTS, atualmente `22.16+`, ainda funciona por compatibilidade)
+2. `npm i -g opencraft@latest`
+3. `opencraft onboard --install-daemon`
+4. Do seu laptop: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
+5. Abra `http://127.0.0.1:18789/` e cole seu token
 
-Step-by-step VPS guide: [exe.dev](/install/exe-dev)
+Guia passo a passo para VPS: [exe.dev](/install/exe-dev)
 
-## Install
+## Instalação
 
-- [Getting Started](/start/getting-started)
-- [Install & updates](/install/updating)
-- Optional flows: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
+- [Primeiros Passos](/start/getting-started)
+- [Instalar e atualizar](/install/updating)
+- Fluxos opcionais: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
 
 ## Gateway
 
-- [Gateway runbook](/gateway)
-- [Configuration](/gateway/configuration)
+- [Runbook do Gateway](/gateway)
+- [Configuração](/gateway/configuration)
 
-## Gateway service install (CLI)
+## Instalação do serviço Gateway (CLI)
 
-Use one of these:
-
-```
-openclaw onboard --install-daemon
-```
-
-Or:
+Use um destes:
 
 ```
-openclaw gateway install
+opencraft onboard --install-daemon
 ```
 
-Or:
+Ou:
 
 ```
-openclaw configure
+opencraft gateway install
 ```
 
-Select **Gateway service** when prompted.
-
-Repair/migrate:
+Ou:
 
 ```
-openclaw doctor
+opencraft configure
 ```
 
-## System control (systemd user unit)
+Selecione **Gateway service** quando solicitado.
 
-OpenClaw installs a systemd **user** service by default. Use a **system**
-service for shared or always-on servers. The full unit example and guidance
-live in the [Gateway runbook](/gateway).
+Reparar/migrar:
 
-Minimal setup:
+```
+opencraft doctor
+```
 
-Create `~/.config/systemd/user/openclaw-gateway[-<profile>].service`:
+## Controle do sistema (unidade de usuário systemd)
+
+O OpenCraft instala um serviço de **usuário** systemd por padrão. Use um serviço de
+**sistema** para servidores compartilhados ou sempre ligados. O exemplo completo de unidade e
+orientações ficam no [Runbook do Gateway](/gateway).
+
+Configuração mínima:
+
+Crie `~/.config/systemd/user/openclaw-gateway[-<profile>].service`:
 
 ```
 [Unit]
-Description=OpenClaw Gateway (profile: <profile>, v<version>)
+Description=OpenCraft Gateway (profile: <profile>, v<version>)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/local/bin/openclaw gateway --port 18789
+ExecStart=/usr/local/bin/opencraft gateway --port 18789
 Restart=always
 RestartSec=5
 
@@ -87,7 +87,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-Enable it:
+Habilite-o:
 
 ```
 systemctl --user enable --now openclaw-gateway[-<profile>].service

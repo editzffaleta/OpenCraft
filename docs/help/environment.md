@@ -1,29 +1,29 @@
 ---
-summary: "Where OpenClaw loads environment variables and the precedence order"
+summary: "Onde o OpenCraft carrega variáveis de ambiente e a ordem de precedência"
 read_when:
-  - You need to know which env vars are loaded, and in what order
-  - You are debugging missing API keys in the Gateway
-  - You are documenting provider auth or deployment environments
-title: "Environment Variables"
+  - Você precisa saber quais variáveis de env são carregadas e em qual ordem
+  - Você está depurando chaves de API ausentes no Gateway
+  - Você está documentando auth de provedor ou ambientes de implantação
+title: "Variáveis de Ambiente"
 ---
 
-# Environment variables
+# Variáveis de ambiente
 
-OpenClaw pulls environment variables from multiple sources. The rule is **never override existing values**.
+O OpenCraft obtém variáveis de ambiente de múltiplas fontes. A regra é **nunca sobrescrever valores existentes**.
 
-## Precedence (highest → lowest)
+## Precedência (maior → menor)
 
-1. **Process environment** (what the Gateway process already has from the parent shell/daemon).
-2. **`.env` in the current working directory** (dotenv default; does not override).
-3. **Global `.env`** at `~/.openclaw/.env` (aka `$OPENCLAW_STATE_DIR/.env`; does not override).
-4. **Config `env` block** in `~/.openclaw/openclaw.json` (applied only if missing).
-5. **Optional login-shell import** (`env.shellEnv.enabled` or `OPENCLAW_LOAD_SHELL_ENV=1`), applied only for missing expected keys.
+1. **Ambiente do processo** (o que o processo do Gateway já tem do shell/daemon pai).
+2. **`.env` no diretório de trabalho atual** (padrão dotenv; não sobrescreve).
+3. **`.env` global** em `~/.opencraft/.env` (também `$OPENCLAW_STATE_DIR/.env`; não sobrescreve).
+4. **Bloco `env` da config** em `~/.opencraft/opencraft.json` (aplicado apenas se ausente).
+5. **Importação opcional do shell de login** (`env.shellEnv.enabled` ou `OPENCLAW_LOAD_SHELL_ENV=1`), aplicada apenas para chaves esperadas ausentes.
 
-If the config file is missing entirely, step 4 is skipped; shell import still runs if enabled.
+Se o arquivo de configuração estiver completamente ausente, o passo 4 é ignorado; a importação do shell ainda roda se habilitada.
 
-## Config `env` block
+## Bloco `env` da config
 
-Two equivalent ways to set inline env vars (both are non-overriding):
+Duas formas equivalentes de definir variáveis de env inline (ambas não sobrescrevem):
 
 ```json5
 {
@@ -36,9 +36,9 @@ Two equivalent ways to set inline env vars (both are non-overriding):
 }
 ```
 
-## Shell env import
+## Importação de env do shell
 
-`env.shellEnv` runs your login shell and imports only **missing** expected keys:
+`env.shellEnv` executa seu shell de login e importa apenas chaves esperadas **ausentes**:
 
 ```json5
 {
@@ -51,32 +51,32 @@ Two equivalent ways to set inline env vars (both are non-overriding):
 }
 ```
 
-Env var equivalents:
+Equivalentes em variáveis de ambiente:
 
 - `OPENCLAW_LOAD_SHELL_ENV=1`
 - `OPENCLAW_SHELL_ENV_TIMEOUT_MS=15000`
 
-## Runtime-injected env vars
+## Variáveis de env injetadas em tempo de execução
 
-OpenClaw also injects context markers into spawned child processes:
+O OpenCraft também injeta marcadores de contexto em processos filhos iniciados:
 
-- `OPENCLAW_SHELL=exec`: set for commands run through the `exec` tool.
-- `OPENCLAW_SHELL=acp`: set for ACP runtime backend process spawns (for example `acpx`).
-- `OPENCLAW_SHELL=acp-client`: set for `openclaw acp client` when it spawns the ACP bridge process.
-- `OPENCLAW_SHELL=tui-local`: set for local TUI `!` shell commands.
+- `OPENCLAW_SHELL=exec`: definido para comandos executados pela ferramenta `exec`.
+- `OPENCLAW_SHELL=acp`: definido para spawns do processo backend de runtime ACP (por exemplo `acpx`).
+- `OPENCLAW_SHELL=acp-client`: definido para `opencraft acp client` quando inicia o processo bridge ACP.
+- `OPENCLAW_SHELL=tui-local`: definido para comandos shell `!` do TUI local.
 
-These are runtime markers (not required user config). They can be used in shell/profile logic
-to apply context-specific rules.
+Estes são marcadores de runtime (não configuração obrigatória do usuário). Podem ser usados em lógica de shell/perfil
+para aplicar regras específicas de contexto.
 
-## UI env vars
+## Variáveis de env de UI
 
-- `OPENCLAW_THEME=light`: force the light TUI palette when your terminal has a light background.
-- `OPENCLAW_THEME=dark`: force the dark TUI palette.
-- `COLORFGBG`: if your terminal exports it, OpenClaw uses the background color hint to auto-pick the TUI palette.
+- `OPENCLAW_THEME=light`: força a paleta de TUI clara quando seu terminal tem fundo claro.
+- `OPENCLAW_THEME=dark`: força a paleta de TUI escura.
+- `COLORFGBG`: se seu terminal exportá-lo, o OpenCraft usa a dica de cor de fundo para escolher automaticamente a paleta do TUI.
 
-## Env var substitution in config
+## Substituição de variável de env na config
 
-You can reference env vars directly in config string values using `${VAR_NAME}` syntax:
+Você pode referenciar variáveis de env diretamente em valores de string da config usando a sintaxe `${VAR_NAME}`:
 
 ```json5
 {
@@ -90,38 +90,38 @@ You can reference env vars directly in config string values using `${VAR_NAME}` 
 }
 ```
 
-See [Configuration: Env var substitution](/gateway/configuration#env-var-substitution-in-config) for full details.
+Veja [Configuração: Substituição de variável de env](/gateway/configuration#env-var-substitution-in-config) para detalhes completos.
 
-## Secret refs vs `${ENV}` strings
+## Refs de segredo vs strings `${ENV}`
 
-OpenClaw supports two env-driven patterns:
+O OpenCraft suporta dois padrões baseados em env:
 
-- `${VAR}` string substitution in config values.
-- SecretRef objects (`{ source: "env", provider: "default", id: "VAR" }`) for fields that support secrets references.
+- Substituição de string `${VAR}` em valores de config.
+- Objetos SecretRef (`{ source: "env", provider: "default", id: "VAR" }`) para campos que suportam referências de segredo.
 
-Both resolve from process env at activation time. SecretRef details are documented in [Secrets Management](/gateway/secrets).
+Ambos resolvem a partir do env do processo no momento de ativação. Detalhes do SecretRef estão documentados em [Gerenciamento de Segredos](/gateway/secrets).
 
-## Path-related env vars
+## Variáveis de env relacionadas a caminhos
 
-| Variable               | Purpose                                                                                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OPENCLAW_HOME`        | Override the home directory used for all internal path resolution (`~/.openclaw/`, agent dirs, sessions, credentials). Useful when running OpenClaw as a dedicated service user. |
-| `OPENCLAW_STATE_DIR`   | Override the state directory (default `~/.openclaw`).                                                                                                                            |
-| `OPENCLAW_CONFIG_PATH` | Override the config file path (default `~/.openclaw/openclaw.json`).                                                                                                             |
+| Variável               | Propósito                                                                                                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPENCLAW_HOME`        | Substitui o diretório home usado para toda resolução de caminho interno (`~/.opencraft/`, diretórios de agente, sessões, credenciais). Útil ao executar o OpenCraft como usuário de serviço dedicado. |
+| `OPENCLAW_STATE_DIR`   | Substitui o diretório de estado (padrão `~/.opencraft`).                                                                                                                            |
+| `OPENCLAW_CONFIG_PATH` | Substitui o caminho do arquivo de config (padrão `~/.opencraft/opencraft.json`).                                                                                                   |
 
 ## Logging
 
-| Variable             | Purpose                                                                                                                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OPENCLAW_LOG_LEVEL` | Override log level for both file and console (e.g. `debug`, `trace`). Takes precedence over `logging.level` and `logging.consoleLevel` in config. Invalid values are ignored with a warning. |
+| Variável             | Propósito                                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OPENCLAW_LOG_LEVEL` | Substitui o nível de log para arquivo e console (ex.: `debug`, `trace`). Tem precedência sobre `logging.level` e `logging.consoleLevel` na config. Valores inválidos são ignorados com aviso. |
 
 ### `OPENCLAW_HOME`
 
-When set, `OPENCLAW_HOME` replaces the system home directory (`$HOME` / `os.homedir()`) for all internal path resolution. This enables full filesystem isolation for headless service accounts.
+Quando definido, `OPENCLAW_HOME` substitui o diretório home do sistema (`$HOME` / `os.homedir()`) para toda resolução de caminho interno. Isso permite isolamento completo do sistema de arquivos para contas de serviço headless.
 
-**Precedence:** `OPENCLAW_HOME` > `$HOME` > `USERPROFILE` > `os.homedir()`
+**Precedência:** `OPENCLAW_HOME` > `$HOME` > `USERPROFILE` > `os.homedir()`
 
-**Example** (macOS LaunchDaemon):
+**Exemplo** (macOS LaunchDaemon):
 
 ```xml
 <key>EnvironmentVariables</key>
@@ -131,10 +131,10 @@ When set, `OPENCLAW_HOME` replaces the system home directory (`$HOME` / `os.home
 </dict>
 ```
 
-`OPENCLAW_HOME` can also be set to a tilde path (e.g. `~/svc`), which gets expanded using `$HOME` before use.
+`OPENCLAW_HOME` também pode ser definido com um caminho de tilde (ex.: `~/svc`), que é expandido usando `$HOME` antes do uso.
 
-## Related
+## Relacionado
 
-- [Gateway configuration](/gateway/configuration)
-- [FAQ: env vars and .env loading](/help/faq#env-vars-and-env-loading)
-- [Models overview](/concepts/models)
+- [Configuração do gateway](/gateway/configuration)
+- [FAQ: variáveis de env e carregamento de .env](/help/faq#env-vars-and-env-loading)
+- [Visão geral de modelos](/concepts/models)

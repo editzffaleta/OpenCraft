@@ -1,72 +1,72 @@
 ---
-summary: "Image and media handling rules for send, gateway, and agent replies"
+summary: "Regras de tratamento de imagem e mídia para envio, gateway e respostas do agente"
 read_when:
-  - Modifying media pipeline or attachments
-title: "Image and Media Support"
+  - Modificando o pipeline de mídia ou anexos
+title: "Suporte a Imagem e Mídia"
 ---
 
-# Image & Media Support — 2025-12-05
+# Suporte a Imagem e Mídia — 2025-12-05
 
-The WhatsApp channel runs via **Baileys Web**. This document captures the current media handling rules for send, gateway, and agent replies.
+O canal WhatsApp roda via **Baileys Web**. Este documento captura as regras atuais de tratamento de mídia para envio, gateway e respostas do agente.
 
-## Goals
+## Objetivos
 
-- Send media with optional captions via `openclaw message send --media`.
-- Allow auto-replies from the web inbox to include media alongside text.
-- Keep per-type limits sane and predictable.
+- Enviar mídia com legendas opcionais via `opencraft message send --media`.
+- Permitir auto-respostas da caixa de entrada web para incluir mídia junto ao texto.
+- Manter limites por tipo sensatos e previsíveis.
 
-## CLI Surface
+## Superfície CLI
 
-- `openclaw message send --media <path-or-url> [--message <caption>]`
-  - `--media` optional; caption can be empty for media-only sends.
-  - `--dry-run` prints the resolved payload; `--json` emits `{ channel, to, messageId, mediaUrl, caption }`.
+- `opencraft message send --media <path-or-url> [--message <caption>]`
+  - `--media` opcional; legenda pode estar vazia para envios apenas de mídia.
+  - `--dry-run` imprime o payload resolvido; `--json` emite `{ channel, to, messageId, mediaUrl, caption }`.
 
-## WhatsApp Web channel behavior
+## Comportamento do canal WhatsApp Web
 
-- Input: local file path **or** HTTP(S) URL.
-- Flow: load into a Buffer, detect media kind, and build the correct payload:
-  - **Images:** resize & recompress to JPEG (max side 2048px) targeting `agents.defaults.mediaMaxMb` (default 5 MB), capped at 6 MB.
-  - **Audio/Voice/Video:** pass-through up to 16 MB; audio is sent as a voice note (`ptt: true`).
-  - **Documents:** anything else, up to 100 MB, with filename preserved when available.
-- WhatsApp GIF-style playback: send an MP4 with `gifPlayback: true` (CLI: `--gif-playback`) so mobile clients loop inline.
-- MIME detection prefers magic bytes, then headers, then file extension.
-- Caption comes from `--message` or `reply.text`; empty caption is allowed.
-- Logging: non-verbose shows `↩️`/`✅`; verbose includes size and source path/URL.
+- Entrada: caminho de arquivo local **ou** URL HTTP(S).
+- Fluxo: carregar em um Buffer, detectar o tipo de mídia e construir o payload correto:
+  - **Imagens:** redimensionar e recomprimir para JPEG (lado máximo 2048px) com alvo `agents.defaults.mediaMaxMb` (padrão 5 MB), limitado a 6 MB.
+  - **Áudio/Voz/Vídeo:** passagem direta até 16 MB; áudio é enviado como nota de voz (`ptt: true`).
+  - **Documentos:** qualquer outra coisa, até 100 MB, com nome de arquivo preservado quando disponível.
+- Reprodução no estilo GIF do WhatsApp: envie um MP4 com `gifPlayback: true` (CLI: `--gif-playback`) para que clientes mobile façam loop inline.
+- Detecção de MIME prefere bytes mágicos, depois headers, depois extensão do arquivo.
+- Legenda vem de `--message` ou `reply.text`; legenda vazia é permitida.
+- Logging: não-verbose mostra `↩️`/`✅`; verbose inclui tamanho e caminho/URL de origem.
 
-## Auto-Reply Pipeline
+## Pipeline de Auto-Resposta
 
-- `getReplyFromConfig` returns `{ text?, mediaUrl?, mediaUrls? }`.
-- When media is present, the web sender resolves local paths or URLs using the same pipeline as `openclaw message send`.
-- Multiple media entries are sent sequentially if provided.
+- `getReplyFromConfig` retorna `{ text?, mediaUrl?, mediaUrls? }`.
+- Quando mídia está presente, o remetente web resolve caminhos locais ou URLs usando o mesmo pipeline de `opencraft message send`.
+- Múltiplas entradas de mídia são enviadas sequencialmente quando fornecidas.
 
-## Inbound Media to Commands (Pi)
+## Mídia de Entrada para Comandos (Pi)
 
-- When inbound web messages include media, OpenClaw downloads to a temp file and exposes templating variables:
-  - `{{MediaUrl}}` pseudo-URL for the inbound media.
-  - `{{MediaPath}}` local temp path written before running the command.
-- When a per-session Docker sandbox is enabled, inbound media is copied into the sandbox workspace and `MediaPath`/`MediaUrl` are rewritten to a relative path like `media/inbound/<filename>`.
-- Media understanding (if configured via `tools.media.*` or shared `tools.media.models`) runs before templating and can insert `[Image]`, `[Audio]`, and `[Video]` blocks into `Body`.
-  - Audio sets `{{Transcript}}` and uses the transcript for command parsing so slash commands still work.
-  - Video and image descriptions preserve any caption text for command parsing.
-- By default only the first matching image/audio/video attachment is processed; set `tools.media.<cap>.attachments` to process multiple attachments.
+- Quando mensagens web de entrada incluem mídia, o OpenCraft faz download para um arquivo temp e expõe variáveis de template:
+  - `{{MediaUrl}}` pseudo-URL para a mídia de entrada.
+  - `{{MediaPath}}` caminho temp local escrito antes de rodar o comando.
+- Quando um sandbox Docker por sessão está habilitado, a mídia de entrada é copiada para o workspace do sandbox e `MediaPath`/`MediaUrl` são reescritos para um caminho relativo como `media/inbound/<filename>`.
+- Entendimento de mídia (se configurado via `tools.media.*` ou `tools.media.models` compartilhado) roda antes do template e pode inserir blocos `[Image]`, `[Audio]` e `[Video]` em `Body`.
+  - Áudio define `{{Transcript}}` e usa o transcript para análise de comandos para que slash commands ainda funcionem.
+  - Descrições de vídeo e imagem preservam qualquer texto de legenda para análise de comandos.
+- Por padrão apenas o primeiro anexo de imagem/áudio/vídeo correspondente é processado; defina `tools.media.<cap>.attachments` para processar múltiplos anexos.
 
-## Limits & Errors
+## Limites e Erros
 
-**Outbound send caps (WhatsApp web send)**
+**Limites de envio de saída (envio web WhatsApp)**
 
-- Images: ~6 MB cap after recompression.
-- Audio/voice/video: 16 MB cap; documents: 100 MB cap.
-- Oversize or unreadable media → clear error in logs and the reply is skipped.
+- Imagens: ~6 MB após recompressão.
+- Áudio/voz/vídeo: 16 MB; documentos: 100 MB.
+- Mídia muito grande ou ilegível → erro claro nos logs e a resposta é ignorada.
 
-**Media understanding caps (transcription/description)**
+**Limites de entendimento de mídia (transcrição/descrição)**
 
-- Image default: 10 MB (`tools.media.image.maxBytes`).
-- Audio default: 20 MB (`tools.media.audio.maxBytes`).
-- Video default: 50 MB (`tools.media.video.maxBytes`).
-- Oversize media skips understanding, but replies still go through with the original body.
+- Padrão de imagem: 10 MB (`tools.media.image.maxBytes`).
+- Padrão de áudio: 20 MB (`tools.media.audio.maxBytes`).
+- Padrão de vídeo: 50 MB (`tools.media.video.maxBytes`).
+- Mídia muito grande pula o entendimento, mas as respostas ainda passam com o corpo original.
 
-## Notes for Tests
+## Notas para Testes
 
-- Cover send + reply flows for image/audio/document cases.
-- Validate recompression for images (size bound) and voice-note flag for audio.
-- Ensure multi-media replies fan out as sequential sends.
+- Cobrir fluxos de envio + resposta para casos de imagem/áudio/documento.
+- Validar recompressão para imagens (limite de tamanho) e flag de nota de voz para áudio.
+- Garantir que respostas com múltiplas mídias são enviadas como envios sequenciais.

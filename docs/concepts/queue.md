@@ -1,48 +1,48 @@
 ---
-summary: "Command queue design that serializes inbound auto-reply runs"
+summary: "Design da fila de comandos que serializa execuções de auto-resposta de entrada"
 read_when:
-  - Changing auto-reply execution or concurrency
-title: "Command Queue"
+  - Alterando execução de auto-resposta ou concorrência
+title: "Fila de Comandos"
 ---
 
-# Command Queue (2026-01-16)
+# Fila de Comandos (2026-01-16)
 
-We serialize inbound auto-reply runs (all channels) through a tiny in-process queue to prevent multiple agent runs from colliding, while still allowing safe parallelism across sessions.
+Serializamos execuções de auto-resposta de entrada (todos os canais) por meio de uma pequena fila em processo para evitar que múltiplas execuções de agente colidam, enquanto ainda permitimos paralelismo seguro entre sessões.
 
-## Why
+## Por quê
 
-- Auto-reply runs can be expensive (LLM calls) and can collide when multiple inbound messages arrive close together.
-- Serializing avoids competing for shared resources (session files, logs, CLI stdin) and reduces the chance of upstream rate limits.
+- Execuções de auto-resposta podem ser caras (chamadas LLM) e podem colidir quando múltiplas mensagens de entrada chegam próximas uma da outra.
+- Serializar evita competição por recursos compartilhados (arquivos de sessão, logs, stdin da CLI) e reduz a chance de rate limits upstream.
 
-## How it works
+## Como funciona
 
-- A lane-aware FIFO queue drains each lane with a configurable concurrency cap (default 1 for unconfigured lanes; main defaults to 4, subagent to 8).
-- `runEmbeddedPiAgent` enqueues by **session key** (lane `session:<key>`) to guarantee only one active run per session.
-- Each session run is then queued into a **global lane** (`main` by default) so overall parallelism is capped by `agents.defaults.maxConcurrent`.
-- When verbose logging is enabled, queued runs emit a short notice if they waited more than ~2s before starting.
-- Typing indicators still fire immediately on enqueue (when supported by the channel) so user experience is unchanged while we wait our turn.
+- Uma fila FIFO com consciência de lane drena cada lane com um limite de concorrência configurável (padrão 1 para lanes não configuradas; main padrão 4, subagente 8).
+- `runEmbeddedPiAgent` enfileira por **chave de sessão** (lane `session:<key>`) para garantir apenas uma execução ativa por sessão.
+- Cada execução de sessão é então enfileirada em uma **lane global** (`main` por padrão) para que o paralelismo geral seja limitado por `agents.defaults.maxConcurrent`.
+- Quando o logging verbose está habilitado, execuções enfileiradas emitem um aviso curto se esperaram mais de ~2s antes de iniciar.
+- Indicadores de digitação ainda disparam imediatamente no enfileiramento (quando suportado pelo canal) para que a experiência do usuário não seja alterada enquanto aguardamos nossa vez.
 
-## Queue modes (per channel)
+## Modos de fila (por canal)
 
-Inbound messages can steer the current run, wait for a followup turn, or do both:
+Mensagens de entrada podem direcionar a execução atual, aguardar um turno de followup, ou ambos:
 
-- `steer`: inject immediately into the current run (cancels pending tool calls after the next tool boundary). If not streaming, falls back to followup.
-- `followup`: enqueue for the next agent turn after the current run ends.
-- `collect`: coalesce all queued messages into a **single** followup turn (default). If messages target different channels/threads, they drain individually to preserve routing.
-- `steer-backlog` (aka `steer+backlog`): steer now **and** preserve the message for a followup turn.
-- `interrupt` (legacy): abort the active run for that session, then run the newest message.
-- `queue` (legacy alias): same as `steer`.
+- `steer`: injetar imediatamente na execução atual (cancela chamadas de ferramenta pendentes após o próximo limite de ferramenta). Se não estiver em streaming, faz fallback para followup.
+- `followup`: enfileirar para o próximo turno do agente após a execução atual terminar.
+- `collect`: coalescer todas as mensagens enfileiradas em um **único** turno de followup (padrão). Se mensagens visam diferentes canais/threads, elas drenam individualmente para preservar o roteamento.
+- `steer-backlog` (também `steer+backlog`): direcionar agora **e** preservar a mensagem para um turno de followup.
+- `interrupt` (legado): abortar a execução ativa para aquela sessão, depois executar a mensagem mais nova.
+- `queue` (alias legado): mesmo que `steer`.
 
-Steer-backlog means you can get a followup response after the steered run, so
-streaming surfaces can look like duplicates. Prefer `collect`/`steer` if you want
-one response per inbound message.
-Send `/queue collect` as a standalone command (per-session) or set `messages.queue.byChannel.discord: "collect"`.
+Steer-backlog significa que você pode obter uma resposta de followup após a execução direcionada, então
+superfícies de streaming podem parecer duplicadas. Prefira `collect`/`steer` se você quiser
+uma resposta por mensagem de entrada.
+Envie `/queue collect` como um comando standalone (por sessão) ou defina `messages.queue.byChannel.discord: "collect"`.
 
-Defaults (when unset in config):
+Padrões (quando não definido na config):
 
-- All surfaces → `collect`
+- Todas as superfícies → `collect`
 
-Configure globally or per channel via `messages.queue`:
+Configure globalmente ou por canal via `messages.queue`:
 
 ```json5
 {
@@ -58,32 +58,32 @@ Configure globally or per channel via `messages.queue`:
 }
 ```
 
-## Queue options
+## Opções de fila
 
-Options apply to `followup`, `collect`, and `steer-backlog` (and to `steer` when it falls back to followup):
+As opções se aplicam a `followup`, `collect` e `steer-backlog` (e a `steer` quando faz fallback para followup):
 
-- `debounceMs`: wait for quiet before starting a followup turn (prevents “continue, continue”).
-- `cap`: max queued messages per session.
-- `drop`: overflow policy (`old`, `new`, `summarize`).
+- `debounceMs`: aguardar quietude antes de iniciar um turno de followup (evita "continue, continue").
+- `cap`: max de mensagens enfileiradas por sessão.
+- `drop`: política de overflow (`old`, `new`, `summarize`).
 
-Summarize keeps a short bullet list of dropped messages and injects it as a synthetic followup prompt.
-Defaults: `debounceMs: 1000`, `cap: 20`, `drop: summarize`.
+Summarize mantém uma lista curta de marcadores de mensagens descartadas e a injeta como um prompt de followup sintético.
+Padrões: `debounceMs: 1000`, `cap: 20`, `drop: summarize`.
 
-## Per-session overrides
+## Overrides por sessão
 
-- Send `/queue <mode>` as a standalone command to store the mode for the current session.
-- Options can be combined: `/queue collect debounce:2s cap:25 drop:summarize`
-- `/queue default` or `/queue reset` clears the session override.
+- Envie `/queue <mode>` como um comando standalone para armazenar o modo para a sessão atual.
+- As opções podem ser combinadas: `/queue collect debounce:2s cap:25 drop:summarize`
+- `/queue default` ou `/queue reset` limpa o override de sessão.
 
-## Scope and guarantees
+## Escopo e garantias
 
-- Applies to auto-reply agent runs across all inbound channels that use the gateway reply pipeline (WhatsApp web, Telegram, Slack, Discord, Signal, iMessage, webchat, etc.).
-- Default lane (`main`) is process-wide for inbound + main heartbeats; set `agents.defaults.maxConcurrent` to allow multiple sessions in parallel.
-- Additional lanes may exist (e.g. `cron`, `subagent`) so background jobs can run in parallel without blocking inbound replies.
-- Per-session lanes guarantee that only one agent run touches a given session at a time.
-- No external dependencies or background worker threads; pure TypeScript + promises.
+- Aplica-se a execuções de agente de auto-resposta em todos os canais de entrada que usam o pipeline de resposta do gateway (WhatsApp web, Telegram, Slack, Discord, Signal, iMessage, webchat, etc.).
+- Lane padrão (`main`) é para todo o processo para entradas + heartbeats principais; defina `agents.defaults.maxConcurrent` para permitir múltiplas sessões em paralelo.
+- Lanes adicionais podem existir (ex.: `cron`, `subagent`) para que jobs em background possam rodar em paralelo sem bloquear respostas de entrada.
+- Lanes por sessão garantem que apenas uma execução de agente toque uma dada sessão por vez.
+- Sem dependências externas ou threads de worker em background; TypeScript puro + promises.
 
-## Troubleshooting
+## Solução de problemas
 
-- If commands seem stuck, enable verbose logs and look for “queued for …ms” lines to confirm the queue is draining.
-- If you need queue depth, enable verbose logs and watch for queue timing lines.
+- Se comandos parecerem travados, habilite logs verbose e procure por linhas "queued for …ms" para confirmar que a fila está drenando.
+- Se você precisar de profundidade da fila, habilite logs verbose e observe as linhas de timing da fila.

@@ -1,150 +1,150 @@
 ---
-summary: "Windows (WSL2) support + companion app status"
+summary: "Suporte Windows (WSL2) + status do app companion"
 read_when:
-  - Installing OpenClaw on Windows
-  - Looking for Windows companion app status
+  - Instalando o OpenCraft no Windows
+  - Procurando status do app companion Windows
 title: "Windows (WSL2)"
 ---
 
 # Windows (WSL2)
 
-OpenClaw on Windows is recommended **via WSL2** (Ubuntu recommended). The
-CLI + Gateway run inside Linux, which keeps the runtime consistent and makes
-tooling far more compatible (Node/Bun/pnpm, Linux binaries, skills). Native
-Windows might be trickier. WSL2 gives you the full Linux experience — one command
-to install: `wsl --install`.
+O OpenCraft no Windows é recomendado **via WSL2** (Ubuntu recomendado). O
+CLI + Gateway rodam dentro do Linux, o que mantém o runtime consistente e deixa
+as ferramentas muito mais compatíveis (Node/Bun/pnpm, binários Linux, skills). O Windows
+nativo pode ser mais complicado. O WSL2 oferece a experiência Linux completa — um comando
+para instalar: `wsl --install`.
 
-Native Windows companion apps are planned.
+Apps companion nativos para Windows estão planejados.
 
-## Install (WSL2)
+## Instalação (WSL2)
 
-- [Getting Started](/start/getting-started) (use inside WSL)
-- [Install & updates](/install/updating)
-- Official WSL2 guide (Microsoft): [https://learn.microsoft.com/windows/wsl/install](https://learn.microsoft.com/windows/wsl/install)
+- [Primeiros Passos](/start/getting-started) (use dentro do WSL)
+- [Instalar e atualizar](/install/updating)
+- Guia oficial do WSL2 (Microsoft): [https://learn.microsoft.com/windows/wsl/install](https://learn.microsoft.com/windows/wsl/install)
 
-## Native Windows status
+## Status do Windows nativo
 
-Native Windows CLI flows are improving, but WSL2 is still the recommended path.
+Os fluxos nativos do Windows CLI estão melhorando, mas o WSL2 ainda é o caminho recomendado.
 
-What works well on native Windows today:
+O que funciona bem no Windows nativo hoje:
 
-- website installer via `install.ps1`
-- local CLI use such as `openclaw --version`, `openclaw doctor`, and `openclaw plugins list --json`
-- embedded local-agent/provider smoke such as:
-
-```powershell
-openclaw agent --local --agent main --thinking low -m "Reply with exactly WINDOWS-HATCH-OK."
-```
-
-Current caveats:
-
-- `openclaw onboard --non-interactive` still expects a reachable local gateway unless you pass `--skip-health`
-- `openclaw onboard --non-interactive --install-daemon` and `openclaw gateway install` try Windows Scheduled Tasks first
-- if Scheduled Task creation is denied, OpenClaw falls back to a per-user Startup-folder login item and starts the gateway immediately
-- if `schtasks` itself wedges or stops responding, OpenClaw now aborts that path quickly and falls back instead of hanging forever
-- Scheduled Tasks are still preferred when available because they provide better supervisor status
-
-If you want the native CLI only, without gateway service install, use one of these:
+- instalador do site via `install.ps1`
+- uso local do CLI como `opencraft --version`, `opencraft doctor` e `opencraft plugins list --json`
+- smoke de agente/provedor local embutido como:
 
 ```powershell
-openclaw onboard --non-interactive --skip-health
-openclaw gateway run
+opencraft agent --local --agent main --thinking low -m "Reply with exactly WINDOWS-HATCH-OK."
 ```
 
-If you do want managed startup on native Windows:
+Ressalvas atuais:
+
+- `opencraft onboard --non-interactive` ainda espera um gateway local acessível a menos que você passe `--skip-health`
+- `opencraft onboard --non-interactive --install-daemon` e `opencraft gateway install` tentam o Windows Scheduled Tasks primeiro
+- se a criação do Scheduled Task for negada, o OpenCraft usa como fallback um item de login na pasta Startup do usuário e inicia o gateway imediatamente
+- se `schtasks` travar ou parar de responder, o OpenCraft agora aborta esse caminho rapidamente e usa fallback em vez de travar para sempre
+- Scheduled Tasks ainda são preferidos quando disponíveis porque fornecem melhor status de supervisor
+
+Se quiser apenas o CLI nativo, sem instalação do serviço gateway, use um destes:
 
 ```powershell
-openclaw gateway install
-openclaw gateway status --json
+opencraft onboard --non-interactive --skip-health
+opencraft gateway run
 ```
 
-If Scheduled Task creation is blocked, the fallback service mode still auto-starts after login through the current user's Startup folder.
+Se quiser inicialização gerenciada no Windows nativo:
+
+```powershell
+opencraft gateway install
+opencraft gateway status --json
+```
+
+Se a criação do Scheduled Task for bloqueada, o modo de serviço de fallback ainda inicia automaticamente após o login pela pasta Startup do usuário atual.
 
 ## Gateway
 
-- [Gateway runbook](/gateway)
-- [Configuration](/gateway/configuration)
+- [Runbook do Gateway](/gateway)
+- [Configuração](/gateway/configuration)
 
-## Gateway service install (CLI)
+## Instalação do serviço Gateway (CLI)
 
-Inside WSL2:
-
-```
-openclaw onboard --install-daemon
-```
-
-Or:
+Dentro do WSL2:
 
 ```
-openclaw gateway install
+opencraft onboard --install-daemon
 ```
 
-Or:
+Ou:
 
 ```
-openclaw configure
+opencraft gateway install
 ```
 
-Select **Gateway service** when prompted.
-
-Repair/migrate:
+Ou:
 
 ```
-openclaw doctor
+opencraft configure
 ```
 
-## Gateway auto-start before Windows login
+Selecione **Gateway service** quando solicitado.
 
-For headless setups, ensure the full boot chain runs even when no one logs into
+Reparar/migrar:
+
+```
+opencraft doctor
+```
+
+## Auto-inicialização do Gateway antes do login no Windows
+
+Para setups headless, garanta que a cadeia de inicialização completa rode mesmo quando ninguém faz login no
 Windows.
 
-### 1) Keep user services running without login
+### 1) Manter serviços de usuário rodando sem login
 
-Inside WSL:
+Dentro do WSL:
 
 ```bash
 sudo loginctl enable-linger "$(whoami)"
 ```
 
-### 2) Install the OpenClaw gateway user service
+### 2) Instalar o serviço de usuário do gateway OpenCraft
 
-Inside WSL:
+Dentro do WSL:
 
 ```bash
-openclaw gateway install
+opencraft gateway install
 ```
 
-### 3) Start WSL automatically at Windows boot
+### 3) Iniciar o WSL automaticamente na inicialização do Windows
 
-In PowerShell as Administrator:
+No PowerShell como Administrador:
 
 ```powershell
 schtasks /create /tn "WSL Boot" /tr "wsl.exe -d Ubuntu --exec /bin/true" /sc onstart /ru SYSTEM
 ```
 
-Replace `Ubuntu` with your distro name from:
+Substitua `Ubuntu` pelo nome da sua distro de:
 
 ```powershell
 wsl --list --verbose
 ```
 
-### Verify startup chain
+### Verificar cadeia de inicialização
 
-After a reboot (before Windows sign-in), check from WSL:
+Após uma reinicialização (antes do login no Windows), verifique no WSL:
 
 ```bash
 systemctl --user is-enabled openclaw-gateway
 systemctl --user status openclaw-gateway --no-pager
 ```
 
-## Advanced: expose WSL services over LAN (portproxy)
+## Avançado: expor serviços WSL via LAN (portproxy)
 
-WSL has its own virtual network. If another machine needs to reach a service
-running **inside WSL** (SSH, a local TTS server, or the Gateway), you must
-forward a Windows port to the current WSL IP. The WSL IP changes after restarts,
-so you may need to refresh the forwarding rule.
+O WSL tem sua própria rede virtual. Se outra máquina precisar acessar um serviço
+rodando **dentro do WSL** (SSH, um servidor TTS local ou o Gateway), você deve
+encaminhar uma porta do Windows para o IP atual do WSL. O IP do WSL muda após reinicializações,
+então pode ser necessário atualizar a regra de encaminhamento.
 
-Example (PowerShell **as Administrator**):
+Exemplo (PowerShell **como Administrador**):
 
 ```powershell
 $Distro = "Ubuntu-24.04"
@@ -152,20 +152,20 @@ $ListenPort = 2222
 $TargetPort = 22
 
 $WslIp = (wsl -d $Distro -- hostname -I).Trim().Split(" ")[0]
-if (-not $WslIp) { throw "WSL IP not found." }
+if (-not $WslIp) { throw "IP do WSL não encontrado." }
 
 netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=$ListenPort `
   connectaddress=$WslIp connectport=$TargetPort
 ```
 
-Allow the port through Windows Firewall (one-time):
+Permita a porta pelo Windows Firewall (uma vez):
 
 ```powershell
 New-NetFirewallRule -DisplayName "WSL SSH $ListenPort" -Direction Inbound `
   -Protocol TCP -LocalPort $ListenPort -Action Allow
 ```
 
-Refresh the portproxy after WSL restarts:
+Atualize o portproxy após reinicializações do WSL:
 
 ```powershell
 netsh interface portproxy delete v4tov4 listenport=$ListenPort listenaddress=0.0.0.0 | Out-Null
@@ -173,33 +173,33 @@ netsh interface portproxy add v4tov4 listenport=$ListenPort listenaddress=0.0.0.
   connectaddress=$WslIp connectport=$TargetPort | Out-Null
 ```
 
-Notes:
+Notas:
 
-- SSH from another machine targets the **Windows host IP** (example: `ssh user@windows-host -p 2222`).
-- Remote nodes must point at a **reachable** Gateway URL (not `127.0.0.1`); use
-  `openclaw status --all` to confirm.
-- Use `listenaddress=0.0.0.0` for LAN access; `127.0.0.1` keeps it local only.
-- If you want this automatic, register a Scheduled Task to run the refresh
-  step at login.
+- SSH de outra máquina aponta para o **IP do host Windows** (exemplo: `ssh user@windows-host -p 2222`).
+- Nós remotos devem apontar para uma URL de Gateway **acessível** (não `127.0.0.1`); use
+  `opencraft status --all` para confirmar.
+- Use `listenaddress=0.0.0.0` para acesso LAN; `127.0.0.1` mantém apenas local.
+- Se quiser automatizar isso, registre uma Scheduled Task para rodar o passo de atualização
+  no login.
 
-## Step-by-step WSL2 install
+## Instalação passo a passo do WSL2
 
-### 1) Install WSL2 + Ubuntu
+### 1) Instalar WSL2 + Ubuntu
 
-Open PowerShell (Admin):
+Abra o PowerShell (Admin):
 
 ```powershell
 wsl --install
-# Or pick a distro explicitly:
+# Ou escolha uma distro explicitamente:
 wsl --list --online
 wsl --install -d Ubuntu-24.04
 ```
 
-Reboot if Windows asks.
+Reinicie se o Windows solicitar.
 
-### 2) Enable systemd (required for gateway install)
+### 2) Habilitar systemd (necessário para instalação do gateway)
 
-In your WSL terminal:
+No seu terminal WSL:
 
 ```bash
 sudo tee /etc/wsl.conf >/dev/null <<'EOF'
@@ -208,34 +208,34 @@ systemd=true
 EOF
 ```
 
-Then from PowerShell:
+Depois no PowerShell:
 
 ```powershell
 wsl --shutdown
 ```
 
-Re-open Ubuntu, then verify:
+Reabra o Ubuntu e verifique:
 
 ```bash
 systemctl --user status
 ```
 
-### 3) Install OpenClaw (inside WSL)
+### 3) Instalar o OpenCraft (dentro do WSL)
 
-Follow the Linux Getting Started flow inside WSL:
+Siga o fluxo Linux de Primeiros Passos dentro do WSL:
 
 ```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 pnpm install
-pnpm ui:build # auto-installs UI deps on first run
+pnpm ui:build # instala deps da UI automaticamente na primeira execução
 pnpm build
-openclaw onboard
+opencraft onboard
 ```
 
-Full guide: [Getting Started](/start/getting-started)
+Guia completo: [Primeiros Passos](/start/getting-started)
 
-## Windows companion app
+## App companion Windows
 
-We do not have a Windows companion app yet. Contributions are welcome if you want
-contributions to make it happen.
+Ainda não temos um app companion para Windows. Contribuições são bem-vindas se quiser
+ajudar a fazer acontecer.

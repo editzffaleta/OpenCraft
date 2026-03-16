@@ -1,192 +1,192 @@
 ---
-summary: "Move (migrate) a OpenClaw install from one machine to another"
+summary: "Mover (migrar) uma instalação do OpenCraft de uma máquina para outra"
 read_when:
-  - You are moving OpenClaw to a new laptop/server
-  - You want to preserve sessions, auth, and channel logins (WhatsApp, etc.)
-title: "Migration Guide"
+  - Você está movendo o OpenCraft para um novo laptop/servidor
+  - Você quer preservar sessões, auth e logins de canal (WhatsApp, etc.)
+title: "Guia de Migração"
 ---
 
-# Migrating OpenClaw to a new machine
+# Migrando o OpenCraft para uma nova máquina
 
-This guide migrates a OpenClaw Gateway from one machine to another **without redoing onboarding**.
+Este guia migra um Gateway do OpenCraft de uma máquina para outra **sem refazer o onboarding**.
 
-The migration is simple conceptually:
+A migração é conceitualmente simples:
 
-- Copy the **state directory** (`$OPENCLAW_STATE_DIR`, default: `~/.openclaw/`) — this includes config, auth, sessions, and channel state.
-- Copy your **workspace** (`~/.openclaw/workspace/` by default) — this includes your agent files (memory, prompts, etc.).
+- Copie o **diretório de estado** (`$OPENCLAW_STATE_DIR`, padrão: `~/.opencraft/`) — isso inclui config, auth, sessões e estado de canal.
+- Copie seu **workspace** (`~/.opencraft/workspace/` por padrão) — isso inclui seus arquivos de agente (memória, prompts, etc.).
 
-But there are common footguns around **profiles**, **permissions**, and **partial copies**.
+Mas há armadilhas comuns em torno de **perfis**, **permissões** e **cópias parciais**.
 
-## Before you start (what you are migrating)
+## Antes de começar (o que você está migrando)
 
-### 1) Identify your state directory
+### 1) Identifique seu diretório de estado
 
-Most installs use the default:
+A maioria das instalações usa o padrão:
 
-- **State dir:** `~/.openclaw/`
+- **Diretório de estado:** `~/.opencraft/`
 
-But it may be different if you use:
+Mas pode ser diferente se você usa:
 
-- `--profile <name>` (often becomes `~/.openclaw-<profile>/`)
+- `--profile <name>` (frequentemente se torna `~/.opencraft-<profile>/`)
 - `OPENCLAW_STATE_DIR=/some/path`
 
-If you’re not sure, run on the **old** machine:
+Se não tiver certeza, execute na máquina **antiga**:
 
 ```bash
-openclaw status
+opencraft status
 ```
 
-Look for mentions of `OPENCLAW_STATE_DIR` / profile in the output. If you run multiple gateways, repeat for each profile.
+Procure por menções de `OPENCLAW_STATE_DIR` / perfil na saída. Se você executa múltiplos gateways, repita para cada perfil.
 
-### 2) Identify your workspace
+### 2) Identifique seu workspace
 
-Common defaults:
+Padrões comuns:
 
-- `~/.openclaw/workspace/` (recommended workspace)
-- a custom folder you created
+- `~/.opencraft/workspace/` (workspace recomendado)
+- uma pasta personalizada que você criou
 
-Your workspace is where files like `MEMORY.md`, `USER.md`, and `memory/*.md` live.
+Seu workspace é onde ficam arquivos como `MEMORY.md`, `USER.md` e `memory/*.md`.
 
-### 3) Understand what you will preserve
+### 3) Entenda o que você vai preservar
 
-If you copy **both** the state dir and workspace, you keep:
+Se você copiar **tanto** o diretório de estado quanto o workspace, você mantém:
 
-- Gateway configuration (`openclaw.json`)
-- Auth profiles / API keys / OAuth tokens
-- Session history + agent state
-- Channel state (e.g. WhatsApp login/session)
-- Your workspace files (memory, skills notes, etc.)
+- Configuração do Gateway (`opencraft.json`)
+- Perfis de auth / chaves de API / tokens OAuth
+- Histórico de sessão + estado do agente
+- Estado de canal (ex.: login/sessão do WhatsApp)
+- Seus arquivos de workspace (memória, notas de skills, etc.)
 
-If you copy **only** the workspace (e.g., via Git), you do **not** preserve:
+Se você copiar **apenas** o workspace (ex.: via Git), você **não** preserva:
 
-- sessions
-- credentials
-- channel logins
+- sessões
+- credenciais
+- logins de canal
 
-Those live under `$OPENCLAW_STATE_DIR`.
+Esses ficam em `$OPENCLAW_STATE_DIR`.
 
-## Migration steps (recommended)
+## Etapas de migração (recomendado)
 
-### Step 0 — Make a backup (old machine)
+### Etapa 0 — Faça um backup (máquina antiga)
 
-On the **old** machine, stop the gateway first so files aren’t changing mid-copy:
+Na máquina **antiga**, pare o gateway primeiro para que os arquivos não estejam mudando durante a cópia:
 
 ```bash
-openclaw gateway stop
+opencraft gateway stop
 ```
 
-(Optional but recommended) archive the state dir and workspace:
+(Opcional mas recomendado) arquive o diretório de estado e workspace:
 
 ```bash
-# Adjust paths if you use a profile or custom locations
+# Ajuste os caminhos se você usa um perfil ou locais personalizados
 cd ~
-tar -czf openclaw-state.tgz .openclaw
+tar -czf opencraft-state.tgz .opencraft
 
-tar -czf openclaw-workspace.tgz .openclaw/workspace
+tar -czf opencraft-workspace.tgz .opencraft/workspace
 ```
 
-If you have multiple profiles/state dirs (e.g. `~/.openclaw-main`, `~/.openclaw-work`), archive each.
+Se você tiver múltiplos perfis/diretórios de estado (ex.: `~/.opencraft-main`, `~/.opencraft-work`), arquive cada um.
 
-### Step 1 — Install OpenClaw on the new machine
+### Etapa 1 — Instale o OpenCraft na nova máquina
 
-On the **new** machine, install the CLI (and Node if needed):
+Na máquina **nova**, instale o CLI (e o Node se necessário):
 
-- See: [Install](/install)
+- Veja: [Instalação](/install)
 
-At this stage, it’s OK if onboarding creates a fresh `~/.openclaw/` — you will overwrite it in the next step.
+Neste ponto, tudo bem se o onboarding criar um `~/.opencraft/` novo — você irá sobrescrevê-lo na próxima etapa.
 
-### Step 2 — Copy the state dir + workspace to the new machine
+### Etapa 2 — Copie o diretório de estado + workspace para a nova máquina
 
-Copy **both**:
+Copie **ambos**:
 
-- `$OPENCLAW_STATE_DIR` (default `~/.openclaw/`)
-- your workspace (default `~/.openclaw/workspace/`)
+- `$OPENCLAW_STATE_DIR` (padrão `~/.opencraft/`)
+- seu workspace (padrão `~/.opencraft/workspace/`)
 
-Common approaches:
+Abordagens comuns:
 
-- `scp` the tarballs and extract
-- `rsync -a` over SSH
-- external drive
+- `scp` os tarballs e extraia
+- `rsync -a` via SSH
+- unidade externa
 
-After copying, ensure:
+Após copiar, certifique-se de:
 
-- Hidden directories were included (e.g. `.openclaw/`)
-- File ownership is correct for the user running the gateway
+- Diretórios ocultos foram incluídos (ex.: `.opencraft/`)
+- A propriedade dos arquivos está correta para o usuário que executa o gateway
 
-### Step 3 — Run Doctor (migrations + service repair)
+### Etapa 3 — Execute o Doctor (migrações + reparo de serviço)
 
-On the **new** machine:
+Na máquina **nova**:
 
 ```bash
-openclaw doctor
+opencraft doctor
 ```
 
-Doctor is the “safe boring” command. It repairs services, applies config migrations, and warns about mismatches.
+O Doctor é o comando "seguro e tedioso". Ele repara serviços, aplica migrações de config e avisa sobre incompatibilidades.
 
-Then:
+Em seguida:
 
 ```bash
-openclaw gateway restart
-openclaw status
+opencraft gateway restart
+opencraft status
 ```
 
-## Common footguns (and how to avoid them)
+## Armadilhas comuns (e como evitá-las)
 
-### Footgun: profile / state-dir mismatch
+### Armadilha: incompatibilidade de perfil / diretório de estado
 
-If you ran the old gateway with a profile (or `OPENCLAW_STATE_DIR`), and the new gateway uses a different one, you’ll see symptoms like:
+Se você executou o gateway antigo com um perfil (ou `OPENCLAW_STATE_DIR`), e o novo gateway usa um diferente, você verá sintomas como:
 
-- config changes not taking effect
-- channels missing / logged out
-- empty session history
+- mudanças de config não tendo efeito
+- canais ausentes / desconectados
+- histórico de sessão vazio
 
-Fix: run the gateway/service using the **same** profile/state dir you migrated, then rerun:
+Correção: execute o gateway/serviço usando o **mesmo** perfil/diretório de estado que você migrou, depois execute novamente:
 
 ```bash
-openclaw doctor
+opencraft doctor
 ```
 
-### Footgun: copying only `openclaw.json`
+### Armadilha: copiar apenas `opencraft.json`
 
-`openclaw.json` is not enough. Many providers store state under:
+`opencraft.json` não é suficiente. Muitos provedores armazenam estado em:
 
 - `$OPENCLAW_STATE_DIR/credentials/`
 - `$OPENCLAW_STATE_DIR/agents/<agentId>/...`
 
-Always migrate the entire `$OPENCLAW_STATE_DIR` folder.
+Sempre migre a pasta `$OPENCLAW_STATE_DIR` inteira.
 
-### Footgun: permissions / ownership
+### Armadilha: permissões / propriedade
 
-If you copied as root or changed users, the gateway may fail to read credentials/sessions.
+Se você copiou como root ou mudou de usuário, o gateway pode falhar ao ler credenciais/sessões.
 
-Fix: ensure the state dir + workspace are owned by the user running the gateway.
+Correção: certifique-se de que o diretório de estado + workspace são de propriedade do usuário que executa o gateway.
 
-### Footgun: migrating between remote/local modes
+### Armadilha: migrando entre modos remoto/local
 
-- If your UI (WebUI/TUI) points at a **remote** gateway, the remote host owns the session store + workspace.
-- Migrating your laptop won’t move the remote gateway’s state.
+- Se sua UI (WebUI/TUI) aponta para um gateway **remoto**, o host remoto possui o armazenamento de sessão + workspace.
+- Migrar seu laptop não irá mover o estado do gateway remoto.
 
-If you’re in remote mode, migrate the **gateway host**.
+Se você está no modo remoto, migre o **host do gateway**.
 
-### Footgun: secrets in backups
+### Armadilha: segredos em backups
 
-`$OPENCLAW_STATE_DIR` contains secrets (API keys, OAuth tokens, WhatsApp creds). Treat backups like production secrets:
+`$OPENCLAW_STATE_DIR` contém segredos (chaves de API, tokens OAuth, credenciais do WhatsApp). Trate backups como segredos de produção:
 
-- store encrypted
-- avoid sharing over insecure channels
-- rotate keys if you suspect exposure
+- armazene criptografados
+- evite compartilhar por canais inseguros
+- rotacione chaves se suspeitar de exposição
 
-## Verification checklist
+## Lista de verificação de verificação
 
-On the new machine, confirm:
+Na nova máquina, confirme:
 
-- `openclaw status` shows the gateway running
-- Your channels are still connected (e.g. WhatsApp doesn’t require re-pair)
-- The dashboard opens and shows existing sessions
-- Your workspace files (memory, configs) are present
+- `opencraft status` mostra o gateway em execução
+- Seus canais ainda estão conectados (ex.: WhatsApp não requer novo pareamento)
+- O dashboard abre e mostra sessões existentes
+- Seus arquivos de workspace (memória, configs) estão presentes
 
-## Related
+## Relacionados
 
 - [Doctor](/gateway/doctor)
-- [Gateway troubleshooting](/gateway/troubleshooting)
-- [Where does OpenClaw store its data?](/help/faq#where-does-openclaw-store-its-data)
+- [Solução de problemas do Gateway](/gateway/troubleshooting)
+- [Onde o OpenCraft armazena seus dados?](/help/faq#where-does-openclaw-store-its-data)

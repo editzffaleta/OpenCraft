@@ -1,38 +1,38 @@
 ---
-summary: "Use Kilo Gateway's unified API to access many models in OpenClaw"
+summary: "Usar a API unificada do Kilo Gateway para acessar muitos modelos no OpenCraft"
 read_when:
-  - You want a single API key for many LLMs
-  - You want to run models via Kilo Gateway in OpenClaw
+  - Você quer uma única chave de API para muitos LLMs
+  - Você quer rodar modelos via Kilo Gateway no OpenCraft
 ---
 
 # Kilo Gateway
 
-Kilo Gateway provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+O Kilo Gateway fornece uma **API unificada** que roteia requisições para muitos modelos atrás de um único
+endpoint e chave de API. É compatível com OpenAI, então a maioria dos SDKs OpenAI funciona trocando a URL base.
 
-## Getting an API key
+## Obtendo uma chave de API
 
-1. Go to [app.kilo.ai](https://app.kilo.ai)
-2. Sign in or create an account
-3. Navigate to API Keys and generate a new key
+1. Acesse [app.kilo.ai](https://app.kilo.ai)
+2. Faça login ou crie uma conta
+3. Navegue até API Keys e gere uma nova chave
 
-## CLI setup
-
-```bash
-openclaw onboard --kilocode-api-key <key>
-```
-
-Or set the environment variable:
+## Configuração CLI
 
 ```bash
-export KILOCODE_API_KEY="<your-kilocode-api-key>" # pragma: allowlist secret
+opencraft onboard --kilocode-api-key <chave>
 ```
 
-## Config snippet
+Ou defina a variável de ambiente:
+
+```bash
+export KILOCODE_API_KEY="<sua-chave-kilocode>" # pragma: allowlist secret
+```
+
+## Trecho de config
 
 ```json5
 {
-  env: { KILOCODE_API_KEY: "<your-kilocode-api-key>" }, // pragma: allowlist secret
+  env: { KILOCODE_API_KEY: "<sua-chave-kilocode>" }, // pragma: allowlist secret
   agents: {
     defaults: {
       model: { primary: "kilocode/kilo/auto" },
@@ -41,33 +41,33 @@ export KILOCODE_API_KEY="<your-kilocode-api-key>" # pragma: allowlist secret
 }
 ```
 
-## Default model
+## Modelo padrão
 
-The default model is `kilocode/kilo/auto`, a smart routing model that automatically selects
-the best underlying model based on the task:
+O modelo padrão é `kilocode/kilo/auto`, um modelo de roteamento inteligente que seleciona automaticamente
+o melhor modelo subjacente com base na tarefa:
 
-- Planning, debugging, and orchestration tasks route to Claude Opus
-- Code writing and exploration tasks route to Claude Sonnet
+- Tarefas de planejamento, depuração e orquestração são roteadas para Claude Opus
+- Tarefas de escrita e exploração de código são roteadas para Claude Sonnet
 
-## Available models
+## Modelos disponíveis
 
-OpenClaw dynamically discovers available models from the Kilo Gateway at startup. Use
-`/models kilocode` to see the full list of models available with your account.
+O OpenCraft descobre dinamicamente os modelos disponíveis do Kilo Gateway na inicialização. Use
+`/models kilocode` para ver a lista completa de modelos disponíveis com sua conta.
 
-Any model available on the gateway can be used with the `kilocode/` prefix:
+Qualquer modelo disponível no gateway pode ser usado com o prefixo `kilocode/`:
 
 ```
-kilocode/kilo/auto              (default - smart routing)
+kilocode/kilo/auto              (padrão - roteamento inteligente)
 kilocode/anthropic/claude-sonnet-4
 kilocode/openai/gpt-5.2
 kilocode/google/gemini-3-pro-preview
-...and many more
+...e muitos mais
 ```
 
-## Notes
+## Notas
 
-- Model refs are `kilocode/<model-id>` (e.g., `kilocode/anthropic/claude-sonnet-4`).
-- Default model: `kilocode/kilo/auto`
-- Base URL: `https://api.kilo.ai/api/gateway/`
-- For more model/provider options, see [/concepts/model-providers](/concepts/model-providers).
-- Kilo Gateway uses a Bearer token with your API key under the hood.
+- Refs de modelo são `kilocode/<model-id>` (ex: `kilocode/anthropic/claude-sonnet-4`).
+- Modelo padrão: `kilocode/kilo/auto`
+- URL base: `https://api.kilo.ai/api/gateway/`
+- Para mais opções de modelo/provedor, veja [/concepts/model-providers](/concepts/model-providers).
+- O Kilo Gateway usa um token Bearer com sua chave de API internamente.

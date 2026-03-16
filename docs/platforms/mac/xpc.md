@@ -1,61 +1,61 @@
 ---
-summary: "macOS IPC architecture for OpenClaw app, gateway node transport, and PeekabooBridge"
+summary: "Arquitetura IPC macOS para o app OpenCraft, transporte do nó gateway e PeekabooBridge"
 read_when:
-  - Editing IPC contracts or menu bar app IPC
-title: "macOS IPC"
+  - Editando contratos IPC ou IPC do app de barra de menu
+title: "IPC macOS"
 ---
 
-# OpenClaw macOS IPC architecture
+# Arquitetura IPC macOS do OpenCraft
 
-**Current model:** a local Unix socket connects the **node host service** to the **macOS app** for exec approvals + `system.run`. A `openclaw-mac` debug CLI exists for discovery/connect checks; agent actions still flow through the Gateway WebSocket and `node.invoke`. UI automation uses PeekabooBridge.
+**Modelo atual:** um socket Unix local conecta o **serviço host do nó** ao **app macOS** para aprovações de exec + `system.run`. Existe um CLI de debug `openclaw-mac` para verificações de descoberta/conexão; as ações do agente ainda fluem pelo WebSocket do Gateway e `node.invoke`. A automação de UI usa PeekabooBridge.
 
-## Goals
+## Objetivos
 
-- Single GUI app instance that owns all TCC-facing work (notifications, screen recording, mic, speech, AppleScript).
-- A small surface for automation: Gateway + node commands, plus PeekabooBridge for UI automation.
-- Predictable permissions: always the same signed bundle ID, launched by launchd, so TCC grants stick.
+- Instância única de app GUI que possui todo o trabalho voltado ao TCC (notificações, gravação de tela, microfone, voz, AppleScript).
+- Uma superfície pequena para automação: comandos do Gateway + nó, mais PeekabooBridge para automação de UI.
+- Permissões previsíveis: sempre o mesmo bundle ID assinado, lançado pelo launchd, para que as concessões do TCC persistam.
 
-## How it works
+## Como funciona
 
-### Gateway + node transport
+### Transporte Gateway + nó
 
-- The app runs the Gateway (local mode) and connects to it as a node.
-- Agent actions are performed via `node.invoke` (e.g. `system.run`, `system.notify`, `canvas.*`).
+- O app executa o Gateway (modo local) e se conecta a ele como um nó.
+- As ações do agente são realizadas via `node.invoke` (ex: `system.run`, `system.notify`, `canvas.*`).
 
-### Node service + app IPC
+### Serviço de nó + IPC do app
 
-- A headless node host service connects to the Gateway WebSocket.
-- `system.run` requests are forwarded to the macOS app over a local Unix socket.
-- The app performs the exec in UI context, prompts if needed, and returns output.
+- Um serviço host de nó headless conecta ao WebSocket do Gateway.
+- Requisições `system.run` são encaminhadas para o app macOS via socket Unix local.
+- O app realiza o exec no contexto de UI, solicita confirmação se necessário, e retorna a saída.
 
-Diagram (SCI):
+Diagrama (SCI):
 
 ```
-Agent -> Gateway -> Node Service (WS)
-                      |  IPC (UDS + token + HMAC + TTL)
-                      v
-                  Mac App (UI + TCC + system.run)
+Agente -> Gateway -> Serviço de Nó (WS)
+                       |  IPC (UDS + token + HMAC + TTL)
+                       v
+                   App Mac (UI + TCC + system.run)
 ```
 
-### PeekabooBridge (UI automation)
+### PeekabooBridge (automação de UI)
 
-- UI automation uses a separate UNIX socket named `bridge.sock` and the PeekabooBridge JSON protocol.
-- Host preference order (client-side): Peekaboo.app → Claude.app → OpenClaw.app → local execution.
-- Security: bridge hosts require an allowed TeamID; DEBUG-only same-UID escape hatch is guarded by `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` (Peekaboo convention).
-- See: [PeekabooBridge usage](/platforms/mac/peekaboo) for details.
+- A automação de UI usa um socket UNIX separado chamado `bridge.sock` e o protocolo JSON PeekabooBridge.
+- Ordem de preferência do host (lado cliente): Peekaboo.app → Claude.app → OpenCraft.app → execução local.
+- Segurança: hosts bridge requerem um TeamID permitido; a saída de escape somente DEBUG para mesmo-UID é protegida por `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` (convenção Peekaboo).
+- Veja: [Uso do PeekabooBridge](/platforms/mac/peekaboo) para detalhes.
 
-## Operational flows
+## Fluxos operacionais
 
-- Restart/rebuild: `SIGN_IDENTITY="Apple Development: <Developer Name> (<TEAMID>)" scripts/restart-mac.sh`
-  - Kills existing instances
-  - Swift build + package
-  - Writes/bootstraps/kickstarts the LaunchAgent
-- Single instance: app exits early if another instance with the same bundle ID is running.
+- Reiniciar/rebuildar: `SIGN_IDENTITY="Apple Development: <Nome do Desenvolvedor> (<TEAMID>)" scripts/restart-mac.sh`
+  - Mata instâncias existentes
+  - Build + empacotamento Swift
+  - Escreve/bootstraps/kickstarts o LaunchAgent
+- Instância única: o app sai cedo se outra instância com o mesmo bundle ID estiver rodando.
 
-## Hardening notes
+## Notas de endurecimento
 
-- Prefer requiring a TeamID match for all privileged surfaces.
-- PeekabooBridge: `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` (DEBUG-only) may allow same-UID callers for local development.
-- All communication remains local-only; no network sockets are exposed.
-- TCC prompts originate only from the GUI app bundle; keep the signed bundle ID stable across rebuilds.
-- IPC hardening: socket mode `0600`, token, peer-UID checks, HMAC challenge/response, short TTL.
+- Prefira exigir correspondência de TeamID para todas as superfícies privilegiadas.
+- PeekabooBridge: `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` (somente DEBUG) pode permitir chamadores do mesmo UID para desenvolvimento local.
+- Toda a comunicação permanece apenas local; nenhum socket de rede é exposto.
+- Os prompts do TCC originam apenas do bundle do app GUI; mantenha o bundle ID assinado estável entre rebuilds.
+- Endurecimento do IPC: modo de socket `0600`, token, verificações de peer-UID, desafio/resposta HMAC, TTL curto.

@@ -1,210 +1,210 @@
 ---
-summary: "OpenClaw plugins/extensions: discovery, config, and safety"
+summary: "Plugins/extensões do OpenCraft: descoberta, configuração e segurança"
 read_when:
-  - Adding or modifying plugins/extensions
-  - Documenting plugin install or load rules
+  - Adicionando ou modificando plugins/extensões
+  - Documentando regras de instalação ou carregamento de plugins
 title: "Plugins"
 ---
 
-# Plugins (Extensions)
+# Plugins (Extensões)
 
-## Quick start (new to plugins?)
+## Início rápido (novo em plugins?)
 
-A plugin is just a **small code module** that extends OpenClaw with extra
-features (commands, tools, and Gateway RPC).
+Um plugin é apenas um **módulo de código pequeno** que estende o OpenCraft com recursos
+extras (comandos, tools e Gateway RPC).
 
-Most of the time, you’ll use plugins when you want a feature that’s not built
-into core OpenClaw yet (or you want to keep optional features out of your main
-install).
+Na maioria das vezes, você usará plugins quando quiser um recurso que ainda não está
+integrado ao OpenCraft (ou quando quiser manter recursos opcionais fora da sua
+instalação principal).
 
-Fast path:
+Caminho rápido:
 
-1. See what’s already loaded:
-
-```bash
-openclaw plugins list
-```
-
-2. Install an official plugin (example: Voice Call):
+1. Veja o que já está carregado:
 
 ```bash
-openclaw plugins install @openclaw/voice-call
+opencraft plugins list
 ```
 
-Npm specs are **registry-only** (package name + optional **exact version** or
-**dist-tag**). Git/URL/file specs and semver ranges are rejected.
+2. Instale um plugin oficial (exemplo: Voice Call):
 
-Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
-prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
+```bash
+opencraft plugins install @openclaw/voice-call
+```
 
-3. Restart the Gateway, then configure under `plugins.entries.<id>.config`.
+Specs npm são **somente do registry** (nome do pacote + **versão exata** ou
+**dist-tag** opcionais). Specs de Git/URL/arquivo e ranges de semver são rejeitados.
 
-See [Voice Call](/plugins/voice-call) for a concrete example plugin.
-Looking for third-party listings? See [Community plugins](/plugins/community).
+Specs bare e `@latest` ficam na trilha estável. Se o npm resolver qualquer um desses
+para um prelançamento, o OpenCraft para e pede que você faça opt-in explicitamente com uma
+tag de prelançamento como `@beta`/`@rc` ou uma versão exata de prelançamento.
 
-## Architecture
+3. Reinicie o Gateway, então configure em `plugins.entries.<id>.config`.
 
-OpenClaw's plugin system has four layers:
+Veja [Voice Call](/plugins/voice-call) para um exemplo concreto de plugin.
+Procurando listagens de terceiros? Veja [Plugins da comunidade](/plugins/community).
 
-1. **Manifest + discovery**
-   OpenClaw finds candidate plugins from configured paths, workspace roots,
-   global extension roots, and bundled extensions. Discovery reads
-   `openclaw.plugin.json` plus package metadata first.
-2. **Enablement + validation**
-   Core decides whether a discovered plugin is enabled, disabled, blocked, or
-   selected for an exclusive slot such as memory.
-3. **Runtime loading**
-   Enabled plugins are loaded in-process via jiti and register capabilities into
-   a central registry.
-4. **Surface consumption**
-   The rest of OpenClaw reads the registry to expose tools, channels, provider
-   setup, hooks, HTTP routes, CLI commands, and services.
+## Arquitetura
 
-The important design boundary:
+O sistema de plugins do OpenCraft tem quatro camadas:
 
-- discovery + config validation should work from **manifest/schema metadata**
-  without executing plugin code
-- runtime behavior comes from the plugin module's `register(api)` path
+1. **Manifest + descoberta**
+   O OpenCraft encontra candidatos a plugins em caminhos configurados, raízes de workspace,
+   raízes de extensões globais e extensões empacotadas. A descoberta lê
+   `openclaw.plugin.json` mais metadados do pacote primeiro.
+2. **Habilitação + validação**
+   O core decide se um plugin descoberto é habilitado, desabilitado, bloqueado ou
+   selecionado para um slot exclusivo como memória.
+3. **Carregamento em runtime**
+   Plugins habilitados são carregados em-processo via jiti e registram capacidades em
+   um registry central.
+4. **Consumo de superfície**
+   O restante do OpenCraft lê o registry para expor tools, canais, configuração de
+   provedor, hooks, rotas HTTP, comandos CLI e serviços.
 
-That split lets OpenClaw validate config, explain missing/disabled plugins, and
-build UI/schema hints before the full runtime is active.
+A fronteira de design importante:
 
-## Execution model
+- descoberta + validação de config devem funcionar a partir de **metadados de manifest/schema**
+  sem executar código de plugin
+- o comportamento em runtime vem do caminho `register(api)` do módulo de plugin
 
-Plugins run **in-process** with the Gateway. They are not sandboxed. A loaded
-plugin has the same process-level trust boundary as core code.
+Essa divisão permite que o OpenCraft valide config, explique plugins ausentes/desabilitados e
+construa hints de UI/schema antes que o runtime completo esteja ativo.
 
-Implications:
+## Modelo de execução
 
-- a plugin can register tools, network handlers, hooks, and services
-- a plugin bug can crash or destabilize the gateway
-- a malicious plugin is equivalent to arbitrary code execution inside the
-  OpenClaw process
+Plugins rodam **em-processo** com o Gateway. Eles não são sandboxados. Um plugin
+carregado tem o mesmo limite de confiança em nível de processo que o código core.
 
-Use allowlists and explicit install/load paths for non-bundled plugins. Treat
-workspace plugins as development-time code, not production defaults.
+Implicações:
 
-Important trust note:
+- um plugin pode registrar tools, handlers de rede, hooks e serviços
+- um bug em plugin pode travar ou desestabilizar o gateway
+- um plugin malicioso é equivalente a execução de código arbitrário dentro do
+  processo do OpenCraft
 
-- `plugins.allow` trusts **plugin ids**, not source provenance.
-- A workspace plugin with the same id as a bundled plugin intentionally shadows
-  the bundled copy when that workspace plugin is enabled/allowlisted.
-- This is normal and useful for local development, patch testing, and hotfixes.
+Use allowlists e caminhos explícitos de install/load para plugins não empacotados. Trate
+plugins de workspace como código em tempo de desenvolvimento, não padrões de produção.
 
-## Available plugins (official)
+Nota importante de confiança:
 
-- Microsoft Teams is plugin-only as of 2026.1.15; install `@openclaw/msteams` if you use Teams.
-- Memory (Core) — bundled memory search plugin (enabled by default via `plugins.slots.memory`)
-- Memory (LanceDB) — bundled long-term memory plugin (auto-recall/capture; set `plugins.slots.memory = "memory-lancedb"`)
+- `plugins.allow` confia em **ids de plugin**, não em proveniência de fonte.
+- Um plugin de workspace com o mesmo id que um plugin empacotado intencionalmente ofusca
+  a cópia empacotada quando esse plugin de workspace é habilitado/allowlistado.
+- Isso é normal e útil para desenvolvimento local, testes de patch e hotfixes.
+
+## Plugins disponíveis (oficiais)
+
+- Microsoft Teams é somente plugin desde 2026.1.15; instale `@openclaw/msteams` se você usar o Teams.
+- Memory (Core) — plugin de busca de memória empacotado (habilitado por padrão via `plugins.slots.memory`)
+- Memory (LanceDB) — plugin de memória de longo prazo empacotado (auto-recall/capture; defina `plugins.slots.memory = "memory-lancedb"`)
 - [Voice Call](/plugins/voice-call) — `@openclaw/voice-call`
 - [Zalo Personal](/plugins/zalouser) — `@openclaw/zalouser`
 - [Matrix](/channels/matrix) — `@openclaw/matrix`
 - [Nostr](/channels/nostr) — `@openclaw/nostr`
 - [Zalo](/channels/zalo) — `@openclaw/zalo`
 - [Microsoft Teams](/channels/msteams) — `@openclaw/msteams`
-- Google Antigravity OAuth (provider auth) — bundled as `google-antigravity-auth` (disabled by default)
-- Gemini CLI OAuth (provider auth) — bundled as `google-gemini-cli-auth` (disabled by default)
-- Qwen OAuth (provider auth) — bundled as `qwen-portal-auth` (disabled by default)
-- Copilot Proxy (provider auth) — local VS Code Copilot Proxy bridge; distinct from built-in `github-copilot` device login (bundled, disabled by default)
+- Google Antigravity OAuth (autenticação de provedor) — empacotado como `google-antigravity-auth` (desabilitado por padrão)
+- Gemini CLI OAuth (autenticação de provedor) — empacotado como `google-gemini-cli-auth` (desabilitado por padrão)
+- Qwen OAuth (autenticação de provedor) — empacotado como `qwen-portal-auth` (desabilitado por padrão)
+- Copilot Proxy (autenticação de provedor) — ponte de proxy Copilot local do VS Code; distinto do login de dispositivo `github-copilot` integrado (empacotado, desabilitado por padrão)
 
-OpenClaw plugins are **TypeScript modules** loaded at runtime via jiti. **Config
-validation does not execute plugin code**; it uses the plugin manifest and JSON
-Schema instead. See [Plugin manifest](/plugins/manifest).
+Plugins do OpenCraft são **módulos TypeScript** carregados em runtime via jiti. **A
+validação de config não executa código de plugin**; ela usa o manifest do plugin e JSON
+Schema. Veja [Manifest de plugin](/plugins/manifest).
 
-Plugins can register:
+Plugins podem registrar:
 
-- Gateway RPC methods
-- Gateway HTTP routes
-- Agent tools
-- CLI commands
-- Background services
-- Context engines
-- Optional config validation
-- **Skills** (by listing `skills` directories in the plugin manifest)
-- **Auto-reply commands** (execute without invoking the AI agent)
+- Métodos RPC do Gateway
+- Rotas HTTP do Gateway
+- Tools do agente
+- Comandos CLI
+- Serviços em background
+- Engines de contexto
+- Validação de config opcional
+- **Skills** (listando diretórios `skills` no manifest do plugin)
+- **Comandos de auto-resposta** (executam sem invocar o agente de IA)
 
-Plugins run **in‑process** with the Gateway, so treat them as trusted code.
-Tool authoring guide: [Plugin agent tools](/plugins/agent-tools).
+Plugins rodam **em-processo** com o Gateway, então trate-os como código confiável.
+Guia de autoria de tools: [Tools de agente para plugins](/plugins/agent-tools).
 
-## Load pipeline
+## Pipeline de carregamento
 
-At startup, OpenClaw does roughly this:
+Na inicialização, o OpenCraft faz aproximadamente isso:
 
-1. discover candidate plugin roots
-2. read `openclaw.plugin.json` and package metadata
-3. reject unsafe candidates
-4. normalize plugin config (`plugins.enabled`, `allow`, `deny`, `entries`,
+1. descobre raízes de plugins candidatas
+2. lê `openclaw.plugin.json` e metadados do pacote
+3. rejeita candidatos inseguros
+4. normaliza a config do plugin (`plugins.enabled`, `allow`, `deny`, `entries`,
    `slots`, `load.paths`)
-5. decide enablement for each candidate
-6. load enabled modules via jiti
-7. call `register(api)` and collect registrations into the plugin registry
-8. expose the registry to commands/runtime surfaces
+5. decide a habilitação para cada candidato
+6. carrega módulos habilitados via jiti
+7. chama `register(api)` e coleta registros no registry de plugin
+8. expõe o registry para comandos/superfícies de runtime
 
-The safety gates happen **before** runtime execution. Candidates are blocked
-when the entry escapes the plugin root, the path is world-writable, or path
-ownership looks suspicious for non-bundled plugins.
+As travas de segurança acontecem **antes** da execução em runtime. Candidatos são bloqueados
+quando a entrada escapa da raiz do plugin, o caminho é gravável por todos, ou a
+propriedade do caminho parece suspeita para plugins não empacotados.
 
-### Manifest-first behavior
+### Comportamento manifest-first
 
-The manifest is the control-plane source of truth. OpenClaw uses it to:
+O manifest é a fonte de verdade do plano de controle. O OpenCraft o usa para:
 
-- identify the plugin
-- discover declared channels/skills/config schema
-- validate `plugins.entries.<id>.config`
-- augment Control UI labels/placeholders
-- show install/catalog metadata
+- identificar o plugin
+- descobrir canais/skills/schema de config declarados
+- validar `plugins.entries.<id>.config`
+- aumentar labels/placeholders da UI de Controle
+- mostrar metadados de install/catálogo
 
-The runtime module is the data-plane part. It registers actual behavior such as
-hooks, tools, commands, or provider flows.
+O módulo em runtime é a parte do plano de dados. Ele registra comportamento real como
+hooks, tools, comandos ou fluxos de provedor.
 
-### What the loader caches
+### O que o loader armazena em cache
 
-OpenClaw keeps short in-process caches for:
+O OpenCraft mantém caches curtos em-processo para:
 
-- discovery results
-- manifest registry data
-- loaded plugin registries
+- resultados de descoberta
+- dados de registry de manifest
+- registries de plugin carregados
 
-These caches reduce bursty startup and repeated command overhead. They are safe
-to think of as short-lived performance caches, not persistence.
+Esses caches reduzem a sobrecarga de inicialização em rajada e de comandos repetidos. É seguro
+pensar neles como caches de desempenho de curta duração, não persistência.
 
-## Runtime helpers
+## Helpers de runtime
 
-Plugins can access selected core helpers via `api.runtime`. For telephony TTS:
+Plugins podem acessar helpers selecionados do core via `api.runtime`. Para TTS de telefonia:
 
 ```ts
 const result = await api.runtime.tts.textToSpeechTelephony({
-  text: "Hello from OpenClaw",
+  text: "Olá do OpenCraft",
   cfg: api.config,
 });
 ```
 
-Notes:
+Notas:
 
-- Uses core `messages.tts` configuration (OpenAI or ElevenLabs).
-- Returns PCM audio buffer + sample rate. Plugins must resample/encode for providers.
-- Edge TTS is not supported for telephony.
+- Usa a configuração `messages.tts` do core (OpenAI ou ElevenLabs).
+- Retorna buffer de áudio PCM + taxa de amostragem. Plugins devem reamostrar/codificar para provedores.
+- Edge TTS não é suportado para telefonia.
 
-For STT/transcription, plugins can call:
+Para STT/transcrição, plugins podem chamar:
 
 ```ts
 const { text } = await api.runtime.stt.transcribeAudioFile({
   filePath: "/tmp/inbound-audio.ogg",
   cfg: api.config,
-  // Optional when MIME cannot be inferred reliably:
+  // Opcional quando o MIME não pode ser inferido de forma confiável:
   mime: "audio/ogg",
 });
 ```
 
-Notes:
+Notas:
 
-- Uses core media-understanding audio configuration (`tools.media.audio`) and provider fallback order.
-- Returns `{ text: undefined }` when no transcription output is produced (for example skipped/unsupported input).
+- Usa a configuração de áudio de compreensão de mídia do core (`tools.media.audio`) e a ordem de fallback de provedor.
+- Retorna `{ text: undefined }` quando nenhuma saída de transcrição é produzida (por exemplo entrada ignorada/não suportada).
 
-## Gateway HTTP routes
+## Rotas HTTP do Gateway
 
-Plugins can expose HTTP endpoints with `api.registerHttpRoute(...)`.
+Plugins podem expor endpoints HTTP com `api.registerHttpRoute(...)`.
 
 ```ts
 api.registerHttpRoute({
@@ -219,37 +219,37 @@ api.registerHttpRoute({
 });
 ```
 
-Route fields:
+Campos de rota:
 
-- `path`: route path under the gateway HTTP server.
-- `auth`: required. Use `"gateway"` to require normal gateway auth, or `"plugin"` for plugin-managed auth/webhook verification.
-- `match`: optional. `"exact"` (default) or `"prefix"`.
-- `replaceExisting`: optional. Allows the same plugin to replace its own existing route registration.
-- `handler`: return `true` when the route handled the request.
+- `path`: caminho de rota sob o servidor HTTP do gateway.
+- `auth`: obrigatório. Use `"gateway"` para exigir autenticação normal do gateway, ou `"plugin"` para autenticação gerenciada pelo plugin/verificação de webhook.
+- `match`: opcional. `"exact"` (padrão) ou `"prefix"`.
+- `replaceExisting`: opcional. Permite que o mesmo plugin substitua seu próprio registro de rota existente.
+- `handler`: retorna `true` quando a rota tratou a requisição.
 
-Notes:
+Notas:
 
-- `api.registerHttpHandler(...)` is obsolete. Use `api.registerHttpRoute(...)`.
-- Plugin routes must declare `auth` explicitly.
-- Exact `path + match` conflicts are rejected unless `replaceExisting: true`, and one plugin cannot replace another plugin's route.
-- Overlapping routes with different `auth` levels are rejected. Keep `exact`/`prefix` fallthrough chains on the same auth level only.
+- `api.registerHttpHandler(...)` está obsoleto. Use `api.registerHttpRoute(...)`.
+- Rotas de plugin devem declarar `auth` explicitamente.
+- Conflitos exatos de `path + match` são rejeitados a menos que `replaceExisting: true`, e um plugin não pode substituir a rota de outro plugin.
+- Rotas sobrepostas com diferentes níveis de `auth` são rejeitadas. Mantenha cadeias de fallthrough `exact`/`prefix` no mesmo nível de auth apenas.
 
-## Plugin SDK import paths
+## Caminhos de importação do SDK do plugin
 
-Use SDK subpaths instead of the monolithic `openclaw/plugin-sdk` import when
-authoring plugins:
+Use subcaminhos do SDK em vez da importação monolítica `openclaw/plugin-sdk` ao
+criar plugins:
 
-- `openclaw/plugin-sdk/core` for generic plugin APIs, provider auth types, and shared helpers.
-- `openclaw/plugin-sdk/compat` for bundled/internal plugin code that needs broader shared runtime helpers than `core`.
-- `openclaw/plugin-sdk/telegram` for Telegram channel plugins.
-- `openclaw/plugin-sdk/discord` for Discord channel plugins.
-- `openclaw/plugin-sdk/slack` for Slack channel plugins.
-- `openclaw/plugin-sdk/signal` for Signal channel plugins.
-- `openclaw/plugin-sdk/imessage` for iMessage channel plugins.
-- `openclaw/plugin-sdk/whatsapp` for WhatsApp channel plugins.
-- `openclaw/plugin-sdk/line` for LINE channel plugins.
-- `openclaw/plugin-sdk/msteams` for the bundled Microsoft Teams plugin surface.
-- Bundled extension-specific subpaths are also available:
+- `openclaw/plugin-sdk/core` para APIs de plugin genéricas, tipos de autenticação de provedor e helpers compartilhados.
+- `openclaw/plugin-sdk/compat` para código de plugin empacotado/interno que precisa de helpers de runtime compartilhados mais amplos do que `core`.
+- `openclaw/plugin-sdk/telegram` para plugins de canal Telegram.
+- `openclaw/plugin-sdk/discord` para plugins de canal Discord.
+- `openclaw/plugin-sdk/slack` para plugins de canal Slack.
+- `openclaw/plugin-sdk/signal` para plugins de canal Signal.
+- `openclaw/plugin-sdk/imessage` para plugins de canal iMessage.
+- `openclaw/plugin-sdk/whatsapp` para plugins de canal WhatsApp.
+- `openclaw/plugin-sdk/line` para plugins de canal LINE.
+- `openclaw/plugin-sdk/msteams` para a superfície de plugin Microsoft Teams empacotado.
+- Subcaminhos específicos de extensões empacotadas também estão disponíveis:
   `openclaw/plugin-sdk/acpx`, `openclaw/plugin-sdk/bluebubbles`,
   `openclaw/plugin-sdk/copilot-proxy`, `openclaw/plugin-sdk/device-pair`,
   `openclaw/plugin-sdk/diagnostics-otel`, `openclaw/plugin-sdk/diffs`,
@@ -266,171 +266,166 @@ authoring plugins:
   `openclaw/plugin-sdk/talk-voice`, `openclaw/plugin-sdk/test-utils`,
   `openclaw/plugin-sdk/thread-ownership`, `openclaw/plugin-sdk/tlon`,
   `openclaw/plugin-sdk/twitch`, `openclaw/plugin-sdk/voice-call`,
-  `openclaw/plugin-sdk/zalo`, and `openclaw/plugin-sdk/zalouser`.
+  `openclaw/plugin-sdk/zalo` e `openclaw/plugin-sdk/zalouser`.
 
-Compatibility note:
+Nota de compatibilidade:
 
-- `openclaw/plugin-sdk` remains supported for existing external plugins.
-- New and migrated bundled plugins should use channel or extension-specific
-  subpaths; use `core` for generic surfaces and `compat` only when broader
-  shared helpers are required.
+- `openclaw/plugin-sdk` permanece suportado para plugins externos existentes.
+- Plugins empacotados novos e migrados devem usar subcaminhos específicos de canal ou extensão; use `core` para superfícies genéricas e `compat` apenas quando helpers de runtime compartilhados mais amplos forem necessários.
 
-## Read-only channel inspection
+## Inspeção de canal somente leitura
 
-If your plugin registers a channel, prefer implementing
-`plugin.config.inspectAccount(cfg, accountId)` alongside `resolveAccount(...)`.
+Se seu plugin registra um canal, prefira implementar
+`plugin.config.inspectAccount(cfg, accountId)` junto com `resolveAccount(...)`.
 
-Why:
+Por quê:
 
-- `resolveAccount(...)` is the runtime path. It is allowed to assume credentials
-  are fully materialized and can fail fast when required secrets are missing.
-- Read-only command paths such as `openclaw status`, `openclaw status --all`,
-  `openclaw channels status`, `openclaw channels resolve`, and doctor/config
-  repair flows should not need to materialize runtime credentials just to
-  describe configuration.
+- `resolveAccount(...)` é o caminho em runtime. Pode assumir que as credenciais
+  estão totalmente materializadas e pode falhar rapidamente quando secrets obrigatórios estão ausentes.
+- Caminhos de comando somente leitura como `opencraft status`, `opencraft status --all`,
+  `opencraft channels status`, `opencraft channels resolve` e fluxos de reparo de doctor/config
+  não devem precisar materializar credenciais em runtime apenas para
+  descrever a configuração.
 
-Recommended `inspectAccount(...)` behavior:
+Comportamento recomendado de `inspectAccount(...)`:
 
-- Return descriptive account state only.
-- Preserve `enabled` and `configured`.
-- Include credential source/status fields when relevant, such as:
+- Retorne apenas estado descritivo da conta.
+- Preserve `enabled` e `configured`.
+- Inclua campos de fonte/status de credencial quando relevante, como:
   - `tokenSource`, `tokenStatus`
   - `botTokenSource`, `botTokenStatus`
   - `appTokenSource`, `appTokenStatus`
   - `signingSecretSource`, `signingSecretStatus`
-- You do not need to return raw token values just to report read-only
-  availability. Returning `tokenStatus: "available"` (and the matching source
-  field) is enough for status-style commands.
-- Use `configured_unavailable` when a credential is configured via SecretRef but
-  unavailable in the current command path.
+- Você não precisa retornar valores de token brutos apenas para reportar
+  disponibilidade somente leitura. Retornar `tokenStatus: "available"` (e o campo de fonte correspondente) é suficiente para comandos de estilo de status.
+- Use `configured_unavailable` quando uma credencial é configurada via SecretRef mas
+  indisponível no caminho de comando atual.
 
-This lets read-only commands report “configured but unavailable in this command
-path” instead of crashing or misreporting the account as not configured.
+Isso permite que comandos somente leitura reportem "configurado mas indisponível neste caminho de comando" em vez de travar ou reportar incorretamente a conta como não configurada.
 
-Performance note:
+Nota de desempenho:
 
-- Plugin discovery and manifest metadata use short in-process caches to reduce
-  bursty startup/reload work.
-- Set `OPENCLAW_DISABLE_PLUGIN_DISCOVERY_CACHE=1` or
-  `OPENCLAW_DISABLE_PLUGIN_MANIFEST_CACHE=1` to disable these caches.
-- Tune cache windows with `OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS` and
+- Descoberta de plugin e metadados de manifest usam caches curtos em-processo para reduzir
+  trabalho de inicialização/recarga em rajada.
+- Defina `OPENCLAW_DISABLE_PLUGIN_DISCOVERY_CACHE=1` ou
+  `OPENCLAW_DISABLE_PLUGIN_MANIFEST_CACHE=1` para desabilitar esses caches.
+- Ajuste janelas de cache com `OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS` e
   `OPENCLAW_PLUGIN_MANIFEST_CACHE_MS`.
 
-## Discovery & precedence
+## Descoberta e precedência
 
-OpenClaw scans, in order:
+O OpenCraft escaneia, nesta ordem:
 
-1. Config paths
+1. Caminhos de configuração
 
-- `plugins.load.paths` (file or directory)
+- `plugins.load.paths` (arquivo ou diretório)
 
-2. Workspace extensions
+2. Extensões de workspace
 
 - `<workspace>/.openclaw/extensions/*.ts`
 - `<workspace>/.openclaw/extensions/*/index.ts`
 
-3. Global extensions
+3. Extensões globais
 
-- `~/.openclaw/extensions/*.ts`
-- `~/.openclaw/extensions/*/index.ts`
+- `~/.opencraft/extensions/*.ts`
+- `~/.opencraft/extensions/*/index.ts`
 
-4. Bundled extensions (shipped with OpenClaw, mostly disabled by default)
+4. Extensões empacotadas (enviadas com o OpenCraft, maioria desabilitada por padrão)
 
-- `<openclaw>/extensions/*`
+- `<opencraft>/extensions/*`
 
-Most bundled plugins must be enabled explicitly via
-`plugins.entries.<id>.enabled` or `openclaw plugins enable <id>`.
+A maioria dos plugins empacotados deve ser habilitada explicitamente via
+`plugins.entries.<id>.enabled` ou `opencraft plugins enable <id>`.
 
-Default-on bundled plugin exceptions:
+Exceções de plugins empacotados habilitados por padrão:
 
 - `device-pair`
 - `phone-control`
 - `talk-voice`
-- active memory slot plugin (default slot: `memory-core`)
+- plugin de slot de memória ativo (slot padrão: `memory-core`)
 
-Installed plugins are enabled by default, but can be disabled the same way.
+Plugins instalados são habilitados por padrão, mas podem ser desabilitados da mesma forma.
 
-Workspace plugins are **disabled by default** unless you explicitly enable them
-or allowlist them. This is intentional: a checked-out repo should not silently
-become production gateway code.
+Plugins de workspace são **desabilitados por padrão** a menos que você os habilite explicitamente
+ou os allowliste. Isso é intencional: um repo clonado não deve silenciosamente
+se tornar código de gateway de produção.
 
-Hardening notes:
+Notas de fortalecimento:
 
-- If `plugins.allow` is empty and non-bundled plugins are discoverable, OpenClaw logs a startup warning with plugin ids and sources.
-- Candidate paths are safety-checked before discovery admission. OpenClaw blocks candidates when:
-  - extension entry resolves outside plugin root (including symlink/path traversal escapes),
-  - plugin root/source path is world-writable,
-  - path ownership is suspicious for non-bundled plugins (POSIX owner is neither current uid nor root).
-- Loaded non-bundled plugins without install/load-path provenance emit a warning so you can pin trust (`plugins.allow`) or install tracking (`plugins.installs`).
+- Se `plugins.allow` estiver vazio e plugins não empacotados forem descobríveis, o OpenCraft registra um aviso de inicialização com ids e fontes de plugin.
+- Caminhos candidatos são verificados de segurança antes da admissão de descoberta. O OpenCraft bloqueia candidatos quando:
+  - a entrada de extensão resolve fora da raiz do plugin (incluindo escapes de symlink/path traversal),
+  - o caminho raiz/fonte do plugin é gravável por todos,
+  - a propriedade do caminho é suspeita para plugins não empacotados (proprietário POSIX não é nem uid atual nem root).
+- Plugins não empacotados carregados sem proveniência de install/load-path emitem um aviso para que você possa fixar a confiança (`plugins.allow`) ou rastreamento de install (`plugins.installs`).
 
-Each plugin must include a `openclaw.plugin.json` file in its root. If a path
-points at a file, the plugin root is the file's directory and must contain the
+Cada plugin deve incluir um arquivo `openclaw.plugin.json` em sua raiz. Se um caminho
+aponta para um arquivo, a raiz do plugin é o diretório do arquivo e deve conter o
 manifest.
 
-If multiple plugins resolve to the same id, the first match in the order above
-wins and lower-precedence copies are ignored.
+Se múltiplos plugins resolverem para o mesmo id, a primeira correspondência na ordem acima
+vence e cópias de precedência inferior são ignoradas.
 
-That means:
+Isso significa:
 
-- workspace plugins intentionally shadow bundled plugins with the same id
-- `plugins.allow: ["foo"]` authorizes the active `foo` plugin by id, even when
-  the active copy comes from the workspace instead of the bundled extension root
-- if you need stricter provenance control, use explicit install/load paths and
-  inspect the resolved plugin source before enabling it
+- plugins de workspace intencionalmente ofuscam plugins empacotados com o mesmo id
+- `plugins.allow: ["foo"]` autoriza o plugin `foo` ativo pelo id, mesmo quando
+  a cópia ativa vem do workspace em vez da raiz de extensão empacotada
+- se você precisar de controle de proveniência mais estrito, use caminhos explícitos de install/load e
+  inspecione a fonte do plugin resolvido antes de habilitá-lo
 
-### Enablement rules
+### Regras de habilitação
 
-Enablement is resolved after discovery:
+A habilitação é resolvida após a descoberta:
 
-- `plugins.enabled: false` disables all plugins
-- `plugins.deny` always wins
-- `plugins.entries.<id>.enabled: false` disables that plugin
-- workspace-origin plugins are disabled by default
-- allowlists restrict the active set when `plugins.allow` is non-empty
-- allowlists are **id-based**, not source-based
-- bundled plugins are disabled by default unless:
-  - the bundled id is in the built-in default-on set, or
-  - you explicitly enable it, or
-  - channel config implicitly enables the bundled channel plugin
-- exclusive slots can force-enable the selected plugin for that slot
+- `plugins.enabled: false` desabilita todos os plugins
+- `plugins.deny` sempre vence
+- `plugins.entries.<id>.enabled: false` desabilita aquele plugin
+- plugins de origem de workspace são desabilitados por padrão
+- allowlists restringem o conjunto ativo quando `plugins.allow` é não vazio
+- allowlists são **baseadas em id**, não em fonte
+- plugins empacotados são desabilitados por padrão a menos que:
+  - o id empacotado esteja no conjunto padrão habilitado integrado, ou
+  - você o habilite explicitamente, ou
+  - a config de canal implicitamente habilite o plugin de canal empacotado
+- slots exclusivos podem forçar-habilitar o plugin selecionado para aquele slot
 
-In current core, bundled default-on ids include local/provider helpers such as
-`ollama`, `sglang`, `vllm`, plus `device-pair`, `phone-control`, and
+No core atual, ids padrão habilitados empacotados incluem helpers locais/de provedor como
+`ollama`, `sglang`, `vllm`, mais `device-pair`, `phone-control` e
 `talk-voice`.
 
-### Package packs
+### Pacotes de pacotes
 
-A plugin directory may include a `package.json` with `openclaw.extensions`:
+Um diretório de plugin pode incluir um `package.json` com `openclaw.extensions`:
 
 ```json
 {
-  "name": "my-pack",
+  "name": "meu-pacote",
   "openclaw": {
     "extensions": ["./src/safety.ts", "./src/tools.ts"]
   }
 }
 ```
 
-Each entry becomes a plugin. If the pack lists multiple extensions, the plugin id
-becomes `name/<fileBase>`.
+Cada entrada se torna um plugin. Se o pacote listar múltiplas extensões, o id do plugin
+se torna `nome/<fileBase>`.
 
-If your plugin imports npm deps, install them in that directory so
-`node_modules` is available (`npm install` / `pnpm install`).
+Se seu plugin importa deps npm, instale-os nesse diretório para que
+`node_modules` esteja disponível (`npm install` / `pnpm install`).
 
-Security guardrail: every `openclaw.extensions` entry must stay inside the plugin
-directory after symlink resolution. Entries that escape the package directory are
-rejected.
+Guarda de segurança: cada entrada `openclaw.extensions` deve permanecer dentro do diretório do plugin
+após resolução de symlink. Entradas que escapam do diretório do pacote são
+rejeitadas.
 
-Security note: `openclaw plugins install` installs plugin dependencies with
-`npm install --ignore-scripts` (no lifecycle scripts). Keep plugin dependency
-trees "pure JS/TS" and avoid packages that require `postinstall` builds.
+Nota de segurança: `opencraft plugins install` instala dependências de plugin com
+`npm install --ignore-scripts` (sem scripts de ciclo de vida). Mantenha árvores de dependência de plugin "JS/TS puro" e evite pacotes que requerem builds `postinstall`.
 
-### Channel catalog metadata
+### Metadados de catálogo de canal
 
-Channel plugins can advertise onboarding metadata via `openclaw.channel` and
-install hints via `openclaw.install`. This keeps the core catalog data-free.
+Plugins de canal podem anunciar metadados de onboarding via `openclaw.channel` e
+hints de install via `openclaw.install`. Isso mantém os dados do catálogo core-free.
 
-Example:
+Exemplo:
 
 ```json
 {
@@ -443,7 +438,7 @@ Example:
       "selectionLabel": "Nextcloud Talk (self-hosted)",
       "docsPath": "/channels/nextcloud-talk",
       "docsLabel": "nextcloud-talk",
-      "blurb": "Self-hosted chat via Nextcloud Talk webhook bots.",
+      "blurb": "Chat self-hosted via bots webhook do Nextcloud Talk.",
       "order": 65,
       "aliases": ["nc-talk", "nc"]
     },
@@ -456,54 +451,52 @@ Example:
 }
 ```
 
-OpenClaw can also merge **external channel catalogs** (for example, an MPM
-registry export). Drop a JSON file at one of:
+O OpenCraft também pode mesclar **catálogos de canal externos** (por exemplo, uma exportação de registry MPM). Coloque um arquivo JSON em um dos seguintes locais:
 
-- `~/.openclaw/mpm/plugins.json`
-- `~/.openclaw/mpm/catalog.json`
-- `~/.openclaw/plugins/catalog.json`
+- `~/.opencraft/mpm/plugins.json`
+- `~/.opencraft/mpm/catalog.json`
+- `~/.opencraft/plugins/catalog.json`
 
-Or point `OPENCLAW_PLUGIN_CATALOG_PATHS` (or `OPENCLAW_MPM_CATALOG_PATHS`) at
-one or more JSON files (comma/semicolon/`PATH`-delimited). Each file should
-contain `{ "entries": [ { "name": "@scope/pkg", "openclaw": { "channel": {...}, "install": {...} } } ] }`.
+Ou aponte `OPENCLAW_PLUGIN_CATALOG_PATHS` (ou `OPENCLAW_MPM_CATALOG_PATHS`) para
+um ou mais arquivos JSON (delimitados por vírgula/ponto-e-vírgula/`PATH`). Cada arquivo deve
+conter `{ "entries": [ { "name": "@scope/pkg", "openclaw": { "channel": {...}, "install": {...} } } ] }`.
 
-## Plugin IDs
+## IDs de plugin
 
-Default plugin ids:
+IDs padrão de plugin:
 
-- Package packs: `package.json` `name`
-- Standalone file: file base name (`~/.../voice-call.ts` → `voice-call`)
+- Pacotes de pacotes: `name` do `package.json`
+- Arquivo standalone: nome base do arquivo (`~/.../voice-call.ts` → `voice-call`)
 
-If a plugin exports `id`, OpenClaw uses it but warns when it doesn’t match the
-configured id.
+Se um plugin exporta `id`, o OpenCraft o usa mas avisa quando ele não corresponde ao
+id configurado.
 
-## Registry model
+## Modelo de registry
 
-Loaded plugins do not directly mutate random core globals. They register into a
-central plugin registry.
+Plugins carregados não mutam diretamente globals core aleatórios. Eles registram em um
+registry central de plugins.
 
-The registry tracks:
+O registry rastreia:
 
-- plugin records (identity, source, origin, status, diagnostics)
+- registros de plugin (identidade, fonte, origem, status, diagnósticos)
 - tools
-- legacy hooks and typed hooks
-- channels
-- providers
-- gateway RPC handlers
-- HTTP routes
-- CLI registrars
-- background services
-- plugin-owned commands
+- hooks legados e hooks tipados
+- canais
+- provedores
+- handlers RPC do gateway
+- rotas HTTP
+- registradores CLI
+- serviços em background
+- comandos de propriedade do plugin
 
-Core features then read from that registry instead of talking to plugin modules
-directly. This keeps loading one-way:
+Recursos core então leem desse registry em vez de falar com módulos de plugin
+diretamente. Isso mantém o carregamento unidirecional:
 
-- plugin module -> registry registration
-- core runtime -> registry consumption
+- módulo de plugin -> registro no registry
+- runtime core -> consumo do registry
 
-That separation matters for maintainability. It means most core surfaces only
-need one integration point: "read the registry", not "special-case every plugin
-module".
+Essa separação importa para a manutenibilidade. Significa que a maioria das superfícies core só
+precisa de um ponto de integração: "ler o registry", não "tratar cada módulo de plugin como caso especial".
 
 ## Config
 
@@ -521,89 +514,89 @@ module".
 }
 ```
 
-Fields:
+Campos:
 
-- `enabled`: master toggle (default: true)
-- `allow`: allowlist (optional)
-- `deny`: denylist (optional; deny wins)
-- `load.paths`: extra plugin files/dirs
-- `slots`: exclusive slot selectors such as `memory` and `contextEngine`
-- `entries.<id>`: per‑plugin toggles + config
+- `enabled`: toggle principal (padrão: true)
+- `allow`: allowlist (opcional)
+- `deny`: denylist (opcional; deny vence)
+- `load.paths`: arquivos/dirs de plugin extras
+- `slots`: seletores de slot exclusivo como `memory` e `contextEngine`
+- `entries.<id>`: toggles + config por plugin
 
-Config changes **require a gateway restart**.
+Mudanças de config **requerem reinicialização do gateway**.
 
-Validation rules (strict):
+Regras de validação (strict):
 
-- Unknown plugin ids in `entries`, `allow`, `deny`, or `slots` are **errors**.
-- Unknown `channels.<id>` keys are **errors** unless a plugin manifest declares
-  the channel id.
-- Plugin config is validated using the JSON Schema embedded in
+- IDs de plugin desconhecidos em `entries`, `allow`, `deny` ou `slots` são **erros**.
+- Chaves `channels.<id>` desconhecidas são **erros** a menos que um manifest de plugin declare
+  o id do canal.
+- A config do plugin é validada usando o JSON Schema embutido em
   `openclaw.plugin.json` (`configSchema`).
-- If a plugin is disabled, its config is preserved and a **warning** is emitted.
+- Se um plugin estiver desabilitado, sua config é preservada e um **aviso** é emitido.
 
-### Disabled vs missing vs invalid
+### Desabilitado vs ausente vs inválido
 
-These states are intentionally different:
+Esses estados são intencionalmente diferentes:
 
-- **disabled**: plugin exists, but enablement rules turned it off
-- **missing**: config references a plugin id that discovery did not find
-- **invalid**: plugin exists, but its config does not match the declared schema
+- **desabilitado**: plugin existe, mas regras de habilitação o desligaram
+- **ausente**: config referencia um id de plugin que a descoberta não encontrou
+- **inválido**: plugin existe, mas sua config não corresponde ao schema declarado
 
-OpenClaw preserves config for disabled plugins so toggling them back on is not
-destructive.
+O OpenCraft preserva a config para plugins desabilitados para que reativá-los não seja
+destrutivo.
 
-## Plugin slots (exclusive categories)
+## Slots de plugin (categorias exclusivas)
 
-Some plugin categories are **exclusive** (only one active at a time). Use
-`plugins.slots` to select which plugin owns the slot:
+Algumas categorias de plugin são **exclusivas** (apenas um ativo por vez). Use
+`plugins.slots` para selecionar qual plugin possui o slot:
 
 ```json5
 {
   plugins: {
     slots: {
-      memory: "memory-core", // or "none" to disable memory plugins
-      contextEngine: "legacy", // or a plugin id such as "lossless-claw"
+      memory: "memory-core", // ou "none" para desabilitar plugins de memória
+      contextEngine: "legacy", // ou um id de plugin como "lossless-claw"
     },
   },
 }
 ```
 
-Supported exclusive slots:
+Slots exclusivos suportados:
 
-- `memory`: active memory plugin (`"none"` disables memory plugins)
-- `contextEngine`: active context engine plugin (`"legacy"` is the built-in default)
+- `memory`: plugin de memória ativo (`"none"` desabilita plugins de memória)
+- `contextEngine`: plugin de engine de contexto ativo (`"legacy"` é o padrão integrado)
 
-If multiple plugins declare `kind: "memory"` or `kind: "context-engine"`, only
-the selected plugin loads for that slot. Others are disabled with diagnostics.
+Se múltiplos plugins declararem `kind: "memory"` ou `kind: "context-engine"`, apenas
+o plugin selecionado carrega para aquele slot. Os outros são desabilitados com diagnósticos.
 
-### Context engine plugins
+### Plugins de engine de contexto
 
-Context engine plugins own session context orchestration for ingest, assembly,
-and compaction. Register them from your plugin with
-`api.registerContextEngine(id, factory)`, then select the active engine with
+Plugins de engine de contexto possuem a orquestração de contexto de sessão para ingest, assembly
+e compactação. Registre-os do seu plugin com
+`api.registerContextEngine(id, factory)`, então selecione a engine ativa com
 `plugins.slots.contextEngine`.
 
-Use this when your plugin needs to replace or extend the default context
-pipeline rather than just add memory search or hooks.
+Use isso quando seu plugin precisar substituir ou estender o pipeline de contexto padrão
+em vez de apenas adicionar busca de memória ou hooks.
 
-## Control UI (schema + labels)
+## UI de Controle (schema + labels)
 
-The Control UI uses `config.schema` (JSON Schema + `uiHints`) to render better forms.
+A UI de Controle usa `config.schema` (JSON Schema + `uiHints`) para renderizar melhores formulários.
 
-OpenClaw augments `uiHints` at runtime based on discovered plugins:
+O OpenCraft aumenta `uiHints` em runtime com base nos plugins descobertos:
 
-- Adds per-plugin labels for `plugins.entries.<id>` / `.enabled` / `.config`
-- Merges optional plugin-provided config field hints under:
+- Adiciona labels por plugin para `plugins.entries.<id>` / `.enabled` / `.config`
+- Mescla hints de campo de config fornecidos opcionalmente pelo plugin em:
   `plugins.entries.<id>.config.<field>`
 
-If you want your plugin config fields to show good labels/placeholders (and mark secrets as sensitive),
-provide `uiHints` alongside your JSON Schema in the plugin manifest.
+Se você quer que seus campos de config de plugin mostrem bons labels/placeholders (e marquem secrets como sensíveis),
+forneça `uiHints` junto com seu JSON Schema no manifest do plugin.
 
-Example:
+Exemplo:
 
 ```json
 {
-  "id": "my-plugin",
+  "id": "meu-plugin",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
@@ -613,8 +606,8 @@ Example:
     }
   },
   "uiHints": {
-    "apiKey": { "label": "API Key", "sensitive": true },
-    "region": { "label": "Region", "placeholder": "us-east-1" }
+    "apiKey": { "label": "Chave de API", "sensitive": true },
+    "region": { "label": "Região", "placeholder": "us-east-1" }
   }
 }
 ```
@@ -622,39 +615,39 @@ Example:
 ## CLI
 
 ```bash
-openclaw plugins list
-openclaw plugins info <id>
-openclaw plugins install <path>                 # copy a local file/dir into ~/.openclaw/extensions/<id>
-openclaw plugins install ./extensions/voice-call # relative path ok
-openclaw plugins install ./plugin.tgz           # install from a local tarball
-openclaw plugins install ./plugin.zip           # install from a local zip
-openclaw plugins install -l ./extensions/voice-call # link (no copy) for dev
-openclaw plugins install @openclaw/voice-call # install from npm
-openclaw plugins install @openclaw/voice-call --pin # store exact resolved name@version
-openclaw plugins update <id>
-openclaw plugins update --all
-openclaw plugins enable <id>
-openclaw plugins disable <id>
-openclaw plugins doctor
+opencraft plugins list
+opencraft plugins info <id>
+opencraft plugins install <caminho>                    # copia um arquivo/dir local em ~/.opencraft/extensions/<id>
+opencraft plugins install ./extensions/voice-call     # caminho relativo ok
+opencraft plugins install ./plugin.tgz                # instalar de um tarball local
+opencraft plugins install ./plugin.zip                # instalar de um zip local
+opencraft plugins install -l ./extensions/voice-call  # link (sem cópia) para dev
+opencraft plugins install @openclaw/voice-call        # instalar do npm
+opencraft plugins install @openclaw/voice-call --pin  # armazenar nome@versão exata resolvida
+opencraft plugins update <id>
+opencraft plugins update --all
+opencraft plugins enable <id>
+opencraft plugins disable <id>
+opencraft plugins doctor
 ```
 
-`plugins update` only works for npm installs tracked under `plugins.installs`.
-If stored integrity metadata changes between updates, OpenClaw warns and asks for confirmation (use global `--yes` to bypass prompts).
+`plugins update` funciona apenas para installs npm rastreados em `plugins.installs`.
+Se os metadados de integridade armazenados mudarem entre atualizações, o OpenCraft avisa e pede confirmação (use o `--yes` global para ignorar prompts).
 
-Plugins may also register their own top‑level commands (example: `openclaw voicecall`).
+Plugins também podem registrar seus próprios comandos de nível superior (exemplo: `opencraft voicecall`).
 
-## Plugin API (overview)
+## API do plugin (visão geral)
 
-Plugins export either:
+Plugins exportam:
 
-- A function: `(api) => { ... }`
-- An object: `{ id, name, configSchema, register(api) { ... } }`
+- Uma função: `(api) => { ... }`
+- Um objeto: `{ id, name, configSchema, register(api) { ... } }`
 
-`register(api)` is where plugins attach behavior. Common registrations include:
+`register(api)` é onde plugins anexam comportamento. Registros comuns incluem:
 
 - `registerTool`
 - `registerHook`
-- `on(...)` for typed lifecycle hooks
+- `on(...)` para hooks de ciclo de vida tipados
 - `registerChannel`
 - `registerProvider`
 - `registerHttpRoute`
@@ -663,7 +656,7 @@ Plugins export either:
 - `registerContextEngine`
 - `registerService`
 
-Context engine plugins can also register a runtime-owned context manager:
+Plugins de engine de contexto também podem registrar um gerenciador de contexto de propriedade do runtime:
 
 ```ts
 export default function (api) {
@@ -682,7 +675,7 @@ export default function (api) {
 }
 ```
 
-Then enable it in config:
+Então habilite na config:
 
 ```json5
 {
@@ -694,38 +687,38 @@ Then enable it in config:
 }
 ```
 
-## Plugin hooks
+## Hooks de plugin
 
-Plugins can register hooks at runtime. This lets a plugin bundle event-driven
-automation without a separate hook pack install.
+Plugins podem registrar hooks em runtime. Isso permite que um plugin empacote automação
+orientada a eventos sem uma instalação separada de pacote de hook.
 
-### Example
+### Exemplo
 
 ```ts
 export default function register(api) {
   api.registerHook(
     "command:new",
     async () => {
-      // Hook logic here.
+      // Lógica do hook aqui.
     },
     {
       name: "my-plugin.command-new",
-      description: "Runs when /new is invoked",
+      description: "Roda quando /new é invocado",
     },
   );
 }
 ```
 
-Notes:
+Notas:
 
-- Register hooks explicitly via `api.registerHook(...)`.
-- Hook eligibility rules still apply (OS/bins/env/config requirements).
-- Plugin-managed hooks show up in `openclaw hooks list` with `plugin:<id>`.
-- You cannot enable/disable plugin-managed hooks via `openclaw hooks`; enable/disable the plugin instead.
+- Registre hooks explicitamente via `api.registerHook(...)`.
+- Regras de elegibilidade de hook ainda se aplicam (requisitos de OS/bins/env/config).
+- Hooks gerenciados por plugin aparecem em `opencraft hooks list` com `plugin:<id>`.
+- Você não pode habilitar/desabilitar hooks gerenciados por plugin via `opencraft hooks`; habilite/desabilite o plugin.
 
-### Agent lifecycle hooks (`api.on`)
+### Hooks de ciclo de vida do agente (`api.on`)
 
-For typed runtime lifecycle hooks, use `api.on(...)`:
+Para hooks de ciclo de vida em runtime tipados, use `api.on(...)`:
 
 ```ts
 export default function register(api) {
@@ -733,7 +726,7 @@ export default function register(api) {
     "before_prompt_build",
     (event, ctx) => {
       return {
-        prependSystemContext: "Follow company style guide.",
+        prependSystemContext: "Siga o guia de estilo da empresa.",
       };
     },
     { priority: 10 },
@@ -741,185 +734,183 @@ export default function register(api) {
 }
 ```
 
-Important hooks for prompt construction:
+Hooks importantes para construção de prompt:
 
-- `before_model_resolve`: runs before session load (`messages` are not available). Use this to deterministically override `modelOverride` or `providerOverride`.
-- `before_prompt_build`: runs after session load (`messages` are available). Use this to shape prompt input.
-- `before_agent_start`: legacy compatibility hook. Prefer the two explicit hooks above.
+- `before_model_resolve`: roda antes do carregamento de sessão (`messages` não estão disponíveis). Use para sobrescrever deterministicamente `modelOverride` ou `providerOverride`.
+- `before_prompt_build`: roda após o carregamento de sessão (`messages` estão disponíveis). Use para moldar a entrada de prompt.
+- `before_agent_start`: hook de compatibilidade legado. Prefira os dois hooks explícitos acima.
 
-Core-enforced hook policy:
+Política de hook imposta pelo core:
 
-- Operators can disable prompt mutation hooks per plugin via `plugins.entries.<id>.hooks.allowPromptInjection: false`.
-- When disabled, OpenClaw blocks `before_prompt_build` and ignores prompt-mutating fields returned from legacy `before_agent_start` while preserving legacy `modelOverride` and `providerOverride`.
+- Operadores podem desabilitar hooks de mutação de prompt por plugin via `plugins.entries.<id>.hooks.allowPromptInjection: false`.
+- Quando desabilitado, o OpenCraft bloqueia `before_prompt_build` e ignora campos de mutação de prompt retornados do `before_agent_start` legado enquanto preserva `modelOverride` e `providerOverride` legados.
 
-`before_prompt_build` result fields:
+Campos de resultado de `before_prompt_build`:
 
-- `prependContext`: prepends text to the user prompt for this run. Best for turn-specific or dynamic content.
-- `systemPrompt`: full system prompt override.
-- `prependSystemContext`: prepends text to the current system prompt.
-- `appendSystemContext`: appends text to the current system prompt.
+- `prependContext`: prepend de texto ao prompt do usuário para este turno. Melhor para conteúdo específico de turno ou dinâmico.
+- `systemPrompt`: substituição completa do prompt de sistema.
+- `prependSystemContext`: prepend de texto ao prompt de sistema atual.
+- `appendSystemContext`: append de texto ao prompt de sistema atual.
 
-Prompt build order in embedded runtime:
+Ordem de build do prompt no runtime embutido:
 
-1. Apply `prependContext` to the user prompt.
-2. Apply `systemPrompt` override when provided.
-3. Apply `prependSystemContext + current system prompt + appendSystemContext`.
+1. Aplica `prependContext` ao prompt do usuário.
+2. Aplica substituição `systemPrompt` quando fornecida.
+3. Aplica `prependSystemContext + prompt de sistema atual + appendSystemContext`.
 
-Merge and precedence notes:
+Notas de mesclagem e precedência:
 
-- Hook handlers run by priority (higher first).
-- For merged context fields, values are concatenated in execution order.
-- `before_prompt_build` values are applied before legacy `before_agent_start` fallback values.
+- Handlers de hook rodam por prioridade (maior primeiro).
+- Para campos de contexto mesclados, valores são concatenados em ordem de execução.
+- Valores de `before_prompt_build` são aplicados antes dos valores de fallback do `before_agent_start` legado.
 
-Migration guidance:
+Orientação de migração:
 
-- Move static guidance from `prependContext` to `prependSystemContext` (or `appendSystemContext`) so providers can cache stable system-prefix content.
-- Keep `prependContext` for per-turn dynamic context that should stay tied to the user message.
+- Mova orientação estática de `prependContext` para `prependSystemContext` (ou `appendSystemContext`) para que provedores possam armazenar em cache conteúdo estável de prefixo de sistema.
+- Mantenha `prependContext` para contexto dinâmico por turno que deve ficar vinculado à mensagem do usuário.
 
-## Provider plugins (model auth)
+## Plugins de provedor (autenticação de modelo)
 
-Plugins can register **model providers** so users can run OAuth or API-key
-setup inside OpenClaw, surface provider setup in onboarding/model-pickers, and
-contribute implicit provider discovery.
+Plugins podem registrar **provedores de modelo** para que usuários possam executar OAuth ou configuração de
+chave de API dentro do OpenCraft, expor configuração de provedor no onboarding/model-pickers e
+contribuir com descoberta implícita de provedor.
 
-Provider plugins are the modular extension seam for model-provider setup. They
-are not just "OAuth helpers" anymore.
+Plugins de provedor são a costura de extensão modular para configuração de provedor de modelo. Eles
+não são apenas "helpers OAuth" mais.
 
-### Provider plugin lifecycle
+### Ciclo de vida do plugin de provedor
 
-A provider plugin can participate in five distinct phases:
+Um plugin de provedor pode participar de cinco fases distintas:
 
-1. **Auth**
-   `auth[].run(ctx)` performs OAuth, API-key capture, device code, or custom
-   setup and returns auth profiles plus optional config patches.
-2. **Non-interactive setup**
-   `auth[].runNonInteractive(ctx)` handles `openclaw onboard --non-interactive`
-   without prompts. Use this when the provider needs custom headless setup
-   beyond the built-in simple API-key paths.
-3. **Wizard integration**
-   `wizard.onboarding` adds an entry to `openclaw onboard`.
-   `wizard.modelPicker` adds a setup entry to the model picker.
-4. **Implicit discovery**
-   `discovery.run(ctx)` can contribute provider config automatically during
-   model resolution/listing.
-5. **Post-selection follow-up**
-   `onModelSelected(ctx)` runs after a model is chosen. Use this for provider-
-   specific work such as downloading a local model.
+1. **Autenticação**
+   `auth[].run(ctx)` realiza OAuth, captura de chave de API, código de dispositivo ou configuração personalizada
+   e retorna perfis de autenticação mais patches de config opcionais.
+2. **Configuração não interativa**
+   `auth[].runNonInteractive(ctx)` trata `opencraft onboard --non-interactive`
+   sem prompts. Use isso quando o provedor precisa de configuração headless personalizada
+   além dos caminhos simples de chave de API integrados.
+3. **Integração com wizard**
+   `wizard.onboarding` adiciona uma entrada ao `opencraft onboard`.
+   `wizard.modelPicker` adiciona uma entrada de configuração ao seletor de modelo.
+4. **Descoberta implícita**
+   `discovery.run(ctx)` pode contribuir com config de provedor automaticamente durante
+   resolução/listagem de modelo.
+5. **Follow-up pós-seleção**
+   `onModelSelected(ctx)` roda após um modelo ser escolhido. Use para trabalho
+   específico do provedor como baixar um modelo local.
 
-This is the recommended split because these phases have different lifecycle
-requirements:
+Essa é a divisão recomendada porque essas fases têm diferentes requisitos de ciclo de vida:
 
-- auth is interactive and writes credentials/config
-- non-interactive setup is flag/env-driven and must not prompt
-- wizard metadata is static and UI-facing
-- discovery should be safe, quick, and failure-tolerant
-- post-select hooks are side effects tied to the chosen model
+- autenticação é interativa e escreve credenciais/config
+- configuração não interativa é acionada por flag/env e não deve solicitar
+- metadados de wizard são estáticos e voltados para UI
+- descoberta deve ser segura, rápida e tolerante a falhas
+- hooks pós-seleção são efeitos colaterais vinculados ao modelo escolhido
 
-### Provider auth contract
+### Contrato de autenticação do provedor
 
-`auth[].run(ctx)` returns:
+`auth[].run(ctx)` retorna:
 
-- `profiles`: auth profiles to write
-- `configPatch`: optional `openclaw.json` changes
-- `defaultModel`: optional `provider/model` ref
-- `notes`: optional user-facing notes
+- `profiles`: perfis de autenticação para escrever
+- `configPatch`: mudanças opcionais de `opencraft.json`
+- `defaultModel`: referência opcional `provedor/modelo`
+- `notes`: notas opcionais voltadas para o usuário
 
-Core then:
+O core então:
 
-1. writes the returned auth profiles
-2. applies auth-profile config wiring
-3. merges the config patch
-4. optionally applies the default model
-5. runs the provider's `onModelSelected` hook when appropriate
+1. escreve os perfis de autenticação retornados
+2. aplica fiação de config de perfil de autenticação
+3. mescla o patch de config
+4. opcionalmente aplica o modelo padrão
+5. roda o hook `onModelSelected` do provedor quando apropriado
 
-That means a provider plugin owns the provider-specific setup logic, while core
-owns the generic persistence and config-merge path.
+Isso significa que um plugin de provedor possui a lógica de configuração específica do provedor, enquanto o core
+possui o caminho genérico de persistência e mesclagem de config.
 
-### Provider non-interactive contract
+### Contrato não interativo do provedor
 
-`auth[].runNonInteractive(ctx)` is optional. Implement it when the provider
-needs headless setup that cannot be expressed through the built-in generic
-API-key flows.
+`auth[].runNonInteractive(ctx)` é opcional. Implemente-o quando o provedor
+precisar de configuração headless que não pode ser expressa pelos fluxos genéricos
+de chave de API integrados.
 
-The non-interactive context includes:
+O contexto não interativo inclui:
 
-- the current and base config
-- parsed onboarding CLI options
-- runtime logging/error helpers
-- agent/workspace dirs
-- `resolveApiKey(...)` to read provider keys from flags, env, or existing auth
-  profiles while honoring `--secret-input-mode`
-- `toApiKeyCredential(...)` to convert a resolved key into an auth-profile
-  credential with the right plaintext vs secret-ref storage
+- a config atual e base
+- opções de CLI de onboarding analisadas
+- helpers de logging/error de runtime
+- dirs de agente/workspace
+- `resolveApiKey(...)` para ler chaves de provedor de flags, env ou perfis de autenticação
+  existentes enquanto respeita `--secret-input-mode`
+- `toApiKeyCredential(...)` para converter uma chave resolvida em uma credencial de perfil de autenticação
+  com o armazenamento correto de texto simples vs secret-ref
 
-Use this surface for providers such as:
+Use esta superfície para provedores como:
 
-- self-hosted OpenAI-compatible runtimes that need `--custom-base-url` +
+- runtimes OpenAI-compatíveis self-hosted que precisam de `--custom-base-url` +
   `--custom-model-id`
-- provider-specific non-interactive verification or config synthesis
+- verificação não interativa específica do provedor ou síntese de config
 
-Do not prompt from `runNonInteractive`. Reject missing inputs with actionable
-errors instead.
+Não solicite de `runNonInteractive`. Rejeite entradas ausentes com erros acionáveis.
 
-### Provider wizard metadata
+### Metadados de wizard do provedor
 
-`wizard.onboarding` controls how the provider appears in grouped onboarding:
+`wizard.onboarding` controla como o provedor aparece no onboarding agrupado:
 
-- `choiceId`: auth-choice value
-- `choiceLabel`: option label
-- `choiceHint`: short hint
-- `groupId`: group bucket id
-- `groupLabel`: group label
-- `groupHint`: group hint
-- `methodId`: auth method to run
+- `choiceId`: valor da escolha de autenticação
+- `choiceLabel`: label da opção
+- `choiceHint`: hint curto
+- `groupId`: id do bucket de grupo
+- `groupLabel`: label do grupo
+- `groupHint`: hint do grupo
+- `methodId`: método de autenticação para rodar
 
-`wizard.modelPicker` controls how a provider appears as a "set this up now"
-entry in model selection:
+`wizard.modelPicker` controla como um provedor aparece como uma entrada "configurar isso agora"
+na seleção de modelo:
 
 - `label`
 - `hint`
 - `methodId`
 
-When a provider has multiple auth methods, the wizard can either point at one
-explicit method or let OpenClaw synthesize per-method choices.
+Quando um provedor tem múltiplos métodos de autenticação, o wizard pode apontar para um
+método explícito ou deixar o OpenCraft sintetizar escolhas por método.
 
-OpenClaw validates provider wizard metadata when the plugin registers:
+O OpenCraft valida metadados de wizard de provedor quando o plugin registra:
 
-- duplicate or blank auth-method ids are rejected
-- wizard metadata is ignored when the provider has no auth methods
-- invalid `methodId` bindings are downgraded to warnings and fall back to the
-  provider's remaining auth methods
+- ids de método de autenticação duplicados ou em branco são rejeitados
+- metadados de wizard são ignorados quando o provedor não tem métodos de autenticação
+- bindings `methodId` inválidos são rebaixados para avisos e recuam para os
+  métodos de autenticação restantes do provedor
 
-### Provider discovery contract
+### Contrato de descoberta do provedor
 
-`discovery.run(ctx)` returns one of:
+`discovery.run(ctx)` retorna um dos seguintes:
 
 - `{ provider }`
 - `{ providers }`
 - `null`
 
-Use `{ provider }` for the common case where the plugin owns one provider id.
-Use `{ providers }` when a plugin discovers multiple provider entries.
+Use `{ provider }` para o caso comum onde o plugin possui um id de provedor.
+Use `{ providers }` quando um plugin descobre múltiplas entradas de provedor.
 
-The discovery context includes:
+O contexto de descoberta inclui:
 
-- the current config
-- agent/workspace dirs
-- process env
-- a helper to resolve the provider API key and a discovery-safe API key value
+- a config atual
+- dirs de agente/workspace
+- env do processo
+- um helper para resolver a chave de API do provedor e um valor de chave de API seguro para descoberta
 
-Discovery should be:
+A descoberta deve ser:
 
-- fast
-- best-effort
-- safe to skip on failure
-- careful about side effects
+- rápida
+- melhor esforço
+- segura para pular em caso de falha
+- cuidadosa com efeitos colaterais
 
-It should not depend on prompts or long-running setup.
+Não deve depender de prompts ou configuração de longa duração.
 
-### Discovery ordering
+### Ordenação de descoberta
 
-Provider discovery runs in ordered phases:
+A descoberta de provedor roda em fases ordenadas:
 
 - `simple`
 - `profile`
@@ -928,40 +919,40 @@ Provider discovery runs in ordered phases:
 
 Use:
 
-- `simple` for cheap environment-only discovery
-- `profile` when discovery depends on auth profiles
-- `paired` for providers that need to coordinate with another discovery step
-- `late` for expensive or local-network probing
+- `simple` para descoberta barata somente de ambiente
+- `profile` quando a descoberta depende de perfis de autenticação
+- `paired` para provedores que precisam coordenar com outro passo de descoberta
+- `late` para sondagem cara ou de rede local
 
-Most self-hosted providers should use `late`.
+A maioria dos provedores self-hosted deve usar `late`.
 
-### Good provider-plugin boundaries
+### Boas fronteiras de plugin de provedor
 
-Good fit for provider plugins:
+Boa adequação para plugins de provedor:
 
-- local/self-hosted providers with custom setup flows
-- provider-specific OAuth/device-code login
-- implicit discovery of local model servers
-- post-selection side effects such as model pulls
+- provedores locais/self-hosted com fluxos de configuração personalizados
+- login OAuth/device-code específico do provedor
+- descoberta implícita de servidores de modelo locais
+- efeitos colaterais pós-seleção como pulls de modelo
 
-Less compelling fit:
+Menor adequação:
 
-- trivial API-key-only providers that differ only by env var, base URL, and one
-  default model
+- provedores triviais somente de chave de API que diferem apenas por variável de env, URL base e um
+  modelo padrão
 
-Those can still become plugins, but the main modularity payoff comes from
-extracting behavior-rich providers first.
+Esses ainda podem se tornar plugins, mas o principal ganho de modularidade vem de
+extrair provedores ricos em comportamento primeiro.
 
-Register a provider via `api.registerProvider(...)`. Each provider exposes one
-or more auth methods (OAuth, API key, device code, etc.). Those methods can
-power:
+Registre um provedor via `api.registerProvider(...)`. Cada provedor expõe um
+ou mais métodos de autenticação (OAuth, chave de API, código de dispositivo, etc.). Esses métodos podem
+alimentar:
 
-- `openclaw models auth login --provider <id> [--method <id>]`
-- `openclaw onboard`
-- model-picker “custom provider” setup entries
-- implicit provider discovery during model resolution/listing
+- `opencraft models auth login --provider <id> [--method <id>]`
+- `opencraft onboard`
+- entradas de configuração de "provedor personalizado" no seletor de modelo
+- descoberta implícita de provedor durante resolução/listagem de modelo
 
-Example:
+Exemplo:
 
 ```ts
 api.registerProvider({
@@ -973,7 +964,7 @@ api.registerProvider({
       label: "OAuth",
       kind: "oauth",
       run: async (ctx) => {
-        // Run OAuth flow and return auth profiles.
+        // Execute o fluxo OAuth e retorne perfis de autenticação.
         return {
           profiles: [
             {
@@ -1001,8 +992,8 @@ api.registerProvider({
       methodId: "oauth",
     },
     modelPicker: {
-      label: "AcmeAI (custom)",
-      hint: "Connect a self-hosted AcmeAI endpoint",
+      label: "AcmeAI (personalizado)",
+      hint: "Conectar um endpoint AcmeAI self-hosted",
       methodId: "oauth",
     },
   },
@@ -1020,39 +1011,38 @@ api.registerProvider({
 });
 ```
 
-Notes:
+Notas:
 
-- `run` receives a `ProviderAuthContext` with `prompter`, `runtime`,
-  `openUrl`, and `oauth.createVpsAwareHandlers` helpers.
-- `runNonInteractive` receives a `ProviderAuthMethodNonInteractiveContext`
-  with `opts`, `resolveApiKey`, and `toApiKeyCredential` helpers for
-  headless onboarding.
-- Return `configPatch` when you need to add default models or provider config.
-- Return `defaultModel` so `--set-default` can update agent defaults.
-- `wizard.onboarding` adds a provider choice to `openclaw onboard`.
-- `wizard.modelPicker` adds a “setup this provider” entry to the model picker.
-- `discovery.run` returns either `{ provider }` for the plugin’s own provider id
-  or `{ providers }` for multi-provider discovery.
-- `discovery.order` controls when the provider runs relative to built-in
-  discovery phases: `simple`, `profile`, `paired`, or `late`.
-- `onModelSelected` is the post-selection hook for provider-specific follow-up
-  work such as pulling a local model.
+- `run` recebe um `ProviderAuthContext` com helpers `prompter`, `runtime`,
+  `openUrl` e `oauth.createVpsAwareHandlers`.
+- `runNonInteractive` recebe um `ProviderAuthMethodNonInteractiveContext`
+  com helpers `opts`, `resolveApiKey` e `toApiKeyCredential` para
+  onboarding headless.
+- Retorne `configPatch` quando precisar adicionar modelos padrão ou config de provedor.
+- Retorne `defaultModel` para que `--set-default` possa atualizar padrões do agente.
+- `wizard.onboarding` adiciona uma escolha de provedor ao `opencraft onboard`.
+- `wizard.modelPicker` adiciona uma entrada "configurar este provedor" ao seletor de modelo.
+- `discovery.run` retorna `{ provider }` para o id de provedor próprio do plugin
+  ou `{ providers }` para descoberta multi-provedor.
+- `discovery.order` controla quando o provedor roda em relação às fases de descoberta integradas: `simple`, `profile`, `paired` ou `late`.
+- `onModelSelected` é o hook pós-seleção para trabalho de follow-up específico do provedor
+  como puxar um modelo local.
 
-### Register a messaging channel
+### Registrar um canal de mensagens
 
-Plugins can register **channel plugins** that behave like built‑in channels
-(WhatsApp, Telegram, etc.). Channel config lives under `channels.<id>` and is
-validated by your channel plugin code.
+Plugins podem registrar **plugins de canal** que se comportam como canais integrados
+(WhatsApp, Telegram, etc.). A config do canal vive em `channels.<id>` e é
+validada pelo seu código de plugin de canal.
 
 ```ts
-const myChannel = {
+const meuCanal = {
   id: "acmechat",
   meta: {
     id: "acmechat",
     label: "AcmeChat",
     selectionLabel: "AcmeChat (API)",
     docsPath: "/channels/acmechat",
-    blurb: "demo channel plugin.",
+    blurb: "plugin de canal demo.",
     aliases: ["acme"],
   },
   capabilities: { chatTypes: ["direct"] },
@@ -1070,75 +1060,75 @@ const myChannel = {
 };
 
 export default function (api) {
-  api.registerChannel({ plugin: myChannel });
+  api.registerChannel({ plugin: meuCanal });
 }
 ```
 
-Notes:
+Notas:
 
-- Put config under `channels.<id>` (not `plugins.entries`).
-- `meta.label` is used for labels in CLI/UI lists.
-- `meta.aliases` adds alternate ids for normalization and CLI inputs.
-- `meta.preferOver` lists channel ids to skip auto-enable when both are configured.
-- `meta.detailLabel` and `meta.systemImage` let UIs show richer channel labels/icons.
+- Coloque a config em `channels.<id>` (não em `plugins.entries`).
+- `meta.label` é usado para labels em listas de CLI/UI.
+- `meta.aliases` adiciona ids alternativos para normalização e entradas CLI.
+- `meta.preferOver` lista ids de canal para pular auto-enable quando ambos estiverem configurados.
+- `meta.detailLabel` e `meta.systemImage` permitem que UIs mostrem labels/ícones de canal mais ricos.
 
-### Channel onboarding hooks
+### Hooks de onboarding de canal
 
-Channel plugins can define optional onboarding hooks on `plugin.onboarding`:
+Plugins de canal podem definir hooks de onboarding opcionais em `plugin.onboarding`:
 
-- `configure(ctx)` is the baseline setup flow.
-- `configureInteractive(ctx)` can fully own interactive setup for both configured and unconfigured states.
-- `configureWhenConfigured(ctx)` can override behavior only for already configured channels.
+- `configure(ctx)` é o fluxo de configuração base.
+- `configureInteractive(ctx)` pode possuir completamente a configuração interativa para estados configurados e não configurados.
+- `configureWhenConfigured(ctx)` pode sobrescrever o comportamento apenas para canais já configurados.
 
-Hook precedence in the wizard:
+Precedência de hook no wizard:
 
-1. `configureInteractive` (if present)
-2. `configureWhenConfigured` (only when channel status is already configured)
-3. fallback to `configure`
+1. `configureInteractive` (se presente)
+2. `configureWhenConfigured` (somente quando o status do canal já está configurado)
+3. fallback para `configure`
 
-Context details:
+Detalhes de contexto:
 
-- `configureInteractive` and `configureWhenConfigured` receive:
-  - `configured` (`true` or `false`)
-  - `label` (user-facing channel name used by prompts)
-  - plus the shared config/runtime/prompter/options fields
-- Returning `"skip"` leaves selection and account tracking unchanged.
-- Returning `{ cfg, accountId? }` applies config updates and records account selection.
+- `configureInteractive` e `configureWhenConfigured` recebem:
+  - `configured` (`true` ou `false`)
+  - `label` (nome do canal voltado para o usuário usado por prompts)
+  - mais os campos compartilhados de config/runtime/prompter/options
+- Retornar `"skip"` deixa a seleção e rastreamento de conta sem alterações.
+- Retornar `{ cfg, accountId? }` aplica atualizações de config e registra a seleção de conta.
 
-### Write a new messaging channel (step‑by‑step)
+### Escrever um novo canal de mensagens (passo a passo)
 
-Use this when you want a **new chat surface** (a "messaging channel"), not a model provider.
-Model provider docs live under `/providers/*`.
+Use isso quando quiser uma **nova superfície de chat** (um "canal de mensagens"), não um provedor de modelo.
+Docs de provedor de modelo vivem em `/providers/*`.
 
-1. Pick an id + config shape
+1. Escolha um id + forma de config
 
-- All channel config lives under `channels.<id>`.
-- Prefer `channels.<id>.accounts.<accountId>` for multi‑account setups.
+- Toda config de canal vive em `channels.<id>`.
+- Prefira `channels.<id>.accounts.<accountId>` para configurações multi-conta.
 
-2. Define the channel metadata
+2. Defina os metadados do canal
 
-- `meta.label`, `meta.selectionLabel`, `meta.docsPath`, `meta.blurb` control CLI/UI lists.
-- `meta.docsPath` should point at a docs page like `/channels/<id>`.
-- `meta.preferOver` lets a plugin replace another channel (auto-enable prefers it).
-- `meta.detailLabel` and `meta.systemImage` are used by UIs for detail text/icons.
+- `meta.label`, `meta.selectionLabel`, `meta.docsPath`, `meta.blurb` controlam listas CLI/UI.
+- `meta.docsPath` deve apontar para uma página de docs como `/channels/<id>`.
+- `meta.preferOver` permite que um plugin substitua outro canal (auto-enable o prefere).
+- `meta.detailLabel` e `meta.systemImage` são usados por UIs para texto de detalhe/ícones.
 
-3. Implement the required adapters
+3. Implemente os adaptadores obrigatórios
 
 - `config.listAccountIds` + `config.resolveAccount`
-- `capabilities` (chat types, media, threads, etc.)
-- `outbound.deliveryMode` + `outbound.sendText` (for basic send)
+- `capabilities` (tipos de chat, mídia, threads, etc.)
+- `outbound.deliveryMode` + `outbound.sendText` (para envio básico)
 
-4. Add optional adapters as needed
+4. Adicione adaptadores opcionais conforme necessário
 
-- `setup` (wizard), `security` (DM policy), `status` (health/diagnostics)
+- `setup` (wizard), `security` (política de DM), `status` (health/diagnósticos)
 - `gateway` (start/stop/login), `mentions`, `threading`, `streaming`
-- `actions` (message actions), `commands` (native command behavior)
+- `actions` (ações de mensagem), `commands` (comportamento de comando nativo)
 
-5. Register the channel in your plugin
+5. Registre o canal no seu plugin
 
 - `api.registerChannel({ plugin })`
 
-Minimal config example:
+Exemplo mínimo de config:
 
 ```json5
 {
@@ -1152,7 +1142,7 @@ Minimal config example:
 }
 ```
 
-Minimal channel plugin (outbound‑only):
+Plugin de canal mínimo (somente saída):
 
 ```ts
 const plugin = {
@@ -1162,7 +1152,7 @@ const plugin = {
     label: "AcmeChat",
     selectionLabel: "AcmeChat (API)",
     docsPath: "/channels/acmechat",
-    blurb: "AcmeChat messaging channel.",
+    blurb: "Canal de mensagens AcmeChat.",
     aliases: ["acme"],
   },
   capabilities: { chatTypes: ["direct"] },
@@ -1176,7 +1166,7 @@ const plugin = {
   outbound: {
     deliveryMode: "direct",
     sendText: async ({ text }) => {
-      // deliver `text` to your channel here
+      // entregue `text` ao seu canal aqui
       return { ok: true };
     },
   },
@@ -1187,14 +1177,14 @@ export default function (api) {
 }
 ```
 
-Load the plugin (extensions dir or `plugins.load.paths`), restart the gateway,
-then configure `channels.<id>` in your config.
+Carregue o plugin (dir de extensões ou `plugins.load.paths`), reinicie o gateway,
+então configure `channels.<id>` na sua config.
 
-### Agent tools
+### Tools do agente
 
-See the dedicated guide: [Plugin agent tools](/plugins/agent-tools).
+Veja o guia dedicado: [Tools de agente para plugins](/plugins/agent-tools).
 
-### Register a gateway RPC method
+### Registrar um método RPC do gateway
 
 ```ts
 export default function (api) {
@@ -1204,14 +1194,14 @@ export default function (api) {
 }
 ```
 
-### Register CLI commands
+### Registrar comandos CLI
 
 ```ts
 export default function (api) {
   api.registerCli(
     ({ program }) => {
       program.command("mycmd").action(() => {
-        console.log("Hello");
+        console.log("Olá");
       });
     },
     { commands: ["mycmd"] },
@@ -1219,132 +1209,132 @@ export default function (api) {
 }
 ```
 
-### Register auto-reply commands
+### Registrar comandos de auto-resposta
 
-Plugins can register custom slash commands that execute **without invoking the
-AI agent**. This is useful for toggle commands, status checks, or quick actions
-that don't need LLM processing.
+Plugins podem registrar comandos de barra personalizados que executam **sem invocar o
+agente de IA**. Isso é útil para comandos de toggle, verificações de status ou ações rápidas
+que não precisam de processamento LLM.
 
 ```ts
 export default function (api) {
   api.registerCommand({
     name: "mystatus",
-    description: "Show plugin status",
+    description: "Mostrar status do plugin",
     handler: (ctx) => ({
-      text: `Plugin is running! Channel: ${ctx.channel}`,
+      text: `Plugin rodando! Canal: ${ctx.channel}`,
     }),
   });
 }
 ```
 
-Command handler context:
+Contexto do handler de comando:
 
-- `senderId`: The sender's ID (if available)
-- `channel`: The channel where the command was sent
-- `isAuthorizedSender`: Whether the sender is an authorized user
-- `args`: Arguments passed after the command (if `acceptsArgs: true`)
-- `commandBody`: The full command text
-- `config`: The current OpenClaw config
+- `senderId`: O ID do remetente (se disponível)
+- `channel`: O canal onde o comando foi enviado
+- `isAuthorizedSender`: Se o remetente é um usuário autorizado
+- `args`: Argumentos passados após o comando (se `acceptsArgs: true`)
+- `commandBody`: O texto completo do comando
+- `config`: A config atual do OpenCraft
 
-Command options:
+Opções de comando:
 
-- `name`: Command name (without the leading `/`)
-- `nativeNames`: Optional native-command aliases for slash/menu surfaces. Use `default` for all native providers, or provider-specific keys like `discord`
-- `description`: Help text shown in command lists
-- `acceptsArgs`: Whether the command accepts arguments (default: false). If false and arguments are provided, the command won't match and the message falls through to other handlers
-- `requireAuth`: Whether to require authorized sender (default: true)
-- `handler`: Function that returns `{ text: string }` (can be async)
+- `name`: Nome do comando (sem o `/` inicial)
+- `nativeNames`: Aliases de comando nativo opcionais para superfícies slash/menu. Use `default` para todos os provedores nativos, ou chaves específicas de provedor como `discord`
+- `description`: Texto de ajuda mostrado em listas de comando
+- `acceptsArgs`: Se o comando aceita argumentos (padrão: false). Se false e argumentos forem fornecidos, o comando não corresponderá e a mensagem passará por outros handlers
+- `requireAuth`: Se deve exigir remetente autorizado (padrão: true)
+- `handler`: Função que retorna `{ text: string }` (pode ser async)
 
-Example with authorization and arguments:
+Exemplo com autorização e argumentos:
 
 ```ts
 api.registerCommand({
   name: "setmode",
-  description: "Set plugin mode",
+  description: "Definir modo do plugin",
   acceptsArgs: true,
   requireAuth: true,
   handler: async (ctx) => {
     const mode = ctx.args?.trim() || "default";
     await saveMode(mode);
-    return { text: `Mode set to: ${mode}` };
+    return { text: `Modo definido para: ${mode}` };
   },
 });
 ```
 
-Notes:
+Notas:
 
-- Plugin commands are processed **before** built-in commands and the AI agent
-- Commands are registered globally and work across all channels
-- Command names are case-insensitive (`/MyStatus` matches `/mystatus`)
-- Command names must start with a letter and contain only letters, numbers, hyphens, and underscores
-- Reserved command names (like `help`, `status`, `reset`, etc.) cannot be overridden by plugins
-- Duplicate command registration across plugins will fail with a diagnostic error
+- Comandos de plugin são processados **antes** de comandos integrados e do agente de IA
+- Comandos são registrados globalmente e funcionam em todos os canais
+- Nomes de comando são insensíveis a maiúsculas (`/MyStatus` corresponde a `/mystatus`)
+- Nomes de comando devem começar com uma letra e conter apenas letras, números, hífens e sublinhados
+- Nomes de comando reservados (como `help`, `status`, `reset`, etc.) não podem ser substituídos por plugins
+- Registro duplicado de comandos entre plugins falhará com um erro de diagnóstico
 
-### Register background services
+### Registrar serviços em background
 
 ```ts
 export default function (api) {
   api.registerService({
-    id: "my-service",
-    start: () => api.logger.info("ready"),
-    stop: () => api.logger.info("bye"),
+    id: "meu-servico",
+    start: () => api.logger.info("pronto"),
+    stop: () => api.logger.info("tchau"),
   });
 }
 ```
 
-## Naming conventions
+## Convenções de nomenclatura
 
-- Gateway methods: `pluginId.action` (example: `voicecall.status`)
-- Tools: `snake_case` (example: `voice_call`)
-- CLI commands: kebab or camel, but avoid clashing with core commands
+- Métodos de Gateway: `pluginId.acao` (exemplo: `voicecall.status`)
+- Tools: `snake_case` (exemplo: `voice_call`)
+- Comandos CLI: kebab ou camel, mas evite conflitar com comandos core
 
 ## Skills
 
-Plugins can ship a skill in the repo (`skills/<name>/SKILL.md`).
-Enable it with `plugins.entries.<id>.enabled` (or other config gates) and ensure
-it’s present in your workspace/managed skills locations.
+Plugins podem incluir uma skill no repo (`skills/<nome>/SKILL.md`).
+Habilite-a com `plugins.entries.<id>.enabled` (ou outros gates de config) e certifique-se de
+que está presente nos locais de skills gerenciados/do workspace.
 
-## Distribution (npm)
+## Distribuição (npm)
 
-Recommended packaging:
+Empacotamento recomendado:
 
-- Main package: `openclaw` (this repo)
-- Plugins: separate npm packages under `@openclaw/*` (example: `@openclaw/voice-call`)
+- Pacote principal: `opencraft` (este repo)
+- Plugins: pacotes npm separados em `@openclaw/*` (exemplo: `@openclaw/voice-call`)
 
-Publishing contract:
+Contrato de publicação:
 
-- Plugin `package.json` must include `openclaw.extensions` with one or more entry files.
-- Entry files can be `.js` or `.ts` (jiti loads TS at runtime).
-- `openclaw plugins install <npm-spec>` uses `npm pack`, extracts into `~/.openclaw/extensions/<id>/`, and enables it in config.
-- Config key stability: scoped packages are normalized to the **unscoped** id for `plugins.entries.*`.
+- O `package.json` do plugin deve incluir `openclaw.extensions` com um ou mais arquivos de entrada.
+- Arquivos de entrada podem ser `.js` ou `.ts` (jiti carrega TS em runtime).
+- `opencraft plugins install <npm-spec>` usa `npm pack`, extrai em `~/.opencraft/extensions/<id>/` e o habilita na config.
+- Estabilidade de chave de config: pacotes com escopo são normalizados para o id **sem escopo** para `plugins.entries.*`.
 
-## Example plugin: Voice Call
+## Plugin de exemplo: Voice Call
 
-This repo includes a voice‑call plugin (Twilio or log fallback):
+Este repo inclui um plugin de voice call (Twilio ou fallback de log):
 
-- Source: `extensions/voice-call`
+- Fonte: `extensions/voice-call`
 - Skill: `skills/voice-call`
-- CLI: `openclaw voicecall start|status`
+- CLI: `opencraft voicecall start|status`
 - Tool: `voice_call`
 - RPC: `voicecall.start`, `voicecall.status`
-- Config (twilio): `provider: "twilio"` + `twilio.accountSid/authToken/from` (optional `statusCallbackUrl`, `twimlUrl`)
-- Config (dev): `provider: "log"` (no network)
+- Config (twilio): `provider: "twilio"` + `twilio.accountSid/authToken/from` (opcional `statusCallbackUrl`, `twimlUrl`)
+- Config (dev): `provider: "log"` (sem rede)
 
-See [Voice Call](/plugins/voice-call) and `extensions/voice-call/README.md` for setup and usage.
+Veja [Voice Call](/plugins/voice-call) e `extensions/voice-call/README.md` para configuração e uso.
 
-## Safety notes
+## Notas de segurança
 
-Plugins run in-process with the Gateway. Treat them as trusted code:
+Plugins rodam em-processo com o Gateway. Trate-os como código confiável:
 
-- Only install plugins you trust.
-- Prefer `plugins.allow` allowlists.
-- Remember that `plugins.allow` is id-based, so an enabled workspace plugin can
-  intentionally shadow a bundled plugin with the same id.
-- Restart the Gateway after changes.
+- Instale apenas plugins em que você confia.
+- Prefira allowlists `plugins.allow`.
+- Lembre que `plugins.allow` é baseado em id, então um plugin de workspace habilitado pode
+  intencionalmente ofuscar um plugin empacotado com o mesmo id.
+- Reinicie o Gateway após mudanças.
 
-## Testing plugins
+## Testando plugins
 
-Plugins can (and should) ship tests:
+Plugins podem (e devem) incluir testes:
 
-- In-repo plugins can keep Vitest tests under `src/**` (example: `src/plugins/voice-call.plugin.test.ts`).
-- Separately published plugins should run their own CI (lint/build/test) and validate `openclaw.extensions` points at the built entrypoint (`dist/index.js`).
+- Plugins no repo podem manter testes Vitest em `src/**` (exemplo: `src/plugins/voice-call.plugin.test.ts`).
+- Plugins publicados separadamente devem rodar seu próprio CI (lint/build/test) e validar que `openclaw.extensions` aponta para o entrypoint buildado (`dist/index.js`).

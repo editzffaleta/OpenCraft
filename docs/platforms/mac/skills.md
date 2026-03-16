@@ -1,33 +1,33 @@
 ---
-summary: "macOS Skills settings UI and gateway-backed status"
+summary: "UI de configurações de Skills do macOS e status respaldado pelo gateway"
 read_when:
-  - Updating the macOS Skills settings UI
-  - Changing skills gating or install behavior
+  - Atualizando a UI de configurações de Skills do macOS
+  - Alterando o controle de acesso ou comportamento de instalação de skills
 title: "Skills"
 ---
 
 # Skills (macOS)
 
-The macOS app surfaces OpenClaw skills via the gateway; it does not parse skills locally.
+O app macOS expõe as skills do OpenCraft via o gateway; não analisa as skills localmente.
 
-## Data source
+## Fonte de dados
 
-- `skills.status` (gateway) returns all skills plus eligibility and missing requirements
-  (including allowlist blocks for bundled skills).
-- Requirements are derived from `metadata.openclaw.requires` in each `SKILL.md`.
+- `skills.status` (gateway) retorna todas as skills além de elegibilidade e requisitos ausentes
+  (incluindo bloqueios de allowlist para skills embutidas).
+- Os requisitos são derivados de `metadata.openclaw.requires` em cada `SKILL.md`.
 
-## Install actions
+## Ações de instalação
 
-- `metadata.openclaw.install` defines install options (brew/node/go/uv).
-- The app calls `skills.install` to run installers on the gateway host.
-- The gateway surfaces only one preferred installer when multiple are provided
-  (brew when available, otherwise node manager from `skills.install`, default npm).
+- `metadata.openclaw.install` define opções de instalação (brew/node/go/uv).
+- O app chama `skills.install` para executar instaladores no host do gateway.
+- O gateway expõe apenas um instalador preferido quando múltiplos são fornecidos
+  (brew quando disponível, caso contrário gerenciador de node de `skills.install`, padrão npm).
 
-## Env/API keys
+## Env/chaves de API
 
-- The app stores keys in `~/.openclaw/openclaw.json` under `skills.entries.<skillKey>`.
-- `skills.update` patches `enabled`, `apiKey`, and `env`.
+- O app armazena chaves em `~/.opencraft/opencraft.json` sob `skills.entries.<skillKey>`.
+- `skills.update` atualiza `enabled`, `apiKey` e `env`.
 
-## Remote mode
+## Modo remoto
 
-- Install + config updates happen on the gateway host (not the local Mac).
+- Atualizações de instalação + configuração acontecem no host do gateway (não no Mac local).

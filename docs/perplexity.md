@@ -1,37 +1,37 @@
 ---
-summary: "Perplexity Search API and Sonar/OpenRouter compatibility for web_search"
+summary: "Perplexity Search API e compatibilidade Sonar/OpenRouter para web_search"
 read_when:
-  - You want to use Perplexity Search for web search
-  - You need PERPLEXITY_API_KEY or OPENROUTER_API_KEY setup
+  - Você quer usar o Perplexity Search para busca na web
+  - Você precisa de configuração de PERPLEXITY_API_KEY ou OPENROUTER_API_KEY
 title: "Perplexity Search"
 ---
 
 # Perplexity Search API
 
-OpenClaw supports Perplexity Search API as a `web_search` provider.
-It returns structured results with `title`, `url`, and `snippet` fields.
+O OpenCraft suporta a Perplexity Search API como provedor de `web_search`.
+Ela retorna resultados estruturados com campos `title`, `url` e `snippet`.
 
-For compatibility, OpenClaw also supports legacy Perplexity Sonar/OpenRouter setups.
-If you use `OPENROUTER_API_KEY`, an `sk-or-...` key in `tools.web.search.perplexity.apiKey`, or set `tools.web.search.perplexity.baseUrl` / `model`, the provider switches to the chat-completions path and returns AI-synthesized answers with citations instead of structured Search API results.
+Para compatibilidade, o OpenCraft também suporta configurações legadas de Perplexity Sonar/OpenRouter.
+Se você usar `OPENROUTER_API_KEY`, uma chave `sk-or-...` em `tools.web.search.perplexity.apiKey`, ou definir `tools.web.search.perplexity.baseUrl` / `model`, o provedor muda para o caminho de chat-completions e retorna respostas sintetizadas por IA com citações em vez de resultados estruturados da Search API.
 
-## Getting a Perplexity API key
+## Obtendo uma chave de API do Perplexity
 
-1. Create a Perplexity account at [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
-2. Generate an API key in the dashboard
-3. Store the key in config or set `PERPLEXITY_API_KEY` in the Gateway environment.
+1. Crie uma conta no Perplexity em [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
+2. Gere uma chave de API no dashboard
+3. Armazene a chave na config ou defina `PERPLEXITY_API_KEY` no ambiente do Gateway.
 
-## OpenRouter compatibility
+## Compatibilidade com OpenRouter
 
-If you were already using OpenRouter for Perplexity Sonar, keep `provider: "perplexity"` and set `OPENROUTER_API_KEY` in the Gateway environment, or store an `sk-or-...` key in `tools.web.search.perplexity.apiKey`.
+Se você já usava o OpenRouter para Perplexity Sonar, mantenha `provider: "perplexity"` e defina `OPENROUTER_API_KEY` no ambiente do Gateway, ou armazene uma chave `sk-or-...` em `tools.web.search.perplexity.apiKey`.
 
-Optional legacy controls:
+Controles legados opcionais:
 
 - `tools.web.search.perplexity.baseUrl`
 - `tools.web.search.perplexity.model`
 
-## Config examples
+## Exemplos de config
 
-### Native Perplexity Search API
+### Perplexity Search API nativa
 
 ```json5
 {
@@ -48,7 +48,7 @@ Optional legacy controls:
 }
 ```
 
-### OpenRouter / Sonar compatibility
+### Compatibilidade OpenRouter / Sonar
 
 ```json5
 {
@@ -67,92 +67,92 @@ Optional legacy controls:
 }
 ```
 
-## Where to set the key
+## Onde definir a chave
 
-**Via config:** run `openclaw configure --section web`. It stores the key in
-`~/.openclaw/openclaw.json` under `tools.web.search.perplexity.apiKey`.
-That field also accepts SecretRef objects.
+**Via config:** rode `opencraft configure --section web`. Armazena a chave em
+`~/.opencraft/opencraft.json` sob `tools.web.search.perplexity.apiKey`.
+Este campo também aceita objetos SecretRef.
 
-**Via environment:** set `PERPLEXITY_API_KEY` or `OPENROUTER_API_KEY`
-in the Gateway process environment. For a gateway install, put it in
-`~/.openclaw/.env` (or your service environment). See [Env vars](/help/faq#how-does-openclaw-load-environment-variables).
+**Via ambiente:** defina `PERPLEXITY_API_KEY` ou `OPENROUTER_API_KEY`
+no ambiente do processo do Gateway. Para uma instalação de gateway, coloque em
+`~/.opencraft/.env` (ou no ambiente do serviço). Veja [Variáveis de env](/help/faq#how-does-openclaw-load-environment-variables).
 
-If `provider: "perplexity"` is configured and the Perplexity key SecretRef is unresolved with no env fallback, startup/reload fails fast.
+Se `provider: "perplexity"` estiver configurado e o SecretRef da chave Perplexity não for resolvido sem fallback de env, a inicialização/recarga falha rapidamente.
 
-## Tool parameters
+## Parâmetros da tool
 
-These parameters apply to the native Perplexity Search API path.
+Estes parâmetros se aplicam ao caminho nativo da Perplexity Search API.
 
-| Parameter             | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| `query`               | Search query (required)                              |
-| `count`               | Number of results to return (1-10, default: 5)       |
-| `country`             | 2-letter ISO country code (e.g., "US", "DE")         |
-| `language`            | ISO 639-1 language code (e.g., "en", "de", "fr")     |
-| `freshness`           | Time filter: `day` (24h), `week`, `month`, or `year` |
-| `date_after`          | Only results published after this date (YYYY-MM-DD)  |
-| `date_before`         | Only results published before this date (YYYY-MM-DD) |
-| `domain_filter`       | Domain allowlist/denylist array (max 20)             |
-| `max_tokens`          | Total content budget (default: 25000, max: 1000000)  |
-| `max_tokens_per_page` | Per-page token limit (default: 2048)                 |
+| Parâmetro             | Descrição                                                    |
+| --------------------- | ------------------------------------------------------------ |
+| `query`               | Consulta de busca (obrigatório)                              |
+| `count`               | Número de resultados a retornar (1-10, padrão: 5)            |
+| `country`             | Código de país ISO de 2 letras (ex.: "US", "BR")             |
+| `language`            | Código de idioma ISO 639-1 (ex.: "en", "pt", "fr")          |
+| `freshness`           | Filtro de tempo: `day` (24h), `week`, `month` ou `year`     |
+| `date_after`          | Apenas resultados publicados após esta data (YYYY-MM-DD)     |
+| `date_before`         | Apenas resultados publicados antes desta data (YYYY-MM-DD)   |
+| `domain_filter`       | Array de allowlist/denylist de domínios (máx 20)             |
+| `max_tokens`          | Orçamento total de conteúdo (padrão: 25000, máx: 1000000)   |
+| `max_tokens_per_page` | Limite de tokens por página (padrão: 2048)                   |
 
-For the legacy Sonar/OpenRouter compatibility path, only `query` and `freshness` are supported.
-Search API-only filters such as `country`, `language`, `date_after`, `date_before`, `domain_filter`, `max_tokens`, and `max_tokens_per_page` return explicit errors.
+Para o caminho de compatibilidade legado Sonar/OpenRouter, apenas `query` e `freshness` são suportados.
+Filtros exclusivos da Search API como `country`, `language`, `date_after`, `date_before`, `domain_filter`, `max_tokens` e `max_tokens_per_page` retornam erros explícitos.
 
-**Examples:**
+**Exemplos:**
 
 ```javascript
-// Country and language-specific search
+// Busca específica por país e idioma
 await web_search({
-  query: "renewable energy",
-  country: "DE",
-  language: "de",
+  query: "energia renovável",
+  country: "BR",
+  language: "pt",
 });
 
-// Recent results (past week)
+// Resultados recentes (última semana)
 await web_search({
-  query: "AI news",
+  query: "notícias de IA",
   freshness: "week",
 });
 
-// Date range search
+// Busca por intervalo de datas
 await web_search({
-  query: "AI developments",
+  query: "desenvolvimentos em IA",
   date_after: "2024-01-01",
   date_before: "2024-06-30",
 });
 
-// Domain filtering (allowlist)
+// Filtragem de domínio (allowlist)
 await web_search({
-  query: "climate research",
+  query: "pesquisa climática",
   domain_filter: ["nature.com", "science.org", ".edu"],
 });
 
-// Domain filtering (denylist - prefix with -)
+// Filtragem de domínio (denylist - prefixo com -)
 await web_search({
-  query: "product reviews",
+  query: "avaliações de produtos",
   domain_filter: ["-reddit.com", "-pinterest.com"],
 });
 
-// More content extraction
+// Mais extração de conteúdo
 await web_search({
-  query: "detailed AI research",
+  query: "pesquisa detalhada de IA",
   max_tokens: 50000,
   max_tokens_per_page: 4096,
 });
 ```
 
-### Domain filter rules
+### Regras de filtro de domínio
 
-- Maximum 20 domains per filter
-- Cannot mix allowlist and denylist in the same request
-- Use `-` prefix for denylist entries (e.g., `["-reddit.com"]`)
+- Máximo de 20 domínios por filtro
+- Não é possível misturar allowlist e denylist na mesma requisição
+- Use o prefixo `-` para entradas de denylist (ex.: `["-reddit.com"]`)
 
-## Notes
+## Notas
 
-- Perplexity Search API returns structured web search results (`title`, `url`, `snippet`)
-- OpenRouter or explicit `baseUrl` / `model` switches Perplexity back to Sonar chat completions for compatibility
-- Results are cached for 15 minutes by default (configurable via `cacheTtlMinutes`)
+- A Perplexity Search API retorna resultados de busca na web estruturados (`title`, `url`, `snippet`)
+- OpenRouter ou `baseUrl` / `model` explícito muda o Perplexity de volta para chat completions do Sonar para compatibilidade
+- Os resultados são armazenados em cache por 15 minutos por padrão (configurável via `cacheTtlMinutes`)
 
-See [Web tools](/tools/web) for the full web_search configuration.
-See [Perplexity Search API docs](https://docs.perplexity.ai/docs/search/quickstart) for more details.
+Veja [Ferramentas Web](/tools/web) para a configuração completa de web_search.
+Veja a [documentação da Perplexity Search API](https://docs.perplexity.ai/docs/search/quickstart) para mais detalhes.

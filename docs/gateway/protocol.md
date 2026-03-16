@@ -1,27 +1,27 @@
 ---
-summary: "Gateway WebSocket protocol: handshake, frames, versioning"
+summary: "Protocolo WebSocket do Gateway: handshake, frames, versionamento"
 read_when:
-  - Implementing or updating gateway WS clients
-  - Debugging protocol mismatches or connect failures
-  - Regenerating protocol schema/models
-title: "Gateway Protocol"
+  - Implementando ou atualizando clientes WS do gateway
+  - Depurando incompatibilidades de protocolo ou falhas de conexão
+  - Regenerando schema/modelos do protocolo
+title: "Protocolo do Gateway"
 ---
 
-# Gateway protocol (WebSocket)
+# Protocolo do gateway (WebSocket)
 
-The Gateway WS protocol is the **single control plane + node transport** for
-OpenClaw. All clients (CLI, web UI, macOS app, iOS/Android nodes, headless
-nodes) connect over WebSocket and declare their **role** + **scope** at
-handshake time.
+O protocolo WS do Gateway é o **único plano de controle + transporte de node** para
+o OpenCraft. Todos os clientes (CLI, web UI, app macOS, nodes iOS/Android, nodes
+headless) conectam via WebSocket e declaram seu **role** + **escopo** no
+momento do handshake.
 
-## Transport
+## Transporte
 
-- WebSocket, text frames with JSON payloads.
-- First frame **must** be a `connect` request.
+- WebSocket, frames de texto com payloads JSON.
+- Primeiro frame **deve** ser uma requisição `connect`.
 
 ## Handshake (connect)
 
-Gateway → Client (pre-connect challenge):
+Gateway → Cliente (challenge pré-connect):
 
 ```json
 {
@@ -31,7 +31,7 @@ Gateway → Client (pre-connect challenge):
 }
 ```
 
-Client → Gateway:
+Cliente → Gateway:
 
 ```json
 {
@@ -53,8 +53,8 @@ Client → Gateway:
     "commands": [],
     "permissions": {},
     "auth": { "token": "…" },
-    "locale": "en-US",
-    "userAgent": "openclaw-cli/1.2.3",
+    "locale": "pt-BR",
+    "userAgent": "opencraft-cli/1.2.3",
     "device": {
       "id": "device_fingerprint",
       "publicKey": "…",
@@ -66,7 +66,7 @@ Client → Gateway:
 }
 ```
 
-Gateway → Client:
+Gateway → Cliente:
 
 ```json
 {
@@ -77,7 +77,7 @@ Gateway → Client:
 }
 ```
 
-When a device token is issued, `hello-ok` also includes:
+Quando um token de dispositivo é emitido, `hello-ok` também inclui:
 
 ```json
 {
@@ -89,7 +89,7 @@ When a device token is issued, `hello-ok` also includes:
 }
 ```
 
-### Node example
+### Exemplo de node
 
 ```json
 {
@@ -111,8 +111,8 @@ When a device token is issued, `hello-ok` also includes:
     "commands": ["camera.snap", "canvas.navigate", "screen.record", "location.get"],
     "permissions": { "camera.capture": true, "screen.record": false },
     "auth": { "token": "…" },
-    "locale": "en-US",
-    "userAgent": "openclaw-ios/1.2.3",
+    "locale": "pt-BR",
+    "userAgent": "opencraft-ios/1.2.3",
     "device": {
       "id": "device_fingerprint",
       "publicKey": "…",
@@ -126,22 +126,22 @@ When a device token is issued, `hello-ok` also includes:
 
 ## Framing
 
-- **Request**: `{type:"req", id, method, params}`
-- **Response**: `{type:"res", id, ok, payload|error}`
-- **Event**: `{type:"event", event, payload, seq?, stateVersion?}`
+- **Requisição**: `{type:"req", id, method, params}`
+- **Resposta**: `{type:"res", id, ok, payload|error}`
+- **Evento**: `{type:"event", event, payload, seq?, stateVersion?}`
 
-Side-effecting methods require **idempotency keys** (see schema).
+Métodos com efeitos colaterais exigem **chaves de idempotência** (veja schema).
 
-## Roles + scopes
+## Roles + escopos
 
 ### Roles
 
-- `operator` = control plane client (CLI/UI/automation).
-- `node` = capability host (camera/screen/canvas/system.run).
+- `operator` = cliente de plano de controle (CLI/UI/automação).
+- `node` = host de capacidade (câmera/tela/canvas/system.run).
 
-### Scopes (operator)
+### Escopos (operator)
 
-Common scopes:
+Escopos comuns:
 
 - `operator.read`
 - `operator.write`
@@ -149,119 +149,119 @@ Common scopes:
 - `operator.approvals`
 - `operator.pairing`
 
-Method scope is only the first gate. Some slash commands reached through
-`chat.send` apply stricter command-level checks on top. For example, persistent
-`/config set` and `/config unset` writes require `operator.admin`.
+O escopo do método é apenas o primeiro portão. Alguns slash commands acessados via
+`chat.send` aplicam verificações mais rigorosas no nível de comando por cima. Por exemplo, escritas
+persistentes `/config set` e `/config unset` exigem `operator.admin`.
 
 ### Caps/commands/permissions (node)
 
-Nodes declare capability claims at connect time:
+Nodes declaram claims de capacidade no momento do connect:
 
-- `caps`: high-level capability categories.
-- `commands`: command allowlist for invoke.
-- `permissions`: granular toggles (e.g. `screen.record`, `camera.capture`).
+- `caps`: categorias de capacidade de alto nível.
+- `commands`: allowlist de comandos para invoke.
+- `permissions`: toggles granulares (ex. `screen.record`, `camera.capture`).
 
-The Gateway treats these as **claims** and enforces server-side allowlists.
+O Gateway trata esses como **claims** e aplica allowlists no lado do servidor.
 
-## Presence
+## Presença
 
-- `system-presence` returns entries keyed by device identity.
-- Presence entries include `deviceId`, `roles`, and `scopes` so UIs can show a single row per device
-  even when it connects as both **operator** and **node**.
+- `system-presence` retorna entradas chaveadas por identidade de dispositivo.
+- Entradas de presença incluem `deviceId`, `roles` e `scopes` para que UIs possam mostrar uma única linha por dispositivo
+  mesmo quando ele conecta como **operator** e **node**.
 
-### Node helper methods
+### Métodos auxiliares de node
 
-- Nodes may call `skills.bins` to fetch the current list of skill executables
-  for auto-allow checks.
+- Nodes podem chamar `skills.bins` para buscar a lista atual de executáveis de skill
+  para verificações de auto-allow.
 
-### Operator helper methods
+### Métodos auxiliares de operator
 
-- Operators may call `tools.catalog` (`operator.read`) to fetch the runtime tool catalog for an
-  agent. The response includes grouped tools and provenance metadata:
-  - `source`: `core` or `plugin`
-  - `pluginId`: plugin owner when `source="plugin"`
-  - `optional`: whether a plugin tool is optional
+- Operators podem chamar `tools.catalog` (`operator.read`) para buscar o catálogo de tools em runtime para um
+  agente. A resposta inclui tools agrupadas e metadados de proveniência:
+  - `source`: `core` ou `plugin`
+  - `pluginId`: owner do plugin quando `source="plugin"`
+  - `optional`: se uma tool de plugin é opcional
 
-## Exec approvals
+## Aprovações de exec
 
-- When an exec request needs approval, the gateway broadcasts `exec.approval.requested`.
-- Operator clients resolve by calling `exec.approval.resolve` (requires `operator.approvals` scope).
-- For `host=node`, `exec.approval.request` must include `systemRunPlan` (canonical `argv`/`cwd`/`rawCommand`/session metadata). Requests missing `systemRunPlan` are rejected.
+- Quando uma requisição de exec precisa de aprovação, o gateway transmite `exec.approval.requested`.
+- Clientes operator resolvem chamando `exec.approval.resolve` (requer escopo `operator.approvals`).
+- Para `host=node`, `exec.approval.request` deve incluir `systemRunPlan` (canonical `argv`/`cwd`/`rawCommand`/metadados de sessão). Requisições sem `systemRunPlan` são rejeitadas.
 
-## Versioning
+## Versionamento
 
-- `PROTOCOL_VERSION` lives in `src/gateway/protocol/schema.ts`.
-- Clients send `minProtocol` + `maxProtocol`; the server rejects mismatches.
-- Schemas + models are generated from TypeBox definitions:
+- `PROTOCOL_VERSION` fica em `src/gateway/protocol/schema.ts`.
+- Clientes enviam `minProtocol` + `maxProtocol`; o servidor rejeita incompatibilidades.
+- Schemas + modelos são gerados a partir de definições TypeBox:
   - `pnpm protocol:gen`
   - `pnpm protocol:gen:swift`
   - `pnpm protocol:check`
 
 ## Auth
 
-- If `OPENCLAW_GATEWAY_TOKEN` (or `--token`) is set, `connect.params.auth.token`
-  must match or the socket is closed.
-- After pairing, the Gateway issues a **device token** scoped to the connection
-  role + scopes. It is returned in `hello-ok.auth.deviceToken` and should be
-  persisted by the client for future connects.
-- Device tokens can be rotated/revoked via `device.token.rotate` and
-  `device.token.revoke` (requires `operator.pairing` scope).
-- Auth failures include `error.details.code` plus recovery hints:
+- Se `OPENCLAW_GATEWAY_TOKEN` (ou `--token`) estiver definido, `connect.params.auth.token`
+  deve corresponder ou o socket é fechado.
+- Após o pareamento, o Gateway emite um **device token** escopado ao role + escopos da conexão.
+  É retornado em `hello-ok.auth.deviceToken` e deve ser
+  persistido pelo cliente para connects futuros.
+- Device tokens podem ser rotacionados/revogados via `device.token.rotate` e
+  `device.token.revoke` (requer escopo `operator.pairing`).
+- Falhas de auth incluem `error.details.code` mais hints de recuperação:
   - `error.details.canRetryWithDeviceToken` (boolean)
   - `error.details.recommendedNextStep` (`retry_with_device_token`, `update_auth_configuration`, `update_auth_credentials`, `wait_then_retry`, `review_auth_configuration`)
-- Client behavior for `AUTH_TOKEN_MISMATCH`:
-  - Trusted clients may attempt one bounded retry with a cached per-device token.
-  - If that retry fails, clients should stop automatic reconnect loops and surface operator action guidance.
+- Comportamento do cliente para `AUTH_TOKEN_MISMATCH`:
+  - Clientes confiáveis podem tentar uma nova tentativa limitada com um token por dispositivo em cache.
+  - Se essa nova tentativa falhar, clientes devem parar loops automáticos de reconexão e exibir orientação de ação do operador.
 
-## Device identity + pairing
+## Identidade de dispositivo + pareamento
 
-- Nodes should include a stable device identity (`device.id`) derived from a
-  keypair fingerprint.
-- Gateways issue tokens per device + role.
-- Pairing approvals are required for new device IDs unless local auto-approval
-  is enabled.
-- **Local** connects include loopback and the gateway host’s own tailnet address
-  (so same‑host tailnet binds can still auto‑approve).
-- All WS clients must include `device` identity during `connect` (operator + node).
-  Control UI can omit it only in these modes:
-  - `gateway.controlUi.allowInsecureAuth=true` for localhost-only insecure HTTP compatibility.
-  - `gateway.controlUi.dangerouslyDisableDeviceAuth=true` (break-glass, severe security downgrade).
-- All connections must sign the server-provided `connect.challenge` nonce.
+- Nodes devem incluir uma identidade de dispositivo estável (`device.id`) derivada de
+  um fingerprint de keypair.
+- Gateways emitem tokens por dispositivo + role.
+- Aprovações de pareamento são necessárias para novos IDs de dispositivo a menos que auto-aprovação
+  local esteja habilitada.
+- Conexões **locais** incluem loopback e o próprio endereço tailnet do host do gateway
+  (para que binds tailnet no mesmo host ainda possam auto-aprovar).
+- Todos os clientes WS devem incluir identidade `device` durante `connect` (operator + node).
+  A Control UI pode omiti-la apenas nestes modos:
+  - `gateway.controlUi.allowInsecureAuth=true` para compatibilidade com HTTP inseguro somente localhost.
+  - `gateway.controlUi.dangerouslyDisableDeviceAuth=true` (break-glass, downgrade severo de segurança).
+- Todas as conexões devem assinar o nonce `connect.challenge` fornecido pelo servidor.
 
-### Device auth migration diagnostics
+### Diagnósticos de migração de auth de dispositivo
 
-For legacy clients that still use pre-challenge signing behavior, `connect` now returns
-`DEVICE_AUTH_*` detail codes under `error.details.code` with a stable `error.details.reason`.
+Para clientes legados que ainda usam comportamento de assinatura pré-challenge, `connect` agora retorna
+códigos de detalhe `DEVICE_AUTH_*` em `error.details.code` com um `error.details.reason` estável.
 
-Common migration failures:
+Falhas comuns de migração:
 
-| Message                     | details.code                     | details.reason           | Meaning                                            |
-| --------------------------- | -------------------------------- | ------------------------ | -------------------------------------------------- |
-| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | Client omitted `device.nonce` (or sent blank).     |
-| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | Client signed with a stale/wrong nonce.            |
-| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | Signature payload does not match v2 payload.       |
-| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | Signed timestamp is outside allowed skew.          |
-| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` does not match public key fingerprint. |
-| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | Public key format/canonicalization failed.         |
+| Mensagem                    | details.code                     | details.reason           | Significado                                               |
+| --------------------------- | -------------------------------- | ------------------------ | --------------------------------------------------------- |
+| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | Cliente omitiu `device.nonce` (ou enviou em branco).      |
+| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | Cliente assinou com nonce obsoleto/errado.                |
+| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | Payload de assinatura não corresponde ao payload v2.      |
+| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | Timestamp assinado está fora da defasagem permitida.      |
+| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` não corresponde ao fingerprint da chave pública. |
+| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | Formato/canonicalização da chave pública falhou.          |
 
-Migration target:
+Alvo de migração:
 
-- Always wait for `connect.challenge`.
-- Sign the v2 payload that includes the server nonce.
-- Send the same nonce in `connect.params.device.nonce`.
-- Preferred signature payload is `v3`, which binds `platform` and `deviceFamily`
-  in addition to device/client/role/scopes/token/nonce fields.
-- Legacy `v2` signatures remain accepted for compatibility, but paired-device
-  metadata pinning still controls command policy on reconnect.
+- Sempre aguarde `connect.challenge`.
+- Assine o payload v2 que inclui o nonce do servidor.
+- Envie o mesmo nonce em `connect.params.device.nonce`.
+- O payload de assinatura preferido é `v3`, que vincula `platform` e `deviceFamily`
+  além dos campos device/client/role/scopes/token/nonce.
+- Assinaturas `v2` legadas permanecem aceitas por compatibilidade, mas o
+  pinning de metadados de dispositivo pareado ainda controla a política de comando na reconexão.
 
 ## TLS + pinning
 
-- TLS is supported for WS connections.
-- Clients may optionally pin the gateway cert fingerprint (see `gateway.tls`
-  config plus `gateway.remote.tlsFingerprint` or CLI `--tls-fingerprint`).
+- TLS é suportado para conexões WS.
+- Clientes podem opcionalmente fixar o fingerprint do certificado do gateway (veja config `gateway.tls`
+  mais `gateway.remote.tlsFingerprint` ou CLI `--tls-fingerprint`).
 
-## Scope
+## Escopo
 
-This protocol exposes the **full gateway API** (status, channels, models, chat,
-agent, sessions, nodes, approvals, etc.). The exact surface is defined by the
-TypeBox schemas in `src/gateway/protocol/schema.ts`.
+Este protocolo expõe a **API completa do gateway** (status, canais, modelos, chat,
+agente, sessões, nodes, aprovações, etc.). A superfície exata é definida pelos
+schemas TypeBox em `src/gateway/protocol/schema.ts`.

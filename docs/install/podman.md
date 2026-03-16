@@ -1,122 +1,122 @@
 ---
-summary: "Run OpenClaw in a rootless Podman container"
+summary: "Rodar o OpenCraft em um container Podman rootless"
 read_when:
-  - You want a containerized gateway with Podman instead of Docker
+  - Você quer um gateway em container com Podman em vez de Docker
 title: "Podman"
 ---
 
 # Podman
 
-Run the OpenClaw gateway in a **rootless** Podman container. Uses the same image as Docker (build from the repo [Dockerfile](https://github.com/openclaw/openclaw/blob/main/Dockerfile)).
+Rode o gateway OpenCraft em um container Podman **rootless**. Usa a mesma imagem do Docker (compilada a partir do [Dockerfile](https://github.com/openclaw/openclaw/blob/main/Dockerfile) do repositório).
 
-## Requirements
+## Requisitos
 
 - Podman (rootless)
-- Sudo for one-time setup (create user, build image)
+- Sudo para configuração única (criar usuário, construir imagem)
 
-## Quick start
+## Início rápido
 
-**1. One-time setup** (from repo root; creates user, builds image, installs launch script):
+**1. Configuração única** (a partir da raiz do repositório; cria usuário, constrói imagem, instala script de inicialização):
 
 ```bash
 ./setup-podman.sh
 ```
 
-This also creates a minimal `~openclaw/.openclaw/openclaw.json` (sets `gateway.mode="local"`) so the gateway can start without running the wizard.
+Isso também cria um `~opencraft/.opencraft/opencraft.json` mínimo (define `gateway.mode="local"`) para que o gateway possa iniciar sem executar o wizard.
 
-By default the container is **not** installed as a systemd service, you start it manually (see below). For a production-style setup with auto-start and restarts, install it as a systemd Quadlet user service instead:
+Por padrão o container **não** é instalado como serviço systemd, você o inicia manualmente (veja abaixo). Para uma configuração estilo produção com auto-start e reinicializações, instale-o como um serviço de usuário Quadlet systemd:
 
 ```bash
 ./setup-podman.sh --quadlet
 ```
 
-(Or set `OPENCLAW_PODMAN_QUADLET=1`; use `--container` to install only the container and launch script.)
+(Ou defina `OPENCLAW_PODMAN_QUADLET=1`; use `--container` para instalar apenas o container e o script de inicialização.)
 
-Optional build-time env vars (set before running `setup-podman.sh`):
+Variáveis de ambiente opcionais no momento do build (defina antes de executar `setup-podman.sh`):
 
-- `OPENCLAW_DOCKER_APT_PACKAGES` — install extra apt packages during image build
-- `OPENCLAW_EXTENSIONS` — pre-install extension dependencies (space-separated extension names, e.g. `diagnostics-otel matrix`)
+- `OPENCLAW_DOCKER_APT_PACKAGES` — instalar pacotes apt extras durante a construção da imagem
+- `OPENCLAW_EXTENSIONS` — pré-instalar dependências de extensões (nomes de extensões separados por espaço, ex.: `diagnostics-otel matrix`)
 
-**2. Start gateway** (manual, for quick smoke testing):
+**2. Iniciar gateway** (manual, para testes rápidos):
 
 ```bash
 ./scripts/run-openclaw-podman.sh launch
 ```
 
-**3. Onboarding wizard** (e.g. to add channels or providers):
+**3. Wizard de onboarding** (ex.: para adicionar canais ou provedores):
 
 ```bash
 ./scripts/run-openclaw-podman.sh launch setup
 ```
 
-Then open `http://127.0.0.1:18789/` and use the token from `~openclaw/.openclaw/.env` (or the value printed by setup).
+Depois abra `http://127.0.0.1:18789/` e use o token de `~opencraft/.opencraft/.env` (ou o valor impresso pelo setup).
 
-## Systemd (Quadlet, optional)
+## Systemd (Quadlet, opcional)
 
-If you ran `./setup-podman.sh --quadlet` (or `OPENCLAW_PODMAN_QUADLET=1`), a [Podman Quadlet](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) unit is installed so the gateway runs as a systemd user service for the openclaw user. The service is enabled and started at the end of setup.
+Se você executou `./setup-podman.sh --quadlet` (ou `OPENCLAW_PODMAN_QUADLET=1`), uma unidade [Podman Quadlet](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) é instalada para que o gateway rode como serviço de usuário systemd para o usuário opencraft. O serviço é habilitado e iniciado ao final do setup.
 
-- **Start:** `sudo systemctl --machine openclaw@ --user start openclaw.service`
-- **Stop:** `sudo systemctl --machine openclaw@ --user stop openclaw.service`
-- **Status:** `sudo systemctl --machine openclaw@ --user status openclaw.service`
-- **Logs:** `sudo journalctl --machine openclaw@ --user -u openclaw.service -f`
+- **Iniciar:** `sudo systemctl --machine opencraft@ --user start opencraft.service`
+- **Parar:** `sudo systemctl --machine opencraft@ --user stop opencraft.service`
+- **Status:** `sudo systemctl --machine opencraft@ --user status opencraft.service`
+- **Logs:** `sudo journalctl --machine opencraft@ --user -u opencraft.service -f`
 
-The quadlet file lives at `~openclaw/.config/containers/systemd/openclaw.container`. To change ports or env, edit that file (or the `.env` it sources), then `sudo systemctl --machine openclaw@ --user daemon-reload` and restart the service. On boot, the service starts automatically if lingering is enabled for openclaw (setup does this when loginctl is available).
+O arquivo quadlet fica em `~opencraft/.config/containers/systemd/opencraft.container`. Para mudar portas ou env, edite esse arquivo (ou o `.env` que ele importa), depois `sudo systemctl --machine opencraft@ --user daemon-reload` e reinicie o serviço. Na inicialização, o serviço começa automaticamente se o lingering estiver habilitado para opencraft (o setup faz isso quando loginctl está disponível).
 
-To add quadlet **after** an initial setup that did not use it, re-run: `./setup-podman.sh --quadlet`.
+Para adicionar quadlet **depois** de uma configuração inicial que não o usou, execute novamente: `./setup-podman.sh --quadlet`.
 
-## The openclaw user (non-login)
+## O usuário opencraft (sem login)
 
-`setup-podman.sh` creates a dedicated system user `openclaw`:
+`setup-podman.sh` cria um usuário de sistema dedicado `opencraft`:
 
-- **Shell:** `nologin` — no interactive login; reduces attack surface.
-- **Home:** e.g. `/home/openclaw` — holds `~/.openclaw` (config, workspace) and the launch script `run-openclaw-podman.sh`.
-- **Rootless Podman:** The user must have a **subuid** and **subgid** range. Many distros assign these automatically when the user is created. If setup prints a warning, add lines to `/etc/subuid` and `/etc/subgid`:
+- **Shell:** `nologin` — sem login interativo; reduz a superfície de ataque.
+- **Home:** ex.: `/home/opencraft` — contém `~/.opencraft` (config, workspace) e o script de inicialização `run-openclaw-podman.sh`.
+- **Podman rootless:** O usuário deve ter um intervalo **subuid** e **subgid**. Muitas distros atribuem automaticamente quando o usuário é criado. Se o setup exibir um aviso, adicione linhas em `/etc/subuid` e `/etc/subgid`:
 
   ```text
-  openclaw:100000:65536
+  opencraft:100000:65536
   ```
 
-  Then start the gateway as that user (e.g. from cron or systemd):
+  Depois inicie o gateway como esse usuário (ex.: via cron ou systemd):
 
   ```bash
-  sudo -u openclaw /home/openclaw/run-openclaw-podman.sh
-  sudo -u openclaw /home/openclaw/run-openclaw-podman.sh setup
+  sudo -u opencraft /home/opencraft/run-openclaw-podman.sh
+  sudo -u opencraft /home/opencraft/run-openclaw-podman.sh setup
   ```
 
-- **Config:** Only `openclaw` and root can access `/home/openclaw/.openclaw`. To edit config: use the Control UI once the gateway is running, or `sudo -u openclaw $EDITOR /home/openclaw/.openclaw/openclaw.json`.
+- **Config:** Apenas `opencraft` e root podem acessar `/home/opencraft/.opencraft`. Para editar a config: use a UI de Controle quando o gateway estiver rodando, ou `sudo -u opencraft $EDITOR /home/opencraft/.opencraft/opencraft.json`.
 
-## Environment and config
+## Ambiente e config
 
-- **Token:** Stored in `~openclaw/.openclaw/.env` as `OPENCLAW_GATEWAY_TOKEN`. `setup-podman.sh` and `run-openclaw-podman.sh` generate it if missing (uses `openssl`, `python3`, or `od`).
-- **Optional:** In that `.env` you can set provider keys (e.g. `GROQ_API_KEY`, `OLLAMA_API_KEY`) and other OpenClaw env vars.
-- **Host ports:** By default the script maps `18789` (gateway) and `18790` (bridge). Override the **host** port mapping with `OPENCLAW_PODMAN_GATEWAY_HOST_PORT` and `OPENCLAW_PODMAN_BRIDGE_HOST_PORT` when launching.
-- **Gateway bind:** By default, `run-openclaw-podman.sh` starts the gateway with `--bind loopback` for safe local access. To expose on LAN, set `OPENCLAW_GATEWAY_BIND=lan` and configure `gateway.controlUi.allowedOrigins` (or explicitly enable host-header fallback) in `openclaw.json`.
-- **Paths:** Host config and workspace default to `~openclaw/.openclaw` and `~openclaw/.openclaw/workspace`. Override the host paths used by the launch script with `OPENCLAW_CONFIG_DIR` and `OPENCLAW_WORKSPACE_DIR`.
+- **Token:** Armazenado em `~opencraft/.opencraft/.env` como `OPENCLAW_GATEWAY_TOKEN`. `setup-podman.sh` e `run-openclaw-podman.sh` o geram se ausente (usa `openssl`, `python3` ou `od`).
+- **Opcional:** Nesse `.env` você pode definir chaves de provedor (ex.: `GROQ_API_KEY`, `OLLAMA_API_KEY`) e outras variáveis de ambiente do OpenCraft.
+- **Portas no host:** Por padrão o script mapeia `18789` (gateway) e `18790` (bridge). Sobrescreva o mapeamento de porta do **host** com `OPENCLAW_PODMAN_GATEWAY_HOST_PORT` e `OPENCLAW_PODMAN_BRIDGE_HOST_PORT` ao iniciar.
+- **Bind do gateway:** Por padrão, `run-openclaw-podman.sh` inicia o gateway com `--bind loopback` para acesso local seguro. Para expor na LAN, defina `OPENCLAW_GATEWAY_BIND=lan` e configure `gateway.controlUi.allowedOrigins` (ou habilite explicitamente o fallback de host-header) em `opencraft.json`.
+- **Caminhos:** Config e workspace do host padrão para `~opencraft/.opencraft` e `~opencraft/.opencraft/workspace`. Sobrescreva os caminhos do host usados pelo script de inicialização com `OPENCLAW_CONFIG_DIR` e `OPENCLAW_WORKSPACE_DIR`.
 
-## Storage model
+## Modelo de armazenamento
 
-- **Persistent host data:** `OPENCLAW_CONFIG_DIR` and `OPENCLAW_WORKSPACE_DIR` are bind-mounted into the container and retain state on the host.
-- **Ephemeral sandbox tmpfs:** if you enable `agents.defaults.sandbox`, the tool sandbox containers mount `tmpfs` at `/tmp`, `/var/tmp`, and `/run`. Those paths are memory-backed and disappear with the sandbox container; the top-level Podman container setup does not add its own tmpfs mounts.
-- **Disk growth hotspots:** the main paths to watch are `media/`, `agents/<agentId>/sessions/sessions.json`, transcript JSONL files, `cron/runs/*.jsonl`, and rolling file logs under `/tmp/openclaw/` (or your configured `logging.file`).
+- **Dados persistentes no host:** `OPENCLAW_CONFIG_DIR` e `OPENCLAW_WORKSPACE_DIR` são montados por bind no container e retêm estado no host.
+- **Sandbox tmpfs efêmero:** se você habilitar `agents.defaults.sandbox`, os containers sandbox de ferramentas montam `tmpfs` em `/tmp`, `/var/tmp` e `/run`. Esses caminhos são respaldados pela memória e desaparecem com o container sandbox; a configuração top-level do Podman não adiciona seus próprios mounts tmpfs.
+- **Pontos de crescimento de disco:** os principais caminhos a monitorar são `media/`, `agents/<agentId>/sessions/sessions.json`, arquivos JSONL de transcrição, `cron/runs/*.jsonl` e logs de arquivo rotativo em `/tmp/opencraft/` (ou seu `logging.file` configurado).
 
-`setup-podman.sh` now stages the image tar in a private temp directory and prints the chosen base dir during setup. For non-root runs it accepts `TMPDIR` only when that base is safe to use; otherwise it falls back to `/var/tmp`, then `/tmp`. The saved tar stays owner-only and is streamed into the target user’s `podman load`, so private caller temp dirs do not block setup.
+`setup-podman.sh` agora armazena o tar da imagem em um diretório temporário privado e imprime o diretório base escolhido durante o setup. Para execuções não-root aceita `TMPDIR` apenas quando essa base é segura para uso; caso contrário recorre a `/var/tmp`, depois `/tmp`. O tar salvo fica como proprietário-only e é transmitido para o `podman load` do usuário alvo, para que diretórios temporários privados do chamador não bloqueiem o setup.
 
-## Useful commands
+## Comandos úteis
 
-- **Logs:** With quadlet: `sudo journalctl --machine openclaw@ --user -u openclaw.service -f`. With script: `sudo -u openclaw podman logs -f openclaw`
-- **Stop:** With quadlet: `sudo systemctl --machine openclaw@ --user stop openclaw.service`. With script: `sudo -u openclaw podman stop openclaw`
-- **Start again:** With quadlet: `sudo systemctl --machine openclaw@ --user start openclaw.service`. With script: re-run the launch script or `podman start openclaw`
-- **Remove container:** `sudo -u openclaw podman rm -f openclaw` — config and workspace on the host are kept
+- **Logs:** Com quadlet: `sudo journalctl --machine opencraft@ --user -u opencraft.service -f`. Com script: `sudo -u opencraft podman logs -f opencraft`
+- **Parar:** Com quadlet: `sudo systemctl --machine opencraft@ --user stop opencraft.service`. Com script: `sudo -u opencraft podman stop opencraft`
+- **Iniciar novamente:** Com quadlet: `sudo systemctl --machine opencraft@ --user start opencraft.service`. Com script: reexecute o script de inicialização ou `podman start opencraft`
+- **Remover container:** `sudo -u opencraft podman rm -f opencraft` — config e workspace no host são mantidos
 
-## Troubleshooting
+## Solução de problemas
 
-- **Permission denied (EACCES) on config or auth-profiles:** The container defaults to `--userns=keep-id` and runs as the same uid/gid as the host user running the script. Ensure your host `OPENCLAW_CONFIG_DIR` and `OPENCLAW_WORKSPACE_DIR` are owned by that user.
-- **Gateway start blocked (missing `gateway.mode=local`):** Ensure `~openclaw/.openclaw/openclaw.json` exists and sets `gateway.mode="local"`. `setup-podman.sh` creates this file if missing.
-- **Rootless Podman fails for user openclaw:** Check `/etc/subuid` and `/etc/subgid` contain a line for `openclaw` (e.g. `openclaw:100000:65536`). Add it if missing and restart.
-- **Container name in use:** The launch script uses `podman run --replace`, so the existing container is replaced when you start again. To clean up manually: `podman rm -f openclaw`.
-- **Script not found when running as openclaw:** Ensure `setup-podman.sh` was run so that `run-openclaw-podman.sh` is copied to openclaw’s home (e.g. `/home/openclaw/run-openclaw-podman.sh`).
-- **Quadlet service not found or fails to start:** Run `sudo systemctl --machine openclaw@ --user daemon-reload` after editing the `.container` file. Quadlet requires cgroups v2: `podman info --format '{{.Host.CgroupsVersion}}'` should show `2`.
+- **Permissão negada (EACCES) na config ou auth-profiles:** O container padrão usa `--userns=keep-id` e roda como o mesmo uid/gid do usuário host que executa o script. Certifique-se de que seu `OPENCLAW_CONFIG_DIR` e `OPENCLAW_WORKSPACE_DIR` no host são de propriedade desse usuário.
+- **Inicialização do gateway bloqueada (falta `gateway.mode=local`):** Certifique-se de que `~opencraft/.opencraft/opencraft.json` existe e define `gateway.mode="local"`. `setup-podman.sh` cria este arquivo se ausente.
+- **Podman rootless falha para usuário opencraft:** Verifique se `/etc/subuid` e `/etc/subgid` contêm uma linha para `opencraft` (ex.: `opencraft:100000:65536`). Adicione se ausente e reinicie.
+- **Nome do container em uso:** O script de inicialização usa `podman run --replace`, então o container existente é substituído ao iniciar novamente. Para limpar manualmente: `podman rm -f opencraft`.
+- **Script não encontrado ao rodar como opencraft:** Certifique-se de que `setup-podman.sh` foi executado para que `run-openclaw-podman.sh` seja copiado para o home do opencraft (ex.: `/home/opencraft/run-openclaw-podman.sh`).
+- **Serviço quadlet não encontrado ou falha ao iniciar:** Execute `sudo systemctl --machine opencraft@ --user daemon-reload` após editar o arquivo `.container`. O Quadlet requer cgroups v2: `podman info --format '{{.Host.CgroupsVersion}}'` deve mostrar `2`.
 
-## Optional: run as your own user
+## Opcional: rodar como seu próprio usuário
 
-To run the gateway as your normal user (no dedicated openclaw user): build the image, create `~/.openclaw/.env` with `OPENCLAW_GATEWAY_TOKEN`, and run the container with `--userns=keep-id` and mounts to your `~/.openclaw`. The launch script is designed for the openclaw-user flow; for a single-user setup you can instead run the `podman run` command from the script manually, pointing config and workspace to your home. Recommended for most users: use `setup-podman.sh` and run as the openclaw user so config and process are isolated.
+Para rodar o gateway como seu usuário normal (sem usuário opencraft dedicado): construa a imagem, crie `~/.opencraft/.env` com `OPENCLAW_GATEWAY_TOKEN` e rode o container com `--userns=keep-id` e mounts para seu `~/.opencraft`. O script de inicialização foi projetado para o fluxo com usuário opencraft; para uma configuração de usuário único você pode executar o comando `podman run` do script manualmente, apontando config e workspace para seu home. Recomendado para a maioria dos usuários: use `setup-podman.sh` e rode como usuário opencraft para que config e processo fiquem isolados.

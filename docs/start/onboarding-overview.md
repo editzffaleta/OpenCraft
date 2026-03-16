@@ -1,51 +1,51 @@
 ---
-summary: "Overview of OpenClaw onboarding options and flows"
+summary: "Visão geral dos caminhos e fluxos de onboarding do OpenCraft"
 read_when:
-  - Choosing an onboarding path
-  - Setting up a new environment
-title: "Onboarding Overview"
-sidebarTitle: "Onboarding Overview"
+  - Escolhendo um caminho de onboarding
+  - Configurando um novo ambiente
+title: "Visão Geral do Onboarding"
+sidebarTitle: "Visão Geral do Onboarding"
 ---
 
-# Onboarding Overview
+# Visão Geral do Onboarding
 
-OpenClaw supports multiple onboarding paths depending on where the Gateway runs
-and how you prefer to configure providers.
+O OpenCraft suporta múltiplos caminhos de onboarding dependendo de onde o Gateway
+roda e como você prefere configurar os provedores.
 
-## Choose your onboarding path
+## Escolha seu caminho de onboarding
 
-- **CLI wizard** for macOS, Linux, and Windows (via WSL2).
-- **macOS app** for a guided first run on Apple silicon or Intel Macs.
+- **Assistente CLI** para macOS, Linux e Windows (via WSL2).
+- **App macOS** para uma primeira execução guiada no Apple Silicon ou Macs Intel.
 
-## CLI onboarding wizard
+## Assistente de onboarding CLI
 
-Run the wizard in a terminal:
+Execute o assistente em um terminal:
 
 ```bash
-openclaw onboard
+opencraft onboard
 ```
 
-Use the CLI wizard when you want full control of the Gateway, workspace,
-channels, and skills. Docs:
+Use o assistente CLI quando quiser controle total do Gateway, workspace,
+canais e skills. Documentação:
 
-- [Onboarding Wizard (CLI)](/start/wizard)
-- [`openclaw onboard` command](/cli/onboard)
+- [Assistente de Onboarding (CLI)](/start/wizard)
+- [Comando `opencraft onboard`](/cli/onboard)
 
-## macOS app onboarding
+## Onboarding pelo app macOS
 
-Use the OpenClaw app when you want a fully guided setup on macOS. Docs:
+Use o app OpenCraft quando quiser uma configuração totalmente guiada no macOS. Documentação:
 
-- [Onboarding (macOS App)](/start/onboarding)
+- [Onboarding (App macOS)](/start/onboarding)
 
-## Custom Provider
+## Provedor Personalizado
 
-If you need an endpoint that is not listed, including hosted providers that
-expose standard OpenAI or Anthropic APIs, choose **Custom Provider** in the
-CLI wizard. You will be asked to:
+Se você precisar de um endpoint que não está listado, incluindo provedores hospedados
+que expõem APIs padrão OpenAI ou Anthropic, escolha **Provedor Personalizado** no
+assistente CLI. Você será solicitado a:
 
-- Pick OpenAI-compatible, Anthropic-compatible, or **Unknown** (auto-detect).
-- Enter a base URL and API key (if required by the provider).
-- Provide a model ID and optional alias.
-- Choose an Endpoint ID so multiple custom endpoints can coexist.
+- Escolher compatível com OpenAI, compatível com Anthropic, ou **Desconhecido** (detecção automática).
+- Inserir uma URL base e chave de API (se exigido pelo provedor).
+- Fornecer um ID de modelo e alias opcional.
+- Escolher um ID de endpoint para que múltiplos endpoints personalizados possam coexistir.
 
-For detailed steps, follow the CLI onboarding docs above.
+Para etapas detalhadas, siga a documentação de onboarding CLI acima.

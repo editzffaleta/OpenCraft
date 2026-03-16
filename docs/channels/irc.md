@@ -1,19 +1,19 @@
 ---
 title: IRC
-description: Connect OpenClaw to IRC channels and direct messages.
-summary: "IRC plugin setup, access controls, and troubleshooting"
+description: Conecte o OpenCraft a canais IRC e mensagens diretas.
+summary: "Configuração do plugin IRC, controles de acesso e solução de problemas"
 read_when:
-  - You want to connect OpenClaw to IRC channels or DMs
-  - You are configuring IRC allowlists, group policy, or mention gating
+  - Você quer conectar o OpenCraft a canais IRC ou DMs
+  - Você está configurando allowlists, política de grupo ou controle por menção do IRC
 ---
 
-Use IRC when you want OpenClaw in classic channels (`#room`) and direct messages.
-IRC ships as an extension plugin, but it is configured in the main config under `channels.irc`.
+Use o IRC quando quiser o OpenCraft em canais clássicos (`#sala`) e mensagens diretas.
+O IRC vem como um plugin de extensão, mas é configurado na config principal em `channels.irc`.
 
-## Quick start
+## Início rápido
 
-1. Enable IRC config in `~/.openclaw/openclaw.json`.
-2. Set at least:
+1. Habilite a config do IRC em `~/.opencraft/opencraft.json`.
+2. Defina pelo menos:
 
 ```json
 {
@@ -23,55 +23,55 @@ IRC ships as an extension plugin, but it is configured in the main config under 
       "host": "irc.libera.chat",
       "port": 6697,
       "tls": true,
-      "nick": "openclaw-bot",
-      "channels": ["#openclaw"]
+      "nick": "opencraft-bot",
+      "channels": ["#opencraft"]
     }
   }
 }
 ```
 
-3. Start/restart gateway:
+3. Inicie/reinicie o gateway:
 
 ```bash
-openclaw gateway run
+opencraft gateway run
 ```
 
-## Security defaults
+## Padrões de segurança
 
-- `channels.irc.dmPolicy` defaults to `"pairing"`.
-- `channels.irc.groupPolicy` defaults to `"allowlist"`.
-- With `groupPolicy="allowlist"`, set `channels.irc.groups` to define allowed channels.
-- Use TLS (`channels.irc.tls=true`) unless you intentionally accept plaintext transport.
+- `channels.irc.dmPolicy` padrão é `"pairing"`.
+- `channels.irc.groupPolicy` padrão é `"allowlist"`.
+- Com `groupPolicy="allowlist"`, defina `channels.irc.groups` para definir os canais permitidos.
+- Use TLS (`channels.irc.tls=true`) a menos que aceite intencionalmente transporte em texto simples.
 
-## Access control
+## Controle de acesso
 
-There are two separate “gates” for IRC channels:
+Há dois "portões" separados para canais IRC:
 
-1. **Channel access** (`groupPolicy` + `groups`): whether the bot accepts messages from a channel at all.
-2. **Sender access** (`groupAllowFrom` / per-channel `groups["#channel"].allowFrom`): who is allowed to trigger the bot inside that channel.
+1. **Acesso ao canal** (`groupPolicy` + `groups`): se o bot aceita mensagens de um canal.
+2. **Acesso do remetente** (`groupAllowFrom` / `groups["#canal"].allowFrom` por canal): quem tem permissão para acionar o bot dentro daquele canal.
 
-Config keys:
+Chaves de config:
 
-- DM allowlist (DM sender access): `channels.irc.allowFrom`
-- Group sender allowlist (channel sender access): `channels.irc.groupAllowFrom`
-- Per-channel controls (channel + sender + mention rules): `channels.irc.groups["#channel"]`
-- `channels.irc.groupPolicy="open"` allows unconfigured channels (**still mention-gated by default**)
+- Allowlist de DM (acesso de remetente de DM): `channels.irc.allowFrom`
+- Allowlist de remetentes de grupo (acesso de remetente de canal): `channels.irc.groupAllowFrom`
+- Controles por canal (canal + remetente + regras de menção): `channels.irc.groups["#canal"]`
+- `channels.irc.groupPolicy="open"` permite canais não configurados (**ainda com controle por menção por padrão**)
 
-Allowlist entries should use stable sender identities (`nick!user@host`).
-Bare nick matching is mutable and only enabled when `channels.irc.dangerouslyAllowNameMatching: true`.
+As entradas da allowlist devem usar identidades de remetente estáveis (`nick!user@host`).
+A correspondência de nick bare é mutável e habilitada apenas quando `channels.irc.dangerouslyAllowNameMatching: true`.
 
-### Common gotcha: `allowFrom` is for DMs, not channels
+### Armadilha comum: `allowFrom` é para DMs, não canais
 
-If you see logs like:
+Se você vir logs como:
 
 - `irc: drop group sender alice!ident@host (policy=allowlist)`
 
-…it means the sender wasn’t allowed for **group/channel** messages. Fix it by either:
+…significa que o remetente não foi permitido para mensagens de **grupo/canal**. Corrija definindo:
 
-- setting `channels.irc.groupAllowFrom` (global for all channels), or
-- setting per-channel sender allowlists: `channels.irc.groups["#channel"].allowFrom`
+- `channels.irc.groupAllowFrom` (global para todos os canais), ou
+- allowlists de remetente por canal: `channels.irc.groups["#canal"].allowFrom`
 
-Example (allow anyone in `#tuirc-dev` to talk to the bot):
+Exemplo (permitir qualquer um em `#tuirc-dev` falar com o bot):
 
 ```json5
 {
@@ -86,13 +86,13 @@ Example (allow anyone in `#tuirc-dev` to talk to the bot):
 }
 ```
 
-## Reply triggering (mentions)
+## Acionamento de resposta (menções)
 
-Even if a channel is allowed (via `groupPolicy` + `groups`) and the sender is allowed, OpenClaw defaults to **mention-gating** in group contexts.
+Mesmo que um canal seja permitido (via `groupPolicy` + `groups`) e o remetente seja permitido, o OpenCraft usa **controle por menção** em contextos de grupo por padrão.
 
-That means you may see logs like `drop channel … (missing-mention)` unless the message includes a mention pattern that matches the bot.
+Isso significa que você pode ver logs como `drop channel … (missing-mention)` a menos que a mensagem inclua um padrão de menção que corresponda ao bot.
 
-To make the bot reply in an IRC channel **without needing a mention**, disable mention gating for that channel:
+Para fazer o bot responder em um canal IRC **sem precisar de uma menção**, desabilite o controle por menção para aquele canal:
 
 ```json5
 {
@@ -110,7 +110,7 @@ To make the bot reply in an IRC channel **without needing a mention**, disable m
 }
 ```
 
-Or to allow **all** IRC channels (no per-channel allowlist) and still reply without mentions:
+Ou para permitir **todos** os canais IRC (sem allowlist por canal) e ainda responder sem menções:
 
 ```json5
 {
@@ -125,12 +125,12 @@ Or to allow **all** IRC channels (no per-channel allowlist) and still reply with
 }
 ```
 
-## Security note (recommended for public channels)
+## Nota de segurança (recomendado para canais públicos)
 
-If you allow `allowFrom: ["*"]` in a public channel, anyone can prompt the bot.
-To reduce risk, restrict tools for that channel.
+Se você permitir `allowFrom: ["*"]` em um canal público, qualquer um pode acionar o bot.
+Para reduzir o risco, restrinja as ferramentas para aquele canal.
 
-### Same tools for everyone in the channel
+### Mesmas ferramentas para todos no canal
 
 ```json5
 {
@@ -149,9 +149,9 @@ To reduce risk, restrict tools for that channel.
 }
 ```
 
-### Different tools per sender (owner gets more power)
+### Ferramentas diferentes por remetente (proprietário tem mais poder)
 
-Use `toolsBySender` to apply a stricter policy to `"*"` and a looser one to your nick:
+Use `toolsBySender` para aplicar uma política mais restritiva a `"*"` e uma mais permissiva ao seu nick:
 
 ```json5
 {
@@ -175,18 +175,18 @@ Use `toolsBySender` to apply a stricter policy to `"*"` and a looser one to your
 }
 ```
 
-Notes:
+Notas:
 
-- `toolsBySender` keys should use `id:` for IRC sender identity values:
-  `id:eigen` or `id:eigen!~eigen@174.127.248.171` for stronger matching.
-- Legacy unprefixed keys are still accepted and matched as `id:` only.
-- The first matching sender policy wins; `"*"` is the wildcard fallback.
+- As chaves `toolsBySender` devem usar `id:` para valores de identidade de remetente IRC:
+  `id:eigen` ou `id:eigen!~eigen@174.127.248.171` para correspondência mais forte.
+- Chaves legadas sem prefixo ainda são aceitas e correspondidas apenas como `id:`.
+- A primeira política de remetente correspondente vence; `"*"` é o fallback curinga.
 
-For more on group access vs mention-gating (and how they interact), see: [/channels/groups](/channels/groups).
+Para mais sobre acesso de grupo vs controle por menção (e como eles interagem), veja: [/channels/groups](/channels/groups).
 
 ## NickServ
 
-To identify with NickServ after connect:
+Para identificar com o NickServ após a conexão:
 
 ```json
 {
@@ -195,14 +195,14 @@ To identify with NickServ after connect:
       "nickserv": {
         "enabled": true,
         "service": "NickServ",
-        "password": "your-nickserv-password"
+        "password": "sua-senha-nickserv"
       }
     }
   }
 }
 ```
 
-Optional one-time registration on connect:
+Registro único opcional na conexão:
 
 ```json
 {
@@ -217,11 +217,11 @@ Optional one-time registration on connect:
 }
 ```
 
-Disable `register` after the nick is registered to avoid repeated REGISTER attempts.
+Desabilite `register` após o nick estar registrado para evitar tentativas repetidas de REGISTER.
 
-## Environment variables
+## Variáveis de ambiente
 
-Default account supports:
+A conta padrão suporta:
 
 - `IRC_HOST`
 - `IRC_PORT`
@@ -230,12 +230,12 @@ Default account supports:
 - `IRC_USERNAME`
 - `IRC_REALNAME`
 - `IRC_PASSWORD`
-- `IRC_CHANNELS` (comma-separated)
+- `IRC_CHANNELS` (separados por vírgula)
 - `IRC_NICKSERV_PASSWORD`
 - `IRC_NICKSERV_REGISTER_EMAIL`
 
-## Troubleshooting
+## Solução de problemas
 
-- If the bot connects but never replies in channels, verify `channels.irc.groups` **and** whether mention-gating is dropping messages (`missing-mention`). If you want it to reply without pings, set `requireMention:false` for the channel.
-- If login fails, verify nick availability and server password.
-- If TLS fails on a custom network, verify host/port and certificate setup.
+- Se o bot conecta mas nunca responde em canais, verifique `channels.irc.groups` **e** se o controle por menção está descartando mensagens (`missing-mention`). Se quiser que responda sem pings, defina `requireMention:false` para o canal.
+- Se o login falhar, verifique a disponibilidade do nick e a senha do servidor.
+- Se o TLS falhar em uma rede personalizada, verifique o host/porta e a configuração do certificado.

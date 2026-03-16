@@ -1,54 +1,54 @@
 ---
-summary: "Manual logins for browser automation + X/Twitter posting"
+summary: "Logins manuais para automação de browser + postagem no X/Twitter"
 read_when:
-  - You need to log into sites for browser automation
-  - You want to post updates to X/Twitter
-title: "Browser Login"
+  - Você precisa fazer login em sites para automação de browser
+  - Você quer postar atualizações no X/Twitter
+title: "Login no Browser"
 ---
 
-# Browser login + X/Twitter posting
+# Login no browser + postagem no X/Twitter
 
-## Manual login (recommended)
+## Login manual (recomendado)
 
-When a site requires login, **sign in manually** in the **host** browser profile (the openclaw browser).
+Quando um site requer login, **faça login manualmente** no perfil de browser do **host** (o browser do opencraft).
 
-Do **not** give the model your credentials. Automated logins often trigger anti‑bot defenses and can lock the account.
+**Não** forneça suas credenciais ao modelo. Logins automatizados frequentemente acionam defesas anti-bot e podem bloquear a conta.
 
-Back to the main browser docs: [Browser](/tools/browser).
+De volta à documentação principal do browser: [Browser](/tools/browser).
 
-## Which Chrome profile is used?
+## Qual perfil do Chrome é usado?
 
-OpenClaw controls a **dedicated Chrome profile** (named `openclaw`, orange‑tinted UI). This is separate from your daily browser profile.
+O OpenCraft controla um **perfil dedicado do Chrome** (chamado `openclaw`, com interface laranja). Isso é separado do seu perfil de browser diário.
 
-For agent browser tool calls:
+Para chamadas de tool de browser do agente:
 
-- Default choice: the agent should use its isolated `openclaw` browser.
-- Use `profile="user"` only when existing logged-in sessions matter and the user is at the computer to click/approve any attach prompt.
-- Use `profile="chrome-relay"` only for the Chrome extension / toolbar-button attach flow.
-- If you have multiple user-browser profiles, specify the profile explicitly instead of guessing.
+- Escolha padrão: o agente deve usar seu browser `openclaw` isolado.
+- Use `profile="user"` apenas quando sessões com login existentes importam e o usuário está no computador para clicar/aprovar qualquer prompt de conexão.
+- Use `profile="chrome-relay"` apenas para o fluxo de conexão via extensão Chrome / botão da barra de ferramentas.
+- Se você tiver múltiplos perfis de browser de usuário, especifique o perfil explicitamente em vez de adivinhar.
 
-Two easy ways to access it:
+Duas formas fáceis de acessá-lo:
 
-1. **Ask the agent to open the browser** and then log in yourself.
-2. **Open it via CLI**:
+1. **Peça ao agente para abrir o browser** e então faça login você mesmo.
+2. **Abra via CLI**:
 
 ```bash
-openclaw browser start
-openclaw browser open https://x.com
+opencraft browser start
+opencraft browser open https://x.com
 ```
 
-If you have multiple profiles, pass `--browser-profile <name>` (the default is `openclaw`).
+Se você tiver múltiplos perfis, passe `--browser-profile <nome>` (o padrão é `openclaw`).
 
-## X/Twitter: recommended flow
+## X/Twitter: fluxo recomendado
 
-- **Read/search/threads:** use the **host** browser (manual login).
-- **Post updates:** use the **host** browser (manual login).
+- **Ler/pesquisar/threads:** use o browser do **host** (login manual).
+- **Postar atualizações:** use o browser do **host** (login manual).
 
-## Sandboxing + host browser access
+## Sandboxing + acesso ao browser do host
 
-Sandboxed browser sessions are **more likely** to trigger bot detection. For X/Twitter (and other strict sites), prefer the **host** browser.
+Sessões de browser em sandbox são **mais propensas** a acionar detecção de bot. Para X/Twitter (e outros sites restritos), prefira o browser do **host**.
 
-If the agent is sandboxed, the browser tool defaults to the sandbox. To allow host control:
+Se o agente estiver em sandbox, a tool de browser usa o sandbox por padrão. Para permitir controle do host:
 
 ```json5
 {
@@ -65,10 +65,10 @@ If the agent is sandboxed, the browser tool defaults to the sandbox. To allow ho
 }
 ```
 
-Then target the host browser:
+Então aponte para o browser do host:
 
 ```bash
-openclaw browser open https://x.com --browser-profile openclaw --target host
+opencraft browser open https://x.com --browser-profile openclaw --target host
 ```
 
-Or disable sandboxing for the agent that posts updates.
+Ou desabilite o sandboxing para o agente que posta atualizações.

@@ -1,30 +1,30 @@
 ---
 title: "Vercel AI Gateway"
-summary: "Vercel AI Gateway setup (auth + model selection)"
+summary: "Configuração do Vercel AI Gateway (auth + seleção de modelo)"
 read_when:
-  - You want to use Vercel AI Gateway with OpenClaw
-  - You need the API key env var or CLI auth choice
+  - Você quer usar o Vercel AI Gateway com o OpenCraft
+  - Você precisa da variável de env de chave de API ou da opção de auth CLI
 ---
 
 # Vercel AI Gateway
 
-The [Vercel AI Gateway](https://vercel.com/ai-gateway) provides a unified API to access hundreds of models through a single endpoint.
+O [Vercel AI Gateway](https://vercel.com/ai-gateway) fornece uma API unificada para acessar centenas de modelos por um único endpoint.
 
-- Provider: `vercel-ai-gateway`
+- Provedor: `vercel-ai-gateway`
 - Auth: `AI_GATEWAY_API_KEY`
-- API: Anthropic Messages compatible
-- OpenClaw auto-discovers the Gateway `/v1/models` catalog, so `/models vercel-ai-gateway`
-  includes current model refs such as `vercel-ai-gateway/openai/gpt-5.4`.
+- API: compatível com Anthropic Messages
+- O OpenCraft auto-descobre o catálogo `/v1/models` do Gateway, então `/models vercel-ai-gateway`
+  inclui refs de modelo atuais como `vercel-ai-gateway/openai/gpt-5.4`.
 
-## Quick start
+## Início rápido
 
-1. Set the API key (recommended: store it for the Gateway):
+1. Defina a chave de API (recomendado: armazene-a para o Gateway):
 
 ```bash
-openclaw onboard --auth-choice ai-gateway-api-key
+opencraft onboard --auth-choice ai-gateway-api-key
 ```
 
-2. Set a default model:
+2. Defina um modelo padrão:
 
 ```json5
 {
@@ -36,24 +36,24 @@ openclaw onboard --auth-choice ai-gateway-api-key
 }
 ```
 
-## Non-interactive example
+## Exemplo não-interativo
 
 ```bash
-openclaw onboard --non-interactive \
+opencraft onboard --non-interactive \
   --mode local \
   --auth-choice ai-gateway-api-key \
   --ai-gateway-api-key "$AI_GATEWAY_API_KEY"
 ```
 
-## Environment note
+## Nota sobre ambiente
 
-If the Gateway runs as a daemon (launchd/systemd), make sure `AI_GATEWAY_API_KEY`
-is available to that process (for example, in `~/.openclaw/.env` or via
+Se o Gateway roda como daemon (launchd/systemd), certifique-se de que `AI_GATEWAY_API_KEY`
+está disponível para esse processo (por exemplo, em `~/.opencraft/.env` ou via
 `env.shellEnv`).
 
-## Model ID shorthand
+## Abreviação de ID de modelo
 
-OpenClaw accepts Vercel Claude shorthand model refs and normalizes them at
+O OpenCraft aceita refs de modelo Claude abreviados do Vercel e as normaliza em
 runtime:
 
 - `vercel-ai-gateway/claude-opus-4.6` -> `vercel-ai-gateway/anthropic/claude-opus-4.6`

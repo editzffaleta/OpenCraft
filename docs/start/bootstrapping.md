@@ -1,41 +1,41 @@
 ---
-summary: "Agent bootstrapping ritual that seeds the workspace and identity files"
+summary: "Ritual de bootstrapping que inicializa o workspace e os arquivos de identidade do agente"
 read_when:
-  - Understanding what happens on the first agent run
-  - Explaining where bootstrapping files live
-  - Debugging onboarding identity setup
-title: "Agent Bootstrapping"
+  - Entender o que acontece na primeira execução do agente
+  - Explicar onde ficam os arquivos de bootstrapping
+  - Depurar a configuração de identidade no onboarding
+title: "Bootstrapping do Agente"
 sidebarTitle: "Bootstrapping"
 ---
 
-# Agent Bootstrapping
+# Bootstrapping do Agente
 
-Bootstrapping is the **first‑run** ritual that prepares an agent workspace and
-collects identity details. It happens after onboarding, when the agent starts
-for the first time.
+O bootstrapping é o ritual de **primeira execução** que prepara o workspace do
+agente e coleta detalhes de identidade. Acontece após o onboarding, quando o
+agente inicia pela primeira vez.
 
-## What bootstrapping does
+## O que o bootstrapping faz
 
-On the first agent run, OpenClaw bootstraps the workspace (default
-`~/.openclaw/workspace`):
+Na primeira execução do agente, o OpenCraft inicializa o workspace (padrão
+`~/.opencraft/workspace`):
 
-- Seeds `AGENTS.md`, `BOOTSTRAP.md`, `IDENTITY.md`, `USER.md`.
-- Runs a short Q&A ritual (one question at a time).
-- Writes identity + preferences to `IDENTITY.md`, `USER.md`, `SOUL.md`.
-- Removes `BOOTSTRAP.md` when finished so it only runs once.
+- Cria `AGENTS.md`, `BOOTSTRAP.md`, `IDENTITY.md`, `USER.md`.
+- Executa um breve ritual de perguntas e respostas (uma pergunta por vez).
+- Grava identidade e preferências em `IDENTITY.md`, `USER.md`, `SOUL.md`.
+- Remove `BOOTSTRAP.md` ao finalizar, para que o ritual ocorra apenas uma vez.
 
-## Where it runs
+## Onde é executado
 
-Bootstrapping always runs on the **gateway host**. If the macOS app connects to
-a remote Gateway, the workspace and bootstrapping files live on that remote
-machine.
+O bootstrapping sempre roda no **host do gateway**. Se o app macOS se conecta a
+um Gateway remoto, o workspace e os arquivos de bootstrapping ficam nessa máquina
+remota.
 
 <Note>
-When the Gateway runs on another machine, edit workspace files on the gateway
-host (for example, `user@gateway-host:~/.openclaw/workspace`).
+Quando o Gateway roda em outra máquina, edite os arquivos do workspace no host do
+gateway (por exemplo, `user@gateway-host:~/.opencraft/workspace`).
 </Note>
 
-## Related docs
+## Documentação relacionada
 
-- macOS app onboarding: [Onboarding](/start/onboarding)
-- Workspace layout: [Agent workspace](/concepts/agent-workspace)
+- Onboarding do app macOS: [Onboarding](/start/onboarding)
+- Layout do workspace: [Workspace do agente](/concepts/agent-workspace)

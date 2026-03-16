@@ -1,162 +1,162 @@
 ---
-summary: "Camera capture (iOS/Android nodes + macOS app) for agent use: photos (jpg) and short video clips (mp4)"
+summary: "Captura de câmera (nodes iOS/Android + app macOS) para uso do agente: fotos (jpg) e clipes de vídeo curtos (mp4)"
 read_when:
-  - Adding or modifying camera capture on iOS/Android nodes or macOS
-  - Extending agent-accessible MEDIA temp-file workflows
-title: "Camera Capture"
+  - Adicionando ou modificando captura de câmera em nodes iOS/Android ou macOS
+  - Estendendo workflows de arquivo temporário MEDIA acessíveis pelo agente
+title: "Captura de Câmera"
 ---
 
-# Camera capture (agent)
+# Captura de câmera (agente)
 
-OpenClaw supports **camera capture** for agent workflows:
+O OpenCraft suporta **captura de câmera** para workflows de agente:
 
-- **iOS node** (paired via Gateway): capture a **photo** (`jpg`) or **short video clip** (`mp4`, with optional audio) via `node.invoke`.
-- **Android node** (paired via Gateway): capture a **photo** (`jpg`) or **short video clip** (`mp4`, with optional audio) via `node.invoke`.
-- **macOS app** (node via Gateway): capture a **photo** (`jpg`) or **short video clip** (`mp4`, with optional audio) via `node.invoke`.
+- **Node iOS** (emparelhado via Gateway): capture uma **foto** (`jpg`) ou **clipe de vídeo curto** (`mp4`, com áudio opcional) via `node.invoke`.
+- **Node Android** (emparelhado via Gateway): capture uma **foto** (`jpg`) ou **clipe de vídeo curto** (`mp4`, com áudio opcional) via `node.invoke`.
+- **App macOS** (node via Gateway): capture uma **foto** (`jpg`) ou **clipe de vídeo curto** (`mp4`, com áudio opcional) via `node.invoke`.
 
-All camera access is gated behind **user-controlled settings**.
+Todo acesso à câmera é controlado por **configurações controladas pelo usuário**.
 
-## iOS node
+## Node iOS
 
-### User setting (default on)
+### Configuração do usuário (padrão ativado)
 
-- iOS Settings tab → **Camera** → **Allow Camera** (`camera.enabled`)
-  - Default: **on** (missing key is treated as enabled).
-  - When off: `camera.*` commands return `CAMERA_DISABLED`.
+- Aba de Configurações iOS → **Câmera** → **Permitir Câmera** (`camera.enabled`)
+  - Padrão: **ativado** (chave ausente é tratada como habilitada).
+  - Quando desativado: comandos `camera.*` retornam `CAMERA_DISABLED`.
 
-### Commands (via Gateway `node.invoke`)
+### Comandos (via `node.invoke` do Gateway)
 
 - `camera.list`
-  - Response payload:
-    - `devices`: array of `{ id, name, position, deviceType }`
+  - Payload de resposta:
+    - `devices`: array de `{ id, name, position, deviceType }`
 
 - `camera.snap`
   - Params:
-    - `facing`: `front|back` (default: `front`)
-    - `maxWidth`: number (optional; default `1600` on the iOS node)
-    - `quality`: `0..1` (optional; default `0.9`)
-    - `format`: currently `jpg`
-    - `delayMs`: number (optional; default `0`)
-    - `deviceId`: string (optional; from `camera.list`)
-  - Response payload:
+    - `facing`: `front|back` (padrão: `front`)
+    - `maxWidth`: número (opcional; padrão `1600` no node iOS)
+    - `quality`: `0..1` (opcional; padrão `0.9`)
+    - `format`: atualmente `jpg`
+    - `delayMs`: número (opcional; padrão `0`)
+    - `deviceId`: string (opcional; de `camera.list`)
+  - Payload de resposta:
     - `format: "jpg"`
     - `base64: "<...>"`
     - `width`, `height`
-  - Payload guard: photos are recompressed to keep the base64 payload under 5 MB.
+  - Guarda de payload: fotos são recomprimidas para manter o payload base64 abaixo de 5 MB.
 
 - `camera.clip`
   - Params:
-    - `facing`: `front|back` (default: `front`)
-    - `durationMs`: number (default `3000`, clamped to a max of `60000`)
-    - `includeAudio`: boolean (default `true`)
-    - `format`: currently `mp4`
-    - `deviceId`: string (optional; from `camera.list`)
-  - Response payload:
+    - `facing`: `front|back` (padrão: `front`)
+    - `durationMs`: número (padrão `3000`, limitado a máx de `60000`)
+    - `includeAudio`: boolean (padrão `true`)
+    - `format`: atualmente `mp4`
+    - `deviceId`: string (opcional; de `camera.list`)
+  - Payload de resposta:
     - `format: "mp4"`
     - `base64: "<...>"`
     - `durationMs`
     - `hasAudio`
 
-### Foreground requirement
+### Requisito de foreground
 
-Like `canvas.*`, the iOS node only allows `camera.*` commands in the **foreground**. Background invocations return `NODE_BACKGROUND_UNAVAILABLE`.
+Assim como `canvas.*`, o node iOS permite comandos `camera.*` apenas em **foreground**. Invocações em background retornam `NODE_BACKGROUND_UNAVAILABLE`.
 
-### CLI helper (temp files + MEDIA)
+### Helper CLI (arquivos temp + MEDIA)
 
-The easiest way to get attachments is via the CLI helper, which writes decoded media to a temp file and prints `MEDIA:<path>`.
+A forma mais fácil de obter anexos é via helper CLI, que escreve a mídia decodificada em um arquivo temp e imprime `MEDIA:<path>`.
 
-Examples:
+Exemplos:
 
 ```bash
-openclaw nodes camera snap --node <id>               # default: both front + back (2 MEDIA lines)
-openclaw nodes camera snap --node <id> --facing front
-openclaw nodes camera clip --node <id> --duration 3000
-openclaw nodes camera clip --node <id> --no-audio
+opencraft nodes camera snap --node <id>               # padrão: front + back (2 linhas MEDIA)
+opencraft nodes camera snap --node <id> --facing front
+opencraft nodes camera clip --node <id> --duration 3000
+opencraft nodes camera clip --node <id> --no-audio
 ```
 
-Notes:
+Notas:
 
-- `nodes camera snap` defaults to **both** facings to give the agent both views.
-- Output files are temporary (in the OS temp directory) unless you build your own wrapper.
+- `nodes camera snap` padrão é **ambas** as posições para dar ao agente as duas visões.
+- Arquivos de saída são temporários (no diretório temp do SO) a menos que você crie seu próprio wrapper.
 
-## Android node
+## Node Android
 
-### Android user setting (default on)
+### Configuração do usuário Android (padrão ativado)
 
-- Android Settings sheet → **Camera** → **Allow Camera** (`camera.enabled`)
-  - Default: **on** (missing key is treated as enabled).
-  - When off: `camera.*` commands return `CAMERA_DISABLED`.
+- Painel de Configurações Android → **Câmera** → **Permitir Câmera** (`camera.enabled`)
+  - Padrão: **ativado** (chave ausente é tratada como habilitada).
+  - Quando desativado: comandos `camera.*` retornam `CAMERA_DISABLED`.
 
-### Permissions
+### Permissões
 
-- Android requires runtime permissions:
-  - `CAMERA` for both `camera.snap` and `camera.clip`.
-  - `RECORD_AUDIO` for `camera.clip` when `includeAudio=true`.
+- Android requer permissões em runtime:
+  - `CAMERA` para ambos `camera.snap` e `camera.clip`.
+  - `RECORD_AUDIO` para `camera.clip` quando `includeAudio=true`.
 
-If permissions are missing, the app will prompt when possible; if denied, `camera.*` requests fail with a
-`*_PERMISSION_REQUIRED` error.
+Se as permissões estiverem faltando, o app solicitará quando possível; se negadas, requisições `camera.*` falham com
+erro `*_PERMISSION_REQUIRED`.
 
-### Android foreground requirement
+### Requisito de foreground Android
 
-Like `canvas.*`, the Android node only allows `camera.*` commands in the **foreground**. Background invocations return `NODE_BACKGROUND_UNAVAILABLE`.
+Assim como `canvas.*`, o node Android permite comandos `camera.*` apenas em **foreground**. Invocações em background retornam `NODE_BACKGROUND_UNAVAILABLE`.
 
-### Android commands (via Gateway `node.invoke`)
+### Comandos Android (via `node.invoke` do Gateway)
 
 - `camera.list`
-  - Response payload:
-    - `devices`: array of `{ id, name, position, deviceType }`
+  - Payload de resposta:
+    - `devices`: array de `{ id, name, position, deviceType }`
 
-### Payload guard
+### Guarda de payload
 
-Photos are recompressed to keep the base64 payload under 5 MB.
+Fotos são recomprimidas para manter o payload base64 abaixo de 5 MB.
 
-## macOS app
+## App macOS
 
-### User setting (default off)
+### Configuração do usuário (padrão desativado)
 
-The macOS companion app exposes a checkbox:
+O app companheiro macOS expõe uma caixa de seleção:
 
-- **Settings → General → Allow Camera** (`openclaw.cameraEnabled`)
-  - Default: **off**
-  - When off: camera requests return “Camera disabled by user”.
+- **Configurações → Geral → Permitir Câmera** (`openclaw.cameraEnabled`)
+  - Padrão: **desativado**
+  - Quando desativado: requisições de câmera retornam "Câmera desativada pelo usuário".
 
-### CLI helper (node invoke)
+### Helper CLI (node invoke)
 
-Use the main `openclaw` CLI to invoke camera commands on the macOS node.
+Use o CLI principal `opencraft` para invocar comandos de câmera no node macOS.
 
-Examples:
-
-```bash
-openclaw nodes camera list --node <id>            # list camera ids
-openclaw nodes camera snap --node <id>            # prints MEDIA:<path>
-openclaw nodes camera snap --node <id> --max-width 1280
-openclaw nodes camera snap --node <id> --delay-ms 2000
-openclaw nodes camera snap --node <id> --device-id <id>
-openclaw nodes camera clip --node <id> --duration 10s          # prints MEDIA:<path>
-openclaw nodes camera clip --node <id> --duration-ms 3000      # prints MEDIA:<path> (legacy flag)
-openclaw nodes camera clip --node <id> --device-id <id>
-openclaw nodes camera clip --node <id> --no-audio
-```
-
-Notes:
-
-- `openclaw nodes camera snap` defaults to `maxWidth=1600` unless overridden.
-- On macOS, `camera.snap` waits `delayMs` (default 2000ms) after warm-up/exposure settle before capturing.
-- Photo payloads are recompressed to keep base64 under 5 MB.
-
-## Safety + practical limits
-
-- Camera and microphone access trigger the usual OS permission prompts (and require usage strings in Info.plist).
-- Video clips are capped (currently `<= 60s`) to avoid oversized node payloads (base64 overhead + message limits).
-
-## macOS screen video (OS-level)
-
-For _screen_ video (not camera), use the macOS companion:
+Exemplos:
 
 ```bash
-openclaw nodes screen record --node <id> --duration 10s --fps 15   # prints MEDIA:<path>
+opencraft nodes camera list --node <id>            # listar ids de câmera
+opencraft nodes camera snap --node <id>            # imprime MEDIA:<path>
+opencraft nodes camera snap --node <id> --max-width 1280
+opencraft nodes camera snap --node <id> --delay-ms 2000
+opencraft nodes camera snap --node <id> --device-id <id>
+opencraft nodes camera clip --node <id> --duration 10s          # imprime MEDIA:<path>
+opencraft nodes camera clip --node <id> --duration-ms 3000      # imprime MEDIA:<path> (flag legada)
+opencraft nodes camera clip --node <id> --device-id <id>
+opencraft nodes camera clip --node <id> --no-audio
 ```
 
-Notes:
+Notas:
 
-- Requires macOS **Screen Recording** permission (TCC).
+- `opencraft nodes camera snap` padrão é `maxWidth=1600` a menos que sobrescrito.
+- No macOS, `camera.snap` aguarda `delayMs` (padrão 2000ms) após aquecimento/estabilização de exposição antes de capturar.
+- Payloads de foto são recomprimidos para manter base64 abaixo de 5 MB.
+
+## Segurança + limites práticos
+
+- Acesso à câmera e microfone dispara os prompts de permissão usuais do SO (e requer strings de uso em Info.plist).
+- Clipes de vídeo são limitados (atualmente `<= 60s`) para evitar payloads de node muito grandes (overhead base64 + limites de mensagem).
+
+## Vídeo de tela macOS (nível do SO)
+
+Para vídeo de _tela_ (não câmera), use o companheiro macOS:
+
+```bash
+opencraft nodes screen record --node <id> --duration 10s --fps 15   # imprime MEDIA:<path>
+```
+
+Notas:
+
+- Requer permissão de **Gravação de Tela** macOS (TCC).

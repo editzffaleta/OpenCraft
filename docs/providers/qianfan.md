@@ -1,38 +1,38 @@
 ---
-summary: "Use Qianfan's unified API to access many models in OpenClaw"
+summary: "Usar a API unificada do Qianfan para acessar muitos modelos no OpenCraft"
 read_when:
-  - You want a single API key for many LLMs
-  - You need Baidu Qianfan setup guidance
+  - Você quer uma única chave de API para muitos LLMs
+  - Você precisa de orientação de configuração do Baidu Qianfan
 title: "Qianfan"
 ---
 
-# Qianfan Provider Guide
+# Guia do Provedor Qianfan
 
-Qianfan is Baidu's MaaS platform, provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+O Qianfan é a plataforma MaaS da Baidu e fornece uma **API unificada** que roteia requisições para muitos modelos atrás de um único
+endpoint e chave de API. É compatível com OpenAI, então a maioria dos SDKs OpenAI funciona trocando a URL base.
 
-## Prerequisites
+## Pré-requisitos
 
-1. A Baidu Cloud account with Qianfan API access
-2. An API key from the Qianfan console
-3. OpenClaw installed on your system
+1. Uma conta Baidu Cloud com acesso à API Qianfan
+2. Uma chave de API do console Qianfan
+3. OpenCraft instalado no seu sistema
 
-## Getting Your API Key
+## Obtendo sua Chave de API
 
-1. Visit the [Qianfan Console](https://console.bce.baidu.com/qianfan/ais/console/apiKey)
-2. Create a new application or select an existing one
-3. Generate an API key (format: `bce-v3/ALTAK-...`)
-4. Copy the API key for use with OpenClaw
+1. Acesse o [Console Qianfan](https://console.bce.baidu.com/qianfan/ais/console/apiKey)
+2. Crie uma nova aplicação ou selecione uma existente
+3. Gere uma chave de API (formato: `bce-v3/ALTAK-...`)
+4. Copie a chave de API para uso com o OpenCraft
 
-## CLI setup
+## Configuração CLI
 
 ```bash
-openclaw onboard --auth-choice qianfan-api-key
+opencraft onboard --auth-choice qianfan-api-key
 ```
 
-## Related Documentation
+## Documentação relacionada
 
-- [OpenClaw Configuration](/gateway/configuration)
-- [Model Providers](/concepts/model-providers)
-- [Agent Setup](/concepts/agent)
-- [Qianfan API Documentation](https://cloud.baidu.com/doc/qianfan-api/s/3m7of64lb)
+- [Configuração do OpenCraft](/gateway/configuration)
+- [Provedores de Modelo](/concepts/model-providers)
+- [Configuração de Agente](/concepts/agent)
+- [Documentação da API Qianfan](https://cloud.baidu.com/doc/qianfan-api/s/3m7of64lb)

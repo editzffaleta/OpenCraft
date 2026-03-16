@@ -1,81 +1,81 @@
 ---
-summary: "CLI reference for `openclaw models` (status/list/set/scan, aliases, fallbacks, auth)"
+summary: "Referência do CLI para `opencraft models` (status/list/set/scan, aliases, fallbacks, auth)"
 read_when:
-  - You want to change default models or view provider auth status
-  - You want to scan available models/providers and debug auth profiles
+  - Você quer mudar modelos padrão ou ver status de auth do provedor
+  - Você quer escanear modelos/provedores disponíveis e depurar perfis de auth
 title: "models"
 ---
 
-# `openclaw models`
+# `opencraft models`
 
-Model discovery, scanning, and configuration (default model, fallbacks, auth profiles).
+Descoberta, escaneamento e configuração de modelos (modelo padrão, fallbacks, perfis de auth).
 
-Related:
+Relacionado:
 
-- Providers + models: [Models](/providers/models)
-- Provider auth setup: [Getting started](/start/getting-started)
+- Provedores + modelos: [Models](/providers/models)
+- Setup de auth de provedor: [Getting started](/start/getting-started)
 
-## Common commands
+## Comandos comuns
 
 ```bash
-openclaw models status
-openclaw models list
-openclaw models set <model-or-alias>
-openclaw models scan
+opencraft models status
+opencraft models list
+opencraft models set <model-or-alias>
+opencraft models scan
 ```
 
-`openclaw models status` shows the resolved default/fallbacks plus an auth overview.
-When provider usage snapshots are available, the OAuth/token status section includes
-provider usage headers.
-Add `--probe` to run live auth probes against each configured provider profile.
-Probes are real requests (may consume tokens and trigger rate limits).
-Use `--agent <id>` to inspect a configured agent’s model/auth state. When omitted,
-the command uses `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR` if set, otherwise the
-configured default agent.
+`opencraft models status` mostra o padrão/fallbacks resolvidos mais uma visão geral de auth.
+Quando snapshots de uso de provedor estão disponíveis, a seção de status OAuth/token inclui
+cabeçalhos de uso do provedor.
+Adicione `--probe` para rodar probes de auth ao vivo contra cada perfil de provedor configurado.
+Probes são requisições reais (podem consumir tokens e acionar rate limits).
+Use `--agent <id>` para inspecionar o estado de modelo/auth de um agente configurado. Quando omitido,
+o comando usa `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR` se definido, caso contrário o
+agente padrão configurado.
 
-Notes:
+Notas:
 
-- `models set <model-or-alias>` accepts `provider/model` or an alias.
-- Model refs are parsed by splitting on the **first** `/`. If the model ID includes `/` (OpenRouter-style), include the provider prefix (example: `openrouter/moonshotai/kimi-k2`).
-- If you omit the provider, OpenClaw treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
-- `models status` may show `marker(<value>)` in auth output for non-secret placeholders (for example `OPENAI_API_KEY`, `secretref-managed`, `minimax-oauth`, `qwen-oauth`, `ollama-local`) instead of masking them as secrets.
+- `models set <model-or-alias>` aceita `provider/model` ou um alias.
+- Refs de modelo são analisadas dividindo no **primeiro** `/`. Se o ID do modelo incluir `/` (estilo OpenRouter), inclua o prefixo do provedor (exemplo: `openrouter/moonshotai/kimi-k2`).
+- Se você omitir o provedor, OpenCraft trata a entrada como um alias ou um modelo para o **provedor padrão** (só funciona quando não há `/` no ID do modelo).
+- `models status` pode mostrar `marker(<value>)` na saída de auth para placeholders não secretos (por exemplo `OPENAI_API_KEY`, `secretref-managed`, `minimax-oauth`, `qwen-oauth`, `ollama-local`) em vez de mascará-los como segredos.
 
 ### `models status`
 
-Options:
+Opções:
 
 - `--json`
 - `--plain`
-- `--check` (exit 1=expired/missing, 2=expiring)
-- `--probe` (live probe of configured auth profiles)
-- `--probe-provider <name>` (probe one provider)
-- `--probe-profile <id>` (repeat or comma-separated profile ids)
+- `--check` (sair 1=expirado/ausente, 2=expirando)
+- `--probe` (probe ao vivo de perfis de auth configurados)
+- `--probe-provider <name>` (fazer probe de um provedor)
+- `--probe-profile <id>` (repetir ou ids de perfil separados por vírgula)
 - `--probe-timeout <ms>`
 - `--probe-concurrency <n>`
 - `--probe-max-tokens <n>`
-- `--agent <id>` (configured agent id; overrides `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
+- `--agent <id>` (id de agente configurado; sobrescreve `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
 
 ## Aliases + fallbacks
 
 ```bash
-openclaw models aliases list
-openclaw models fallbacks list
+opencraft models aliases list
+opencraft models fallbacks list
 ```
 
-## Auth profiles
+## Perfis de auth
 
 ```bash
-openclaw models auth add
-openclaw models auth login --provider <id>
-openclaw models auth setup-token
-openclaw models auth paste-token
+opencraft models auth add
+opencraft models auth login --provider <id>
+opencraft models auth setup-token
+opencraft models auth paste-token
 ```
 
-`models auth login` runs a provider plugin’s auth flow (OAuth/API key). Use
-`openclaw plugins list` to see which providers are installed.
+`models auth login` roda o fluxo de auth do plugin do provedor (OAuth/API key). Use
+`opencraft plugins list` para ver quais provedores estão instalados.
 
-Notes:
+Notas:
 
-- `setup-token` prompts for a setup-token value (generate it with `claude setup-token` on any machine).
-- `paste-token` accepts a token string generated elsewhere or from automation.
-- Anthropic policy note: setup-token support is technical compatibility. Anthropic has blocked some subscription usage outside Claude Code in the past, so verify current terms before using it broadly.
+- `setup-token` solicita um valor de setup-token (gere com `claude setup-token` em qualquer máquina).
+- `paste-token` aceita uma string de token gerada em outro lugar ou de automação.
+- Nota de política Anthropic: suporte a setup-token é compatibilidade técnica. A Anthropic bloqueou algum uso de assinatura fora do Claude Code no passado, então verifique os termos atuais antes de usá-lo amplamente.

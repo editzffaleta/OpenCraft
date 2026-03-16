@@ -1,142 +1,142 @@
 ---
-summary: "Ephemeral side questions with /btw"
+summary: "Perguntas laterais efêmeras com /btw"
 read_when:
-  - You want to ask a quick side question about the current session
-  - You are implementing or debugging BTW behavior across clients
-title: "BTW Side Questions"
+  - Você quer fazer uma pergunta lateral rápida sobre a sessão atual
+  - Você está implementando ou depurando o comportamento BTW em diferentes clientes
+title: "Perguntas Laterais BTW"
 ---
 
-# BTW Side Questions
+# Perguntas Laterais BTW
 
-`/btw` lets you ask a quick side question about the **current session** without
-turning that question into normal conversation history.
+`/btw` permite fazer uma pergunta lateral rápida sobre a **sessão atual** sem
+transformar essa pergunta em histórico de conversa normal.
 
-It is modeled after Claude Code's `/btw` behavior, but adapted to OpenClaw's
-Gateway and multi-channel architecture.
+É modelado a partir do comportamento `/btw` do Claude Code, mas adaptado ao
+Gateway e arquitetura multicanal do OpenCraft.
 
-## What it does
+## O que faz
 
-When you send:
+Quando você envia:
 
 ```text
-/btw what changed?
+/btw o que mudou?
 ```
 
-OpenClaw:
+O OpenCraft:
 
-1. snapshots the current session context,
-2. runs a separate **tool-less** model call,
-3. answers only the side question,
-4. leaves the main run alone,
-5. does **not** write the BTW question or answer to session history,
-6. emits the answer as a **live side result** rather than a normal assistant message.
+1. tira um snapshot do contexto da sessão atual,
+2. executa uma chamada de modelo **sem ferramentas** separada,
+3. responde apenas à pergunta lateral,
+4. deixa a execução principal intacta,
+5. **não** escreve a pergunta ou resposta BTW no histórico da sessão,
+6. emite a resposta como um **resultado lateral ao vivo** em vez de uma mensagem normal do assistente.
 
-The important mental model is:
+O modelo mental importante é:
 
-- same session context
-- separate one-shot side query
-- no tool calls
-- no future context pollution
-- no transcript persistence
+- mesmo contexto de sessão
+- consulta lateral separada de uma única vez
+- sem chamadas de ferramentas
+- sem poluição de contexto futuro
+- sem persistência no transcript
 
-## What it does not do
+## O que não faz
 
-`/btw` does **not**:
+`/btw` **não**:
 
-- create a new durable session,
-- continue the unfinished main task,
-- run tools or agent tool loops,
-- write BTW question/answer data to transcript history,
-- appear in `chat.history`,
-- survive a reload.
+- cria uma nova sessão durável,
+- continua a tarefa principal inacabada,
+- executa ferramentas ou loops de ferramentas do agente,
+- escreve dados de pergunta/resposta BTW no histórico do transcript,
+- aparece em `chat.history`,
+- sobrevive a um recarregamento.
 
-It is intentionally **ephemeral**.
+É intencionalmente **efêmero**.
 
-## How context works
+## Como o contexto funciona
 
-BTW uses the current session as **background context only**.
+O BTW usa a sessão atual apenas como **contexto de fundo**.
 
-If the main run is currently active, OpenClaw snapshots the current message
-state and includes the in-flight main prompt as background context, while
-explicitly telling the model:
+Se a execução principal estiver ativa, o OpenCraft tira um snapshot do estado
+atual da mensagem e inclui o prompt principal em andamento como contexto de fundo,
+enquanto diz explicitamente ao modelo:
 
-- answer only the side question,
-- do not resume or complete the unfinished main task,
-- do not emit tool calls or pseudo-tool calls.
+- responda apenas à pergunta lateral,
+- não retome nem complete a tarefa principal inacabada,
+- não emita chamadas de ferramentas nem pseudo-chamadas de ferramentas.
 
-That keeps BTW isolated from the main run while still making it aware of what
-the session is about.
+Isso mantém o BTW isolado da execução principal enquanto ainda o torna ciente
+do que a sessão está tratando.
 
-## Delivery model
+## Modelo de entrega
 
-BTW is **not** delivered as a normal assistant transcript message.
+O BTW **não** é entregue como uma mensagem normal de transcript do assistente.
 
-At the Gateway protocol level:
+No nível do protocolo Gateway:
 
-- normal assistant chat uses the `chat` event
-- BTW uses the `chat.side_result` event
+- o chat normal do assistente usa o evento `chat`
+- o BTW usa o evento `chat.side_result`
 
-This separation is intentional. If BTW reused the normal `chat` event path,
-clients would treat it like regular conversation history.
+Essa separação é intencional. Se o BTW reutilizasse o caminho do evento `chat` normal,
+os clientes o tratariam como histórico de conversa regular.
 
-Because BTW uses a separate live event and is not replayed from
-`chat.history`, it disappears after reload.
+Como o BTW usa um evento ao vivo separado e não é reproduzido a partir de
+`chat.history`, ele desaparece após o recarregamento.
 
-## Surface behavior
+## Comportamento por superfície
 
 ### TUI
 
-In TUI, BTW is rendered inline in the current session view, but it remains
-ephemeral:
+Na TUI, o BTW é renderizado inline na visualização da sessão atual, mas permanece
+efêmero:
 
-- visibly distinct from a normal assistant reply
-- dismissible with `Enter` or `Esc`
-- not replayed on reload
+- visualmente distinto de uma resposta normal do assistente
+- descartável com `Enter` ou `Esc`
+- não reproduzido ao recarregar
 
-### External channels
+### Canais externos
 
-On channels like Telegram, WhatsApp, and Discord, BTW is delivered as a
-clearly labeled one-off reply because those surfaces do not have a local
-ephemeral overlay concept.
+Em canais como Telegram, WhatsApp e Discord, o BTW é entregue como uma resposta
+única claramente identificada, pois essas superfícies não têm conceito de overlay
+efêmero local.
 
-The answer is still treated as a side result, not normal session history.
+A resposta ainda é tratada como resultado lateral, não como histórico normal da sessão.
 
-### Control UI / web
+### UI de controle / web
 
-The Gateway emits BTW correctly as `chat.side_result`, and BTW is not included
-in `chat.history`, so the persistence contract is already correct for web.
+O Gateway emite o BTW corretamente como `chat.side_result`, e o BTW não está incluído
+em `chat.history`, então o contrato de persistência já está correto para web.
 
-The current Control UI still needs a dedicated `chat.side_result` consumer to
-render BTW live in the browser. Until that client-side support lands, BTW is a
-Gateway-level feature with full TUI and external-channel behavior, but not yet
-a complete browser UX.
+A UI de controle atual ainda precisa de um consumer dedicado `chat.side_result` para
+renderizar o BTW ao vivo no navegador. Até que esse suporte do lado do cliente chegue,
+o BTW é um recurso no nível do Gateway com comportamento completo na TUI e em canais
+externos, mas ainda não uma UX de navegador completa.
 
-## When to use BTW
+## Quando usar BTW
 
-Use `/btw` when you want:
+Use `/btw` quando quiser:
 
-- a quick clarification about the current work,
-- a factual side answer while a long run is still in progress,
-- a temporary answer that should not become part of future session context.
+- uma esclarecimento rápido sobre o trabalho atual,
+- uma resposta factual lateral enquanto uma execução longa ainda está em progresso,
+- uma resposta temporária que não deve fazer parte do contexto futuro da sessão.
 
-Examples:
+Exemplos:
 
 ```text
-/btw what file are we editing?
-/btw what does this error mean?
-/btw summarize the current task in one sentence
-/btw what is 17 * 19?
+/btw que arquivo estamos editando?
+/btw o que significa esse erro?
+/btw resuma a tarefa atual em uma frase
+/btw quanto é 17 * 19?
 ```
 
-## When not to use BTW
+## Quando não usar BTW
 
-Do not use `/btw` when you want the answer to become part of the session's
-future working context.
+Não use `/btw` quando quiser que a resposta se torne parte do contexto de
+trabalho futuro da sessão.
 
-In that case, ask normally in the main session instead of using BTW.
+Nesse caso, pergunte normalmente na sessão principal em vez de usar o BTW.
 
-## Related
+## Relacionado
 
 - [Slash commands](/tools/slash-commands)
-- [Thinking Levels](/tools/thinking)
-- [Session](/concepts/session)
+- [Níveis de Thinking](/tools/thinking)
+- [Sessão](/concepts/session)

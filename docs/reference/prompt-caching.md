@@ -1,28 +1,28 @@
 ---
-title: "Prompt Caching"
-summary: "Prompt caching knobs, merge order, provider behavior, and tuning patterns"
+title: "Cache de Prompt"
+summary: "Controles de cache de prompt, ordem de merge, comportamento por provedor e padrões de ajuste"
 read_when:
-  - You want to reduce prompt token costs with cache retention
-  - You need per-agent cache behavior in multi-agent setups
-  - You are tuning heartbeat and cache-ttl pruning together
+  - Você quer reduzir custos de tokens de prompt com retenção de cache
+  - Você precisa de comportamento de cache por agente em configurações multi-agente
+  - Você está ajustando heartbeat e poda cache-ttl juntos
 ---
 
-# Prompt caching
+# Cache de prompt
 
-Prompt caching means the model provider can reuse unchanged prompt prefixes (usually system/developer instructions and other stable context) across turns instead of re-processing them every time. The first matching request writes cache tokens (`cacheWrite`), and later matching requests can read them back (`cacheRead`).
+O cache de prompt significa que o provedor de modelo pode reutilizar prefixos de prompt inalterados (geralmente instruções de sistema/desenvolvedor e outros contextos estáveis) entre os turnos em vez de reprocessá-los a cada vez. A primeira requisição correspondente escreve tokens de cache (`cacheWrite`), e requisições correspondentes posteriores podem lê-los de volta (`cacheRead`).
 
-Why this matters: lower token cost, faster responses, and more predictable performance for long-running sessions. Without caching, repeated prompts pay the full prompt cost on every turn even when most input did not change.
+Por que isso importa: menor custo de tokens, respostas mais rápidas e desempenho mais previsível para sessões de longa duração. Sem caching, prompts repetidos pagam o custo completo do prompt a cada turno, mesmo quando a maior parte da entrada não mudou.
 
-This page covers all cache-related knobs that affect prompt reuse and token cost.
+Esta página cobre todos os controles relacionados a cache que afetam a reutilização de prompts e o custo de tokens.
 
-For Anthropic pricing details, see:
+Para detalhes de preços da Anthropic, veja:
 [https://docs.anthropic.com/docs/build-with-claude/prompt-caching](https://docs.anthropic.com/docs/build-with-claude/prompt-caching)
 
-## Primary knobs
+## Controles principais
 
-### `cacheRetention` (model and per-agent)
+### `cacheRetention` (modelo e por agente)
 
-Set cache retention on model params:
+Defina a retenção de cache nos parâmetros do modelo:
 
 ```yaml
 agents:
@@ -33,7 +33,7 @@ agents:
           cacheRetention: "short" # none | short | long
 ```
 
-Per-agent override:
+Override por agente:
 
 ```yaml
 agents:
@@ -43,23 +43,23 @@ agents:
         cacheRetention: "none"
 ```
 
-Config merge order:
+Ordem de merge de config:
 
 1. `agents.defaults.models["provider/model"].params`
-2. `agents.list[].params` (matching agent id; overrides by key)
+2. `agents.list[].params` (id de agente correspondente; sobrescreve por chave)
 
-### Legacy `cacheControlTtl`
+### `cacheControlTtl` legado
 
-Legacy values are still accepted and mapped:
+Valores legados ainda são aceitos e mapeados:
 
 - `5m` -> `short`
 - `1h` -> `long`
 
-Prefer `cacheRetention` for new config.
+Prefira `cacheRetention` para nova configuração.
 
 ### `contextPruning.mode: "cache-ttl"`
 
-Prunes old tool-result context after cache TTL windows so post-idle requests do not re-cache oversized history.
+Poda o contexto antigo de tool-result após janelas de TTL de cache para que requisições pós-inatividade não rearmazenem em cache histórico muito grande.
 
 ```yaml
 agents:
@@ -69,11 +69,11 @@ agents:
       ttl: "1h"
 ```
 
-See [Session Pruning](/concepts/session-pruning) for full behavior.
+Veja [Poda de Sessão](/concepts/session-pruning) para comportamento completo.
 
-### Heartbeat keep-warm
+### Keep-warm de heartbeat
 
-Heartbeat can keep cache windows warm and reduce repeated cache writes after idle gaps.
+O heartbeat pode manter as janelas de cache aquecidas e reduzir escritas de cache repetidas após lacunas de inatividade.
 
 ```yaml
 agents:
@@ -82,33 +82,33 @@ agents:
       every: "55m"
 ```
 
-Per-agent heartbeat is supported at `agents.list[].heartbeat`.
+O heartbeat por agente é suportado em `agents.list[].heartbeat`.
 
-## Provider behavior
+## Comportamento por provedor
 
-### Anthropic (direct API)
+### Anthropic (API direta)
 
-- `cacheRetention` is supported.
-- With Anthropic API-key auth profiles, OpenClaw seeds `cacheRetention: "short"` for Anthropic model refs when unset.
+- `cacheRetention` é suportado.
+- Com perfis de auth de chave API da Anthropic, o OpenCraft semeia `cacheRetention: "short"` para refs de modelos Anthropic quando não definido.
 
 ### Amazon Bedrock
 
-- Anthropic Claude model refs (`amazon-bedrock/*anthropic.claude*`) support explicit `cacheRetention` pass-through.
-- Non-Anthropic Bedrock models are forced to `cacheRetention: "none"` at runtime.
+- Refs de modelos Anthropic Claude (`amazon-bedrock/*anthropic.claude*`) suportam passagem explícita de `cacheRetention`.
+- Modelos Bedrock não-Anthropic são forçados para `cacheRetention: "none"` em runtime.
 
-### OpenRouter Anthropic models
+### Modelos Anthropic no OpenRouter
 
-For `openrouter/anthropic/*` model refs, OpenClaw injects Anthropic `cache_control` on system/developer prompt blocks to improve prompt-cache reuse.
+Para refs de modelos `openrouter/anthropic/*`, o OpenCraft injeta `cache_control` da Anthropic em blocos de prompt de sistema/desenvolvedor para melhorar a reutilização do cache de prompt.
 
-### Other providers
+### Outros provedores
 
-If the provider does not support this cache mode, `cacheRetention` has no effect.
+Se o provedor não suporta este modo de cache, `cacheRetention` não tem efeito.
 
-## Tuning patterns
+## Padrões de ajuste
 
-### Mixed traffic (recommended default)
+### Tráfego misto (padrão recomendado)
 
-Keep a long-lived baseline on your main agent, disable caching on bursty notifier agents:
+Mantenha uma linha de base de longa duração no seu agente principal, desabilite caching em agentes notificadores com muita atividade:
 
 ```yaml
 agents:
@@ -129,57 +129,57 @@ agents:
         cacheRetention: "none"
 ```
 
-### Cost-first baseline
+### Linha de base com foco em custo
 
-- Set baseline `cacheRetention: "short"`.
-- Enable `contextPruning.mode: "cache-ttl"`.
-- Keep heartbeat below your TTL only for agents that benefit from warm caches.
+- Defina `cacheRetention: "short"` como linha de base.
+- Habilite `contextPruning.mode: "cache-ttl"`.
+- Mantenha o heartbeat abaixo do seu TTL apenas para agentes que se beneficiam de caches aquecidos.
 
-## Cache diagnostics
+## Diagnósticos de cache
 
-OpenClaw exposes dedicated cache-trace diagnostics for embedded agent runs.
+O OpenCraft expõe diagnósticos dedicados de cache-trace para execuções de agente embutidas.
 
-### `diagnostics.cacheTrace` config
+### Config `diagnostics.cacheTrace`
 
 ```yaml
 diagnostics:
   cacheTrace:
     enabled: true
-    filePath: "~/.openclaw/logs/cache-trace.jsonl" # optional
-    includeMessages: false # default true
-    includePrompt: false # default true
-    includeSystem: false # default true
+    filePath: "~/.opencraft/logs/cache-trace.jsonl" # opcional
+    includeMessages: false # padrão true
+    includePrompt: false # padrão true
+    includeSystem: false # padrão true
 ```
 
-Defaults:
+Padrões:
 
 - `filePath`: `$OPENCLAW_STATE_DIR/logs/cache-trace.jsonl`
 - `includeMessages`: `true`
 - `includePrompt`: `true`
 - `includeSystem`: `true`
 
-### Env toggles (one-off debugging)
+### Toggles de env (depuração pontual)
 
-- `OPENCLAW_CACHE_TRACE=1` enables cache tracing.
-- `OPENCLAW_CACHE_TRACE_FILE=/path/to/cache-trace.jsonl` overrides output path.
-- `OPENCLAW_CACHE_TRACE_MESSAGES=0|1` toggles full message payload capture.
-- `OPENCLAW_CACHE_TRACE_PROMPT=0|1` toggles prompt text capture.
-- `OPENCLAW_CACHE_TRACE_SYSTEM=0|1` toggles system prompt capture.
+- `OPENCLAW_CACHE_TRACE=1` habilita o cache tracing.
+- `OPENCLAW_CACHE_TRACE_FILE=/caminho/para/cache-trace.jsonl` sobrescreve o caminho de saída.
+- `OPENCLAW_CACHE_TRACE_MESSAGES=0|1` alterna a captura de payload completo de mensagens.
+- `OPENCLAW_CACHE_TRACE_PROMPT=0|1` alterna a captura de texto do prompt.
+- `OPENCLAW_CACHE_TRACE_SYSTEM=0|1` alterna a captura do system prompt.
 
-### What to inspect
+### O que inspecionar
 
-- Cache trace events are JSONL and include staged snapshots like `session:loaded`, `prompt:before`, `stream:context`, and `session:after`.
-- Per-turn cache token impact is visible in normal usage surfaces via `cacheRead` and `cacheWrite` (for example `/usage full` and session usage summaries).
+- Os eventos de cache trace são JSONL e incluem snapshots em estágio como `session:loaded`, `prompt:before`, `stream:context` e `session:after`.
+- O impacto de tokens de cache por turno é visível nas superfícies de uso normais via `cacheRead` e `cacheWrite` (por exemplo `/usage full` e resumos de uso de sessão).
 
-## Quick troubleshooting
+## Troubleshooting rápido
 
-- High `cacheWrite` on most turns: check for volatile system-prompt inputs and verify model/provider supports your cache settings.
-- No effect from `cacheRetention`: confirm model key matches `agents.defaults.models["provider/model"]`.
-- Bedrock Nova/Mistral requests with cache settings: expected runtime force to `none`.
+- `cacheWrite` alto na maioria dos turnos: verifique entradas de system prompt voláteis e confirme se o modelo/provedor suporta suas configurações de cache.
+- Nenhum efeito de `cacheRetention`: confirme se a chave do modelo corresponde a `agents.defaults.models["provider/model"]`.
+- Requisições Bedrock Nova/Mistral com configurações de cache: forçamento esperado para `none` em runtime.
 
-Related docs:
+Docs relacionados:
 
 - [Anthropic](/providers/anthropic)
-- [Token Use and Costs](/reference/token-use)
-- [Session Pruning](/concepts/session-pruning)
-- [Gateway Configuration Reference](/gateway/configuration-reference)
+- [Uso e Custos de Tokens](/reference/token-use)
+- [Poda de Sessão](/concepts/session-pruning)
+- [Referência de Configuração do Gateway](/gateway/configuration-reference)

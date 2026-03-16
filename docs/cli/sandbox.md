@@ -1,127 +1,127 @@
 ---
-title: Sandbox CLI
-summary: "Manage sandbox containers and inspect effective sandbox policy"
-read_when: "You are managing sandbox containers or debugging sandbox/tool-policy behavior."
+title: CLI de Sandbox
+summary: "Gerenciar containers de sandbox e inspecionar política de sandbox efetiva"
+read_when: "Você está gerenciando containers de sandbox ou depurando comportamento de sandbox/tool-policy."
 status: active
 ---
 
-# Sandbox CLI
+# CLI de Sandbox
 
-Manage Docker-based sandbox containers for isolated agent execution.
+Gerenciar containers Docker de sandbox para execução isolada de agente.
 
-## Overview
+## Visão geral
 
-OpenClaw can run agents in isolated Docker containers for security. The `sandbox` commands help you manage these containers, especially after updates or configuration changes.
+OpenCraft pode rodar agentes em containers Docker isolados por segurança. Os comandos `sandbox` ajudam você a gerenciar esses containers, especialmente após atualizações ou mudanças de configuração.
 
-## Commands
+## Comandos
 
-### `openclaw sandbox explain`
+### `opencraft sandbox explain`
 
-Inspect the **effective** sandbox mode/scope/workspace access, sandbox tool policy, and elevated gates (with fix-it config key paths).
+Inspecionar o modo/escopo/acesso ao workspace de sandbox **efetivo**, política de tools de sandbox e gates elevados (com paths de chave de config para correção).
 
 ```bash
-openclaw sandbox explain
-openclaw sandbox explain --session agent:main:main
-openclaw sandbox explain --agent work
-openclaw sandbox explain --json
+opencraft sandbox explain
+opencraft sandbox explain --session agent:main:main
+opencraft sandbox explain --agent work
+opencraft sandbox explain --json
 ```
 
-### `openclaw sandbox list`
+### `opencraft sandbox list`
 
-List all sandbox containers with their status and configuration.
+Listar todos os containers de sandbox com seu status e configuração.
 
 ```bash
-openclaw sandbox list
-openclaw sandbox list --browser  # List only browser containers
-openclaw sandbox list --json     # JSON output
+opencraft sandbox list
+opencraft sandbox list --browser  # Listar apenas containers de browser
+opencraft sandbox list --json     # Saída JSON
 ```
 
-**Output includes:**
+**Saída inclui:**
 
-- Container name and status (running/stopped)
-- Docker image and whether it matches config
-- Age (time since creation)
-- Idle time (time since last use)
-- Associated session/agent
+- Nome e status do container (running/stopped)
+- Imagem Docker e se corresponde à config
+- Idade (tempo desde a criação)
+- Tempo idle (tempo desde o último uso)
+- Sessão/agente associado
 
-### `openclaw sandbox recreate`
+### `opencraft sandbox recreate`
 
-Remove sandbox containers to force recreation with updated images/config.
+Remover containers de sandbox para forçar recriação com imagens/config atualizadas.
 
 ```bash
-openclaw sandbox recreate --all                # Recreate all containers
-openclaw sandbox recreate --session main       # Specific session
-openclaw sandbox recreate --agent mybot        # Specific agent
-openclaw sandbox recreate --browser            # Only browser containers
-openclaw sandbox recreate --all --force        # Skip confirmation
+opencraft sandbox recreate --all                # Recriar todos os containers
+opencraft sandbox recreate --session main       # Sessão específica
+opencraft sandbox recreate --agent mybot        # Agente específico
+opencraft sandbox recreate --browser            # Apenas containers de browser
+opencraft sandbox recreate --all --force        # Pular confirmação
 ```
 
-**Options:**
+**Opções:**
 
-- `--all`: Recreate all sandbox containers
-- `--session <key>`: Recreate container for specific session
-- `--agent <id>`: Recreate containers for specific agent
-- `--browser`: Only recreate browser containers
-- `--force`: Skip confirmation prompt
+- `--all`: Recriar todos os containers de sandbox
+- `--session <key>`: Recriar container para sessão específica
+- `--agent <id>`: Recriar containers para agente específico
+- `--browser`: Recriar apenas containers de browser
+- `--force`: Pular prompt de confirmação
 
-**Important:** Containers are automatically recreated when the agent is next used.
+**Importante:** Containers são automaticamente recriados quando o agente for usado na próxima vez.
 
-## Use Cases
+## Casos de uso
 
-### After updating Docker images
+### Após atualizar imagens Docker
 
 ```bash
-# Pull new image
+# Baixar nova imagem
 docker pull openclaw-sandbox:latest
 docker tag openclaw-sandbox:latest openclaw-sandbox:bookworm-slim
 
-# Update config to use new image
-# Edit config: agents.defaults.sandbox.docker.image (or agents.list[].sandbox.docker.image)
+# Atualizar config para usar nova imagem
+# Editar config: agents.defaults.sandbox.docker.image (ou agents.list[].sandbox.docker.image)
 
-# Recreate containers
-openclaw sandbox recreate --all
+# Recriar containers
+opencraft sandbox recreate --all
 ```
 
-### After changing sandbox configuration
+### Após mudar a configuração de sandbox
 
 ```bash
-# Edit config: agents.defaults.sandbox.* (or agents.list[].sandbox.*)
+# Editar config: agents.defaults.sandbox.* (ou agents.list[].sandbox.*)
 
-# Recreate to apply new config
-openclaw sandbox recreate --all
+# Recriar para aplicar nova config
+opencraft sandbox recreate --all
 ```
 
-### After changing setupCommand
+### Após mudar setupCommand
 
 ```bash
-openclaw sandbox recreate --all
-# or just one agent:
-openclaw sandbox recreate --agent family
+opencraft sandbox recreate --all
+# ou apenas um agente:
+opencraft sandbox recreate --agent family
 ```
 
-### For a specific agent only
+### Apenas para um agente específico
 
 ```bash
-# Update only one agent's containers
-openclaw sandbox recreate --agent alfred
+# Atualizar apenas os containers de um agente
+opencraft sandbox recreate --agent alfred
 ```
 
-## Why is this needed?
+## Por que isso é necessário?
 
-**Problem:** When you update sandbox Docker images or configuration:
+**Problema:** Quando você atualiza imagens Docker de sandbox ou configuração:
 
-- Existing containers continue running with old settings
-- Containers are only pruned after 24h of inactivity
-- Regularly-used agents keep old containers running indefinitely
+- Containers existentes continuam rodando com configurações antigas
+- Containers só são removidos após 24h de inatividade
+- Agentes usados regularmente mantêm containers antigos rodando indefinidamente
 
-**Solution:** Use `openclaw sandbox recreate` to force removal of old containers. They'll be recreated automatically with current settings when next needed.
+**Solução:** Use `opencraft sandbox recreate` para forçar a remoção de containers antigos. Eles serão recriados automaticamente com as configurações atuais quando forem necessários.
 
-Tip: prefer `openclaw sandbox recreate` over manual `docker rm`. It uses the
-Gateway’s container naming and avoids mismatches when scope/session keys change.
+Dica: prefira `opencraft sandbox recreate` ao `docker rm` manual. Ele usa o
+naming de container do Gateway e evita incompatibilidades quando chaves de escopo/sessão mudam.
 
-## Configuration
+## Configuração
 
-Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sandbox` (per-agent overrides go in `agents.list[].sandbox`):
+Configurações de sandbox ficam em `~/.opencraft/opencraft.json` em `agents.defaults.sandbox` (overrides por agente vão em `agents.list[].sandbox`):
 
 ```jsonc
 {
@@ -133,11 +133,11 @@ Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sand
         "docker": {
           "image": "openclaw-sandbox:bookworm-slim",
           "containerPrefix": "openclaw-sbx-",
-          // ... more Docker options
+          // ... mais opções Docker
         },
         "prune": {
-          "idleHours": 24, // Auto-prune after 24h idle
-          "maxAgeDays": 7, // Auto-prune after 7 days
+          "idleHours": 24, // Auto-remover após 24h idle
+          "maxAgeDays": 7, // Auto-remover após 7 dias
         },
       },
     },
@@ -145,8 +145,8 @@ Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sand
 }
 ```
 
-## See Also
+## Veja também
 
-- [Sandbox Documentation](/gateway/sandboxing)
-- [Agent Configuration](/concepts/agent-workspace)
-- [Doctor Command](/gateway/doctor) - Check sandbox setup
+- [Documentação de Sandbox](/gateway/sandboxing)
+- [Configuração de Agente](/concepts/agent-workspace)
+- [Comando Doctor](/gateway/doctor) - Verificar setup de sandbox

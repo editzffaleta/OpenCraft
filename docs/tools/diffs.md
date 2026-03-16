@@ -1,38 +1,38 @@
 ---
 title: "Diffs"
-summary: "Read-only diff viewer and file renderer for agents (optional plugin tool)"
-description: "Use the optional Diffs plugin to render before and after text or unified patches as a gateway-hosted diff view, a file (PNG or PDF), or both."
+summary: "Visualizador de diff somente leitura e renderizador de arquivo para agentes (tool de plugin opcional)"
+description: "Use o plugin Diffs opcional para renderizar texto antes e depois ou patches unificados como uma visualização de diff hospedada no gateway, um arquivo (PNG ou PDF), ou ambos."
 read_when:
-  - You want agents to show code or markdown edits as diffs
-  - You want a canvas-ready viewer URL or a rendered diff file
-  - You need controlled, temporary diff artifacts with secure defaults
+  - Você quer que agentes mostrem edições de código ou markdown como diffs
+  - Você quer uma URL de visualizador pronta para canvas ou um arquivo de diff renderizado
+  - Você precisa de artefatos de diff temporários controlados com padrões seguros
 ---
 
 # Diffs
 
-`diffs` is an optional plugin tool with short built-in system guidance and a companion skill that turns change content into a read-only diff artifact for agents.
+`diffs` é uma tool de plugin opcional com orientação embutida concisa no sistema e uma skill complementar que transforma conteúdo de mudanças em um artefato de diff somente leitura para agentes.
 
-It accepts either:
+Aceita:
 
-- `before` and `after` text
-- a unified `patch`
+- texto `before` e `after`
+- um `patch` unificado
 
-It can return:
+Pode retornar:
 
-- a gateway viewer URL for canvas presentation
-- a rendered file path (PNG or PDF) for message delivery
-- both outputs in one call
+- uma URL de visualizador do gateway para apresentação no canvas
+- um caminho de arquivo renderizado (PNG ou PDF) para entrega por mensagem
+- ambas as saídas em uma única chamada
 
-When enabled, the plugin prepends concise usage guidance into system-prompt space and also exposes a detailed skill for cases where the agent needs fuller instructions.
+Quando habilitado, o plugin insere orientação de uso concisa no espaço do prompt do sistema e também expõe uma skill detalhada para casos em que o agente precisa de instruções mais completas.
 
-## Quick start
+## Início rápido
 
-1. Enable the plugin.
-2. Call `diffs` with `mode: "view"` for canvas-first flows.
-3. Call `diffs` with `mode: "file"` for chat file delivery flows.
-4. Call `diffs` with `mode: "both"` when you need both artifacts.
+1. Habilite o plugin.
+2. Chame `diffs` com `mode: "view"` para fluxos com canvas primeiro.
+3. Chame `diffs` com `mode: "file"` para fluxos de entrega de arquivo por chat.
+4. Chame `diffs` com `mode: "both"` quando precisar de ambos os artefatos.
 
-## Enable the plugin
+## Habilitar o plugin
 
 ```json5
 {
@@ -46,9 +46,9 @@ When enabled, the plugin prepends concise usage guidance into system-prompt spac
 }
 ```
 
-## Disable built-in system guidance
+## Desabilitar orientação embutida do sistema
 
-If you want to keep the `diffs` tool enabled but disable its built-in system-prompt guidance, set `plugins.entries.diffs.hooks.allowPromptInjection` to `false`:
+Se você quiser manter a tool `diffs` habilitada mas desabilitar sua orientação embutida no prompt do sistema, defina `plugins.entries.diffs.hooks.allowPromptInjection` como `false`:
 
 ```json5
 {
@@ -65,28 +65,28 @@ If you want to keep the `diffs` tool enabled but disable its built-in system-pro
 }
 ```
 
-This blocks the diffs plugin's `before_prompt_build` hook while keeping the plugin, tool, and companion skill available.
+Isso bloqueia o hook `before_prompt_build` do plugin diffs mantendo o plugin, a tool e a skill complementar disponíveis.
 
-If you want to disable both the guidance and the tool, disable the plugin instead.
+Se você quiser desabilitar tanto a orientação quanto a tool, desative o plugin.
 
-## Typical agent workflow
+## Fluxo típico do agente
 
-1. Agent calls `diffs`.
-2. Agent reads `details` fields.
-3. Agent either:
-   - opens `details.viewerUrl` with `canvas present`
-   - sends `details.filePath` with `message` using `path` or `filePath`
-   - does both
+1. Agente chama `diffs`.
+2. Agente lê os campos `details`.
+3. Agente:
+   - abre `details.viewerUrl` com `canvas present`
+   - envia `details.filePath` com `message` usando `path` ou `filePath`
+   - faz ambos
 
-## Input examples
+## Exemplos de entrada
 
-Before and after:
+Antes e depois:
 
 ```json
 {
-  "before": "# Hello\n\nOne",
-  "after": "# Hello\n\nTwo",
-  "path": "docs/example.md",
+  "before": "# Olá\n\nUm",
+  "after": "# Olá\n\nDois",
+  "path": "docs/exemplo.md",
   "mode": "view"
 }
 ```
@@ -95,52 +95,52 @@ Patch:
 
 ```json
 {
-  "patch": "diff --git a/src/example.ts b/src/example.ts\n--- a/src/example.ts\n+++ b/src/example.ts\n@@ -1 +1 @@\n-const x = 1;\n+const x = 2;\n",
+  "patch": "diff --git a/src/exemplo.ts b/src/exemplo.ts\n--- a/src/exemplo.ts\n+++ b/src/exemplo.ts\n@@ -1 +1 @@\n-const x = 1;\n+const x = 2;\n",
   "mode": "both"
 }
 ```
 
-## Tool input reference
+## Referência de entrada da tool
 
-All fields are optional unless noted:
+Todos os campos são opcionais a menos que indicado:
 
-- `before` (`string`): original text. Required with `after` when `patch` is omitted.
-- `after` (`string`): updated text. Required with `before` when `patch` is omitted.
-- `patch` (`string`): unified diff text. Mutually exclusive with `before` and `after`.
-- `path` (`string`): display filename for before and after mode.
-- `lang` (`string`): language override hint for before and after mode.
-- `title` (`string`): viewer title override.
-- `mode` (`"view" | "file" | "both"`): output mode. Defaults to plugin default `defaults.mode`.
-- `theme` (`"light" | "dark"`): viewer theme. Defaults to plugin default `defaults.theme`.
-- `layout` (`"unified" | "split"`): diff layout. Defaults to plugin default `defaults.layout`.
-- `expandUnchanged` (`boolean`): expand unchanged sections when full context is available. Per-call option only (not a plugin default key).
-- `fileFormat` (`"png" | "pdf"`): rendered file format. Defaults to plugin default `defaults.fileFormat`.
-- `fileQuality` (`"standard" | "hq" | "print"`): quality preset for PNG or PDF rendering.
-- `fileScale` (`number`): device scale override (`1`-`4`).
-- `fileMaxWidth` (`number`): max render width in CSS pixels (`640`-`2400`).
-- `ttlSeconds` (`number`): viewer artifact TTL in seconds. Default 1800, max 21600.
-- `baseUrl` (`string`): viewer URL origin override. Must be `http` or `https`, no query/hash.
+- `before` (`string`): texto original. Obrigatório com `after` quando `patch` é omitido.
+- `after` (`string`): texto atualizado. Obrigatório com `before` quando `patch` é omitido.
+- `patch` (`string`): texto de diff unificado. Mutuamente exclusivo com `before` e `after`.
+- `path` (`string`): nome de arquivo de exibição para o modo before e after.
+- `lang` (`string`): dica de override de linguagem para o modo before e after.
+- `title` (`string`): override do título do visualizador.
+- `mode` (`"view" | "file" | "both"`): modo de saída. Padrão é `defaults.mode` do plugin.
+- `theme` (`"light" | "dark"`): tema do visualizador. Padrão é `defaults.theme` do plugin.
+- `layout` (`"unified" | "split"`): layout do diff. Padrão é `defaults.layout` do plugin.
+- `expandUnchanged` (`boolean`): expandir seções sem alterações quando contexto completo disponível. Opção apenas por chamada (não é chave de padrão do plugin).
+- `fileFormat` (`"png" | "pdf"`): formato do arquivo renderizado. Padrão é `defaults.fileFormat` do plugin.
+- `fileQuality` (`"standard" | "hq" | "print"`): preset de qualidade para renderização PNG ou PDF.
+- `fileScale` (`number`): override de escala do dispositivo (`1`-`4`).
+- `fileMaxWidth` (`number`): largura máxima de renderização em pixels CSS (`640`-`2400`).
+- `ttlSeconds` (`number`): TTL do artefato do visualizador em segundos. Padrão 1800, máx 21600.
+- `baseUrl` (`string`): override de origem da URL do visualizador. Deve ser `http` ou `https`, sem query/hash.
 
-Validation and limits:
+Validação e limites:
 
-- `before` and `after` each max 512 KiB.
-- `patch` max 2 MiB.
-- `path` max 2048 bytes.
-- `lang` max 128 bytes.
-- `title` max 1024 bytes.
-- Patch complexity cap: max 128 files and 120000 total lines.
-- `patch` and `before` or `after` together are rejected.
-- Rendered file safety limits (apply to PNG and PDF):
-  - `fileQuality: "standard"`: max 8 MP (8,000,000 rendered pixels).
-  - `fileQuality: "hq"`: max 14 MP (14,000,000 rendered pixels).
-  - `fileQuality: "print"`: max 24 MP (24,000,000 rendered pixels).
-  - PDF also has a max of 50 pages.
+- `before` e `after` cada um com máx de 512 KiB.
+- `patch` máx de 2 MiB.
+- `path` máx de 2048 bytes.
+- `lang` máx de 128 bytes.
+- `title` máx de 1024 bytes.
+- Limite de complexidade do patch: máx de 128 arquivos e 120000 linhas no total.
+- `patch` e `before` ou `after` juntos são rejeitados.
+- Limites de segurança para arquivos renderizados (aplicam-se a PNG e PDF):
+  - `fileQuality: "standard"`: máx de 8 MP (8.000.000 pixels renderizados).
+  - `fileQuality: "hq"`: máx de 14 MP (14.000.000 pixels renderizados).
+  - `fileQuality: "print"`: máx de 24 MP (24.000.000 pixels renderizados).
+  - PDF também tem máx de 50 páginas.
 
-## Output details contract
+## Contrato de detalhes de saída
 
-The tool returns structured metadata under `details`.
+A tool retorna metadados estruturados em `details`.
 
-Shared fields for modes that create a viewer:
+Campos compartilhados para modos que criam um visualizador:
 
 - `artifactId`
 - `viewerUrl`
@@ -151,33 +151,33 @@ Shared fields for modes that create a viewer:
 - `fileCount`
 - `mode`
 
-File fields when PNG or PDF is rendered:
+Campos de arquivo quando PNG ou PDF é renderizado:
 
 - `filePath`
-- `path` (same value as `filePath`, for message tool compatibility)
+- `path` (mesmo valor que `filePath`, para compatibilidade com a tool message)
 - `fileBytes`
 - `fileFormat`
 - `fileQuality`
 - `fileScale`
 - `fileMaxWidth`
 
-Mode behavior summary:
+Resumo de comportamento por modo:
 
-- `mode: "view"`: viewer fields only.
-- `mode: "file"`: file fields only, no viewer artifact.
-- `mode: "both"`: viewer fields plus file fields. If file rendering fails, viewer still returns with `fileError`.
+- `mode: "view"`: apenas campos do visualizador.
+- `mode: "file"`: apenas campos de arquivo, sem artefato de visualizador.
+- `mode: "both"`: campos do visualizador mais campos de arquivo. Se a renderização de arquivo falhar, o visualizador ainda retorna com `fileError`.
 
-## Collapsed unchanged sections
+## Seções de linhas sem alterações colapsadas
 
-- The viewer can show rows like `N unmodified lines`.
-- Expand controls on those rows are conditional and not guaranteed for every input kind.
-- Expand controls appear when the rendered diff has expandable context data, which is typical for before and after input.
-- For many unified patch inputs, omitted context bodies are not available in the parsed patch hunks, so the row can appear without expand controls. This is expected behavior.
-- `expandUnchanged` applies only when expandable context exists.
+- O visualizador pode mostrar linhas como `N linhas não modificadas`.
+- Controles de expansão nessas linhas são condicionais e não garantidos para todo tipo de entrada.
+- Controles de expansão aparecem quando o diff renderizado tem dados de contexto expansíveis, o que é típico para entrada before e after.
+- Para muitas entradas de patch unificado, corpos de contexto omitidos não estão disponíveis nos hunks do patch analisado, portanto a linha pode aparecer sem controles de expansão. Este é o comportamento esperado.
+- `expandUnchanged` aplica-se apenas quando contexto expansível existe.
 
-## Plugin defaults
+## Padrões do plugin
 
-Set plugin-wide defaults in `~/.openclaw/openclaw.json`:
+Defina padrões para todo o plugin em `~/.opencraft/opencraft.json`:
 
 ```json5
 {
@@ -209,7 +209,7 @@ Set plugin-wide defaults in `~/.openclaw/openclaw.json`:
 }
 ```
 
-Supported defaults:
+Padrões suportados:
 
 - `fontFamily`
 - `fontSize`
@@ -226,15 +226,15 @@ Supported defaults:
 - `fileMaxWidth`
 - `mode`
 
-Explicit tool parameters override these defaults.
+Parâmetros explícitos da tool sobrescrevem esses padrões.
 
-## Security config
+## Configuração de segurança
 
-- `security.allowRemoteViewer` (`boolean`, default `false`)
-  - `false`: non-loopback requests to viewer routes are denied.
-  - `true`: remote viewers are allowed if tokenized path is valid.
+- `security.allowRemoteViewer` (`boolean`, padrão `false`)
+  - `false`: requisições não-loopback para rotas do visualizador são negadas.
+  - `true`: visualizadores remotos são permitidos se o caminho tokenizado for válido.
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -253,131 +253,131 @@ Example:
 }
 ```
 
-## Artifact lifecycle and storage
+## Ciclo de vida e armazenamento de artefatos
 
-- Artifacts are stored under the temp subfolder: `$TMPDIR/openclaw-diffs`.
-- Viewer artifact metadata contains:
-  - random artifact ID (20 hex chars)
-  - random token (48 hex chars)
-  - `createdAt` and `expiresAt`
-  - stored `viewer.html` path
-- Default viewer TTL is 30 minutes when not specified.
-- Maximum accepted viewer TTL is 6 hours.
-- Cleanup runs opportunistically after artifact creation.
-- Expired artifacts are deleted.
-- Fallback cleanup removes stale folders older than 24 hours when metadata is missing.
+- Artefatos são armazenados na subpasta temp: `$TMPDIR/openclaw-diffs`.
+- Metadados do artefato do visualizador contém:
+  - ID de artefato aleatório (20 chars hex)
+  - token aleatório (48 chars hex)
+  - `createdAt` e `expiresAt`
+  - caminho `viewer.html` armazenado
+- TTL padrão do visualizador é 30 minutos quando não especificado.
+- TTL máximo aceito do visualizador é 6 horas.
+- Limpeza é executada oportunisticamente após a criação do artefato.
+- Artefatos expirados são deletados.
+- Limpeza de fallback remove pastas antigas há mais de 24 horas quando metadados estão ausentes.
 
-## Viewer URL and network behavior
+## URL do visualizador e comportamento de rede
 
-Viewer route:
+Rota do visualizador:
 
 - `/plugins/diffs/view/{artifactId}/{token}`
 
-Viewer assets:
+Assets do visualizador:
 
 - `/plugins/diffs/assets/viewer.js`
 - `/plugins/diffs/assets/viewer-runtime.js`
 
-URL construction behavior:
+Comportamento de construção de URL:
 
-- If `baseUrl` is provided, it is used after strict validation.
-- Without `baseUrl`, viewer URL defaults to loopback `127.0.0.1`.
-- If gateway bind mode is `custom` and `gateway.customBindHost` is set, that host is used.
+- Se `baseUrl` for fornecido, é usado após validação estrita.
+- Sem `baseUrl`, a URL do visualizador padrão é loopback `127.0.0.1`.
+- Se o modo de bind do gateway for `custom` e `gateway.customBindHost` estiver definido, esse host é usado.
 
-`baseUrl` rules:
+Regras de `baseUrl`:
 
-- Must be `http://` or `https://`.
-- Query and hash are rejected.
-- Origin plus optional base path is allowed.
+- Deve ser `http://` ou `https://`.
+- Query e hash são rejeitados.
+- Origem mais caminho base opcional é permitido.
 
-## Security model
+## Modelo de segurança
 
-Viewer hardening:
+Hardening do visualizador:
 
-- Loopback-only by default.
-- Tokenized viewer paths with strict ID and token validation.
-- Viewer response CSP:
+- Somente loopback por padrão.
+- Caminhos de visualizador tokenizados com validação estrita de ID e token.
+- CSP da resposta do visualizador:
   - `default-src 'none'`
-  - scripts and assets only from self
-  - no outbound `connect-src`
-- Remote miss throttling when remote access is enabled:
-  - 40 failures per 60 seconds
-  - 60 second lockout (`429 Too Many Requests`)
+  - scripts e assets apenas de self
+  - sem `connect-src` de saída
+- Throttling de miss remoto quando acesso remoto está habilitado:
+  - 40 falhas por 60 segundos
+  - bloqueio de 60 segundos (`429 Too Many Requests`)
 
-File rendering hardening:
+Hardening de renderização de arquivo:
 
-- Screenshot browser request routing is deny-by-default.
-- Only local viewer assets from `http://127.0.0.1/plugins/diffs/assets/*` are allowed.
-- External network requests are blocked.
+- Roteamento de requisição do browser de screenshot é negado por padrão.
+- Apenas assets do visualizador local de `http://127.0.0.1/plugins/diffs/assets/*` são permitidos.
+- Requisições de rede externas são bloqueadas.
 
-## Browser requirements for file mode
+## Requisitos de browser para modo arquivo
 
-`mode: "file"` and `mode: "both"` need a Chromium-compatible browser.
+`mode: "file"` e `mode: "both"` precisam de um browser compatível com Chromium.
 
-Resolution order:
+Ordem de resolução:
 
-1. `browser.executablePath` in OpenClaw config.
-2. Environment variables:
+1. `browser.executablePath` na configuração do OpenCraft.
+2. Variáveis de ambiente:
    - `OPENCLAW_BROWSER_EXECUTABLE_PATH`
    - `BROWSER_EXECUTABLE_PATH`
    - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`
-3. Platform command/path discovery fallback.
+3. Fallback de descoberta de comando/caminho de plataforma.
 
-Common failure text:
+Texto comum de falha:
 
 - `Diff PNG/PDF rendering requires a Chromium-compatible browser...`
 
-Fix by installing Chrome, Chromium, Edge, or Brave, or setting one of the executable path options above.
+Corrija instalando Chrome, Chromium, Edge ou Brave, ou definindo uma das opções de caminho de executável acima.
 
-## Troubleshooting
+## Solução de problemas
 
-Input validation errors:
+Erros de validação de entrada:
 
 - `Provide patch or both before and after text.`
-  - Include both `before` and `after`, or provide `patch`.
+  - Inclua tanto `before` quanto `after`, ou forneça `patch`.
 - `Provide either patch or before/after input, not both.`
-  - Do not mix input modes.
+  - Não misture modos de entrada.
 - `Invalid baseUrl: ...`
-  - Use `http(s)` origin with optional path, no query/hash.
+  - Use origem `http(s)` com caminho opcional, sem query/hash.
 - `{field} exceeds maximum size (...)`
-  - Reduce payload size.
-- Large patch rejection
-  - Reduce patch file count or total lines.
+  - Reduza o tamanho do payload.
+- Rejeição de patch grande
+  - Reduza a contagem de arquivos do patch ou o total de linhas.
 
-Viewer accessibility issues:
+Problemas de acessibilidade do visualizador:
 
-- Viewer URL resolves to `127.0.0.1` by default.
-- For remote access scenarios, either:
-  - pass `baseUrl` per tool call, or
-  - use `gateway.bind=custom` and `gateway.customBindHost`
-- Enable `security.allowRemoteViewer` only when you intend external viewer access.
+- URL do visualizador resolve para `127.0.0.1` por padrão.
+- Para cenários de acesso remoto:
+  - passe `baseUrl` por chamada de tool, ou
+  - use `gateway.bind=custom` e `gateway.customBindHost`
+- Habilite `security.allowRemoteViewer` apenas quando você pretende acesso externo ao visualizador.
 
-Unmodified-lines row has no expand button:
+Linha de linhas não modificadas sem botão de expansão:
 
-- This can happen for patch input when the patch does not carry expandable context.
-- This is expected and does not indicate a viewer failure.
+- Isso pode acontecer para entrada de patch quando o patch não carrega contexto expansível.
+- Este é o comportamento esperado e não indica falha do visualizador.
 
-Artifact not found:
+Artefato não encontrado:
 
-- Artifact expired due TTL.
-- Token or path changed.
-- Cleanup removed stale data.
+- Artefato expirou devido ao TTL.
+- Token ou caminho mudou.
+- Limpeza removeu dados obsoletos.
 
-## Operational guidance
+## Orientação operacional
 
-- Prefer `mode: "view"` for local interactive reviews in canvas.
-- Prefer `mode: "file"` for outbound chat channels that need an attachment.
-- Keep `allowRemoteViewer` disabled unless your deployment requires remote viewer URLs.
-- Set explicit short `ttlSeconds` for sensitive diffs.
-- Avoid sending secrets in diff input when not required.
-- If your channel compresses images aggressively (for example Telegram or WhatsApp), prefer PDF output (`fileFormat: "pdf"`).
+- Prefira `mode: "view"` para revisões interativas locais no canvas.
+- Prefira `mode: "file"` para canais de chat de saída que precisam de um anexo.
+- Mantenha `allowRemoteViewer` desabilitado a menos que seu deployment exija URLs de visualizador remotas.
+- Defina `ttlSeconds` curto explícito para diffs sensíveis.
+- Evite enviar segredos na entrada de diff quando não necessário.
+- Se seu canal comprime imagens agressivamente (por exemplo Telegram ou WhatsApp), prefira saída PDF (`fileFormat: "pdf"`).
 
-Diff rendering engine:
+Motor de renderização de diff:
 
 - Powered by [Diffs](https://diffs.com).
 
-## Related docs
+## Documentação relacionada
 
-- [Tools overview](/tools)
+- [Visão geral de tools](/tools)
 - [Plugins](/tools/plugin)
 - [Browser](/tools/browser)

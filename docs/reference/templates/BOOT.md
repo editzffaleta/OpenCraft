@@ -1,11 +1,11 @@
 ---
-title: "BOOT.md Template"
-summary: "Workspace template for BOOT.md"
+title: "Template BOOT.md"
+summary: "Template de workspace para BOOT.md"
 read_when:
-  - Adding a BOOT.md checklist
+  - Adicionando uma checklist BOOT.md
 ---
 
 # BOOT.md
 
-Add short, explicit instructions for what OpenClaw should do on startup (enable `hooks.internal.enabled`).
-If the task sends a message, use the message tool and then reply with NO_REPLY.
+Adicione instruções curtas e explícitas do que o OpenCraft deve fazer na inicialização (ative `hooks.internal.enabled`).
+Se a tarefa enviar uma mensagem, use a ferramenta de mensagem e então responda com NO_REPLY.

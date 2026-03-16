@@ -1,34 +1,34 @@
 ---
-summary: "CLI reference for `openclaw voicecall` (voice-call plugin command surface)"
+summary: "Referência do CLI para `opencraft voicecall` (superfície de comandos CLI do plugin voice-call)"
 read_when:
-  - You use the voice-call plugin and want the CLI entry points
-  - You want quick examples for `voicecall call|continue|status|tail|expose`
+  - Você usa o plugin voice-call e quer os pontos de entrada CLI
+  - Você quer exemplos rápidos para `voicecall call|continue|status|tail|expose`
 title: "voicecall"
 ---
 
-# `openclaw voicecall`
+# `opencraft voicecall`
 
-`voicecall` is a plugin-provided command. It only appears if the voice-call plugin is installed and enabled.
+`voicecall` é um comando fornecido por plugin. Só aparece se o plugin voice-call estiver instalado e habilitado.
 
-Primary doc:
+Doc principal:
 
-- Voice-call plugin: [Voice Call](/plugins/voice-call)
+- Plugin voice-call: [Voice Call](/plugins/voice-call)
 
-## Common commands
-
-```bash
-openclaw voicecall status --call-id <id>
-openclaw voicecall call --to "+15555550123" --message "Hello" --mode notify
-openclaw voicecall continue --call-id <id> --message "Any questions?"
-openclaw voicecall end --call-id <id>
-```
-
-## Exposing webhooks (Tailscale)
+## Comandos comuns
 
 ```bash
-openclaw voicecall expose --mode serve
-openclaw voicecall expose --mode funnel
-openclaw voicecall expose --mode off
+opencraft voicecall status --call-id <id>
+opencraft voicecall call --to "+15555550123" --message "Hello" --mode notify
+opencraft voicecall continue --call-id <id> --message "Any questions?"
+opencraft voicecall end --call-id <id>
 ```
 
-Security note: only expose the webhook endpoint to networks you trust. Prefer Tailscale Serve over Funnel when possible.
+## Expondo webhooks (Tailscale)
+
+```bash
+opencraft voicecall expose --mode serve
+opencraft voicecall expose --mode funnel
+opencraft voicecall expose --mode off
+```
+
+Nota de segurança: só exponha o endpoint webhook para redes em que você confia. Prefira Tailscale Serve em vez de Funnel quando possível.

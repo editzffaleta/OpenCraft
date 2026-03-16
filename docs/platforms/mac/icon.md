@@ -1,31 +1,31 @@
 ---
-summary: "Menu bar icon states and animations for OpenClaw on macOS"
+summary: "Estados e animações do ícone da barra de menu do OpenCraft no macOS"
 read_when:
-  - Changing menu bar icon behavior
-title: "Menu Bar Icon"
+  - Alterando o comportamento do ícone da barra de menu
+title: "Ícone da Barra de Menu"
 ---
 
-# Menu Bar Icon States
+# Estados do Ícone da Barra de Menu
 
-Author: steipete · Updated: 2025-12-06 · Scope: macOS app (`apps/macos`)
+Autor: steipete · Atualizado em: 2025-12-06 · Escopo: app macOS (`apps/macos`)
 
-- **Idle:** Normal icon animation (blink, occasional wiggle).
-- **Paused:** Status item uses `appearsDisabled`; no motion.
-- **Voice trigger (big ears):** Voice wake detector calls `AppState.triggerVoiceEars(ttl: nil)` when the wake word is heard, keeping `earBoostActive=true` while the utterance is captured. Ears scale up (1.9x), get circular ear holes for readability, then drop via `stopVoiceEars()` after 1s of silence. Only fired from the in-app voice pipeline.
-- **Working (agent running):** `AppState.isWorking=true` drives a “tail/leg scurry” micro-motion: faster leg wiggle and slight offset while work is in-flight. Currently toggled around WebChat agent runs; add the same toggle around other long tasks when you wire them.
+- **Ocioso:** Animação de ícone normal (piscar, mexer ocasional).
+- **Pausado:** O item de status usa `appearsDisabled`; sem movimento.
+- **Gatilho de voz (orelhas grandes):** O detector de voice wake chama `AppState.triggerVoiceEars(ttl: nil)` quando a wake word é ouvida, mantendo `earBoostActive=true` enquanto o enunciado é capturado. As orelhas aumentam de escala (1,9x), ficam com buracos circulares para legibilidade, e depois caem via `stopVoiceEars()` após 1s de silêncio. Disparado apenas a partir do pipeline de voz interno do app.
+- **Trabalhando (agente em execução):** `AppState.isWorking=true` aciona uma micro-animação de "scurry de cauda/pernas": agitação de perna mais rápida e leve deslocamento enquanto o trabalho está em andamento. Atualmente ativado em torno de execuções do agente no WebChat; adicione o mesmo toggle em torno de outras tarefas longas ao conectá-las.
 
-Wiring points
+Pontos de conexão
 
-- Voice wake: runtime/tester call `AppState.triggerVoiceEars(ttl: nil)` on trigger and `stopVoiceEars()` after 1s of silence to match the capture window.
-- Agent activity: set `AppStateStore.shared.setWorking(true/false)` around work spans (already done in WebChat agent call). Keep spans short and reset in `defer` blocks to avoid stuck animations.
+- Voice wake: o runtime/testador chama `AppState.triggerVoiceEars(ttl: nil)` no gatilho e `stopVoiceEars()` após 1s de silêncio para corresponder à janela de captura.
+- Atividade do agente: defina `AppStateStore.shared.setWorking(true/false)` em torno dos spans de trabalho (já feito na chamada do agente do WebChat). Mantenha os spans curtos e redefina em blocos `defer` para evitar animações travadas.
 
-Shapes & sizes
+Formas e tamanhos
 
-- Base icon drawn in `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)`.
-- Ear scale defaults to `1.0`; voice boost sets `earScale=1.9` and toggles `earHoles=true` without changing overall frame (18×18 pt template image rendered into a 36×36 px Retina backing store).
-- Scurry uses leg wiggle up to ~1.0 with a small horizontal jiggle; it’s additive to any existing idle wiggle.
+- Ícone base desenhado em `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)`.
+- Escala de orelha padrão em `1.0`; o boost de voz define `earScale=1.9` e alterna `earHoles=true` sem alterar o frame geral (imagem de template 18×18 pt renderizada em um backing store Retina de 36×36 px).
+- O scurry usa agitação de perna até ~1,0 com um pequeno jiggle horizontal; é aditivo a qualquer agitação idle existente.
 
-Behavioral notes
+Notas comportamentais
 
-- No external CLI/broker toggle for ears/working; keep it internal to the app’s own signals to avoid accidental flapping.
-- Keep TTLs short (&lt;10s) so the icon returns to baseline quickly if a job hangs.
+- Sem toggle CLI/broker externo para orelhas/working; mantenha interno aos próprios sinais do app para evitar flapping acidental.
+- Mantenha os TTLs curtos (&lt;10s) para que o ícone retorne ao baseline rapidamente se um job travar.

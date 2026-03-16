@@ -1,127 +1,127 @@
 ---
-summary: "Troubleshoot WSL2 Gateway + Windows Chrome remote CDP and extension-relay setups in layers"
+summary: "Solucionar problemas de Gateway WSL2 + CDP Chrome remoto Windows e configurações de relay de extensão em camadas"
 read_when:
-  - Running OpenClaw Gateway in WSL2 while Chrome lives on Windows
-  - Seeing overlapping browser/control-ui errors across WSL2 and Windows
-  - Deciding between raw remote CDP and the Chrome extension relay in split-host setups
-title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
+  - Executando o Gateway do OpenCraft no WSL2 enquanto o Chrome está no Windows
+  - Vendo erros sobrepostos de browser/control-ui entre WSL2 e Windows
+  - Decidindo entre CDP remoto bruto e o relay de extensão Chrome em configurações de host dividido
+title: "WSL2 + Windows + solução de problemas de Chrome CDP remoto"
 ---
 
-# WSL2 + Windows + remote Chrome CDP troubleshooting
+# WSL2 + Windows + solução de problemas de Chrome CDP remoto
 
-This guide covers the common split-host setup where:
+Este guia cobre a configuração comum de host dividido onde:
 
-- OpenClaw Gateway runs inside WSL2
-- Chrome runs on Windows
-- browser control must cross the WSL2/Windows boundary
+- O Gateway do OpenCraft roda dentro do WSL2
+- O Chrome roda no Windows
+- o controle de browser deve cruzar a fronteira WSL2/Windows
 
-It also covers the layered failure pattern from [issue #39369](https://github.com/openclaw/openclaw/issues/39369): several independent problems can show up at once, which makes the wrong layer look broken first.
+Também cobre o padrão de falha em camadas do [issue #39369](https://github.com/openclaw/openclaw/issues/39369): vários problemas independentes podem aparecer ao mesmo tempo, o que faz a camada errada parecer quebrada primeiro.
 
-## Choose the right browser mode first
+## Escolha o modo de browser correto primeiro
 
-You have two valid patterns:
+Você tem dois padrões válidos:
 
-### Option 1: Raw remote CDP
+### Opção 1: CDP remoto bruto
 
-Use a remote browser profile that points from WSL2 to a Windows Chrome CDP endpoint.
+Use um perfil de browser remoto que aponte do WSL2 para um endpoint CDP do Chrome no Windows.
 
-Choose this when:
+Escolha isso quando:
 
-- you only need browser control
-- you are comfortable exposing Chrome remote debugging to WSL2
-- you do not need the Chrome extension relay
+- você só precisa de controle de browser
+- você está confortável em expor a depuração remota do Chrome para o WSL2
+- você não precisa do relay de extensão Chrome
 
-### Option 2: Chrome extension relay
+### Opção 2: Relay de extensão Chrome
 
-Use the built-in `chrome-relay` profile plus the OpenClaw Chrome extension.
+Use o perfil `chrome-relay` integrado mais a extensão Chrome do OpenCraft.
 
-Choose this when:
+Escolha isso quando:
 
-- you want to attach to an existing Windows Chrome tab with the toolbar button
-- you want extension-based control instead of raw `--remote-debugging-port`
-- the relay itself must be reachable across the WSL2/Windows boundary
+- você quer conectar a uma aba Chrome do Windows existente com o botão da barra de ferramentas
+- você quer controle baseado em extensão em vez de `--remote-debugging-port` bruto
+- o relay em si deve ser acessível pela fronteira WSL2/Windows
 
-If you use the extension relay across namespaces, `browser.relayBindHost` is the important setting introduced in [Browser](/tools/browser) and [Chrome extension](/tools/chrome-extension).
+Se você usar o relay de extensão entre namespaces, `browser.relayBindHost` é a configuração importante introduzida em [Browser](/tools/browser) e [Extensão Chrome](/tools/chrome-extension).
 
-## Working architecture
+## Arquitetura funcional
 
-Reference shape:
+Forma de referência:
 
-- WSL2 runs the Gateway on `127.0.0.1:18789`
-- Windows opens the Control UI in a normal browser at `http://127.0.0.1:18789/`
-- Windows Chrome exposes a CDP endpoint on port `9222`
-- WSL2 can reach that Windows CDP endpoint
-- OpenClaw points a browser profile at the address that is reachable from WSL2
+- WSL2 roda o Gateway em `127.0.0.1:18789`
+- Windows abre o Control UI em um browser normal em `http://127.0.0.1:18789/`
+- Chrome no Windows expõe um endpoint CDP na porta `9222`
+- WSL2 pode atingir esse endpoint CDP do Windows
+- O OpenCraft aponta um perfil de browser para o endereço acessível pelo WSL2
 
-## Why this setup is confusing
+## Por que essa configuração é confusa
 
-Several failures can overlap:
+Várias falhas podem se sobrepor:
 
-- WSL2 cannot reach the Windows CDP endpoint
-- the Control UI is opened from a non-secure origin
-- `gateway.controlUi.allowedOrigins` does not match the page origin
-- token or pairing is missing
-- the browser profile points at the wrong address
-- the extension relay is still loopback-only when you actually need cross-namespace access
+- WSL2 não consegue atingir o endpoint CDP do Windows
+- o Control UI é aberto de uma origem não segura
+- `gateway.controlUi.allowedOrigins` não corresponde à origem da página
+- token ou pareamento está ausente
+- o perfil de browser aponta para o endereço errado
+- o relay de extensão ainda é somente loopback quando você realmente precisa de acesso entre namespaces
 
-Because of that, fixing one layer can still leave a different error visible.
+Por causa disso, corrigir uma camada ainda pode deixar um erro diferente visível.
 
-## Critical rule for the Control UI
+## Regra crítica para o Control UI
 
-When the UI is opened from Windows, use Windows localhost unless you have a deliberate HTTPS setup.
+Quando o UI é aberto do Windows, use o localhost do Windows a menos que você tenha uma configuração HTTPS deliberada.
 
 Use:
 
 `http://127.0.0.1:18789/`
 
-Do not default to a LAN IP for the Control UI. Plain HTTP on a LAN or tailnet address can trigger insecure-origin/device-auth behavior that is unrelated to CDP itself. See [Control UI](/web/control-ui).
+Não use um IP de LAN como padrão para o Control UI. HTTP simples em um endereço de LAN ou tailnet pode acionar comportamento de origem insegura/autenticação de dispositivo que é não relacionado ao CDP em si. Veja [Control UI](/web/control-ui).
 
-## Validate in layers
+## Valide em camadas
 
-Work top to bottom. Do not skip ahead.
+Trabalhe de cima para baixo. Não pule adiante.
 
-### Layer 1: Verify Chrome is serving CDP on Windows
+### Camada 1: Verificar se o Chrome está servindo CDP no Windows
 
-Start Chrome on Windows with remote debugging enabled:
+Inicie o Chrome no Windows com depuração remota habilitada:
 
 ```powershell
 chrome.exe --remote-debugging-port=9222
 ```
 
-From Windows, verify Chrome itself first:
+Do Windows, verifique o Chrome primeiro:
 
 ```powershell
 curl http://127.0.0.1:9222/json/version
 curl http://127.0.0.1:9222/json/list
 ```
 
-If this fails on Windows, OpenClaw is not the problem yet.
+Se isso falhar no Windows, o OpenCraft ainda não é o problema.
 
-### Layer 2: Verify WSL2 can reach that Windows endpoint
+### Camada 2: Verificar se o WSL2 consegue atingir esse endpoint do Windows
 
-From WSL2, test the exact address you plan to use in `cdpUrl`:
+Do WSL2, teste o endereço exato que você planeja usar em `cdpUrl`:
 
 ```bash
 curl http://WINDOWS_HOST_OR_IP:9222/json/version
 curl http://WINDOWS_HOST_OR_IP:9222/json/list
 ```
 
-Good result:
+Bom resultado:
 
-- `/json/version` returns JSON with Browser / Protocol-Version metadata
-- `/json/list` returns JSON (empty array is fine if no pages are open)
+- `/json/version` retorna JSON com metadados de Browser/Protocol-Version
+- `/json/list` retorna JSON (array vazio é ok se não houver páginas abertas)
 
-If this fails:
+Se isso falhar:
 
-- Windows is not exposing the port to WSL2 yet
-- the address is wrong for the WSL2 side
-- firewall / port forwarding / local proxying is still missing
+- O Windows não está expondo a porta para o WSL2 ainda
+- o endereço está errado para o lado do WSL2
+- firewall / encaminhamento de porta / proxy local ainda está ausente
 
-Fix that before touching OpenClaw config.
+Corrija isso antes de tocar na configuração do OpenCraft.
 
-### Layer 3: Configure the correct browser profile
+### Camada 3: Configurar o perfil de browser correto
 
-For raw remote CDP, point OpenClaw at the address that is reachable from WSL2:
+Para CDP remoto bruto, aponte o OpenCraft para o endereço acessível pelo WSL2:
 
 ```json5
 {
@@ -139,17 +139,17 @@ For raw remote CDP, point OpenClaw at the address that is reachable from WSL2:
 }
 ```
 
-Notes:
+Notas:
 
-- use the WSL2-reachable address, not whatever only works on Windows
-- keep `attachOnly: true` for externally managed browsers
-- test the same URL with `curl` before expecting OpenClaw to succeed
+- use o endereço acessível pelo WSL2, não o que só funciona no Windows
+- mantenha `attachOnly: true` para browsers gerenciados externamente
+- teste a mesma URL com `curl` antes de esperar que o OpenCraft consiga
 
-### Layer 4: If you use the Chrome extension relay instead
+### Camada 4: Se você usar o relay de extensão Chrome
 
-If the browser machine and the Gateway are separated by a namespace boundary, the relay may need a non-loopback bind address.
+Se a máquina do browser e o Gateway estão separados por uma fronteira de namespace, o relay pode precisar de um endereço de bind não-loopback.
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -161,82 +161,82 @@ Example:
 }
 ```
 
-Use this only when needed:
+Use isso apenas quando necessário:
 
-- default behavior is safer because the relay stays loopback-only
-- `0.0.0.0` expands exposure surface
-- keep Gateway auth, node pairing, and the surrounding network private
+- o comportamento padrão é mais seguro porque o relay fica somente loopback
+- `0.0.0.0` expande a superfície de exposição
+- mantenha autenticação do Gateway, pareamento de node e a rede circundante privada
 
-If you do not need the extension relay, prefer the raw remote CDP profile above.
+Se você não precisar do relay de extensão, prefira o perfil de CDP remoto bruto acima.
 
-### Layer 5: Verify the Control UI layer separately
+### Camada 5: Verificar a camada do Control UI separadamente
 
-Open the UI from Windows:
+Abra o UI do Windows:
 
 `http://127.0.0.1:18789/`
 
-Then verify:
+Então verifique:
 
-- the page origin matches what `gateway.controlUi.allowedOrigins` expects
-- token auth or pairing is configured correctly
-- you are not debugging a Control UI auth problem as if it were a browser problem
+- a origem da página corresponde ao que `gateway.controlUi.allowedOrigins` espera
+- autenticação por token ou pareamento está configurada corretamente
+- você não está depurando um problema de autenticação do Control UI como se fosse um problema de browser
 
-Helpful page:
+Página útil:
 
 - [Control UI](/web/control-ui)
 
-### Layer 6: Verify end-to-end browser control
+### Camada 6: Verificar o controle de browser de ponta a ponta
 
-From WSL2:
-
-```bash
-openclaw browser open https://example.com --browser-profile remote
-openclaw browser tabs --browser-profile remote
-```
-
-For the extension relay:
+Do WSL2:
 
 ```bash
-openclaw browser tabs --browser-profile chrome-relay
+opencraft browser open https://example.com --browser-profile remote
+opencraft browser tabs --browser-profile remote
 ```
 
-Good result:
+Para o relay de extensão:
 
-- the tab opens in Windows Chrome
-- `openclaw browser tabs` returns the target
-- later actions (`snapshot`, `screenshot`, `navigate`) work from the same profile
+```bash
+opencraft browser tabs --browser-profile chrome-relay
+```
 
-## Common misleading errors
+Bom resultado:
 
-Treat each message as a layer-specific clue:
+- a aba abre no Chrome do Windows
+- `opencraft browser tabs` retorna o alvo
+- ações posteriores (`snapshot`, `screenshot`, `navigate`) funcionam do mesmo perfil
+
+## Erros comuns enganosos
+
+Trate cada mensagem como uma pista específica de camada:
 
 - `control-ui-insecure-auth`
-  - UI origin / secure-context problem, not a CDP transport problem
+  - Problema de origem do UI / contexto seguro, não problema de transporte CDP
 - `token_missing`
-  - auth configuration problem
+  - Problema de configuração de autenticação
 - `pairing required`
-  - device approval problem
+  - Problema de aprovação de dispositivo
 - `Remote CDP for profile "remote" is not reachable`
-  - WSL2 cannot reach the configured `cdpUrl`
+  - WSL2 não consegue atingir o `cdpUrl` configurado
 - `gateway timeout after 1500ms`
-  - often still CDP reachability or a slow/unreachable remote endpoint
+  - frequentemente ainda é acessibilidade do CDP ou um endpoint remoto lento/inacessível
 - `Chrome extension relay is running, but no tab is connected`
-  - extension relay profile selected, but no attached tab exists yet
+  - Perfil de relay de extensão selecionado, mas nenhuma aba conectada existe ainda
 
-## Fast triage checklist
+## Lista de verificação rápida de triagem
 
-1. Windows: does `curl http://127.0.0.1:9222/json/version` work?
-2. WSL2: does `curl http://WINDOWS_HOST_OR_IP:9222/json/version` work?
-3. OpenClaw config: does `browser.profiles.<name>.cdpUrl` use that exact WSL2-reachable address?
-4. Control UI: are you opening `http://127.0.0.1:18789/` instead of a LAN IP?
-5. Extension relay only: do you actually need `browser.relayBindHost`, and if so is it set explicitly?
+1. Windows: `curl http://127.0.0.1:9222/json/version` funciona?
+2. WSL2: `curl http://WINDOWS_HOST_OR_IP:9222/json/version` funciona?
+3. Config do OpenCraft: `browser.profiles.<nome>.cdpUrl` usa exatamente esse endereço acessível pelo WSL2?
+4. Control UI: você está abrindo `http://127.0.0.1:18789/` em vez de um IP de LAN?
+5. Somente relay de extensão: você realmente precisa de `browser.relayBindHost`, e se sim, está definido explicitamente?
 
-## Practical takeaway
+## Conclusão prática
 
-The setup is usually viable. The hard part is that browser transport, Control UI origin security, token/pairing, and extension-relay topology can each fail independently while looking similar from the user side.
+A configuração geralmente é viável. A parte difícil é que transporte de browser, segurança de origem do Control UI, token/pareamento e topologia de relay de extensão podem falhar independentemente enquanto parecem similares do lado do usuário.
 
-When in doubt:
+Em caso de dúvida:
 
-- verify the Windows Chrome endpoint locally first
-- verify the same endpoint from WSL2 second
-- only then debug OpenClaw config or Control UI auth
+- verifique o endpoint Chrome do Windows localmente primeiro
+- verifique o mesmo endpoint do WSL2 em seguida
+- só então depure a configuração do OpenCraft ou autenticação do Control UI

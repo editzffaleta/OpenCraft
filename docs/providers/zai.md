@@ -1,34 +1,34 @@
 ---
-summary: "Use Z.AI (GLM models) with OpenClaw"
+summary: "Usar Z.AI (modelos GLM) com o OpenCraft"
 read_when:
-  - You want Z.AI / GLM models in OpenClaw
-  - You need a simple ZAI_API_KEY setup
+  - Você quer modelos Z.AI / GLM no OpenCraft
+  - Você precisa de uma configuração simples com ZAI_API_KEY
 title: "Z.AI"
 ---
 
 # Z.AI
 
-Z.AI is the API platform for **GLM** models. It provides REST APIs for GLM and uses API keys
-for authentication. Create your API key in the Z.AI console. OpenClaw uses the `zai` provider
-with a Z.AI API key.
+O Z.AI é a plataforma de API para modelos **GLM**. Fornece APIs REST para GLM e usa chaves de API
+para autenticação. Crie sua chave de API no console do Z.AI. O OpenCraft usa o provedor `zai`
+com uma chave de API do Z.AI.
 
-## CLI setup
+## Configuração CLI
 
 ```bash
-# Coding Plan Global, recommended for Coding Plan users
-openclaw onboard --auth-choice zai-coding-global
+# Coding Plan Global, recomendado para usuários do Coding Plan
+opencraft onboard --auth-choice zai-coding-global
 
-# Coding Plan CN (China region), recommended for Coding Plan users
-openclaw onboard --auth-choice zai-coding-cn
+# Coding Plan CN (região China), recomendado para usuários do Coding Plan
+opencraft onboard --auth-choice zai-coding-cn
 
-# General API
-openclaw onboard --auth-choice zai-global
+# API geral
+opencraft onboard --auth-choice zai-global
 
-# General API CN (China region)
-openclaw onboard --auth-choice zai-cn
+# API geral CN (região China)
+opencraft onboard --auth-choice zai-cn
 ```
 
-## Config snippet
+## Trecho de config
 
 ```json5
 {
@@ -37,10 +37,10 @@ openclaw onboard --auth-choice zai-cn
 }
 ```
 
-## Notes
+## Notas
 
-- GLM models are available as `zai/<model>` (example: `zai/glm-5`).
-- `tool_stream` is enabled by default for Z.AI tool-call streaming. Set
-  `agents.defaults.models["zai/<model>"].params.tool_stream` to `false` to disable it.
-- See [/providers/glm](/providers/glm) for the model family overview.
-- Z.AI uses Bearer auth with your API key.
+- Modelos GLM estão disponíveis como `zai/<model>` (exemplo: `zai/glm-5`).
+- `tool_stream` está habilitado por padrão para streaming de chamadas de tool do Z.AI. Defina
+  `agents.defaults.models["zai/<model>"].params.tool_stream` como `false` para desabilitá-lo.
+- Veja [/providers/glm](/providers/glm) para a visão geral da família de modelos.
+- O Z.AI usa auth Bearer com sua chave de API.

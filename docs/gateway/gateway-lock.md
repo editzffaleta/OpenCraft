@@ -1,34 +1,34 @@
 ---
-summary: "Gateway singleton guard using the WebSocket listener bind"
+summary: "Guarda singleton do Gateway usando o bind do listener WebSocket"
 read_when:
-  - Running or debugging the gateway process
-  - Investigating single-instance enforcement
+  - Rodando ou depurando o processo do gateway
+  - Investigando aplicação de instância única
 title: "Gateway Lock"
 ---
 
-# Gateway lock
+# Lock do Gateway
 
-Last updated: 2025-12-11
+Última atualização: 2025-12-11
 
-## Why
+## Por quê
 
-- Ensure only one gateway instance runs per base port on the same host; additional gateways must use isolated profiles and unique ports.
-- Survive crashes/SIGKILL without leaving stale lock files.
-- Fail fast with a clear error when the control port is already occupied.
+- Garantir que apenas uma instância do gateway rode por porta base no mesmo host; gateways adicionais devem usar perfis isolados e portas únicas.
+- Sobreviver a crashes/SIGKILL sem deixar arquivos de lock obsoletos.
+- Falhar rapidamente com um erro claro quando a porta de controle já está ocupada.
 
-## Mechanism
+## Mecanismo
 
-- The gateway binds the WebSocket listener (default `ws://127.0.0.1:18789`) immediately on startup using an exclusive TCP listener.
-- If the bind fails with `EADDRINUSE`, startup throws `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
-- The OS releases the listener automatically on any process exit, including crashes and SIGKILL—no separate lock file or cleanup step is needed.
-- On shutdown the gateway closes the WebSocket server and underlying HTTP server to free the port promptly.
+- O gateway faz bind do listener WebSocket (padrão `ws://127.0.0.1:18789`) imediatamente na inicialização usando um listener TCP exclusivo.
+- Se o bind falhar com `EADDRINUSE`, a inicialização lança `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
+- O OS libera o listener automaticamente em qualquer saída de processo, incluindo crashes e SIGKILL — nenhum arquivo de lock separado ou passo de limpeza é necessário.
+- No shutdown o gateway fecha o servidor WebSocket e o servidor HTTP subjacente para liberar a porta prontamente.
 
-## Error surface
+## Superfície de erro
 
-- If another process holds the port, startup throws `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
-- Other bind failures surface as `GatewayLockError("failed to bind gateway socket on ws://127.0.0.1:<port>: …")`.
+- Se outro processo mantém a porta, a inicialização lança `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
+- Outras falhas de bind aparecem como `GatewayLockError("failed to bind gateway socket on ws://127.0.0.1:<port>: …")`.
 
-## Operational notes
+## Notas operacionais
 
-- If the port is occupied by _another_ process, the error is the same; free the port or choose another with `openclaw gateway --port <port>`.
-- The macOS app still maintains its own lightweight PID guard before spawning the gateway; the runtime lock is enforced by the WebSocket bind.
+- Se a porta está ocupada por _outro_ processo, o erro é o mesmo; libere a porta ou escolha outra com `opencraft gateway --port <port>`.
+- O app macOS ainda mantém seu próprio guarda PID leve antes de gerar o gateway; o lock de runtime é aplicado pelo bind WebSocket.

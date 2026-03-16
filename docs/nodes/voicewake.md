@@ -1,66 +1,66 @@
 ---
-summary: "Global voice wake words (Gateway-owned) and how they sync across nodes"
+summary: "Palavras de ativação por voz globais (de propriedade do Gateway) e como sincronizam entre nodes"
 read_when:
-  - Changing voice wake words behavior or defaults
-  - Adding new node platforms that need wake word sync
+  - Alterando comportamento ou padrões de palavras de ativação por voz
+  - Adicionando novas plataformas de node que precisam de sincronização de palavra de ativação
 title: "Voice Wake"
 ---
 
-# Voice Wake (Global Wake Words)
+# Voice Wake (Palavras de Ativação Globais)
 
-OpenClaw treats **wake words as a single global list** owned by the **Gateway**.
+O OpenCraft trata **palavras de ativação como uma lista global única** de propriedade do **Gateway**.
 
-- There are **no per-node custom wake words**.
-- **Any node/app UI may edit** the list; changes are persisted by the Gateway and broadcast to everyone.
-- macOS and iOS keep local **Voice Wake enabled/disabled** toggles (local UX + permissions differ).
-- Android currently keeps Voice Wake off and uses a manual mic flow in the Voice tab.
+- Não existem **palavras de ativação personalizadas por node**.
+- **Qualquer UI de node/app pode editar** a lista; alterações são persistidas pelo Gateway e transmitidas a todos.
+- macOS e iOS mantêm toggles locais de **Voice Wake habilitado/desabilitado** (UX local + permissões diferem).
+- Android atualmente mantém o Voice Wake desativado e usa um fluxo de microfone manual na aba de Voz.
 
-## Storage (Gateway host)
+## Armazenamento (host do Gateway)
 
-Wake words are stored on the gateway machine at:
+Palavras de ativação são armazenadas na máquina do gateway em:
 
-- `~/.openclaw/settings/voicewake.json`
+- `~/.opencraft/settings/voicewake.json`
 
-Shape:
+Estrutura:
 
 ```json
-{ "triggers": ["openclaw", "claude", "computer"], "updatedAtMs": 1730000000000 }
+{ "triggers": ["opencraft", "claude", "computador"], "updatedAtMs": 1730000000000 }
 ```
 
-## Protocol
+## Protocolo
 
-### Methods
+### Métodos
 
 - `voicewake.get` → `{ triggers: string[] }`
-- `voicewake.set` with params `{ triggers: string[] }` → `{ triggers: string[] }`
+- `voicewake.set` com params `{ triggers: string[] }` → `{ triggers: string[] }`
 
-Notes:
+Notas:
 
-- Triggers are normalized (trimmed, empties dropped). Empty lists fall back to defaults.
-- Limits are enforced for safety (count/length caps).
+- Triggers são normalizados (trimmed, vazios removidos). Listas vazias voltam para os padrões.
+- Limites são aplicados por segurança (limites de quantidade/comprimento).
 
-### Events
+### Eventos
 
 - `voicewake.changed` payload `{ triggers: string[] }`
 
-Who receives it:
+Quem recebe:
 
-- All WebSocket clients (macOS app, WebChat, etc.)
-- All connected nodes (iOS/Android), and also on node connect as an initial “current state” push.
+- Todos os clientes WebSocket (app macOS, WebChat, etc.)
+- Todos os nodes conectados (iOS/Android), e também ao conectar o node como um push de "estado atual" inicial.
 
-## Client behavior
+## Comportamento do cliente
 
-### macOS app
+### App macOS
 
-- Uses the global list to gate `VoiceWakeRuntime` triggers.
-- Editing “Trigger words” in Voice Wake settings calls `voicewake.set` and then relies on the broadcast to keep other clients in sync.
+- Usa a lista global para controlar triggers do `VoiceWakeRuntime`.
+- Editar "Palavras de ativação" nas configurações de Voice Wake chama `voicewake.set` e então depende da transmissão para manter outros clientes sincronizados.
 
-### iOS node
+### Node iOS
 
-- Uses the global list for `VoiceWakeManager` trigger detection.
-- Editing Wake Words in Settings calls `voicewake.set` (over the Gateway WS) and also keeps local wake-word detection responsive.
+- Usa a lista global para detecção de triggers do `VoiceWakeManager`.
+- Editar Palavras de Ativação em Configurações chama `voicewake.set` (via WS do Gateway) e também mantém a detecção local de palavra de ativação responsiva.
 
-### Android node
+### Node Android
 
-- Voice Wake is currently disabled in Android runtime/Settings.
-- Android voice uses manual mic capture in the Voice tab instead of wake-word triggers.
+- Voice Wake está atualmente desativado no runtime/Configurações do Android.
+- Voz no Android usa captura de microfone manual na aba de Voz em vez de triggers de palavra de ativação.

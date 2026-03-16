@@ -1,31 +1,29 @@
 ---
-summary: "Use OpenAI via API keys or Codex subscription in OpenClaw"
+summary: "Usar OpenAI via chaves de API ou assinatura Codex no OpenCraft"
 read_when:
-  - You want to use OpenAI models in OpenClaw
-  - You want Codex subscription auth instead of API keys
+  - Você quer usar modelos OpenAI no OpenCraft
+  - Você quer autenticação por assinatura Codex em vez de chaves de API
 title: "OpenAI"
 ---
 
 # OpenAI
 
-OpenAI provides developer APIs for GPT models. Codex supports **ChatGPT sign-in** for subscription
-access or **API key** sign-in for usage-based access. Codex cloud requires ChatGPT sign-in.
-OpenAI explicitly supports subscription OAuth usage in external tools/workflows like OpenClaw.
+A OpenAI fornece APIs de desenvolvedor para modelos GPT. O Codex suporta **login ChatGPT** para acesso por assinatura ou **chave de API** para acesso por uso. O Codex cloud requer login ChatGPT. A OpenAI suporta explicitamente o uso OAuth de assinatura em ferramentas/workflows externos como o OpenCraft.
 
-## Option A: OpenAI API key (OpenAI Platform)
+## Opção A: chave de API OpenAI (OpenAI Platform)
 
-**Best for:** direct API access and usage-based billing.
-Get your API key from the OpenAI dashboard.
+**Ideal para:** acesso direto à API e cobrança por uso.
+Obtenha sua chave de API no painel OpenAI.
 
-### CLI setup
+### Configuração CLI
 
 ```bash
-openclaw onboard --auth-choice openai-api-key
-# or non-interactive
-openclaw onboard --openai-api-key "$OPENAI_API_KEY"
+opencraft onboard --auth-choice openai-api-key
+# ou não-interativo
+opencraft onboard --openai-api-key "$OPENAI_API_KEY"
 ```
 
-### Config snippet
+### Trecho de config
 
 ```json5
 {
@@ -34,31 +32,26 @@ openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 }
 ```
 
-OpenAI's current API model docs list `gpt-5.4` and `gpt-5.4-pro` for direct
-OpenAI API usage. OpenClaw forwards both through the `openai/*` Responses path.
-OpenClaw intentionally suppresses the stale `openai/gpt-5.3-codex-spark` row,
-because direct OpenAI API calls reject it in live traffic.
+A documentação atual de modelos de API da OpenAI lista `gpt-5.4` e `gpt-5.4-pro` para uso direto da OpenAI API. O OpenCraft encaminha ambos pelo caminho de Respostas `openai/*`. O OpenCraft suprime intencionalmente a linha obsoleta `openai/gpt-5.3-codex-spark`, pois chamadas diretas à OpenAI API a rejeitam em tráfego real.
 
-OpenClaw does **not** expose `openai/gpt-5.3-codex-spark` on the direct OpenAI
-API path. `pi-ai` still ships a built-in row for that model, but live OpenAI API
-requests currently reject it. Spark is treated as Codex-only in OpenClaw.
+O OpenCraft **não** expõe `openai/gpt-5.3-codex-spark` no caminho direto da OpenAI API. `pi-ai` ainda inclui uma linha embutida para esse modelo, mas requisições reais à OpenAI API atualmente a rejeitam. Spark é tratado como Codex-only no OpenCraft.
 
-## Option B: OpenAI Code (Codex) subscription
+## Opção B: assinatura OpenAI Code (Codex)
 
-**Best for:** using ChatGPT/Codex subscription access instead of an API key.
-Codex cloud requires ChatGPT sign-in, while the Codex CLI supports ChatGPT or API key sign-in.
+**Ideal para:** usar acesso por assinatura ChatGPT/Codex em vez de uma chave de API.
+O Codex cloud requer login ChatGPT, enquanto o Codex CLI suporta login ChatGPT ou chave de API.
 
-### CLI setup (Codex OAuth)
+### Configuração CLI (OAuth Codex)
 
 ```bash
-# Run Codex OAuth in the wizard
-openclaw onboard --auth-choice openai-codex
+# Rodar OAuth Codex no wizard
+opencraft onboard --auth-choice openai-codex
 
-# Or run OAuth directly
-openclaw models auth login --provider openai-codex
+# Ou rodar OAuth diretamente
+opencraft models auth login --provider openai-codex
 ```
 
-### Config snippet (Codex subscription)
+### Trecho de config (assinatura Codex)
 
 ```json5
 {
@@ -66,40 +59,29 @@ openclaw models auth login --provider openai-codex
 }
 ```
 
-OpenAI's current Codex docs list `gpt-5.4` as the current Codex model. OpenClaw
-maps that to `openai-codex/gpt-5.4` for ChatGPT/Codex OAuth usage.
+A documentação atual do Codex da OpenAI lista `gpt-5.4` como o modelo Codex atual. O OpenCraft mapeia isso para `openai-codex/gpt-5.4` para uso OAuth ChatGPT/Codex.
 
-If your Codex account is entitled to Codex Spark, OpenClaw also supports:
+Se sua conta Codex tem direito ao Codex Spark, o OpenCraft também suporta:
 
 - `openai-codex/gpt-5.3-codex-spark`
 
-OpenClaw treats Codex Spark as Codex-only. It does not expose a direct
-`openai/gpt-5.3-codex-spark` API-key path.
+O OpenCraft trata o Codex Spark como Codex-only. Não expõe um caminho direto de chave de API `openai/gpt-5.3-codex-spark`.
 
-OpenClaw also preserves `openai-codex/gpt-5.3-codex-spark` when `pi-ai`
-discovers it. Treat it as entitlement-dependent and experimental: Codex Spark is
-separate from GPT-5.4 `/fast`, and availability depends on the signed-in Codex /
-ChatGPT account.
+O OpenCraft também preserva `openai-codex/gpt-5.3-codex-spark` quando `pi-ai` o descobre. Trate-o como dependente de direitos e experimental: o Codex Spark é separado do GPT-5.4 `/fast`, e a disponibilidade depende da conta Codex / ChatGPT logada.
 
-### Transport default
+### Padrão de transporte
 
-OpenClaw uses `pi-ai` for model streaming. For both `openai/*` and
-`openai-codex/*`, default transport is `"auto"` (WebSocket-first, then SSE
-fallback).
+O OpenCraft usa `pi-ai` para streaming de modelo. Para ambos `openai/*` e
+`openai-codex/*`, o transporte padrão é `"auto"` (WebSocket primeiro, depois fallback SSE).
 
-You can set `agents.defaults.models.<provider/model>.params.transport`:
+Você pode definir `agents.defaults.models.<provider/model>.params.transport`:
 
-- `"sse"`: force SSE
-- `"websocket"`: force WebSocket
-- `"auto"`: try WebSocket, then fall back to SSE
+- `"sse"`: forçar SSE
+- `"websocket"`: forçar WebSocket
+- `"auto"`: tentar WebSocket, depois voltar para SSE
 
-For `openai/*` (Responses API), OpenClaw also enables WebSocket warm-up by
-default (`openaiWsWarmup: true`) when WebSocket transport is used.
-
-Related OpenAI docs:
-
-- [Realtime API with WebSocket](https://platform.openai.com/docs/guides/realtime-websocket)
-- [Streaming API responses (SSE)](https://platform.openai.com/docs/guides/streaming-responses)
+Para `openai/*` (API Responses), o OpenCraft também habilita warm-up WebSocket por
+padrão (`openaiWsWarmup: true`) quando transporte WebSocket é usado.
 
 ```json5
 {
@@ -118,12 +100,12 @@ Related OpenAI docs:
 }
 ```
 
-### OpenAI WebSocket warm-up
+### Warm-up WebSocket OpenAI
 
-OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
-`openai/*` to reduce first-turn latency when using WebSocket transport.
+A documentação OpenAI descreve warm-up como opcional. O OpenCraft o habilita por padrão para
+`openai/*` para reduzir a latência do primeiro turno ao usar transporte WebSocket.
 
-### Disable warm-up
+### Desabilitar warm-up
 
 ```json5
 {
@@ -141,7 +123,7 @@ OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
 }
 ```
 
-### Enable warm-up explicitly
+### Habilitar warm-up explicitamente
 
 ```json5
 {
@@ -159,11 +141,11 @@ OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
 }
 ```
 
-### OpenAI priority processing
+### Processamento prioritário OpenAI
 
-OpenAI's API exposes priority processing via `service_tier=priority`. In
-OpenClaw, set `agents.defaults.models["openai/<model>"].params.serviceTier` to
-pass that field through on direct `openai/*` Responses requests.
+A API da OpenAI expõe processamento prioritário via `service_tier=priority`. No
+OpenCraft, defina `agents.defaults.models["openai/<model>"].params.serviceTier` para
+passar esse campo nas requisições `openai/*` Responses diretas.
 
 ```json5
 {
@@ -181,23 +163,23 @@ pass that field through on direct `openai/*` Responses requests.
 }
 ```
 
-Supported values are `auto`, `default`, `flex`, and `priority`.
+Valores suportados são `auto`, `default`, `flex` e `priority`.
 
-### OpenAI fast mode
+### Modo fast OpenAI
 
-OpenClaw exposes a shared fast-mode toggle for both `openai/*` and
-`openai-codex/*` sessions:
+O OpenCraft expõe um toggle de modo fast compartilhado para sessões `openai/*` e
+`openai-codex/*`:
 
 - Chat/UI: `/fast status|on|off`
 - Config: `agents.defaults.models["<provider>/<model>"].params.fastMode`
 
-When fast mode is enabled, OpenClaw applies a low-latency OpenAI profile:
+Quando o modo fast está habilitado, o OpenCraft aplica um perfil OpenAI de baixa latência:
 
-- `reasoning.effort = "low"` when the payload does not already specify reasoning
-- `text.verbosity = "low"` when the payload does not already specify verbosity
-- `service_tier = "priority"` for direct `openai/*` Responses calls to `api.openai.com`
+- `reasoning.effort = "low"` quando o payload não especifica reasoning
+- `text.verbosity = "low"` quando o payload não especifica verbosity
+- `service_tier = "priority"` para chamadas `openai/*` Responses diretas em `api.openai.com`
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -220,25 +202,22 @@ Example:
 }
 ```
 
-Session overrides win over config. Clearing the session override in the Sessions UI
-returns the session to the configured default.
+Overrides de sessão vencem sobre a config. Limpar o override de sessão na UI de Sessões retorna a sessão para o padrão configurado.
 
-### OpenAI Responses server-side compaction
+### Compactação server-side OpenAI Responses
 
-For direct OpenAI Responses models (`openai/*` using `api: "openai-responses"` with
-`baseUrl` on `api.openai.com`), OpenClaw now auto-enables OpenAI server-side
-compaction payload hints:
+Para modelos OpenAI Responses diretos (`openai/*` usando `api: "openai-responses"` com
+`baseUrl` em `api.openai.com`), o OpenCraft agora auto-habilita hints de payload de compactação server-side OpenAI:
 
-- Forces `store: true` (unless model compat sets `supportsStore: false`)
-- Injects `context_management: [{ type: "compaction", compact_threshold: ... }]`
+- Força `store: true` (a menos que compat de modelo defina `supportsStore: false`)
+- Injeta `context_management: [{ type: "compaction", compact_threshold: ... }]`
 
-By default, `compact_threshold` is `70%` of model `contextWindow` (or `80000`
-when unavailable).
+Por padrão, `compact_threshold` é `70%` do `contextWindow` do modelo (ou `80000`
+quando indisponível).
 
-### Enable server-side compaction explicitly
+### Habilitar compactação server-side explicitamente
 
-Use this when you want to force `context_management` injection on compatible
-Responses models (for example Azure OpenAI Responses):
+Use isso quando você quer forçar a injeção de `context_management` em modelos Responses compatíveis (por exemplo Azure OpenAI Responses):
 
 ```json5
 {
@@ -256,7 +235,7 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-### Enable with a custom threshold
+### Habilitar com threshold personalizado
 
 ```json5
 {
@@ -275,7 +254,7 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-### Disable server-side compaction
+### Desabilitar compactação server-side
 
 ```json5
 {
@@ -293,11 +272,11 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-`responsesServerCompaction` only controls `context_management` injection.
-Direct OpenAI Responses models still force `store: true` unless compat sets
+`responsesServerCompaction` controla apenas a injeção de `context_management`.
+Modelos OpenAI Responses diretos ainda forçam `store: true` a menos que compat defina
 `supportsStore: false`.
 
-## Notes
+## Notas
 
-- Model refs always use `provider/model` (see [/concepts/models](/concepts/models)).
-- Auth details + reuse rules are in [/concepts/oauth](/concepts/oauth).
+- Refs de modelo sempre usam `provider/model` (veja [/concepts/models](/concepts/models)).
+- Detalhes de autenticação + regras de reutilização estão em [/concepts/oauth](/concepts/oauth).

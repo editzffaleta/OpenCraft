@@ -1,54 +1,54 @@
 ---
-summary: "Model provider overview with example configs + CLI flows"
+summary: "Visão geral de provedores de modelo com exemplos de config + fluxos CLI"
 read_when:
-  - You need a provider-by-provider model setup reference
-  - You want example configs or CLI onboarding commands for model providers
-title: "Model Providers"
+  - Você precisa de uma referência de configuração de modelo por provedor
+  - Você quer exemplos de config ou comandos de onboarding CLI para provedores de modelo
+title: "Provedores de Modelo"
 ---
 
-# Model providers
+# Provedores de modelo
 
-This page covers **LLM/model providers** (not chat channels like WhatsApp/Telegram).
-For model selection rules, see [/concepts/models](/concepts/models).
+Esta página cobre **provedores de LLM/modelo** (não canais de chat como WhatsApp/Telegram).
+Para regras de seleção de modelo, veja [/concepts/models](/concepts/models).
 
-## Quick rules
+## Regras rápidas
 
-- Model refs use `provider/model` (example: `opencode/claude-opus-4-6`).
-- If you set `agents.defaults.models`, it becomes the allowlist.
-- CLI helpers: `openclaw onboard`, `openclaw models list`, `openclaw models set <provider/model>`.
+- Refs de modelo usam `provider/model` (exemplo: `opencode/claude-opus-4-6`).
+- Se você definir `agents.defaults.models`, ele se torna a allowlist.
+- Helpers CLI: `opencraft onboard`, `opencraft models list`, `opencraft models set <provider/model>`.
 
-## API key rotation
+## Rotação de chave de API
 
-- Supports generic provider rotation for selected providers.
-- Configure multiple keys via:
-  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (single live override, highest priority)
-  - `<PROVIDER>_API_KEYS` (comma or semicolon list)
-  - `<PROVIDER>_API_KEY` (primary key)
-  - `<PROVIDER>_API_KEY_*` (numbered list, e.g. `<PROVIDER>_API_KEY_1`)
-- For Google providers, `GOOGLE_API_KEY` is also included as fallback.
-- Key selection order preserves priority and deduplicates values.
-- Requests are retried with the next key only on rate-limit responses (for example `429`, `rate_limit`, `quota`, `resource exhausted`).
-- Non-rate-limit failures fail immediately; no key rotation is attempted.
-- When all candidate keys fail, the final error is returned from the last attempt.
+- Suporta rotação genérica de provedor para provedores selecionados.
+- Configure múltiplas chaves via:
+  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (override único ao vivo, maior prioridade)
+  - `<PROVIDER>_API_KEYS` (lista separada por vírgula ou ponto-e-vírgula)
+  - `<PROVIDER>_API_KEY` (chave primária)
+  - `<PROVIDER>_API_KEY_*` (lista numerada, ex.: `<PROVIDER>_API_KEY_1`)
+- Para provedores Google, `GOOGLE_API_KEY` também é incluído como fallback.
+- A ordem de seleção de chave preserva prioridade e remove duplicatas.
+- Requisições são refeitas com a próxima chave apenas em respostas de rate-limit (por exemplo `429`, `rate_limit`, `quota`, `resource exhausted`).
+- Falhas não relacionadas a rate-limit falham imediatamente; nenhuma rotação de chave é tentada.
+- Quando todas as chaves candidatas falharem, o erro final é retornado da última tentativa.
 
-## Built-in providers (pi-ai catalog)
+## Provedores embutidos (catálogo pi-ai)
 
-OpenClaw ships with the pi‑ai catalog. These providers require **no**
-`models.providers` config; just set auth + pick a model.
+O OpenCraft vem com o catálogo pi-ai. Esses provedores **não** requerem
+config `models.providers`; basta definir auth + escolher um modelo.
 
 ### OpenAI
 
-- Provider: `openai`
+- Provedor: `openai`
 - Auth: `OPENAI_API_KEY`
-- Optional rotation: `OPENAI_API_KEYS`, `OPENAI_API_KEY_1`, `OPENAI_API_KEY_2`, plus `OPENCLAW_LIVE_OPENAI_KEY` (single override)
-- Example models: `openai/gpt-5.4`, `openai/gpt-5.4-pro`
-- CLI: `openclaw onboard --auth-choice openai-api-key`
-- Default transport is `auto` (WebSocket-first, SSE fallback)
-- Override per model via `agents.defaults.models["openai/<model>"].params.transport` (`"sse"`, `"websocket"`, or `"auto"`)
-- OpenAI Responses WebSocket warm-up defaults to enabled via `params.openaiWsWarmup` (`true`/`false`)
-- OpenAI priority processing can be enabled via `agents.defaults.models["openai/<model>"].params.serviceTier`
-- OpenAI fast mode can be enabled per model via `agents.defaults.models["<provider>/<model>"].params.fastMode`
-- `openai/gpt-5.3-codex-spark` is intentionally suppressed in OpenClaw because the live OpenAI API rejects it; Spark is treated as Codex-only
+- Rotação opcional: `OPENAI_API_KEYS`, `OPENAI_API_KEY_1`, `OPENAI_API_KEY_2`, mais `OPENCLAW_LIVE_OPENAI_KEY` (override único)
+- Modelos exemplo: `openai/gpt-5.4`, `openai/gpt-5.4-pro`
+- CLI: `opencraft onboard --auth-choice openai-api-key`
+- Transport padrão é `auto` (WebSocket primeiro, fallback SSE)
+- Override por modelo via `agents.defaults.models["openai/<model>"].params.transport` (`"sse"`, `"websocket"`, ou `"auto"`)
+- Warm-up WebSocket do OpenAI Responses padrão habilitado via `params.openaiWsWarmup` (`true`/`false`)
+- Processamento prioritário do OpenAI pode ser habilitado via `agents.defaults.models["openai/<model>"].params.serviceTier`
+- Modo rápido do OpenAI pode ser habilitado por modelo via `agents.defaults.models["<provider>/<model>"].params.fastMode`
+- `openai/gpt-5.3-codex-spark` é intencionalmente suprimido no OpenCraft porque a API OpenAI ao vivo o rejeita; Spark é tratado como somente Codex
 
 ```json5
 {
@@ -58,14 +58,14 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 
 ### Anthropic
 
-- Provider: `anthropic`
-- Auth: `ANTHROPIC_API_KEY` or `claude setup-token`
-- Optional rotation: `ANTHROPIC_API_KEYS`, `ANTHROPIC_API_KEY_1`, `ANTHROPIC_API_KEY_2`, plus `OPENCLAW_LIVE_ANTHROPIC_KEY` (single override)
-- Example model: `anthropic/claude-opus-4-6`
-- CLI: `openclaw onboard --auth-choice token` (paste setup-token) or `openclaw models auth paste-token --provider anthropic`
-- Direct API-key models support the shared `/fast` toggle and `params.fastMode`; OpenClaw maps that to Anthropic `service_tier` (`auto` vs `standard_only`)
-- Policy note: setup-token support is technical compatibility; Anthropic has blocked some subscription usage outside Claude Code in the past. Verify current Anthropic terms and decide based on your risk tolerance.
-- Recommendation: Anthropic API key auth is the safer, recommended path over subscription setup-token auth.
+- Provedor: `anthropic`
+- Auth: `ANTHROPIC_API_KEY` ou `claude setup-token`
+- Rotação opcional: `ANTHROPIC_API_KEYS`, `ANTHROPIC_API_KEY_1`, `ANTHROPIC_API_KEY_2`, mais `OPENCLAW_LIVE_ANTHROPIC_KEY` (override único)
+- Modelo exemplo: `anthropic/claude-opus-4-6`
+- CLI: `opencraft onboard --auth-choice token` (cole setup-token) ou `opencraft models auth paste-token --provider anthropic`
+- Modelos de API direta suportam o toggle `/fast` compartilhado e `params.fastMode`; o OpenCraft mapeia isso para o Anthropic `service_tier` (`auto` vs `standard_only`)
+- Nota de política: o suporte ao setup-token é compatibilidade técnica; a Anthropic bloqueou alguns usos de assinatura fora do Claude Code no passado. Verifique os termos atuais da Anthropic e decida com base em sua tolerância a risco.
+- Recomendação: auth por chave de API da Anthropic é o caminho mais seguro e recomendado em vez do auth por setup-token de assinatura.
 
 ```json5
 {
@@ -75,15 +75,15 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 
 ### OpenAI Code (Codex)
 
-- Provider: `openai-codex`
+- Provedor: `openai-codex`
 - Auth: OAuth (ChatGPT)
-- Example model: `openai-codex/gpt-5.4`
-- CLI: `openclaw onboard --auth-choice openai-codex` or `openclaw models auth login --provider openai-codex`
-- Default transport is `auto` (WebSocket-first, SSE fallback)
-- Override per model via `agents.defaults.models["openai-codex/<model>"].params.transport` (`"sse"`, `"websocket"`, or `"auto"`)
-- Shares the same `/fast` toggle and `params.fastMode` config as direct `openai/*`
-- `openai-codex/gpt-5.3-codex-spark` remains available when the Codex OAuth catalog exposes it; entitlement-dependent
-- Policy note: OpenAI Codex OAuth is explicitly supported for external tools/workflows like OpenClaw.
+- Modelo exemplo: `openai-codex/gpt-5.4`
+- CLI: `opencraft onboard --auth-choice openai-codex` ou `opencraft models auth login --provider openai-codex`
+- Transport padrão é `auto` (WebSocket primeiro, fallback SSE)
+- Override por modelo via `agents.defaults.models["openai-codex/<model>"].params.transport` (`"sse"`, `"websocket"`, ou `"auto"`)
+- Compartilha o mesmo toggle `/fast` e config `params.fastMode` que `openai/*` direto
+- `openai-codex/gpt-5.3-codex-spark` permanece disponível quando o catálogo OAuth do Codex o expõe; dependente de titularidade
+- Nota de política: OpenAI Codex OAuth é explicitamente suportado para ferramentas/fluxos externos como o OpenCraft.
 
 ```json5
 {
@@ -93,11 +93,11 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 
 ### OpenCode
 
-- Auth: `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`)
-- Zen runtime provider: `opencode`
-- Go runtime provider: `opencode-go`
-- Example models: `opencode/claude-opus-4-6`, `opencode-go/kimi-k2.5`
-- CLI: `openclaw onboard --auth-choice opencode-zen` or `openclaw onboard --auth-choice opencode-go`
+- Auth: `OPENCODE_API_KEY` (ou `OPENCODE_ZEN_API_KEY`)
+- Provedor de runtime Zen: `opencode`
+- Provedor de runtime Go: `opencode-go`
+- Modelos exemplo: `opencode/claude-opus-4-6`, `opencode-go/kimi-k2.5`
+- CLI: `opencraft onboard --auth-choice opencode-zen` ou `opencraft onboard --auth-choice opencode-go`
 
 ```json5
 {
@@ -105,86 +105,86 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 }
 ```
 
-### Google Gemini (API key)
+### Google Gemini (chave de API)
 
-- Provider: `google`
+- Provedor: `google`
 - Auth: `GEMINI_API_KEY`
-- Optional rotation: `GEMINI_API_KEYS`, `GEMINI_API_KEY_1`, `GEMINI_API_KEY_2`, `GOOGLE_API_KEY` fallback, and `OPENCLAW_LIVE_GEMINI_KEY` (single override)
-- Example models: `google/gemini-3.1-pro-preview`, `google/gemini-3-flash-preview`
-- Compatibility: legacy OpenClaw config using `google/gemini-3.1-flash-preview` is normalized to `google/gemini-3-flash-preview`
-- CLI: `openclaw onboard --auth-choice gemini-api-key`
+- Rotação opcional: `GEMINI_API_KEYS`, `GEMINI_API_KEY_1`, `GEMINI_API_KEY_2`, fallback `GOOGLE_API_KEY` e `OPENCLAW_LIVE_GEMINI_KEY` (override único)
+- Modelos exemplo: `google/gemini-3.1-pro-preview`, `google/gemini-3-flash-preview`
+- Compatibilidade: config legada do OpenCraft usando `google/gemini-3.1-flash-preview` é normalizada para `google/gemini-3-flash-preview`
+- CLI: `opencraft onboard --auth-choice gemini-api-key`
 
-### Google Vertex, Antigravity, and Gemini CLI
+### Google Vertex, Antigravity e Gemini CLI
 
-- Providers: `google-vertex`, `google-antigravity`, `google-gemini-cli`
-- Auth: Vertex uses gcloud ADC; Antigravity/Gemini CLI use their respective auth flows
-- Caution: Antigravity and Gemini CLI OAuth in OpenClaw are unofficial integrations. Some users have reported Google account restrictions after using third-party clients. Review Google terms and use a non-critical account if you choose to proceed.
-- Antigravity OAuth is shipped as a bundled plugin (`google-antigravity-auth`, disabled by default).
-  - Enable: `openclaw plugins enable google-antigravity-auth`
-  - Login: `openclaw models auth login --provider google-antigravity --set-default`
-- Gemini CLI OAuth is shipped as a bundled plugin (`google-gemini-cli-auth`, disabled by default).
-  - Enable: `openclaw plugins enable google-gemini-cli-auth`
-  - Login: `openclaw models auth login --provider google-gemini-cli --set-default`
-  - Note: you do **not** paste a client id or secret into `openclaw.json`. The CLI login flow stores
-    tokens in auth profiles on the gateway host.
+- Provedores: `google-vertex`, `google-antigravity`, `google-gemini-cli`
+- Auth: Vertex usa gcloud ADC; Antigravity/Gemini CLI usam seus respectivos fluxos de auth
+- Cuidado: Antigravity e Gemini CLI OAuth no OpenCraft são integrações não-oficiais. Alguns usuários relataram restrições de conta Google após usar clientes de terceiros. Revise os termos do Google e use uma conta não-crítica se optar por prosseguir.
+- Antigravity OAuth é fornecido como um plugin embutido (`google-antigravity-auth`, desabilitado por padrão).
+  - Habilitar: `opencraft plugins enable google-antigravity-auth`
+  - Login: `opencraft models auth login --provider google-antigravity --set-default`
+- Gemini CLI OAuth é fornecido como um plugin embutido (`google-gemini-cli-auth`, desabilitado por padrão).
+  - Habilitar: `opencraft plugins enable google-gemini-cli-auth`
+  - Login: `opencraft models auth login --provider google-gemini-cli --set-default`
+  - Nota: você **não** cola um client id ou secret no `opencraft.json`. O fluxo de login CLI armazena
+    tokens em perfis de auth no host do gateway.
 
 ### Z.AI (GLM)
 
-- Provider: `zai`
+- Provedor: `zai`
 - Auth: `ZAI_API_KEY`
-- Example model: `zai/glm-5`
-- CLI: `openclaw onboard --auth-choice zai-api-key`
-  - Aliases: `z.ai/*` and `z-ai/*` normalize to `zai/*`
+- Modelo exemplo: `zai/glm-5`
+- CLI: `opencraft onboard --auth-choice zai-api-key`
+  - Aliases: `z.ai/*` e `z-ai/*` normalizam para `zai/*`
 
 ### Vercel AI Gateway
 
-- Provider: `vercel-ai-gateway`
+- Provedor: `vercel-ai-gateway`
 - Auth: `AI_GATEWAY_API_KEY`
-- Example model: `vercel-ai-gateway/anthropic/claude-opus-4.6`
-- CLI: `openclaw onboard --auth-choice ai-gateway-api-key`
+- Modelo exemplo: `vercel-ai-gateway/anthropic/claude-opus-4.6`
+- CLI: `opencraft onboard --auth-choice ai-gateway-api-key`
 
 ### Kilo Gateway
 
-- Provider: `kilocode`
+- Provedor: `kilocode`
 - Auth: `KILOCODE_API_KEY`
-- Example model: `kilocode/anthropic/claude-opus-4.6`
-- CLI: `openclaw onboard --kilocode-api-key <key>`
-- Base URL: `https://api.kilo.ai/api/gateway/`
-- Expanded built-in catalog includes GLM-5 Free, MiniMax M2.5 Free, GPT-5.2, Gemini 3 Pro Preview, Gemini 3 Flash Preview, Grok Code Fast 1, and Kimi K2.5.
+- Modelo exemplo: `kilocode/anthropic/claude-opus-4.6`
+- CLI: `opencraft onboard --kilocode-api-key <key>`
+- URL base: `https://api.kilo.ai/api/gateway/`
+- Catálogo embutido expandido inclui GLM-5 Free, MiniMax M2.5 Free, GPT-5.2, Gemini 3 Pro Preview, Gemini 3 Flash Preview, Grok Code Fast 1 e Kimi K2.5.
 
-See [/providers/kilocode](/providers/kilocode) for setup details.
+Veja [/providers/kilocode](/providers/kilocode) para detalhes de configuração.
 
-### Other built-in providers
+### Outros provedores embutidos
 
 - OpenRouter: `openrouter` (`OPENROUTER_API_KEY`)
-- Example model: `openrouter/anthropic/claude-sonnet-4-5`
+- Modelo exemplo: `openrouter/anthropic/claude-sonnet-4-5`
 - Kilo Gateway: `kilocode` (`KILOCODE_API_KEY`)
-- Example model: `kilocode/anthropic/claude-opus-4.6`
+- Modelo exemplo: `kilocode/anthropic/claude-opus-4.6`
 - xAI: `xai` (`XAI_API_KEY`)
 - Mistral: `mistral` (`MISTRAL_API_KEY`)
-- Example model: `mistral/mistral-large-latest`
-- CLI: `openclaw onboard --auth-choice mistral-api-key`
+- Modelo exemplo: `mistral/mistral-large-latest`
+- CLI: `opencraft onboard --auth-choice mistral-api-key`
 - Groq: `groq` (`GROQ_API_KEY`)
 - Cerebras: `cerebras` (`CEREBRAS_API_KEY`)
-  - GLM models on Cerebras use ids `zai-glm-4.7` and `zai-glm-4.6`.
-  - OpenAI-compatible base URL: `https://api.cerebras.ai/v1`.
+  - Modelos GLM no Cerebras usam ids `zai-glm-4.7` e `zai-glm-4.6`.
+  - URL base compatível com OpenAI: `https://api.cerebras.ai/v1`.
 - GitHub Copilot: `github-copilot` (`COPILOT_GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_TOKEN`)
-- Hugging Face Inference: `huggingface` (`HUGGINGFACE_HUB_TOKEN` or `HF_TOKEN`) — OpenAI-compatible router; example model: `huggingface/deepseek-ai/DeepSeek-R1`; CLI: `openclaw onboard --auth-choice huggingface-api-key`. See [Hugging Face (Inference)](/providers/huggingface).
+- Hugging Face Inference: `huggingface` (`HUGGINGFACE_HUB_TOKEN` ou `HF_TOKEN`) — roteador compatível com OpenAI; modelo exemplo: `huggingface/deepseek-ai/DeepSeek-R1`; CLI: `opencraft onboard --auth-choice huggingface-api-key`. Veja [Hugging Face (Inference)](/providers/huggingface).
 
-## Providers via `models.providers` (custom/base URL)
+## Provedores via `models.providers` (custom/base URL)
 
-Use `models.providers` (or `models.json`) to add **custom** providers or
-OpenAI/Anthropic‑compatible proxies.
+Use `models.providers` (ou `models.json`) para adicionar provedores **customizados** ou
+proxies compatíveis com OpenAI/Anthropic.
 
 ### Moonshot AI (Kimi)
 
-Moonshot uses OpenAI-compatible endpoints, so configure it as a custom provider:
+Moonshot usa endpoints compatíveis com OpenAI, então configure-o como um provedor customizado:
 
-- Provider: `moonshot`
+- Provedor: `moonshot`
 - Auth: `MOONSHOT_API_KEY`
-- Example model: `moonshot/kimi-k2.5`
+- Modelo exemplo: `moonshot/kimi-k2.5`
 
-Kimi K2 model IDs:
+IDs de modelo Kimi K2:
 
 [//]: # "moonshot-kimi-k2-model-refs:start"
 
@@ -217,11 +217,11 @@ Kimi K2 model IDs:
 
 ### Kimi Coding
 
-Kimi Coding uses Moonshot AI's Anthropic-compatible endpoint:
+Kimi Coding usa o endpoint compatível com Anthropic do Moonshot AI:
 
-- Provider: `kimi-coding`
+- Provedor: `kimi-coding`
 - Auth: `KIMI_API_KEY`
-- Example model: `kimi-coding/k2p5`
+- Modelo exemplo: `kimi-coding/k2p5`
 
 ```json5
 {
@@ -232,31 +232,31 @@ Kimi Coding uses Moonshot AI's Anthropic-compatible endpoint:
 }
 ```
 
-### Qwen OAuth (free tier)
+### Qwen OAuth (tier gratuito)
 
-Qwen provides OAuth access to Qwen Coder + Vision via a device-code flow.
-Enable the bundled plugin, then log in:
+Qwen fornece acesso OAuth ao Qwen Coder + Vision via um fluxo de device-code.
+Habilite o plugin embutido, depois faça login:
 
 ```bash
-openclaw plugins enable qwen-portal-auth
-openclaw models auth login --provider qwen-portal --set-default
+opencraft plugins enable qwen-portal-auth
+opencraft models auth login --provider qwen-portal --set-default
 ```
 
-Model refs:
+Refs de modelo:
 
 - `qwen-portal/coder-model`
 - `qwen-portal/vision-model`
 
-See [/providers/qwen](/providers/qwen) for setup details and notes.
+Veja [/providers/qwen](/providers/qwen) para detalhes de configuração e notas.
 
 ### Volcano Engine (Doubao)
 
-Volcano Engine (火山引擎) provides access to Doubao and other models in China.
+Volcano Engine (火山引擎) fornece acesso ao Doubao e outros modelos na China.
 
-- Provider: `volcengine` (coding: `volcengine-plan`)
+- Provedor: `volcengine` (coding: `volcengine-plan`)
 - Auth: `VOLCANO_ENGINE_API_KEY`
-- Example model: `volcengine/doubao-seed-1-8-251228`
-- CLI: `openclaw onboard --auth-choice volcengine-api-key`
+- Modelo exemplo: `volcengine/doubao-seed-1-8-251228`
+- CLI: `opencraft onboard --auth-choice volcengine-api-key`
 
 ```json5
 {
@@ -266,7 +266,7 @@ Volcano Engine (火山引擎) provides access to Doubao and other models in Chin
 }
 ```
 
-Available models:
+Modelos disponíveis:
 
 - `volcengine/doubao-seed-1-8-251228` (Doubao Seed 1.8)
 - `volcengine/doubao-seed-code-preview-251028`
@@ -274,7 +274,7 @@ Available models:
 - `volcengine/glm-4-7-251222` (GLM 4.7)
 - `volcengine/deepseek-v3-2-251201` (DeepSeek V3.2 128K)
 
-Coding models (`volcengine-plan`):
+Modelos de coding (`volcengine-plan`):
 
 - `volcengine-plan/ark-code-latest`
 - `volcengine-plan/doubao-seed-code`
@@ -282,14 +282,14 @@ Coding models (`volcengine-plan`):
 - `volcengine-plan/kimi-k2-thinking`
 - `volcengine-plan/glm-4.7`
 
-### BytePlus (International)
+### BytePlus (Internacional)
 
-BytePlus ARK provides access to the same models as Volcano Engine for international users.
+BytePlus ARK fornece acesso aos mesmos modelos que o Volcano Engine para usuários internacionais.
 
-- Provider: `byteplus` (coding: `byteplus-plan`)
+- Provedor: `byteplus` (coding: `byteplus-plan`)
 - Auth: `BYTEPLUS_API_KEY`
-- Example model: `byteplus/seed-1-8-251228`
-- CLI: `openclaw onboard --auth-choice byteplus-api-key`
+- Modelo exemplo: `byteplus/seed-1-8-251228`
+- CLI: `opencraft onboard --auth-choice byteplus-api-key`
 
 ```json5
 {
@@ -299,13 +299,13 @@ BytePlus ARK provides access to the same models as Volcano Engine for internatio
 }
 ```
 
-Available models:
+Modelos disponíveis:
 
 - `byteplus/seed-1-8-251228` (Seed 1.8)
 - `byteplus/kimi-k2-5-260127` (Kimi K2.5)
 - `byteplus/glm-4-7-251222` (GLM 4.7)
 
-Coding models (`byteplus-plan`):
+Modelos de coding (`byteplus-plan`):
 
 - `byteplus-plan/ark-code-latest`
 - `byteplus-plan/doubao-seed-code`
@@ -315,12 +315,12 @@ Coding models (`byteplus-plan`):
 
 ### Synthetic
 
-Synthetic provides Anthropic-compatible models behind the `synthetic` provider:
+Synthetic fornece modelos compatíveis com Anthropic por trás do provedor `synthetic`:
 
-- Provider: `synthetic`
+- Provedor: `synthetic`
 - Auth: `SYNTHETIC_API_KEY`
-- Example model: `synthetic/hf:MiniMaxAI/MiniMax-M2.5`
-- CLI: `openclaw onboard --auth-choice synthetic-api-key`
+- Modelo exemplo: `synthetic/hf:MiniMaxAI/MiniMax-M2.5`
+- CLI: `opencraft onboard --auth-choice synthetic-api-key`
 
 ```json5
 {
@@ -343,24 +343,24 @@ Synthetic provides Anthropic-compatible models behind the `synthetic` provider:
 
 ### MiniMax
 
-MiniMax is configured via `models.providers` because it uses custom endpoints:
+MiniMax é configurado via `models.providers` porque usa endpoints customizados:
 
-- MiniMax (Anthropic‑compatible): `--auth-choice minimax-api`
+- MiniMax (compatível com Anthropic): `--auth-choice minimax-api`
 - Auth: `MINIMAX_API_KEY`
 
-See [/providers/minimax](/providers/minimax) for setup details, model options, and config snippets.
+Veja [/providers/minimax](/providers/minimax) para detalhes de configuração, opções de modelo e snippets de config.
 
 ### Ollama
 
-Ollama ships as a bundled provider plugin and uses Ollama's native API:
+Ollama vem como um plugin de provedor embutido e usa a API nativa do Ollama:
 
-- Provider: `ollama`
-- Auth: None required (local server)
-- Example model: `ollama/llama3.3`
-- Installation: [https://ollama.com/download](https://ollama.com/download)
+- Provedor: `ollama`
+- Auth: Nenhum necessário (servidor local)
+- Modelo exemplo: `ollama/llama3.3`
+- Instalação: [https://ollama.com/download](https://ollama.com/download)
 
 ```bash
-# Install Ollama, then pull a model:
+# Instale o Ollama, depois baixe um modelo:
 ollama pull llama3.3
 ```
 
@@ -372,27 +372,27 @@ ollama pull llama3.3
 }
 ```
 
-Ollama is detected locally at `http://127.0.0.1:11434` when you opt in with
-`OLLAMA_API_KEY`, and the bundled provider plugin adds Ollama directly to
-`openclaw onboard` and the model picker. See [/providers/ollama](/providers/ollama)
-for onboarding, cloud/local mode, and custom configuration.
+Ollama é detectado localmente em `http://127.0.0.1:11434` quando você opta com
+`OLLAMA_API_KEY`, e o plugin de provedor embutido adiciona Ollama diretamente ao
+`opencraft onboard` e ao seletor de modelos. Veja [/providers/ollama](/providers/ollama)
+para onboarding, modo cloud/local e configuração customizada.
 
 ### vLLM
 
-vLLM ships as a bundled provider plugin for local/self-hosted OpenAI-compatible
-servers:
+vLLM vem como um plugin de provedor embutido para servidores OpenAI-compatíveis
+locais/auto-hospedados:
 
-- Provider: `vllm`
-- Auth: Optional (depends on your server)
-- Default base URL: `http://127.0.0.1:8000/v1`
+- Provedor: `vllm`
+- Auth: Opcional (depende do seu servidor)
+- URL base padrão: `http://127.0.0.1:8000/v1`
 
-To opt in to auto-discovery locally (any value works if your server doesn’t enforce auth):
+Para optar pela auto-descoberta local (qualquer valor funciona se o seu servidor não impõe auth):
 
 ```bash
 export VLLM_API_KEY="vllm-local"
 ```
 
-Then set a model (replace with one of the IDs returned by `/v1/models`):
+Depois defina um modelo (substitua por um dos IDs retornados por `/v1/models`):
 
 ```json5
 {
@@ -402,25 +402,25 @@ Then set a model (replace with one of the IDs returned by `/v1/models`):
 }
 ```
 
-See [/providers/vllm](/providers/vllm) for details.
+Veja [/providers/vllm](/providers/vllm) para detalhes.
 
 ### SGLang
 
-SGLang ships as a bundled provider plugin for fast self-hosted
-OpenAI-compatible servers:
+SGLang vem como um plugin de provedor embutido para servidores OpenAI-compatíveis
+auto-hospedados rápidos:
 
-- Provider: `sglang`
-- Auth: Optional (depends on your server)
-- Default base URL: `http://127.0.0.1:30000/v1`
+- Provedor: `sglang`
+- Auth: Opcional (depende do seu servidor)
+- URL base padrão: `http://127.0.0.1:30000/v1`
 
-To opt in to auto-discovery locally (any value works if your server does not
-enforce auth):
+Para optar pela auto-descoberta local (qualquer valor funciona se o seu servidor não
+impõe auth):
 
 ```bash
 export SGLANG_API_KEY="sglang-local"
 ```
 
-Then set a model (replace with one of the IDs returned by `/v1/models`):
+Depois defina um modelo (substitua por um dos IDs retornados por `/v1/models`):
 
 ```json5
 {
@@ -430,11 +430,11 @@ Then set a model (replace with one of the IDs returned by `/v1/models`):
 }
 ```
 
-See [/providers/sglang](/providers/sglang) for details.
+Veja [/providers/sglang](/providers/sglang) para detalhes.
 
-### Local proxies (LM Studio, vLLM, LiteLLM, etc.)
+### Proxies locais (LM Studio, vLLM, LiteLLM, etc.)
 
-Example (OpenAI‑compatible):
+Exemplo (compatível com OpenAI):
 
 ```json5
 {
@@ -467,26 +467,26 @@ Example (OpenAI‑compatible):
 }
 ```
 
-Notes:
+Notas:
 
-- For custom providers, `reasoning`, `input`, `cost`, `contextWindow`, and `maxTokens` are optional.
-  When omitted, OpenClaw defaults to:
+- Para provedores customizados, `reasoning`, `input`, `cost`, `contextWindow` e `maxTokens` são opcionais.
+  Quando omitidos, o OpenCraft usa como padrão:
   - `reasoning: false`
   - `input: ["text"]`
   - `cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }`
   - `contextWindow: 200000`
   - `maxTokens: 8192`
-- Recommended: set explicit values that match your proxy/model limits.
-- For `api: "openai-completions"` on non-native endpoints (any non-empty `baseUrl` whose host is not `api.openai.com`), OpenClaw forces `compat.supportsDeveloperRole: false` to avoid provider 400 errors for unsupported `developer` roles.
-- If `baseUrl` is empty/omitted, OpenClaw keeps the default OpenAI behavior (which resolves to `api.openai.com`).
-- For safety, an explicit `compat.supportsDeveloperRole: true` is still overridden on non-native `openai-completions` endpoints.
+- Recomendado: defina valores explícitos que correspondam aos limites do seu proxy/modelo.
+- Para `api: "openai-completions"` em endpoints não-nativos (qualquer `baseUrl` não-vazio cujo host não seja `api.openai.com`), o OpenCraft força `compat.supportsDeveloperRole: false` para evitar erros 400 do provedor para roles `developer` não suportados.
+- Se `baseUrl` estiver vazio/omitido, o OpenCraft mantém o comportamento padrão do OpenAI (que resolve para `api.openai.com`).
+- Por segurança, um `compat.supportsDeveloperRole: true` explícito ainda é sobrescrito em endpoints `openai-completions` não-nativos.
 
-## CLI examples
+## Exemplos CLI
 
 ```bash
-openclaw onboard --auth-choice opencode-zen
-openclaw models set opencode/claude-opus-4-6
-openclaw models list
+opencraft onboard --auth-choice opencode-zen
+opencraft models set opencode/claude-opus-4-6
+opencraft models list
 ```
 
-See also: [/gateway/configuration](/gateway/configuration) for full configuration examples.
+Veja também: [/gateway/configuration](/gateway/configuration) para exemplos completos de configuração.

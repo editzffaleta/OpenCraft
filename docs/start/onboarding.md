@@ -1,91 +1,89 @@
 ---
-summary: "First-run onboarding flow for OpenClaw (macOS app)"
+summary: "Fluxo de onboarding de primeira execução do OpenCraft (app macOS)"
 read_when:
-  - Designing the macOS onboarding assistant
-  - Implementing auth or identity setup
-title: "Onboarding (macOS App)"
-sidebarTitle: "Onboarding: macOS App"
+  - Projetando o assistente de onboarding do macOS
+  - Implementando configuração de auth ou identidade
+title: "Onboarding (App macOS)"
+sidebarTitle: "Onboarding: App macOS"
 ---
 
-# Onboarding (macOS App)
+# Onboarding (App macOS)
 
-This doc describes the **current** first‑run onboarding flow. The goal is a
-smooth “day 0” experience: pick where the Gateway runs, connect auth, run the
-wizard, and let the agent bootstrap itself.
-For a general overview of onboarding paths, see [Onboarding Overview](/start/onboarding-overview).
+Este documento descreve o fluxo de onboarding de **primeira execução** atual. O objetivo é
+uma experiência suave no "dia 0": escolher onde o Gateway roda, conectar a autenticação,
+executar o assistente e deixar o agente inicializar sozinho.
+Para uma visão geral dos caminhos de onboarding, veja [Visão Geral do Onboarding](/start/onboarding-overview).
 
 <Steps>
-<Step title="Approve macOS warning">
+<Step title="Aprovar aviso do macOS">
 <Frame>
 <img src="/assets/macos-onboarding/01-macos-warning.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Approve find local networks">
+<Step title="Aprovar acesso a redes locais">
 <Frame>
 <img src="/assets/macos-onboarding/02-local-networks.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Welcome and security notice">
-<Frame caption="Read the security notice displayed and decide accordingly">
+<Step title="Boas-vindas e aviso de segurança">
+<Frame caption="Leia o aviso de segurança exibido e decida de acordo">
 <img src="/assets/macos-onboarding/03-security-notice.png" alt="" />
 </Frame>
 
-Security trust model:
+Modelo de confiança de segurança:
 
-- By default, OpenClaw is a personal agent: one trusted operator boundary.
-- Shared/multi-user setups require lock-down (split trust boundaries, keep tool access minimal, and follow [Security](/gateway/security)).
-- Local onboarding now defaults new configs to `tools.profile: "coding"` so fresh local setups keep filesystem/runtime tools without forcing the unrestricted `full` profile.
-- If hooks/webhooks or other untrusted content feeds are enabled, use a strong modern model tier and keep strict tool policy/sandboxing.
+- Por padrão, o OpenCraft é um agente pessoal: um único limite de operador confiável.
+- Configurações compartilhadas/multiusuário exigem bloqueio (dividir limites de confiança, manter acesso a ferramentas mínimo e seguir [Segurança](/gateway/security)).
+- O onboarding local agora padreia novos configs para `tools.profile: "coding"`, para que configurações locais novas mantenham ferramentas de sistema de arquivos/runtime sem forçar o perfil irrestrito `full`.
+- Se hooks/webhooks ou outros feeds de conteúdo não confiável estiverem habilitados, use um nível de modelo moderno e forte e mantenha política de ferramentas/sandboxing estritos.
 
 </Step>
-<Step title="Local vs Remote">
+<Step title="Local vs Remoto">
 <Frame>
 <img src="/assets/macos-onboarding/04-choose-gateway.png" alt="" />
 </Frame>
 
-Where does the **Gateway** run?
+Onde o **Gateway** roda?
 
-- **This Mac (Local only):** onboarding can configure auth and write credentials
-  locally.
-- **Remote (over SSH/Tailnet):** onboarding does **not** configure local auth;
-  credentials must exist on the gateway host.
-- **Configure later:** skip setup and leave the app unconfigured.
+- **Este Mac (apenas local):** o onboarding pode configurar auth e gravar credenciais localmente.
+- **Remoto (via SSH/Tailnet):** o onboarding **não** configura auth local; as credenciais devem existir no host do gateway.
+- **Configurar depois:** pular a configuração e deixar o app sem configuração.
 
 <Tip>
-**Gateway auth tip:**
+**Dica de auth do Gateway:**
 
-- The wizard now generates a **token** even for loopback, so local WS clients must authenticate.
-- If you disable auth, any local process can connect; use that only on fully trusted machines.
-- Use a **token** for multi‑machine access or non‑loopback binds.
+- O assistente agora gera um **token** mesmo para loopback, então clientes WS locais devem se autenticar.
+- Se você desabilitar o auth, qualquer processo local pode se conectar; use isso apenas em máquinas totalmente confiáveis.
+- Use um **token** para acesso multi-máquina ou binds não-loopback.
 
 </Tip>
 </Step>
-<Step title="Permissions">
-<Frame caption="Choose what permissions do you want to give OpenClaw">
+<Step title="Permissões">
+<Frame caption="Escolha quais permissões deseja conceder ao OpenCraft">
 <img src="/assets/macos-onboarding/05-permissions.png" alt="" />
 </Frame>
 
-Onboarding requests TCC permissions needed for:
+O onboarding solicita permissões TCC necessárias para:
 
-- Automation (AppleScript)
-- Notifications
-- Accessibility
-- Screen Recording
-- Microphone
-- Speech Recognition
-- Camera
-- Location
+- Automação (AppleScript)
+- Notificações
+- Acessibilidade
+- Gravação de tela
+- Microfone
+- Reconhecimento de fala
+- Câmera
+- Localização
 
 </Step>
 <Step title="CLI">
-  <Info>This step is optional</Info>
-  The app can install the global `openclaw` CLI via npm/pnpm so terminal
-  workflows and launchd tasks work out of the box.
+  <Info>Esta etapa é opcional</Info>
+  O app pode instalar o CLI global `opencraft` via npm/pnpm para que fluxos de
+  trabalho em terminal e tarefas launchd funcionem imediatamente.
 </Step>
-<Step title="Onboarding Chat (dedicated session)">
-  After setup, the app opens a dedicated onboarding chat session so the agent can
-  introduce itself and guide next steps. This keeps first‑run guidance separate
-  from your normal conversation. See [Bootstrapping](/start/bootstrapping) for
-  what happens on the gateway host during the first agent run.
+<Step title="Chat de Onboarding (sessão dedicada)">
+  Após a configuração, o app abre uma sessão de chat de onboarding dedicada para que o
+  agente possa se apresentar e guiar os próximos passos. Isso mantém a orientação de
+  primeira execução separada da sua conversa normal. Veja [Bootstrapping](/start/bootstrapping) para
+  o que acontece no host do gateway durante a primeira execução do agente.
 </Step>
 </Steps>

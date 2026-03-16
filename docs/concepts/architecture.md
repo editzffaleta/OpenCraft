@@ -1,62 +1,62 @@
 ---
-summary: "WebSocket gateway architecture, components, and client flows"
+summary: "Arquitetura WebSocket do gateway, componentes e fluxos de cliente"
 read_when:
-  - Working on gateway protocol, clients, or transports
-title: "Gateway Architecture"
+  - Trabalhando em protocolo do gateway, clientes ou transportes
+title: "Arquitetura do Gateway"
 ---
 
-# Gateway architecture
+# Arquitetura do gateway
 
-Last updated: 2026-01-22
+Última atualização: 2026-01-22
 
-## Overview
+## Visão geral
 
-- A single long‑lived **Gateway** owns all messaging surfaces (WhatsApp via
+- Um único **Gateway** de longa duração possui todas as superfícies de mensagens (WhatsApp via
   Baileys, Telegram via grammY, Slack, Discord, Signal, iMessage, WebChat).
-- Control-plane clients (macOS app, CLI, web UI, automations) connect to the
-  Gateway over **WebSocket** on the configured bind host (default
+- Clientes de plano de controle (app macOS, CLI, web UI, automações) conectam-se ao
+  Gateway via **WebSocket** no host bind configurado (padrão
   `127.0.0.1:18789`).
-- **Nodes** (macOS/iOS/Android/headless) also connect over **WebSocket**, but
-  declare `role: node` with explicit caps/commands.
-- One Gateway per host; it is the only place that opens a WhatsApp session.
-- The **canvas host** is served by the Gateway HTTP server under:
-  - `/__openclaw__/canvas/` (agent-editable HTML/CSS/JS)
-  - `/__openclaw__/a2ui/` (A2UI host)
-    It uses the same port as the Gateway (default `18789`).
+- **Nós** (macOS/iOS/Android/headless) também conectam via **WebSocket**, mas
+  declaram `role: node` com caps/comandos explícitos.
+- Um Gateway por host; é o único lugar que abre uma sessão WhatsApp.
+- O **host canvas** é servido pelo servidor HTTP do Gateway em:
+  - `/__openclaw__/canvas/` (HTML/CSS/JS editável pelo agente)
+  - `/__openclaw__/a2ui/` (host A2UI)
+    Usa a mesma porta do Gateway (padrão `18789`).
 
-## Components and flows
+## Componentes e fluxos
 
 ### Gateway (daemon)
 
-- Maintains provider connections.
-- Exposes a typed WS API (requests, responses, server‑push events).
-- Validates inbound frames against JSON Schema.
-- Emits events like `agent`, `chat`, `presence`, `health`, `heartbeat`, `cron`.
+- Mantém conexões de provedor.
+- Expõe uma API WS tipada (requests, responses, eventos server-push).
+- Valida frames de entrada contra JSON Schema.
+- Emite eventos como `agent`, `chat`, `presence`, `health`, `heartbeat`, `cron`.
 
-### Clients (mac app / CLI / web admin)
+### Clientes (app mac / CLI / admin web)
 
-- One WS connection per client.
-- Send requests (`health`, `status`, `send`, `agent`, `system-presence`).
-- Subscribe to events (`tick`, `agent`, `presence`, `shutdown`).
+- Uma conexão WS por cliente.
+- Enviam requests (`health`, `status`, `send`, `agent`, `system-presence`).
+- Assinam eventos (`tick`, `agent`, `presence`, `shutdown`).
 
-### Nodes (macOS / iOS / Android / headless)
+### Nós (macOS / iOS / Android / headless)
 
-- Connect to the **same WS server** with `role: node`.
-- Provide a device identity in `connect`; pairing is **device‑based** (role `node`) and
-  approval lives in the device pairing store.
-- Expose commands like `canvas.*`, `camera.*`, `screen.record`, `location.get`.
+- Conectam ao **mesmo servidor WS** com `role: node`.
+- Fornecem uma identidade de dispositivo em `connect`; pareamento é **baseado em dispositivo** (role `node`) e
+  aprovação fica no armazenamento de pareamento de dispositivo.
+- Expõem comandos como `canvas.*`, `camera.*`, `screen.record`, `location.get`.
 
-Protocol details:
+Detalhes do protocolo:
 
-- [Gateway protocol](/gateway/protocol)
+- [Protocolo do Gateway](/gateway/protocol)
 
 ### WebChat
 
-- Static UI that uses the Gateway WS API for chat history and sends.
-- In remote setups, connects through the same SSH/Tailscale tunnel as other
-  clients.
+- UI estática que usa a API WS do Gateway para histórico de chat e envios.
+- Em configurações remotas, conecta através do mesmo túnel SSH/Tailscale que outros
+  clientes.
 
-## Connection lifecycle (single client)
+## Ciclo de vida de conexão (cliente único)
 
 ```mermaid
 sequenceDiagram
@@ -65,7 +65,7 @@ sequenceDiagram
 
     Client->>Gateway: req:connect
     Gateway-->>Client: res (ok)
-    Note right of Gateway: or res error + close
+    Note right of Gateway: ou res error + close
     Note left of Client: payload=hello-ok<br>snapshot: presence + health
 
     Gateway-->>Client: event:presence
@@ -77,63 +77,62 @@ sequenceDiagram
     Gateway-->>Client: res:agent<br>final {runId, status, summary}
 ```
 
-## Wire protocol (summary)
+## Protocolo wire (resumo)
 
-- Transport: WebSocket, text frames with JSON payloads.
-- First frame **must** be `connect`.
-- After handshake:
+- Transporte: WebSocket, frames de texto com payloads JSON.
+- Primeiro frame **deve** ser `connect`.
+- Após handshake:
   - Requests: `{type:"req", id, method, params}` → `{type:"res", id, ok, payload|error}`
-  - Events: `{type:"event", event, payload, seq?, stateVersion?}`
-- If `OPENCLAW_GATEWAY_TOKEN` (or `--token`) is set, `connect.params.auth.token`
-  must match or the socket closes.
-- Idempotency keys are required for side‑effecting methods (`send`, `agent`) to
-  safely retry; the server keeps a short‑lived dedupe cache.
-- Nodes must include `role: "node"` plus caps/commands/permissions in `connect`.
+  - Eventos: `{type:"event", event, payload, seq?, stateVersion?}`
+- Se `OPENCLAW_GATEWAY_TOKEN` (ou `--token`) estiver definido, `connect.params.auth.token`
+  deve corresponder ou o socket fecha.
+- Chaves de idempotência são necessárias para métodos com efeitos colaterais (`send`, `agent`) para
+  retentativas seguras; o servidor mantém um cache de deduplicação de curta duração.
+- Nós devem incluir `role: "node"` mais caps/commands/permissions no `connect`.
 
-## Pairing + local trust
+## Pareamento + confiança local
 
-- All WS clients (operators + nodes) include a **device identity** on `connect`.
-- New device IDs require pairing approval; the Gateway issues a **device token**
-  for subsequent connects.
-- **Local** connects (loopback or the gateway host’s own tailnet address) can be
-  auto‑approved to keep same‑host UX smooth.
-- All connects must sign the `connect.challenge` nonce.
-- Signature payload `v3` also binds `platform` + `deviceFamily`; the gateway
-  pins paired metadata on reconnect and requires repair pairing for metadata
-  changes.
-- **Non‑local** connects still require explicit approval.
-- Gateway auth (`gateway.auth.*`) still applies to **all** connections, local or
-  remote.
+- Todos os clientes WS (operadores + nós) incluem uma **identidade de dispositivo** no `connect`.
+- Novos IDs de dispositivo requerem aprovação de pareamento; o Gateway emite um **token de dispositivo**
+  para conexões subsequentes.
+- Conexões **locais** (loopback ou o próprio endereço tailnet do host do gateway) podem ser
+  auto-aprovadas para manter a UX no mesmo host fluida.
+- Todas as conexões devem assinar o nonce `connect.challenge`.
+- O payload de assinatura `v3` também vincula `platform` + `deviceFamily`; o gateway
+  fixa metadados pareados na reconexão e requer re-pareamento para mudanças de metadados.
+- Conexões **não-locais** ainda requerem aprovação explícita.
+- Auth do Gateway (`gateway.auth.*`) ainda se aplica a **todas** as conexões, locais ou
+  remotas.
 
-Details: [Gateway protocol](/gateway/protocol), [Pairing](/channels/pairing),
-[Security](/gateway/security).
+Detalhes: [Protocolo do Gateway](/gateway/protocol), [Pareamento](/channels/pairing),
+[Segurança](/gateway/security).
 
-## Protocol typing and codegen
+## Tipagem de protocolo e codegen
 
-- TypeBox schemas define the protocol.
-- JSON Schema is generated from those schemas.
-- Swift models are generated from the JSON Schema.
+- Schemas TypeBox definem o protocolo.
+- JSON Schema é gerado a partir desses schemas.
+- Modelos Swift são gerados a partir do JSON Schema.
 
-## Remote access
+## Acesso remoto
 
-- Preferred: Tailscale or VPN.
-- Alternative: SSH tunnel
+- Preferido: Tailscale ou VPN.
+- Alternativa: túnel SSH
 
   ```bash
   ssh -N -L 18789:127.0.0.1:18789 user@host
   ```
 
-- The same handshake + auth token apply over the tunnel.
-- TLS + optional pinning can be enabled for WS in remote setups.
+- O mesmo handshake + token de auth se aplicam através do túnel.
+- TLS + pinning opcional podem ser habilitados para WS em configurações remotas.
 
-## Operations snapshot
+## Snapshot de operações
 
-- Start: `openclaw gateway` (foreground, logs to stdout).
-- Health: `health` over WS (also included in `hello-ok`).
-- Supervision: launchd/systemd for auto‑restart.
+- Iniciar: `opencraft gateway` (foreground, logs para stdout).
+- Saúde: `health` via WS (também incluído em `hello-ok`).
+- Supervisão: launchd/systemd para auto-restart.
 
-## Invariants
+## Invariantes
 
-- Exactly one Gateway controls a single Baileys session per host.
-- Handshake is mandatory; any non‑JSON or non‑connect first frame is a hard close.
-- Events are not replayed; clients must refresh on gaps.
+- Exatamente um Gateway controla uma única sessão Baileys por host.
+- Handshake é obrigatório; qualquer frame não-JSON ou não-connect primeiro é um fechamento rígido.
+- Eventos não são repetidos; clientes devem atualizar em lacunas.

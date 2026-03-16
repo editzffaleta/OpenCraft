@@ -1,128 +1,128 @@
 ---
-summary: "Use ACP runtime sessions for Pi, Claude Code, Codex, OpenCode, Gemini CLI, and other harness agents"
+summary: "Usar sessões de runtime ACP para Pi, Claude Code, Codex, OpenCode, Gemini CLI e outros agentes harness"
 read_when:
-  - Running coding harnesses through ACP
-  - Setting up thread-bound ACP sessions on thread-capable channels
-  - Binding Discord channels or Telegram forum topics to persistent ACP sessions
-  - Troubleshooting ACP backend and plugin wiring
-  - Operating /acp commands from chat
+  - Executando harnesses de coding através do ACP
+  - Configurando sessões ACP vinculadas a thread em canais com suporte a threads
+  - Vinculando canais Discord ou tópicos de fórum Telegram a sessões ACP persistentes
+  - Solucionando problemas de backend ACP e fiação de plugin
+  - Operando comandos /acp do chat
 title: "ACP Agents"
 ---
 
 # ACP agents
 
-[Agent Client Protocol (ACP)](https://agentclientprotocol.com/) sessions let OpenClaw run external coding harnesses (for example Pi, Claude Code, Codex, OpenCode, and Gemini CLI) through an ACP backend plugin.
+Sessões [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) permitem ao OpenCraft executar harnesses de coding externos (por exemplo Pi, Claude Code, Codex, OpenCode e Gemini CLI) através de um plugin de backend ACP.
 
-If you ask OpenClaw in plain language to "run this in Codex" or "start Claude Code in a thread", OpenClaw should route that request to the ACP runtime (not the native sub-agent runtime).
+Se você pedir ao OpenCraft em linguagem simples para "rodar isso no Codex" ou "iniciar Claude Code em uma thread", o OpenCraft deve rotear essa requisição para o runtime ACP (não o runtime nativo de sub-agente).
 
-## Fast operator flow
+## Fluxo rápido do operador
 
-Use this when you want a practical `/acp` runbook:
+Use quando você quer um runbook prático de `/acp`:
 
-1. Spawn a session:
+1. Criar uma sessão:
    - `/acp spawn codex --mode persistent --thread auto`
-2. Work in the bound thread (or target that session key explicitly).
-3. Check runtime state:
+2. Trabalhar na thread vinculada (ou direcionar aquela chave de sessão explicitamente).
+3. Verificar o estado do runtime:
    - `/acp status`
-4. Tune runtime options as needed:
-   - `/acp model <provider/model>`
-   - `/acp permissions <profile>`
-   - `/acp timeout <seconds>`
-5. Nudge an active session without replacing context:
-   - `/acp steer tighten logging and continue`
-6. Stop work:
-   - `/acp cancel` (stop current turn), or
-   - `/acp close` (close session + remove bindings)
+4. Ajustar opções de runtime conforme necessário:
+   - `/acp model <provedor/modelo>`
+   - `/acp permissions <perfil>`
+   - `/acp timeout <segundos>`
+5. Direcionar uma sessão ativa sem substituir o contexto:
+   - `/acp steer aperte o logging e continue`
+6. Parar o trabalho:
+   - `/acp cancel` (parar o turno atual), ou
+   - `/acp close` (fechar sessão + remover vínculos)
 
-## Quick start for humans
+## Início rápido para humanos
 
-Examples of natural requests:
+Exemplos de requisições naturais:
 
-- "Start a persistent Codex session in a thread here and keep it focused."
-- "Run this as a one-shot Claude Code ACP session and summarize the result."
-- "Use Gemini CLI for this task in a thread, then keep follow-ups in that same thread."
+- "Inicie uma sessão Codex persistente em uma thread aqui e mantenha-a focada."
+- "Rode isso como uma sessão ACP Claude Code one-shot e resuma o resultado."
+- "Use Gemini CLI para esta tarefa em uma thread, depois mantenha os seguimentos naquela mesma thread."
 
-What OpenClaw should do:
+O que o OpenCraft deve fazer:
 
-1. Pick `runtime: "acp"`.
-2. Resolve the requested harness target (`agentId`, for example `codex`).
-3. If thread binding is requested and the current channel supports it, bind the ACP session to the thread.
-4. Route follow-up thread messages to that same ACP session until unfocused/closed/expired.
+1. Escolher `runtime: "acp"`.
+2. Resolver o alvo de harness solicitado (`agentId`, por exemplo `codex`).
+3. Se vínculo de thread for solicitado e o canal atual suportar, vincular a sessão ACP à thread.
+4. Rotear mensagens de seguimento na thread para aquela mesma sessão ACP até desfocar/fechar/expirar.
 
-## ACP versus sub-agents
+## ACP versus sub-agentes
 
-Use ACP when you want an external harness runtime. Use sub-agents when you want OpenClaw-native delegated runs.
+Use ACP quando quiser um runtime de harness externo. Use sub-agentes quando quiser execuções delegadas nativas do OpenCraft.
 
-| Area          | ACP session                           | Sub-agent run                      |
-| ------------- | ------------------------------------- | ---------------------------------- |
-| Runtime       | ACP backend plugin (for example acpx) | OpenClaw native sub-agent runtime  |
-| Session key   | `agent:<agentId>:acp:<uuid>`          | `agent:<agentId>:subagent:<uuid>`  |
-| Main commands | `/acp ...`                            | `/subagents ...`                   |
-| Spawn tool    | `sessions_spawn` with `runtime:"acp"` | `sessions_spawn` (default runtime) |
+| Área          | Sessão ACP                            | Execução de sub-agente                     |
+| ------------- | ------------------------------------- | ------------------------------------------ |
+| Runtime       | Plugin de backend ACP (ex.: acpx)     | Runtime nativo de sub-agente do OpenCraft  |
+| Chave de sessão | `agent:<agentId>:acp:<uuid>`        | `agent:<agentId>:subagent:<uuid>`          |
+| Comandos principais | `/acp ...`                      | `/subagents ...`                           |
+| Tool de spawn | `sessions_spawn` com `runtime:"acp"` | `sessions_spawn` (runtime padrão)          |
 
-See also [Sub-agents](/tools/subagents).
+Veja também [Sub-agentes](/tools/subagents).
 
-## Thread-bound sessions (channel-agnostic)
+## Sessões vinculadas a thread (agnóstico ao canal)
 
-When thread bindings are enabled for a channel adapter, ACP sessions can be bound to threads:
+Quando os vínculos de thread estão habilitados para um adaptador de canal, sessões ACP podem ser vinculadas a threads:
 
-- OpenClaw binds a thread to a target ACP session.
-- Follow-up messages in that thread route to the bound ACP session.
-- ACP output is delivered back to the same thread.
-- Unfocus/close/archive/idle-timeout or max-age expiry removes the binding.
+- O OpenCraft vincula uma thread a uma sessão ACP alvo.
+- Mensagens de seguimento naquela thread roteiam para a sessão ACP vinculada.
+- Saída ACP é entregue de volta para a mesma thread.
+- Desfoco/fechamento/arquivamento/timeout de inatividade ou expiração de max-age remove o vínculo.
 
-Thread binding support is adapter-specific. If the active channel adapter does not support thread bindings, OpenClaw returns a clear unsupported/unavailable message.
+Suporte a vínculo de thread é específico do adaptador. Se o adaptador do canal ativo não suportar vínculos de thread, o OpenCraft retorna uma mensagem clara de não suportado/indisponível.
 
-Required feature flags for thread-bound ACP:
+Flags de funcionalidade necessárias para ACP vinculado a thread:
 
 - `acp.enabled=true`
-- `acp.dispatch.enabled` is on by default (set `false` to pause ACP dispatch)
-- Channel-adapter ACP thread-spawn flag enabled (adapter-specific)
+- `acp.dispatch.enabled` está ativado por padrão (defina `false` para pausar despacho ACP)
+- Flag de spawn ACP de thread do adaptador de canal habilitada (específica do adaptador)
   - Discord: `channels.discord.threadBindings.spawnAcpSessions=true`
   - Telegram: `channels.telegram.threadBindings.spawnAcpSessions=true`
 
-### Thread supporting channels
+### Canais com suporte a threads
 
-- Any channel adapter that exposes session/thread binding capability.
-- Current built-in support:
-  - Discord threads/channels
-  - Telegram topics (forum topics in groups/supergroups and DM topics)
-- Plugin channels can add support through the same binding interface.
+- Qualquer adaptador de canal que expõe capacidade de vínculo de sessão/thread.
+- Suporte embutido atual:
+  - Threads/canais Discord
+  - Tópicos Telegram (tópicos de fórum em grupos/supergrupos e tópicos DM)
+- Canais de plugin podem adicionar suporte através da mesma interface de vínculo.
 
-## Channel specific settings
+## Configurações específicas de canal
 
-For non-ephemeral workflows, configure persistent ACP bindings in top-level `bindings[]` entries.
+Para workflows não efêmeros, configure vínculos ACP persistentes em entradas `bindings[]` de nível superior.
 
-### Binding model
+### Modelo de vínculo
 
-- `bindings[].type="acp"` marks a persistent ACP conversation binding.
-- `bindings[].match` identifies the target conversation:
-  - Discord channel or thread: `match.channel="discord"` + `match.peer.id="<channelOrThreadId>"`
-  - Telegram forum topic: `match.channel="telegram"` + `match.peer.id="<chatId>:topic:<topicId>"`
-- `bindings[].agentId` is the owning OpenClaw agent id.
-- Optional ACP overrides live under `bindings[].acp`:
-  - `mode` (`persistent` or `oneshot`)
+- `bindings[].type="acp"` marca um vínculo de conversa ACP persistente.
+- `bindings[].match` identifica a conversa alvo:
+  - Canal ou thread Discord: `match.channel="discord"` + `match.peer.id="<channelOrThreadId>"`
+  - Tópico de fórum Telegram: `match.channel="telegram"` + `match.peer.id="<chatId>:topic:<topicId>"`
+- `bindings[].agentId` é o id do agente OpenCraft proprietário.
+- Overrides ACP opcionais ficam em `bindings[].acp`:
+  - `mode` (`persistent` ou `oneshot`)
   - `label`
   - `cwd`
   - `backend`
 
-### Runtime defaults per agent
+### Padrões de runtime por agente
 
-Use `agents.list[].runtime` to define ACP defaults once per agent:
+Use `agents.list[].runtime` para definir padrões ACP uma vez por agente:
 
 - `agents.list[].runtime.type="acp"`
-- `agents.list[].runtime.acp.agent` (harness id, for example `codex` or `claude`)
+- `agents.list[].runtime.acp.agent` (id do harness, por exemplo `codex` ou `claude`)
 - `agents.list[].runtime.acp.backend`
 - `agents.list[].runtime.acp.mode`
 - `agents.list[].runtime.acp.cwd`
 
-Override precedence for ACP bound sessions:
+Precedência de override para sessões ACP vinculadas:
 
 1. `bindings[].acp.*`
 2. `agents.list[].runtime.acp.*`
-3. global ACP defaults (for example `acp.backend`)
+3. padrões ACP globais (por exemplo `acp.backend`)
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -136,7 +136,7 @@ Example:
             agent: "codex",
             backend: "acpx",
             mode: "persistent",
-            cwd: "/workspace/openclaw",
+            cwd: "/workspace/opencraft",
           },
         },
       },
@@ -202,22 +202,22 @@ Example:
 }
 ```
 
-Behavior:
+Comportamento:
 
-- OpenClaw ensures the configured ACP session exists before use.
-- Messages in that channel or topic route to the configured ACP session.
-- In bound conversations, `/new` and `/reset` reset the same ACP session key in place.
-- Temporary runtime bindings (for example created by thread-focus flows) still apply where present.
+- O OpenCraft garante que a sessão ACP configurada exista antes do uso.
+- Mensagens naquele canal ou tópico roteiam para a sessão ACP configurada.
+- Em conversas vinculadas, `/new` e `/reset` resetam a mesma chave de sessão ACP no lugar.
+- Vínculos de runtime temporários (por exemplo criados por fluxos de thread-focus) ainda se aplicam quando presentes.
 
-## Start ACP sessions (interfaces)
+## Iniciar sessões ACP (interfaces)
 
-### From `sessions_spawn`
+### De `sessions_spawn`
 
-Use `runtime: "acp"` to start an ACP session from an agent turn or tool call.
+Use `runtime: "acp"` para iniciar uma sessão ACP a partir de um turno de agente ou chamada de tool.
 
 ```json
 {
-  "task": "Open the repo and summarize failing tests",
+  "task": "Abra o repositório e resuma os testes com falha",
   "runtime": "acp",
   "agentId": "codex",
   "thread": true,
@@ -225,78 +225,77 @@ Use `runtime: "acp"` to start an ACP session from an agent turn or tool call.
 }
 ```
 
-Notes:
+Notas:
 
-- `runtime` defaults to `subagent`, so set `runtime: "acp"` explicitly for ACP sessions.
-- If `agentId` is omitted, OpenClaw uses `acp.defaultAgent` when configured.
-- `mode: "session"` requires `thread: true` to keep a persistent bound conversation.
+- `runtime` padrão é `subagent`, então defina `runtime: "acp"` explicitamente para sessões ACP.
+- Se `agentId` for omitido, o OpenCraft usa `acp.defaultAgent` quando configurado.
+- `mode: "session"` requer `thread: true` para manter uma conversa vinculada persistente.
 
-Interface details:
+Detalhes da interface:
 
-- `task` (required): initial prompt sent to the ACP session.
-- `runtime` (required for ACP): must be `"acp"`.
-- `agentId` (optional): ACP target harness id. Falls back to `acp.defaultAgent` if set.
-- `thread` (optional, default `false`): request thread binding flow where supported.
-- `mode` (optional): `run` (one-shot) or `session` (persistent).
-  - default is `run`
-  - if `thread: true` and mode omitted, OpenClaw may default to persistent behavior per runtime path
-  - `mode: "session"` requires `thread: true`
-- `cwd` (optional): requested runtime working directory (validated by backend/runtime policy).
-- `label` (optional): operator-facing label used in session/banner text.
-- `resumeSessionId` (optional): resume an existing ACP session instead of creating a new one. The agent replays its conversation history via `session/load`. Requires `runtime: "acp"`.
-- `streamTo` (optional): `"parent"` streams initial ACP run progress summaries back to the requester session as system events.
-  - When available, accepted responses include `streamLogPath` pointing to a session-scoped JSONL log (`<sessionId>.acp-stream.jsonl`) you can tail for full relay history.
+- `task` (obrigatório): prompt inicial enviado para a sessão ACP.
+- `runtime` (obrigatório para ACP): deve ser `"acp"`.
+- `agentId` (opcional): id do harness ACP alvo. Cai para `acp.defaultAgent` se definido.
+- `thread` (opcional, padrão `false`): solicitar fluxo de vínculo de thread onde suportado.
+- `mode` (opcional): `run` (one-shot) ou `session` (persistente).
+  - padrão é `run`
+  - se `thread: true` e mode omitido, o OpenCraft pode padrão para comportamento persistente por caminho de runtime
+  - `mode: "session"` requer `thread: true`
+- `cwd` (opcional): diretório de trabalho de runtime solicitado (validado pela política de backend/runtime).
+- `label` (opcional): rótulo voltado ao operador usado em texto de sessão/banner.
+- `resumeSessionId` (opcional): retomar uma sessão ACP existente em vez de criar uma nova. O agente reproduz seu histórico de conversa via `session/load`. Requer `runtime: "acp"`.
+- `streamTo` (opcional): `"parent"` transmite resumos de progresso de execução ACP inicial de volta à sessão solicitante como eventos de sistema.
+  - Quando disponível, respostas aceitas incluem `streamLogPath` apontando para um log JSONL com escopo de sessão (`<sessionId>.acp-stream.jsonl`) que você pode acompanhar para histórico completo de relay.
 
-### Resume an existing session
+### Retomar uma sessão existente
 
-Use `resumeSessionId` to continue a previous ACP session instead of starting fresh. The agent replays its conversation history via `session/load`, so it picks up with full context of what came before.
+Use `resumeSessionId` para continuar uma sessão ACP anterior em vez de começar do zero. O agente reproduz seu histórico de conversa via `session/load`, então retoma com contexto completo do que veio antes.
 
 ```json
 {
-  "task": "Continue where we left off — fix the remaining test failures",
+  "task": "Continue de onde paramos — corrija as falhas de teste restantes",
   "runtime": "acp",
   "agentId": "codex",
-  "resumeSessionId": "<previous-session-id>"
+  "resumeSessionId": "<id-sessão-anterior>"
 }
 ```
 
-Common use cases:
+Casos de uso comuns:
 
-- Hand off a Codex session from your laptop to your phone — tell your agent to pick up where you left off
-- Continue a coding session you started interactively in the CLI, now headlessly through your agent
-- Pick up work that was interrupted by a gateway restart or idle timeout
+- Transferir uma sessão Codex do seu laptop para o celular — peça ao seu agente para continuar de onde parou
+- Continuar uma sessão de coding que você iniciou interativamente no CLI, agora de forma headless pelo seu agente
+- Retomar trabalho que foi interrompido por uma reinicialização do gateway ou timeout de inatividade
 
-Notes:
+Notas:
 
-- `resumeSessionId` requires `runtime: "acp"` — returns an error if used with the sub-agent runtime.
-- `resumeSessionId` restores the upstream ACP conversation history; `thread` and `mode` still apply normally to the new OpenClaw session you are creating, so `mode: "session"` still requires `thread: true`.
-- The target agent must support `session/load` (Codex and Claude Code do).
-- If the session ID isn't found, the spawn fails with a clear error — no silent fallback to a new session.
+- `resumeSessionId` requer `runtime: "acp"` — retorna um erro se usado com o runtime de sub-agente.
+- `resumeSessionId` restaura o histórico de conversa ACP upstream; `thread` e `mode` ainda se aplicam normalmente à nova sessão OpenCraft que você está criando, então `mode: "session"` ainda requer `thread: true`.
+- O agente alvo deve suportar `session/load` (Codex e Claude Code suportam).
+- Se o ID de sessão não for encontrado, o spawn falha com um erro claro — sem fallback silencioso para uma nova sessão.
 
-### Operator smoke test
+### Smoke test do operador
 
-Use this after a gateway deploy when you want a quick live check that ACP spawn
-is actually working end-to-end, not just passing unit tests.
+Use após um deploy do gateway quando você quer uma verificação ao vivo rápida de que o spawn ACP
+está realmente funcionando de ponta a ponta, não apenas passando testes unitários.
 
-Recommended gate:
+Gate recomendado:
 
-1. Verify the deployed gateway version/commit on the target host.
-2. Confirm the deployed source includes the ACP lineage acceptance in
-   `src/gateway/sessions-patch.ts` (`subagent:* or acp:* sessions`).
-3. Open a temporary ACPX bridge session to a live agent (for example
-   `razor(main)` on `jpclawhq`).
-4. Ask that agent to call `sessions_spawn` with:
+1. Verifique a versão/commit do gateway implantado no host alvo.
+2. Confirme que a fonte implantada inclui a aceitação de linhagem ACP em
+   `src/gateway/sessions-patch.ts` (sessões `subagent:* or acp:*`).
+3. Abra uma sessão bridge ACPX temporária para um agente ao vivo.
+4. Peça a aquele agente para chamar `sessions_spawn` com:
    - `runtime: "acp"`
    - `agentId: "codex"`
    - `mode: "run"`
    - task: `Reply with exactly LIVE-ACP-SPAWN-OK`
-5. Verify the agent reports:
+5. Verifique que o agente reporta:
    - `accepted=yes`
-   - a real `childSessionKey`
-   - no validator error
-6. Clean up the temporary ACPX bridge session.
+   - uma `childSessionKey` real
+   - sem erro de validação
+6. Limpe a sessão bridge ACPX temporária.
 
-Example prompt to the live agent:
+Prompt de exemplo para o agente ao vivo:
 
 ```text
 Use the sessions_spawn tool now with runtime: "acp", agentId: "codex", and mode: "run".
@@ -304,31 +303,31 @@ Set the task to: "Reply with exactly LIVE-ACP-SPAWN-OK".
 Then report only: accepted=<yes/no>; childSessionKey=<value or none>; error=<exact text or none>.
 ```
 
-Notes:
+Notas:
 
-- Keep this smoke test on `mode: "run"` unless you are intentionally testing
-  thread-bound persistent ACP sessions.
-- Do not require `streamTo: "parent"` for the basic gate. That path depends on
-  requester/session capabilities and is a separate integration check.
-- Treat thread-bound `mode: "session"` testing as a second, richer integration
-  pass from a real Discord thread or Telegram topic.
+- Mantenha este smoke test em `mode: "run"` a menos que você esteja intencionalmente testando
+  sessões ACP persistentes vinculadas a thread.
+- Não exija `streamTo: "parent"` para o gate básico. Esse caminho depende de
+  capacidades de solicitante/sessão e é uma verificação de integração separada.
+- Trate os testes de `mode: "session"` vinculados a thread como um segundo passo mais rico
+  de integração a partir de uma thread Discord real ou tópico Telegram.
 
-## Sandbox compatibility
+## Compatibilidade com sandbox
 
-ACP sessions currently run on the host runtime, not inside the OpenClaw sandbox.
+Sessões ACP atualmente rodam no runtime do host, não dentro do sandbox do OpenCraft.
 
-Current limitations:
+Limitações atuais:
 
-- If the requester session is sandboxed, ACP spawns are blocked for both `sessions_spawn({ runtime: "acp" })` and `/acp spawn`.
-  - Error: `Sandboxed sessions cannot spawn ACP sessions because runtime="acp" runs on the host. Use runtime="subagent" from sandboxed sessions.`
-- `sessions_spawn` with `runtime: "acp"` does not support `sandbox: "require"`.
-  - Error: `sessions_spawn sandbox="require" is unsupported for runtime="acp" because ACP sessions run outside the sandbox. Use runtime="subagent" or sandbox="inherit".`
+- Se a sessão solicitante está em sandbox, spawns ACP são bloqueados tanto para `sessions_spawn({ runtime: "acp" })` quanto para `/acp spawn`.
+  - Erro: `Sandboxed sessions cannot spawn ACP sessions because runtime="acp" runs on the host. Use runtime="subagent" from sandboxed sessions.`
+- `sessions_spawn` com `runtime: "acp"` não suporta `sandbox: "require"`.
+  - Erro: `sessions_spawn sandbox="require" is unsupported for runtime="acp" because ACP sessions run outside the sandbox. Use runtime="subagent" or sandbox="inherit".`
 
-Use `runtime: "subagent"` when you need sandbox-enforced execution.
+Use `runtime: "subagent"` quando precisar de execução com sandbox aplicado.
 
-### From `/acp` command
+### Do comando `/acp`
 
-Use `/acp spawn` for explicit operator control from chat when needed.
+Use `/acp spawn` para controle explícito do operador pelo chat quando necessário.
 
 ```text
 /acp spawn codex --mode persistent --thread auto
@@ -336,50 +335,50 @@ Use `/acp spawn` for explicit operator control from chat when needed.
 /acp spawn codex --thread here
 ```
 
-Key flags:
+Flags principais:
 
 - `--mode persistent|oneshot`
 - `--thread auto|here|off`
-- `--cwd <absolute-path>`
-- `--label <name>`
+- `--cwd <caminho-absoluto>`
+- `--label <nome>`
 
-See [Slash Commands](/tools/slash-commands).
+Veja [Slash Commands](/tools/slash-commands).
 
-## Session target resolution
+## Resolução de alvo de sessão
 
-Most `/acp` actions accept an optional session target (`session-key`, `session-id`, or `session-label`).
+A maioria das ações `/acp` aceita um alvo de sessão opcional (`session-key`, `session-id` ou `session-label`).
 
-Resolution order:
+Ordem de resolução:
 
-1. Explicit target argument (or `--session` for `/acp steer`)
-   - tries key
-   - then UUID-shaped session id
-   - then label
-2. Current thread binding (if this conversation/thread is bound to an ACP session)
-3. Current requester session fallback
+1. Argumento alvo explícito (ou `--session` para `/acp steer`)
+   - tenta chave
+   - depois id de sessão em formato UUID
+   - depois rótulo
+2. Vínculo de thread atual (se esta conversa/thread está vinculada a uma sessão ACP)
+3. Fallback da sessão solicitante atual
 
-If no target resolves, OpenClaw returns a clear error (`Unable to resolve session target: ...`).
+Se nenhum alvo resolver, o OpenCraft retorna um erro claro (`Unable to resolve session target: ...`).
 
-## Spawn thread modes
+## Modos de thread de spawn
 
-`/acp spawn` supports `--thread auto|here|off`.
+`/acp spawn` suporta `--thread auto|here|off`.
 
-| Mode   | Behavior                                                                                            |
-| ------ | --------------------------------------------------------------------------------------------------- |
-| `auto` | In an active thread: bind that thread. Outside a thread: create/bind a child thread when supported. |
-| `here` | Require current active thread; fail if not in one.                                                  |
-| `off`  | No binding. Session starts unbound.                                                                 |
+| Modo   | Comportamento                                                                                              |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| `auto` | Em uma thread ativa: vincular aquela thread. Fora de uma thread: criar/vincular uma thread filha quando suportado. |
+| `here` | Requer thread ativa atual; falha se não estiver em uma.                                                    |
+| `off`  | Sem vínculo. Sessão inicia não vinculada.                                                                  |
 
-Notes:
+Notas:
 
-- On non-thread binding surfaces, default behavior is effectively `off`.
-- Thread-bound spawn requires channel policy support:
+- Em superfícies sem suporte a vínculo de thread, o comportamento padrão é efetivamente `off`.
+- Spawn vinculado a thread requer suporte de política de canal:
   - Discord: `channels.discord.threadBindings.spawnAcpSessions=true`
   - Telegram: `channels.telegram.threadBindings.spawnAcpSessions=true`
 
-## ACP controls
+## Controles ACP
 
-Available command family:
+Família de comandos disponível:
 
 - `/acp spawn`
 - `/acp cancel`
@@ -397,49 +396,49 @@ Available command family:
 - `/acp doctor`
 - `/acp install`
 
-`/acp status` shows the effective runtime options and, when available, both runtime-level and backend-level session identifiers.
+`/acp status` mostra as opções de runtime efetivas e, quando disponível, identificadores de sessão de nível runtime e de nível backend.
 
-Some controls depend on backend capabilities. If a backend does not support a control, OpenClaw returns a clear unsupported-control error.
+Alguns controles dependem de capacidades do backend. Se um backend não suportar um controle, o OpenCraft retorna um erro claro de controle não suportado.
 
-## ACP command cookbook
+## Cookbook de comandos ACP
 
-| Command              | What it does                                              | Example                                                        |
-| -------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| `/acp spawn`         | Create ACP session; optional thread bind.                 | `/acp spawn codex --mode persistent --thread auto --cwd /repo` |
-| `/acp cancel`        | Cancel in-flight turn for target session.                 | `/acp cancel agent:codex:acp:<uuid>`                           |
-| `/acp steer`         | Send steer instruction to running session.                | `/acp steer --session support inbox prioritize failing tests`  |
-| `/acp close`         | Close session and unbind thread targets.                  | `/acp close`                                                   |
-| `/acp status`        | Show backend, mode, state, runtime options, capabilities. | `/acp status`                                                  |
-| `/acp set-mode`      | Set runtime mode for target session.                      | `/acp set-mode plan`                                           |
-| `/acp set`           | Generic runtime config option write.                      | `/acp set model openai/gpt-5.2`                                |
-| `/acp cwd`           | Set runtime working directory override.                   | `/acp cwd /Users/user/Projects/repo`                           |
-| `/acp permissions`   | Set approval policy profile.                              | `/acp permissions strict`                                      |
-| `/acp timeout`       | Set runtime timeout (seconds).                            | `/acp timeout 120`                                             |
-| `/acp model`         | Set runtime model override.                               | `/acp model anthropic/claude-opus-4-5`                         |
-| `/acp reset-options` | Remove session runtime option overrides.                  | `/acp reset-options`                                           |
-| `/acp sessions`      | List recent ACP sessions from store.                      | `/acp sessions`                                                |
-| `/acp doctor`        | Backend health, capabilities, actionable fixes.           | `/acp doctor`                                                  |
-| `/acp install`       | Print deterministic install and enable steps.             | `/acp install`                                                 |
+| Comando              | O que faz                                                     | Exemplo                                                          |
+| -------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `/acp spawn`         | Criar sessão ACP; vínculo opcional de thread.                 | `/acp spawn codex --mode persistent --thread auto --cwd /repo`   |
+| `/acp cancel`        | Cancelar turno em andamento para sessão alvo.                 | `/acp cancel agent:codex:acp:<uuid>`                             |
+| `/acp steer`         | Enviar instrução de direcionamento para sessão em execução.   | `/acp steer --session suporte inbox priorize testes com falha`   |
+| `/acp close`         | Fechar sessão e desvincular threads alvo.                     | `/acp close`                                                     |
+| `/acp status`        | Mostrar backend, modo, estado, opções de runtime, capacidades. | `/acp status`                                                   |
+| `/acp set-mode`      | Definir modo de runtime para sessão alvo.                     | `/acp set-mode plan`                                             |
+| `/acp set`           | Escrita genérica de opção de config de runtime.               | `/acp set model openai/gpt-5.2`                                  |
+| `/acp cwd`           | Definir override de diretório de trabalho de runtime.         | `/acp cwd /Users/usuario/Projects/repo`                          |
+| `/acp permissions`   | Definir perfil de política de aprovação.                      | `/acp permissions strict`                                        |
+| `/acp timeout`       | Definir timeout de runtime (segundos).                        | `/acp timeout 120`                                               |
+| `/acp model`         | Definir override de modelo de runtime.                        | `/acp model anthropic/claude-opus-4-5`                           |
+| `/acp reset-options` | Remover overrides de opção de runtime de sessão.              | `/acp reset-options`                                             |
+| `/acp sessions`      | Listar sessões ACP recentes do armazém.                       | `/acp sessions`                                                  |
+| `/acp doctor`        | Saúde do backend, capacidades, correções acionáveis.          | `/acp doctor`                                                    |
+| `/acp install`       | Imprimir etapas determinísticas de instalação e habilitação.  | `/acp install`                                                   |
 
-`/acp sessions` reads the store for the current bound or requester session. Commands that accept `session-key`, `session-id`, or `session-label` tokens resolve targets through gateway session discovery, including custom per-agent `session.store` roots.
+`/acp sessions` lê o armazém para a sessão vinculada ou solicitante atual. Comandos que aceitam tokens `session-key`, `session-id` ou `session-label` resolvem alvos através da descoberta de sessão do gateway, incluindo raízes `session.store` por agente personalizadas.
 
-## Runtime options mapping
+## Mapeamento de opções de runtime
 
-`/acp` has convenience commands and a generic setter.
+`/acp` tem comandos de conveniência e um setter genérico.
 
-Equivalent operations:
+Operações equivalentes:
 
-- `/acp model <id>` maps to runtime config key `model`.
-- `/acp permissions <profile>` maps to runtime config key `approval_policy`.
-- `/acp timeout <seconds>` maps to runtime config key `timeout`.
-- `/acp cwd <path>` updates runtime cwd override directly.
-- `/acp set <key> <value>` is the generic path.
-  - Special case: `key=cwd` uses the cwd override path.
-- `/acp reset-options` clears all runtime overrides for target session.
+- `/acp model <id>` mapeia para chave de config de runtime `model`.
+- `/acp permissions <perfil>` mapeia para chave de config de runtime `approval_policy`.
+- `/acp timeout <segundos>` mapeia para chave de config de runtime `timeout`.
+- `/acp cwd <caminho>` atualiza o override de cwd de runtime diretamente.
+- `/acp set <chave> <valor>` é o caminho genérico.
+  - Caso especial: `key=cwd` usa o caminho de override de cwd.
+- `/acp reset-options` limpa todos os overrides de runtime para a sessão alvo.
 
-## acpx harness support (current)
+## Suporte de harness acpx (atual)
 
-Current acpx built-in harness aliases:
+Aliases de harness embutidos acpx atuais:
 
 - `pi`
 - `claude`
@@ -448,19 +447,19 @@ Current acpx built-in harness aliases:
 - `gemini`
 - `kimi`
 
-When OpenClaw uses the acpx backend, prefer these values for `agentId` unless your acpx config defines custom agent aliases.
+Quando o OpenCraft usa o backend acpx, prefira esses valores para `agentId` a menos que sua config acpx defina aliases de agente personalizados.
 
-Direct acpx CLI usage can also target arbitrary adapters via `--agent <command>`, but that raw escape hatch is an acpx CLI feature (not the normal OpenClaw `agentId` path).
+O uso direto do CLI acpx também pode direcionar adaptadores arbitrários via `--agent <comando>`, mas essa saída de emergência bruta é um recurso do CLI acpx (não o caminho normal de `agentId` do OpenCraft).
 
-## Required config
+## Config necessária
 
-Core ACP baseline:
+Baseline core ACP:
 
 ```json5
 {
   acp: {
     enabled: true,
-    // Optional. Default is true; set false to pause ACP dispatch while keeping /acp controls.
+    // Opcional. Padrão é true; defina false para pausar despacho ACP mantendo controles /acp.
     dispatch: { enabled: true },
     backend: "acpx",
     defaultAgent: "codex",
@@ -477,7 +476,7 @@ Core ACP baseline:
 }
 ```
 
-Thread binding config is channel-adapter specific. Example for Discord:
+Config de vínculo de thread é específica do adaptador de canal. Exemplo para Discord:
 
 ```json5
 {
@@ -499,45 +498,45 @@ Thread binding config is channel-adapter specific. Example for Discord:
 }
 ```
 
-If thread-bound ACP spawn does not work, verify the adapter feature flag first:
+Se o spawn ACP vinculado a thread não funcionar, verifique a flag de funcionalidade do adaptador primeiro:
 
 - Discord: `channels.discord.threadBindings.spawnAcpSessions=true`
 
-See [Configuration Reference](/gateway/configuration-reference).
+Veja [Referência de Configuração](/gateway/configuration-reference).
 
-## Plugin setup for acpx backend
+## Configuração do plugin para backend acpx
 
-Install and enable plugin:
-
-```bash
-openclaw plugins install acpx
-openclaw config set plugins.entries.acpx.enabled true
-```
-
-Local workspace install during development:
+Instale e habilite o plugin:
 
 ```bash
-openclaw plugins install ./extensions/acpx
+opencraft plugins install acpx
+opencraft config set plugins.entries.acpx.enabled true
 ```
 
-Then verify backend health:
+Instalação local de workspace durante desenvolvimento:
+
+```bash
+opencraft plugins install ./extensions/acpx
+```
+
+Depois verifique a saúde do backend:
 
 ```text
 /acp doctor
 ```
 
-### acpx command and version configuration
+### Configuração de comando e versão do acpx
 
-By default, the acpx plugin (published as `@openclaw/acpx`) uses the plugin-local pinned binary:
+Por padrão, o plugin acpx (publicado como `@openclaw/acpx`) usa o binário fixado local do plugin:
 
-1. Command defaults to `extensions/acpx/node_modules/.bin/acpx`.
-2. Expected version defaults to the extension pin.
-3. Startup registers ACP backend immediately as not-ready.
-4. A background ensure job verifies `acpx --version`.
-5. If the plugin-local binary is missing or mismatched, it runs:
-   `npm install --omit=dev --no-save acpx@<pinned>` and re-verifies.
+1. Comando padrão para `extensions/acpx/node_modules/.bin/acpx`.
+2. Versão esperada padrão para o pin da extensão.
+3. Na inicialização, registra backend ACP imediatamente como não-pronto.
+4. Um job de verificação em background verifica `acpx --version`.
+5. Se o binário local do plugin estiver faltando ou com versão incorreta, roda:
+   `npm install --omit=dev --no-save acpx@<fixado>` e re-verifica.
 
-You can override command/version in plugin config:
+Você pode sobrescrever comando/versão na config do plugin:
 
 ```json
 {
@@ -555,69 +554,69 @@ You can override command/version in plugin config:
 }
 ```
 
-Notes:
+Notas:
 
-- `command` accepts an absolute path, relative path, or command name (`acpx`).
-- Relative paths resolve from OpenClaw workspace directory.
-- `expectedVersion: "any"` disables strict version matching.
-- When `command` points to a custom binary/path, plugin-local auto-install is disabled.
-- OpenClaw startup remains non-blocking while the backend health check runs.
+- `command` aceita um caminho absoluto, caminho relativo ou nome de comando (`acpx`).
+- Caminhos relativos resolvem a partir do diretório workspace do OpenCraft.
+- `expectedVersion: "any"` desabilita a correspondência estrita de versão.
+- Quando `command` aponta para um binário/caminho personalizado, a auto-instalação local do plugin é desabilitada.
+- A inicialização do OpenCraft permanece não-bloqueante enquanto a verificação de saúde do backend roda.
 
-See [Plugins](/tools/plugin).
+Veja [Plugins](/tools/plugin).
 
-## Permission configuration
+## Configuração de permissões
 
-ACP sessions run non-interactively — there is no TTY to approve or deny file-write and shell-exec permission prompts. The acpx plugin provides two config keys that control how permissions are handled:
+Sessões ACP rodam de forma não interativa — não há TTY para aprovar ou negar prompts de permissão de escrita de arquivo e execução de shell. O plugin acpx fornece duas chaves de config que controlam como as permissões são tratadas:
 
 ### `permissionMode`
 
-Controls which operations the harness agent can perform without prompting.
+Controla quais operações o agente harness pode realizar sem solicitar.
 
-| Value           | Behavior                                                  |
-| --------------- | --------------------------------------------------------- |
-| `approve-all`   | Auto-approve all file writes and shell commands.          |
-| `approve-reads` | Auto-approve reads only; writes and exec require prompts. |
-| `deny-all`      | Deny all permission prompts.                              |
+| Valor           | Comportamento                                                     |
+| --------------- | ----------------------------------------------------------------- |
+| `approve-all`   | Auto-aprovar todas as escritas de arquivo e comandos shell.       |
+| `approve-reads` | Auto-aprovar apenas leituras; escritas e exec requerem prompts.   |
+| `deny-all`      | Negar todos os prompts de permissão.                              |
 
 ### `nonInteractivePermissions`
 
-Controls what happens when a permission prompt would be shown but no interactive TTY is available (which is always the case for ACP sessions).
+Controla o que acontece quando um prompt de permissão seria mostrado mas nenhum TTY interativo está disponível (o que é sempre o caso para sessões ACP).
 
-| Value  | Behavior                                                          |
-| ------ | ----------------------------------------------------------------- |
-| `fail` | Abort the session with `AcpRuntimeError`. **(default)**           |
-| `deny` | Silently deny the permission and continue (graceful degradation). |
+| Valor  | Comportamento                                                                   |
+| ------ | ------------------------------------------------------------------------------- |
+| `fail` | Abortar a sessão com `AcpRuntimeError`. **(padrão)**                            |
+| `deny` | Negar silenciosamente a permissão e continuar (degradação elegante).            |
 
-### Configuration
+### Configuração
 
-Set via plugin config:
+Definir via config do plugin:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.permissionMode approve-all
-openclaw config set plugins.entries.acpx.config.nonInteractivePermissions fail
+opencraft config set plugins.entries.acpx.config.permissionMode approve-all
+opencraft config set plugins.entries.acpx.config.nonInteractivePermissions fail
 ```
 
-Restart the gateway after changing these values.
+Reinicie o gateway após mudar esses valores.
 
-> **Important:** OpenClaw currently defaults to `permissionMode=approve-reads` and `nonInteractivePermissions=fail`. In non-interactive ACP sessions, any write or exec that triggers a permission prompt can fail with `AcpRuntimeError: Permission prompt unavailable in non-interactive mode`.
+> **Importante:** O OpenCraft atualmente padrão para `permissionMode=approve-reads` e `nonInteractivePermissions=fail`. Em sessões ACP não interativas, qualquer escrita ou exec que acione um prompt de permissão pode falhar com `AcpRuntimeError: Permission prompt unavailable in non-interactive mode`.
 >
-> If you need to restrict permissions, set `nonInteractivePermissions` to `deny` so sessions degrade gracefully instead of crashing.
+> Se você precisar restringir permissões, defina `nonInteractivePermissions` como `deny` para que as sessões degradem elegantemente em vez de travarem.
 
-## Troubleshooting
+## Solução de problemas
 
-| Symptom                                                                  | Likely cause                                                                    | Fix                                                                                                                                                               |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACP runtime backend is not configured`                                  | Backend plugin missing or disabled.                                             | Install and enable backend plugin, then run `/acp doctor`.                                                                                                        |
-| `ACP is disabled by policy (acp.enabled=false)`                          | ACP globally disabled.                                                          | Set `acp.enabled=true`.                                                                                                                                           |
-| `ACP dispatch is disabled by policy (acp.dispatch.enabled=false)`        | Dispatch from normal thread messages disabled.                                  | Set `acp.dispatch.enabled=true`.                                                                                                                                  |
-| `ACP agent "<id>" is not allowed by policy`                              | Agent not in allowlist.                                                         | Use allowed `agentId` or update `acp.allowedAgents`.                                                                                                              |
-| `Unable to resolve session target: ...`                                  | Bad key/id/label token.                                                         | Run `/acp sessions`, copy exact key/label, retry.                                                                                                                 |
-| `--thread here requires running /acp spawn inside an active ... thread`  | `--thread here` used outside a thread context.                                  | Move to target thread or use `--thread auto`/`off`.                                                                                                               |
-| `Only <user-id> can rebind this thread.`                                 | Another user owns thread binding.                                               | Rebind as owner or use a different thread.                                                                                                                        |
-| `Thread bindings are unavailable for <channel>.`                         | Adapter lacks thread binding capability.                                        | Use `--thread off` or move to supported adapter/channel.                                                                                                          |
-| `Sandboxed sessions cannot spawn ACP sessions ...`                       | ACP runtime is host-side; requester session is sandboxed.                       | Use `runtime="subagent"` from sandboxed sessions, or run ACP spawn from a non-sandboxed session.                                                                  |
-| `sessions_spawn sandbox="require" is unsupported for runtime="acp" ...`  | `sandbox="require"` requested for ACP runtime.                                  | Use `runtime="subagent"` for required sandboxing, or use ACP with `sandbox="inherit"` from a non-sandboxed session.                                               |
-| Missing ACP metadata for bound session                                   | Stale/deleted ACP session metadata.                                             | Recreate with `/acp spawn`, then rebind/focus thread.                                                                                                             |
-| `AcpRuntimeError: Permission prompt unavailable in non-interactive mode` | `permissionMode` blocks writes/exec in non-interactive ACP session.             | Set `plugins.entries.acpx.config.permissionMode` to `approve-all` and restart gateway. See [Permission configuration](#permission-configuration).                 |
-| ACP session fails early with little output                               | Permission prompts are blocked by `permissionMode`/`nonInteractivePermissions`. | Check gateway logs for `AcpRuntimeError`. For full permissions, set `permissionMode=approve-all`; for graceful degradation, set `nonInteractivePermissions=deny`. |
-| ACP session stalls indefinitely after completing work                    | Harness process finished but ACP session did not report completion.             | Monitor with `ps aux \| grep acpx`; kill stale processes manually.                                                                                                |
+| Sintoma                                                                  | Causa provável                                                                   | Correção                                                                                                                                                          |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACP runtime backend is not configured`                                  | Plugin de backend faltando ou desabilitado.                                      | Instale e habilite o plugin de backend, depois rode `/acp doctor`.                                                                                                |
+| `ACP is disabled by policy (acp.enabled=false)`                          | ACP globalmente desabilitado.                                                    | Defina `acp.enabled=true`.                                                                                                                                        |
+| `ACP dispatch is disabled by policy (acp.dispatch.enabled=false)`        | Despacho de mensagens normais de thread desabilitado.                            | Defina `acp.dispatch.enabled=true`.                                                                                                                               |
+| `ACP agent "<id>" is not allowed by policy`                              | Agente não está na allowlist.                                                    | Use `agentId` permitido ou atualize `acp.allowedAgents`.                                                                                                          |
+| `Unable to resolve session target: ...`                                  | Token de chave/id/rótulo inválido.                                               | Rode `/acp sessions`, copie a chave/rótulo exato, tente novamente.                                                                                                |
+| `--thread here requires running /acp spawn inside an active ... thread`  | `--thread here` usado fora de um contexto de thread.                             | Mova para a thread alvo ou use `--thread auto`/`off`.                                                                                                             |
+| `Only <user-id> can rebind this thread.`                                 | Outro usuário possui o vínculo de thread.                                        | Revincule como proprietário ou use uma thread diferente.                                                                                                          |
+| `Thread bindings are unavailable for <channel>.`                         | Adaptador não tem capacidade de vínculo de thread.                               | Use `--thread off` ou mova para adaptador/canal suportado.                                                                                                        |
+| `Sandboxed sessions cannot spawn ACP sessions ...`                       | Runtime ACP é no host; sessão solicitante está em sandbox.                       | Use `runtime="subagent"` de sessões em sandbox, ou rode spawn ACP de uma sessão não sandboxed.                                                                    |
+| `sessions_spawn sandbox="require" is unsupported for runtime="acp" ...`  | `sandbox="require"` solicitado para runtime ACP.                                 | Use `runtime="subagent"` para sandboxing obrigatório, ou use ACP com `sandbox="inherit"` de uma sessão não sandboxed.                                             |
+| Metadados ACP faltando para sessão vinculada                             | Metadados de sessão ACP obsoletos/deletados.                                     | Recrie com `/acp spawn`, depois revincule/foque a thread.                                                                                                         |
+| `AcpRuntimeError: Permission prompt unavailable in non-interactive mode` | `permissionMode` bloqueia escritas/exec em sessão ACP não interativa.            | Defina `plugins.entries.acpx.config.permissionMode` como `approve-all` e reinicie o gateway. Veja [Configuração de permissões](#configuração-de-permissões).      |
+| Sessão ACP falha cedo com pouca saída                                    | Prompts de permissão bloqueados por `permissionMode`/`nonInteractivePermissions`. | Verifique logs do gateway para `AcpRuntimeError`. Para permissões completas, defina `permissionMode=approve-all`; para degradação elegante, defina `nonInteractivePermissions=deny`. |
+| Sessão ACP trava indefinidamente após concluir o trabalho                | Processo harness terminou mas sessão ACP não reportou conclusão.                 | Monitore com `ps aux \| grep acpx`; mate processos obsoletos manualmente.                                                                                         |

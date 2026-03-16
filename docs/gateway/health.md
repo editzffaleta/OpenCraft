@@ -1,35 +1,35 @@
 ---
-summary: "Health check steps for channel connectivity"
+summary: "Passos de verificação de saúde para conectividade de canais"
 read_when:
-  - Diagnosing WhatsApp channel health
-title: "Health Checks"
+  - Diagnosticando saúde do canal WhatsApp
+title: "Verificações de Saúde"
 ---
 
-# Health Checks (CLI)
+# Verificações de Saúde (CLI)
 
-Short guide to verify channel connectivity without guessing.
+Guia rápido para verificar conectividade de canais sem precisar adivinhar.
 
-## Quick checks
+## Verificações rápidas
 
-- `openclaw status` — local summary: gateway reachability/mode, update hint, linked channel auth age, sessions + recent activity.
-- `openclaw status --all` — full local diagnosis (read-only, color, safe to paste for debugging).
-- `openclaw status --deep` — also probes the running Gateway (per-channel probes when supported).
-- `openclaw health --json` — asks the running Gateway for a full health snapshot (WS-only; no direct Baileys socket).
-- Send `/status` as a standalone message in WhatsApp/WebChat to get a status reply without invoking the agent.
-- Logs: tail `/tmp/openclaw/openclaw-*.log` and filter for `web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound`.
+- `opencraft status` — resumo local: acessibilidade/modo do gateway, hint de atualização, idade de auth do canal vinculado, sessões + atividade recente.
+- `opencraft status --all` — diagnóstico local completo (somente leitura, colorido, seguro para colar ao depurar).
+- `opencraft status --deep` — também verifica o Gateway em execução (probes por canal quando suportado).
+- `opencraft health --json` — pede ao Gateway em execução um snapshot completo de saúde (somente WS; sem socket Baileys direto).
+- Envie `/status` como mensagem standalone no WhatsApp/WebChat para obter uma resposta de status sem invocar o agente.
+- Logs: monitore `/tmp/openclaw/openclaw-*.log` e filtre por `web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound`.
 
-## Deep diagnostics
+## Diagnósticos profundos
 
-- Creds on disk: `ls -l ~/.openclaw/credentials/whatsapp/<accountId>/creds.json` (mtime should be recent).
-- Session store: `ls -l ~/.openclaw/agents/<agentId>/sessions/sessions.json` (path can be overridden in config). Count and recent recipients are surfaced via `status`.
-- Relink flow: `openclaw channels logout && openclaw channels login --verbose` when status codes 409–515 or `loggedOut` appear in logs. (Note: the QR login flow auto-restarts once for status 515 after pairing.)
+- Credenciais em disco: `ls -l ~/.opencraft/credentials/whatsapp/<accountId>/creds.json` (mtime deve ser recente).
+- Session store: `ls -l ~/.opencraft/agents/<agentId>/sessions/sessions.json` (path pode ser substituído na config). Contagem e destinatários recentes aparecem via `status`.
+- Fluxo de reconexão: `opencraft channels logout && opencraft channels login --verbose` quando aparecerem códigos de status 409–515 ou `loggedOut` nos logs. (Nota: o fluxo de login QR reinicia automaticamente uma vez para status 515 após o pareamento.)
 
-## When something fails
+## Quando algo falha
 
-- `logged out` or status 409–515 → relink with `openclaw channels logout` then `openclaw channels login`.
-- Gateway unreachable → start it: `openclaw gateway --port 18789` (use `--force` if the port is busy).
-- No inbound messages → confirm linked phone is online and the sender is allowed (`channels.whatsapp.allowFrom`); for group chats, ensure allowlist + mention rules match (`channels.whatsapp.groups`, `agents.list[].groupChat.mentionPatterns`).
+- `logged out` ou status 409–515 → reconecte com `opencraft channels logout` e depois `opencraft channels login`.
+- Gateway inacessível → inicie-o: `opencraft gateway --port 18789` (use `--force` se a porta estiver ocupada).
+- Sem mensagens recebidas → confirme que o telefone vinculado está online e que o remetente é permitido (`channels.whatsapp.allowFrom`); para chats em grupo, certifique-se de que as regras de allowlist + menção correspondem (`channels.whatsapp.groups`, `agents.list[].groupChat.mentionPatterns`).
 
-## Dedicated "health" command
+## Comando "health" dedicado
 
-`openclaw health --json` asks the running Gateway for its health snapshot (no direct channel sockets from the CLI). It reports linked creds/auth age when available, per-channel probe summaries, session-store summary, and a probe duration. It exits non-zero if the Gateway is unreachable or the probe fails/timeouts. Use `--timeout <ms>` to override the 10s default.
+`opencraft health --json` pede ao Gateway em execução seu snapshot de saúde (sem sockets de canal diretos do CLI). Ele reporta credenciais/idade de auth vinculados quando disponíveis, resumos de probe por canal, resumo do session-store e duração do probe. Sai com código não-zero se o Gateway estiver inacessível ou o probe falhar/expirar. Use `--timeout <ms>` para substituir o padrão de 10s.

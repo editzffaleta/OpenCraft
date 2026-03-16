@@ -1,126 +1,126 @@
 ---
-title: "Default AGENTS.md"
-summary: "Default OpenClaw agent instructions and skills roster for the personal assistant setup"
+title: "AGENTS.md Padrão"
+summary: "Instruções padrão do agente OpenCraft e roster de skills para a configuração de assistente pessoal"
 read_when:
-  - Starting a new OpenClaw agent session
-  - Enabling or auditing default skills
+  - Iniciando uma nova sessão de agente OpenCraft
+  - Habilitando ou auditando skills padrão
 ---
 
-# AGENTS.md — OpenClaw Personal Assistant (default)
+# AGENTS.md — Assistente Pessoal OpenCraft (padrão)
 
-## First run (recommended)
+## Primeira execução (recomendado)
 
-OpenClaw uses a dedicated workspace directory for the agent. Default: `~/.openclaw/workspace` (configurable via `agents.defaults.workspace`).
+O OpenCraft usa um diretório de workspace dedicado para o agente. Padrão: `~/.opencraft/workspace` (configurável via `agents.defaults.workspace`).
 
-1. Create the workspace (if it doesn’t already exist):
-
-```bash
-mkdir -p ~/.openclaw/workspace
-```
-
-2. Copy the default workspace templates into the workspace:
+1. Crie o workspace (se ainda não existir):
 
 ```bash
-cp docs/reference/templates/AGENTS.md ~/.openclaw/workspace/AGENTS.md
-cp docs/reference/templates/SOUL.md ~/.openclaw/workspace/SOUL.md
-cp docs/reference/templates/TOOLS.md ~/.openclaw/workspace/TOOLS.md
+mkdir -p ~/.opencraft/workspace
 ```
 
-3. Optional: if you want the personal assistant skill roster, replace AGENTS.md with this file:
+2. Copie os templates de workspace padrão para o workspace:
 
 ```bash
-cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
+cp docs/reference/templates/AGENTS.md ~/.opencraft/workspace/AGENTS.md
+cp docs/reference/templates/SOUL.md ~/.opencraft/workspace/SOUL.md
+cp docs/reference/templates/TOOLS.md ~/.opencraft/workspace/TOOLS.md
 ```
 
-4. Optional: choose a different workspace by setting `agents.defaults.workspace` (supports `~`):
+3. Opcional: se você quiser o roster de skills de assistente pessoal, substitua AGENTS.md por este arquivo:
+
+```bash
+cp docs/reference/AGENTS.default.md ~/.opencraft/workspace/AGENTS.md
+```
+
+4. Opcional: escolha um workspace diferente definindo `agents.defaults.workspace` (suporta `~`):
 
 ```json5
 {
-  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
+  agents: { defaults: { workspace: "~/.opencraft/workspace" } },
 }
 ```
 
-## Safety defaults
+## Padrões de segurança
 
-- Don’t dump directories or secrets into chat.
-- Don’t run destructive commands unless explicitly asked.
-- Don’t send partial/streaming replies to external messaging surfaces (only final replies).
+- Não despeje diretórios ou segredos no chat.
+- Não execute comandos destrutivos a menos que seja explicitamente solicitado.
+- Não envie respostas parciais/streaming para superfícies de mensagens externas (apenas respostas finais).
 
-## Session start (required)
+## Início de sessão (obrigatório)
 
-- Read `SOUL.md`, `USER.md`, and today+yesterday in `memory/`.
-- Read `MEMORY.md` when present; only fall back to lowercase `memory.md` when `MEMORY.md` is absent.
-- Do it before responding.
+- Leia `SOUL.md`, `USER.md` e hoje+ontem em `memory/`.
+- Leia `MEMORY.md` quando presente; só faça fallback para `memory.md` em minúsculas quando `MEMORY.md` estiver ausente.
+- Faça isso antes de responder.
 
-## Soul (required)
+## Soul (obrigatório)
 
-- `SOUL.md` defines identity, tone, and boundaries. Keep it current.
-- If you change `SOUL.md`, tell the user.
-- You are a fresh instance each session; continuity lives in these files.
+- `SOUL.md` define identidade, tom e limites. Mantenha-o atualizado.
+- Se você alterar `SOUL.md`, avise o usuário.
+- Você é uma instância nova a cada sessão; a continuidade vive nesses arquivos.
 
-## Shared spaces (recommended)
+## Espaços compartilhados (recomendado)
 
-- You’re not the user’s voice; be careful in group chats or public channels.
-- Don’t share private data, contact info, or internal notes.
+- Você não é a voz do usuário; seja cuidadoso em chats em grupo ou canais públicos.
+- Não compartilhe dados privados, informações de contato ou notas internas.
 
-## Memory system (recommended)
+## Sistema de memória (recomendado)
 
-- Daily log: `memory/YYYY-MM-DD.md` (create `memory/` if needed).
-- Long-term memory: `MEMORY.md` for durable facts, preferences, and decisions.
-- Lowercase `memory.md` is legacy fallback only; do not keep both root files on purpose.
-- On session start, read today + yesterday + `MEMORY.md` when present, otherwise `memory.md`.
-- Capture: decisions, preferences, constraints, open loops.
-- Avoid secrets unless explicitly requested.
+- Diário: `memory/YYYY-MM-DD.md` (crie `memory/` se necessário).
+- Memória de longo prazo: `MEMORY.md` para fatos, preferências e decisões duráveis.
+- `memory.md` em minúsculas é apenas fallback legado; não mantenha ambos os arquivos raiz propositalmente.
+- No início da sessão, leia hoje + ontem + `MEMORY.md` quando presente, caso contrário `memory.md`.
+- Capture: decisões, preferências, restrições, loops abertos.
+- Evite segredos a menos que explicitamente solicitado.
 
-## Tools & skills
+## Ferramentas e skills
 
-- Tools live in skills; follow each skill’s `SKILL.md` when you need it.
-- Keep environment-specific notes in `TOOLS.md` (Notes for Skills).
+- As ferramentas vivem em skills; siga o `SKILL.md` de cada skill quando precisar dela.
+- Mantenha notas específicas do ambiente em `TOOLS.md` (Notas para Skills).
 
-## Backup tip (recommended)
+## Dica de backup (recomendado)
 
-If you treat this workspace as Clawd’s “memory”, make it a git repo (ideally private) so `AGENTS.md` and your memory files are backed up.
+Se você tratar este workspace como a "memória" do Clawd, transforme-o em um repositório git (de preferência privado) para que `AGENTS.md` e seus arquivos de memória sejam salvos.
 
 ```bash
-cd ~/.openclaw/workspace
+cd ~/.opencraft/workspace
 git init
 git add AGENTS.md
 git commit -m "Add Clawd workspace"
-# Optional: add a private remote + push
+# Opcional: adicione um remote privado + push
 ```
 
-## What OpenClaw Does
+## O que o OpenCraft faz
 
-- Runs WhatsApp gateway + Pi coding agent so the assistant can read/write chats, fetch context, and run skills via the host Mac.
-- macOS app manages permissions (screen recording, notifications, microphone) and exposes the `openclaw` CLI via its bundled binary.
-- Direct chats collapse into the agent's `main` session by default; groups stay isolated as `agent:<agentId>:<channel>:group:<id>` (rooms/channels: `agent:<agentId>:<channel>:channel:<id>`); heartbeats keep background tasks alive.
+- Executa gateway WhatsApp + agente de codagem Pi para que o assistente possa ler/escrever chats, buscar contexto e executar skills via o Mac host.
+- O app macOS gerencia permissões (gravação de tela, notificações, microfone) e expõe o CLI `opencraft` via seu binário embutido.
+- Chats diretos colapsam na sessão `main` do agente por padrão; grupos ficam isolados como `agent:<agentId>:<canal>:group:<id>` (salas/canais: `agent:<agentId>:<canal>:channel:<id>`); heartbeats mantêm tarefas em background ativas.
 
-## Core Skills (enable in Settings → Skills)
+## Skills Principais (habilite em Configurações → Skills)
 
-- **mcporter** — Tool server runtime/CLI for managing external skill backends.
-- **Peekaboo** — Fast macOS screenshots with optional AI vision analysis.
-- **camsnap** — Capture frames, clips, or motion alerts from RTSP/ONVIF security cams.
-- **oracle** — OpenAI-ready agent CLI with session replay and browser control.
-- **eightctl** — Control your sleep, from the terminal.
-- **imsg** — Send, read, stream iMessage & SMS.
-- **wacli** — WhatsApp CLI: sync, search, send.
-- **discord** — Discord actions: react, stickers, polls. Use `user:<id>` or `channel:<id>` targets (bare numeric ids are ambiguous).
-- **gog** — Google Suite CLI: Gmail, Calendar, Drive, Contacts.
-- **spotify-player** — Terminal Spotify client to search/queue/control playback.
-- **sag** — ElevenLabs speech with mac-style say UX; streams to speakers by default.
-- **Sonos CLI** — Control Sonos speakers (discover/status/playback/volume/grouping) from scripts.
-- **blucli** — Play, group, and automate BluOS players from scripts.
-- **OpenHue CLI** — Philips Hue lighting control for scenes and automations.
-- **OpenAI Whisper** — Local speech-to-text for quick dictation and voicemail transcripts.
-- **Gemini CLI** — Google Gemini models from the terminal for fast Q&A.
-- **agent-tools** — Utility toolkit for automations and helper scripts.
+- **mcporter** — Runtime/CLI de servidor de tools para gerenciar backends de skills externos.
+- **Peekaboo** — Screenshots rápidos do macOS com análise de visão de IA opcional.
+- **camsnap** — Capture frames, clips ou alertas de movimento de câmeras de segurança RTSP/ONVIF.
+- **oracle** — CLI de agente pronto para OpenAI com replay de sessão e controle de navegador.
+- **eightctl** — Controle seu sono, pelo terminal.
+- **imsg** — Envie, leia, transmita iMessage e SMS.
+- **wacli** — CLI do WhatsApp: sync, busca, envio.
+- **discord** — Ações do Discord: reações, stickers, enquetes. Use alvos `user:<id>` ou `channel:<id>` (ids numéricos sem prefixo são ambíguos).
+- **gog** — CLI do Google Suite: Gmail, Agenda, Drive, Contatos.
+- **spotify-player** — Cliente Spotify de terminal para buscar/enfileirar/controlar reprodução.
+- **sag** — Voz ElevenLabs com UX estilo mac say; transmite para os alto-falantes por padrão.
+- **Sonos CLI** — Controle alto-falantes Sonos (descoberta/status/reprodução/volume/agrupamento) por scripts.
+- **blucli** — Reproduza, agrupe e automatize players BluOS por scripts.
+- **OpenHue CLI** — Controle de iluminação Philips Hue para cenas e automações.
+- **OpenAI Whisper** — Fala-para-texto local para ditado rápido e transcrição de voicemail.
+- **Gemini CLI** — Modelos Google Gemini pelo terminal para P&R rápido.
+- **agent-tools** — Kit de ferramentas utilitárias para automações e scripts auxiliares.
 
-## Usage Notes
+## Notas de Uso
 
-- Prefer the `openclaw` CLI for scripting; mac app handles permissions.
-- Run installs from the Skills tab; it hides the button if a binary is already present.
-- Keep heartbeats enabled so the assistant can schedule reminders, monitor inboxes, and trigger camera captures.
-- Canvas UI runs full-screen with native overlays. Avoid placing critical controls in the top-left/top-right/bottom edges; add explicit gutters in the layout and don’t rely on safe-area insets.
-- For browser-driven verification, use `openclaw browser` (tabs/status/screenshot) with the OpenClaw-managed Chrome profile.
-- For DOM inspection, use `openclaw browser eval|query|dom|snapshot` (and `--json`/`--out` when you need machine output).
-- For interactions, use `openclaw browser click|type|hover|drag|select|upload|press|wait|navigate|back|evaluate|run` (click/type require snapshot refs; use `evaluate` for CSS selectors).
+- Prefira o CLI `opencraft` para scripting; o app mac gerencia permissões.
+- Execute instalações na aba Skills; ela oculta o botão se um binário já estiver presente.
+- Mantenha os heartbeats habilitados para que o assistente possa agendar lembretes, monitorar caixas de entrada e disparar capturas de câmera.
+- A UI Canvas roda em tela cheia com overlays nativos. Evite colocar controles críticos nas bordas superior-esquerda/superior-direita/inferior; adicione margens explícitas no layout e não dependa de insets de safe-area.
+- Para verificação baseada em navegador, use `opencraft browser` (abas/status/screenshot) com o perfil Chrome gerenciado pelo OpenCraft.
+- Para inspeção do DOM, use `opencraft browser eval|query|dom|snapshot` (e `--json`/`--out` quando precisar de saída para máquina).
+- Para interações, use `opencraft browser click|type|hover|drag|select|upload|press|wait|navigate|back|evaluate|run` (click/type requerem refs de snapshot; use `evaluate` para seletores CSS).

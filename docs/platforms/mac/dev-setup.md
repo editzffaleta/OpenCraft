@@ -1,104 +1,104 @@
 ---
-summary: "Setup guide for developers working on the OpenClaw macOS app"
+summary: "Guia de configuração para desenvolvedores trabalhando no app macOS do OpenCraft"
 read_when:
-  - Setting up the macOS development environment
-title: "macOS Dev Setup"
+  - Configurando o ambiente de desenvolvimento macOS
+title: "Configuração Dev macOS"
 ---
 
-# macOS Developer Setup
+# Configuração do Desenvolvedor macOS
 
-This guide covers the necessary steps to build and run the OpenClaw macOS application from source.
+Este guia cobre os passos necessários para compilar e executar o app macOS do OpenCraft a partir do código-fonte.
 
-## Prerequisites
+## Pré-requisitos
 
-Before building the app, ensure you have the following installed:
+Antes de compilar o app, certifique-se de ter o seguinte instalado:
 
-1. **Xcode 26.2+**: Required for Swift development.
-2. **Node.js 24 & pnpm**: Recommended for the gateway, CLI, and packaging scripts. Node 22 LTS, currently `22.16+`, remains supported for compatibility.
+1. **Xcode 26.2+**: Necessário para desenvolvimento Swift.
+2. **Node.js 24 & pnpm**: Recomendado para o gateway, CLI e scripts de empacotamento. Node 22 LTS, atualmente `22.16+`, permanece suportado para compatibilidade.
 
-## 1. Install Dependencies
+## 1. Instalar Dependências
 
-Install the project-wide dependencies:
+Instale as dependências do projeto:
 
 ```bash
 pnpm install
 ```
 
-## 2. Build and Package the App
+## 2. Compilar e Empacotar o App
 
-To build the macOS app and package it into `dist/OpenClaw.app`, run:
+Para compilar o app macOS e empacotá-lo em `dist/OpenCraft.app`, execute:
 
 ```bash
 ./scripts/package-mac-app.sh
 ```
 
-If you don't have an Apple Developer ID certificate, the script will automatically use **ad-hoc signing** (`-`).
+Se você não tiver um certificado Apple Developer ID, o script usará automaticamente **assinatura ad-hoc** (`-`).
 
-For dev run modes, signing flags, and Team ID troubleshooting, see the macOS app README:
+Para modos de execução dev, flags de assinatura e troubleshooting de Team ID, veja o README do app macOS:
 [https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md](https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md)
 
-> **Note**: Ad-hoc signed apps may trigger security prompts. If the app crashes immediately with "Abort trap 6", see the [Troubleshooting](#troubleshooting) section.
+> **Nota**: Apps com assinatura ad-hoc podem disparar prompts de segurança. Se o app travar imediatamente com "Abort trap 6", veja a seção de [Troubleshooting](#troubleshooting).
 
-## 3. Install the CLI
+## 3. Instalar o CLI
 
-The macOS app expects a global `openclaw` CLI install to manage background tasks.
+O app macOS espera uma instalação global do CLI `opencraft` para gerenciar tarefas em background.
 
-**To install it (recommended):**
+**Para instalá-lo (recomendado):**
 
-1. Open the OpenClaw app.
-2. Go to the **General** settings tab.
-3. Click **"Install CLI"**.
+1. Abra o app OpenCraft.
+2. Vá para a aba de configurações **Geral**.
+3. Clique em **"Install CLI"**.
 
-Alternatively, install it manually:
+Alternativamente, instale manualmente:
 
 ```bash
-npm install -g openclaw@<version>
+npm install -g opencraft@<versão>
 ```
 
 ## Troubleshooting
 
-### Build Fails: Toolchain or SDK Mismatch
+### Falha no Build: Incompatibilidade de Toolchain ou SDK
 
-The macOS app build expects the latest macOS SDK and Swift 6.2 toolchain.
+O build do app macOS espera o SDK mais recente do macOS e o toolchain Swift 6.2.
 
-**System dependencies (required):**
+**Dependências do sistema (necessárias):**
 
-- **Latest macOS version available in Software Update** (required by Xcode 26.2 SDKs)
-- **Xcode 26.2** (Swift 6.2 toolchain)
+- **Última versão do macOS disponível em Atualização de Software** (necessária pelos SDKs do Xcode 26.2)
+- **Xcode 26.2** (toolchain Swift 6.2)
 
-**Checks:**
+**Verificações:**
 
 ```bash
 xcodebuild -version
 xcrun swift --version
 ```
 
-If versions don’t match, update macOS/Xcode and re-run the build.
+Se as versões não corresponderem, atualize macOS/Xcode e execute o build novamente.
 
-### App Crashes on Permission Grant
+### App Trava ao Conceder Permissão
 
-If the app crashes when you try to allow **Speech Recognition** or **Microphone** access, it may be due to a corrupted TCC cache or signature mismatch.
+Se o app travar quando você tentar permitir acesso ao **Reconhecimento de Fala** ou **Microfone**, pode ser devido a um cache TCC corrompido ou incompatibilidade de assinatura.
 
-**Fix:**
+**Solução:**
 
-1. Reset the TCC permissions:
+1. Redefina as permissões TCC:
 
    ```bash
    tccutil reset All ai.openclaw.mac.debug
    ```
 
-2. If that fails, change the `BUNDLE_ID` temporarily in [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) to force a "clean slate" from macOS.
+2. Se isso falhar, altere o `BUNDLE_ID` temporariamente em [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) para forçar um "slate limpo" do macOS.
 
-### Gateway "Starting..." indefinitely
+### Gateway preso em "Starting..." indefinidamente
 
-If the gateway status stays on "Starting...", check if a zombie process is holding the port:
+Se o status do gateway permanecer em "Starting...", verifique se um processo zumbi está segurando a porta:
 
 ```bash
-openclaw gateway status
-openclaw gateway stop
+opencraft gateway status
+opencraft gateway stop
 
-# If you’re not using a LaunchAgent (dev mode / manual runs), find the listener:
+# Se você não estiver usando um LaunchAgent (modo dev / execuções manuais), encontre o listener:
 lsof -nP -iTCP:18789 -sTCP:LISTEN
 ```
 
-If a manual run is holding the port, stop that process (Ctrl+C). As a last resort, kill the PID you found above.
+Se uma execução manual estiver segurando a porta, pare esse processo (Ctrl+C). Como último recurso, mate o PID encontrado acima.

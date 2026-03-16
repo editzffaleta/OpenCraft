@@ -1,93 +1,93 @@
 ---
-summary: "Run OpenClaw Gateway 24/7 on a cheap Hetzner VPS (Docker) with durable state and baked-in binaries"
+summary: "Rodar o Gateway OpenCraft 24/7 em um VPS Hetzner barato (Docker) com estado durável e binários embutidos"
 read_when:
-  - You want OpenClaw running 24/7 on a cloud VPS (not your laptop)
-  - You want a production-grade, always-on Gateway on your own VPS
-  - You want full control over persistence, binaries, and restart behavior
-  - You are running OpenClaw in Docker on Hetzner or a similar provider
+  - Você quer o OpenCraft rodando 24/7 em um VPS cloud (não no seu laptop)
+  - Você quer um Gateway sempre ativo e de nível produção em seu próprio VPS
+  - Você quer controle total sobre persistência, binários e comportamento de reinicialização
+  - Você está rodando o OpenCraft em Docker na Hetzner ou provedor similar
 title: "Hetzner"
 ---
 
-# OpenClaw on Hetzner (Docker, Production VPS Guide)
+# OpenCraft na Hetzner (Docker, Guia de VPS para Produção)
 
-## Goal
+## Objetivo
 
-Run a persistent OpenClaw Gateway on a Hetzner VPS using Docker, with durable state, baked-in binaries, and safe restart behavior.
+Rodar um Gateway OpenCraft persistente em um VPS Hetzner usando Docker, com estado durável, binários embutidos e comportamento seguro de reinicialização.
 
-If you want “OpenClaw 24/7 for ~$5”, this is the simplest reliable setup.
-Hetzner pricing changes; pick the smallest Debian/Ubuntu VPS and scale up if you hit OOMs.
+Se você quer "OpenCraft 24/7 por ~$5", esta é a configuração confiável mais simples.
+Os preços da Hetzner mudam; escolha o menor VPS Debian/Ubuntu e escale se tiver OOMs.
 
-Security model reminder:
+Lembrete do modelo de segurança:
 
-- Company-shared agents are fine when everyone is in the same trust boundary and the runtime is business-only.
-- Keep strict separation: dedicated VPS/runtime + dedicated accounts; no personal Apple/Google/browser/password-manager profiles on that host.
-- If users are adversarial to each other, split by gateway/host/OS user.
+- Agentes compartilhados por empresa estão bem quando todos estão no mesmo limite de confiança e o runtime é apenas para negócios.
+- Mantenha separação estrita: VPS/runtime dedicado + contas dedicadas; sem perfis pessoais de Apple/Google/navegador/gerenciador de senhas nesse host.
+- Se os usuários são adversários entre si, separe por gateway/host/usuário do SO.
 
-See [Security](/gateway/security) and [VPS hosting](/vps).
+Veja [Segurança](/gateway/security) e [Hospedagem VPS](/vps).
 
-## What are we doing (simple terms)?
+## O que estamos fazendo (em termos simples)?
 
-- Rent a small Linux server (Hetzner VPS)
-- Install Docker (isolated app runtime)
-- Start the OpenClaw Gateway in Docker
-- Persist `~/.openclaw` + `~/.openclaw/workspace` on the host (survives restarts/rebuilds)
-- Access the Control UI from your laptop via an SSH tunnel
+- Alugar um pequeno servidor Linux (VPS Hetzner)
+- Instalar Docker (runtime de app isolado)
+- Iniciar o Gateway OpenCraft no Docker
+- Persistir `~/.opencraft` + `~/.opencraft/workspace` no host (sobrevive a reinicializações/reconstruções)
+- Acessar a UI de Controle do seu laptop via túnel SSH
 
-The Gateway can be accessed via:
+O Gateway pode ser acessado via:
 
-- SSH port forwarding from your laptop
-- Direct port exposure if you manage firewalling and tokens yourself
+- Port forwarding SSH do seu laptop
+- Exposição direta de porta se você gerenciar firewall e tokens você mesmo
 
-This guide assumes Ubuntu or Debian on Hetzner.  
-If you are on another Linux VPS, map packages accordingly.
-For the generic Docker flow, see [Docker](/install/docker).
+Este guia assume Ubuntu ou Debian na Hetzner.
+Se você estiver em outro VPS Linux, adapte os pacotes conforme necessário.
+Para o fluxo Docker genérico, veja [Docker](/install/docker).
 
 ---
 
-## Quick path (experienced operators)
+## Caminho rápido (operadores experientes)
 
-1. Provision Hetzner VPS
-2. Install Docker
-3. Clone OpenClaw repository
-4. Create persistent host directories
-5. Configure `.env` and `docker-compose.yml`
-6. Bake required binaries into the image
+1. Provisionar VPS Hetzner
+2. Instalar Docker
+3. Clonar repositório OpenCraft
+4. Criar diretórios persistentes no host
+5. Configurar `.env` e `docker-compose.yml`
+6. Compilar binários necessários na imagem
 7. `docker compose up -d`
-8. Verify persistence and Gateway access
+8. Verificar persistência e acesso ao Gateway
 
 ---
 
-## What you need
+## O que você precisa
 
-- Hetzner VPS with root access
-- SSH access from your laptop
-- Basic comfort with SSH + copy/paste
-- ~20 minutes
-- Docker and Docker Compose
-- Model auth credentials
-- Optional provider credentials
-  - WhatsApp QR
-  - Telegram bot token
-  - Gmail OAuth
+- VPS Hetzner com acesso root
+- Acesso SSH do seu laptop
+- Familiaridade básica com SSH + copiar/colar
+- ~20 minutos
+- Docker e Docker Compose
+- Credenciais de auth do modelo
+- Credenciais de provedor opcionais
+  - QR do WhatsApp
+  - Token de bot Telegram
+  - OAuth do Gmail
 
 ---
 
-## 1) Provision the VPS
+## 1) Provisionar o VPS
 
-Create an Ubuntu or Debian VPS in Hetzner.
+Crie um VPS Ubuntu ou Debian na Hetzner.
 
-Connect as root:
+Conecte como root:
 
 ```bash
-ssh root@YOUR_VPS_IP
+ssh root@SEU_IP_DO_VPS
 ```
 
-This guide assumes the VPS is stateful.
-Do not treat it as disposable infrastructure.
+Este guia assume que o VPS é stateful.
+Não o trate como infraestrutura descartável.
 
 ---
 
-## 2) Install Docker (on the VPS)
+## 2) Instalar Docker (no VPS)
 
 ```bash
 apt-get update
@@ -95,7 +95,7 @@ apt-get install -y git curl ca-certificates
 curl -fsSL https://get.docker.com | sh
 ```
 
-Verify:
+Verifique:
 
 ```bash
 docker --version
@@ -104,61 +104,61 @@ docker compose version
 
 ---
 
-## 3) Clone the OpenClaw repository
+## 3) Clonar o repositório OpenCraft
 
 ```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 ```
 
-This guide assumes you will build a custom image to guarantee binary persistence.
+Este guia assume que você construirá uma imagem personalizada para garantir a persistência de binários.
 
 ---
 
-## 4) Create persistent host directories
+## 4) Criar diretórios persistentes no host
 
-Docker containers are ephemeral.
-All long-lived state must live on the host.
+Containers Docker são efêmeros.
+Todo estado de longa duração deve ficar no host.
 
 ```bash
-mkdir -p /root/.openclaw/workspace
+mkdir -p /root/.opencraft/workspace
 
-# Set ownership to the container user (uid 1000):
-chown -R 1000:1000 /root/.openclaw
+# Defina a propriedade para o usuário do container (uid 1000):
+chown -R 1000:1000 /root/.opencraft
 ```
 
 ---
 
-## 5) Configure environment variables
+## 5) Configurar variáveis de ambiente
 
-Create `.env` in the repository root.
+Crie `.env` na raiz do repositório.
 
 ```bash
 OPENCLAW_IMAGE=openclaw:latest
-OPENCLAW_GATEWAY_TOKEN=change-me-now
+OPENCLAW_GATEWAY_TOKEN=mude-isso-agora
 OPENCLAW_GATEWAY_BIND=lan
 OPENCLAW_GATEWAY_PORT=18789
 
-OPENCLAW_CONFIG_DIR=/root/.openclaw
-OPENCLAW_WORKSPACE_DIR=/root/.openclaw/workspace
+OPENCLAW_CONFIG_DIR=/root/.opencraft
+OPENCLAW_WORKSPACE_DIR=/root/.opencraft/workspace
 
-GOG_KEYRING_PASSWORD=change-me-now
-XDG_CONFIG_HOME=/home/node/.openclaw
+GOG_KEYRING_PASSWORD=mude-isso-agora
+XDG_CONFIG_HOME=/home/node/.opencraft
 ```
 
-Generate strong secrets:
+Gere secrets fortes:
 
 ```bash
 openssl rand -hex 32
 ```
 
-**Do not commit this file.**
+**Não commite este arquivo.**
 
 ---
 
-## 6) Docker Compose configuration
+## 6) Configuração do Docker Compose
 
-Create or update `docker-compose.yml`.
+Crie ou atualize `docker-compose.yml`.
 
 ```yaml
 services:
@@ -179,11 +179,11 @@ services:
       - XDG_CONFIG_HOME=${XDG_CONFIG_HOME}
       - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.opencraft
+      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.opencraft/workspace
     ports:
-      # Recommended: keep the Gateway loopback-only on the VPS; access via SSH tunnel.
-      # To expose it publicly, remove the `127.0.0.1:` prefix and firewall accordingly.
+      # Recomendado: mantenha o Gateway apenas no loopback do VPS; acesse via túnel SSH.
+      # Para expô-lo publicamente, remova o prefixo `127.0.0.1:` e configure o firewall.
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
     command:
       [
@@ -198,54 +198,54 @@ services:
       ]
 ```
 
-`--allow-unconfigured` is only for bootstrap convenience, it is not a replacement for a proper gateway configuration. Still set auth (`gateway.auth.token` or password) and use safe bind settings for your deployment.
+`--allow-unconfigured` é apenas por conveniência de bootstrap, não é substituto para uma configuração adequada do gateway. Ainda defina auth (`gateway.auth.token` ou senha) e use configurações de bind seguras para sua implantação.
 
 ---
 
-## 7) Shared Docker VM runtime steps
+## 7) Etapas compartilhadas de runtime Docker em VM
 
-Use the shared runtime guide for the common Docker host flow:
+Use o guia de runtime compartilhado para o fluxo Docker em host comum:
 
-- [Bake required binaries into the image](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
-- [Build and launch](/install/docker-vm-runtime#build-and-launch)
-- [What persists where](/install/docker-vm-runtime#what-persists-where)
-- [Updates](/install/docker-vm-runtime#updates)
+- [Compilar binários necessários na imagem](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
+- [Construir e iniciar](/install/docker-vm-runtime#build-and-launch)
+- [O que persiste onde](/install/docker-vm-runtime#what-persists-where)
+- [Atualizações](/install/docker-vm-runtime#updates)
 
 ---
 
-## 8) Hetzner-specific access
+## 8) Acesso específico da Hetzner
 
-After the shared build and launch steps, tunnel from your laptop:
+Após as etapas compartilhadas de build e inicialização, crie um túnel do seu laptop:
 
 ```bash
-ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
+ssh -N -L 18789:127.0.0.1:18789 root@SEU_IP_DO_VPS
 ```
 
-Open:
+Abra:
 
 `http://127.0.0.1:18789/`
 
-Paste your gateway token.
+Cole seu token do gateway.
 
 ---
 
-The shared persistence map lives in [Docker VM Runtime](/install/docker-vm-runtime#what-persists-where).
+O mapa de persistência compartilhado fica em [Runtime Docker em VM](/install/docker-vm-runtime#what-persists-where).
 
 ## Infrastructure as Code (Terraform)
 
-For teams preferring infrastructure-as-code workflows, a community-maintained Terraform setup provides:
+Para equipes que preferem fluxos de trabalho de infraestrutura como código, uma configuração Terraform mantida pela comunidade oferece:
 
-- Modular Terraform configuration with remote state management
-- Automated provisioning via cloud-init
-- Deployment scripts (bootstrap, deploy, backup/restore)
-- Security hardening (firewall, UFW, SSH-only access)
-- SSH tunnel configuration for gateway access
+- Configuração Terraform modular com gerenciamento de estado remoto
+- Provisionamento automatizado via cloud-init
+- Scripts de implantação (bootstrap, deploy, backup/restore)
+- Hardening de segurança (firewall, UFW, acesso apenas por SSH)
+- Configuração de túnel SSH para acesso ao gateway
 
-**Repositories:**
+**Repositórios:**
 
-- Infrastructure: [openclaw-terraform-hetzner](https://github.com/andreesg/openclaw-terraform-hetzner)
-- Docker config: [openclaw-docker-config](https://github.com/andreesg/openclaw-docker-config)
+- Infraestrutura: [openclaw-terraform-hetzner](https://github.com/andreesg/openclaw-terraform-hetzner)
+- Config Docker: [openclaw-docker-config](https://github.com/andreesg/openclaw-docker-config)
 
-This approach complements the Docker setup above with reproducible deployments, version-controlled infrastructure, and automated disaster recovery.
+Esta abordagem complementa a configuração Docker acima com implantações reproduzíveis, infraestrutura versionada e recuperação automática de desastres.
 
-> **Note:** Community-maintained. For issues or contributions, see the repository links above.
+> **Nota:** Mantido pela comunidade. Para problemas ou contribuições, veja os links dos repositórios acima.

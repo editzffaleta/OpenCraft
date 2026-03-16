@@ -1,57 +1,57 @@
 ---
-summary: "Shared Docker VM runtime steps for long-lived OpenClaw Gateway hosts"
+summary: "Etapas compartilhadas de runtime Docker em VM para hosts de Gateway OpenCraft de longa duração"
 read_when:
-  - You are deploying OpenClaw on a cloud VM with Docker
-  - You need the shared binary bake, persistence, and update flow
-title: "Docker VM Runtime"
+  - Você está implantando o OpenCraft em uma VM cloud com Docker
+  - Você precisa do fluxo compartilhado de bake de binários, persistência e atualização
+title: "Runtime Docker em VM"
 ---
 
-# Docker VM Runtime
+# Runtime Docker em VM
 
-Shared runtime steps for VM-based Docker installs such as GCP, Hetzner, and similar VPS providers.
+Etapas de runtime compartilhadas para instalações Docker em VM, como GCP, Hetzner e provedores VPS similares.
 
-## Bake required binaries into the image
+## Compilar binários necessários na imagem
 
-Installing binaries inside a running container is a trap.
-Anything installed at runtime will be lost on restart.
+Instalar binários dentro de um container em execução é uma armadilha.
+Qualquer coisa instalada em runtime será perdida ao reiniciar.
 
-All external binaries required by skills must be installed at image build time.
+Todos os binários externos necessários por skills devem ser instalados no momento da construção da imagem.
 
-The examples below show three common binaries only:
+Os exemplos abaixo mostram apenas três binários comuns:
 
-- `gog` for Gmail access
-- `goplaces` for Google Places
-- `wacli` for WhatsApp
+- `gog` para acesso ao Gmail
+- `goplaces` para Google Places
+- `wacli` para WhatsApp
 
-These are examples, not a complete list.
-You may install as many binaries as needed using the same pattern.
+Estes são exemplos, não uma lista completa.
+Você pode instalar quantos binários forem necessários usando o mesmo padrão.
 
-If you add new skills later that depend on additional binaries, you must:
+Se você adicionar novos skills posteriormente que dependem de binários adicionais, você deve:
 
-1. Update the Dockerfile
-2. Rebuild the image
-3. Restart the containers
+1. Atualizar o Dockerfile
+2. Reconstruir a imagem
+3. Reiniciar os containers
 
-**Example Dockerfile**
+**Exemplo de Dockerfile**
 
 ```dockerfile
 FROM node:24-bookworm
 
 RUN apt-get update && apt-get install -y socat && rm -rf /var/lib/apt/lists/*
 
-# Example binary 1: Gmail CLI
+# Exemplo de binário 1: CLI do Gmail
 RUN curl -L https://github.com/steipete/gog/releases/latest/download/gog_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/gog
 
-# Example binary 2: Google Places CLI
+# Exemplo de binário 2: CLI do Google Places
 RUN curl -L https://github.com/steipete/goplaces/releases/latest/download/goplaces_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/goplaces
 
-# Example binary 3: WhatsApp CLI
+# Exemplo de binário 3: CLI do WhatsApp
 RUN curl -L https://github.com/steipete/wacli/releases/latest/download/wacli_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/wacli
 
-# Add more binaries below using the same pattern
+# Adicione mais binários abaixo usando o mesmo padrão
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -71,17 +71,17 @@ ENV NODE_ENV=production
 CMD ["node","dist/index.js"]
 ```
 
-## Build and launch
+## Construir e iniciar
 
 ```bash
 docker compose build
 docker compose up -d openclaw-gateway
 ```
 
-If build fails with `Killed` or `exit code 137` during `pnpm install --frozen-lockfile`, the VM is out of memory.
-Use a larger machine class before retrying.
+Se a build falhar com `Killed` ou `exit code 137` durante `pnpm install --frozen-lockfile`, a VM está sem memória.
+Use uma classe de máquina maior antes de tentar novamente.
 
-Verify binaries:
+Verificar binários:
 
 ```bash
 docker compose exec openclaw-gateway which gog
@@ -89,7 +89,7 @@ docker compose exec openclaw-gateway which goplaces
 docker compose exec openclaw-gateway which wacli
 ```
 
-Expected output:
+Saída esperada:
 
 ```
 /usr/local/bin/gog
@@ -97,39 +97,39 @@ Expected output:
 /usr/local/bin/wacli
 ```
 
-Verify Gateway:
+Verificar Gateway:
 
 ```bash
 docker compose logs -f openclaw-gateway
 ```
 
-Expected output:
+Saída esperada:
 
 ```
 [gateway] listening on ws://0.0.0.0:18789
 ```
 
-## What persists where
+## O que persiste onde
 
-OpenClaw runs in Docker, but Docker is not the source of truth.
-All long-lived state must survive restarts, rebuilds, and reboots.
+O OpenCraft roda em Docker, mas o Docker não é a fonte da verdade.
+Todo estado de longa duração deve sobreviver a reinicializações, reconstruções e reboots.
 
-| Component           | Location                          | Persistence mechanism  | Notes                            |
-| ------------------- | --------------------------------- | ---------------------- | -------------------------------- |
-| Gateway config      | `/home/node/.openclaw/`           | Host volume mount      | Includes `openclaw.json`, tokens |
-| Model auth profiles | `/home/node/.openclaw/`           | Host volume mount      | OAuth tokens, API keys           |
-| Skill configs       | `/home/node/.openclaw/skills/`    | Host volume mount      | Skill-level state                |
-| Agent workspace     | `/home/node/.openclaw/workspace/` | Host volume mount      | Code and agent artifacts         |
-| WhatsApp session    | `/home/node/.openclaw/`           | Host volume mount      | Preserves QR login               |
-| Gmail keyring       | `/home/node/.openclaw/`           | Host volume + password | Requires `GOG_KEYRING_PASSWORD`  |
-| External binaries   | `/usr/local/bin/`                 | Docker image           | Must be baked at build time      |
-| Node runtime        | Container filesystem              | Docker image           | Rebuilt every image build        |
-| OS packages         | Container filesystem              | Docker image           | Do not install at runtime        |
-| Docker container    | Ephemeral                         | Restartable            | Safe to destroy                  |
+| Componente          | Localização                            | Mecanismo de persistência | Notas                               |
+| ------------------- | -------------------------------------- | ------------------------- | ----------------------------------- |
+| Config do gateway   | `/home/node/.opencraft/`              | Mount de volume no host   | Inclui `opencraft.json`, tokens     |
+| Perfis de auth      | `/home/node/.opencraft/`              | Mount de volume no host   | Tokens OAuth, chaves de API         |
+| Configs de skills   | `/home/node/.opencraft/skills/`       | Mount de volume no host   | Estado no nível do skill            |
+| Workspace do agente | `/home/node/.opencraft/workspace/`    | Mount de volume no host   | Código e artefatos do agente        |
+| Sessão WhatsApp     | `/home/node/.opencraft/`              | Mount de volume no host   | Preserva login por QR               |
+| Keyring Gmail       | `/home/node/.opencraft/`              | Volume no host + senha    | Requer `GOG_KEYRING_PASSWORD`       |
+| Binários externos   | `/usr/local/bin/`                     | Imagem Docker             | Devem ser compilados no build time  |
+| Runtime Node        | Sistema de arquivos do container      | Imagem Docker             | Reconstruído a cada build de imagem |
+| Pacotes SO          | Sistema de arquivos do container      | Imagem Docker             | Não instale em runtime              |
+| Container Docker    | Efêmero                               | Reiniciável               | Seguro para destruir                |
 
-## Updates
+## Atualizações
 
-To update OpenClaw on the VM:
+Para atualizar o OpenCraft na VM:
 
 ```bash
 git pull

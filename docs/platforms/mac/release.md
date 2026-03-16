@@ -1,90 +1,90 @@
 ---
-summary: "OpenClaw macOS release checklist (Sparkle feed, packaging, signing)"
+summary: "Checklist de release macOS do OpenCraft (feed Sparkle, empacotamento, assinatura)"
 read_when:
-  - Cutting or validating a OpenClaw macOS release
-  - Updating the Sparkle appcast or feed assets
-title: "macOS Release"
+  - Criando ou validando um release macOS do OpenCraft
+  - Atualizando o appcast Sparkle ou assets do feed
+title: "Release macOS"
 ---
 
-# OpenClaw macOS release (Sparkle)
+# Release macOS do OpenCraft (Sparkle)
 
-This app now ships Sparkle auto-updates. Release builds must be Developer ID–signed, zipped, and published with a signed appcast entry.
+Este app agora inclui auto-atualizações Sparkle. Builds de release devem ser assinados com Developer ID, compactados em zip, e publicados com uma entrada de appcast assinada.
 
-## Prereqs
+## Pré-requisitos
 
-- Developer ID Application cert installed (example: `Developer ID Application: <Developer Name> (<TEAMID>)`).
-- Sparkle private key path set in the environment as `SPARKLE_PRIVATE_KEY_FILE` (path to your Sparkle ed25519 private key; public key baked into Info.plist). If it is missing, check `~/.profile`.
-- Notary credentials (keychain profile or API key) for `xcrun notarytool` if you want Gatekeeper-safe DMG/zip distribution.
-  - We use a Keychain profile named `openclaw-notary`, created from App Store Connect API key env vars in your shell profile:
+- Certificado Developer ID Application instalado (exemplo: `Developer ID Application: <Nome do Desenvolvedor> (<TEAMID>)`).
+- Caminho da chave privada Sparkle definido no ambiente como `SPARKLE_PRIVATE_KEY_FILE` (caminho para sua chave privada ed25519 do Sparkle; chave pública embutida no Info.plist). Se estiver ausente, verifique `~/.profile`.
+- Credenciais de notarização (perfil keychain ou chave API) para `xcrun notarytool` se quiser distribuição de DMG/zip segura para Gatekeeper.
+  - Usamos um perfil Keychain chamado `openclaw-notary`, criado a partir de variáveis de ambiente da chave API do App Store Connect no seu perfil de shell:
     - `APP_STORE_CONNECT_API_KEY_P8`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`
     - `echo "$APP_STORE_CONNECT_API_KEY_P8" | sed 's/\\n/\n/g' > /tmp/openclaw-notary.p8`
     - `xcrun notarytool store-credentials "openclaw-notary" --key /tmp/openclaw-notary.p8 --key-id "$APP_STORE_CONNECT_KEY_ID" --issuer "$APP_STORE_CONNECT_ISSUER_ID"`
-- `pnpm` deps installed (`pnpm install --config.node-linker=hoisted`).
-- Sparkle tools are fetched automatically via SwiftPM at `apps/macos/.build/artifacts/sparkle/Sparkle/bin/` (`sign_update`, `generate_appcast`, etc.).
+- Deps `pnpm` instaladas (`pnpm install --config.node-linker=hoisted`).
+- As ferramentas Sparkle são obtidas automaticamente via SwiftPM em `apps/macos/.build/artifacts/sparkle/Sparkle/bin/` (`sign_update`, `generate_appcast`, etc.).
 
-## Build & package
+## Build e empacotamento
 
-Notes:
+Notas:
 
-- `APP_BUILD` maps to `CFBundleVersion`/`sparkle:version`; keep it numeric + monotonic (no `-beta`), or Sparkle compares it as equal.
-- If `APP_BUILD` is omitted, `scripts/package-mac-app.sh` derives a Sparkle-safe default from `APP_VERSION` (`YYYYMMDDNN`: stable defaults to `90`, prereleases use a suffix-derived lane) and uses the higher of that value and git commit count.
-- You can still override `APP_BUILD` explicitly when release engineering needs a specific monotonic value.
-- For `BUILD_CONFIG=release`, `scripts/package-mac-app.sh` now defaults to universal (`arm64 x86_64`) automatically. You can still override with `BUILD_ARCHS=arm64` or `BUILD_ARCHS=x86_64`. For local/dev builds (`BUILD_CONFIG=debug`), it defaults to the current architecture (`$(uname -m)`).
-- Use `scripts/package-mac-dist.sh` for release artifacts (zip + DMG + notarization). Use `scripts/package-mac-app.sh` for local/dev packaging.
+- `APP_BUILD` mapeia para `CFBundleVersion`/`sparkle:version`; mantenha numérico + monotônico (sem `-beta`), ou o Sparkle o compara como igual.
+- Se `APP_BUILD` for omitido, `scripts/package-mac-app.sh` deriva um padrão seguro para Sparkle de `APP_VERSION` (`YYYYMMDDNN`: estável usa `90` como padrão, pré-lançamentos usam um sufixo derivado do lane) e usa o maior desse valor e a contagem de commits git.
+- Você ainda pode sobrescrever `APP_BUILD` explicitamente quando a engenharia de release precisa de um valor monotônico específico.
+- Para `BUILD_CONFIG=release`, `scripts/package-mac-app.sh` agora usa universal (`arm64 x86_64`) automaticamente. Você ainda pode sobrescrever com `BUILD_ARCHS=arm64` ou `BUILD_ARCHS=x86_64`. Para builds locais/dev (`BUILD_CONFIG=debug`), usa como padrão a arquitetura atual (`$(uname -m)`).
+- Use `scripts/package-mac-dist.sh` para artefatos de release (zip + DMG + notarização). Use `scripts/package-mac-app.sh` para empacotamento local/dev.
 
 ```bash
-# From repo root; set release IDs so Sparkle feed is enabled.
-# This command builds release artifacts without notarization.
-# APP_BUILD must be numeric + monotonic for Sparkle compare.
-# Default is auto-derived from APP_VERSION when omitted.
+# Da raiz do repositório; defina os IDs de release para que o feed Sparkle seja habilitado.
+# Este comando cria artefatos de release sem notarização.
+# APP_BUILD deve ser numérico + monotônico para comparação Sparkle.
+# O padrão é derivado automaticamente de APP_VERSION quando omitido.
 SKIP_NOTARIZE=1 \
 BUNDLE_ID=ai.openclaw.mac \
 APP_VERSION=2026.3.13 \
 BUILD_CONFIG=release \
-SIGN_IDENTITY="Developer ID Application: <Developer Name> (<TEAMID>)" \
+SIGN_IDENTITY="Developer ID Application: <Nome do Desenvolvedor> (<TEAMID>)" \
 scripts/package-mac-dist.sh
 
-# `package-mac-dist.sh` already creates the zip + DMG.
-# If you used `package-mac-app.sh` directly instead, create them manually:
-# If you want notarization/stapling in this step, use the NOTARIZE command below.
-ditto -c -k --sequesterRsrc --keepParent dist/OpenClaw.app dist/OpenClaw-2026.3.13.zip
+# `package-mac-dist.sh` já cria o zip + DMG.
+# Se você usou `package-mac-app.sh` diretamente, crie-os manualmente:
+# Se quiser notarização/stapling nesta etapa, use o comando NOTARIZE abaixo.
+ditto -c -k --sequesterRsrc --keepParent dist/OpenCraft.app dist/OpenCraft-2026.3.13.zip
 
-# Optional: build a styled DMG for humans (drag to /Applications)
-scripts/create-dmg.sh dist/OpenClaw.app dist/OpenClaw-2026.3.13.dmg
+# Opcional: criar um DMG estilizado para humanos (arrastar para /Applications)
+scripts/create-dmg.sh dist/OpenCraft.app dist/OpenCraft-2026.3.13.dmg
 
-# Recommended: build + notarize/staple zip + DMG
-# First, create a keychain profile once:
+# Recomendado: build + notarizar/staple zip + DMG
+# Primeiro, crie um perfil keychain uma vez:
 #   xcrun notarytool store-credentials "openclaw-notary" \
 #     --apple-id "<apple-id>" --team-id "<team-id>" --password "<app-specific-password>"
 NOTARIZE=1 NOTARYTOOL_PROFILE=openclaw-notary \
 BUNDLE_ID=ai.openclaw.mac \
 APP_VERSION=2026.3.13 \
 BUILD_CONFIG=release \
-SIGN_IDENTITY="Developer ID Application: <Developer Name> (<TEAMID>)" \
+SIGN_IDENTITY="Developer ID Application: <Nome do Desenvolvedor> (<TEAMID>)" \
 scripts/package-mac-dist.sh
 
-# Optional: ship dSYM alongside the release
-ditto -c -k --keepParent apps/macos/.build/release/OpenClaw.app.dSYM dist/OpenClaw-2026.3.13.dSYM.zip
+# Opcional: incluir dSYM junto ao release
+ditto -c -k --keepParent apps/macos/.build/release/OpenCraft.app.dSYM dist/OpenCraft-2026.3.13.dSYM.zip
 ```
 
-## Appcast entry
+## Entrada do appcast
 
-Use the release note generator so Sparkle renders formatted HTML notes:
+Use o gerador de notas de release para que o Sparkle renderize notas HTML formatadas:
 
 ```bash
-SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/OpenClaw-2026.3.13.zip https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml
+SPARKLE_PRIVATE_KEY_FILE=/caminho/para/chave-privada-ed25519 scripts/make_appcast.sh dist/OpenCraft-2026.3.13.zip https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml
 ```
 
-Generates HTML release notes from `CHANGELOG.md` (via [`scripts/changelog-to-html.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/changelog-to-html.sh)) and embeds them in the appcast entry.
-Commit the updated `appcast.xml` alongside the release assets (zip + dSYM) when publishing.
+Gera notas de release HTML a partir do `CHANGELOG.md` (via [`scripts/changelog-to-html.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/changelog-to-html.sh)) e as incorpora na entrada do appcast.
+Faça commit do `appcast.xml` atualizado junto com os assets de release (zip + dSYM) ao publicar.
 
-## Publish & verify
+## Publicar e verificar
 
-- Upload `OpenClaw-2026.3.13.zip` (and `OpenClaw-2026.3.13.dSYM.zip`) to the GitHub release for tag `v2026.3.13`.
-- Ensure the raw appcast URL matches the baked feed: `https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml`.
-- Sanity checks:
-  - `curl -I https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml` returns 200.
-  - `curl -I <enclosure url>` returns 200 after assets upload.
-  - On a previous public build, run “Check for Updates…” from the About tab and verify Sparkle installs the new build cleanly.
+- Faça upload de `OpenCraft-2026.3.13.zip` (e `OpenCraft-2026.3.13.dSYM.zip`) para o release GitHub da tag `v2026.3.13`.
+- Certifique-se de que a URL bruta do appcast corresponde ao feed embutido: `https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml`.
+- Verificações de sanidade:
+  - `curl -I https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml` retorna 200.
+  - `curl -I <url do enclosure>` retorna 200 após o upload dos assets.
+  - Em um build público anterior, execute "Verificar Atualizações…" na aba Sobre e verifique se o Sparkle instala o novo build corretamente.
 
-Definition of done: signed app + appcast are published, update flow works from an older installed version, and release assets are attached to the GitHub release.
+Definição de concluído: app assinado + appcast publicados, fluxo de atualização funciona a partir de uma versão instalada mais antiga, e assets de release estão anexados ao release GitHub.

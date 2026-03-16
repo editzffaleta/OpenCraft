@@ -1,32 +1,32 @@
 ---
-summary: "Timezone handling for agents, envelopes, and prompts"
+summary: "Tratamento de fuso horário para agentes, envelopes e prompts"
 read_when:
-  - You need to understand how timestamps are normalized for the model
-  - Configuring the user timezone for system prompts
-title: "Timezones"
+  - Você precisa entender como timestamps são normalizados para o modelo
+  - Configurando o fuso horário do usuário para system prompts
+title: "Fusos Horários"
 ---
 
-# Timezones
+# Fusos Horários
 
-OpenClaw standardizes timestamps so the model sees a **single reference time**.
+O OpenCraft padroniza timestamps para que o modelo veja um **único tempo de referência**.
 
-## Message envelopes (local by default)
+## Envelopes de mensagem (local por padrão)
 
-Inbound messages are wrapped in an envelope like:
+Mensagens de entrada são envolvidas em um envelope como:
 
 ```
-[Provider ... 2026-01-05 16:26 PST] message text
+[Provider ... 2026-01-05 16:26 PST] texto da mensagem
 ```
 
-The timestamp in the envelope is **host-local by default**, with minutes precision.
+O timestamp no envelope é **local do host por padrão**, com precisão de minutos.
 
-You can override this with:
+Você pode sobrescrever isso com:
 
 ```json5
 {
   agents: {
     defaults: {
-      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA timezone
+      envelopeTimezone: "local", // "utc" | "local" | "user" | fuso horário IANA
       envelopeTimestamp: "on", // "on" | "off"
       envelopeElapsed: "on", // "on" | "off"
     },
@@ -34,46 +34,46 @@ You can override this with:
 }
 ```
 
-- `envelopeTimezone: "utc"` uses UTC.
-- `envelopeTimezone: "user"` uses `agents.defaults.userTimezone` (falls back to host timezone).
-- Use an explicit IANA timezone (e.g., `"Europe/Vienna"`) for a fixed offset.
-- `envelopeTimestamp: "off"` removes absolute timestamps from envelope headers.
-- `envelopeElapsed: "off"` removes elapsed time suffixes (the `+2m` style).
+- `envelopeTimezone: "utc"` usa UTC.
+- `envelopeTimezone: "user"` usa `agents.defaults.userTimezone` (faz fallback para o fuso horário do host).
+- Use um fuso horário IANA explícito (ex.: `"Europe/Vienna"`) para um offset fixo.
+- `envelopeTimestamp: "off"` remove timestamps absolutos dos headers de envelope.
+- `envelopeElapsed: "off"` remove sufixos de tempo decorrido (o estilo `+2m`).
 
-### Examples
+### Exemplos
 
-**Local (default):**
-
-```
-[Signal Alice +1555 2026-01-18 00:19 PST] hello
-```
-
-**Fixed timezone:**
+**Local (padrão):**
 
 ```
-[Signal Alice +1555 2026-01-18 06:19 GMT+1] hello
+[Signal Alice +1555 2026-01-18 00:19 PST] olá
 ```
 
-**Elapsed time:**
+**Fuso horário fixo:**
 
 ```
-[Signal Alice +1555 +2m 2026-01-18T05:19Z] follow-up
+[Signal Alice +1555 2026-01-18 06:19 GMT+1] olá
 ```
 
-## Tool payloads (raw provider data + normalized fields)
+**Tempo decorrido:**
 
-Tool calls (`channels.discord.readMessages`, `channels.slack.readMessages`, etc.) return **raw provider timestamps**.
-We also attach normalized fields for consistency:
+```
+[Signal Alice +1555 +2m 2026-01-18T05:19Z] acompanhamento
+```
 
-- `timestampMs` (UTC epoch milliseconds)
-- `timestampUtc` (ISO 8601 UTC string)
+## Payloads de ferramentas (dados brutos do provedor + campos normalizados)
 
-Raw provider fields are preserved.
+Chamadas de ferramentas (`channels.discord.readMessages`, `channels.slack.readMessages`, etc.) retornam **timestamps brutos do provedor**.
+Também anexamos campos normalizados para consistência:
 
-## User timezone for the system prompt
+- `timestampMs` (milissegundos UTC epoch)
+- `timestampUtc` (string UTC ISO 8601)
 
-Set `agents.defaults.userTimezone` to tell the model the user's local time zone. If it is
-unset, OpenClaw resolves the **host timezone at runtime** (no config write).
+Campos brutos do provedor são preservados.
+
+## Fuso horário do usuário para o system prompt
+
+Defina `agents.defaults.userTimezone` para dizer ao modelo o fuso horário local do usuário. Se estiver
+não definido, o OpenCraft resolve o **fuso horário do host em runtime** (sem escrita de config).
 
 ```json5
 {
@@ -81,11 +81,11 @@ unset, OpenClaw resolves the **host timezone at runtime** (no config write).
 }
 ```
 
-The system prompt includes:
+O system prompt inclui:
 
-- `Current Date & Time` section with local time and timezone
-- `Time format: 12-hour` or `24-hour`
+- Seção `Current Date & Time` com hora local e fuso horário
+- `Time format: 12-hour` ou `24-hour`
 
-You can control the prompt format with `agents.defaults.timeFormat` (`auto` | `12` | `24`).
+Você pode controlar o formato do prompt com `agents.defaults.timeFormat` (`auto` | `12` | `24`).
 
-See [Date & Time](/date-time) for the full behavior and examples.
+Veja [Data e Hora](/date-time) para o comportamento completo e exemplos.

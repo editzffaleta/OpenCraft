@@ -1,53 +1,53 @@
 ---
-summary: "Use Qwen OAuth (free tier) in OpenClaw"
+summary: "Usar Qwen OAuth (tier gratuito) no OpenCraft"
 read_when:
-  - You want to use Qwen with OpenClaw
-  - You want free-tier OAuth access to Qwen Coder
+  - Você quer usar Qwen com o OpenCraft
+  - Você quer acesso OAuth gratuito ao Qwen Coder
 title: "Qwen"
 ---
 
 # Qwen
 
-Qwen provides a free-tier OAuth flow for Qwen Coder and Qwen Vision models
-(2,000 requests/day, subject to Qwen rate limits).
+O Qwen fornece um fluxo OAuth de tier gratuito para modelos Qwen Coder e Qwen Vision
+(2.000 requisições/dia, sujeito aos limites de taxa do Qwen).
 
-## Enable the plugin
-
-```bash
-openclaw plugins enable qwen-portal-auth
-```
-
-Restart the Gateway after enabling.
-
-## Authenticate
+## Habilitar o plugin
 
 ```bash
-openclaw models auth login --provider qwen-portal --set-default
+opencraft plugins enable qwen-portal-auth
 ```
 
-This runs the Qwen device-code OAuth flow and writes a provider entry to your
-`models.json` (plus a `qwen` alias for quick switching).
+Reinicie o Gateway após habilitar.
 
-## Model IDs
+## Autenticar
+
+```bash
+opencraft models auth login --provider qwen-portal --set-default
+```
+
+Isso executa o fluxo OAuth de device-code do Qwen e escreve uma entrada de provedor no seu
+`models.json` (mais um alias `qwen` para troca rápida).
+
+## IDs de modelo
 
 - `qwen-portal/coder-model`
 - `qwen-portal/vision-model`
 
-Switch models with:
+Troque modelos com:
 
 ```bash
-openclaw models set qwen-portal/coder-model
+opencraft models set qwen-portal/coder-model
 ```
 
-## Reuse Qwen Code CLI login
+## Reutilizar login do Qwen Code CLI
 
-If you already logged in with the Qwen Code CLI, OpenClaw will sync credentials
-from `~/.qwen/oauth_creds.json` when it loads the auth store. You still need a
-`models.providers.qwen-portal` entry (use the login command above to create one).
+Se você já fez login com o Qwen Code CLI, o OpenCraft sincronizará credenciais
+de `~/.qwen/oauth_creds.json` ao carregar o auth store. Você ainda precisa de uma
+entrada `models.providers.qwen-portal` (use o comando de login acima para criar uma).
 
-## Notes
+## Notas
 
-- Tokens auto-refresh; re-run the login command if refresh fails or access is revoked.
-- Default base URL: `https://portal.qwen.ai/v1` (override with
-  `models.providers.qwen-portal.baseUrl` if Qwen provides a different endpoint).
-- See [Model providers](/concepts/model-providers) for provider-wide rules.
+- Tokens são auto-renovados; re-execute o comando de login se a renovação falhar ou o acesso for revogado.
+- URL base padrão: `https://portal.qwen.ai/v1` (sobrescreva com
+  `models.providers.qwen-portal.baseUrl` se o Qwen fornecer um endpoint diferente).
+- Veja [Provedores de modelo](/concepts/model-providers) para regras gerais de provedor.

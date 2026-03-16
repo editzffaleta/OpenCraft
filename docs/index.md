@@ -1,192 +1,192 @@
 ---
-summary: "OpenClaw is a multi-channel gateway for AI agents that runs on any OS."
+summary: "O OpenCraft é um gateway multi-canal para agentes de IA que roda em qualquer OS."
 read_when:
-  - Introducing OpenClaw to newcomers
-title: "OpenClaw"
+  - Apresentando o OpenCraft a novatos
+title: "OpenCraft"
 ---
 
-# OpenClaw 🦞
+# OpenCraft 🦞
 
 <p align="center">
     <img
         src="/assets/openclaw-logo-text-dark.png"
-        alt="OpenClaw"
+        alt="OpenCraft"
         width="500"
         class="dark:hidden"
     />
     <img
         src="/assets/openclaw-logo-text.png"
-        alt="OpenClaw"
+        alt="OpenCraft"
         width="500"
         class="hidden dark:block"
     />
 </p>
 
-> _"EXFOLIATE! EXFOLIATE!"_ — A space lobster, probably
+> _"EXFOLIATE! EXFOLIATE!"_ — Uma lagosta espacial, provavelmente
 
 <p align="center">
-  <strong>Any OS gateway for AI agents across WhatsApp, Telegram, Discord, iMessage, and more.</strong><br />
-  Send a message, get an agent response from your pocket. Plugins add Mattermost and more.
+  <strong>Gateway para qualquer OS para agentes de IA via WhatsApp, Telegram, Discord, iMessage e mais.</strong><br />
+  Envie uma mensagem, receba uma resposta do agente do seu bolso. Plugins adicionam Mattermost e mais.
 </p>
 
 <Columns>
-  <Card title="Get Started" href="/start/getting-started" icon="rocket">
-    Install OpenClaw and bring up the Gateway in minutes.
+  <Card title="Começar" href="/start/getting-started" icon="rocket">
+    Instale o OpenCraft e suba o Gateway em minutos.
   </Card>
-  <Card title="Run the Wizard" href="/start/wizard" icon="sparkles">
-    Guided setup with `openclaw onboard` and pairing flows.
+  <Card title="Rodar o Wizard" href="/start/wizard" icon="sparkles">
+    Configuração guiada com `opencraft onboard` e fluxos de pareamento.
   </Card>
-  <Card title="Open the Control UI" href="/web/control-ui" icon="layout-dashboard">
-    Launch the browser dashboard for chat, config, and sessions.
+  <Card title="Abrir a Control UI" href="/web/control-ui" icon="layout-dashboard">
+    Abra o dashboard do browser para chat, config e sessões.
   </Card>
 </Columns>
 
-## What is OpenClaw?
+## O que é o OpenCraft?
 
-OpenClaw is a **self-hosted gateway** that connects your favorite chat apps — WhatsApp, Telegram, Discord, iMessage, and more — to AI coding agents like Pi. You run a single Gateway process on your own machine (or a server), and it becomes the bridge between your messaging apps and an always-available AI assistant.
+O OpenCraft é um **gateway auto-hospedado** que conecta seus apps de chat favoritos — WhatsApp, Telegram, Discord, iMessage e mais — a agentes de IA de codificação como o Pi. Você roda um único processo Gateway na sua própria máquina (ou servidor), e ele se torna a ponte entre seus apps de mensagens e um assistente de IA sempre disponível.
 
-**Who is it for?** Developers and power users who want a personal AI assistant they can message from anywhere — without giving up control of their data or relying on a hosted service.
+**Para quem é?** Desenvolvedores e usuários avançados que querem um assistente de IA pessoal que podem acessar de qualquer lugar — sem abrir mão do controle dos seus dados ou depender de um serviço hospedado.
 
-**What makes it different?**
+**O que o diferencia?**
 
-- **Self-hosted**: runs on your hardware, your rules
-- **Multi-channel**: one Gateway serves WhatsApp, Telegram, Discord, and more simultaneously
-- **Agent-native**: built for coding agents with tool use, sessions, memory, and multi-agent routing
-- **Open source**: MIT licensed, community-driven
+- **Auto-hospedado**: roda no seu hardware, suas regras
+- **Multi-canal**: um único Gateway serve WhatsApp, Telegram, Discord e mais simultaneamente
+- **Nativo para agentes**: construído para agentes de codificação com uso de tools, sessões, memória e roteamento multi-agente
+- **Código aberto**: licença MIT, orientado pela comunidade
 
-**What do you need?** Node 24 (recommended), or Node 22 LTS (`22.16+`) for compatibility, an API key from your chosen provider, and 5 minutes. For best quality and security, use the strongest latest-generation model available.
+**O que você precisa?** Node 24 (recomendado), ou Node 22 LTS (`22.16+`) para compatibilidade, uma chave de API do provedor de sua escolha e 5 minutos. Para melhor qualidade e segurança, use o modelo mais forte e recente disponível.
 
-## How it works
+## Como funciona
 
 ```mermaid
 flowchart LR
-  A["Chat apps + plugins"] --> B["Gateway"]
-  B --> C["Pi agent"]
+  A["Apps de chat + plugins"] --> B["Gateway"]
+  B --> C["Agente Pi"]
   B --> D["CLI"]
-  B --> E["Web Control UI"]
-  B --> F["macOS app"]
-  B --> G["iOS and Android nodes"]
+  B --> E["Control UI Web"]
+  B --> F["App macOS"]
+  B --> G["Nodes iOS e Android"]
 ```
 
-The Gateway is the single source of truth for sessions, routing, and channel connections.
+O Gateway é a fonte única da verdade para sessões, roteamento e conexões de canal.
 
-## Key capabilities
+## Capacidades principais
 
 <Columns>
-  <Card title="Multi-channel gateway" icon="network">
-    WhatsApp, Telegram, Discord, and iMessage with a single Gateway process.
+  <Card title="Gateway multi-canal" icon="network">
+    WhatsApp, Telegram, Discord e iMessage com um único processo Gateway.
   </Card>
-  <Card title="Plugin channels" icon="plug">
-    Add Mattermost and more with extension packages.
+  <Card title="Canais por plugin" icon="plug">
+    Adicione Mattermost e mais com pacotes de extensão.
   </Card>
-  <Card title="Multi-agent routing" icon="route">
-    Isolated sessions per agent, workspace, or sender.
+  <Card title="Roteamento multi-agente" icon="route">
+    Sessões isoladas por agente, workspace ou remetente.
   </Card>
-  <Card title="Media support" icon="image">
-    Send and receive images, audio, and documents.
+  <Card title="Suporte a mídia" icon="image">
+    Envie e receba imagens, áudio e documentos.
   </Card>
-  <Card title="Web Control UI" icon="monitor">
-    Browser dashboard for chat, config, sessions, and nodes.
+  <Card title="Control UI Web" icon="monitor">
+    Dashboard no browser para chat, config, sessões e nodes.
   </Card>
-  <Card title="Mobile nodes" icon="smartphone">
-    Pair iOS and Android nodes for Canvas, camera, and voice-enabled workflows.
+  <Card title="Nodes móveis" icon="smartphone">
+    Pareie nodes iOS e Android para workflows com Canvas, câmera e voz.
   </Card>
 </Columns>
 
-## Quick start
+## Início rápido
 
 <Steps>
-  <Step title="Install OpenClaw">
+  <Step title="Instalar o OpenCraft">
     ```bash
-    npm install -g openclaw@latest
+    npm install -g opencraft@latest
     ```
   </Step>
-  <Step title="Onboard and install the service">
+  <Step title="Onboarding e instalar o serviço">
     ```bash
-    openclaw onboard --install-daemon
+    opencraft onboard --install-daemon
     ```
   </Step>
-  <Step title="Pair WhatsApp and start the Gateway">
+  <Step title="Parear o WhatsApp e iniciar o Gateway">
     ```bash
-    openclaw channels login
-    openclaw gateway --port 18789
+    opencraft channels login
+    opencraft gateway --port 18789
     ```
   </Step>
 </Steps>
 
-Need the full install and dev setup? See [Quick start](/start/quickstart).
+Precisa do setup completo de instalação e dev? Veja [Início rápido](/start/quickstart).
 
 ## Dashboard
 
-Open the browser Control UI after the Gateway starts.
+Abra a Control UI no browser após o Gateway iniciar.
 
-- Local default: [http://127.0.0.1:18789/](http://127.0.0.1:18789/)
-- Remote access: [Web surfaces](/web) and [Tailscale](/gateway/tailscale)
+- Padrão local: [http://127.0.0.1:18789/](http://127.0.0.1:18789/)
+- Acesso remoto: [Superfícies Web](/web) e [Tailscale](/gateway/tailscale)
 
 <p align="center">
-  <img src="/whatsapp-openclaw.jpg" alt="OpenClaw" width="420" />
+  <img src="/whatsapp-openclaw.jpg" alt="OpenCraft" width="420" />
 </p>
 
-## Configuration (optional)
+## Configuração (opcional)
 
-Config lives at `~/.openclaw/openclaw.json`.
+A config fica em `~/.opencraft/opencraft.json`.
 
-- If you **do nothing**, OpenClaw uses the bundled Pi binary in RPC mode with per-sender sessions.
-- If you want to lock it down, start with `channels.whatsapp.allowFrom` and (for groups) mention rules.
+- Se você **não fizer nada**, o OpenCraft usa o binário Pi embutido em modo RPC com sessões por remetente.
+- Se quiser restringir o acesso, comece com `channels.whatsapp.allowFrom` e (para grupos) regras de menção.
 
-Example:
+Exemplo:
 
 ```json5
 {
   channels: {
     whatsapp: {
-      allowFrom: ["+15555550123"],
+      allowFrom: ["+5511999999999"],
       groups: { "*": { requireMention: true } },
     },
   },
-  messages: { groupChat: { mentionPatterns: ["@openclaw"] } },
+  messages: { groupChat: { mentionPatterns: ["@opencraft"] } },
 }
 ```
 
-## Start here
+## Comece aqui
 
 <Columns>
-  <Card title="Docs hubs" href="/start/hubs" icon="book-open">
-    All docs and guides, organized by use case.
+  <Card title="Hubs de docs" href="/start/hubs" icon="book-open">
+    Todos os docs e guias, organizados por caso de uso.
   </Card>
-  <Card title="Configuration" href="/gateway/configuration" icon="settings">
-    Core Gateway settings, tokens, and provider config.
+  <Card title="Configuração" href="/gateway/configuration" icon="settings">
+    Configurações principais do Gateway, tokens e config de provedor.
   </Card>
-  <Card title="Remote access" href="/gateway/remote" icon="globe">
-    SSH and tailnet access patterns.
+  <Card title="Acesso remoto" href="/gateway/remote" icon="globe">
+    Padrões de acesso via SSH e tailnet.
   </Card>
-  <Card title="Channels" href="/channels/telegram" icon="message-square">
-    Channel-specific setup for WhatsApp, Telegram, Discord, and more.
+  <Card title="Canais" href="/channels/telegram" icon="message-square">
+    Setup específico de canal para WhatsApp, Telegram, Discord e mais.
   </Card>
   <Card title="Nodes" href="/nodes" icon="smartphone">
-    iOS and Android nodes with pairing, Canvas, camera, and device actions.
+    Nodes iOS e Android com pareamento, Canvas, câmera e ações de dispositivo.
   </Card>
-  <Card title="Help" href="/help" icon="life-buoy">
-    Common fixes and troubleshooting entry point.
+  <Card title="Ajuda" href="/help" icon="life-buoy">
+    Correções comuns e ponto de entrada para resolução de problemas.
   </Card>
 </Columns>
 
-## Learn more
+## Saiba mais
 
 <Columns>
-  <Card title="Full feature list" href="/concepts/features" icon="list">
-    Complete channel, routing, and media capabilities.
+  <Card title="Lista completa de recursos" href="/concepts/features" icon="list">
+    Capacidades completas de canal, roteamento e mídia.
   </Card>
-  <Card title="Multi-agent routing" href="/concepts/multi-agent" icon="route">
-    Workspace isolation and per-agent sessions.
+  <Card title="Roteamento multi-agente" href="/concepts/multi-agent" icon="route">
+    Isolamento de workspace e sessões por agente.
   </Card>
-  <Card title="Security" href="/gateway/security" icon="shield">
-    Tokens, allowlists, and safety controls.
+  <Card title="Segurança" href="/gateway/security" icon="shield">
+    Tokens, allowlists e controles de segurança.
   </Card>
-  <Card title="Troubleshooting" href="/gateway/troubleshooting" icon="wrench">
-    Gateway diagnostics and common errors.
+  <Card title="Resolução de problemas" href="/gateway/troubleshooting" icon="wrench">
+    Diagnósticos do Gateway e erros comuns.
   </Card>
-  <Card title="About and credits" href="/reference/credits" icon="info">
-    Project origins, contributors, and license.
+  <Card title="Sobre e créditos" href="/reference/credits" icon="info">
+    Origens do projeto, contribuidores e licença.
   </Card>
 </Columns>

@@ -1,71 +1,71 @@
 ---
-summary: "CLI reference for `openclaw security` (audit and fix common security footguns)"
+summary: "Referência do CLI para `opencraft security` (auditar e corrigir footguns de segurança comuns)"
 read_when:
-  - You want to run a quick security audit on config/state
-  - You want to apply safe “fix” suggestions (chmod, tighten defaults)
+  - Você quer rodar uma auditoria de segurança rápida na config/estado
+  - Você quer aplicar sugestões de "fix" seguras (chmod, apertar padrões)
 title: "security"
 ---
 
-# `openclaw security`
+# `opencraft security`
 
-Security tools (audit + optional fixes).
+Ferramentas de segurança (auditoria + correções opcionais).
 
-Related:
+Relacionado:
 
-- Security guide: [Security](/gateway/security)
+- Guia de segurança: [Security](/gateway/security)
 
 ## Audit
 
 ```bash
-openclaw security audit
-openclaw security audit --deep
-openclaw security audit --fix
-openclaw security audit --json
+opencraft security audit
+opencraft security audit --deep
+opencraft security audit --fix
+opencraft security audit --json
 ```
 
-The audit warns when multiple DM senders share the main session and recommends **secure DM mode**: `session.dmScope="per-channel-peer"` (or `per-account-channel-peer` for multi-account channels) for shared inboxes.
-This is for cooperative/shared inbox hardening. A single Gateway shared by mutually untrusted/adversarial operators is not a recommended setup; split trust boundaries with separate gateways (or separate OS users/hosts).
-It also emits `security.trust_model.multi_user_heuristic` when config suggests likely shared-user ingress (for example open DM/group policy, configured group targets, or wildcard sender rules), and reminds you that OpenClaw is a personal-assistant trust model by default.
-For intentional shared-user setups, the audit guidance is to sandbox all sessions, keep filesystem access workspace-scoped, and keep personal/private identities or credentials off that runtime.
-It also warns when small models (`<=300B`) are used without sandboxing and with web/browser tools enabled.
-For webhook ingress, it warns when `hooks.defaultSessionKey` is unset, when request `sessionKey` overrides are enabled, and when overrides are enabled without `hooks.allowedSessionKeyPrefixes`.
-It also warns when sandbox Docker settings are configured while sandbox mode is off, when `gateway.nodes.denyCommands` uses ineffective pattern-like/unknown entries (exact node command-name matching only, not shell-text filtering), when `gateway.nodes.allowCommands` explicitly enables dangerous node commands, when global `tools.profile="minimal"` is overridden by agent tool profiles, when open groups expose runtime/filesystem tools without sandbox/workspace guards, and when installed extension plugin tools may be reachable under permissive tool policy.
-It also flags `gateway.allowRealIpFallback=true` (header-spoofing risk if proxies are misconfigured) and `discovery.mdns.mode="full"` (metadata leakage via mDNS TXT records).
-It also warns when sandbox browser uses Docker `bridge` network without `sandbox.browser.cdpSourceRange`.
-It also flags dangerous sandbox Docker network modes (including `host` and `container:*` namespace joins).
-It also warns when existing sandbox browser Docker containers have missing/stale hash labels (for example pre-migration containers missing `openclaw.browserConfigEpoch`) and recommends `openclaw sandbox recreate --browser --all`.
-It also warns when npm-based plugin/hook install records are unpinned, missing integrity metadata, or drift from currently installed package versions.
-It warns when channel allowlists rely on mutable names/emails/tags instead of stable IDs (Discord, Slack, Google Chat, MS Teams, Mattermost, IRC scopes where applicable).
-It warns when `gateway.auth.mode="none"` leaves Gateway HTTP APIs reachable without a shared secret (`/tools/invoke` plus any enabled `/v1/*` endpoint).
-Settings prefixed with `dangerous`/`dangerously` are explicit break-glass operator overrides; enabling one is not, by itself, a security vulnerability report.
-For the complete dangerous-parameter inventory, see the "Insecure or dangerous flags summary" section in [Security](/gateway/security).
+A auditoria avisa quando múltiplos remetentes de DM compartilham a sessão principal e recomenda o **modo DM seguro**: `session.dmScope="per-channel-peer"` (ou `per-account-channel-peer` para canais multi-conta) para inboxes compartilhados.
+Isso é para hardening de inbox cooperativo/compartilhado. Um único Gateway compartilhado por operadores mutuamente não confiáveis/adversariais não é uma configuração recomendada; separe limites de confiança com gateways separados (ou usuários/hosts de OS separados).
+Também emite `security.trust_model.multi_user_heuristic` quando a config sugere provável ingresso multi-usuário (por exemplo política aberta de DM/grupo, alvos de grupo configurados, ou regras de remetente com wildcard), e lembra que OpenCraft é um modelo de confiança de assistente pessoal por padrão.
+Para configurações multi-usuário intencionais, a orientação da auditoria é sandboxear todas as sessões, manter acesso ao filesystem com escopo de workspace, e manter identidades pessoais/privadas ou credenciais fora daquele runtime.
+Também avisa quando modelos pequenos (`<=300B`) são usados sem sandboxing e com tools web/browser habilitadas.
+Para ingresso webhook, avisa quando `hooks.defaultSessionKey` não está definido, quando overrides de `sessionKey` de requisição estão habilitados, e quando overrides estão habilitados sem `hooks.allowedSessionKeyPrefixes`.
+Também avisa quando configurações Docker de sandbox estão definidas enquanto o modo sandbox está desligado, quando `gateway.nodes.denyCommands` usa entradas pattern-like/desconhecidas inefetivas (apenas correspondência exata de nome de comando de node, não filtragem de texto shell), quando `gateway.nodes.allowCommands` habilita explicitamente comandos de node perigosos, quando `tools.profile="minimal"` global é sobrescrito por perfis de tools de agente, quando grupos abertos expõem tools de runtime/filesystem sem guardas de sandbox/workspace, e quando tools de plugins de extensão instalados podem ser acessíveis sob política de tools permissiva.
+Também sinaliza `gateway.allowRealIpFallback=true` (risco de spoofing de cabeçalho se proxies estiverem mal configurados) e `discovery.mdns.mode="full"` (vazamento de metadados via registros TXT de mDNS).
+Também avisa quando o browser de sandbox usa rede Docker `bridge` sem `sandbox.browser.cdpSourceRange`.
+Também sinaliza modos de rede Docker de sandbox perigosos (incluindo `host` e joins de namespace `container:*`).
+Também avisa quando containers Docker de browser de sandbox existentes têm labels de hash ausentes/obsoletos (por exemplo containers pré-migração sem `openclaw.browserConfigEpoch`) e recomenda `opencraft sandbox recreate --browser --all`.
+Também avisa quando registros de instalação de plugin/hook baseados em npm não estão fixados, têm metadados de integridade ausentes, ou diferem das versões de pacote atualmente instaladas.
+Avisa quando allowlists de canal dependem de nomes/emails/tags mutáveis em vez de IDs estáveis (Discord, Slack, Google Chat, MS Teams, Mattermost, escopos IRC onde aplicável).
+Avisa quando `gateway.auth.mode="none"` deixa as APIs HTTP do Gateway acessíveis sem um segredo compartilhado (`/tools/invoke` mais qualquer endpoint `/v1/*` habilitado).
+Configurações prefixadas com `dangerous`/`dangerously` são overrides explícitos de break-glass do operador; habilitar um não é, por si só, um relatório de vulnerabilidade de segurança.
+Para o inventário completo de parâmetros perigosos, veja a seção "Insecure or dangerous flags summary" em [Security](/gateway/security).
 
-## JSON output
+## Saída JSON
 
-Use `--json` for CI/policy checks:
+Use `--json` para verificações de CI/política:
 
 ```bash
-openclaw security audit --json | jq '.summary'
-openclaw security audit --deep --json | jq '.findings[] | select(.severity=="critical") | .checkId'
+opencraft security audit --json | jq '.summary'
+opencraft security audit --deep --json | jq '.findings[] | select(.severity=="critical") | .checkId'
 ```
 
-If `--fix` and `--json` are combined, output includes both fix actions and final report:
+Se `--fix` e `--json` forem combinados, a saída inclui tanto ações de fix quanto o relatório final:
 
 ```bash
-openclaw security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summary}'
+opencraft security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summary}'
 ```
 
-## What `--fix` changes
+## O que `--fix` muda
 
-`--fix` applies safe, deterministic remediations:
+`--fix` aplica remediações seguras e determinísticas:
 
-- flips common `groupPolicy="open"` to `groupPolicy="allowlist"` (including account variants in supported channels)
-- sets `logging.redactSensitive` from `"off"` to `"tools"`
-- tightens permissions for state/config and common sensitive files (`credentials/*.json`, `auth-profiles.json`, `sessions.json`, session `*.jsonl`)
+- muda `groupPolicy="open"` comum para `groupPolicy="allowlist"` (incluindo variantes de conta em canais suportados)
+- define `logging.redactSensitive` de `"off"` para `"tools"`
+- aperta permissões para estado/config e arquivos sensíveis comuns (`credentials/*.json`, `auth-profiles.json`, `sessions.json`, sessão `*.jsonl`)
 
-`--fix` does **not**:
+`--fix` **não**:
 
-- rotate tokens/passwords/API keys
-- disable tools (`gateway`, `cron`, `exec`, etc.)
-- change gateway bind/auth/network exposure choices
-- remove or rewrite plugins/skills
+- rotaciona tokens/senhas/chaves de API
+- desabilita tools (`gateway`, `cron`, `exec`, etc.)
+- muda escolhas de bind/auth/exposição de rede do gateway
+- remove ou reescreve plugins/skills

@@ -1,24 +1,24 @@
 ---
-summary: "Scripted onboarding and agent setup for the OpenClaw CLI"
+summary: "Onboarding e configuração de agente com script para o CLI do OpenCraft"
 read_when:
-  - You are automating onboarding in scripts or CI
-  - You need non-interactive examples for specific providers
-title: "CLI Automation"
-sidebarTitle: "CLI automation"
+  - Você está automatizando o onboarding em scripts ou CI
+  - Você precisa de exemplos não interativos para provedores específicos
+title: "Automação CLI"
+sidebarTitle: "Automação CLI"
 ---
 
-# CLI Automation
+# Automação CLI
 
-Use `--non-interactive` to automate `openclaw onboard`.
+Use `--non-interactive` para automatizar o `opencraft onboard`.
 
 <Note>
-`--json` does not imply non-interactive mode. Use `--non-interactive` (and `--workspace`) for scripts.
+`--json` não implica modo não interativo. Use `--non-interactive` (e `--workspace`) para scripts.
 </Note>
 
-## Baseline non-interactive example
+## Exemplo não interativo básico
 
 ```bash
-openclaw onboard --non-interactive \
+opencraft onboard --non-interactive \
   --mode local \
   --auth-choice apiKey \
   --anthropic-api-key "$ANTHROPIC_API_KEY" \
@@ -30,30 +30,30 @@ openclaw onboard --non-interactive \
   --skip-skills
 ```
 
-Add `--json` for a machine-readable summary.
+Adicione `--json` para um resumo legível por máquina.
 
-Use `--secret-input-mode ref` to store env-backed refs in auth profiles instead of plaintext values.
-Interactive selection between env refs and configured provider refs (`file` or `exec`) is available in the onboarding wizard flow.
+Use `--secret-input-mode ref` para armazenar refs com backup em env nos perfis de auth em vez de valores em texto simples.
+A seleção interativa entre refs de env e refs de provedor configuradas (`file` ou `exec`) está disponível no fluxo do assistente de onboarding.
 
-In non-interactive `ref` mode, provider env vars must be set in the process environment.
-Passing inline key flags without the matching env var now fails fast.
+No modo `ref` não interativo, as variáveis de ambiente do provedor devem estar definidas no ambiente do processo.
+Passar flags de chave inline sem a variável de ambiente correspondente falha rapidamente.
 
-Example:
+Exemplo:
 
 ```bash
-openclaw onboard --non-interactive \
+opencraft onboard --non-interactive \
   --mode local \
   --auth-choice openai-api-key \
   --secret-input-mode ref \
   --accept-risk
 ```
 
-## Provider-specific examples
+## Exemplos por provedor
 
 <AccordionGroup>
-  <Accordion title="Gemini example">
+  <Accordion title="Exemplo Gemini">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice gemini-api-key \
       --gemini-api-key "$GEMINI_API_KEY" \
@@ -61,9 +61,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Z.AI example">
+  <Accordion title="Exemplo Z.AI">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice zai-api-key \
       --zai-api-key "$ZAI_API_KEY" \
@@ -71,9 +71,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Vercel AI Gateway example">
+  <Accordion title="Exemplo Vercel AI Gateway">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice ai-gateway-api-key \
       --ai-gateway-api-key "$AI_GATEWAY_API_KEY" \
@@ -81,21 +81,21 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Cloudflare AI Gateway example">
+  <Accordion title="Exemplo Cloudflare AI Gateway">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice cloudflare-ai-gateway-api-key \
-      --cloudflare-ai-gateway-account-id "your-account-id" \
-      --cloudflare-ai-gateway-gateway-id "your-gateway-id" \
+      --cloudflare-ai-gateway-account-id "seu-account-id" \
+      --cloudflare-ai-gateway-gateway-id "seu-gateway-id" \
       --cloudflare-ai-gateway-api-key "$CLOUDFLARE_AI_GATEWAY_API_KEY" \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Moonshot example">
+  <Accordion title="Exemplo Moonshot">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice moonshot-api-key \
       --moonshot-api-key "$MOONSHOT_API_KEY" \
@@ -103,9 +103,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Mistral example">
+  <Accordion title="Exemplo Mistral">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice mistral-api-key \
       --mistral-api-key "$MISTRAL_API_KEY" \
@@ -113,9 +113,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Synthetic example">
+  <Accordion title="Exemplo Synthetic">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice synthetic-api-key \
       --synthetic-api-key "$SYNTHETIC_API_KEY" \
@@ -123,20 +123,20 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="OpenCode example">
+  <Accordion title="Exemplo OpenCode">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice opencode-zen \
       --opencode-zen-api-key "$OPENCODE_API_KEY" \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```
-    Swap to `--auth-choice opencode-go --opencode-go-api-key "$OPENCODE_API_KEY"` for the Go catalog.
+    Troque para `--auth-choice opencode-go --opencode-go-api-key "$OPENCODE_API_KEY"` para o catálogo Go.
   </Accordion>
-  <Accordion title="Ollama example">
+  <Accordion title="Exemplo Ollama">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice ollama \
       --custom-model-id "qwen3.5:27b" \
@@ -145,9 +145,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Custom provider example">
+  <Accordion title="Exemplo de provedor personalizado">
     ```bash
-    openclaw onboard --non-interactive \
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice custom-api-key \
       --custom-base-url "https://llm.example.com/v1" \
@@ -159,13 +159,13 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
 
-    `--custom-api-key` is optional. If omitted, onboarding checks `CUSTOM_API_KEY`.
+    `--custom-api-key` é opcional. Se omitido, o onboarding verifica `CUSTOM_API_KEY`.
 
-    Ref-mode variant:
+    Variante com modo ref:
 
     ```bash
-    export CUSTOM_API_KEY="your-key"
-    openclaw onboard --non-interactive \
+    export CUSTOM_API_KEY="sua-chave"
+    opencraft onboard --non-interactive \
       --mode local \
       --auth-choice custom-api-key \
       --custom-base-url "https://llm.example.com/v1" \
@@ -177,39 +177,39 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
 
-    In this mode, onboarding stores `apiKey` as `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`.
+    Neste modo, o onboarding armazena `apiKey` como `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`.
 
   </Accordion>
 </AccordionGroup>
 
-## Add another agent
+## Adicionar outro agente
 
-Use `openclaw agents add <name>` to create a separate agent with its own workspace,
-sessions, and auth profiles. Running without `--workspace` launches the wizard.
+Use `opencraft agents add <nome>` para criar um agente separado com seu próprio workspace,
+sessões e perfis de auth. Executar sem `--workspace` lança o assistente.
 
 ```bash
-openclaw agents add work \
-  --workspace ~/.openclaw/workspace-work \
+opencraft agents add trabalho \
+  --workspace ~/.opencraft/workspace-trabalho \
   --model openai/gpt-5.2 \
   --bind whatsapp:biz \
   --non-interactive \
   --json
 ```
 
-What it sets:
+O que define:
 
 - `agents.list[].name`
 - `agents.list[].workspace`
 - `agents.list[].agentDir`
 
-Notes:
+Notas:
 
-- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
-- Add `bindings` to route inbound messages (the wizard can do this).
-- Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
+- Workspaces padrão seguem `~/.opencraft/workspace-<agentId>`.
+- Adicione `bindings` para rotear mensagens de entrada (o assistente pode fazer isso).
+- Flags não interativas: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
 
-## Related docs
+## Documentação relacionada
 
-- Onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
-- Full reference: [CLI Onboarding Reference](/start/wizard-cli-reference)
-- Command reference: [`openclaw onboard`](/cli/onboard)
+- Hub de onboarding: [Assistente de Onboarding (CLI)](/start/wizard)
+- Referência completa: [Referência CLI de Onboarding](/start/wizard-cli-reference)
+- Referência de comando: [`opencraft onboard`](/cli/onboard)

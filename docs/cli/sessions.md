@@ -1,45 +1,45 @@
 ---
-summary: "CLI reference for `openclaw sessions` (list stored sessions + usage)"
+summary: "Referência do CLI para `opencraft sessions` (listar sessões armazenadas + uso)"
 read_when:
-  - You want to list stored sessions and see recent activity
+  - Você quer listar sessões armazenadas e ver atividade recente
 title: "sessions"
 ---
 
-# `openclaw sessions`
+# `opencraft sessions`
 
-List stored conversation sessions.
+Listar sessões de conversa armazenadas.
 
 ```bash
-openclaw sessions
-openclaw sessions --agent work
-openclaw sessions --all-agents
-openclaw sessions --active 120
-openclaw sessions --json
+opencraft sessions
+opencraft sessions --agent work
+opencraft sessions --all-agents
+opencraft sessions --active 120
+opencraft sessions --json
 ```
 
-Scope selection:
+Seleção de escopo:
 
-- default: configured default agent store
-- `--agent <id>`: one configured agent store
-- `--all-agents`: aggregate all configured agent stores
-- `--store <path>`: explicit store path (cannot be combined with `--agent` or `--all-agents`)
+- padrão: store do agente padrão configurado
+- `--agent <id>`: um store de agente configurado
+- `--all-agents`: agregar todos os stores de agentes configurados
+- `--store <path>`: path de store explícito (não pode ser combinado com `--agent` ou `--all-agents`)
 
-`openclaw sessions --all-agents` reads configured agent stores. Gateway and ACP
-session discovery are broader: they also include disk-only stores found under
-the default `agents/` root or a templated `session.store` root. Those
-discovered stores must resolve to regular `sessions.json` files inside the
-agent root; symlinks and out-of-root paths are skipped.
+`opencraft sessions --all-agents` lê stores de agentes configurados. Descoberta de sessão
+do Gateway e ACP é mais ampla: também inclui stores apenas em disco encontrados em
+o root padrão `agents/` ou um root `session.store` com template. Esses
+stores descobertos devem resolver para arquivos `sessions.json` regulares dentro do
+root do agente; links simbólicos e paths fora do root são pulados.
 
-JSON examples:
+Exemplos JSON:
 
-`openclaw sessions --all-agents --json`:
+`opencraft sessions --all-agents --json`:
 
 ```json
 {
   "path": null,
   "stores": [
-    { "agentId": "main", "path": "/home/user/.openclaw/agents/main/sessions/sessions.json" },
-    { "agentId": "work", "path": "/home/user/.openclaw/agents/work/sessions/sessions.json" }
+    { "agentId": "main", "path": "/home/user/.opencraft/agents/main/sessions/sessions.json" },
+    { "agentId": "work", "path": "/home/user/.opencraft/agents/work/sessions/sessions.json" }
   ],
   "allAgents": true,
   "count": 2,
@@ -51,33 +51,33 @@ JSON examples:
 }
 ```
 
-## Cleanup maintenance
+## Manutenção de limpeza
 
-Run maintenance now (instead of waiting for the next write cycle):
+Rodar manutenção agora (em vez de aguardar o próximo ciclo de escrita):
 
 ```bash
-openclaw sessions cleanup --dry-run
-openclaw sessions cleanup --agent work --dry-run
-openclaw sessions cleanup --all-agents --dry-run
-openclaw sessions cleanup --enforce
-openclaw sessions cleanup --enforce --active-key "agent:main:telegram:direct:123"
-openclaw sessions cleanup --json
+opencraft sessions cleanup --dry-run
+opencraft sessions cleanup --agent work --dry-run
+opencraft sessions cleanup --all-agents --dry-run
+opencraft sessions cleanup --enforce
+opencraft sessions cleanup --enforce --active-key "agent:main:telegram:direct:123"
+opencraft sessions cleanup --json
 ```
 
-`openclaw sessions cleanup` uses `session.maintenance` settings from config:
+`opencraft sessions cleanup` usa configurações de `session.maintenance` da config:
 
-- Scope note: `openclaw sessions cleanup` maintains session stores/transcripts only. It does not prune cron run logs (`cron/runs/<jobId>.jsonl`), which are managed by `cron.runLog.maxBytes` and `cron.runLog.keepLines` in [Cron configuration](/automation/cron-jobs#configuration) and explained in [Cron maintenance](/automation/cron-jobs#maintenance).
+- Nota de escopo: `opencraft sessions cleanup` mantém apenas stores/transcrições de sessão. Não remove logs de execução de cron (`cron/runs/<jobId>.jsonl`), que são gerenciados por `cron.runLog.maxBytes` e `cron.runLog.keepLines` em [Configuração de Cron](/automation/cron-jobs#configuration) e explicados em [Manutenção de Cron](/automation/cron-jobs#maintenance).
 
-- `--dry-run`: preview how many entries would be pruned/capped without writing.
-  - In text mode, dry-run prints a per-session action table (`Action`, `Key`, `Age`, `Model`, `Flags`) so you can see what would be kept vs removed.
-- `--enforce`: apply maintenance even when `session.maintenance.mode` is `warn`.
-- `--active-key <key>`: protect a specific active key from disk-budget eviction.
-- `--agent <id>`: run cleanup for one configured agent store.
-- `--all-agents`: run cleanup for all configured agent stores.
-- `--store <path>`: run against a specific `sessions.json` file.
-- `--json`: print a JSON summary. With `--all-agents`, output includes one summary per store.
+- `--dry-run`: preview de quantas entradas seriam podadas/limitadas sem escrever.
+  - Em modo texto, dry-run imprime uma tabela de ação por sessão (`Action`, `Key`, `Age`, `Model`, `Flags`) para que você veja o que seria mantido vs removido.
+- `--enforce`: aplicar manutenção mesmo quando `session.maintenance.mode` é `warn`.
+- `--active-key <key>`: proteger uma chave ativa específica de evicção por orçamento de disco.
+- `--agent <id>`: rodar limpeza para um store de agente configurado.
+- `--all-agents`: rodar limpeza para todos os stores de agentes configurados.
+- `--store <path>`: rodar contra um arquivo `sessions.json` específico.
+- `--json`: imprimir um resumo JSON. Com `--all-agents`, a saída inclui um resumo por store.
 
-`openclaw sessions cleanup --all-agents --dry-run --json`:
+`opencraft sessions cleanup --all-agents --dry-run --json`:
 
 ```json
 {
@@ -87,7 +87,7 @@ openclaw sessions cleanup --json
   "stores": [
     {
       "agentId": "main",
-      "storePath": "/home/user/.openclaw/agents/main/sessions/sessions.json",
+      "storePath": "/home/user/.opencraft/agents/main/sessions/sessions.json",
       "beforeCount": 120,
       "afterCount": 80,
       "pruned": 40,
@@ -95,7 +95,7 @@ openclaw sessions cleanup --json
     },
     {
       "agentId": "work",
-      "storePath": "/home/user/.openclaw/agents/work/sessions/sessions.json",
+      "storePath": "/home/user/.opencraft/agents/work/sessions/sessions.json",
       "beforeCount": 18,
       "afterCount": 18,
       "pruned": 0,
@@ -105,6 +105,6 @@ openclaw sessions cleanup --json
 }
 ```
 
-Related:
+Relacionado:
 
-- Session config: [Configuration reference](/gateway/configuration-reference#session)
+- Config de sessão: [Configuration reference](/gateway/configuration-reference#session)

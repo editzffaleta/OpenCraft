@@ -1,72 +1,72 @@
 ---
-summary: "Text-to-speech (TTS) for outbound replies"
+summary: "Texto para fala (TTS) para respostas de saída"
 read_when:
-  - Enabling text-to-speech for replies
-  - Configuring TTS providers or limits
-  - Using /tts commands
-title: "Text-to-Speech"
+  - Habilitando texto para fala para respostas
+  - Configurando provedores TTS ou limites
+  - Usando comandos /tts
+title: "Texto para Fala"
 ---
 
-# Text-to-speech (TTS)
+# Texto para Fala (TTS)
 
-OpenClaw can convert outbound replies into audio using ElevenLabs, OpenAI, or Edge TTS.
-It works anywhere OpenClaw can send audio; Telegram gets a round voice-note bubble.
+O OpenCraft pode converter respostas de saída em áudio usando ElevenLabs, OpenAI ou Edge TTS.
+Funciona em qualquer lugar que o OpenCraft possa enviar áudio; o Telegram recebe uma bolha de nota de voz arredondada.
 
-## Supported services
+## Serviços suportados
 
-- **ElevenLabs** (primary or fallback provider)
-- **OpenAI** (primary or fallback provider; also used for summaries)
-- **Edge TTS** (primary or fallback provider; uses `node-edge-tts`, default when no API keys)
+- **ElevenLabs** (provedor primário ou de fallback)
+- **OpenAI** (provedor primário ou de fallback; também usado para resumos)
+- **Edge TTS** (provedor primário ou de fallback; usa `node-edge-tts`, padrão quando não há chaves de API)
 
-### Edge TTS notes
+### Notas sobre Edge TTS
 
-Edge TTS uses Microsoft Edge's online neural TTS service via the `node-edge-tts`
-library. It's a hosted service (not local), uses Microsoft’s endpoints, and does
-not require an API key. `node-edge-tts` exposes speech configuration options and
-output formats, but not all options are supported by the Edge service. citeturn2search0
+O Edge TTS usa o serviço TTS neural online do Microsoft Edge via a biblioteca `node-edge-tts`.
+É um serviço hospedado (não local), usa os endpoints da Microsoft e
+não requer uma chave de API. O `node-edge-tts` expõe opções de configuração de fala e
+formatos de saída, mas nem todas as opções são suportadas pelo serviço Edge.
 
-Because Edge TTS is a public web service without a published SLA or quota, treat it
-as best-effort. If you need guaranteed limits and support, use OpenAI or ElevenLabs.
-Microsoft's Speech REST API documents a 10‑minute audio limit per request; Edge TTS
-does not publish limits, so assume similar or lower limits. citeturn0search3
+Como o Edge TTS é um serviço web público sem SLA ou cota publicados, trate-o
+como best-effort. Se precisar de limites garantidos e suporte, use OpenAI ou ElevenLabs.
+A API REST de Fala da Microsoft documenta um limite de 10 minutos de áudio por requisição; o Edge TTS
+não publica limites, então assuma limites similares ou menores.
 
-## Optional keys
+## Chaves opcionais
 
-If you want OpenAI or ElevenLabs:
+Se quiser OpenAI ou ElevenLabs:
 
-- `ELEVENLABS_API_KEY` (or `XI_API_KEY`)
+- `ELEVENLABS_API_KEY` (ou `XI_API_KEY`)
 - `OPENAI_API_KEY`
 
-Edge TTS does **not** require an API key. If no API keys are found, OpenClaw defaults
-to Edge TTS (unless disabled via `messages.tts.edge.enabled=false`).
+O Edge TTS **não** requer uma chave de API. Se nenhuma chave de API for encontrada, o OpenCraft usa
+Edge TTS por padrão (a menos que desabilitado via `messages.tts.edge.enabled=false`).
 
-If multiple providers are configured, the selected provider is used first and the others are fallback options.
-Auto-summary uses the configured `summaryModel` (or `agents.defaults.model.primary`),
-so that provider must also be authenticated if you enable summaries.
+Se múltiplos provedores estiverem configurados, o provedor selecionado é usado primeiro e os outros são opções de fallback.
+O auto-resumo usa o `summaryModel` configurado (ou `agents.defaults.model.primary`),
+então esse provedor também deve estar autenticado se você habilitar resumos.
 
-## Service links
+## Links de serviço
 
-- [OpenAI Text-to-Speech guide](https://platform.openai.com/docs/guides/text-to-speech)
-- [OpenAI Audio API reference](https://platform.openai.com/docs/api-reference/audio)
-- [ElevenLabs Text to Speech](https://elevenlabs.io/docs/api-reference/text-to-speech)
-- [ElevenLabs Authentication](https://elevenlabs.io/docs/api-reference/authentication)
+- [Guia de Texto para Fala OpenAI](https://platform.openai.com/docs/guides/text-to-speech)
+- [Referência da API de Áudio OpenAI](https://platform.openai.com/docs/api-reference/audio)
+- [Texto para Fala ElevenLabs](https://elevenlabs.io/docs/api-reference/text-to-speech)
+- [Autenticação ElevenLabs](https://elevenlabs.io/docs/api-reference/authentication)
 - [node-edge-tts](https://github.com/SchneeHertz/node-edge-tts)
-- [Microsoft Speech output formats](https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech#audio-outputs)
+- [Formatos de saída de fala Microsoft](https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech#audio-outputs)
 
-## Is it enabled by default?
+## Está habilitado por padrão?
 
-No. Auto‑TTS is **off** by default. Enable it in config with
-`messages.tts.auto` or per session with `/tts always` (alias: `/tts on`).
+Não. O TTS automático está **desligado** por padrão. Habilite-o na config com
+`messages.tts.auto` ou por sessão com `/tts always` (alias: `/tts on`).
 
-Edge TTS **is** enabled by default once TTS is on, and is used automatically
-when no OpenAI or ElevenLabs API keys are available.
+O Edge TTS **está** habilitado por padrão assim que o TTS for ativado, e é usado automaticamente
+quando não há chaves de API OpenAI ou ElevenLabs disponíveis.
 
 ## Config
 
-TTS config lives under `messages.tts` in `openclaw.json`.
-Full schema is in [Gateway configuration](/gateway/configuration).
+A config de TTS fica em `messages.tts` no `opencraft.json`.
+O schema completo está em [Configuração do Gateway](/gateway/configuration).
 
-### Minimal config (enable + provider)
+### Config mínima (habilitar + provedor)
 
 ```json5
 {
@@ -79,7 +79,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-### OpenAI primary with ElevenLabs fallback
+### OpenAI primário com ElevenLabs de fallback
 
 ```json5
 {
@@ -104,7 +104,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
         modelId: "eleven_multilingual_v2",
         seed: 42,
         applyTextNormalization: "auto",
-        languageCode: "en",
+        languageCode: "pt",
         voiceSettings: {
           stability: 0.5,
           similarityBoost: 0.75,
@@ -118,7 +118,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-### Edge TTS primary (no API key)
+### Edge TTS primário (sem chave de API)
 
 ```json5
 {
@@ -128,8 +128,8 @@ Full schema is in [Gateway configuration](/gateway/configuration).
       provider: "edge",
       edge: {
         enabled: true,
-        voice: "en-US-MichelleNeural",
-        lang: "en-US",
+        voice: "pt-BR-FranciscaNeural",
+        lang: "pt-BR",
         outputFormat: "audio-24khz-48kbitrate-mono-mp3",
         rate: "+10%",
         pitch: "-5%",
@@ -139,7 +139,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-### Disable Edge TTS
+### Desabilitar Edge TTS
 
 ```json5
 {
@@ -153,7 +153,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-### Custom limits + prefs path
+### Limites personalizados + caminho de prefs
 
 ```json5
 {
@@ -162,13 +162,13 @@ Full schema is in [Gateway configuration](/gateway/configuration).
       auto: "always",
       maxTextLength: 4000,
       timeoutMs: 30000,
-      prefsPath: "~/.openclaw/settings/tts.json",
+      prefsPath: "~/.opencraft/settings/tts.json",
     },
   },
 }
 ```
 
-### Only reply with audio after an inbound voice note
+### Responder apenas com áudio após uma nota de voz recebida
 
 ```json5
 {
@@ -180,7 +180,7 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-### Disable auto-summary for long replies
+### Desabilitar auto-resumo para respostas longas
 
 ```json5
 {
@@ -192,83 +192,82 @@ Full schema is in [Gateway configuration](/gateway/configuration).
 }
 ```
 
-Then run:
+Então rode:
 
 ```
 /tts summary off
 ```
 
-### Notes on fields
+### Notas sobre campos
 
-- `auto`: auto‑TTS mode (`off`, `always`, `inbound`, `tagged`).
-  - `inbound` only sends audio after an inbound voice note.
-  - `tagged` only sends audio when the reply includes `[[tts]]` tags.
-- `enabled`: legacy toggle (doctor migrates this to `auto`).
-- `mode`: `"final"` (default) or `"all"` (includes tool/block replies).
-- `provider`: `"elevenlabs"`, `"openai"`, or `"edge"` (fallback is automatic).
-- If `provider` is **unset**, OpenClaw prefers `openai` (if key), then `elevenlabs` (if key),
-  otherwise `edge`.
-- `summaryModel`: optional cheap model for auto-summary; defaults to `agents.defaults.model.primary`.
-  - Accepts `provider/model` or a configured model alias.
-- `modelOverrides`: allow the model to emit TTS directives (on by default).
-  - `allowProvider` defaults to `false` (provider switching is opt-in).
-- `maxTextLength`: hard cap for TTS input (chars). `/tts audio` fails if exceeded.
-- `timeoutMs`: request timeout (ms).
-- `prefsPath`: override the local prefs JSON path (provider/limit/summary).
-- `apiKey` values fall back to env vars (`ELEVENLABS_API_KEY`/`XI_API_KEY`, `OPENAI_API_KEY`).
-- `elevenlabs.baseUrl`: override ElevenLabs API base URL.
-- `openai.baseUrl`: override the OpenAI TTS endpoint.
-  - Resolution order: `messages.tts.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
-  - Non-default values are treated as OpenAI-compatible TTS endpoints, so custom model and voice names are accepted.
+- `auto`: modo de TTS automático (`off`, `always`, `inbound`, `tagged`).
+  - `inbound` envia áudio apenas após uma nota de voz recebida.
+  - `tagged` envia áudio apenas quando a resposta inclui tags `[[tts]]`.
+- `enabled`: toggle legado (o doctor migra isso para `auto`).
+- `mode`: `"final"` (padrão) ou `"all"` (inclui respostas de tool/bloco).
+- `provider`: `"elevenlabs"`, `"openai"` ou `"edge"` (fallback é automático).
+- Se `provider` estiver **indefinido**, o OpenCraft prefere `openai` (se houver chave), depois `elevenlabs` (se houver chave),
+  caso contrário `edge`.
+- `summaryModel`: modelo barato opcional para auto-resumo; padrão para `agents.defaults.model.primary`.
+  - Aceita `provedor/modelo` ou um alias de modelo configurado.
+- `modelOverrides`: permite que o modelo emita diretivas TTS (ativado por padrão).
+  - `allowProvider` padrão é `false` (troca de provedor é opt-in).
+- `maxTextLength`: limite máximo para entrada TTS (chars). `/tts audio` falha se excedido.
+- `timeoutMs`: timeout de requisição (ms).
+- `prefsPath`: sobrescrever o caminho JSON de prefs locais (provedor/limite/resumo).
+- Valores de `apiKey` caem de volta para variáveis de env (`ELEVENLABS_API_KEY`/`XI_API_KEY`, `OPENAI_API_KEY`).
+- `elevenlabs.baseUrl`: sobrescrever URL base da API ElevenLabs.
+- `openai.baseUrl`: sobrescrever o endpoint TTS do OpenAI.
+  - Ordem de resolução: `messages.tts.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
+  - Valores não-padrão são tratados como endpoints TTS compatíveis com OpenAI, então nomes de modelo e voz personalizados são aceitos.
 - `elevenlabs.voiceSettings`:
   - `stability`, `similarityBoost`, `style`: `0..1`
   - `useSpeakerBoost`: `true|false`
   - `speed`: `0.5..2.0` (1.0 = normal)
 - `elevenlabs.applyTextNormalization`: `auto|on|off`
-- `elevenlabs.languageCode`: 2-letter ISO 639-1 (e.g. `en`, `de`)
-- `elevenlabs.seed`: integer `0..4294967295` (best-effort determinism)
-- `edge.enabled`: allow Edge TTS usage (default `true`; no API key).
-- `edge.voice`: Edge neural voice name (e.g. `en-US-MichelleNeural`).
-- `edge.lang`: language code (e.g. `en-US`).
-- `edge.outputFormat`: Edge output format (e.g. `audio-24khz-48kbitrate-mono-mp3`).
-  - See Microsoft Speech output formats for valid values; not all formats are supported by Edge.
-- `edge.rate` / `edge.pitch` / `edge.volume`: percent strings (e.g. `+10%`, `-5%`).
-- `edge.saveSubtitles`: write JSON subtitles alongside the audio file.
-- `edge.proxy`: proxy URL for Edge TTS requests.
-- `edge.timeoutMs`: request timeout override (ms).
+- `elevenlabs.languageCode`: 2 letras ISO 639-1 (ex.: `pt`, `en`)
+- `elevenlabs.seed`: inteiro `0..4294967295` (determinismo best-effort)
+- `edge.enabled`: permitir uso do Edge TTS (padrão `true`; sem chave de API).
+- `edge.voice`: nome de voz neural Edge (ex.: `pt-BR-FranciscaNeural`).
+- `edge.lang`: código de idioma (ex.: `pt-BR`).
+- `edge.outputFormat`: formato de saída Edge (ex.: `audio-24khz-48kbitrate-mono-mp3`).
+  - Veja os formatos de saída de fala Microsoft para valores válidos; nem todos os formatos são suportados pelo Edge.
+- `edge.rate` / `edge.pitch` / `edge.volume`: strings de porcentagem (ex.: `+10%`, `-5%`).
+- `edge.saveSubtitles`: escrever legendas JSON junto ao arquivo de áudio.
+- `edge.proxy`: URL de proxy para requisições Edge TTS.
+- `edge.timeoutMs`: sobrescrição de timeout de requisição (ms).
 
-## Model-driven overrides (default on)
+## Sobrescrições dirigidas pelo modelo (padrão ativado)
 
-By default, the model **can** emit TTS directives for a single reply.
-When `messages.tts.auto` is `tagged`, these directives are required to trigger audio.
+Por padrão, o modelo **pode** emitir diretivas TTS para uma única resposta.
+Quando `messages.tts.auto` é `tagged`, essas diretivas são necessárias para acionar o áudio.
 
-When enabled, the model can emit `[[tts:...]]` directives to override the voice
-for a single reply, plus an optional `[[tts:text]]...[[/tts:text]]` block to
-provide expressive tags (laughter, singing cues, etc) that should only appear in
-the audio.
+Quando habilitado, o modelo pode emitir diretivas `[[tts:...]]` para sobrescrever a voz
+para uma única resposta, mais um bloco opcional `[[tts:text]]...[[/tts:text]]` para
+fornecer tags expressivas (risos, pistas de canto, etc.) que devem aparecer apenas no áudio.
 
-`provider=...` directives are ignored unless `modelOverrides.allowProvider: true`.
+Diretivas `provider=...` são ignoradas a menos que `modelOverrides.allowProvider: true`.
 
-Example reply payload:
+Exemplo de payload de resposta:
 
 ```
-Here you go.
+Aqui está.
 
 [[tts:voiceId=pMsXgVXv3BLzUgSXRplE model=eleven_v3 speed=1.1]]
-[[tts:text]](laughs) Read the song once more.[[/tts:text]]
+[[tts:text]](ri) Leia a música mais uma vez.[[/tts:text]]
 ```
 
-Available directive keys (when enabled):
+Chaves de diretiva disponíveis (quando habilitadas):
 
-- `provider` (`openai` | `elevenlabs` | `edge`, requires `allowProvider: true`)
-- `voice` (OpenAI voice) or `voiceId` (ElevenLabs)
-- `model` (OpenAI TTS model or ElevenLabs model id)
+- `provider` (`openai` | `elevenlabs` | `edge`, requer `allowProvider: true`)
+- `voice` (voz OpenAI) ou `voiceId` (ElevenLabs)
+- `model` (modelo TTS OpenAI ou id de modelo ElevenLabs)
 - `stability`, `similarityBoost`, `style`, `speed`, `useSpeakerBoost`
 - `applyTextNormalization` (`auto|on|off`)
 - `languageCode` (ISO 639-1)
 - `seed`
 
-Disable all model overrides:
+Desabilitar todas as sobrescrições do modelo:
 
 ```json5
 {
@@ -282,7 +281,7 @@ Disable all model overrides:
 }
 ```
 
-Optional allowlist (enable provider switching while keeping other knobs configurable):
+Allowlist opcional (habilitar troca de provedor mantendo outros ajustes configuráveis):
 
 ```json5
 {
@@ -298,72 +297,70 @@ Optional allowlist (enable provider switching while keeping other knobs configur
 }
 ```
 
-## Per-user preferences
+## Preferências por usuário
 
-Slash commands write local overrides to `prefsPath` (default:
-`~/.openclaw/settings/tts.json`, override with `OPENCLAW_TTS_PREFS` or
+Slash commands escrevem sobrescrições locais em `prefsPath` (padrão:
+`~/.opencraft/settings/tts.json`, sobrescrever com `OPENCLAW_TTS_PREFS` ou
 `messages.tts.prefsPath`).
 
-Stored fields:
+Campos armazenados:
 
 - `enabled`
 - `provider`
-- `maxLength` (summary threshold; default 1500 chars)
-- `summarize` (default `true`)
+- `maxLength` (limite de resumo; padrão 1500 chars)
+- `summarize` (padrão `true`)
 
-These override `messages.tts.*` for that host.
+Estes sobrescrevem `messages.tts.*` para aquele host.
 
-## Output formats (fixed)
+## Formatos de saída (fixos)
 
-- **Telegram**: Opus voice note (`opus_48000_64` from ElevenLabs, `opus` from OpenAI).
-  - 48kHz / 64kbps is a good voice-note tradeoff and required for the round bubble.
-- **Other channels**: MP3 (`mp3_44100_128` from ElevenLabs, `mp3` from OpenAI).
-  - 44.1kHz / 128kbps is the default balance for speech clarity.
-- **Edge TTS**: uses `edge.outputFormat` (default `audio-24khz-48kbitrate-mono-mp3`).
-  - `node-edge-tts` accepts an `outputFormat`, but not all formats are available
-    from the Edge service. citeturn2search0
-  - Output format values follow Microsoft Speech output formats (including Ogg/WebM Opus). citeturn1search0
-  - Telegram `sendVoice` accepts OGG/MP3/M4A; use OpenAI/ElevenLabs if you need
-    guaranteed Opus voice notes. citeturn1search1
-  - If the configured Edge output format fails, OpenClaw retries with MP3.
+- **Telegram**: nota de voz Opus (`opus_48000_64` do ElevenLabs, `opus` do OpenAI).
+  - 48kHz / 64kbps é um bom tradeoff para nota de voz e necessário para a bolha arredondada.
+- **Outros canais**: MP3 (`mp3_44100_128` do ElevenLabs, `mp3` do OpenAI).
+  - 44.1kHz / 128kbps é o balanço padrão para clareza de fala.
+- **Edge TTS**: usa `edge.outputFormat` (padrão `audio-24khz-48kbitrate-mono-mp3`).
+  - O `node-edge-tts` aceita um `outputFormat`, mas nem todos os formatos estão disponíveis
+    no serviço Edge.
+  - Valores de formato de saída seguem os formatos de saída de fala Microsoft (incluindo Ogg/WebM Opus).
+  - O `sendVoice` do Telegram aceita OGG/MP3/M4A; use OpenAI/ElevenLabs se precisar de notas de voz Opus garantidas.
+  - Se o formato de saída Edge configurado falhar, o OpenCraft tenta novamente com MP3.
 
-OpenAI/ElevenLabs formats are fixed; Telegram expects Opus for voice-note UX.
+Formatos OpenAI/ElevenLabs são fixos; o Telegram espera Opus para UX de nota de voz.
 
-## Auto-TTS behavior
+## Comportamento do TTS automático
 
-When enabled, OpenClaw:
+Quando habilitado, o OpenCraft:
 
-- skips TTS if the reply already contains media or a `MEDIA:` directive.
-- skips very short replies (< 10 chars).
-- summarizes long replies when enabled using `agents.defaults.model.primary` (or `summaryModel`).
-- attaches the generated audio to the reply.
+- pula TTS se a resposta já contém mídia ou uma diretiva `MEDIA:`.
+- pula respostas muito curtas (< 10 chars).
+- resume respostas longas quando habilitado usando `agents.defaults.model.primary` (ou `summaryModel`).
+- anexa o áudio gerado à resposta.
 
-If the reply exceeds `maxLength` and summary is off (or no API key for the
-summary model), audio
-is skipped and the normal text reply is sent.
+Se a resposta exceder `maxLength` e o resumo estiver desligado (ou sem chave de API para o
+modelo de resumo), o áudio é pulado e a resposta de texto normal é enviada.
 
-## Flow diagram
+## Diagrama de fluxo
 
 ```
-Reply -> TTS enabled?
-  no  -> send text
-  yes -> has media / MEDIA: / short?
-          yes -> send text
-          no  -> length > limit?
-                   no  -> TTS -> attach audio
-                   yes -> summary enabled?
-                            no  -> send text
-                            yes -> summarize (summaryModel or agents.defaults.model.primary)
-                                      -> TTS -> attach audio
+Resposta -> TTS habilitado?
+  não  -> enviar texto
+  sim  -> tem mídia / MEDIA: / curta?
+          sim -> enviar texto
+          não  -> comprimento > limite?
+                   não  -> TTS -> anexar áudio
+                   sim  -> resumo habilitado?
+                            não  -> enviar texto
+                            sim  -> resumir (summaryModel ou agents.defaults.model.primary)
+                                      -> TTS -> anexar áudio
 ```
 
-## Slash command usage
+## Uso do slash command
 
-There is a single command: `/tts`.
-See [Slash commands](/tools/slash-commands) for enablement details.
+Há um único comando: `/tts`.
+Veja [Slash commands](/tools/slash-commands) para detalhes de habilitação.
 
-Discord note: `/tts` is a built-in Discord command, so OpenClaw registers
-`/voice` as the native command there. Text `/tts ...` still works.
+Nota do Discord: `/tts` é um comando interno do Discord, então o OpenCraft registra
+`/voice` como o comando nativo lá. O texto `/tts ...` ainda funciona.
 
 ```
 /tts off
@@ -374,26 +371,26 @@ Discord note: `/tts` is a built-in Discord command, so OpenClaw registers
 /tts provider openai
 /tts limit 2000
 /tts summary off
-/tts audio Hello from OpenClaw
+/tts audio Olá do OpenCraft
 ```
 
-Notes:
+Notas:
 
-- Commands require an authorized sender (allowlist/owner rules still apply).
-- `commands.text` or native command registration must be enabled.
-- `off|always|inbound|tagged` are per‑session toggles (`/tts on` is an alias for `/tts always`).
-- `limit` and `summary` are stored in local prefs, not the main config.
-- `/tts audio` generates a one-off audio reply (does not toggle TTS on).
+- Comandos requerem um remetente autorizado (regras de allowlist/proprietário ainda se aplicam).
+- `commands.text` ou o registro de comando nativo deve estar habilitado.
+- `off|always|inbound|tagged` são toggles por sessão (`/tts on` é alias para `/tts always`).
+- `limit` e `summary` são armazenados em prefs locais, não na config principal.
+- `/tts audio` gera uma resposta de áudio única (não ativa o TTS de forma persistente).
 
-## Agent tool
+## Tool do agente
 
-The `tts` tool converts text to speech and returns a `MEDIA:` path. When the
-result is Telegram-compatible, the tool includes `[[audio_as_voice]]` so
-Telegram sends a voice bubble.
+A tool `tts` converte texto em fala e retorna um caminho `MEDIA:`. Quando o
+resultado é compatível com Telegram, a tool inclui `[[audio_as_voice]]` para que
+o Telegram envie uma bolha de voz.
 
-## Gateway RPC
+## RPC do Gateway
 
-Gateway methods:
+Métodos do Gateway:
 
 - `tts.status`
 - `tts.enable`

@@ -1,21 +1,21 @@
 ---
-summary: "CLI reference for `openclaw health` (gateway health endpoint via RPC)"
+summary: "Referência do CLI para `opencraft health` (endpoint de saúde do gateway via RPC)"
 read_when:
-  - You want to quickly check the running Gateway’s health
+  - Você quer verificar rapidamente a saúde do Gateway em execução
 title: "health"
 ---
 
-# `openclaw health`
+# `opencraft health`
 
-Fetch health from the running Gateway.
+Buscar saúde do Gateway em execução.
 
 ```bash
-openclaw health
-openclaw health --json
-openclaw health --verbose
+opencraft health
+opencraft health --json
+opencraft health --verbose
 ```
 
-Notes:
+Notas:
 
-- `--verbose` runs live probes and prints per-account timings when multiple accounts are configured.
-- Output includes per-agent session stores when multiple agents are configured.
+- `--verbose` roda probes ao vivo e imprime timings por conta quando múltiplas contas estão configuradas.
+- A saída inclui stores de sessão por agente quando múltiplos agentes estão configurados.

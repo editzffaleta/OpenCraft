@@ -1,128 +1,128 @@
 ---
-summary: "Uninstall OpenClaw completely (CLI, service, state, workspace)"
+summary: "Desinstalar o OpenCraft completamente (CLI, serviço, estado, workspace)"
 read_when:
-  - You want to remove OpenClaw from a machine
-  - The gateway service is still running after uninstall
-title: "Uninstall"
+  - Você quer remover o OpenCraft de uma máquina
+  - O serviço do gateway ainda está em execução após a desinstalação
+title: "Desinstalar"
 ---
 
-# Uninstall
+# Desinstalar
 
-Two paths:
+Dois caminhos:
 
-- **Easy path** if `openclaw` is still installed.
-- **Manual service removal** if the CLI is gone but the service is still running.
+- **Caminho fácil** se `opencraft` ainda estiver instalado.
+- **Remoção manual do serviço** se o CLI não estiver mais presente mas o serviço ainda estiver em execução.
 
-## Easy path (CLI still installed)
+## Caminho fácil (CLI ainda instalado)
 
-Recommended: use the built-in uninstaller:
-
-```bash
-openclaw uninstall
-```
-
-Non-interactive (automation / npx):
+Recomendado: use o desinstalador integrado:
 
 ```bash
-openclaw uninstall --all --yes --non-interactive
-npx -y openclaw uninstall --all --yes --non-interactive
+opencraft uninstall
 ```
 
-Manual steps (same result):
-
-1. Stop the gateway service:
+Não interativo (automação / npx):
 
 ```bash
-openclaw gateway stop
+opencraft uninstall --all --yes --non-interactive
+npx -y opencraft uninstall --all --yes --non-interactive
 ```
 
-2. Uninstall the gateway service (launchd/systemd/schtasks):
+Etapas manuais (mesmo resultado):
+
+1. Parar o serviço do gateway:
 
 ```bash
-openclaw gateway uninstall
+opencraft gateway stop
 ```
 
-3. Delete state + config:
+2. Desinstalar o serviço do gateway (launchd/systemd/schtasks):
 
 ```bash
-rm -rf "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+opencraft gateway uninstall
 ```
 
-If you set `OPENCLAW_CONFIG_PATH` to a custom location outside the state dir, delete that file too.
-
-4. Delete your workspace (optional, removes agent files):
+3. Excluir estado + config:
 
 ```bash
-rm -rf ~/.openclaw/workspace
+rm -rf "${OPENCLAW_STATE_DIR:-$HOME/.opencraft}"
 ```
 
-5. Remove the CLI install (pick the one you used):
+Se você definiu `OPENCLAW_CONFIG_PATH` para um local personalizado fora do diretório de estado, exclua esse arquivo também.
+
+4. Excluir seu workspace (opcional, remove arquivos do agente):
 
 ```bash
-npm rm -g openclaw
-pnpm remove -g openclaw
-bun remove -g openclaw
+rm -rf ~/.opencraft/workspace
 ```
 
-6. If you installed the macOS app:
+5. Remover a instalação do CLI (escolha a que você usou):
 
 ```bash
-rm -rf /Applications/OpenClaw.app
+npm rm -g opencraft
+pnpm remove -g opencraft
+bun remove -g opencraft
 ```
 
-Notes:
+6. Se você instalou o app macOS:
 
-- If you used profiles (`--profile` / `OPENCLAW_PROFILE`), repeat step 3 for each state dir (defaults are `~/.openclaw-<profile>`).
-- In remote mode, the state dir lives on the **gateway host**, so run steps 1-4 there too.
+```bash
+rm -rf /Applications/OpenCraft.app
+```
 
-## Manual service removal (CLI not installed)
+Notas:
 
-Use this if the gateway service keeps running but `openclaw` is missing.
+- Se você usou perfis (`--profile` / `OPENCLAW_PROFILE`), repita a etapa 3 para cada diretório de estado (os padrões são `~/.opencraft-<profile>`).
+- No modo remoto, o diretório de estado fica no **host do gateway**, então execute as etapas 1-4 também lá.
+
+## Remoção manual do serviço (CLI não instalado)
+
+Use isto se o serviço do gateway continua em execução mas `opencraft` está ausente.
 
 ### macOS (launchd)
 
-Default label is `ai.openclaw.gateway` (or `ai.openclaw.<profile>`; legacy `com.openclaw.*` may still exist):
+O label padrão é `ai.opencraft.gateway` (ou `ai.opencraft.<profile>`; o legado `com.opencraft.*` pode ainda existir):
 
 ```bash
-launchctl bootout gui/$UID/ai.openclaw.gateway
-rm -f ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+launchctl bootout gui/$UID/ai.opencraft.gateway
+rm -f ~/Library/LaunchAgents/ai.opencraft.gateway.plist
 ```
 
-If you used a profile, replace the label and plist name with `ai.openclaw.<profile>`. Remove any legacy `com.openclaw.*` plists if present.
+Se você usou um perfil, substitua o label e o nome do plist por `ai.opencraft.<profile>`. Remova quaisquer plists `com.opencraft.*` legados se presentes.
 
-### Linux (systemd user unit)
+### Linux (unidade de usuário systemd)
 
-Default unit name is `openclaw-gateway.service` (or `openclaw-gateway-<profile>.service`):
+O nome padrão da unidade é `opencraft-gateway.service` (ou `opencraft-gateway-<profile>.service`):
 
 ```bash
-systemctl --user disable --now openclaw-gateway.service
-rm -f ~/.config/systemd/user/openclaw-gateway.service
+systemctl --user disable --now opencraft-gateway.service
+rm -f ~/.config/systemd/user/opencraft-gateway.service
 systemctl --user daemon-reload
 ```
 
-### Windows (Scheduled Task)
+### Windows (Tarefa Agendada)
 
-Default task name is `OpenClaw Gateway` (or `OpenClaw Gateway (<profile>)`).
-The task script lives under your state dir.
+O nome padrão da tarefa é `OpenCraft Gateway` (ou `OpenCraft Gateway (<profile>)`).
+O script da tarefa fica no seu diretório de estado.
 
 ```powershell
-schtasks /Delete /F /TN "OpenClaw Gateway"
-Remove-Item -Force "$env:USERPROFILE\.openclaw\gateway.cmd"
+schtasks /Delete /F /TN "OpenCraft Gateway"
+Remove-Item -Force "$env:USERPROFILE\.opencraft\gateway.cmd"
 ```
 
-If you used a profile, delete the matching task name and `~\.openclaw-<profile>\gateway.cmd`.
+Se você usou um perfil, exclua o nome da tarefa correspondente e `~\.opencraft-<profile>\gateway.cmd`.
 
-## Normal install vs source checkout
+## Instalação normal vs checkout de código-fonte
 
-### Normal install (install.sh / npm / pnpm / bun)
+### Instalação normal (install.sh / npm / pnpm / bun)
 
-If you used `https://openclaw.ai/install.sh` or `install.ps1`, the CLI was installed with `npm install -g openclaw@latest`.
-Remove it with `npm rm -g openclaw` (or `pnpm remove -g` / `bun remove -g` if you installed that way).
+Se você usou `https://openclaw.ai/install.sh` ou `install.ps1`, o CLI foi instalado com `npm install -g opencraft@latest`.
+Remova com `npm rm -g opencraft` (ou `pnpm remove -g` / `bun remove -g` se instalou dessa forma).
 
-### Source checkout (git clone)
+### Checkout de código-fonte (git clone)
 
-If you run from a repo checkout (`git clone` + `openclaw ...` / `bun run openclaw ...`):
+Se você executa a partir de um checkout do repositório (`git clone` + `opencraft ...` / `bun run opencraft ...`):
 
-1. Uninstall the gateway service **before** deleting the repo (use the easy path above or manual service removal).
-2. Delete the repo directory.
-3. Remove state + workspace as shown above.
+1. Desinstale o serviço do gateway **antes** de excluir o repositório (use o caminho fácil acima ou a remoção manual do serviço).
+2. Exclua o diretório do repositório.
+3. Remova o estado + workspace conforme mostrado acima.

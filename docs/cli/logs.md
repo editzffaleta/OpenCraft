@@ -1,28 +1,28 @@
 ---
-summary: "CLI reference for `openclaw logs` (tail gateway logs via RPC)"
+summary: "Referência do CLI para `opencraft logs` (tail de logs do gateway via RPC)"
 read_when:
-  - You need to tail Gateway logs remotely (without SSH)
-  - You want JSON log lines for tooling
+  - Você precisa fazer tail de logs do Gateway remotamente (sem SSH)
+  - Você quer linhas de log JSON para tooling
 title: "logs"
 ---
 
-# `openclaw logs`
+# `opencraft logs`
 
-Tail Gateway file logs over RPC (works in remote mode).
+Fazer tail de logs de arquivo do Gateway via RPC (funciona em modo remoto).
 
-Related:
+Relacionado:
 
-- Logging overview: [Logging](/logging)
+- Visão geral de logging: [Logging](/logging)
 
-## Examples
+## Exemplos
 
 ```bash
-openclaw logs
-openclaw logs --follow
-openclaw logs --json
-openclaw logs --limit 500
-openclaw logs --local-time
-openclaw logs --follow --local-time
+opencraft logs
+opencraft logs --follow
+opencraft logs --json
+opencraft logs --limit 500
+opencraft logs --local-time
+opencraft logs --follow --local-time
 ```
 
-Use `--local-time` to render timestamps in your local timezone.
+Use `--local-time` para renderizar timestamps no seu fuso horário local.

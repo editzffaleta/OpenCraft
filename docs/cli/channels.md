@@ -1,101 +1,101 @@
 ---
-summary: "CLI reference for `openclaw channels` (accounts, status, login/logout, logs)"
+summary: "Referência do CLI para `opencraft channels` (contas, status, login/logout, logs)"
 read_when:
-  - You want to add/remove channel accounts (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage)
-  - You want to check channel status or tail channel logs
+  - Você quer adicionar/remover contas de canal (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage)
+  - Você quer verificar status do canal ou cauda de logs do canal
 title: "channels"
 ---
 
-# `openclaw channels`
+# `opencraft channels`
 
-Manage chat channel accounts and their runtime status on the Gateway.
+Gerenciar contas de canal de chat e seu status de runtime no Gateway.
 
-Related docs:
+Docs relacionados:
 
-- Channel guides: [Channels](/channels/index)
-- Gateway configuration: [Configuration](/gateway/configuration)
+- Guias de canal: [Channels](/channels/index)
+- Configuração do Gateway: [Configuration](/gateway/configuration)
 
-## Common commands
-
-```bash
-openclaw channels list
-openclaw channels status
-openclaw channels capabilities
-openclaw channels capabilities --channel discord --target channel:123
-openclaw channels resolve --channel slack "#general" "@jane"
-openclaw channels logs --channel all
-```
-
-## Add / remove accounts
+## Comandos comuns
 
 ```bash
-openclaw channels add --channel telegram --token <bot-token>
-openclaw channels remove --channel telegram --delete
+opencraft channels list
+opencraft channels status
+opencraft channels capabilities
+opencraft channels capabilities --channel discord --target channel:123
+opencraft channels resolve --channel slack "#general" "@jane"
+opencraft channels logs --channel all
 ```
 
-Tip: `openclaw channels add --help` shows per-channel flags (token, app token, signal-cli paths, etc).
-
-When you run `openclaw channels add` without flags, the interactive wizard can prompt:
-
-- account ids per selected channel
-- optional display names for those accounts
-- `Bind configured channel accounts to agents now?`
-
-If you confirm bind now, the wizard asks which agent should own each configured channel account and writes account-scoped routing bindings.
-
-You can also manage the same routing rules later with `openclaw agents bindings`, `openclaw agents bind`, and `openclaw agents unbind` (see [agents](/cli/agents)).
-
-When you add a non-default account to a channel that is still using single-account top-level settings (no `channels.<channel>.accounts` entries yet), OpenClaw moves account-scoped single-account top-level values into `channels.<channel>.accounts.default`, then writes the new account. This preserves the original account behavior while moving to the multi-account shape.
-
-Routing behavior stays consistent:
-
-- Existing channel-only bindings (no `accountId`) continue to match the default account.
-- `channels add` does not auto-create or rewrite bindings in non-interactive mode.
-- Interactive setup can optionally add account-scoped bindings.
-
-If your config was already in a mixed state (named accounts present, missing `default`, and top-level single-account values still set), run `openclaw doctor --fix` to move account-scoped values into `accounts.default`.
-
-## Login / logout (interactive)
+## Adicionar / remover contas
 
 ```bash
-openclaw channels login --channel whatsapp
-openclaw channels logout --channel whatsapp
+opencraft channels add --channel telegram --token <bot-token>
+opencraft channels remove --channel telegram --delete
 ```
 
-## Troubleshooting
+Dica: `opencraft channels add --help` mostra flags por canal (token, app token, paths do signal-cli, etc).
 
-- Run `openclaw status --deep` for a broad probe.
-- Use `openclaw doctor` for guided fixes.
-- `openclaw channels list` prints `Claude: HTTP 403 ... user:profile` → usage snapshot needs the `user:profile` scope. Use `--no-usage`, or provide a claude.ai session key (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`), or re-auth via Claude Code CLI.
-- `openclaw channels status` falls back to config-only summaries when the gateway is unreachable. If a supported channel credential is configured via SecretRef but unavailable in the current command path, it reports that account as configured with degraded notes instead of showing it as not configured.
+Quando você roda `opencraft channels add` sem flags, o wizard interativo pode solicitar:
 
-## Capabilities probe
+- ids de conta por canal selecionado
+- nomes de exibição opcionais para essas contas
+- `Vincular contas de canal configuradas a agentes agora?`
 
-Fetch provider capability hints (intents/scopes where available) plus static feature support:
+Se você confirmar vincular agora, o wizard pergunta qual agente deve possuir cada conta de canal configurada e escreve bindings de roteamento com escopo de conta.
+
+Você também pode gerenciar as mesmas regras de roteamento depois com `opencraft agents bindings`, `opencraft agents bind` e `opencraft agents unbind` (veja [agents](/cli/agents)).
+
+Quando você adiciona uma conta não padrão a um canal que ainda está usando configurações de conta única de nível superior (ainda sem entradas `channels.<channel>.accounts`), o OpenCraft move valores de conta única de nível superior com escopo de conta para `channels.<channel>.accounts.default`, depois escreve a nova conta. Isso preserva o comportamento da conta original enquanto move para o formato multi-conta.
+
+O comportamento de roteamento permanece consistente:
+
+- Bindings apenas de canal existentes (sem `accountId`) continuam correspondendo à conta padrão.
+- `channels add` não cria ou reescreve bindings automaticamente em modo não interativo.
+- Setup interativo pode opcionalmente adicionar bindings com escopo de conta.
+
+Se sua config já estava em um estado misto (contas nomeadas presentes, `default` ausente, e valores de conta única de nível superior ainda definidos), rode `opencraft doctor --fix` para mover valores com escopo de conta para `accounts.default`.
+
+## Login / logout (interativo)
 
 ```bash
-openclaw channels capabilities
-openclaw channels capabilities --channel discord --target channel:123
+opencraft channels login --channel whatsapp
+opencraft channels logout --channel whatsapp
 ```
 
-Notes:
+## Resolução de problemas
 
-- `--channel` is optional; omit it to list every channel (including extensions).
-- `--target` accepts `channel:<id>` or a raw numeric channel id and only applies to Discord.
-- Probes are provider-specific: Discord intents + optional channel permissions; Slack bot + user scopes; Telegram bot flags + webhook; Signal daemon version; MS Teams app token + Graph roles/scopes (annotated where known). Channels without probes report `Probe: unavailable`.
+- Rode `opencraft status --deep` para um probe amplo.
+- Use `opencraft doctor` para correções guiadas.
+- `opencraft channels list` imprime `Claude: HTTP 403 ... user:profile` → snapshot de uso precisa do escopo `user:profile`. Use `--no-usage`, ou forneça uma session key do claude.ai (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`), ou re-auth via CLI do Claude Code.
+- `opencraft channels status` faz fallback para resumos apenas de config quando o gateway está inacessível. Se uma credencial de canal suportada estiver configurada via SecretRef mas indisponível no path de comando atual, ela relata essa conta como configurada com notas degradadas em vez de mostrá-la como não configurada.
 
-## Resolve names to IDs
+## Probe de capacidades
 
-Resolve channel/user names to IDs using the provider directory:
+Buscar hints de capacidade do provedor (intenções/escopos onde disponível) mais suporte de recurso estático:
 
 ```bash
-openclaw channels resolve --channel slack "#general" "@jane"
-openclaw channels resolve --channel discord "My Server/#support" "@someone"
-openclaw channels resolve --channel matrix "Project Room"
+opencraft channels capabilities
+opencraft channels capabilities --channel discord --target channel:123
 ```
 
-Notes:
+Notas:
 
-- Use `--kind user|group|auto` to force the target type.
-- Resolution prefers active matches when multiple entries share the same name.
-- `channels resolve` is read-only. If a selected account is configured via SecretRef but that credential is unavailable in the current command path, the command returns degraded unresolved results with notes instead of aborting the entire run.
+- `--channel` é opcional; omita-o para listar todos os canais (incluindo extensões).
+- `--target` aceita `channel:<id>` ou um id numérico de canal bruto e se aplica apenas ao Discord.
+- Probes são específicos do provedor: intenções Discord + permissões de canal opcionais; escopos de bot + usuário Slack; flags de bot Telegram + webhook; versão do daemon Signal; token de app MS Teams + funções/escopos do Graph (anotados onde conhecidos). Canais sem probes relatam `Probe: unavailable`.
+
+## Resolver nomes para IDs
+
+Resolver nomes de canal/usuário para IDs usando o diretório do provedor:
+
+```bash
+opencraft channels resolve --channel slack "#general" "@jane"
+opencraft channels resolve --channel discord "My Server/#support" "@someone"
+opencraft channels resolve --channel matrix "Project Room"
+```
+
+Notas:
+
+- Use `--kind user|group|auto` para forçar o tipo de alvo.
+- Resolução prefere correspondências ativas quando múltiplas entradas compartilham o mesmo nome.
+- `channels resolve` é somente leitura. Se uma conta selecionada estiver configurada via SecretRef mas essa credencial estiver indisponível no path de comando atual, o comando retorna resultados não resolvidos degradados com notas em vez de abortar a execução inteira.

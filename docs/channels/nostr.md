@@ -1,55 +1,55 @@
 ---
-summary: "Nostr DM channel via NIP-04 encrypted messages"
+summary: "Canal de DM Nostr via mensagens criptografadas NIP-04"
 read_when:
-  - You want OpenClaw to receive DMs via Nostr
-  - You're setting up decentralized messaging
+  - Você quer que o OpenCraft receba DMs via Nostr
+  - Você está configurando mensagens descentralizadas
 title: "Nostr"
 ---
 
 # Nostr
 
-**Status:** Optional plugin (disabled by default).
+**Status:** Plugin opcional (desabilitado por padrão).
 
-Nostr is a decentralized protocol for social networking. This channel enables OpenClaw to receive and respond to encrypted direct messages (DMs) via NIP-04.
+Nostr é um protocolo descentralizado para redes sociais. Este canal permite que o OpenCraft receba e responda a mensagens diretas (DMs) criptografadas via NIP-04.
 
-## Install (on demand)
+## Instalação (sob demanda)
 
-### Onboarding (recommended)
+### Onboarding (recomendado)
 
-- The onboarding wizard (`openclaw onboard`) and `openclaw channels add` list optional channel plugins.
-- Selecting Nostr prompts you to install the plugin on demand.
+- O assistente de onboarding (`opencraft onboard`) e `opencraft channels add` listam plugins de canais opcionais.
+- Selecionar Nostr solicita a instalação do plugin sob demanda.
 
-Install defaults:
+Padrões de instalação:
 
-- **Dev channel + git checkout available:** uses the local plugin path.
-- **Stable/Beta:** downloads from npm.
+- **Canal dev + checkout git disponível:** usa o caminho do plugin local.
+- **Stable/Beta:** baixa do npm.
 
-You can always override the choice in the prompt.
+Você sempre pode substituir a escolha no prompt.
 
-### Manual install
-
-```bash
-openclaw plugins install @openclaw/nostr
-```
-
-Use a local checkout (dev workflows):
+### Instalação manual
 
 ```bash
-openclaw plugins install --link <path-to-openclaw>/extensions/nostr
+opencraft plugins install @openclaw/nostr
 ```
 
-Restart the Gateway after installing or enabling plugins.
-
-## Quick setup
-
-1. Generate a Nostr keypair (if needed):
+Use um checkout local (fluxos de trabalho dev):
 
 ```bash
-# Using nak
-nak key generate
+opencraft plugins install --link <caminho-para-opencraft>/extensions/nostr
 ```
 
-2. Add to config:
+Reinicie o Gateway após instalar ou habilitar plugins.
+
+## Configuração rápida
+
+1. Gere um par de chaves Nostr (se necessário):
+
+```bash
+# Usando nak
+ nak key generate
+```
+
+2. Adicione à config:
 
 ```json
 {
@@ -61,31 +61,31 @@ nak key generate
 }
 ```
 
-3. Export the key:
+3. Exporte a chave:
 
 ```bash
 export NOSTR_PRIVATE_KEY="nsec1..."
 ```
 
-4. Restart the Gateway.
+4. Reinicie o Gateway.
 
-## Configuration reference
+## Referência de configuração
 
-| Key          | Type     | Default                                     | Description                         |
-| ------------ | -------- | ------------------------------------------- | ----------------------------------- |
-| `privateKey` | string   | required                                    | Private key in `nsec` or hex format |
-| `relays`     | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | Relay URLs (WebSocket)              |
-| `dmPolicy`   | string   | `pairing`                                   | DM access policy                    |
-| `allowFrom`  | string[] | `[]`                                        | Allowed sender pubkeys              |
-| `enabled`    | boolean  | `true`                                      | Enable/disable channel              |
-| `name`       | string   | -                                           | Display name                        |
-| `profile`    | object   | -                                           | NIP-01 profile metadata             |
+| Chave        | Tipo     | Padrão                                      | Descrição                                     |
+| ------------ | -------- | ------------------------------------------- | --------------------------------------------- |
+| `privateKey` | string   | obrigatório                                 | Chave privada no formato `nsec` ou hex        |
+| `relays`     | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | URLs de relay (WebSocket)                     |
+| `dmPolicy`   | string   | `pairing`                                   | Política de acesso a DMs                      |
+| `allowFrom`  | string[] | `[]`                                        | Pubkeys de remetentes permitidos              |
+| `enabled`    | boolean  | `true`                                      | Habilitar/desabilitar canal                   |
+| `name`       | string   | -                                           | Nome de exibição                              |
+| `profile`    | object   | -                                           | Metadados de perfil NIP-01                    |
 
-## Profile metadata
+## Metadados de perfil
 
-Profile data is published as a NIP-01 `kind:0` event. You can manage it from the Control UI (Channels -> Nostr -> Profile) or set it directly in config.
+Os dados de perfil são publicados como um evento NIP-01 `kind:0`. Você pode gerenciá-los pela UI de Controle (Canais -> Nostr -> Perfil) ou defini-los diretamente na config.
 
-Example:
+Exemplo:
 
 ```json
 {
@@ -93,35 +93,35 @@ Example:
     "nostr": {
       "privateKey": "${NOSTR_PRIVATE_KEY}",
       "profile": {
-        "name": "openclaw",
-        "displayName": "OpenClaw",
-        "about": "Personal assistant DM bot",
+        "name": "opencraft",
+        "displayName": "OpenCraft",
+        "about": "Bot de DM assistente pessoal",
         "picture": "https://example.com/avatar.png",
         "banner": "https://example.com/banner.png",
         "website": "https://example.com",
-        "nip05": "openclaw@example.com",
-        "lud16": "openclaw@example.com"
+        "nip05": "opencraft@example.com",
+        "lud16": "opencraft@example.com"
       }
     }
   }
 }
 ```
 
-Notes:
+Notas:
 
-- Profile URLs must use `https://`.
-- Importing from relays merges fields and preserves local overrides.
+- URLs de perfil devem usar `https://`.
+- Importar de relays mescla campos e preserva substituições locais.
 
-## Access control
+## Controle de acesso
 
-### DM policies
+### Políticas de DM
 
-- **pairing** (default): unknown senders get a pairing code.
-- **allowlist**: only pubkeys in `allowFrom` can DM.
-- **open**: public inbound DMs (requires `allowFrom: ["*"]`).
-- **disabled**: ignore inbound DMs.
+- **pairing** (padrão): remetentes desconhecidos recebem um código de pareamento.
+- **allowlist**: apenas pubkeys em `allowFrom` podem enviar DMs.
+- **open**: DMs de entrada públicos (requer `allowFrom: ["*"]`).
+- **disabled**: ignorar DMs de entrada.
 
-### Allowlist example
+### Exemplo de allowlist
 
 ```json
 {
@@ -135,16 +135,16 @@ Notes:
 }
 ```
 
-## Key formats
+## Formatos de chave
 
-Accepted formats:
+Formatos aceitos:
 
-- **Private key:** `nsec...` or 64-char hex
-- **Pubkeys (`allowFrom`):** `npub...` or hex
+- **Chave privada:** `nsec...` ou hex de 64 caracteres
+- **Pubkeys (`allowFrom`):** `npub...` ou hex
 
 ## Relays
 
-Defaults: `relay.damus.io` and `nos.lol`.
+Padrões: `relay.damus.io` e `nos.lol`.
 
 ```json
 {
@@ -157,28 +157,28 @@ Defaults: `relay.damus.io` and `nos.lol`.
 }
 ```
 
-Tips:
+Dicas:
 
-- Use 2-3 relays for redundancy.
-- Avoid too many relays (latency, duplication).
-- Paid relays can improve reliability.
-- Local relays are fine for testing (`ws://localhost:7777`).
+- Use 2-3 relays para redundância.
+- Evite muitos relays (latência, duplicação).
+- Relays pagos podem melhorar a confiabilidade.
+- Relays locais são adequados para testes (`ws://localhost:7777`).
 
-## Protocol support
+## Suporte a protocolos
 
-| NIP    | Status    | Description                           |
-| ------ | --------- | ------------------------------------- |
-| NIP-01 | Supported | Basic event format + profile metadata |
-| NIP-04 | Supported | Encrypted DMs (`kind:4`)              |
-| NIP-17 | Planned   | Gift-wrapped DMs                      |
-| NIP-44 | Planned   | Versioned encryption                  |
+| NIP    | Status      | Descrição                               |
+| ------ | ----------- | --------------------------------------- |
+| NIP-01 | Suportado   | Formato de evento básico + metadados de perfil |
+| NIP-04 | Suportado   | DMs criptografados (`kind:4`)           |
+| NIP-17 | Planejado   | DMs com gift-wrap                       |
+| NIP-44 | Planejado   | Criptografia versionada                 |
 
-## Testing
+## Testes
 
-### Local relay
+### Relay local
 
 ```bash
-# Start strfry
+# Iniciar strfry
 docker run -p 7777:7777 ghcr.io/hoytech/strfry
 ```
 
@@ -193,41 +193,41 @@ docker run -p 7777:7777 ghcr.io/hoytech/strfry
 }
 ```
 
-### Manual test
+### Teste manual
 
-1. Note the bot pubkey (npub) from logs.
-2. Open a Nostr client (Damus, Amethyst, etc.).
-3. DM the bot pubkey.
-4. Verify the response.
+1. Anote a pubkey do bot (npub) nos logs.
+2. Abra um cliente Nostr (Damus, Amethyst, etc.).
+3. Envie um DM para a pubkey do bot.
+4. Verifique a resposta.
 
-## Troubleshooting
+## Solução de problemas
 
-### Not receiving messages
+### Não recebe mensagens
 
-- Verify the private key is valid.
-- Ensure relay URLs are reachable and use `wss://` (or `ws://` for local).
-- Confirm `enabled` is not `false`.
-- Check Gateway logs for relay connection errors.
+- Verifique se a chave privada é válida.
+- Certifique-se de que as URLs dos relays são acessíveis e usam `wss://` (ou `ws://` para local).
+- Confirme que `enabled` não é `false`.
+- Verifique nos logs do Gateway erros de conexão com o relay.
 
-### Not sending responses
+### Não envia respostas
 
-- Check relay accepts writes.
-- Verify outbound connectivity.
-- Watch for relay rate limits.
+- Verifique se o relay aceita escritas.
+- Verifique a conectividade de saída.
+- Fique atento aos limites de taxa do relay.
 
-### Duplicate responses
+### Respostas duplicadas
 
-- Expected when using multiple relays.
-- Messages are deduplicated by event ID; only the first delivery triggers a response.
+- Esperado ao usar múltiplos relays.
+- As mensagens são deduplicadas por ID de evento; apenas a primeira entrega dispara uma resposta.
 
-## Security
+## Segurança
 
-- Never commit private keys.
-- Use environment variables for keys.
-- Consider `allowlist` for production bots.
+- Nunca commite chaves privadas.
+- Use variáveis de ambiente para chaves.
+- Considere `allowlist` para bots em produção.
 
-## Limitations (MVP)
+## Limitações (MVP)
 
-- Direct messages only (no group chats).
-- No media attachments.
-- NIP-04 only (NIP-17 gift-wrap planned).
+- Somente mensagens diretas (sem chats em grupo).
+- Sem anexos de mídia.
+- Somente NIP-04 (NIP-17 gift-wrap planejado).

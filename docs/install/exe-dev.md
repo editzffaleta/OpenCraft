@@ -1,75 +1,75 @@
 ---
-summary: "Run OpenClaw Gateway on exe.dev (VM + HTTPS proxy) for remote access"
+summary: "Rodar o Gateway OpenCraft no exe.dev (VM + proxy HTTPS) para acesso remoto"
 read_when:
-  - You want a cheap always-on Linux host for the Gateway
-  - You want remote Control UI access without running your own VPS
+  - Você quer um host Linux sempre ativo e barato para o Gateway
+  - Você quer acesso remoto à UI de Controle sem gerenciar seu próprio VPS
 title: "exe.dev"
 ---
 
 # exe.dev
 
-Goal: OpenClaw Gateway running on an exe.dev VM, reachable from your laptop via: `https://<vm-name>.exe.xyz`
+Objetivo: Gateway OpenCraft rodando em uma VM exe.dev, acessível do seu laptop via: `https://<nome-da-vm>.exe.xyz`
 
-This page assumes exe.dev's default **exeuntu** image. If you picked a different distro, map packages accordingly.
+Esta página assume a imagem padrão **exeuntu** do exe.dev. Se você escolheu uma distro diferente, adapte os pacotes conforme necessário.
 
-## Beginner quick path
+## Caminho rápido para iniciantes
 
 1. [https://exe.new/openclaw](https://exe.new/openclaw)
-2. Fill in your auth key/token as needed
-3. Click on "Agent" next to your VM, and wait...
+2. Preencha sua chave de auth/token conforme necessário
+3. Clique em "Agent" ao lado da sua VM e aguarde...
 4. ???
-5. Profit
+5. Lucro
 
-## What you need
+## O que você precisa
 
-- exe.dev account
-- `ssh exe.dev` access to [exe.dev](https://exe.dev) virtual machines (optional)
+- Conta exe.dev
+- Acesso `ssh exe.dev` às máquinas virtuais [exe.dev](https://exe.dev) (opcional)
 
-## Automated Install with Shelley
+## Instalação automatizada com Shelley
 
-Shelley, [exe.dev](https://exe.dev)'s agent, can install OpenClaw instantly with our
-prompt. The prompt used is as below:
+Shelley, o agente do [exe.dev](https://exe.dev), pode instalar o OpenCraft instantaneamente com nosso
+prompt. O prompt utilizado é o seguinte:
 
 ```
-Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Pairing is done by "openclaw devices list" and "openclaw devices approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
+Configure o OpenCraft (https://docs.openclaw.ai/install) nesta VM. Use as flags não-interativas e de aceitar risco para o onboarding do opencraft. Adicione a auth ou token fornecida conforme necessário. Configure o nginx para redirecionar da porta padrão 18789 para o local raiz na configuração do site habilitado por padrão, garantindo que o suporte a WebSocket esteja ativado. O pareamento é feito com "opencraft devices list" e "opencraft devices approve <request id>". Certifique-se de que o dashboard mostre que a saúde do OpenCraft está OK. O exe.dev cuida do redirecionamento da porta 8000 para a porta 80/443 e HTTPS para nós, então o "reachable" final deve ser <nome-da-vm>.exe.xyz, sem especificação de porta.
 ```
 
-## Manual installation
+## Instalação manual
 
-## 1) Create the VM
+## 1) Criar a VM
 
-From your device:
+Do seu dispositivo:
 
 ```bash
 ssh exe.dev new
 ```
 
-Then connect:
+Depois conecte:
 
 ```bash
-ssh <vm-name>.exe.xyz
+ssh <nome-da-vm>.exe.xyz
 ```
 
-Tip: keep this VM **stateful**. OpenClaw stores state under `~/.openclaw/` and `~/.openclaw/workspace/`.
+Dica: mantenha esta VM **stateful**. O OpenCraft armazena estado em `~/.opencraft/` e `~/.opencraft/workspace/`.
 
-## 2) Install prerequisites (on the VM)
+## 2) Instalar pré-requisitos (na VM)
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y git curl jq ca-certificates openssl
 ```
 
-## 3) Install OpenClaw
+## 3) Instalar o OpenCraft
 
-Run the OpenClaw install script:
+Execute o script de instalação do OpenCraft:
 
 ```bash
 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
-## 4) Setup nginx to proxy OpenClaw to port 8000
+## 4) Configurar nginx para fazer proxy do OpenCraft na porta 8000
 
-Edit `/etc/nginx/sites-enabled/default` with
+Edite `/etc/nginx/sites-enabled/default` com:
 
 ```
 server {
@@ -84,43 +84,43 @@ server {
         proxy_pass http://127.0.0.1:18789;
         proxy_http_version 1.1;
 
-        # WebSocket support
+        # Suporte a WebSocket
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # Standard proxy headers
+        # Headers padrão de proxy
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Timeout settings for long-lived connections
+        # Configurações de timeout para conexões de longa duração
         proxy_read_timeout 86400s;
         proxy_send_timeout 86400s;
     }
 }
 ```
 
-## 5) Access OpenClaw and grant privileges
+## 5) Acessar o OpenCraft e conceder privilégios
 
-Access `https://<vm-name>.exe.xyz/` (see the Control UI output from onboarding). If it prompts for auth, paste the
-token from `gateway.auth.token` on the VM (retrieve with `openclaw config get gateway.auth.token`, or generate one
-with `openclaw doctor --generate-gateway-token`). Approve devices with `openclaw devices list` and
-`openclaw devices approve <requestId>`. When in doubt, use Shelley from your browser!
+Acesse `https://<nome-da-vm>.exe.xyz/` (veja a saída da UI de Controle do onboarding). Se solicitar auth, cole o
+token de `gateway.auth.token` na VM (recupere com `opencraft config get gateway.auth.token`, ou gere um
+com `opencraft doctor --generate-gateway-token`). Aprove dispositivos com `opencraft devices list` e
+`opencraft devices approve <requestId>`. Em caso de dúvida, use Shelley no seu navegador!
 
-## Remote Access
+## Acesso remoto
 
-Remote access is handled by [exe.dev](https://exe.dev)'s authentication. By
-default, HTTP traffic from port 8000 is forwarded to `https://<vm-name>.exe.xyz`
-with email auth.
+O acesso remoto é gerenciado pela autenticação do [exe.dev](https://exe.dev). Por
+padrão, o tráfego HTTP da porta 8000 é redirecionado para `https://<nome-da-vm>.exe.xyz`
+com autenticação por email.
 
-## Updating
+## Atualizando
 
 ```bash
-npm i -g openclaw@latest
-openclaw doctor
-openclaw gateway restart
-openclaw health
+npm i -g opencraft@latest
+opencraft doctor
+opencraft gateway restart
+opencraft health
 ```
 
-Guide: [Updating](/install/updating)
+Guia: [Atualizando](/install/updating)

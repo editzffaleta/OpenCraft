@@ -1,75 +1,75 @@
 ---
-summary: "CLI reference for `openclaw nodes` (list/status/approve/invoke, camera/canvas/screen)"
+summary: "Referência do CLI para `opencraft nodes` (list/status/approve/invoke, câmera/canvas/tela)"
 read_when:
-  - You’re managing paired nodes (cameras, screen, canvas)
-  - You need to approve requests or invoke node commands
+  - Você está gerenciando nodes pareados (câmeras, tela, canvas)
+  - Você precisa aprovar solicitações ou invocar comandos de node
 title: "nodes"
 ---
 
-# `openclaw nodes`
+# `opencraft nodes`
 
-Manage paired nodes (devices) and invoke node capabilities.
+Gerenciar nodes pareados (dispositivos) e invocar capacidades de node.
 
-Related:
+Relacionado:
 
-- Nodes overview: [Nodes](/nodes)
-- Camera: [Camera nodes](/nodes/camera)
-- Images: [Image nodes](/nodes/images)
+- Visão geral de nodes: [Nodes](/nodes)
+- Câmera: [Camera nodes](/nodes/camera)
+- Imagens: [Image nodes](/nodes/images)
 
-Common options:
+Opções comuns:
 
 - `--url`, `--token`, `--timeout`, `--json`
 
-## Common commands
+## Comandos comuns
 
 ```bash
-openclaw nodes list
-openclaw nodes list --connected
-openclaw nodes list --last-connected 24h
-openclaw nodes pending
-openclaw nodes approve <requestId>
-openclaw nodes status
-openclaw nodes status --connected
-openclaw nodes status --last-connected 24h
+opencraft nodes list
+opencraft nodes list --connected
+opencraft nodes list --last-connected 24h
+opencraft nodes pending
+opencraft nodes approve <requestId>
+opencraft nodes status
+opencraft nodes status --connected
+opencraft nodes status --last-connected 24h
 ```
 
-`nodes list` prints pending/paired tables. Paired rows include the most recent connect age (Last Connect).
-Use `--connected` to only show currently-connected nodes. Use `--last-connected <duration>` to
-filter to nodes that connected within a duration (e.g. `24h`, `7d`).
+`nodes list` imprime tabelas de pending/paired. Linhas pareadas incluem a idade de conexão mais recente (Last Connect).
+Use `--connected` para mostrar apenas nodes atualmente conectados. Use `--last-connected <duration>` para
+filtrar nodes que conectaram dentro de uma duração (ex. `24h`, `7d`).
 
-## Invoke / run
+## Invocar / rodar
 
 ```bash
-openclaw nodes invoke --node <id|name|ip> --command <command> --params <json>
-openclaw nodes run --node <id|name|ip> <command...>
-openclaw nodes run --raw "git status"
-openclaw nodes run --agent main --node <id|name|ip> --raw "git status"
+opencraft nodes invoke --node <id|name|ip> --command <command> --params <json>
+opencraft nodes run --node <id|name|ip> <command...>
+opencraft nodes run --raw "git status"
+opencraft nodes run --agent main --node <id|name|ip> --raw "git status"
 ```
 
-Invoke flags:
+Flags de invoke:
 
-- `--params <json>`: JSON object string (default `{}`).
-- `--invoke-timeout <ms>`: node invoke timeout (default `15000`).
-- `--idempotency-key <key>`: optional idempotency key.
+- `--params <json>`: string de objeto JSON (padrão `{}`).
+- `--invoke-timeout <ms>`: timeout de invoke do node (padrão `15000`).
+- `--idempotency-key <key>`: chave de idempotência opcional.
 
-### Exec-style defaults
+### Padrões estilo exec
 
-`nodes run` mirrors the model’s exec behavior (defaults + approvals):
+`nodes run` espelha o comportamento de exec do modelo (padrões + aprovações):
 
-- Reads `tools.exec.*` (plus `agents.list[].tools.exec.*` overrides).
-- Uses exec approvals (`exec.approval.request`) before invoking `system.run`.
-- `--node` can be omitted when `tools.exec.node` is set.
-- Requires a node that advertises `system.run` (macOS companion app or headless node host).
+- Lê `tools.exec.*` (mais overrides de `agents.list[].tools.exec.*`).
+- Usa aprovações de exec (`exec.approval.request`) antes de invocar `system.run`.
+- `--node` pode ser omitido quando `tools.exec.node` estiver definido.
+- Requer um node que anuncie `system.run` (app companion macOS ou host de node headless).
 
 Flags:
 
-- `--cwd <path>`: working directory.
-- `--env <key=val>`: env override (repeatable). Note: node hosts ignore `PATH` overrides (and `tools.exec.pathPrepend` is not applied to node hosts).
-- `--command-timeout <ms>`: command timeout.
-- `--invoke-timeout <ms>`: node invoke timeout (default `30000`).
-- `--needs-screen-recording`: require screen recording permission.
-- `--raw <command>`: run a shell string (`/bin/sh -lc` or `cmd.exe /c`).
-  In allowlist mode on Windows node hosts, `cmd.exe /c` shell-wrapper runs require approval
-  (allowlist entry alone does not auto-allow the wrapper form).
-- `--agent <id>`: agent-scoped approvals/allowlists (defaults to configured agent).
+- `--cwd <path>`: diretório de trabalho.
+- `--env <key=val>`: override de env (repetível). Nota: hosts de node ignoram overrides de `PATH` (e `tools.exec.pathPrepend` não é aplicado a hosts de node).
+- `--command-timeout <ms>`: timeout de comando.
+- `--invoke-timeout <ms>`: timeout de invoke do node (padrão `30000`).
+- `--needs-screen-recording`: requer permissão de gravação de tela.
+- `--raw <command>`: rodar uma string shell (`/bin/sh -lc` ou `cmd.exe /c`).
+  Em modo allowlist em hosts de node Windows, execuções de wrapper shell `cmd.exe /c` requerem aprovação
+  (entrada de allowlist sozinha não auto-permite a forma wrapper).
+- `--agent <id>`: aprovações/allowlists com escopo de agente (padrão: agente configurado).
 - `--ask <off|on-miss|always>`, `--security <deny|allowlist|full>`: overrides.

@@ -1,23 +1,23 @@
 ---
-summary: "Reaction semantics shared across channels"
+summary: "Semântica de reações compartilhada entre canais"
 read_when:
-  - Working on reactions in any channel
-title: "Reactions"
+  - Trabalhando com reações em qualquer canal
+title: "Reações"
 ---
 
-# Reaction tooling
+# Ferramenta de reações
 
-Shared reaction semantics across channels:
+Semântica de reações compartilhada entre canais:
 
-- `emoji` is required when adding a reaction.
-- `emoji=""` removes the bot's reaction(s) when supported.
-- `remove: true` removes the specified emoji when supported (requires `emoji`).
+- `emoji` é obrigatório ao adicionar uma reação.
+- `emoji=""` remove a(s) reação(ões) do bot quando suportado.
+- `remove: true` remove o emoji especificado quando suportado (requer `emoji`).
 
-Channel notes:
+Notas por canal:
 
-- **Discord/Slack**: empty `emoji` removes all of the bot's reactions on the message; `remove: true` removes just that emoji.
-- **Google Chat**: empty `emoji` removes the app's reactions on the message; `remove: true` removes just that emoji.
-- **Telegram**: empty `emoji` removes the bot's reactions; `remove: true` also removes reactions but still requires a non-empty `emoji` for tool validation.
-- **WhatsApp**: empty `emoji` removes the bot reaction; `remove: true` maps to empty emoji (still requires `emoji`).
-- **Zalo Personal (`zalouser`)**: requires non-empty `emoji`; `remove: true` removes that specific emoji reaction.
-- **Signal**: inbound reaction notifications emit system events when `channels.signal.reactionNotifications` is enabled.
+- **Discord/Slack**: `emoji` vazio remove todas as reações do bot na mensagem; `remove: true` remove apenas aquele emoji.
+- **Google Chat**: `emoji` vazio remove as reações do app na mensagem; `remove: true` remove apenas aquele emoji.
+- **Telegram**: `emoji` vazio remove as reações do bot; `remove: true` também remove reações, mas ainda requer um `emoji` não vazio para validação da tool.
+- **WhatsApp**: `emoji` vazio remove a reação do bot; `remove: true` mapeia para emoji vazio (ainda requer `emoji`).
+- **Zalo Pessoal (`zalouser`)**: requer `emoji` não vazio; `remove: true` remove aquela reação de emoji específica.
+- **Signal**: notificações de reação de entrada emitem eventos de sistema quando `channels.signal.reactionNotifications` está habilitado.

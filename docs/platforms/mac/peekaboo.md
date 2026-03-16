@@ -1,65 +1,63 @@
 ---
-summary: "PeekabooBridge integration for macOS UI automation"
+summary: "Integração PeekabooBridge para automação de UI macOS"
 read_when:
-  - Hosting PeekabooBridge in OpenClaw.app
-  - Integrating Peekaboo via Swift Package Manager
-  - Changing PeekabooBridge protocol/paths
+  - Hospedando PeekabooBridge no OpenCraft.app
+  - Integrando Peekaboo via Swift Package Manager
+  - Alterando o protocolo/caminhos do PeekabooBridge
 title: "Peekaboo Bridge"
 ---
 
-# Peekaboo Bridge (macOS UI automation)
+# Peekaboo Bridge (automação de UI macOS)
 
-OpenClaw can host **PeekabooBridge** as a local, permission‑aware UI automation
-broker. This lets the `peekaboo` CLI drive UI automation while reusing the
-macOS app’s TCC permissions.
+O OpenCraft pode hospedar o **PeekabooBridge** como um broker de automação de UI local e ciente de permissões. Isso permite que a CLI `peekaboo` controle a automação de UI reutilizando as permissões TCC do app macOS.
 
-## What this is (and isn’t)
+## O que é isso (e o que não é)
 
-- **Host**: OpenClaw.app can act as a PeekabooBridge host.
-- **Client**: use the `peekaboo` CLI (no separate `openclaw ui ...` surface).
-- **UI**: visual overlays stay in Peekaboo.app; OpenClaw is a thin broker host.
+- **Host**: OpenCraft.app pode atuar como host PeekabooBridge.
+- **Cliente**: use a CLI `peekaboo` (sem superfície `opencraft ui ...` separada).
+- **UI**: overlays visuais ficam no Peekaboo.app; o OpenCraft é apenas um host broker fino.
 
-## Enable the bridge
+## Habilitar o bridge
 
-In the macOS app:
+No app macOS:
 
-- Settings → **Enable Peekaboo Bridge**
+- Configurações → **Enable Peekaboo Bridge**
 
-When enabled, OpenClaw starts a local UNIX socket server. If disabled, the host
-is stopped and `peekaboo` will fall back to other available hosts.
+Quando habilitado, o OpenCraft inicia um servidor de socket UNIX local. Se desabilitado, o host
+é parado e `peekaboo` fará fallback para outros hosts disponíveis.
 
-## Client discovery order
+## Ordem de descoberta do cliente
 
-Peekaboo clients typically try hosts in this order:
+Os clientes Peekaboo normalmente tentam hosts nesta ordem:
 
-1. Peekaboo.app (full UX)
-2. Claude.app (if installed)
-3. OpenClaw.app (thin broker)
+1. Peekaboo.app (UX completo)
+2. Claude.app (se instalado)
+3. OpenCraft.app (broker fino)
 
-Use `peekaboo bridge status --verbose` to see which host is active and which
-socket path is in use. You can override with:
+Use `peekaboo bridge status --verbose` para ver qual host está ativo e qual
+caminho de socket está em uso. Você pode sobrescrever com:
 
 ```bash
-export PEEKABOO_BRIDGE_SOCKET=/path/to/bridge.sock
+export PEEKABOO_BRIDGE_SOCKET=/caminho/para/bridge.sock
 ```
 
-## Security & permissions
+## Segurança e permissões
 
-- The bridge validates **caller code signatures**; an allowlist of TeamIDs is
-  enforced (Peekaboo host TeamID + OpenClaw app TeamID).
-- Requests time out after ~10 seconds.
-- If required permissions are missing, the bridge returns a clear error message
-  rather than launching System Settings.
+- O bridge valida **assinaturas de código do chamador**; uma allowlist de TeamIDs é
+  aplicada (TeamID do host Peekaboo + TeamID do app OpenCraft).
+- As requisições expiram após ~10 segundos.
+- Se as permissões necessárias estiverem ausentes, o bridge retorna uma mensagem de erro clara
+  em vez de abrir as Configurações do Sistema.
 
-## Snapshot behavior (automation)
+## Comportamento de snapshot (automação)
 
-Snapshots are stored in memory and expire automatically after a short window.
-If you need longer retention, re‑capture from the client.
+Os snapshots são armazenados em memória e expiram automaticamente após uma janela curta.
+Se você precisar de retenção mais longa, recapture a partir do cliente.
 
 ## Troubleshooting
 
-- If `peekaboo` reports “bridge client is not authorized”, ensure the client is
-  properly signed or run the host with `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1`
-  in **debug** mode only.
-- If no hosts are found, open one of the host apps (Peekaboo.app or OpenClaw.app)
-  and confirm permissions are granted.
+- Se `peekaboo` reportar "bridge client is not authorized", certifique-se de que o cliente está
+  devidamente assinado ou execute o host com `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1`
+  somente no modo **debug**.
+- Se nenhum host for encontrado, abra um dos apps host (Peekaboo.app ou OpenCraft.app)
+  e confirme que as permissões foram concedidas.

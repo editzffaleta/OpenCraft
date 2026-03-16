@@ -1,38 +1,38 @@
 ---
-summary: "macOS permission persistence (TCC) and signing requirements"
+summary: "Persistência de permissões macOS (TCC) e requisitos de assinatura"
 read_when:
-  - Debugging missing or stuck macOS permission prompts
-  - Packaging or signing the macOS app
-  - Changing bundle IDs or app install paths
-title: "macOS Permissions"
+  - Depurando prompts de permissão macOS ausentes ou travados
+  - Empacotando ou assinando o app macOS
+  - Alterando bundle IDs ou caminhos de instalação do app
+title: "Permissões macOS"
 ---
 
-# macOS permissions (TCC)
+# Permissões macOS (TCC)
 
-macOS permission grants are fragile. TCC associates a permission grant with the
-app's code signature, bundle identifier, and on-disk path. If any of those change,
-macOS treats the app as new and may drop or hide prompts.
+As concessões de permissão do macOS são frágeis. O TCC associa uma concessão de permissão à
+assinatura de código do app, identificador de bundle e caminho no disco. Se qualquer um desses mudar,
+o macOS trata o app como novo e pode descartar ou ocultar prompts.
 
-## Requirements for stable permissions
+## Requisitos para permissões estáveis
 
-- Same path: run the app from a fixed location (for OpenClaw, `dist/OpenClaw.app`).
-- Same bundle identifier: changing the bundle ID creates a new permission identity.
-- Signed app: unsigned or ad-hoc signed builds do not persist permissions.
-- Consistent signature: use a real Apple Development or Developer ID certificate
-  so the signature stays stable across rebuilds.
+- Mesmo caminho: execute o app a partir de um local fixo (para o OpenCraft, `dist/OpenCraft.app`).
+- Mesmo identificador de bundle: alterar o bundle ID cria uma nova identidade de permissão.
+- App assinado: builds sem assinatura ou com assinatura ad-hoc não persistem permissões.
+- Assinatura consistente: use um certificado real Apple Development ou Developer ID
+  para que a assinatura permaneça estável entre rebuilds.
 
-Ad-hoc signatures generate a new identity every build. macOS will forget previous
-grants, and prompts can disappear entirely until the stale entries are cleared.
+Assinaturas ad-hoc geram uma nova identidade a cada build. O macOS vai esquecer as concessões anteriores,
+e os prompts podem desaparecer completamente até que as entradas desatualizadas sejam limpas.
 
-## Recovery checklist when prompts disappear
+## Checklist de recuperação quando os prompts desaparecem
 
-1. Quit the app.
-2. Remove the app entry in System Settings -> Privacy & Security.
-3. Relaunch the app from the same path and re-grant permissions.
-4. If the prompt still does not appear, reset TCC entries with `tccutil` and try again.
-5. Some permissions only reappear after a full macOS restart.
+1. Feche o app.
+2. Remova a entrada do app em Configurações do Sistema -> Privacidade e Segurança.
+3. Relance o app a partir do mesmo caminho e conceda as permissões novamente.
+4. Se o prompt ainda não aparecer, redefina as entradas do TCC com `tccutil` e tente novamente.
+5. Algumas permissões só reaparecem após uma reinicialização completa do macOS.
 
-Example resets (replace bundle ID as needed):
+Exemplos de redefinição (substitua o bundle ID conforme necessário):
 
 ```bash
 sudo tccutil reset Accessibility ai.openclaw.mac
@@ -40,11 +40,11 @@ sudo tccutil reset ScreenCapture ai.openclaw.mac
 sudo tccutil reset AppleEvents
 ```
 
-## Files and folders permissions (Desktop/Documents/Downloads)
+## Permissões de arquivos e pastas (Desktop/Documentos/Downloads)
 
-macOS may also gate Desktop, Documents, and Downloads for terminal/background processes. If file reads or directory listings hang, grant access to the same process context that performs file operations (for example Terminal/iTerm, LaunchAgent-launched app, or SSH process).
+O macOS também pode controlar acesso a Desktop, Documentos e Downloads para processos de terminal/background. Se leituras de arquivo ou listagens de diretório travarem, conceda acesso ao mesmo contexto de processo que realiza operações de arquivo (por exemplo Terminal/iTerm, app lançado por LaunchAgent, ou processo SSH).
 
-Workaround: move files into the OpenClaw workspace (`~/.openclaw/workspace`) if you want to avoid per-folder grants.
+Solução alternativa: mova os arquivos para o workspace do OpenCraft (`~/.opencraft/workspace`) se quiser evitar concessões por pasta.
 
-If you are testing permissions, always sign with a real certificate. Ad-hoc
-builds are only acceptable for quick local runs where permissions do not matter.
+Se estiver testando permissões, sempre assine com um certificado real. Builds
+ad-hoc são aceitáveis apenas para execuções locais rápidas onde as permissões não importam.

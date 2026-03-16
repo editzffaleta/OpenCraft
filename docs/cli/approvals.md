@@ -1,50 +1,50 @@
 ---
-summary: "CLI reference for `openclaw approvals` (exec approvals for gateway or node hosts)"
+summary: "Referência do CLI para `opencraft approvals` (aprovações de exec para gateway ou hosts de node)"
 read_when:
-  - You want to edit exec approvals from the CLI
-  - You need to manage allowlists on gateway or node hosts
+  - Você quer editar aprovações de exec via CLI
+  - Você precisa gerenciar allowlists em gateway ou hosts de node
 title: "approvals"
 ---
 
-# `openclaw approvals`
+# `opencraft approvals`
 
-Manage exec approvals for the **local host**, **gateway host**, or a **node host**.
-By default, commands target the local approvals file on disk. Use `--gateway` to target the gateway, or `--node` to target a specific node.
+Gerenciar aprovações de exec para o **host local**, **host do gateway** ou um **host de node**.
+Por padrão, comandos visam o arquivo de aprovações local no disco. Use `--gateway` para visar o gateway, ou `--node` para visar um node específico.
 
-Related:
+Relacionado:
 
-- Exec approvals: [Exec approvals](/tools/exec-approvals)
+- Aprovações de exec: [Exec approvals](/tools/exec-approvals)
 - Nodes: [Nodes](/nodes)
 
-## Common commands
+## Comandos comuns
 
 ```bash
-openclaw approvals get
-openclaw approvals get --node <id|name|ip>
-openclaw approvals get --gateway
+opencraft approvals get
+opencraft approvals get --node <id|name|ip>
+opencraft approvals get --gateway
 ```
 
-## Replace approvals from a file
+## Substituir aprovações de um arquivo
 
 ```bash
-openclaw approvals set --file ./exec-approvals.json
-openclaw approvals set --node <id|name|ip> --file ./exec-approvals.json
-openclaw approvals set --gateway --file ./exec-approvals.json
+opencraft approvals set --file ./exec-approvals.json
+opencraft approvals set --node <id|name|ip> --file ./exec-approvals.json
+opencraft approvals set --gateway --file ./exec-approvals.json
 ```
 
-## Allowlist helpers
+## Helpers de allowlist
 
 ```bash
-openclaw approvals allowlist add "~/Projects/**/bin/rg"
-openclaw approvals allowlist add --agent main --node <id|name|ip> "/usr/bin/uptime"
-openclaw approvals allowlist add --agent "*" "/usr/bin/uname"
+opencraft approvals allowlist add "~/Projects/**/bin/rg"
+opencraft approvals allowlist add --agent main --node <id|name|ip> "/usr/bin/uptime"
+opencraft approvals allowlist add --agent "*" "/usr/bin/uname"
 
-openclaw approvals allowlist remove "~/Projects/**/bin/rg"
+opencraft approvals allowlist remove "~/Projects/**/bin/rg"
 ```
 
-## Notes
+## Notas
 
-- `--node` uses the same resolver as `openclaw nodes` (id, name, ip, or id prefix).
-- `--agent` defaults to `"*"`, which applies to all agents.
-- The node host must advertise `system.execApprovals.get/set` (macOS app or headless node host).
-- Approvals files are stored per host at `~/.openclaw/exec-approvals.json`.
+- `--node` usa o mesmo resolvedor que `opencraft nodes` (id, nome, ip, ou prefixo de id).
+- `--agent` padrão para `"*"`, que se aplica a todos os agentes.
+- O host de node deve anunciar `system.execApprovals.get/set` (app macOS ou host de node headless).
+- Arquivos de aprovações são armazenados por host em `~/.opencraft/exec-approvals.json`.

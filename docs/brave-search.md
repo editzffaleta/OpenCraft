@@ -1,22 +1,22 @@
 ---
-summary: "Brave Search API setup for web_search"
+summary: "Configuração da Brave Search API para web_search"
 read_when:
-  - You want to use Brave Search for web_search
-  - You need a BRAVE_API_KEY or plan details
+  - Você quer usar o Brave Search para web_search
+  - Você precisa de um BRAVE_API_KEY ou detalhes do plano
 title: "Brave Search"
 ---
 
 # Brave Search API
 
-OpenClaw supports Brave Search API as a `web_search` provider.
+O OpenCraft suporta a Brave Search API como provedor de `web_search`.
 
-## Get an API key
+## Obtenha uma chave de API
 
-1. Create a Brave Search API account at [https://brave.com/search/api/](https://brave.com/search/api/)
-2. In the dashboard, choose the **Search** plan and generate an API key.
-3. Store the key in config or set `BRAVE_API_KEY` in the Gateway environment.
+1. Crie uma conta na Brave Search API em [https://brave.com/search/api/](https://brave.com/search/api/)
+2. No dashboard, escolha o plano **Search** e gere uma chave de API.
+3. Armazene a chave na config ou defina `BRAVE_API_KEY` no ambiente do Gateway.
 
-## Config example
+## Exemplo de config
 
 ```json5
 {
@@ -33,48 +33,48 @@ OpenClaw supports Brave Search API as a `web_search` provider.
 }
 ```
 
-## Tool parameters
+## Parâmetros da tool
 
-| Parameter     | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| `query`       | Search query (required)                                             |
-| `count`       | Number of results to return (1-10, default: 5)                      |
-| `country`     | 2-letter ISO country code (e.g., "US", "DE")                        |
-| `language`    | ISO 639-1 language code for search results (e.g., "en", "de", "fr") |
-| `ui_lang`     | ISO language code for UI elements                                   |
-| `freshness`   | Time filter: `day` (24h), `week`, `month`, or `year`                |
-| `date_after`  | Only results published after this date (YYYY-MM-DD)                 |
-| `date_before` | Only results published before this date (YYYY-MM-DD)                |
+| Parâmetro     | Descrição                                                                 |
+| ------------- | ------------------------------------------------------------------------- |
+| `query`       | Consulta de busca (obrigatório)                                           |
+| `count`       | Número de resultados a retornar (1-10, padrão: 5)                        |
+| `country`     | Código de país ISO de 2 letras (ex.: "US", "BR")                         |
+| `language`    | Código de idioma ISO 639-1 para resultados de busca (ex.: "en", "pt")    |
+| `ui_lang`     | Código de idioma ISO para elementos de UI                                 |
+| `freshness`   | Filtro de tempo: `day` (24h), `week`, `month` ou `year`                  |
+| `date_after`  | Apenas resultados publicados após esta data (YYYY-MM-DD)                  |
+| `date_before` | Apenas resultados publicados antes desta data (YYYY-MM-DD)                |
 
-**Examples:**
+**Exemplos:**
 
 ```javascript
-// Country and language-specific search
+// Busca específica por país e idioma
 await web_search({
-  query: "renewable energy",
-  country: "DE",
-  language: "de",
+  query: "energia renovável",
+  country: "BR",
+  language: "pt",
 });
 
-// Recent results (past week)
+// Resultados recentes (última semana)
 await web_search({
-  query: "AI news",
+  query: "notícias de IA",
   freshness: "week",
 });
 
-// Date range search
+// Busca por intervalo de datas
 await web_search({
-  query: "AI developments",
+  query: "desenvolvimentos em IA",
   date_after: "2024-01-01",
   date_before: "2024-06-30",
 });
 ```
 
-## Notes
+## Notas
 
-- OpenClaw uses the Brave **Search** plan. If you have a legacy subscription (e.g. the original Free plan with 2,000 queries/month), it remains valid but does not include newer features like LLM Context or higher rate limits.
-- Each Brave plan includes **\$5/month in free credit** (renewing). The Search plan costs \$5 per 1,000 requests, so the credit covers 1,000 queries/month. Set your usage limit in the Brave dashboard to avoid unexpected charges. See the [Brave API portal](https://brave.com/search/api/) for current plans.
-- The Search plan includes the LLM Context endpoint and AI inference rights. Storing results to train or tune models requires a plan with explicit storage rights. See the Brave [Terms of Service](https://api-dashboard.search.brave.com/terms-of-service).
-- Results are cached for 15 minutes by default (configurable via `cacheTtlMinutes`).
+- O OpenCraft usa o plano **Search** do Brave. Se você tem uma assinatura legada (ex.: o plano Free original com 2.000 consultas/mês), ela continua válida, mas não inclui recursos mais novos como LLM Context ou limites de taxa maiores.
+- Cada plano Brave inclui **$5/mês em crédito gratuito** (renovando). O plano Search custa $5 por 1.000 requisições, então o crédito cobre 1.000 consultas/mês. Defina seu limite de uso no dashboard do Brave para evitar cobranças inesperadas. Veja o [portal da Brave API](https://brave.com/search/api/) para os planos atuais.
+- O plano Search inclui o endpoint LLM Context e direitos de inferência de IA. Armazenar resultados para treinar ou ajustar modelos requer um plano com direitos explícitos de armazenamento. Veja os [Termos de Serviço](https://api-dashboard.search.brave.com/terms-of-service) do Brave.
+- Os resultados são armazenados em cache por 15 minutos por padrão (configurável via `cacheTtlMinutes`).
 
-See [Web tools](/tools/web) for the full web_search configuration.
+Veja [Ferramentas Web](/tools/web) para a configuração completa de web_search.

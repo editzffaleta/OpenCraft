@@ -1,32 +1,32 @@
 ---
-summary: "Deepgram transcription for inbound voice notes"
+summary: "Transcrição Deepgram para notas de voz recebidas"
 read_when:
-  - You want Deepgram speech-to-text for audio attachments
-  - You need a quick Deepgram config example
+  - Você quer Deepgram para transcrição de áudio em anexos
+  - Você precisa de um exemplo rápido de config do Deepgram
 title: "Deepgram"
 ---
 
-# Deepgram (Audio Transcription)
+# Deepgram (Transcrição de Áudio)
 
-Deepgram is a speech-to-text API. In OpenClaw it is used for **inbound audio/voice note
-transcription** via `tools.media.audio`.
+O Deepgram é uma API de reconhecimento de fala. No OpenCraft é usado para **transcrição
+de áudio/notas de voz recebidas** via `tools.media.audio`.
 
-When enabled, OpenClaw uploads the audio file to Deepgram and injects the transcript
-into the reply pipeline (`{{Transcript}}` + `[Audio]` block). This is **not streaming**;
-it uses the pre-recorded transcription endpoint.
+Quando habilitado, o OpenCraft envia o arquivo de áudio para o Deepgram e injeta a
+transcrição no pipeline de resposta (bloco `{{Transcript}}` + `[Audio]`). Isso **não é
+streaming**; usa o endpoint de transcrição pré-gravada.
 
-Website: [https://deepgram.com](https://deepgram.com)  
+Site: [https://deepgram.com](https://deepgram.com)
 Docs: [https://developers.deepgram.com](https://developers.deepgram.com)
 
-## Quick start
+## Início rápido
 
-1. Set your API key:
+1. Defina sua chave de API:
 
 ```
 DEEPGRAM_API_KEY=dg_...
 ```
 
-2. Enable the provider:
+2. Habilite o provedor:
 
 ```json5
 {
@@ -41,15 +41,15 @@ DEEPGRAM_API_KEY=dg_...
 }
 ```
 
-## Options
+## Opções
 
-- `model`: Deepgram model id (default: `nova-3`)
-- `language`: language hint (optional)
-- `tools.media.audio.providerOptions.deepgram.detect_language`: enable language detection (optional)
-- `tools.media.audio.providerOptions.deepgram.punctuate`: enable punctuation (optional)
-- `tools.media.audio.providerOptions.deepgram.smart_format`: enable smart formatting (optional)
+- `model`: ID do modelo Deepgram (padrão: `nova-3`)
+- `language`: dica de idioma (opcional)
+- `tools.media.audio.providerOptions.deepgram.detect_language`: habilitar detecção de idioma (opcional)
+- `tools.media.audio.providerOptions.deepgram.punctuate`: habilitar pontuação (opcional)
+- `tools.media.audio.providerOptions.deepgram.smart_format`: habilitar formatação inteligente (opcional)
 
-Example with language:
+Exemplo com idioma:
 
 ```json5
 {
@@ -57,14 +57,14 @@ Example with language:
     media: {
       audio: {
         enabled: true,
-        models: [{ provider: "deepgram", model: "nova-3", language: "en" }],
+        models: [{ provider: "deepgram", model: "nova-3", language: "pt" }],
       },
     },
   },
 }
 ```
 
-Example with Deepgram options:
+Exemplo com opções do Deepgram:
 
 ```json5
 {
@@ -86,8 +86,8 @@ Example with Deepgram options:
 }
 ```
 
-## Notes
+## Notas
 
-- Authentication follows the standard provider auth order; `DEEPGRAM_API_KEY` is the simplest path.
-- Override endpoints or headers with `tools.media.audio.baseUrl` and `tools.media.audio.headers` when using a proxy.
-- Output follows the same audio rules as other providers (size caps, timeouts, transcript injection).
+- A autenticação segue a ordem padrão de auth de provedores; `DEEPGRAM_API_KEY` é o caminho mais simples.
+- Sobrescreva endpoints ou headers com `tools.media.audio.baseUrl` e `tools.media.audio.headers` ao usar um proxy.
+- A saída segue as mesmas regras de áudio de outros provedores (limites de tamanho, timeouts, injeção de transcrição).
