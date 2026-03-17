@@ -1,15 +1,15 @@
 ---
-summary: "Secrets management: SecretRef contract, runtime snapshot behavior, and safe one-way scrubbing"
+summary: "Gerenciamento de secrets: contrato SecretRef, comportamento de snapshot em runtime e scrubbing seguro unidirecional"
 read_when:
-  - Configuring SecretRefs for provider credentials and `auth-profiles.json` refs
-  - Operating secrets reload, audit, configure, and apply safely in production
-  - Understanding startup fail-fast, inactive-surface filtering, and last-known-good behavior
+  - Configurando SecretRefs para credenciais de provider e refs de `auth-profiles.json`
+  - Operando reload, auditoria, configuração e apply de secrets com segurança em produção
+  - Entendendo comportamento de fail-fast na inicialização, filtragem de superfície inativa e last-known-good
 title: "Secrets Management"
 ---
 
-# Secrets management
+# Gerenciamento de secrets
 
-OpenCraft supports additive SecretRefs so supported credentials do not need to be stored as plaintext in configuration.
+OpenCraft suporta SecretRefs aditivos para que credenciais suportadas não precisem ser armazenadas como texto puro na configuração.
 
 Plaintext still works. SecretRefs are opt-in per credential.
 

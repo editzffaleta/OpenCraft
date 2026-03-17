@@ -1,93 +1,93 @@
 ---
-summary: "Run OpenCraft Gateway 24/7 on a cheap Hetzner VPS (Docker) with durable state and baked-in binaries"
+summary: "Execute o Gateway OpenCraft 24/7 em um VPS Hetzner barato (Docker) com estado durável e binários incorporados"
 read_when:
-  - You want OpenCraft running 24/7 on a cloud VPS (not your laptop)
-  - You want a production-grade, always-on Gateway on your own VPS
-  - You want full control over persistence, binaries, and restart behavior
-  - You are running OpenCraft in Docker on Hetzner or a similar provider
+  - Você quer o OpenCraft rodando 24/7 em um VPS na nuvem (não no seu laptop)
+  - Você quer um Gateway sempre ativo e pronto para produção no seu próprio VPS
+  - Você quer controle total sobre persistência, binários e comportamento de reinicialização
+  - Você está rodando o OpenCraft em Docker no Hetzner ou provedor similar
 title: "Hetzner"
 ---
 
-# OpenCraft on Hetzner (Docker, Production VPS Guide)
+# OpenCraft no Hetzner (Docker, Guia de VPS para Produção)
 
-## Goal
+## Objetivo
 
-Run a persistent OpenCraft Gateway on a Hetzner VPS using Docker, with durable state, baked-in binaries, and safe restart behavior.
+Executar um Gateway OpenCraft persistente em um VPS Hetzner usando Docker, com estado durável, binários incorporados e comportamento seguro de reinicialização.
 
-If you want “OpenCraft 24/7 for ~$5”, this is the simplest reliable setup.
-Hetzner pricing changes; pick the smallest Debian/Ubuntu VPS and scale up if you hit OOMs.
+Se você quer "OpenCraft 24/7 por ~$5", esta é a configuração confiável mais simples.
+Os preços do Hetzner mudam; escolha o menor VPS Debian/Ubuntu e escale se encontrar OOMs.
 
-Security model reminder:
+Lembrete do modelo de segurança:
 
-- Company-shared agents are fine when everyone is in the same trust boundary and the runtime is business-only.
-- Keep strict separation: dedicated VPS/runtime + dedicated accounts; no personal Apple/Google/browser/password-manager profiles on that host.
-- If users are adversarial to each other, split by gateway/host/OS user.
+- Agentes compartilhados por empresa são ok quando todos estão no mesmo limite de confiança e o runtime é apenas para uso comercial.
+- Mantenha separação rigorosa: VPS/runtime dedicado + contas dedicadas; sem perfis pessoais de Apple/Google/navegador/gerenciador de senhas nesse host.
+- Se os usuários são adversários entre si, separe por gateway/host/usuário de SO.
 
-See [Security](/gateway/security) and [VPS hosting](/vps).
+Veja [Segurança](/gateway/security) e [Hospedagem VPS](/vps).
 
-## What are we doing (simple terms)?
+## O que estamos fazendo (termos simples)?
 
-- Rent a small Linux server (Hetzner VPS)
-- Install Docker (isolated app runtime)
-- Start the OpenCraft Gateway in Docker
-- Persist `~/.opencraft` + `~/.opencraft/workspace` on the host (survives restarts/rebuilds)
-- Access the Control UI from your laptop via an SSH tunnel
+- Alugar um pequeno servidor Linux (VPS Hetzner)
+- Instalar Docker (runtime isolado para aplicações)
+- Iniciar o Gateway OpenCraft em Docker
+- Persistir `~/.opencraft` + `~/.opencraft/workspace` no host (sobrevive a reinicializações/rebuilds)
+- Acessar a Control UI do seu laptop via túnel SSH
 
-The Gateway can be accessed via:
+O Gateway pode ser acessado via:
 
-- SSH port forwarding from your laptop
-- Direct port exposure if you manage firewalling and tokens yourself
+- Encaminhamento de porta SSH do seu laptop
+- Exposição direta de porta se você gerenciar firewall e tokens por conta própria
 
-This guide assumes Ubuntu or Debian on Hetzner.  
-If you are on another Linux VPS, map packages accordingly.
-For the generic Docker flow, see [Docker](/install/docker).
+Este guia assume Ubuntu ou Debian no Hetzner.
+Se você está em outro VPS Linux, adapte os pacotes conforme necessário.
+Para o fluxo genérico Docker, veja [Docker](/install/docker).
 
 ---
 
-## Quick path (experienced operators)
+## Caminho rápido (operadores experientes)
 
-1. Provision Hetzner VPS
-2. Install Docker
-3. Clone OpenCraft repository
-4. Create persistent host directories
-5. Configure `.env` and `docker-compose.yml`
-6. Bake required binaries into the image
+1. Provisionar VPS Hetzner
+2. Instalar Docker
+3. Clonar o repositório OpenCraft
+4. Criar diretórios persistentes no host
+5. Configurar `.env` e `docker-compose.yml`
+6. Incorporar binários necessários na imagem
 7. `docker compose up -d`
-8. Verify persistence and Gateway access
+8. Verificar persistência e acesso ao Gateway
 
 ---
 
-## What you need
+## O que você precisa
 
-- Hetzner VPS with root access
-- SSH access from your laptop
-- Basic comfort with SSH + copy/paste
-- ~20 minutes
-- Docker and Docker Compose
-- Model auth credentials
-- Optional provider credentials
-  - WhatsApp QR
-  - Telegram bot token
-  - Gmail OAuth
+- VPS Hetzner com acesso root
+- Acesso SSH do seu laptop
+- Conforto básico com SSH + copiar/colar
+- ~20 minutos
+- Docker e Docker Compose
+- Credenciais de autenticação de modelo
+- Credenciais opcionais de provedor
+  - QR do WhatsApp
+  - Token de Bot do Telegram
+  - OAuth do Gmail
 
 ---
 
-## 1) Provision the VPS
+## 1) Provisionar o VPS
 
-Create an Ubuntu or Debian VPS in Hetzner.
+Crie um VPS Ubuntu ou Debian no Hetzner.
 
-Connect as root:
+Conecte como root:
 
 ```bash
 ssh root@YOUR_VPS_IP
 ```
 
-This guide assumes the VPS is stateful.
-Do not treat it as disposable infrastructure.
+Este guia assume que o VPS mantém estado.
+Não o trate como infraestrutura descartável.
 
 ---
 
-## 2) Install Docker (on the VPS)
+## 2) Instalar Docker (no VPS)
 
 ```bash
 apt-get update
@@ -95,7 +95,7 @@ apt-get install -y git curl ca-certificates
 curl -fsSL https://get.docker.com | sh
 ```
 
-Verify:
+Verifique:
 
 ```bash
 docker --version
@@ -104,34 +104,34 @@ docker compose version
 
 ---
 
-## 3) Clone the OpenCraft repository
+## 3) Clonar o repositório OpenCraft
 
 ```bash
 git clone https://github.com/editzffaleta/OpenCraft.git
 cd opencraft
 ```
 
-This guide assumes you will build a custom image to guarantee binary persistence.
+Este guia assume que você vai construir uma imagem personalizada para garantir a persistência dos binários.
 
 ---
 
-## 4) Create persistent host directories
+## 4) Criar diretórios persistentes no host
 
-Docker containers are ephemeral.
-All long-lived state must live on the host.
+Contêineres Docker são efêmeros.
+Todo estado de longa duração deve ficar no host.
 
 ```bash
 mkdir -p /root/.opencraft/workspace
 
-# Set ownership to the container user (uid 1000):
+# Definir propriedade para o usuário do contêiner (uid 1000):
 chown -R 1000:1000 /root/.opencraft
 ```
 
 ---
 
-## 5) Configure environment variables
+## 5) Configurar variáveis de ambiente
 
-Create `.env` in the repository root.
+Crie `.env` na raiz do repositório.
 
 ```bash
 OPENCRAFT_IMAGE=opencraft:latest
@@ -146,19 +146,19 @@ GOG_KEYRING_PASSWORD=change-me-now
 XDG_CONFIG_HOME=/home/node/.opencraft
 ```
 
-Generate strong secrets:
+Gere secrets fortes:
 
 ```bash
 openssl rand -hex 32
 ```
 
-**Do not commit this file.**
+**Não faça commit deste arquivo.**
 
 ---
 
-## 6) Docker Compose configuration
+## 6) Configuração do Docker Compose
 
-Create or update `docker-compose.yml`.
+Crie ou atualize `docker-compose.yml`.
 
 ```yaml
 services:
@@ -182,8 +182,8 @@ services:
       - ${OPENCRAFT_CONFIG_DIR}:/home/node/.opencraft
       - ${OPENCRAFT_WORKSPACE_DIR}:/home/node/.opencraft/workspace
     ports:
-      # Recommended: keep the Gateway loopback-only on the VPS; access via SSH tunnel.
-      # To expose it publicly, remove the `127.0.0.1:` prefix and firewall accordingly.
+      # Recomendado: manter o Gateway somente loopback no VPS; acesse via túnel SSH.
+      # Para expor publicamente, remova o prefixo `127.0.0.1:` e configure o firewall adequadamente.
       - "127.0.0.1:${OPENCRAFT_GATEWAY_PORT}:18789"
     command:
       [
@@ -198,54 +198,54 @@ services:
       ]
 ```
 
-`--allow-unconfigured` is only for bootstrap convenience, it is not a replacement for a proper gateway configuration. Still set auth (`gateway.auth.token` or password) and use safe bind settings for your deployment.
+`--allow-unconfigured` é apenas por conveniência no bootstrap, não substitui uma configuração adequada do gateway. Ainda defina autenticação (`gateway.auth.token` ou senha) e use configurações seguras de bind para sua implantação.
 
 ---
 
-## 7) Shared Docker VM runtime steps
+## 7) Etapas compartilhadas de runtime Docker VM
 
-Use the shared runtime guide for the common Docker host flow:
+Use o guia de runtime compartilhado para o fluxo comum de host Docker:
 
-- [Bake required binaries into the image](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
-- [Build and launch](/install/docker-vm-runtime#build-and-launch)
-- [What persists where](/install/docker-vm-runtime#what-persists-where)
-- [Updates](/install/docker-vm-runtime#updates)
+- [Incorporar binários necessários na imagem](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
+- [Build e inicialização](/install/docker-vm-runtime#build-and-launch)
+- [O que persiste e onde](/install/docker-vm-runtime#what-persists-where)
+- [Atualizações](/install/docker-vm-runtime#updates)
 
 ---
 
-## 8) Hetzner-specific access
+## 8) Acesso específico do Hetzner
 
-After the shared build and launch steps, tunnel from your laptop:
+Após as etapas compartilhadas de build e inicialização, crie um túnel do seu laptop:
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
 ```
 
-Open:
+Abra:
 
 `http://127.0.0.1:18789/`
 
-Paste your gateway token.
+Cole seu token do gateway.
 
 ---
 
-The shared persistence map lives in [Docker VM Runtime](/install/docker-vm-runtime#what-persists-where).
+O mapa de persistência compartilhado está em [Docker VM Runtime](/install/docker-vm-runtime#what-persists-where).
 
-## Infrastructure as Code (Terraform)
+## Infraestrutura como Código (Terraform)
 
-For teams preferring infrastructure-as-code workflows, a community-maintained Terraform setup provides:
+Para equipes que preferem fluxos de trabalho de infraestrutura como código, uma configuração Terraform mantida pela comunidade fornece:
 
-- Modular Terraform configuration with remote state management
-- Automated provisioning via cloud-init
-- Deployment scripts (bootstrap, deploy, backup/restore)
-- Security hardening (firewall, UFW, SSH-only access)
-- SSH tunnel configuration for gateway access
+- Configuração modular Terraform com gerenciamento de estado remoto
+- Provisionamento automatizado via cloud-init
+- Scripts de implantação (bootstrap, deploy, backup/restauração)
+- Hardening de segurança (firewall, UFW, acesso somente SSH)
+- Configuração de túnel SSH para acesso ao gateway
 
-**Repositories:**
+**Repositórios:**
 
-- Infrastructure: [opencraft-terraform-hetzner](https://github.com/andreesg/opencraft-terraform-hetzner)
-- Docker config: [opencraft-docker-config](https://github.com/andreesg/opencraft-docker-config)
+- Infraestrutura: [opencraft-terraform-hetzner](https://github.com/andreesg/opencraft-terraform-hetzner)
+- Configuração Docker: [opencraft-docker-config](https://github.com/andreesg/opencraft-docker-config)
 
-This approach complements the Docker setup above with reproducible deployments, version-controlled infrastructure, and automated disaster recovery.
+Esta abordagem complementa a configuração Docker acima com implantações reproduzíveis, infraestrutura versionada e recuperação automatizada de desastres.
 
-> **Note:** Community-maintained. For issues or contributions, see the repository links above.
+> **Nota:** Mantido pela comunidade. Para problemas ou contribuições, veja os links dos repositórios acima.

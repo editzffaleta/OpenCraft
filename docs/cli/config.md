@@ -1,17 +1,17 @@
 ---
-summary: "CLI reference for `opencraft config` (get/set/unset/file/validate)"
+summary: "Referência CLI para `opencraft config` (get/set/unset/file/validate)"
 read_when:
-  - You want to read or edit config non-interactively
+  - Você quer ler ou editar config de forma não interativa
 title: "config"
 ---
 
 # `opencraft config`
 
-Config helpers: get/set/unset/validate values by path and print the active
-config file. Run without a subcommand to open
-the configure wizard (same as `opencraft configure`).
+Auxiliares de config: get/set/unset/validate valores por caminho e imprimir o
+arquivo de config ativo. Execute sem um subcomando para abrir
+o assistente de configuração (mesmo que `opencraft configure`).
 
-## Examples
+## Exemplos
 
 ```bash
 opencraft config file
@@ -24,26 +24,26 @@ opencraft config validate
 opencraft config validate --json
 ```
 
-## Paths
+## Caminhos
 
-Paths use dot or bracket notation:
+Caminhos usam notação de ponto ou colchetes:
 
 ```bash
 opencraft config get agents.defaults.workspace
 opencraft config get agents.list[0].id
 ```
 
-Use the agent list index to target a specific agent:
+Use o índice da lista de agentes para direcionar um agente específico:
 
 ```bash
 opencraft config get agents.list
 opencraft config set agents.list[1].tools.exec.node "node-id-or-name"
 ```
 
-## Values
+## Valores
 
-Values are parsed as JSON5 when possible; otherwise they are treated as strings.
-Use `--strict-json` to require JSON5 parsing. `--json` remains supported as a legacy alias.
+Valores são interpretados como JSON5 quando possível; caso contrário, são tratados como strings.
+Use `--strict-json` para exigir interpretação JSON5. `--json` continua suportado como alias legado.
 
 ```bash
 opencraft config set agents.defaults.heartbeat.every "0m"
@@ -51,15 +51,15 @@ opencraft config set gateway.port 19001 --strict-json
 opencraft config set channels.whatsapp.groups '["*"]' --strict-json
 ```
 
-## Subcommands
+## Subcomandos
 
-- `config file`: Print the active config file path (resolved from `OPENCRAFT_CONFIG_PATH` or default location).
+- `config file`: Imprime o caminho do arquivo de config ativo (resolvido de `OPENCRAFT_CONFIG_PATH` ou localização padrão).
 
-Restart the gateway after edits.
+Reinicie o gateway após edições.
 
-## Validate
+## Validar
 
-Validate the current config against the active schema without starting the
+Valide a config atual contra o esquema ativo sem iniciar o
 gateway.
 
 ```bash

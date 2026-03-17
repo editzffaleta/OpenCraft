@@ -1,15 +1,15 @@
 ---
-summary: "Delegate gateway authentication to a trusted reverse proxy (Pomerium, Caddy, nginx + OAuth)"
+summary: "Delegar autenticação do gateway a um reverse proxy confiável (Pomerium, Caddy, nginx + OAuth)"
 read_when:
-  - Running OpenCraft behind an identity-aware proxy
-  - Setting up Pomerium, Caddy, or nginx with OAuth in front of OpenCraft
-  - Fixing WebSocket 1008 unauthorized errors with reverse proxy setups
-  - Deciding where to set HSTS and other HTTP hardening headers
+  - Executando OpenCraft atrás de um proxy com reconhecimento de identidade
+  - Configurando Pomerium, Caddy ou nginx com OAuth na frente do OpenCraft
+  - Corrigindo erros WebSocket 1008 unauthorized com setups de reverse proxy
+  - Decidindo onde definir HSTS e outros headers de hardening HTTP
 ---
 
 # Trusted Proxy Auth
 
-> ⚠️ **Security-sensitive feature.** This mode delegates authentication entirely to your reverse proxy. Misconfiguration can expose your Gateway to unauthorized access. Read this page carefully before enabling.
+> ⚠️ **Feature sensível à segurança.** Este modo delega autenticação inteiramente ao seu reverse proxy. Configuração incorreta pode expor seu Gateway a acesso não autorizado. Leia esta página cuidadosamente antes de habilitar.
 
 ## When to Use
 

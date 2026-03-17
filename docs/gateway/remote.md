@@ -1,13 +1,13 @@
 ---
-summary: "Remote access using SSH tunnels (Gateway WS) and tailnets"
+summary: “Acesso remoto usando SSH tunnels (Gateway WS) e tailnets”
 read_when:
-  - Running or troubleshooting remote gateway setups
-title: "Remote Access"
+  - Executando ou solucionando problemas de setups de gateway remoto
+title: “Remote Access”
 ---
 
-# Remote access (SSH, tunnels, and tailnets)
+# Acesso remoto (SSH, tunnels e tailnets)
 
-This repo supports “remote over SSH” by keeping a single Gateway (the master) running on a dedicated host (desktop/server) and connecting clients to it.
+Este repo suporta “remoto via SSH” mantendo um único Gateway (o master) executando em um host dedicado (desktop/servidor) e conectando clientes a ele.
 
 - For **operators (you / the macOS app)**: SSH tunneling is the universal fallback.
 - For **nodes (iOS/Android and future devices)**: connect to the Gateway **WebSocket** (LAN/tailnet or SSH tunnel as needed).

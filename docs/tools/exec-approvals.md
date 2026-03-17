@@ -1,56 +1,56 @@
 ---
-summary: "Exec approvals, allowlists, and sandbox escape prompts"
+summary: "Aprovações exec, allowlists e prompts de escape de sandbox"
 read_when:
-  - Configuring exec approvals or allowlists
-  - Implementing exec approval UX in the macOS app
-  - Reviewing sandbox escape prompts and implications
-title: "Exec Approvals"
+  - Configurando aprovações exec ou allowlists
+  - Implementando UX de aprovação exec no app macOS
+  - Revisando prompts de escape de sandbox e implicações
+title: "Aprovações Exec"
 ---
 
-# Exec approvals
+# Aprovações exec
 
-Exec approvals are the **companion app / node host guardrail** for letting a sandboxed agent run
-commands on a real host (`gateway` or `node`). Think of it like a safety interlock:
-commands are allowed only when policy + allowlist + (optional) user approval all agree.
-Exec approvals are **in addition** to tool policy and elevated gating (unless elevated is set to `full`, which skips approvals).
-Effective policy is the **stricter** of `tools.exec.*` and approvals defaults; if an approvals field is omitted, the `tools.exec` value is used.
+Aprovações exec são a **proteção do aplicativo companion / node host** para permitir que um agente em sandbox execute
+comandos em um host real (`gateway` ou `node`). Pense nisso como uma trava de segurança:
+comandos são permitidos apenas quando política + allowlist + (opcional) aprovação do usuário todos concordam.
+Aprovações exec são **adicionais** à política de ferramenta e gating elevado (a menos que elevado esteja definido como `full`, que pula aprovações).
+A política efetiva é a **mais restritiva** entre `tools.exec.*` e padrões de aprovações; se um campo de aprovações for omitido, o valor de `tools.exec` é usado.
 
-If the companion app UI is **not available**, any request that requires a prompt is
-resolved by the **ask fallback** (default: deny).
+Se a UI do aplicativo companion **não** estiver disponível, qualquer requisição que requeira um prompt é
+resolvida pelo **fallback de ask** (padrão: deny).
 
-## Where it applies
+## Onde se aplica
 
-Exec approvals are enforced locally on the execution host:
+Aprovações exec são aplicadas localmente no host de execução:
 
-- **gateway host** → `opencraft` process on the gateway machine
-- **node host** → node runner (macOS companion app or headless node host)
+- **host do Gateway** -> processo `opencraft` na máquina do Gateway
+- **node host** -> executador do node (aplicativo companion macOS ou node host headless)
 
-Trust model note:
+Nota do modelo de confiança:
 
-- Gateway-authenticated callers are trusted operators for that Gateway.
-- Paired nodes extend that trusted operator capability onto the node host.
-- Exec approvals reduce accidental execution risk, but are not a per-user auth boundary.
-- Approved node-host runs bind canonical execution context: canonical cwd, exact argv, env
-  binding when present, and pinned executable path when applicable.
-- For shell scripts and direct interpreter/runtime file invocations, OpenCraft also tries to bind
-  one concrete local file operand. If that bound file changes after approval but before execution,
-  the run is denied instead of executing drifted content.
-- This file binding is intentionally best-effort, not a complete semantic model of every
-  interpreter/runtime loader path. If approval mode cannot identify exactly one concrete local
-  file to bind, it refuses to mint an approval-backed run instead of pretending full coverage.
+- Chamadores autenticados pelo Gateway são operadores confiáveis para aquele Gateway.
+- Nodes pareados estendem essa capacidade de operador confiável para o node host.
+- Aprovações exec reduzem risco de execução acidental, mas não são um limite de autenticação por usuário.
+- Execuções aprovadas no node host vinculam contexto canônico de execução: cwd canônico, argv exato, env
+  binding quando presente e caminho de executável fixado quando aplicável.
+- Para scripts shell e invocações diretas de arquivo interpretador/runtime, o OpenCraft também tenta vincular
+  um operando concreto de arquivo local. Se aquele arquivo vinculado mudar após aprovação mas antes da execução,
+  a execução é negada em vez de executar conteúdo divergente.
+- Esse vínculo de arquivo é intencionalmente melhor esforço, não um modelo semântico completo de cada
+  caminho de loader de interpretador/runtime. Se o modo de aprovação não conseguir identificar exatamente um arquivo local concreto
+  para vincular, ele recusa criar uma execução respaldada por aprovação em vez de fingir cobertura total.
 
-macOS split:
+Divisão macOS:
 
-- **node host service** forwards `system.run` to the **macOS app** over local IPC.
-- **macOS app** enforces approvals + executes the command in UI context.
+- **serviço node host** encaminha `system.run` para o **app macOS** via IPC local.
+- **app macOS** aplica aprovações + executa o comando no contexto da UI.
 
-## Settings and storage
+## Configurações e armazenamento
 
-Approvals live in a local JSON file on the execution host:
+Aprovações ficam em um arquivo JSON local no host de execução:
 
 `~/.opencraft/exec-approvals.json`
 
-Example schema:
+Exemplo de schema:
 
 ```json
 {
@@ -85,80 +85,80 @@ Example schema:
 }
 ```
 
-## Policy knobs
+## Controles de política
 
 ### Security (`exec.security`)
 
-- **deny**: block all host exec requests.
-- **allowlist**: allow only allowlisted commands.
-- **full**: allow everything (equivalent to elevated).
+- **deny**: bloquear todas as requisições de exec no host.
+- **allowlist**: permitir apenas comandos na allowlist.
+- **full**: permitir tudo (equivalente a elevado).
 
 ### Ask (`exec.ask`)
 
-- **off**: never prompt.
-- **on-miss**: prompt only when allowlist does not match.
-- **always**: prompt on every command.
+- **off**: nunca solicitar.
+- **on-miss**: solicitar apenas quando allowlist não corresponde.
+- **always**: solicitar em cada comando.
 
 ### Ask fallback (`askFallback`)
 
-If a prompt is required but no UI is reachable, fallback decides:
+Se um prompt é necessário mas nenhuma UI está acessível, fallback decide:
 
-- **deny**: block.
-- **allowlist**: allow only if allowlist matches.
-- **full**: allow.
+- **deny**: bloquear.
+- **allowlist**: permitir apenas se allowlist corresponder.
+- **full**: permitir.
 
-## Allowlist (per agent)
+## Allowlist (por agente)
 
-Allowlists are **per agent**. If multiple agents exist, switch which agent you’re
-editing in the macOS app. Patterns are **case-insensitive glob matches**.
-Patterns should resolve to **binary paths** (basename-only entries are ignored).
-Legacy `agents.default` entries are migrated to `agents.main` on load.
+Allowlists são **por agente**. Se múltiplos agentes existem, alterne qual agente você está
+editando no app macOS. Padrões são **correspondência glob case-insensitive**.
+Padrões devem resolver para **caminhos de binário** (entradas apenas com basename são ignoradas).
+Entradas legadas `agents.default` são migradas para `agents.main` no carregamento.
 
-Examples:
+Exemplos:
 
 - `~/Projects/**/bin/peekaboo`
 - `~/.local/bin/*`
 - `/opt/homebrew/bin/rg`
 
-Each allowlist entry tracks:
+Cada entrada de allowlist rastreia:
 
-- **id** stable UUID used for UI identity (optional)
+- **id** UUID estável usado para identidade na UI (opcional)
 - **last used** timestamp
 - **last used command**
 - **last resolved path**
 
-## Auto-allow skill CLIs
+## Auto-permitir CLIs de Skill
 
-When **Auto-allow skill CLIs** is enabled, executables referenced by known skills
-are treated as allowlisted on nodes (macOS node or headless node host). This uses
-`skills.bins` over the Gateway RPC to fetch the skill bin list. Disable this if you want strict manual allowlists.
+Quando **Auto-permitir CLIs de Skill** está habilitado, executáveis referenciados por Skills conhecidas
+são tratados como da allowlist em nodes (node macOS ou node host headless). Isso usa
+`skills.bins` via RPC do Gateway para buscar a lista de binários de Skill. Desabilite isso se quiser allowlists manuais estritas.
 
-Important trust notes:
+Notas importantes de confiança:
 
-- This is an **implicit convenience allowlist**, separate from manual path allowlist entries.
-- It is intended for trusted operator environments where Gateway and node are in the same trust boundary.
-- If you require strict explicit trust, keep `autoAllowSkills: false` and use manual path allowlist entries only.
+- Esta é uma **allowlist de conveniência implícita**, separada de entradas manuais de allowlist de caminho.
+- É destinada a ambientes de operador confiável onde Gateway e node estão no mesmo limite de confiança.
+- Se você requer confiança explícita estrita, mantenha `autoAllowSkills: false` e use apenas entradas manuais de allowlist de caminho.
 
-## Safe bins (stdin-only)
+## Safe bins (somente stdin)
 
-`tools.exec.safeBins` defines a small list of **stdin-only** binaries (for example `jq`)
-that can run in allowlist mode **without** explicit allowlist entries. Safe bins reject
-positional file args and path-like tokens, so they can only operate on the incoming stream.
-Treat this as a narrow fast-path for stream filters, not a general trust list.
-Do **not** add interpreter or runtime binaries (for example `python3`, `node`, `ruby`, `bash`, `sh`, `zsh`) to `safeBins`.
-If a command can evaluate code, execute subcommands, or read files by design, prefer explicit allowlist entries and keep approval prompts enabled.
-Custom safe bins must define an explicit profile in `tools.exec.safeBinProfiles.<bin>`.
-Validation is deterministic from argv shape only (no host filesystem existence checks), which
-prevents file-existence oracle behavior from allow/deny differences.
-File-oriented options are denied for default safe bins (for example `sort -o`, `sort --output`,
+`tools.exec.safeBins` define uma pequena lista de binários **somente stdin** (por exemplo `jq`)
+que podem rodar no modo allowlist **sem** entradas explícitas de allowlist. Safe bins rejeitam
+argumentos posicionais de arquivo e tokens com aparência de caminho, então podem operar apenas no fluxo de entrada.
+Trate isso como um caminho rápido estreito para filtros de fluxo, não uma lista de confiança geral.
+**Não** adicione binários interpretadores ou runtime (por exemplo `python3`, `node`, `ruby`, `bash`, `sh`, `zsh`) a `safeBins`.
+Se um comando pode avaliar código, executar subcomandos ou ler arquivos por design, prefira entradas explícitas de allowlist e mantenha prompts de aprovação habilitados.
+Safe bins personalizados devem definir um perfil explícito em `tools.exec.safeBinProfiles.<bin>`.
+A validação é determinística apenas a partir do formato do argv (sem verificações de existência no filesystem do host), o que
+previne comportamento de oráculo de existência de arquivo por diferenças de permitir/negar.
+Opções orientadas a arquivo são negadas para safe bins padrão (por exemplo `sort -o`, `sort --output`,
 `sort --files0-from`, `sort --compress-program`, `sort --random-source`,
 `sort --temporary-directory`/`-T`, `wc --files0-from`, `jq -f/--from-file`,
 `grep -f/--file`).
-Safe bins also enforce explicit per-binary flag policy for options that break stdin-only
-behavior (for example `sort -o/--output/--compress-program` and grep recursive flags).
-Long options are validated fail-closed in safe-bin mode: unknown flags and ambiguous
-abbreviations are rejected.
-Denied flags by safe-bin profile:
+Safe bins também aplicam política explícita de flag por binário para opções que quebram comportamento
+somente stdin (por exemplo `sort -o/--output/--compress-program` e flags recursivas do grep).
+Opções longas são validadas com fail-closed no modo safe-bin: flags desconhecidas e
+abreviações ambíguas são rejeitadas.
+Flags negadas por perfil safe-bin:
 
 [//]: # "SAFE_BIN_DENIED_FLAGS:START"
 
@@ -169,59 +169,59 @@ Denied flags by safe-bin profile:
 
 [//]: # "SAFE_BIN_DENIED_FLAGS:END"
 
-Safe bins also force argv tokens to be treated as **literal text** at execution time (no globbing
-and no `$VARS` expansion) for stdin-only segments, so patterns like `*` or `$HOME/...` cannot be
-used to smuggle file reads.
-Safe bins must also resolve from trusted binary directories (system defaults plus optional
-`tools.exec.safeBinTrustedDirs`). `PATH` entries are never auto-trusted.
-Default trusted safe-bin directories are intentionally minimal: `/bin`, `/usr/bin`.
-If your safe-bin executable lives in package-manager/user paths (for example
-`/opt/homebrew/bin`, `/usr/local/bin`, `/opt/local/bin`, `/snap/bin`), add them explicitly
-to `tools.exec.safeBinTrustedDirs`.
-Shell chaining and redirections are not auto-allowed in allowlist mode.
+Safe bins também forçam tokens argv a serem tratados como **texto literal** no momento da execução (sem globbing
+e sem expansão `$VARS`) para segmentos somente stdin, então padrões como `*` ou `$HOME/...` não podem ser
+usados para contrabandear leituras de arquivo.
+Safe bins também devem resolver de diretórios de binários confiáveis (padrões do sistema mais
+`tools.exec.safeBinTrustedDirs` opcionais). Entradas de `PATH` nunca são auto-confiáveis.
+Diretórios padrão confiáveis de safe-bin são intencionalmente mínimos: `/bin`, `/usr/bin`.
+Se seu executável safe-bin fica em caminhos de gerenciador de pacotes/usuário (por exemplo
+`/opt/homebrew/bin`, `/usr/local/bin`, `/opt/local/bin`, `/snap/bin`), adicione-os explicitamente
+a `tools.exec.safeBinTrustedDirs`.
+Encadeamento shell e redirecionamentos não são auto-permitidos no modo allowlist.
 
-Shell chaining (`&&`, `||`, `;`) is allowed when every top-level segment satisfies the allowlist
-(including safe bins or skill auto-allow). Redirections remain unsupported in allowlist mode.
-Command substitution (`$()` / backticks) is rejected during allowlist parsing, including inside
-double quotes; use single quotes if you need literal `$()` text.
-On macOS companion-app approvals, raw shell text containing shell control or expansion syntax
-(`&&`, `||`, `;`, `|`, `` ` ``, `$`, `<`, `>`, `(`, `)`) is treated as an allowlist miss unless
-the shell binary itself is allowlisted.
-For shell wrappers (`bash|sh|zsh ... -c/-lc`), request-scoped env overrides are reduced to a
-small explicit allowlist (`TERM`, `LANG`, `LC_*`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`).
-For allow-always decisions in allowlist mode, known dispatch wrappers
-(`env`, `nice`, `nohup`, `stdbuf`, `timeout`) persist inner executable paths instead of wrapper
-paths. Shell multiplexers (`busybox`, `toybox`) are also unwrapped for shell applets (`sh`, `ash`,
-etc.) so inner executables are persisted instead of multiplexer binaries. If a wrapper or
-multiplexer cannot be safely unwrapped, no allowlist entry is persisted automatically.
+Encadeamento shell (`&&`, `||`, `;`) é permitido quando cada segmento de nível superior satisfaz a allowlist
+(incluindo safe bins ou auto-allow de Skill). Redirecionamentos permanecem não suportados no modo allowlist.
+Substituição de comando (`$()` / crases) é rejeitada durante parsing de allowlist, incluindo dentro
+de aspas duplas; use aspas simples se precisar de texto literal `$()`.
+Em aprovações do aplicativo companion macOS, texto shell bruto contendo sintaxe de controle ou expansão shell
+(`&&`, `||`, `;`, `|`, `` ` ``, `$`, `<`, `>`, `(`, `)`) é tratado como miss de allowlist a menos que
+o binário shell em si esteja na allowlist.
+Para wrappers shell (`bash|sh|zsh ... -c/-lc`), substituições de env com escopo de requisição são reduzidas a uma
+pequena allowlist explícita (`TERM`, `LANG`, `LC_*`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`).
+Para decisões de sempre-permitir no modo allowlist, wrappers de despacho conhecidos
+(`env`, `nice`, `nohup`, `stdbuf`, `timeout`) persistem caminhos de executável interno em vez de caminhos
+de wrapper. Multiplexadores shell (`busybox`, `toybox`) também são desembrulhados para applets shell (`sh`, `ash`,
+etc.) então executáveis internos são persistidos em vez de binários multiplexadores. Se um wrapper ou
+multiplexador não puder ser desembrulhado com segurança, nenhuma entrada de allowlist é persistida automaticamente.
 
-Default safe bins: `jq`, `cut`, `uniq`, `head`, `tail`, `tr`, `wc`.
+Safe bins padrão: `jq`, `cut`, `uniq`, `head`, `tail`, `tr`, `wc`.
 
-`grep` and `sort` are not in the default list. If you opt in, keep explicit allowlist entries for
-their non-stdin workflows.
-For `grep` in safe-bin mode, provide the pattern with `-e`/`--regexp`; positional pattern form is
-rejected so file operands cannot be smuggled as ambiguous positionals.
+`grep` e `sort` não estão na lista padrão. Se optar por incluí-los, mantenha entradas explícitas de allowlist para
+seus workflows não-stdin.
+Para `grep` no modo safe-bin, forneça o padrão com `-e`/`--regexp`; forma de padrão posicional é
+rejeitada para que operandos de arquivo não possam ser contrabandeados como posicionais ambíguos.
 
 ### Safe bins versus allowlist
 
-| Topic            | `tools.exec.safeBins`                                  | Allowlist (`exec-approvals.json`)                            |
-| ---------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| Goal             | Auto-allow narrow stdin filters                        | Explicitly trust specific executables                        |
-| Match type       | Executable name + safe-bin argv policy                 | Resolved executable path glob pattern                        |
-| Argument scope   | Restricted by safe-bin profile and literal-token rules | Path match only; arguments are otherwise your responsibility |
-| Typical examples | `jq`, `head`, `tail`, `wc`                             | `python3`, `node`, `ffmpeg`, custom CLIs                     |
-| Best use         | Low-risk text transforms in pipelines                  | Any tool with broader behavior or side effects               |
+| Tópico                  | `tools.exec.safeBins`                                  | Allowlist (`exec-approvals.json`)                                      |
+| ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Objetivo                | Auto-permitir filtros estreitos de stdin               | Confiar explicitamente em executáveis específicos                      |
+| Tipo de correspondência | Nome do executável + política argv safe-bin            | Padrão glob de caminho de executável resolvido                         |
+| Escopo de argumento     | Restrito por perfil safe-bin e regras de Token literal | Correspondência de caminho apenas; argumentos são responsabilidade sua |
+| Exemplos típicos        | `jq`, `head`, `tail`, `wc`                             | `python3`, `node`, `ffmpeg`, CLIs personalizados                       |
+| Melhor uso              | Transformações de texto de baixo risco em pipelines    | Qualquer ferramenta com comportamento mais amplo ou efeitos colaterais |
 
-Configuration location:
+Localização da configuração:
 
-- `safeBins` comes from config (`tools.exec.safeBins` or per-agent `agents.list[].tools.exec.safeBins`).
-- `safeBinTrustedDirs` comes from config (`tools.exec.safeBinTrustedDirs` or per-agent `agents.list[].tools.exec.safeBinTrustedDirs`).
-- `safeBinProfiles` comes from config (`tools.exec.safeBinProfiles` or per-agent `agents.list[].tools.exec.safeBinProfiles`). Per-agent profile keys override global keys.
-- allowlist entries live in host-local `~/.opencraft/exec-approvals.json` under `agents.<id>.allowlist` (or via Control UI / `opencraft approvals allowlist ...`).
-- `opencraft security audit` warns with `tools.exec.safe_bins_interpreter_unprofiled` when interpreter/runtime bins appear in `safeBins` without explicit profiles.
-- `opencraft doctor --fix` can scaffold missing custom `safeBinProfiles.<bin>` entries as `{}` (review and tighten afterward). Interpreter/runtime bins are not auto-scaffolded.
+- `safeBins` vem da config (`tools.exec.safeBins` ou por agente `agents.list[].tools.exec.safeBins`).
+- `safeBinTrustedDirs` vem da config (`tools.exec.safeBinTrustedDirs` ou por agente `agents.list[].tools.exec.safeBinTrustedDirs`).
+- `safeBinProfiles` vem da config (`tools.exec.safeBinProfiles` ou por agente `agents.list[].tools.exec.safeBinProfiles`). Chaves de perfil por agente substituem chaves globais.
+- Entradas de allowlist ficam no `~/.opencraft/exec-approvals.json` local do host em `agents.<id>.allowlist` (ou via Control UI / `opencraft approvals allowlist ...`).
+- `opencraft security audit` avisa com `tools.exec.safe_bins_interpreter_unprofiled` quando binários interpretadores/runtime aparecem em `safeBins` sem perfis explícitos.
+- `opencraft doctor --fix` pode criar scaffolds de entradas `safeBinProfiles.<bin>` personalizadas ausentes como `{}` (revise e reforce depois). Binários interpretadores/runtime não recebem scaffold automaticamente.
 
-Custom profile example:
+Exemplo de perfil personalizado:
 
 ```json5
 {
@@ -241,68 +241,66 @@ Custom profile example:
 }
 ```
 
-## Control UI editing
+## Edição na Control UI
 
-Use the **Control UI → Nodes → Exec approvals** card to edit defaults, per‑agent
-overrides, and allowlists. Pick a scope (Defaults or an agent), tweak the policy,
-add/remove allowlist patterns, then **Save**. The UI shows **last used** metadata
-per pattern so you can keep the list tidy.
+Use o card **Control UI -> Nodes -> Exec approvals** para editar padrões, substituições
+por agente e allowlists. Escolha um escopo (Defaults ou um agente), ajuste a política,
+adicione/remova padrões de allowlist, depois **Save**. A UI mostra metadados de **último uso**
+por padrão para manter a lista organizada.
 
-The target selector chooses **Gateway** (local approvals) or a **Node**. Nodes
-must advertise `system.execApprovals.get/set` (macOS app or headless node host).
-If a node does not advertise exec approvals yet, edit its local
-`~/.opencraft/exec-approvals.json` directly.
+O seletor de alvo escolhe **Gateway** (aprovações locais) ou um **Node**. Nodes
+devem anunciar `system.execApprovals.get/set` (app macOS ou node host headless).
+Se um node ainda não anuncia aprovações exec, edite seu
+`~/.opencraft/exec-approvals.json` local diretamente.
 
-CLI: `opencraft approvals` supports gateway or node editing (see [Approvals CLI](/cli/approvals)).
+CLI: `opencraft approvals` suporta edição no Gateway ou node (veja [CLI de Aprovações](/cli/approvals)).
 
-## Approval flow
+## Fluxo de aprovação
 
-When a prompt is required, the gateway broadcasts `exec.approval.requested` to operator clients.
-The Control UI and macOS app resolve it via `exec.approval.resolve`, then the gateway forwards the
-approved request to the node host.
+Quando um prompt é necessário, o Gateway difunde `exec.approval.requested` para clientes operadores.
+A Control UI e o app macOS resolvem via `exec.approval.resolve`, depois o Gateway encaminha a
+requisição aprovada para o node host.
 
-For `host=node`, approval requests include a canonical `systemRunPlan` payload. The gateway uses
-that plan as the authoritative command/cwd/session context when forwarding approved `system.run`
-requests.
+Para `host=node`, requisições de aprovação incluem um payload canônico `systemRunPlan`. O Gateway usa
+esse plano como o comando/cwd/contexto de sessão autoritativo ao encaminhar requisições `system.run` aprovadas.
 
-## Interpreter/runtime commands
+## Comandos interpretador/runtime
 
-Approval-backed interpreter/runtime runs are intentionally conservative:
+Execuções respaldadas por aprovação de interpretador/runtime são intencionalmente conservadoras:
 
-- Exact argv/cwd/env context is always bound.
-- Direct shell script and direct runtime file forms are best-effort bound to one concrete local
-  file snapshot.
-- Common package-manager wrapper forms that still resolve to one direct local file (for example
-  `pnpm exec`, `pnpm node`, `npm exec`, `npx`) are unwrapped before binding.
-- If OpenCraft cannot identify exactly one concrete local file for an interpreter/runtime command
-  (for example package scripts, eval forms, runtime-specific loader chains, or ambiguous multi-file
-  forms), approval-backed execution is denied instead of claiming semantic coverage it does not
-  have.
-- For those workflows, prefer sandboxing, a separate host boundary, or an explicit trusted
-  allowlist/full workflow where the operator accepts the broader runtime semantics.
+- Contexto exato de argv/cwd/env é sempre vinculado.
+- Formas diretas de script shell e arquivo runtime direto são vinculadas por melhor esforço a um snapshot concreto
+  de arquivo local.
+- Formas comuns de wrapper de gerenciador de pacotes que ainda resolvem para um arquivo local direto (por exemplo
+  `pnpm exec`, `pnpm node`, `npm exec`, `npx`) são desembrulhadas antes do vínculo.
+- Se o OpenCraft não conseguir identificar exatamente um arquivo local concreto para um comando interpretador/runtime
+  (por exemplo scripts de pacote, formas eval, cadeias de loader específicas do runtime ou formas ambíguas multi-arquivo),
+  execução respaldada por aprovação é negada em vez de reivindicar cobertura semântica que não tem.
+- Para esses workflows, prefira sandbox, um limite de host separado ou um workflow explícito de
+  allowlist confiável/full onde o operador aceita a semântica mais ampla do runtime.
 
-When approvals are required, the exec tool returns immediately with an approval id. Use that id to
-correlate later system events (`Exec finished` / `Exec denied`). If no decision arrives before the
-timeout, the request is treated as an approval timeout and surfaced as a denial reason.
+Quando aprovações são necessárias, a ferramenta exec retorna imediatamente com um id de aprovação. Use esse id para
+correlacionar eventos de sistema posteriores (`Exec finished` / `Exec denied`). Se nenhuma decisão chegar antes do
+timeout, a requisição é tratada como timeout de aprovação e apresentada como motivo de negação.
 
-The confirmation dialog includes:
+O diálogo de confirmação inclui:
 
-- command + args
+- comando + args
 - cwd
-- agent id
-- resolved executable path
-- host + policy metadata
+- id do agente
+- caminho do executável resolvido
+- host + metadados de política
 
-Actions:
+Ações:
 
-- **Allow once** → run now
-- **Always allow** → add to allowlist + run
-- **Deny** → block
+- **Permitir uma vez** -> executar agora
+- **Sempre permitir** -> adicionar à allowlist + executar
+- **Negar** -> bloquear
 
-## Approval forwarding to chat channels
+## Encaminhamento de aprovação para canais de chat
 
-You can forward exec approval prompts to any chat channel (including plugin channels) and approve
-them with `/approve`. This uses the normal outbound delivery pipeline.
+Você pode encaminhar prompts de aprovação exec para qualquer canal de chat (incluindo canais de Plugin) e aprová-los
+com `/approve`. Isso usa o pipeline normal de entrega de saída.
 
 Config:
 
@@ -313,7 +311,7 @@ Config:
       enabled: true,
       mode: "session", // "session" | "targets" | "both"
       agentFilter: ["main"],
-      sessionFilter: ["discord"], // substring or regex
+      sessionFilter: ["discord"], // substring ou regex
       targets: [
         { channel: "slack", to: "U12345678" },
         { channel: "telegram", to: "123456789" },
@@ -323,7 +321,7 @@ Config:
 }
 ```
 
-Reply in chat:
+Responda no chat:
 
 ```
 /approve <id> allow-once
@@ -331,33 +329,33 @@ Reply in chat:
 /approve <id> deny
 ```
 
-### Built-in chat approval clients
+### Clientes de aprovação de chat integrados
 
-Discord and Telegram can also act as explicit exec approval clients with channel-specific config.
+Discord e Telegram também podem atuar como clientes explícitos de aprovação exec com config específica de canal.
 
 - Discord: `channels.discord.execApprovals.*`
 - Telegram: `channels.telegram.execApprovals.*`
 
-These clients are opt-in. If a channel does not have exec approvals enabled, OpenCraft does not treat
-that channel as an approval surface just because the conversation happened there.
+Esses clientes são opt-in. Se um canal não tem aprovações exec habilitadas, o OpenCraft não trata
+aquele canal como superfície de aprovação apenas porque a conversa aconteceu lá.
 
-Shared behavior:
+Comportamento compartilhado:
 
-- only configured approvers can approve or deny
-- the requester does not need to be an approver
-- when channel delivery is enabled, approval prompts include the command text
-- if no operator UI or configured approval client can accept the request, the prompt falls back to `askFallback`
+- apenas aprovadores configurados podem aprovar ou negar
+- o solicitante não precisa ser um aprovador
+- quando entrega de canal está habilitada, prompts de aprovação incluem o texto do comando
+- se nenhuma UI de operador ou cliente de aprovação configurado pode aceitar a requisição, o prompt recorre ao `askFallback`
 
-Telegram defaults to approver DMs (`target: "dm"`). You can switch to `channel` or `both` when you
-want approval prompts to appear in the originating Telegram chat/topic as well. For Telegram forum
-topics, OpenCraft preserves the topic for the approval prompt and the post-approval follow-up.
+Telegram usa DMs de aprovador por padrão (`target: "dm"`). Você pode mudar para `channel` ou `both` quando
+quiser que prompts de aprovação apareçam no chat/tópico Telegram de origem também. Para tópicos de fórum
+Telegram, o OpenCraft preserva o tópico para o prompt de aprovação e o acompanhamento pós-aprovação.
 
-See:
+Veja:
 
 - [Discord](/channels/discord#exec-approvals-in-discord)
 - [Telegram](/channels/telegram#exec-approvals-in-telegram)
 
-### macOS IPC flow
+### Fluxo IPC macOS
 
 ```
 Gateway -> Node Service (WS)
@@ -366,35 +364,35 @@ Gateway -> Node Service (WS)
              Mac App (UI + approvals + system.run)
 ```
 
-Security notes:
+Notas de segurança:
 
-- Unix socket mode `0600`, token stored in `exec-approvals.json`.
-- Same-UID peer check.
-- Challenge/response (nonce + HMAC token + request hash) + short TTL.
+- Modo de socket Unix `0600`, Token armazenado em `exec-approvals.json`.
+- Verificação de peer mesmo-UID.
+- Desafio/resposta (nonce + HMAC Token + hash de requisição) + TTL curto.
 
-## System events
+## Eventos de sistema
 
-Exec lifecycle is surfaced as system messages:
+O ciclo de vida exec é apresentado como mensagens de sistema:
 
-- `Exec running` (only if the command exceeds the running notice threshold)
+- `Exec running` (apenas se o comando exceder o limiar de aviso de execução)
 - `Exec finished`
 - `Exec denied`
 
-These are posted to the agent’s session after the node reports the event.
-Gateway-host exec approvals emit the same lifecycle events when the command finishes (and optionally when running longer than the threshold).
-Approval-gated execs reuse the approval id as the `runId` in these messages for easy correlation.
+Estes são postados na sessão do agente após o node reportar o evento.
+Aprovações exec no host do Gateway emitem os mesmos eventos de ciclo de vida quando o comando termina (e opcionalmente quando rodando mais que o limiar).
+Execs com gating de aprovação reutilizam o id de aprovação como `runId` nestas mensagens para fácil correlação.
 
-## Implications
+## Implicações
 
-- **full** is powerful; prefer allowlists when possible.
-- **ask** keeps you in the loop while still allowing fast approvals.
-- Per-agent allowlists prevent one agent’s approvals from leaking into others.
-- Approvals only apply to host exec requests from **authorized senders**. Unauthorized senders cannot issue `/exec`.
-- `/exec security=full` is a session-level convenience for authorized operators and skips approvals by design.
-  To hard-block host exec, set approvals security to `deny` or deny the `exec` tool via tool policy.
+- **full** é poderoso; prefira allowlists quando possível.
+- **ask** mantém você informado enquanto ainda permite aprovações rápidas.
+- Allowlists por agente previnem que aprovações de um agente vazem para outros.
+- Aprovações se aplicam apenas a requisições de exec no host de **remetentes autorizados**. Remetentes não autorizados não podem emitir `/exec`.
+- `/exec security=full` é uma conveniência no nível de sessão para operadores autorizados e pula aprovações por design.
+  Para bloquear exec no host permanentemente, defina security de aprovações como `deny` ou negue a ferramenta `exec` via política de ferramenta.
 
-Related:
+Relacionado:
 
-- [Exec tool](/tools/exec)
-- [Elevated mode](/tools/elevated)
+- [Ferramenta exec](/tools/exec)
+- [Modo elevado](/tools/elevated)
 - [Skills](/tools/skills)

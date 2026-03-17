@@ -1,15 +1,15 @@
 ---
-summary: "Deep troubleshooting runbook for gateway, channels, automation, nodes, and browser"
+summary: "Runbook aprofundado de solução de problemas para gateway, canais, automação, nodes e browser"
 read_when:
-  - The troubleshooting hub pointed you here for deeper diagnosis
-  - You need stable symptom based runbook sections with exact commands
+  - O hub de solução de problemas direcionou você aqui para diagnóstico mais profundo
+  - Você precisa de seções estáveis de runbook baseadas em sintomas com comandos exatos
 title: "Troubleshooting"
 ---
 
-# Gateway troubleshooting
+# Solução de problemas do Gateway
 
-This page is the deep runbook.
-Start at [/help/troubleshooting](/help/troubleshooting) if you want the fast triage flow first.
+Esta página é o runbook aprofundado.
+Comece em [/help/troubleshooting](/help/troubleshooting) se você quer o fluxo de triagem rápida primeiro.
 
 ## Command ladder
 

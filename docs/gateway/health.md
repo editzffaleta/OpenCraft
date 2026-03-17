@@ -1,44 +1,44 @@
 ---
-summary: "Health check steps for channel connectivity"
+summary: "Etapas de verificação de saúde para conectividade de canais"
 read_when:
-  - Diagnosing WhatsApp channel health
+  - Diagnosticando saúde do canal WhatsApp
 title: "Health Checks"
 ---
 
 # Health Checks (CLI)
 
-Short guide to verify channel connectivity without guessing.
+Guia rápido para verificar a conectividade dos canais sem adivinhação.
 
-## Quick checks
+## Verificações rápidas
 
-- `opencraft status` — local summary: gateway reachability/mode, update hint, linked channel auth age, sessions + recent activity.
-- `opencraft status --all` — full local diagnosis (read-only, color, safe to paste for debugging).
-- `opencraft status --deep` — also probes the running Gateway (per-channel probes when supported).
-- `opencraft health --json` — asks the running Gateway for a full health snapshot (WS-only; no direct Baileys socket).
-- Send `/status` as a standalone message in WhatsApp/WebChat to get a status reply without invoking the agent.
-- Logs: tail `/tmp/editzffaleta/OpenCraft-*.log` and filter for `web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound`.
+- `opencraft status` — resumo local: alcançabilidade/modo do gateway, dica de atualização, idade da auth de canais vinculados, sessões + atividade recente.
+- `opencraft status --all` — diagnóstico local completo (somente leitura, colorido, seguro para colar ao debugar).
+- `opencraft status --deep` — também sonda o Gateway em execução (sondas por canal quando suportado).
+- `opencraft health --json` — solicita ao Gateway em execução um snapshot completo de saúde (apenas WS; sem socket Baileys direto).
+- Envie `/status` como mensagem standalone no WhatsApp/WebChat para obter uma resposta de status sem invocar o agente.
+- Logs: faça tail em `/tmp/editzffaleta/OpenCraft-*.log` e filtre por `web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound`.
 
-## Deep diagnostics
+## Diagnósticos aprofundados
 
-- Creds on disk: `ls -l ~/.opencraft/credentials/whatsapp/<accountId>/creds.json` (mtime should be recent).
-- Session store: `ls -l ~/.opencraft/agents/<agentId>/sessions/sessions.json` (path can be overridden in config). Count and recent recipients are surfaced via `status`.
-- Relink flow: `opencraft channels logout && opencraft channels login --verbose` when status codes 409–515 or `loggedOut` appear in logs. (Note: the QR login flow auto-restarts once for status 515 after pairing.)
+- Credenciais em disco: `ls -l ~/.opencraft/credentials/whatsapp/<accountId>/creds.json` (mtime deve ser recente).
+- Store de sessão: `ls -l ~/.opencraft/agents/<agentId>/sessions/sessions.json` (o caminho pode ser sobrescrito na config). Contagem e destinatários recentes são exibidos via `status`.
+- Fluxo de revinculação: `opencraft channels logout && opencraft channels login --verbose` quando códigos de status 409–515 ou `loggedOut` aparecem nos logs. (Nota: o fluxo de login por QR reinicia automaticamente uma vez para status 515 após o pairing.)
 
-## Health monitor config
+## Config do health monitor
 
-- `gateway.channelHealthCheckMinutes`: how often the gateway checks channel health. Default: `5`. Set `0` to disable health-monitor restarts globally.
-- `gateway.channelStaleEventThresholdMinutes`: how long a connected channel can stay idle before the health monitor treats it as stale and restarts it. Default: `30`. Keep this greater than or equal to `gateway.channelHealthCheckMinutes`.
-- `gateway.channelMaxRestartsPerHour`: rolling one-hour cap for health-monitor restarts per channel/account. Default: `10`.
-- `channels.<provider>.healthMonitor.enabled`: disable health-monitor restarts for a specific channel while leaving global monitoring enabled.
-- `channels.<provider>.accounts.<accountId>.healthMonitor.enabled`: multi-account override that wins over the channel-level setting.
-- These per-channel overrides apply to the built-in channel monitors that expose them today: Discord, Google Chat, iMessage, Microsoft Teams, Signal, Slack, Telegram, and WhatsApp.
+- `gateway.channelHealthCheckMinutes`: frequência com que o gateway verifica a saúde dos canais. Padrão: `5`. Defina `0` para desabilitar health-monitor restarts globalmente.
+- `gateway.channelStaleEventThresholdMinutes`: quanto tempo um canal conectado pode ficar ocioso antes que o health monitor o trate como obsoleto e o reinicie. Padrão: `30`. Mantenha isso maior ou igual a `gateway.channelHealthCheckMinutes`.
+- `gateway.channelMaxRestartsPerHour`: limite de uma hora rolante para health-monitor restarts por canal/conta. Padrão: `10`.
+- `channels.<provider>.healthMonitor.enabled`: desabilitar health-monitor restarts para um canal específico mantendo o monitoramento global habilitado.
+- `channels.<provider>.accounts.<accountId>.healthMonitor.enabled`: override multi-conta que prevalece sobre a configuração de nível de canal.
+- Esses overrides por canal se aplicam aos monitores de canais built-in que os expõem hoje: Discord, Google Chat, iMessage, Microsoft Teams, Signal, Slack, Telegram e WhatsApp.
 
-## When something fails
+## Quando algo falha
 
-- `logged out` or status 409–515 → relink with `opencraft channels logout` then `opencraft channels login`.
-- Gateway unreachable → start it: `opencraft gateway --port 18789` (use `--force` if the port is busy).
-- No inbound messages → confirm linked phone is online and the sender is allowed (`channels.whatsapp.allowFrom`); for group chats, ensure allowlist + mention rules match (`channels.whatsapp.groups`, `agents.list[].groupChat.mentionPatterns`).
+- `logged out` ou status 409–515 → revincule com `opencraft channels logout` e depois `opencraft channels login`.
+- Gateway inacessível → inicie-o: `opencraft gateway --port 18789` (use `--force` se a porta estiver ocupada).
+- Sem mensagens inbound → confirme que o telefone vinculado está online e o remetente é permitido (`channels.whatsapp.allowFrom`); para chats de grupo, garanta que regras de allowlist + mention correspondam (`channels.whatsapp.groups`, `agents.list[].groupChat.mentionPatterns`).
 
-## Dedicated "health" command
+## Comando "health" dedicado
 
-`opencraft health --json` asks the running Gateway for its health snapshot (no direct channel sockets from the CLI). It reports linked creds/auth age when available, per-channel probe summaries, session-store summary, and a probe duration. It exits non-zero if the Gateway is unreachable or the probe fails/timeouts. Use `--timeout <ms>` to override the 10s default.
+`opencraft health --json` solicita ao Gateway em execução seu snapshot de saúde (sem sockets de canal diretos do CLI). Ele reporta credenciais vinculadas/idade da auth quando disponível, resumos de sondas por canal, resumo do session-store e duração da sonda. Sai com código diferente de zero se o Gateway estiver inacessível ou a sonda falhar/expirar. Use `--timeout <ms>` para sobrescrever o padrão de 10s.

@@ -1,17 +1,17 @@
 ---
-summary: "Troubleshoot cron and heartbeat scheduling and delivery"
+summary: "Solucionar problemas de agendamento e entrega de Cron e heartbeat"
 read_when:
-  - Cron did not run
-  - Cron ran but no message was delivered
-  - Heartbeat seems silent or skipped
+  - Cron não executou
+  - Cron executou mas nenhuma mensagem foi entregue
+  - Heartbeat parece silencioso ou foi pulado
 title: "Automation Troubleshooting"
 ---
 
-# Automation troubleshooting
+# Solução de problemas de automação
 
-Use this page for scheduler and delivery issues (`cron` + `heartbeat`).
+Use esta página para problemas de agendador e entrega (`cron` + `heartbeat`).
 
-## Command ladder
+## Escada de comandos
 
 ```bash
 opencraft status
@@ -21,7 +21,7 @@ opencraft doctor
 opencraft channels status --probe
 ```
 
-Then run automation checks:
+Depois execute verificações de automação:
 
 ```bash
 opencraft cron status
@@ -29,7 +29,7 @@ opencraft cron list
 opencraft system heartbeat last
 ```
 
-## Cron not firing
+## Cron não disparando
 
 ```bash
 opencraft cron status
@@ -38,19 +38,19 @@ opencraft cron runs --id <jobId> --limit 20
 opencraft logs --follow
 ```
 
-Good output looks like:
+Uma saída boa se parece com:
 
-- `cron status` reports enabled and a future `nextWakeAtMs`.
-- Job is enabled and has a valid schedule/timezone.
-- `cron runs` shows `ok` or explicit skip reason.
+- `cron status` reporta habilitado e um `nextWakeAtMs` futuro.
+- O job está habilitado e tem um agendamento/fuso horário válido.
+- `cron runs` mostra `ok` ou razão explícita de pulo.
 
-Common signatures:
+Assinaturas comuns:
 
-- `cron: scheduler disabled; jobs will not run automatically` → cron disabled in config/env.
-- `cron: timer tick failed` → scheduler tick crashed; inspect surrounding stack/log context.
-- `reason: not-due` in run output → manual run called without `--force` and job not due yet.
+- `cron: scheduler disabled; jobs will not run automatically` → Cron desabilitado na configuração/env.
+- `cron: timer tick failed` → tick do agendador falhou; inspecione o stack/contexto de log ao redor.
+- `reason: not-due` na saída de execução → execução manual chamada sem `--force` e o job ainda não está no horário.
 
-## Cron fired but no delivery
+## Cron disparou mas sem entrega
 
 ```bash
 opencraft cron runs --id <jobId> --limit 20
@@ -59,19 +59,19 @@ opencraft channels status --probe
 opencraft logs --follow
 ```
 
-Good output looks like:
+Uma saída boa se parece com:
 
-- Run status is `ok`.
-- Delivery mode/target are set for isolated jobs.
-- Channel probe reports target channel connected.
+- Status da execução é `ok`.
+- Modo/alvo de entrega estão definidos para jobs isolados.
+- Sondagem do canal reporta canal alvo conectado.
 
-Common signatures:
+Assinaturas comuns:
 
-- Run succeeded but delivery mode is `none` → no external message is expected.
-- Delivery target missing/invalid (`channel`/`to`) → run may succeed internally but skip outbound.
-- Channel auth errors (`unauthorized`, `missing_scope`, `Forbidden`) → delivery blocked by channel credentials/permissions.
+- Execução bem-sucedida mas modo de entrega é `none` → nenhuma mensagem externa é esperada.
+- Alvo de entrega ausente/inválido (`channel`/`to`) → execução pode ter sucesso internamente mas pular saída.
+- Erros de autenticação do canal (`unauthorized`, `missing_scope`, `Forbidden`) → entrega bloqueada por credenciais/permissões do canal.
 
-## Heartbeat suppressed or skipped
+## Heartbeat suprimido ou pulado
 
 ```bash
 opencraft system heartbeat last
@@ -80,19 +80,19 @@ opencraft config get agents.defaults.heartbeat
 opencraft channels status --probe
 ```
 
-Good output looks like:
+Uma saída boa se parece com:
 
-- Heartbeat enabled with non-zero interval.
-- Last heartbeat result is `ran` (or skip reason is understood).
+- Heartbeat habilitado com intervalo diferente de zero.
+- Último resultado do heartbeat é `ran` (ou razão de pulo é compreendida).
 
-Common signatures:
+Assinaturas comuns:
 
-- `heartbeat skipped` with `reason=quiet-hours` → outside `activeHours`.
-- `requests-in-flight` → main lane busy; heartbeat deferred.
-- `empty-heartbeat-file` → interval heartbeat skipped because `HEARTBEAT.md` has no actionable content and no tagged cron event is queued.
-- `alerts-disabled` → visibility settings suppress outbound heartbeat messages.
+- `heartbeat skipped` com `reason=quiet-hours` → fora do `activeHours`.
+- `requests-in-flight` → faixa principal ocupada; heartbeat adiado.
+- `empty-heartbeat-file` → heartbeat de intervalo pulado porque `HEARTBEAT.md` não tem conteúdo acionável e nenhum evento Cron marcado está na fila.
+- `alerts-disabled` → configurações de visibilidade suprimem mensagens de heartbeat de saída.
 
-## Timezone and activeHours gotchas
+## Armadilhas de fuso horário e activeHours
 
 ```bash
 opencraft config get agents.defaults.heartbeat.activeHours
@@ -102,19 +102,19 @@ opencraft cron list
 opencraft logs --follow
 ```
 
-Quick rules:
+Regras rápidas:
 
-- `Config path not found: agents.defaults.userTimezone` means the key is unset; heartbeat falls back to host timezone (or `activeHours.timezone` if set).
-- Cron without `--tz` uses gateway host timezone.
-- Heartbeat `activeHours` uses configured timezone resolution (`user`, `local`, or explicit IANA tz).
-- ISO timestamps without timezone are treated as UTC for cron `at` schedules.
+- `Config path not found: agents.defaults.userTimezone` significa que a chave não está definida; heartbeat recorre ao fuso horário do host (ou `activeHours.timezone` se definido).
+- Cron sem `--tz` usa o fuso horário do host do Gateway.
+- `activeHours` do heartbeat usa resolução de fuso horário configurada (`user`, `local`, ou tz IANA explícito).
+- Timestamps ISO sem fuso horário são tratados como UTC para agendamentos Cron `at`.
 
-Common signatures:
+Assinaturas comuns:
 
-- Jobs run at the wrong wall-clock time after host timezone changes.
-- Heartbeat always skipped during your daytime because `activeHours.timezone` is wrong.
+- Jobs executam no horário errado após mudanças de fuso horário do host.
+- Heartbeat sempre pulado durante o dia porque `activeHours.timezone` está errado.
 
-Related:
+Relacionados:
 
 - [/automation/cron-jobs](/automation/cron-jobs)
 - [/gateway/heartbeat](/gateway/heartbeat)

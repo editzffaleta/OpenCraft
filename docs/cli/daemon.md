@@ -1,18 +1,18 @@
 ---
-summary: "CLI reference for `opencraft daemon` (legacy alias for gateway service management)"
+summary: "Referência CLI para `opencraft daemon` (alias legado para gerenciamento de serviço gateway)"
 read_when:
-  - You still use `opencraft daemon ...` in scripts
-  - You need service lifecycle commands (install/start/stop/restart/status)
+  - Você ainda usa `opencraft daemon ...` em scripts
+  - Você precisa de comandos de ciclo de vida do serviço (install/start/stop/restart/status)
 title: "daemon"
 ---
 
 # `opencraft daemon`
 
-Legacy alias for Gateway service management commands.
+Alias legado para comandos de gerenciamento de serviço do Gateway.
 
-`opencraft daemon ...` maps to the same service control surface as `opencraft gateway ...` service commands.
+`opencraft daemon ...` mapeia para a mesma superfície de controle de serviço que `opencraft gateway ...` comandos de serviço.
 
-## Usage
+## Uso
 
 ```bash
 opencraft daemon status
@@ -23,31 +23,31 @@ opencraft daemon restart
 opencraft daemon uninstall
 ```
 
-## Subcommands
+## Subcomandos
 
-- `status`: show service install state and probe Gateway health
-- `install`: install service (`launchd`/`systemd`/`schtasks`)
-- `uninstall`: remove service
-- `start`: start service
-- `stop`: stop service
-- `restart`: restart service
+- `status`: mostrar estado de instalação do serviço e verificar saúde do Gateway
+- `install`: instalar serviço (`launchd`/`systemd`/`schtasks`)
+- `uninstall`: remover serviço
+- `start`: iniciar serviço
+- `stop`: parar serviço
+- `restart`: reiniciar serviço
 
-## Common options
+## Opções comuns
 
 - `status`: `--url`, `--token`, `--password`, `--timeout`, `--no-probe`, `--require-rpc`, `--deep`, `--json`
 - `install`: `--port`, `--runtime <node|bun>`, `--token`, `--force`, `--json`
-- lifecycle (`uninstall|start|stop|restart`): `--json`
+- ciclo de vida (`uninstall|start|stop|restart`): `--json`
 
-Notes:
+Observações:
 
-- `status` resolves configured auth SecretRefs for probe auth when possible.
-- If a required auth SecretRef is unresolved in this command path, `daemon status --json` reports `rpc.authWarning` when probe connectivity/auth fails; pass `--token`/`--password` explicitly or resolve the secret source first.
-- If the probe succeeds, unresolved auth-ref warnings are suppressed to avoid false positives.
-- On Linux systemd installs, `status` token-drift checks include both `Environment=` and `EnvironmentFile=` unit sources.
-- When token auth requires a token and `gateway.auth.token` is SecretRef-managed, `install` validates that the SecretRef is resolvable but does not persist the resolved token into service environment metadata.
-- If token auth requires a token and the configured token SecretRef is unresolved, install fails closed.
-- If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, install is blocked until mode is set explicitly.
+- `status` resolve SecretRefs de autenticação configurados para autenticação de verificação quando possível.
+- Se um SecretRef de autenticação necessário não está resolvido neste caminho de comando, `daemon status --json` reporta `rpc.authWarning` quando a verificação de conectividade/autenticação falha; passe `--token`/`--password` explicitamente ou resolva a fonte do segredo primeiro.
+- Se a verificação é bem-sucedida, avisos de ref de autenticação não resolvidos são suprimidos para evitar falsos positivos.
+- Em instalações Linux systemd, verificações de desvio de token de `status` incluem tanto fontes `Environment=` quanto `EnvironmentFile=` da unidade.
+- Quando autenticação por token requer um token e `gateway.auth.token` é gerenciado por SecretRef, `install` valida que o SecretRef é resolvível mas não persiste o token resolvido nos metadados de ambiente do serviço.
+- Se autenticação por token requer um token e o SecretRef de token configurado não está resolvido, a instalação falha de forma fechada.
+- Se tanto `gateway.auth.token` quanto `gateway.auth.password` estão configurados e `gateway.auth.mode` não está definido, a instalação é bloqueada até que o modo seja definido explicitamente.
 
-## Prefer
+## Preferir
 
-Use [`opencraft gateway`](/cli/gateway) for current docs and examples.
+Use [`opencraft gateway`](/cli/gateway) para documentação e exemplos atuais.

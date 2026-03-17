@@ -1,19 +1,19 @@
 ---
-summary: "Install OpenCraft declaratively with Nix"
+summary: "Instale o OpenCraft declarativamente com Nix"
 read_when:
-  - You want reproducible, rollback-able installs
-  - You're already using Nix/NixOS/Home Manager
-  - You want everything pinned and managed declaratively
+  - Você quer instalações reproduzíveis e com rollback
+  - Você já usa Nix/NixOS/Home Manager
+  - Você quer tudo fixado e gerenciado declarativamente
 title: "Nix"
 ---
 
-# Nix Installation
+# Instalação com Nix
 
-The recommended way to run OpenCraft with Nix is via **[nix-opencraft](https://github.com/opencraft/nix-opencraft)** — a batteries-included Home Manager module.
+A forma recomendada de rodar o OpenCraft com Nix é via **[nix-opencraft](https://github.com/opencraft/nix-opencraft)** - um módulo Home Manager completo.
 
-## Quick Start
+## Início Rápido
 
-Paste this to your AI agent (Claude, Cursor, etc.):
+Cole isso no seu agente de IA (Claude, Cursor, etc.):
 
 ```text
 I want to set up nix-opencraft on my Mac.
@@ -30,69 +30,69 @@ What I need you to do:
 Reference the nix-opencraft README for module options.
 ```
 
-> **📦 Full guide: [github.com/opencraft/nix-opencraft](https://github.com/opencraft/nix-opencraft)**
+> **Guia completo: [github.com/opencraft/nix-opencraft](https://github.com/opencraft/nix-opencraft)**
 >
-> The nix-opencraft repo is the source of truth for Nix installation. This page is just a quick overview.
+> O repositório nix-opencraft é a fonte de verdade para instalação via Nix. Esta página é apenas uma visão geral rápida.
 
-## What you get
+## O que você obtém
 
-- Gateway + macOS app + tools (whisper, spotify, cameras) — all pinned
-- Launchd service that survives reboots
-- Plugin system with declarative config
-- Instant rollback: `home-manager switch --rollback`
+- Gateway + app macOS + ferramentas (whisper, spotify, cameras) - tudo fixado
+- Serviço launchd que sobrevive a reboots
+- Sistema de Plugin com configuração declarativa
+- Rollback instantâneo: `home-manager switch --rollback`
 
 ---
 
-## Nix Mode Runtime Behavior
+## Comportamento de Runtime no Modo Nix
 
-When `OPENCRAFT_NIX_MODE=1` is set (automatic with nix-opencraft):
+Quando `OPENCRAFT_NIX_MODE=1` está definido (automático com nix-opencraft):
 
-OpenCraft supports a **Nix mode** that makes configuration deterministic and disables auto-install flows.
-Enable it by exporting:
+O OpenCraft suporta um **modo Nix** que torna a configuração determinística e desabilita fluxos de auto-instalação.
+Habilite exportando:
 
 ```bash
 OPENCRAFT_NIX_MODE=1
 ```
 
-On macOS, the GUI app does not automatically inherit shell env vars. You can
-also enable Nix mode via defaults:
+No macOS, o app GUI não herda automaticamente variáveis de ambiente do shell. Você também pode
+habilitar o modo Nix via defaults:
 
 ```bash
 defaults write ai.opencraft.mac opencraft.nixMode -bool true
 ```
 
-### Config + state paths
+### Caminhos de config + estado
 
-OpenCraft reads JSON5 config from `OPENCRAFT_CONFIG_PATH` and stores mutable data in `OPENCRAFT_STATE_DIR`.
-When needed, you can also set `OPENCRAFT_HOME` to control the base home directory used for internal path resolution.
+O OpenCraft lê configuração JSON5 de `OPENCRAFT_CONFIG_PATH` e armazena dados mutáveis em `OPENCRAFT_STATE_DIR`.
+Quando necessário, você também pode definir `OPENCRAFT_HOME` para controlar o diretório home base usado para resolução interna de caminhos.
 
-- `OPENCRAFT_HOME` (default precedence: `HOME` / `USERPROFILE` / `os.homedir()`)
-- `OPENCRAFT_STATE_DIR` (default: `~/.opencraft`)
-- `OPENCRAFT_CONFIG_PATH` (default: `$OPENCRAFT_STATE_DIR/opencraft.json`)
+- `OPENCRAFT_HOME` (precedência padrão: `HOME` / `USERPROFILE` / `os.homedir()`)
+- `OPENCRAFT_STATE_DIR` (padrão: `~/.opencraft`)
+- `OPENCRAFT_CONFIG_PATH` (padrão: `$OPENCRAFT_STATE_DIR/opencraft.json`)
 
-When running under Nix, set these explicitly to Nix-managed locations so runtime state and config
-stay out of the immutable store.
+Ao rodar sob Nix, defina estes explicitamente para localizações gerenciadas pelo Nix para que estado de runtime e configuração
+fiquem fora do store imutável.
 
-### Runtime behavior in Nix mode
+### Comportamento de runtime no modo Nix
 
-- Auto-install and self-mutation flows are disabled
-- Missing dependencies surface Nix-specific remediation messages
-- UI surfaces a read-only Nix mode banner when present
+- Fluxos de auto-instalação e auto-mutação são desabilitados
+- Dependências faltantes exibem mensagens de remediação específicas do Nix
+- A UI exibe um banner somente-leitura do modo Nix quando presente
 
-## Packaging note (macOS)
+## Nota de empacotamento (macOS)
 
-The macOS packaging flow expects a stable Info.plist template at:
+O fluxo de empacotamento macOS espera um template Info.plist estável em:
 
 ```
 apps/macos/Sources/OpenCraft/Resources/Info.plist
 ```
 
-[`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) copies this template into the app bundle and patches dynamic fields
-(bundle ID, version/build, Git SHA, Sparkle keys). This keeps the plist deterministic for SwiftPM
-packaging and Nix builds (which do not rely on a full Xcode toolchain).
+[`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) copia este template para o app bundle e modifica campos dinâmicos
+(bundle ID, versão/build, Git SHA, chaves Sparkle). Isso mantém o plist determinístico para empacotamento SwiftPM
+e builds Nix (que não dependem de uma toolchain Xcode completa).
 
-## Related
+## Relacionado
 
-- [nix-opencraft](https://github.com/opencraft/nix-opencraft) — full setup guide
-- [Wizard](/start/wizard) — non-Nix CLI setup
-- [Docker](/install/docker) — containerized setup
+- [nix-opencraft](https://github.com/opencraft/nix-opencraft) - guia de configuração completo
+- [Wizard](/start/wizard) - configuração CLI sem Nix
+- [Docker](/install/docker) - configuração containerizada

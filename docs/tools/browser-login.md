@@ -1,53 +1,53 @@
 ---
-summary: "Manual logins for browser automation + X/Twitter posting"
+summary: "Logins manuais para automação de browser + postagem no X/Twitter"
 read_when:
-  - You need to log into sites for browser automation
-  - You want to post updates to X/Twitter
-title: "Browser Login"
+  - Você precisa fazer login em sites para automação de browser
+  - Você quer postar atualizações no X/Twitter
+title: "Login no Browser"
 ---
 
-# Browser login + X/Twitter posting
+# Login no browser + postagem no X/Twitter
 
-## Manual login (recommended)
+## Login manual (recomendado)
 
-When a site requires login, **sign in manually** in the **host** browser profile (the opencraft browser).
+Quando um site requer login, **faça login manualmente** no perfil de browser do **host** (o browser opencraft).
 
-Do **not** give the model your credentials. Automated logins often trigger anti‑bot defenses and can lock the account.
+**Não** forneça suas credenciais ao modelo. Logins automatizados frequentemente disparam defesas anti-bot e podem bloquear a conta.
 
-Back to the main browser docs: [Browser](/tools/browser).
+Voltar para a documentação principal do browser: [Browser](/tools/browser).
 
-## Which Chrome profile is used?
+## Qual perfil do Chrome é usado?
 
-OpenCraft controls a **dedicated Chrome profile** (named `opencraft`, orange‑tinted UI). This is separate from your daily browser profile.
+O OpenCraft controla um **perfil dedicado do Chrome** (chamado `opencraft`, com UI em tom laranja). Isso é separado do seu perfil de browser do dia a dia.
 
-For agent browser tool calls:
+Para chamadas de ferramenta de browser do agente:
 
-- Default choice: the agent should use its isolated `opencraft` browser.
-- Use `profile="user"` only when existing logged-in sessions matter and the user is at the computer to click/approve any attach prompt.
-- If you have multiple user-browser profiles, specify the profile explicitly instead of guessing.
+- Escolha padrão: o agente deve usar seu browser `opencraft` isolado.
+- Use `profile="user"` apenas quando sessões logadas existentes importam e o usuário está no computador para clicar/aprovar qualquer prompt de conexão.
+- Se você tiver múltiplos perfis de browser de usuário, especifique o perfil explicitamente em vez de adivinhar.
 
-Two easy ways to access it:
+Duas formas fáceis de acessá-lo:
 
-1. **Ask the agent to open the browser** and then log in yourself.
-2. **Open it via CLI**:
+1. **Peça ao agente para abrir o browser** e depois faça login você mesmo.
+2. **Abra via CLI**:
 
 ```bash
 opencraft browser start
 opencraft browser open https://x.com
 ```
 
-If you have multiple profiles, pass `--browser-profile <name>` (the default is `opencraft`).
+Se você tiver múltiplos perfis, passe `--browser-profile <name>` (o padrão é `opencraft`).
 
-## X/Twitter: recommended flow
+## X/Twitter: fluxo recomendado
 
-- **Read/search/threads:** use the **host** browser (manual login).
-- **Post updates:** use the **host** browser (manual login).
+- **Ler/pesquisar/threads:** use o browser do **host** (login manual).
+- **Postar atualizações:** use o browser do **host** (login manual).
 
-## Sandboxing + host browser access
+## Sandbox + acesso ao browser do host
 
-Sandboxed browser sessions are **more likely** to trigger bot detection. For X/Twitter (and other strict sites), prefer the **host** browser.
+Sessões de browser em sandbox são **mais propensas** a disparar detecção de bot. Para X/Twitter (e outros sites rigorosos), prefira o browser do **host**.
 
-If the agent is sandboxed, the browser tool defaults to the sandbox. To allow host control:
+Se o agente estiver em sandbox, a ferramenta de browser usa o sandbox por padrão. Para permitir controle do host:
 
 ```json5
 {
@@ -64,10 +64,10 @@ If the agent is sandboxed, the browser tool defaults to the sandbox. To allow ho
 }
 ```
 
-Then target the host browser:
+Depois aponte para o browser do host:
 
 ```bash
 opencraft browser open https://x.com --browser-profile opencraft --target host
 ```
 
-Or disable sandboxing for the agent that posts updates.
+Ou desabilite o sandbox para o agente que posta atualizações.

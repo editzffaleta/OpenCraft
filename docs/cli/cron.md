@@ -1,77 +1,77 @@
 ---
-summary: "CLI reference for `opencraft cron` (schedule and run background jobs)"
+summary: "Referência CLI para `opencraft cron` (agendar e executar tarefas em segundo plano)"
 read_when:
-  - You want scheduled jobs and wakeups
-  - You’re debugging cron execution and logs
+  - Você quer tarefas agendadas e despertares
+  - Você está depurando execução e logs de Cron
 title: "cron"
 ---
 
 # `opencraft cron`
 
-Manage cron jobs for the Gateway scheduler.
+Gerencie tarefas Cron para o agendador do Gateway.
 
-Related:
+Relacionado:
 
-- Cron jobs: [Cron jobs](/automation/cron-jobs)
+- Tarefas Cron: [Tarefas Cron](/automation/cron-jobs)
 
-Tip: run `opencraft cron --help` for the full command surface.
+Dica: execute `opencraft cron --help` para a superfície completa de comandos.
 
-Note: isolated `cron add` jobs default to `--announce` delivery. Use `--no-deliver` to keep
-output internal. `--deliver` remains as a deprecated alias for `--announce`.
+Nota: tarefas isoladas de `cron add` usam entrega `--announce` por padrão. Use `--no-deliver` para manter
+a saída interna. `--deliver` permanece como alias obsoleto para `--announce`.
 
-Note: one-shot (`--at`) jobs delete after success by default. Use `--keep-after-run` to keep them.
+Nota: tarefas únicas (`--at`) são deletadas após sucesso por padrão. Use `--keep-after-run` para mantê-las.
 
-Note: recurring jobs now use exponential retry backoff after consecutive errors (30s → 1m → 5m → 15m → 60m), then return to normal schedule after the next successful run.
+Nota: tarefas recorrentes agora usam backoff exponencial de retry após erros consecutivos (30s → 1m → 5m → 15m → 60m), e retornam ao agendamento normal após a próxima execução bem-sucedida.
 
-Note: `opencraft cron run` now returns as soon as the manual run is queued for execution. Successful responses include `{ ok: true, enqueued: true, runId }`; use `opencraft cron runs --id <job-id>` to follow the eventual outcome.
+Nota: `opencraft cron run` agora retorna assim que a execução manual é enfileirada. Respostas bem-sucedidas incluem `{ ok: true, enqueued: true, runId }`; use `opencraft cron runs --id <job-id>` para acompanhar o resultado final.
 
-Note: retention/pruning is controlled in config:
+Nota: retenção/limpeza é controlada na config:
 
-- `cron.sessionRetention` (default `24h`) prunes completed isolated run sessions.
-- `cron.runLog.maxBytes` + `cron.runLog.keepLines` prune `~/.opencraft/cron/runs/<jobId>.jsonl`.
+- `cron.sessionRetention` (padrão `24h`) limpa sessões de execução isoladas concluídas.
+- `cron.runLog.maxBytes` + `cron.runLog.keepLines` limpam `~/.opencraft/cron/runs/<jobId>.jsonl`.
 
-Upgrade note: if you have older cron jobs from before the current delivery/store format, run
-`opencraft doctor --fix`. Doctor now normalizes legacy cron fields (`jobId`, `schedule.cron`,
-top-level delivery fields, payload `provider` delivery aliases) and migrates simple
-`notify: true` webhook fallback jobs to explicit webhook delivery when `cron.webhook` is
-configured.
+Nota de atualização: se você tem tarefas Cron mais antigas de antes do formato atual de entrega/armazenamento, execute
+`opencraft doctor --fix`. O Doctor agora normaliza campos Cron legados (`jobId`, `schedule.cron`,
+campos de entrega de nível superior, aliases de entrega `provider` no payload) e migra tarefas simples
+de fallback webhook `notify: true` para entrega webhook explícita quando `cron.webhook` está
+configurado.
 
-## Common edits
+## Edições comuns
 
-Update delivery settings without changing the message:
+Atualize configurações de entrega sem alterar a mensagem:
 
 ```bash
 opencraft cron edit <job-id> --announce --channel telegram --to "123456789"
 ```
 
-Disable delivery for an isolated job:
+Desabilite a entrega para uma tarefa isolada:
 
 ```bash
 opencraft cron edit <job-id> --no-deliver
 ```
 
-Enable lightweight bootstrap context for an isolated job:
+Habilite contexto de bootstrap leve para uma tarefa isolada:
 
 ```bash
 opencraft cron edit <job-id> --light-context
 ```
 
-Announce to a specific channel:
+Anuncie para um canal específico:
 
 ```bash
 opencraft cron edit <job-id> --announce --channel slack --to "channel:C1234567890"
 ```
 
-Create an isolated job with lightweight bootstrap context:
+Crie uma tarefa isolada com contexto de bootstrap leve:
 
 ```bash
 opencraft cron add \
-  --name "Lightweight morning brief" \
+  --name "Resumo matinal leve" \
   --cron "0 7 * * *" \
   --session isolated \
-  --message "Summarize overnight updates." \
+  --message "Resuma as atualizações da noite." \
   --light-context \
   --no-deliver
 ```
 
-`--light-context` applies to isolated agent-turn jobs only. For cron runs, lightweight mode keeps bootstrap context empty instead of injecting the full workspace bootstrap set.
+`--light-context` se aplica apenas a tarefas de turno de agente isoladas. Para execuções Cron, o modo leve mantém o contexto de bootstrap vazio em vez de injetar o conjunto completo de bootstrap do workspace.

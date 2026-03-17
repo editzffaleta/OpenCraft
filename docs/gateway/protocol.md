@@ -1,18 +1,18 @@
 ---
-summary: "Gateway WebSocket protocol: handshake, frames, versioning"
+summary: "Protocolo WebSocket do Gateway: handshake, frames, versionamento"
 read_when:
-  - Implementing or updating gateway WS clients
-  - Debugging protocol mismatches or connect failures
-  - Regenerating protocol schema/models
+  - Implementando ou atualizando clientes WS do gateway
+  - Debugando mismatches de protocolo ou falhas de connect
+  - Regenerando schema/modelos de protocolo
 title: "Gateway Protocol"
 ---
 
-# Gateway protocol (WebSocket)
+# Protocolo do Gateway (WebSocket)
 
-The Gateway WS protocol is the **single control plane + node transport** for
-OpenCraft. All clients (CLI, web UI, macOS app, iOS/Android nodes, headless
-nodes) connect over WebSocket and declare their **role** + **scope** at
-handshake time.
+O protocolo WS do Gateway é o **único control plane + transporte de node** do
+OpenCraft. Todos os clientes (CLI, web UI, app macOS, nodes iOS/Android, nodes
+headless) conectam via WebSocket e declaram seu **role** + **escopo** no
+momento do handshake.
 
 ## Transport
 

@@ -1,62 +1,62 @@
 ---
-summary: "Uninstall OpenCraft completely (CLI, service, state, workspace)"
+summary: "Desinstalar o OpenCraft completamente (CLI, serviço, estado, workspace)"
 read_when:
-  - You want to remove OpenCraft from a machine
-  - The gateway service is still running after uninstall
-title: "Uninstall"
+  - Você quer remover o OpenCraft de uma máquina
+  - O serviço do gateway ainda está rodando após desinstalação
+title: "Desinstalação"
 ---
 
-# Uninstall
+# Desinstalação
 
-Two paths:
+Dois caminhos:
 
-- **Easy path** if `opencraft` is still installed.
-- **Manual service removal** if the CLI is gone but the service is still running.
+- **Caminho fácil** se o `opencraft` ainda está instalado.
+- **Remoção manual do serviço** se o CLI foi removido mas o serviço ainda está rodando.
 
-## Easy path (CLI still installed)
+## Caminho fácil (CLI ainda instalado)
 
-Recommended: use the built-in uninstaller:
+Recomendado: use o desinstalador embutido:
 
 ```bash
 opencraft uninstall
 ```
 
-Non-interactive (automation / npx):
+Não-interativo (automação / npx):
 
 ```bash
 opencraft uninstall --all --yes --non-interactive
 npx -y opencraft uninstall --all --yes --non-interactive
 ```
 
-Manual steps (same result):
+Etapas manuais (mesmo resultado):
 
-1. Stop the gateway service:
+1. Pare o serviço do gateway:
 
 ```bash
 opencraft gateway stop
 ```
 
-2. Uninstall the gateway service (launchd/systemd/schtasks):
+2. Desinstale o serviço do gateway (launchd/systemd/schtasks):
 
 ```bash
 opencraft gateway uninstall
 ```
 
-3. Delete state + config:
+3. Delete estado + configuração:
 
 ```bash
 rm -rf "${OPENCRAFT_STATE_DIR:-$HOME/.opencraft}"
 ```
 
-If you set `OPENCRAFT_CONFIG_PATH` to a custom location outside the state dir, delete that file too.
+Se você definiu `OPENCRAFT_CONFIG_PATH` para uma localização personalizada fora do diretório de estado, delete esse arquivo também.
 
-4. Delete your workspace (optional, removes agent files):
+4. Delete seu workspace (opcional, remove arquivos do agente):
 
 ```bash
 rm -rf ~/.opencraft/workspace
 ```
 
-5. Remove the CLI install (pick the one you used):
+5. Remova a instalação do CLI (escolha a que você usou):
 
 ```bash
 npm rm -g opencraft
@@ -64,35 +64,35 @@ pnpm remove -g opencraft
 bun remove -g opencraft
 ```
 
-6. If you installed the macOS app:
+6. Se você instalou o app macOS:
 
 ```bash
 rm -rf /Applications/OpenCraft.app
 ```
 
-Notes:
+Notas:
 
-- If you used profiles (`--profile` / `OPENCRAFT_PROFILE`), repeat step 3 for each state dir (defaults are `~/.opencraft-<profile>`).
-- In remote mode, the state dir lives on the **gateway host**, so run steps 1-4 there too.
+- Se você usou perfis (`--profile` / `OPENCRAFT_PROFILE`), repita a etapa 3 para cada diretório de estado (padrões são `~/.opencraft-<profile>`).
+- No modo remoto, o diretório de estado fica no **host do gateway**, então execute as etapas 1-4 lá também.
 
-## Manual service removal (CLI not installed)
+## Remoção manual do serviço (CLI não instalado)
 
-Use this if the gateway service keeps running but `opencraft` is missing.
+Use isso se o serviço do gateway continua rodando mas `opencraft` está faltando.
 
 ### macOS (launchd)
 
-Default label is `ai.opencraft.gateway` (or `ai.opencraft.<profile>`; legacy `com.opencraft.*` may still exist):
+O label padrão é `ai.opencraft.gateway` (ou `ai.opencraft.<profile>`; o legado `com.opencraft.*` pode ainda existir):
 
 ```bash
 launchctl bootout gui/$UID/ai.opencraft.gateway
 rm -f ~/Library/LaunchAgents/ai.opencraft.gateway.plist
 ```
 
-If you used a profile, replace the label and plist name with `ai.opencraft.<profile>`. Remove any legacy `com.opencraft.*` plists if present.
+Se você usou um perfil, substitua o label e nome do plist por `ai.opencraft.<profile>`. Remova quaisquer plists legados `com.opencraft.*` se presentes.
 
-### Linux (systemd user unit)
+### Linux (unidade de usuário systemd)
 
-Default unit name is `opencraft-gateway.service` (or `opencraft-gateway-<profile>.service`):
+O nome padrão da unidade é `opencraft-gateway.service` (ou `opencraft-gateway-<profile>.service`):
 
 ```bash
 systemctl --user disable --now opencraft-gateway.service
@@ -100,29 +100,29 @@ rm -f ~/.config/systemd/user/opencraft-gateway.service
 systemctl --user daemon-reload
 ```
 
-### Windows (Scheduled Task)
+### Windows (Tarefa Agendada)
 
-Default task name is `OpenCraft Gateway` (or `OpenCraft Gateway (<profile>)`).
-The task script lives under your state dir.
+O nome padrão da tarefa é `OpenCraft Gateway` (ou `OpenCraft Gateway (<profile>)`).
+O script da tarefa fica no seu diretório de estado.
 
 ```powershell
 schtasks /Delete /F /TN "OpenCraft Gateway"
 Remove-Item -Force "$env:USERPROFILE\.opencraft\gateway.cmd"
 ```
 
-If you used a profile, delete the matching task name and `~\.opencraft-<profile>\gateway.cmd`.
+Se você usou um perfil, delete o nome da tarefa correspondente e `~\.opencraft-<profile>\gateway.cmd`.
 
-## Normal install vs source checkout
+## Instalação normal vs checkout do código-fonte
 
-### Normal install (install.sh / npm / pnpm / bun)
+### Instalação normal (install.sh / npm / pnpm / bun)
 
-If you used `https://opencraft.ai/install.sh` or `install.ps1`, the CLI was installed with `npm install -g opencraft@latest`.
-Remove it with `npm rm -g opencraft` (or `pnpm remove -g` / `bun remove -g` if you installed that way).
+Se você usou `https://opencraft.ai/install.sh` ou `install.ps1`, o CLI foi instalado com `npm install -g opencraft@latest`.
+Remova com `npm rm -g opencraft` (ou `pnpm remove -g` / `bun remove -g` se instalou dessa forma).
 
-### Source checkout (git clone)
+### Checkout do código-fonte (git clone)
 
-If you run from a repo checkout (`git clone` + `opencraft ...` / `bun run opencraft ...`):
+Se você roda a partir de um checkout do repositório (`git clone` + `opencraft ...` / `bun run opencraft ...`):
 
-1. Uninstall the gateway service **before** deleting the repo (use the easy path above or manual service removal).
-2. Delete the repo directory.
-3. Remove state + workspace as shown above.
+1. Desinstale o serviço do gateway **antes** de deletar o repositório (use o caminho fácil acima ou remoção manual do serviço).
+2. Delete o diretório do repositório.
+3. Remova estado + workspace conforme mostrado acima.

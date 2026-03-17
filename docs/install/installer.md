@@ -1,23 +1,23 @@
 ---
-summary: "How the installer scripts work (install.sh, install-cli.sh, install.ps1), flags, and automation"
+summary: "Como os scripts de instalação funcionam (install.sh, install-cli.sh, install.ps1), flags e automação"
 read_when:
-  - You want to understand `opencraft.ai/install.sh`
-  - You want to automate installs (CI / headless)
-  - You want to install from a GitHub checkout
-title: "Installer Internals"
+  - Você quer entender o `opencraft.ai/install.sh`
+  - Você quer automatizar instalações (CI / headless)
+  - Você quer instalar a partir de um checkout do GitHub
+title: "Detalhes do Instalador"
 ---
 
-# Installer internals
+# Detalhes do instalador
 
-OpenCraft ships three installer scripts, served from `opencraft.ai`.
+O OpenCraft distribui três scripts de instalação, servidos a partir de `opencraft.ai`.
 
-| Script                             | Platform             | What it does                                                                                  |
-| ---------------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
-| [`install.sh`](#installsh)         | macOS / Linux / WSL  | Installs Node if needed, installs OpenCraft via npm (default) or git, and can run onboarding. |
-| [`install-cli.sh`](#install-clish) | macOS / Linux / WSL  | Installs Node + OpenCraft into a local prefix (`~/.opencraft`). No root required.             |
-| [`install.ps1`](#installps1)       | Windows (PowerShell) | Installs Node if needed, installs OpenCraft via npm (default) or git, and can run onboarding. |
+| Script                             | Plataforma           | O que faz                                                                                               |
+| ---------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| [`install.sh`](#installsh)         | macOS / Linux / WSL  | Instala Node.js se necessário, instala OpenCraft via npm (padrão) ou git, e pode executar o onboarding. |
+| [`install-cli.sh`](#install-clish) | macOS / Linux / WSL  | Instala Node.js + OpenCraft em um prefixo local (`~/.opencraft`). Não requer root.                      |
+| [`install.ps1`](#installps1)       | Windows (PowerShell) | Instala Node.js se necessário, instala OpenCraft via npm (padrão) ou git, e pode executar o onboarding. |
 
-## Quick commands
+## Comandos rápidos
 
 <Tabs>
   <Tab title="install.sh">
@@ -53,7 +53,7 @@ OpenCraft ships three installer scripts, served from `opencraft.ai`.
 </Tabs>
 
 <Note>
-If install succeeds but `opencraft` is not found in a new terminal, see [Node.js troubleshooting](/install/node#troubleshooting).
+Se a instalação for bem-sucedida mas `opencraft` não for encontrado em um novo terminal, veja [Solução de problemas do Node.js](/install/node#troubleshooting).
 </Note>
 
 ---
@@ -61,57 +61,57 @@ If install succeeds but `opencraft` is not found in a new terminal, see [Node.js
 ## install.sh
 
 <Tip>
-Recommended for most interactive installs on macOS/Linux/WSL.
+Recomendado para a maioria das instalações interativas no macOS/Linux/WSL.
 </Tip>
 
-### Flow (install.sh)
+### Fluxo (install.sh)
 
 <Steps>
-  <Step title="Detect OS">
-    Supports macOS and Linux (including WSL). If macOS is detected, installs Homebrew if missing.
+  <Step title="Detectar SO">
+    Suporta macOS e Linux (incluindo WSL). Se macOS for detectado, instala Homebrew se estiver faltando.
   </Step>
-  <Step title="Ensure Node.js 24 by default">
-    Checks Node version and installs Node 24 if needed (Homebrew on macOS, NodeSource setup scripts on Linux apt/dnf/yum). OpenCraft still supports Node 22 LTS, currently `22.16+`, for compatibility.
+  <Step title="Garantir Node.js 24 por padrão">
+    Verifica a versão do Node.js e instala Node 24 se necessário (Homebrew no macOS, scripts de setup NodeSource no Linux apt/dnf/yum). O OpenCraft ainda suporta Node 22 LTS, atualmente `22.16+`, para compatibilidade.
   </Step>
-  <Step title="Ensure Git">
-    Installs Git if missing.
+  <Step title="Garantir Git">
+    Instala Git se estiver faltando.
   </Step>
-  <Step title="Install OpenCraft">
-    - `npm` method (default): global npm install
-    - `git` method: clone/update repo, install deps with pnpm, build, then install wrapper at `~/.local/bin/opencraft`
+  <Step title="Instalar OpenCraft">
+    - Método `npm` (padrão): instalação global via npm
+    - Método `git`: clone/atualiza repositório, instala dependências com pnpm, faz build, depois instala wrapper em `~/.local/bin/opencraft`
   </Step>
-  <Step title="Post-install tasks">
-    - Runs `opencraft doctor --non-interactive` on upgrades and git installs (best effort)
-    - Attempts onboarding when appropriate (TTY available, onboarding not disabled, and bootstrap/config checks pass)
-    - Defaults `SHARP_IGNORE_GLOBAL_LIBVIPS=1`
+  <Step title="Tarefas pós-instalação">
+    - Executa `opencraft doctor --non-interactive` em atualizações e instalações git (melhor esforço)
+    - Tenta onboarding quando apropriado (TTY disponível, onboarding não desabilitado, e verificações de bootstrap/config passam)
+    - Define `SHARP_IGNORE_GLOBAL_LIBVIPS=1` por padrão
   </Step>
 </Steps>
 
-### Source checkout detection
+### Detecção de checkout do código-fonte
 
-If run inside an OpenCraft checkout (`package.json` + `pnpm-workspace.yaml`), the script offers:
+Se executado dentro de um checkout do OpenCraft (`package.json` + `pnpm-workspace.yaml`), o script oferece:
 
-- use checkout (`git`), or
-- use global install (`npm`)
+- usar checkout (`git`), ou
+- usar instalação global (`npm`)
 
-If no TTY is available and no install method is set, it defaults to `npm` and warns.
+Se não houver TTY disponível e nenhum método de instalação estiver definido, ele usa `npm` por padrão e exibe um aviso.
 
-The script exits with code `2` for invalid method selection or invalid `--install-method` values.
+O script encerra com código `2` para seleção de método inválida ou valores inválidos de `--install-method`.
 
-### Examples (install.sh)
+### Exemplos (install.sh)
 
 <Tabs>
-  <Tab title="Default">
+  <Tab title="Padrão">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash
     ```
   </Tab>
-  <Tab title="Skip onboarding">
+  <Tab title="Pular onboarding">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --no-onboard
     ```
   </Tab>
-  <Tab title="Git install">
+  <Tab title="Instalação git">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --install-method git
     ```
@@ -121,7 +121,7 @@ The script exits with code `2` for invalid method selection or invalid `--instal
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --version main
     ```
   </Tab>
-  <Tab title="Dry run">
+  <Tab title="Simulação">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --dry-run
     ```
@@ -129,41 +129,41 @@ The script exits with code `2` for invalid method selection or invalid `--instal
 </Tabs>
 
 <AccordionGroup>
-  <Accordion title="Flags reference">
+  <Accordion title="Referência de flags">
 
-| Flag                                  | Description                                                 |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `--install-method npm\|git`           | Choose install method (default: `npm`). Alias: `--method`   |
-| `--npm`                               | Shortcut for npm method                                     |
-| `--git`                               | Shortcut for git method. Alias: `--github`                  |
-| `--version <version\|dist-tag\|spec>` | npm version, dist-tag, or package spec (default: `latest`)  |
-| `--beta`                              | Use beta dist-tag if available, else fallback to `latest`   |
-| `--git-dir <path>`                    | Checkout directory (default: `~/opencraft`). Alias: `--dir` |
-| `--no-git-update`                     | Skip `git pull` for existing checkout                       |
-| `--no-prompt`                         | Disable prompts                                             |
-| `--no-onboard`                        | Skip onboarding                                             |
-| `--onboard`                           | Enable onboarding                                           |
-| `--dry-run`                           | Print actions without applying changes                      |
-| `--verbose`                           | Enable debug output (`set -x`, npm notice-level logs)       |
-| `--help`                              | Show usage (`-h`)                                           |
+| Flag                                  | Descrição                                                        |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| `--install-method npm\|git`           | Escolher método de instalação (padrão: `npm`). Alias: `--method` |
+| `--npm`                               | Atalho para método npm                                           |
+| `--git`                               | Atalho para método git. Alias: `--github`                        |
+| `--version <version\|dist-tag\|spec>` | Versão npm, dist-tag ou spec de pacote (padrão: `latest`)        |
+| `--beta`                              | Usar dist-tag beta se disponível, senão fallback para `latest`   |
+| `--git-dir <path>`                    | Diretório de checkout (padrão: `~/opencraft`). Alias: `--dir`    |
+| `--no-git-update`                     | Pular `git pull` para checkout existente                         |
+| `--no-prompt`                         | Desabilitar prompts                                              |
+| `--no-onboard`                        | Pular onboarding                                                 |
+| `--onboard`                           | Habilitar onboarding                                             |
+| `--dry-run`                           | Exibir ações sem aplicar mudanças                                |
+| `--verbose`                           | Habilitar saída de debug (`set -x`, logs npm notice-level)       |
+| `--help`                              | Mostrar uso (`-h`)                                               |
 
   </Accordion>
 
-  <Accordion title="Environment variables reference">
+  <Accordion title="Referência de variáveis de ambiente">
 
-| Variable                                                 | Description                                   |
-| -------------------------------------------------------- | --------------------------------------------- |
-| `OPENCRAFT_INSTALL_METHOD=git\|npm`                      | Install method                                |
-| `OPENCRAFT_VERSION=latest\|next\|main\|<semver>\|<spec>` | npm version, dist-tag, or package spec        |
-| `OPENCRAFT_BETA=0\|1`                                    | Use beta if available                         |
-| `OPENCRAFT_GIT_DIR=<path>`                               | Checkout directory                            |
-| `OPENCRAFT_GIT_UPDATE=0\|1`                              | Toggle git updates                            |
-| `OPENCRAFT_NO_PROMPT=1`                                  | Disable prompts                               |
-| `OPENCRAFT_NO_ONBOARD=1`                                 | Skip onboarding                               |
-| `OPENCRAFT_DRY_RUN=1`                                    | Dry run mode                                  |
-| `OPENCRAFT_VERBOSE=1`                                    | Debug mode                                    |
-| `OPENCRAFT_NPM_LOGLEVEL=error\|warn\|notice`             | npm log level                                 |
-| `SHARP_IGNORE_GLOBAL_LIBVIPS=0\|1`                       | Control sharp/libvips behavior (default: `1`) |
+| Variável                                                 | Descrição                                           |
+| -------------------------------------------------------- | --------------------------------------------------- |
+| `OPENCRAFT_INSTALL_METHOD=git\|npm`                      | Método de instalação                                |
+| `OPENCRAFT_VERSION=latest\|next\|main\|<semver>\|<spec>` | Versão npm, dist-tag ou spec de pacote              |
+| `OPENCRAFT_BETA=0\|1`                                    | Usar beta se disponível                             |
+| `OPENCRAFT_GIT_DIR=<path>`                               | Diretório de checkout                               |
+| `OPENCRAFT_GIT_UPDATE=0\|1`                              | Alternar atualizações git                           |
+| `OPENCRAFT_NO_PROMPT=1`                                  | Desabilitar prompts                                 |
+| `OPENCRAFT_NO_ONBOARD=1`                                 | Pular onboarding                                    |
+| `OPENCRAFT_DRY_RUN=1`                                    | Modo simulação                                      |
+| `OPENCRAFT_VERBOSE=1`                                    | Modo debug                                          |
+| `OPENCRAFT_NPM_LOGLEVEL=error\|warn\|notice`             | Nível de log do npm                                 |
+| `SHARP_IGNORE_GLOBAL_LIBVIPS=0\|1`                       | Controlar comportamento sharp/libvips (padrão: `1`) |
 
   </Accordion>
 </AccordionGroup>
@@ -173,42 +173,42 @@ The script exits with code `2` for invalid method selection or invalid `--instal
 ## install-cli.sh
 
 <Info>
-Designed for environments where you want everything under a local prefix (default `~/.opencraft`) and no system Node dependency.
+Projetado para ambientes onde você quer tudo sob um prefixo local (padrão `~/.opencraft`) e sem dependência de Node.js no sistema.
 </Info>
 
-### Flow (install-cli.sh)
+### Fluxo (install-cli.sh)
 
 <Steps>
-  <Step title="Install local Node runtime">
-    Downloads a pinned supported Node tarball (currently default `22.22.0`) to `<prefix>/tools/node-v<version>` and verifies SHA-256.
+  <Step title="Instalar runtime local Node.js">
+    Baixa um tarball Node.js com versão fixada (atualmente padrão `22.22.0`) para `<prefix>/tools/node-v<version>` e verifica SHA-256.
   </Step>
-  <Step title="Ensure Git">
-    If Git is missing, attempts install via apt/dnf/yum on Linux or Homebrew on macOS.
+  <Step title="Garantir Git">
+    Se Git estiver faltando, tenta instalar via apt/dnf/yum no Linux ou Homebrew no macOS.
   </Step>
-  <Step title="Install OpenCraft under prefix">
-    Installs with npm using `--prefix <prefix>`, then writes wrapper to `<prefix>/bin/opencraft`.
+  <Step title="Instalar OpenCraft sob o prefixo">
+    Instala com npm usando `--prefix <prefix>`, depois escreve wrapper em `<prefix>/bin/opencraft`.
   </Step>
 </Steps>
 
-### Examples (install-cli.sh)
+### Exemplos (install-cli.sh)
 
 <Tabs>
-  <Tab title="Default">
+  <Tab title="Padrão">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install-cli.sh | bash
     ```
   </Tab>
-  <Tab title="Custom prefix + version">
+  <Tab title="Prefixo + versão personalizados">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install-cli.sh | bash -s -- --prefix /opt/opencraft --version latest
     ```
   </Tab>
-  <Tab title="Automation JSON output">
+  <Tab title="Saída JSON para automação">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install-cli.sh | bash -s -- --json --prefix /opt/opencraft
     ```
   </Tab>
-  <Tab title="Run onboarding">
+  <Tab title="Executar onboarding">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install-cli.sh | bash -s -- --onboard
     ```
@@ -216,32 +216,32 @@ Designed for environments where you want everything under a local prefix (defaul
 </Tabs>
 
 <AccordionGroup>
-  <Accordion title="Flags reference">
+  <Accordion title="Referência de flags">
 
-| Flag                   | Description                                                                     |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `--prefix <path>`      | Install prefix (default: `~/.opencraft`)                                        |
-| `--version <ver>`      | OpenCraft version or dist-tag (default: `latest`)                               |
-| `--node-version <ver>` | Node version (default: `22.22.0`)                                               |
-| `--json`               | Emit NDJSON events                                                              |
-| `--onboard`            | Run `opencraft onboard` after install                                           |
-| `--no-onboard`         | Skip onboarding (default)                                                       |
-| `--set-npm-prefix`     | On Linux, force npm prefix to `~/.npm-global` if current prefix is not writable |
-| `--help`               | Show usage (`-h`)                                                               |
+| Flag                   | Descrição                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `--prefix <path>`      | Prefixo de instalação (padrão: `~/.opencraft`)                                        |
+| `--version <ver>`      | Versão ou dist-tag do OpenCraft (padrão: `latest`)                                    |
+| `--node-version <ver>` | Versão do Node.js (padrão: `22.22.0`)                                                 |
+| `--json`               | Emitir eventos NDJSON                                                                 |
+| `--onboard`            | Executar `opencraft onboard` após instalação                                          |
+| `--no-onboard`         | Pular onboarding (padrão)                                                             |
+| `--set-npm-prefix`     | No Linux, forçar prefixo npm para `~/.npm-global` se o prefixo atual não for gravável |
+| `--help`               | Mostrar uso (`-h`)                                                                    |
 
   </Accordion>
 
-  <Accordion title="Environment variables reference">
+  <Accordion title="Referência de variáveis de ambiente">
 
-| Variable                                     | Description                                                                       |
-| -------------------------------------------- | --------------------------------------------------------------------------------- |
-| `OPENCRAFT_PREFIX=<path>`                    | Install prefix                                                                    |
-| `OPENCRAFT_VERSION=<ver>`                    | OpenCraft version or dist-tag                                                     |
-| `OPENCRAFT_NODE_VERSION=<ver>`               | Node version                                                                      |
-| `OPENCRAFT_NO_ONBOARD=1`                     | Skip onboarding                                                                   |
-| `OPENCRAFT_NPM_LOGLEVEL=error\|warn\|notice` | npm log level                                                                     |
-| `OPENCRAFT_GIT_DIR=<path>`                   | Legacy cleanup lookup path (used when removing old `Peekaboo` submodule checkout) |
-| `SHARP_IGNORE_GLOBAL_LIBVIPS=0\|1`           | Control sharp/libvips behavior (default: `1`)                                     |
+| Variável                                     | Descrição                                                                                       |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `OPENCRAFT_PREFIX=<path>`                    | Prefixo de instalação                                                                           |
+| `OPENCRAFT_VERSION=<ver>`                    | Versão ou dist-tag do OpenCraft                                                                 |
+| `OPENCRAFT_NODE_VERSION=<ver>`               | Versão do Node.js                                                                               |
+| `OPENCRAFT_NO_ONBOARD=1`                     | Pular onboarding                                                                                |
+| `OPENCRAFT_NPM_LOGLEVEL=error\|warn\|notice` | Nível de log do npm                                                                             |
+| `OPENCRAFT_GIT_DIR=<path>`                   | Caminho de busca para limpeza legada (usado ao remover checkout antigo do submodule `Peekaboo`) |
+| `SHARP_IGNORE_GLOBAL_LIBVIPS=0\|1`           | Controlar comportamento sharp/libvips (padrão: `1`)                                             |
 
   </Accordion>
 </AccordionGroup>
@@ -250,33 +250,33 @@ Designed for environments where you want everything under a local prefix (defaul
 
 ## install.ps1
 
-### Flow (install.ps1)
+### Fluxo (install.ps1)
 
 <Steps>
-  <Step title="Ensure PowerShell + Windows environment">
-    Requires PowerShell 5+.
+  <Step title="Garantir PowerShell + ambiente Windows">
+    Requer PowerShell 5+.
   </Step>
-  <Step title="Ensure Node.js 24 by default">
-    If missing, attempts install via winget, then Chocolatey, then Scoop. Node 22 LTS, currently `22.16+`, remains supported for compatibility.
+  <Step title="Garantir Node.js 24 por padrão">
+    Se estiver faltando, tenta instalar via winget, depois Chocolatey, depois Scoop. Node 22 LTS, atualmente `22.16+`, continua suportado para compatibilidade.
   </Step>
-  <Step title="Install OpenCraft">
-    - `npm` method (default): global npm install using selected `-Tag`
-    - `git` method: clone/update repo, install/build with pnpm, and install wrapper at `%USERPROFILE%\.local\bin\opencraft.cmd`
+  <Step title="Instalar OpenCraft">
+    - Método `npm` (padrão): instalação global via npm usando a `-Tag` selecionada
+    - Método `git`: clone/atualiza repositório, instala/faz build com pnpm, e instala wrapper em `%USERPROFILE%\.local\bin\opencraft.cmd`
   </Step>
-  <Step title="Post-install tasks">
-    Adds needed bin directory to user PATH when possible, then runs `opencraft doctor --non-interactive` on upgrades and git installs (best effort).
+  <Step title="Tarefas pós-instalação">
+    Adiciona o diretório bin necessário ao PATH do usuário quando possível, depois executa `opencraft doctor --non-interactive` em atualizações e instalações git (melhor esforço).
   </Step>
 </Steps>
 
-### Examples (install.ps1)
+### Exemplos (install.ps1)
 
 <Tabs>
-  <Tab title="Default">
+  <Tab title="Padrão">
     ```powershell
     iwr -useb https://opencraft.ai/install.ps1 | iex
     ```
   </Tab>
-  <Tab title="Git install">
+  <Tab title="Instalação git">
     ```powershell
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -InstallMethod git
     ```
@@ -286,19 +286,19 @@ Designed for environments where you want everything under a local prefix (defaul
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -Tag main
     ```
   </Tab>
-  <Tab title="Custom git directory">
+  <Tab title="Diretório git personalizado">
     ```powershell
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -InstallMethod git -GitDir "C:\opencraft"
     ```
   </Tab>
-  <Tab title="Dry run">
+  <Tab title="Simulação">
     ```powershell
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -DryRun
     ```
   </Tab>
-  <Tab title="Debug trace">
+  <Tab title="Rastreamento de debug">
     ```powershell
-    # install.ps1 has no dedicated -Verbose flag yet.
+    # install.ps1 ainda não tem uma flag -Verbose dedicada.
     Set-PSDebug -Trace 1
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -NoOnboard
     Set-PSDebug -Trace 0
@@ -307,49 +307,49 @@ Designed for environments where you want everything under a local prefix (defaul
 </Tabs>
 
 <AccordionGroup>
-  <Accordion title="Flags reference">
+  <Accordion title="Referência de flags">
 
-| Flag                        | Description                                                |
-| --------------------------- | ---------------------------------------------------------- |
-| `-InstallMethod npm\|git`   | Install method (default: `npm`)                            |
-| `-Tag <tag\|version\|spec>` | npm dist-tag, version, or package spec (default: `latest`) |
-| `-GitDir <path>`            | Checkout directory (default: `%USERPROFILE%\opencraft`)    |
-| `-NoOnboard`                | Skip onboarding                                            |
-| `-NoGitUpdate`              | Skip `git pull`                                            |
-| `-DryRun`                   | Print actions only                                         |
+| Flag                        | Descrição                                                 |
+| --------------------------- | --------------------------------------------------------- |
+| `-InstallMethod npm\|git`   | Método de instalação (padrão: `npm`)                      |
+| `-Tag <tag\|version\|spec>` | dist-tag npm, versão ou spec de pacote (padrão: `latest`) |
+| `-GitDir <path>`            | Diretório de checkout (padrão: `%USERPROFILE%\opencraft`) |
+| `-NoOnboard`                | Pular onboarding                                          |
+| `-NoGitUpdate`              | Pular `git pull`                                          |
+| `-DryRun`                   | Apenas exibir ações                                       |
 
   </Accordion>
 
-  <Accordion title="Environment variables reference">
+  <Accordion title="Referência de variáveis de ambiente">
 
-| Variable                            | Description        |
-| ----------------------------------- | ------------------ |
-| `OPENCRAFT_INSTALL_METHOD=git\|npm` | Install method     |
-| `OPENCRAFT_GIT_DIR=<path>`          | Checkout directory |
-| `OPENCRAFT_NO_ONBOARD=1`            | Skip onboarding    |
-| `OPENCRAFT_GIT_UPDATE=0`            | Disable git pull   |
-| `OPENCRAFT_DRY_RUN=1`               | Dry run mode       |
+| Variável                            | Descrição             |
+| ----------------------------------- | --------------------- |
+| `OPENCRAFT_INSTALL_METHOD=git\|npm` | Método de instalação  |
+| `OPENCRAFT_GIT_DIR=<path>`          | Diretório de checkout |
+| `OPENCRAFT_NO_ONBOARD=1`            | Pular onboarding      |
+| `OPENCRAFT_GIT_UPDATE=0`            | Desabilitar git pull  |
+| `OPENCRAFT_DRY_RUN=1`               | Modo simulação        |
 
   </Accordion>
 </AccordionGroup>
 
 <Note>
-If `-InstallMethod git` is used and Git is missing, the script exits and prints the Git for Windows link.
+Se `-InstallMethod git` for usado e o Git estiver faltando, o script encerra e exibe o link do Git for Windows.
 </Note>
 
 ---
 
-## CI and automation
+## CI e automação
 
-Use non-interactive flags/env vars for predictable runs.
+Use flags/variáveis de ambiente não-interativas para execuções previsíveis.
 
 <Tabs>
-  <Tab title="install.sh (non-interactive npm)">
+  <Tab title="install.sh (npm não-interativo)">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash -s -- --no-prompt --no-onboard
     ```
   </Tab>
-  <Tab title="install.sh (non-interactive git)">
+  <Tab title="install.sh (git não-interativo)">
     ```bash
     OPENCRAFT_INSTALL_METHOD=git OPENCRAFT_NO_PROMPT=1 \
       curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash
@@ -360,7 +360,7 @@ Use non-interactive flags/env vars for predictable runs.
     curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install-cli.sh | bash -s -- --json --prefix /opt/opencraft
     ```
   </Tab>
-  <Tab title="install.ps1 (skip onboarding)">
+  <Tab title="install.ps1 (pular onboarding)">
     ```powershell
     & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -NoOnboard
     ```
@@ -369,19 +369,19 @@ Use non-interactive flags/env vars for predictable runs.
 
 ---
 
-## Troubleshooting
+## Solução de problemas
 
 <AccordionGroup>
-  <Accordion title="Why is Git required?">
-    Git is required for `git` install method. For `npm` installs, Git is still checked/installed to avoid `spawn git ENOENT` failures when dependencies use git URLs.
+  <Accordion title="Por que o Git é necessário?">
+    Git é necessário para o método de instalação `git`. Para instalações `npm`, o Git ainda é verificado/instalado para evitar falhas `spawn git ENOENT` quando dependências usam URLs git.
   </Accordion>
 
-  <Accordion title="Why does npm hit EACCES on Linux?">
-    Some Linux setups point npm global prefix to root-owned paths. `install.sh` can switch prefix to `~/.npm-global` and append PATH exports to shell rc files (when those files exist).
+  <Accordion title="Por que o npm dá EACCES no Linux?">
+    Algumas configurações Linux apontam o prefixo global do npm para caminhos de propriedade do root. `install.sh` pode mudar o prefixo para `~/.npm-global` e adicionar exports de PATH aos arquivos rc do shell (quando esses arquivos existem).
   </Accordion>
 
-  <Accordion title="sharp/libvips issues">
-    The scripts default `SHARP_IGNORE_GLOBAL_LIBVIPS=1` to avoid sharp building against system libvips. To override:
+  <Accordion title="Problemas com sharp/libvips">
+    Os scripts definem `SHARP_IGNORE_GLOBAL_LIBVIPS=1` por padrão para evitar que sharp compile contra o libvips do sistema. Para sobrescrever:
 
     ```bash
     SHARP_IGNORE_GLOBAL_LIBVIPS=0 curl -fsSL --proto '=https' --tlsv1.2 https://opencraft.ai/install.sh | bash
@@ -390,16 +390,16 @@ Use non-interactive flags/env vars for predictable runs.
   </Accordion>
 
   <Accordion title='Windows: "npm error spawn git / ENOENT"'>
-    Install Git for Windows, reopen PowerShell, rerun installer.
+    Instale Git for Windows, reabra o PowerShell, execute o instalador novamente.
   </Accordion>
 
   <Accordion title='Windows: "opencraft is not recognized"'>
-    Run `npm config get prefix` and add that directory to your user PATH (no `\bin` suffix needed on Windows), then reopen PowerShell.
+    Execute `npm config get prefix` e adicione esse diretório ao seu PATH de usuário (sem sufixo `\bin` no Windows), depois reabra o PowerShell.
   </Accordion>
 
-  <Accordion title="Windows: how to get verbose installer output">
-    `install.ps1` does not currently expose a `-Verbose` switch.
-    Use PowerShell tracing for script-level diagnostics:
+  <Accordion title="Windows: como obter saída verbosa do instalador">
+    `install.ps1` não expõe atualmente uma flag `-Verbose`.
+    Use rastreamento do PowerShell para diagnósticos em nível de script:
 
     ```powershell
     Set-PSDebug -Trace 1
@@ -409,7 +409,7 @@ Use non-interactive flags/env vars for predictable runs.
 
   </Accordion>
 
-  <Accordion title="opencraft not found after install">
-    Usually a PATH issue. See [Node.js troubleshooting](/install/node#troubleshooting).
+  <Accordion title="opencraft não encontrado após instalação">
+    Geralmente é um problema de PATH. Veja [Solução de problemas do Node.js](/install/node#troubleshooting).
   </Accordion>
 </AccordionGroup>

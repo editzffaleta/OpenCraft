@@ -1,22 +1,22 @@
 ---
-summary: "CLI reference for `opencraft dashboard` (open the Control UI)"
+summary: "Referência CLI para `opencraft dashboard` (abrir a Interface de Controle)"
 read_when:
-  - You want to open the Control UI with your current token
-  - You want to print the URL without launching a browser
+  - Você quer abrir a Interface de Controle com seu token atual
+  - Você quer imprimir a URL sem abrir um navegador
 title: "dashboard"
 ---
 
 # `opencraft dashboard`
 
-Open the Control UI using your current auth.
+Abra a Interface de Controle usando sua autenticação atual.
 
 ```bash
 opencraft dashboard
 opencraft dashboard --no-open
 ```
 
-Notes:
+Observações:
 
-- `dashboard` resolves configured `gateway.auth.token` SecretRefs when possible.
-- For SecretRef-managed tokens (resolved or unresolved), `dashboard` prints/copies/opens a non-tokenized URL to avoid exposing external secrets in terminal output, clipboard history, or browser-launch arguments.
-- If `gateway.auth.token` is SecretRef-managed but unresolved in this command path, the command prints a non-tokenized URL and explicit remediation guidance instead of embedding an invalid token placeholder.
+- `dashboard` resolve SecretRefs configurados de `gateway.auth.token` quando possível.
+- Para tokens gerenciados por SecretRef (resolvidos ou não), `dashboard` imprime/copia/abre uma URL sem token para evitar expor segredos externos na saída do terminal, histórico da área de transferência ou argumentos de abertura do navegador.
+- Se `gateway.auth.token` é gerenciado por SecretRef mas não está resolvido neste caminho de comando, o comando imprime uma URL sem token e orientação explícita de correção em vez de incorporar um placeholder de token inválido.

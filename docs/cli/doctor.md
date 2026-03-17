@@ -1,21 +1,21 @@
 ---
-summary: "CLI reference for `opencraft doctor` (health checks + guided repairs)"
+summary: "Referência CLI para `opencraft doctor` (verificações de saúde + reparos guiados)"
 read_when:
-  - You have connectivity/auth issues and want guided fixes
-  - You updated and want a sanity check
+  - Você tem problemas de conectividade/autenticação e quer correções guiadas
+  - Você atualizou e quer uma verificação de sanidade
 title: "doctor"
 ---
 
 # `opencraft doctor`
 
-Health checks + quick fixes for the gateway and channels.
+Verificações de saúde + correções rápidas para o gateway e canais.
 
-Related:
+Relacionado:
 
-- Troubleshooting: [Troubleshooting](/gateway/troubleshooting)
-- Security audit: [Security](/gateway/security)
+- Solução de problemas: [Solução de problemas](/gateway/troubleshooting)
+- Auditoria de segurança: [Segurança](/gateway/security)
 
-## Examples
+## Exemplos
 
 ```bash
 opencraft doctor
@@ -23,19 +23,19 @@ opencraft doctor --repair
 opencraft doctor --deep
 ```
 
-Notes:
+Observações:
 
-- Interactive prompts (like keychain/OAuth fixes) only run when stdin is a TTY and `--non-interactive` is **not** set. Headless runs (cron, Telegram, no terminal) will skip prompts.
-- `--fix` (alias for `--repair`) writes a backup to `~/.editzffaleta/OpenCraft.json.bak` and drops unknown config keys, listing each removal.
-- State integrity checks now detect orphan transcript files in the sessions directory and can archive them as `.deleted.<timestamp>` to reclaim space safely.
-- Doctor also scans `~/.opencraft/cron/jobs.json` (or `cron.store`) for legacy cron job shapes and can rewrite them in place before the scheduler has to auto-normalize them at runtime.
-- Doctor includes a memory-search readiness check and can recommend `opencraft configure --section model` when embedding credentials are missing.
-- If sandbox mode is enabled but Docker is unavailable, doctor reports a high-signal warning with remediation (`install Docker` or `opencraft config set agents.defaults.sandbox.mode off`).
-- If `gateway.auth.token`/`gateway.auth.password` are SecretRef-managed and unavailable in the current command path, doctor reports a read-only warning and does not write plaintext fallback credentials.
+- Prompts interativos (como correções de keychain/OAuth) só executam quando stdin é um TTY e `--non-interactive` **não** está definido. Execuções headless (cron, Telegram, sem terminal) pulam prompts.
+- `--fix` (alias para `--repair`) grava um backup em `~/.editzffaleta/OpenCraft.json.bak` e remove chaves de config desconhecidas, listando cada remoção.
+- Verificações de integridade de estado agora detectam arquivos de transcrição órfãos no diretório de sessões e podem arquivá-los como `.deleted.<timestamp>` para recuperar espaço com segurança.
+- O Doctor também varre `~/.opencraft/cron/jobs.json` (ou `cron.store`) em busca de formatos legados de tarefas Cron e pode reescrevê-los no local antes que o agendador tenha que normalizá-los automaticamente em tempo de execução.
+- O Doctor inclui uma verificação de prontidão de busca em memória e pode recomendar `opencraft configure --section model` quando credenciais de embedding estão faltando.
+- Se o modo sandbox está habilitado mas Docker está indisponível, o doctor reporta um aviso de alto sinal com correção (`instalar Docker` ou `opencraft config set agents.defaults.sandbox.mode off`).
+- Se `gateway.auth.token`/`gateway.auth.password` são gerenciados por SecretRef e indisponíveis no caminho de comando atual, o doctor reporta um aviso somente leitura e não grava credenciais de fallback em texto plano.
 
-## macOS: `launchctl` env overrides
+## macOS: substituições de env do `launchctl`
 
-If you previously ran `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (or `...PASSWORD`), that value overrides your config file and can cause persistent “unauthorized” errors.
+Se você executou anteriormente `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (ou `...PASSWORD`), esse valor substitui seu arquivo de config e pode causar erros persistentes de "não autorizado".
 
 ```bash
 launchctl getenv OPENCLAW_GATEWAY_TOKEN

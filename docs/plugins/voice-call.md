@@ -1,58 +1,58 @@
 ---
-summary: "Voice Call plugin: outbound + inbound calls via Twilio/Telnyx/Plivo (plugin install + config + CLI)"
+summary: "Plugin Voice Call: chamadas de saída + entrada via Twilio/Telnyx/Plivo (instalação do Plugin + config + CLI)"
 read_when:
-  - You want to place an outbound voice call from OpenCraft
-  - You are configuring or developing the voice-call plugin
+  - Você quer realizar uma chamada de voz de saída pelo OpenCraft
+  - Você está configurando ou desenvolvendo o Plugin de chamada de voz
 title: "Voice Call Plugin"
 ---
 
-# Voice Call (plugin)
+# Voice Call (Plugin)
 
-Voice calls for OpenCraft via a plugin. Supports outbound notifications and
-multi-turn conversations with inbound policies.
+Chamadas de voz para o OpenCraft via Plugin. Suporta notificações de saída e
+conversas multi-turno com políticas de entrada.
 
-Current providers:
+Provedores atuais:
 
 - `twilio` (Programmable Voice + Media Streams)
 - `telnyx` (Call Control v2)
 - `plivo` (Voice API + XML transfer + GetInput speech)
-- `mock` (dev/no network)
+- `mock` (desenvolvimento/sem rede)
 
-Quick mental model:
+Modelo mental rápido:
 
-- Install plugin
-- Restart Gateway
-- Configure under `plugins.entries.voice-call.config`
-- Use `opencraft voicecall ...` or the `voice_call` tool
+- Instale o Plugin
+- Reinicie o Gateway
+- Configure em `plugins.entries.voice-call.config`
+- Use `opencraft voicecall ...` ou a ferramenta `voice_call`
 
-## Where it runs (local vs remote)
+## Onde roda (local vs remoto)
 
-The Voice Call plugin runs **inside the Gateway process**.
+O Plugin Voice Call roda **dentro do processo do Gateway**.
 
-If you use a remote Gateway, install/configure the plugin on the **machine running the Gateway**, then restart the Gateway to load it.
+Se você usa um Gateway remoto, instale/configure o Plugin na **máquina que está executando o Gateway**, depois reinicie o Gateway para carregá-lo.
 
-## Install
+## Instalação
 
-### Option A: install from npm (recommended)
+### Opção A: instalar do npm (recomendado)
 
 ```bash
 opencraft plugins install @opencraft/voice-call
 ```
 
-Restart the Gateway afterwards.
+Reinicie o Gateway depois.
 
-### Option B: install from a local folder (dev, no copying)
+### Opção B: instalar de uma pasta local (desenvolvimento, sem cópia)
 
 ```bash
 opencraft plugins install ./extensions/voice-call
 cd ./extensions/voice-call && pnpm install
 ```
 
-Restart the Gateway afterwards.
+Reinicie o Gateway depois.
 
 ## Config
 
-Set config under `plugins.entries.voice-call.config`:
+Defina o config em `plugins.entries.voice-call.config`:
 
 ```json5
 {
@@ -61,7 +61,7 @@ Set config under `plugins.entries.voice-call.config`:
       "voice-call": {
         enabled: true,
         config: {
-          provider: "twilio", // or "telnyx" | "plivo" | "mock"
+          provider: "twilio", // ou "telnyx" | "plivo" | "mock"
           fromNumber: "+15550001234",
           toNumber: "+15550005678",
 
@@ -73,8 +73,8 @@ Set config under `plugins.entries.voice-call.config`:
           telnyx: {
             apiKey: "...",
             connectionId: "...",
-            // Telnyx webhook public key from the Telnyx Mission Control Portal
-            // (Base64 string; can also be set via TELNYX_PUBLIC_KEY).
+            // Chave pública do Webhook Telnyx do Telnyx Mission Control Portal
+            // (string Base64; também pode ser definida via TELNYX_PUBLIC_KEY).
             publicKey: "...",
           },
 
@@ -83,19 +83,19 @@ Set config under `plugins.entries.voice-call.config`:
             authToken: "...",
           },
 
-          // Webhook server
+          // Servidor de Webhook
           serve: {
             port: 3334,
             path: "/voice/webhook",
           },
 
-          // Webhook security (recommended for tunnels/proxies)
+          // Segurança de Webhook (recomendado para túneis/proxies)
           webhookSecurity: {
             allowedHosts: ["voice.example.com"],
             trustedProxyIPs: ["100.64.0.1"],
           },
 
-          // Public exposure (pick one)
+          // Exposição pública (escolha uma)
           // publicUrl: "https://example.ngrok.app/voice/webhook",
           // tunnel: { provider: "ngrok" },
           // tailscale: { mode: "funnel", path: "/voice/webhook" }
@@ -119,35 +119,35 @@ Set config under `plugins.entries.voice-call.config`:
 }
 ```
 
-Notes:
+Notas:
 
-- Twilio/Telnyx require a **publicly reachable** webhook URL.
-- Plivo requires a **publicly reachable** webhook URL.
-- `mock` is a local dev provider (no network calls).
-- Telnyx requires `telnyx.publicKey` (or `TELNYX_PUBLIC_KEY`) unless `skipSignatureVerification` is true.
-- `skipSignatureVerification` is for local testing only.
-- If you use ngrok free tier, set `publicUrl` to the exact ngrok URL; signature verification is always enforced.
-- `tunnel.allowNgrokFreeTierLoopbackBypass: true` allows Twilio webhooks with invalid signatures **only** when `tunnel.provider="ngrok"` and `serve.bind` is loopback (ngrok local agent). Use for local dev only.
-- Ngrok free tier URLs can change or add interstitial behavior; if `publicUrl` drifts, Twilio signatures will fail. For production, prefer a stable domain or Tailscale funnel.
-- Streaming security defaults:
-  - `streaming.preStartTimeoutMs` closes sockets that never send a valid `start` frame.
-  - `streaming.maxPendingConnections` caps total unauthenticated pre-start sockets.
-  - `streaming.maxPendingConnectionsPerIp` caps unauthenticated pre-start sockets per source IP.
-  - `streaming.maxConnections` caps total open media stream sockets (pending + active).
+- Twilio/Telnyx requerem uma URL de Webhook **publicamente acessível**.
+- Plivo requer uma URL de Webhook **publicamente acessível**.
+- `mock` é um provedor de desenvolvimento local (sem chamadas de rede).
+- Telnyx requer `telnyx.publicKey` (ou `TELNYX_PUBLIC_KEY`) a menos que `skipSignatureVerification` seja true.
+- `skipSignatureVerification` é apenas para testes locais.
+- Se você usar o tier gratuito do ngrok, defina `publicUrl` para a URL exata do ngrok; a verificação de assinatura é sempre aplicada.
+- `tunnel.allowNgrokFreeTierLoopbackBypass: true` permite Webhooks do Twilio com assinaturas inválidas **apenas** quando `tunnel.provider="ngrok"` e `serve.bind` é loopback (agente local ngrok). Use apenas para desenvolvimento local.
+- URLs do tier gratuito do ngrok podem mudar ou adicionar comportamento intersticial; se `publicUrl` divergir, assinaturas do Twilio falharão. Para produção, prefira um domínio estável ou Tailscale funnel.
+- Padrões de segurança de streaming:
+  - `streaming.preStartTimeoutMs` fecha sockets que nunca enviam um frame `start` válido.
+  - `streaming.maxPendingConnections` limita o total de sockets pré-start não autenticados.
+  - `streaming.maxPendingConnectionsPerIp` limita sockets pré-start não autenticados por IP de origem.
+  - `streaming.maxConnections` limita o total de sockets de media stream abertos (pendentes + ativos).
 
-## Stale call reaper
+## Ceifador de chamadas obsoletas
 
-Use `staleCallReaperSeconds` to end calls that never receive a terminal webhook
-(for example, notify-mode calls that never complete). The default is `0`
-(disabled).
+Use `staleCallReaperSeconds` para encerrar chamadas que nunca recebem um Webhook terminal
+(por exemplo, chamadas no modo notify que nunca completam). O padrão é `0`
+(desabilitado).
 
-Recommended ranges:
+Faixas recomendadas:
 
-- **Production:** `120`–`300` seconds for notify-style flows.
-- Keep this value **higher than `maxDurationSeconds`** so normal calls can
-  finish. A good starting point is `maxDurationSeconds + 30–60` seconds.
+- **Produção:** `120`–`300` segundos para fluxos estilo notify.
+- Mantenha este valor **maior que `maxDurationSeconds`** para que chamadas normais possam
+  terminar. Um bom ponto de partida é `maxDurationSeconds + 30–60` segundos.
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -164,26 +164,26 @@ Example:
 }
 ```
 
-## Webhook Security
+## Segurança de Webhook
 
-When a proxy or tunnel sits in front of the Gateway, the plugin reconstructs the
-public URL for signature verification. These options control which forwarded
-headers are trusted.
+Quando um proxy ou túnel fica na frente do Gateway, o Plugin reconstrói a
+URL pública para verificação de assinatura. Essas opções controlam quais cabeçalhos
+encaminhados são confiáveis.
 
-`webhookSecurity.allowedHosts` allowlists hosts from forwarding headers.
+`webhookSecurity.allowedHosts` define uma allowlist de hosts de cabeçalhos de encaminhamento.
 
-`webhookSecurity.trustForwardingHeaders` trusts forwarded headers without an allowlist.
+`webhookSecurity.trustForwardingHeaders` confia em cabeçalhos encaminhados sem allowlist.
 
-`webhookSecurity.trustedProxyIPs` only trusts forwarded headers when the request
-remote IP matches the list.
+`webhookSecurity.trustedProxyIPs` só confia em cabeçalhos encaminhados quando o IP
+remoto da requisição corresponde à lista.
 
-Webhook replay protection is enabled for Twilio and Plivo. Replayed valid webhook
-requests are acknowledged but skipped for side effects.
+A proteção contra replay de Webhook está habilitada para Twilio e Plivo. Requisições de Webhook
+válidas mas repetidas são confirmadas porém ignoradas para efeitos colaterais.
 
-Twilio conversation turns include a per-turn token in `<Gather>` callbacks, so
-stale/replayed speech callbacks cannot satisfy a newer pending transcript turn.
+Turnos de conversa do Twilio incluem um Token por turno em callbacks `<Gather>`, então
+callbacks de fala obsoletos/repetidos não podem satisfazer um turno de transcrição pendente mais recente.
 
-Example with a stable public host:
+Exemplo com um host público estável:
 
 ```json5
 {
@@ -202,11 +202,11 @@ Example with a stable public host:
 }
 ```
 
-## TTS for calls
+## TTS para chamadas
 
-Voice Call uses the core `messages.tts` configuration for
-streaming speech on calls. You can override it under the plugin config with the
-**same shape** — it deep‑merges with `messages.tts`.
+Voice Call usa a configuração core `messages.tts` para
+fala em streaming nas chamadas. Você pode sobrescrever no config do Plugin com o
+**mesmo formato** — ele faz deep-merge com `messages.tts`.
 
 ```json5
 {
@@ -220,14 +220,14 @@ streaming speech on calls. You can override it under the plugin config with the
 }
 ```
 
-Notes:
+Notas:
 
-- **Microsoft speech is ignored for voice calls** (telephony audio needs PCM; the current Microsoft transport does not expose telephony PCM output).
-- Core TTS is used when Twilio media streaming is enabled; otherwise calls fall back to provider native voices.
+- **Fala da Microsoft é ignorada para chamadas de voz** (áudio de telefonia precisa de PCM; o transporte atual da Microsoft não expõe saída PCM de telefonia).
+- TTS core é usado quando streaming de mídia do Twilio está habilitado; caso contrário, chamadas usam vozes nativas do provedor como fallback.
 
-### More examples
+### Mais exemplos
 
-Use core TTS only (no override):
+Usar apenas TTS core (sem sobrescrita):
 
 ```json5
 {
@@ -240,7 +240,7 @@ Use core TTS only (no override):
 }
 ```
 
-Override to ElevenLabs just for calls (keep core default elsewhere):
+Sobrescrever para ElevenLabs apenas para chamadas (manter o padrão core em outros lugares):
 
 ```json5
 {
@@ -263,7 +263,7 @@ Override to ElevenLabs just for calls (keep core default elsewhere):
 }
 ```
 
-Override only the OpenAI model for calls (deep‑merge example):
+Sobrescrever apenas o modelo OpenAI para chamadas (exemplo de deep-merge):
 
 ```json5
 {
@@ -284,9 +284,9 @@ Override only the OpenAI model for calls (deep‑merge example):
 }
 ```
 
-## Inbound calls
+## Chamadas de entrada
 
-Inbound policy defaults to `disabled`. To enable inbound calls, set:
+A política de entrada padrão é `disabled`. Para habilitar chamadas de entrada, defina:
 
 ```json5
 {
@@ -296,13 +296,13 @@ Inbound policy defaults to `disabled`. To enable inbound calls, set:
 }
 ```
 
-`inboundPolicy: "allowlist"` is a low-assurance caller-ID screen. The plugin
-normalizes the provider-supplied `From` value and compares it to `allowFrom`.
-Webhook verification authenticates provider delivery and payload integrity, but
-it does not prove PSTN/VoIP caller-number ownership. Treat `allowFrom` as
-caller-ID filtering, not strong caller identity.
+`inboundPolicy: "allowlist"` é uma triagem de caller-ID de baixa garantia. O Plugin
+normaliza o valor `From` fornecido pelo provedor e o compara com `allowFrom`.
+A verificação de Webhook autentica a entrega do provedor e a integridade do payload, mas
+não prova propriedade do número de chamada PSTN/VoIP. Trate `allowFrom` como
+filtragem de caller-ID, não como identidade forte do chamador.
 
-Auto-responses use the agent system. Tune with:
+Respostas automáticas usam o sistema de agente. Ajuste com:
 
 - `responseModel`
 - `responseSystemPrompt`
@@ -320,11 +320,11 @@ opencraft voicecall tail
 opencraft voicecall expose --mode funnel
 ```
 
-## Agent tool
+## Ferramenta de agente
 
-Tool name: `voice_call`
+Nome da ferramenta: `voice_call`
 
-Actions:
+Ações:
 
 - `initiate_call` (message, to?, mode?)
 - `continue_call` (callId, message)
@@ -332,7 +332,7 @@ Actions:
 - `end_call` (callId)
 - `get_status` (callId)
 
-This repo ships a matching skill doc at `skills/voice-call/SKILL.md`.
+Este repositório inclui um documento de Skill correspondente em `skills/voice-call/SKILL.md`.
 
 ## Gateway RPC
 

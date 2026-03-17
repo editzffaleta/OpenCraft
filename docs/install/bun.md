@@ -1,59 +1,59 @@
 ---
-summary: "Bun workflow (experimental): installs and gotchas vs pnpm"
+summary: "Fluxo de trabalho com Bun (experimental): instalação e problemas conhecidos vs pnpm"
 read_when:
-  - You want the fastest local dev loop (bun + watch)
-  - You hit Bun install/patch/lifecycle script issues
+  - Você quer o loop de desenvolvimento local mais rápido (bun + watch)
+  - Você encontrou problemas de instalação/patch/lifecycle scripts do Bun
 title: "Bun (Experimental)"
 ---
 
 # Bun (experimental)
 
-Goal: run this repo with **Bun** (optional, not recommended for WhatsApp/Telegram)
-without diverging from pnpm workflows.
+Objetivo: executar este repositório com **Bun** (opcional, não recomendado para WhatsApp/Telegram)
+sem divergir dos fluxos de trabalho do pnpm.
 
-⚠️ **Not recommended for Gateway runtime** (WhatsApp/Telegram bugs). Use Node for production.
+⚠️ **Não recomendado para o runtime do Gateway** (bugs no WhatsApp/Telegram). Use Node.js para produção.
 
 ## Status
 
-- Bun is an optional local runtime for running TypeScript directly (`bun run …`, `bun --watch …`).
-- `pnpm` is the default for builds and remains fully supported (and used by some docs tooling).
-- Bun cannot use `pnpm-lock.yaml` and will ignore it.
+- Bun é um runtime local opcional para executar TypeScript diretamente (`bun run …`, `bun --watch …`).
+- `pnpm` é o padrão para builds e continua totalmente suportado (e usado por algumas ferramentas de documentação).
+- Bun não pode usar `pnpm-lock.yaml` e vai ignorá-lo.
 
-## Install
+## Instalação
 
-Default:
+Padrão:
 
 ```sh
 bun install
 ```
 
-Note: `bun.lock`/`bun.lockb` are gitignored, so there’s no repo churn either way. If you want _no lockfile writes_:
+Nota: `bun.lock`/`bun.lockb` estão no gitignore, então não há churn no repositório de qualquer forma. Se você não quiser _nenhuma escrita de lockfile_:
 
 ```sh
 bun install --no-save
 ```
 
-## Build / Test (Bun)
+## Build / Teste (Bun)
 
 ```sh
 bun run build
 bun run vitest run
 ```
 
-## Bun lifecycle scripts (blocked by default)
+## Lifecycle scripts do Bun (bloqueados por padrão)
 
-Bun may block dependency lifecycle scripts unless explicitly trusted (`bun pm untrusted` / `bun pm trust`).
-For this repo, the commonly blocked scripts are not required:
+Bun pode bloquear lifecycle scripts de dependências a menos que explicitamente confiáveis (`bun pm untrusted` / `bun pm trust`).
+Para este repositório, os scripts comumente bloqueados não são necessários:
 
-- `@whiskeysockets/baileys` `preinstall`: checks Node major >= 20 (OpenCraft defaults to Node 24 and still supports Node 22 LTS, currently `22.16+`).
-- `protobufjs` `postinstall`: emits warnings about incompatible version schemes (no build artifacts).
+- `@whiskeysockets/baileys` `preinstall`: verifica se Node major >= 20 (OpenCraft usa Node 24 por padrão e ainda suporta Node 22 LTS, atualmente `22.16+`).
+- `protobufjs` `postinstall`: emite avisos sobre esquemas de versão incompatíveis (sem artefatos de build).
 
-If you hit a real runtime issue that requires these scripts, trust them explicitly:
+Se você encontrar um problema real de runtime que exija esses scripts, confie neles explicitamente:
 
 ```sh
 bun pm trust @whiskeysockets/baileys protobufjs
 ```
 
-## Caveats
+## Ressalvas
 
-- Some scripts still hardcode pnpm (e.g. `docs:build`, `ui:*`, `protocol:check`). Run those via pnpm for now.
+- Alguns scripts ainda usam pnpm hardcoded (ex.: `docs:build`, `ui:*`, `protocol:check`). Execute-os via pnpm por enquanto.

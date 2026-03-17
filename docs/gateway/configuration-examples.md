@@ -1,19 +1,19 @@
 ---
-summary: "Schema-accurate configuration examples for common OpenCraft setups"
+summary: "Exemplos de configuração precisos em relação ao schema para setups comuns do OpenCraft"
 read_when:
-  - Learning how to configure OpenCraft
-  - Looking for configuration examples
-  - Setting up OpenCraft for the first time
+  - Aprendendo como configurar o OpenCraft
+  - Procurando exemplos de configuração
+  - Configurando o OpenCraft pela primeira vez
 title: "Configuration Examples"
 ---
 
-# Configuration Examples
+# Exemplos de Configuração
 
-Examples below are aligned with the current config schema. For the exhaustive reference and per-field notes, see [Configuration](/gateway/configuration).
+Os exemplos abaixo estão alinhados com o schema de config atual. Para a referência exaustiva e notas por campo, veja [Configuration](/gateway/configuration).
 
-## Quick start
+## Início rápido
 
-### Absolute minimum
+### Mínimo absoluto
 
 ```json5
 {
@@ -22,9 +22,9 @@ Examples below are aligned with the current config schema. For the exhaustive re
 }
 ```
 
-Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number.
+Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir desse número.
 
-### Recommended starter
+### Starter recomendado
 
 ```json5
 {
@@ -46,13 +46,13 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
 }
 ```
 
-## Expanded example (major options)
+## Exemplo expandido (opções principais)
 
-> JSON5 lets you use comments and trailing commas. Regular JSON works too.
+> JSON5 permite usar comentários e trailing commas. JSON regular também funciona.
 
 ```json5
 {
-  // Environment + shell
+  // Ambiente + shell
   env: {
     OPENROUTER_API_KEY: "sk-or-...",
     vars: {
@@ -64,7 +64,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Auth profile metadata (secrets live in auth-profiles.json)
+  // Metadados de perfil de auth (secrets ficam em auth-profiles.json)
   auth: {
     profiles: {
       "anthropic:me@example.com": {
@@ -83,7 +83,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Identity
+  // Identidade
   identity: {
     name: "Samantha",
     theme: "helpful sloth",
@@ -99,7 +99,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     redactSensitive: "tools",
   },
 
-  // Message formatting
+  // Formatação de mensagens
   messages: {
     messagePrefix: "[opencraft]",
     responsePrefix: ">",
@@ -107,7 +107,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     ackReactionScope: "group-mentions",
   },
 
-  // Routing + queue
+  // Roteamento + fila
   routing: {
     groupChat: {
       mentionPatterns: ["@opencraft", "opencraft"],
@@ -130,7 +130,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Tooling
+  // Ferramentas
   tools: {
     media: {
       audio: {
@@ -138,7 +138,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // Optional CLI fallback (Whisper binary):
+          // Fallback de CLI opcional (binário Whisper):
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -151,7 +151,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Session behavior
+  // Comportamento de sessão
   session: {
     scope: "per-sender",
     reset: {
@@ -169,9 +169,9 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
       pruneAfter: "30d",
       maxEntries: 500,
       rotateBytes: "10mb",
-      resetArchiveRetention: "30d", // duration or false
-      maxDiskBytes: "500mb", // optional
-      highWaterBytes: "400mb", // optional (defaults to 80% of maxDiskBytes)
+      resetArchiveRetention: "30d", // duration ou false
+      maxDiskBytes: "500mb", // opcional
+      highWaterBytes: "400mb", // opcional (padrão 80% de maxDiskBytes)
     },
     typingIntervalSeconds: 5,
     sendPolicy: {
@@ -180,7 +180,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Channels
+  // Canais
   channels: {
     whatsapp: {
       dmPolicy: "pairing",
@@ -232,7 +232,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Agent runtime
+  // Runtime do agente
   agents: {
     defaults: {
       workspace: "~/.opencraft/workspace",
@@ -273,7 +273,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
         every: "30m",
         model: "anthropic/claude-sonnet-4-5",
         target: "last",
-        directPolicy: "allow", // allow (default) | block
+        directPolicy: "allow", // allow (padrão) | block
         to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
@@ -327,7 +327,7 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
     },
   },
 
-  // Custom model providers
+  // Providers de modelo customizados
   models: {
     mode: "merge",
     providers: {
@@ -445,9 +445,9 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
 }
 ```
 
-## Common patterns
+## Padrões comuns
 
-### Multi-platform setup
+### Setup multi-plataforma
 
 ```json5
 {
@@ -468,23 +468,23 @@ Save to `~/.editzffaleta/OpenCraft.json` and you can DM the bot from that number
 }
 ```
 
-### Secure DM mode (shared inbox / multi-user DMs)
+### Modo DM seguro (inbox compartilhada / DMs multi-usuário)
 
-If more than one person can DM your bot (multiple entries in `allowFrom`, pairing approvals for multiple people, or `dmPolicy: "open"`), enable **secure DM mode** so DMs from different senders don’t share one context by default:
+Se mais de uma pessoa pode enviar DM ao seu bot (múltiplas entradas em `allowFrom`, aprovações de pairing para múltiplas pessoas, ou `dmPolicy: "open"`), habilite o **modo DM seguro** para que DMs de diferentes remetentes não compartilhem um contexto por padrão:
 
 ```json5
 {
-  // Secure DM mode (recommended for multi-user or sensitive DM agents)
+  // Modo DM seguro (recomendado para agentes multi-usuário ou DMs sensíveis)
   session: { dmScope: "per-channel-peer" },
 
   channels: {
-    // Example: WhatsApp multi-user inbox
+    // Exemplo: inbox WhatsApp multi-usuário
     whatsapp: {
       dmPolicy: "allowlist",
       allowFrom: ["+15555550123", "+15555550124"],
     },
 
-    // Example: Discord multi-user inbox
+    // Exemplo: inbox Discord multi-usuário
     discord: {
       enabled: true,
       token: "YOUR_DISCORD_BOT_TOKEN",
@@ -494,10 +494,10 @@ If more than one person can DM your bot (multiple entries in `allowFrom`, pairin
 }
 ```
 
-For Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, sender authorization is ID-first by default.
-Only enable direct mutable name/email/nick matching with each channel's `dangerouslyAllowNameMatching: true` if you explicitly accept that risk.
+Para Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, a autorização do remetente é baseada em ID por padrão.
+Apenas habilite correspondência direta por nome/email/nick mutável com `dangerouslyAllowNameMatching: true` de cada canal se você aceitar explicitamente esse risco.
 
-### OAuth with API key failover
+### OAuth com failover de API key
 
 ```json5
 {
@@ -527,12 +527,10 @@ Only enable direct mutable name/email/nick matching with each channel's `dangero
 }
 ```
 
-### Anthropic setup-token + API key, MiniMax fallback
+### Anthropic setup-token + API key, fallback MiniMax
 
 <Warning>
-Anthropic setup-token usage outside Claude Code has been restricted for some
-users in the past. Treat this as user-choice risk and verify current Anthropic
-terms before depending on subscription auth.
+O uso de setup-token Anthropic fora do Claude Code foi restrito para alguns usuários no passado. Trate isso como risco de escolha do usuário e verifique os termos atuais da Anthropic antes de depender de auth por assinatura.
 </Warning>
 
 ```json5
@@ -572,7 +570,7 @@ terms before depending on subscription auth.
 }
 ```
 
-### Work bot (restricted access)
+### Bot de trabalho (acesso restrito)
 
 ```json5
 {
@@ -597,7 +595,7 @@ terms before depending on subscription auth.
 }
 ```
 
-### Local models only
+### Apenas modelos locais
 
 ```json5
 {
@@ -629,9 +627,9 @@ terms before depending on subscription auth.
 }
 ```
 
-## Tips
+## Dicas
 
-- If you set `dmPolicy: "open"`, the matching `allowFrom` list must include `"*"`.
-- Provider IDs differ (phone numbers, user IDs, channel IDs). Use the provider docs to confirm the format.
-- Optional sections to add later: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
-- See [Providers](/providers) and [Troubleshooting](/gateway/troubleshooting) for deeper setup notes.
+- Se você definir `dmPolicy: "open"`, a lista `allowFrom` correspondente deve incluir `"*"`.
+- IDs de provider diferem (números de telefone, IDs de usuário, IDs de canal). Use a documentação do provider para confirmar o formato.
+- Seções opcionais para adicionar depois: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
+- Veja [Providers](/providers) e [Troubleshooting](/gateway/troubleshooting) para notas de setup mais detalhadas.

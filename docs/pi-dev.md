@@ -1,25 +1,25 @@
 ---
-title: "Pi Development Workflow"
-summary: "Developer workflow for Pi integration: build, test, and live validation"
+title: "Fluxo de Desenvolvimento Pi"
+summary: "Fluxo de trabalho do desenvolvedor para integração Pi: build, teste e validação ao vivo"
 read_when:
-  - Working on Pi integration code or tests
-  - Running Pi-specific lint, typecheck, and live test flows
+  - Trabalhando no código ou testes de integração Pi
+  - Executando fluxos de lint, typecheck e teste ao vivo específicos do Pi
 ---
 
-# Pi Development Workflow
+# Fluxo de Desenvolvimento Pi
 
-This guide summarizes a sane workflow for working on the pi integration in OpenCraft.
+Este guia resume um fluxo de trabalho sensato para trabalhar na integração Pi no OpenCraft.
 
-## Type Checking and Linting
+## Verificação de Tipos e Linting
 
-- Type check and build: `pnpm build`
+- Verificação de tipos e build: `pnpm build`
 - Lint: `pnpm lint`
-- Format check: `pnpm format`
-- Full gate before pushing: `pnpm lint && pnpm build && pnpm test`
+- Verificação de formatação: `pnpm format`
+- Gate completo antes de fazer push: `pnpm lint && pnpm build && pnpm test`
 
-## Running Pi Tests
+## Executando Testes Pi
 
-Run the Pi-focused test set directly with Vitest:
+Execute o conjunto de testes focados em Pi diretamente com Vitest:
 
 ```bash
 pnpm test -- \
@@ -31,13 +31,13 @@ pnpm test -- \
   "src/agents/pi-extensions/**/*.test.ts"
 ```
 
-To include the live provider exercise:
+Para incluir o exercício de provedor ao vivo:
 
 ```bash
 OPENCRAFT_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live.test.ts
 ```
 
-This covers the main Pi unit suites:
+Isso cobre as principais suítes unitárias do Pi:
 
 - `src/agents/pi-*.test.ts`
 - `src/agents/pi-embedded-*.test.ts`
@@ -46,35 +46,35 @@ This covers the main Pi unit suites:
 - `src/agents/pi-tool-definition-adapter.test.ts`
 - `src/agents/pi-extensions/*.test.ts`
 
-## Manual Testing
+## Testes Manuais
 
-Recommended flow:
+Fluxo recomendado:
 
-- Run the gateway in dev mode:
+- Execute o Gateway em modo dev:
   - `pnpm gateway:dev`
-- Trigger the agent directly:
+- Acione o agente diretamente:
   - `pnpm opencraft agent --message "Hello" --thinking low`
-- Use the TUI for interactive debugging:
+- Use o TUI para depuração interativa:
   - `pnpm tui`
 
-For tool call behavior, prompt for a `read` or `exec` action so you can see tool streaming and payload handling.
+Para comportamento de chamada de ferramenta, solicite uma ação de `read` ou `exec` para que você possa ver o streaming de ferramentas e o tratamento de payload.
 
-## Clean Slate Reset
+## Reset Completo
 
-State lives under the OpenCraft state directory. Default is `~/.opencraft`. If `OPENCRAFT_STATE_DIR` is set, use that directory instead.
+O estado fica no diretório de estado do OpenCraft. O padrão é `~/.opencraft`. Se `OPENCRAFT_STATE_DIR` estiver definido, use esse diretório.
 
-To reset everything:
+Para resetar tudo:
 
-- `opencraft.json` for config
-- `credentials/` for auth profiles and tokens
-- `agents/<agentId>/sessions/` for agent session history
-- `agents/<agentId>/sessions.json` for the session index
-- `sessions/` if legacy paths exist
-- `workspace/` if you want a blank workspace
+- `opencraft.json` para configuração
+- `credentials/` para perfis de autenticação e Tokens
+- `agents/<agentId>/sessions/` para histórico de sessões do agente
+- `agents/<agentId>/sessions.json` para o índice de sessões
+- `sessions/` se caminhos legados existirem
+- `workspace/` se você quiser um workspace em branco
 
-If you only want to reset sessions, delete `agents/<agentId>/sessions/` and `agents/<agentId>/sessions.json` for that agent. Keep `credentials/` if you do not want to reauthenticate.
+Se você quiser resetar apenas sessões, delete `agents/<agentId>/sessions/` e `agents/<agentId>/sessions.json` para aquele agente. Mantenha `credentials/` se você não quiser reautenticar.
 
-## References
+## Referências
 
 - [https://docs.opencraft.ai/testing](https://docs.opencraft.ai/testing)
 - [https://docs.opencraft.ai/start/getting-started](https://docs.opencraft.ai/start/getting-started)

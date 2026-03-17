@@ -1,12 +1,12 @@
 ---
-summary: "SSH tunnel setup for OpenCraft.app connecting to a remote gateway"
-read_when: "Connecting the macOS app to a remote gateway over SSH"
+summary: "Setup de SSH tunnel para o OpenCraft.app conectando a um gateway remoto"
+read_when: "Conectando o app macOS a um gateway remoto via SSH"
 title: "Remote Gateway Setup"
 ---
 
-# Running OpenCraft.app with a Remote Gateway
+# Executando OpenCraft.app com um Gateway Remoto
 
-OpenCraft.app uses SSH tunneling to connect to a remote gateway. This guide shows you how to set it up.
+O OpenCraft.app usa SSH tunneling para conectar a um gateway remoto. Este guia mostra como configurar.
 
 ## Overview
 

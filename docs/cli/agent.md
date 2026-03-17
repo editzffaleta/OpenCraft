@@ -1,29 +1,29 @@
 ---
-summary: "CLI reference for `opencraft agent` (send one agent turn via the Gateway)"
+summary: "Referência CLI para `opencraft agent` (executa um turno de agente via Gateway)"
 read_when:
-  - You want to run one agent turn from scripts (optionally deliver reply)
+  - Você quer executar um turno de agente a partir de scripts (opcionalmente entregar resposta)
 title: "agent"
 ---
 
 # `opencraft agent`
 
-Run an agent turn via the Gateway (use `--local` for embedded).
-Use `--agent <id>` to target a configured agent directly.
+Executa um turno de agente via Gateway (use `--local` para modo embutido).
+Use `--agent <id>` para direcionar um agente configurado diretamente.
 
-Related:
+Relacionado:
 
-- Agent send tool: [Agent send](/tools/agent-send)
+- Ferramenta de envio de agente: [Envio de agente](/tools/agent-send)
 
-## Examples
+## Exemplos
 
 ```bash
-opencraft agent --to +15555550123 --message "status update" --deliver
-opencraft agent --agent ops --message "Summarize logs"
-opencraft agent --session-id 1234 --message "Summarize inbox" --thinking medium
-opencraft agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
+opencraft agent --to +15555550123 --message "atualização de status" --deliver
+opencraft agent --agent ops --message "Resumir logs"
+opencraft agent --session-id 1234 --message "Resumir caixa de entrada" --thinking medium
+opencraft agent --agent ops --message "Gerar relatório" --deliver --reply-channel slack --reply-to "#reports"
 ```
 
-## Notes
+## Observações
 
-- When this command triggers `models.json` regeneration, SecretRef-managed provider credentials are persisted as non-secret markers (for example env var names, `secretref-env:ENV_VAR_NAME`, or `secretref-managed`), not resolved secret plaintext.
-- Marker writes are source-authoritative: OpenCraft persists markers from the active source config snapshot, not from resolved runtime secret values.
+- Quando este comando aciona a regeneração de `models.json`, credenciais de provedor gerenciadas por SecretRef são persistidas como marcadores não secretos (por exemplo, nomes de variáveis de ambiente, `secretref-env:ENV_VAR_NAME`, ou `secretref-managed`), não como texto secreto resolvido.
+- As gravações de marcadores são autoritativas pela fonte: o OpenCraft persiste marcadores do snapshot de config de fonte ativa, não dos valores secretos resolvidos em tempo de execução.

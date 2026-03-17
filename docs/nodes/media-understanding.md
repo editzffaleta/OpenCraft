@@ -1,88 +1,88 @@
 ---
-summary: "Inbound image/audio/video understanding (optional) with provider + CLI fallbacks"
+summary: "Compreensão de imagem/áudio/vídeo recebidos (opcional) com fallbacks de provedor + CLI"
 read_when:
-  - Designing or refactoring media understanding
-  - Tuning inbound audio/video/image preprocessing
-title: "Media Understanding"
+  - Projetando ou refatorando compreensão de mídia
+  - Ajustando pré-processamento de áudio/vídeo/imagem recebidos
+title: "Compreensão de Mídia"
 ---
 
-# Media Understanding (Inbound) — 2026-01-17
+# Compreensão de Mídia (Entrada) — 2026-01-17
 
-OpenCraft can **summarize inbound media** (image/audio/video) before the reply pipeline runs. It auto‑detects when local tools or provider keys are available, and can be disabled or customized. If understanding is off, models still receive the original files/URLs as usual.
+O OpenCraft pode **resumir mídia recebida** (imagem/áudio/vídeo) antes do pipeline de resposta rodar. Ele auto-detecta quando ferramentas locais ou chaves de provedor estão disponíveis, e pode ser desabilitado ou personalizado. Se a compreensão estiver desligada, os modelos ainda recebem os arquivos/URLs originais normalmente.
 
-## Goals
+## Objetivos
 
-- Optional: pre‑digest inbound media into short text for faster routing + better command parsing.
-- Preserve original media delivery to the model (always).
-- Support **provider APIs** and **CLI fallbacks**.
-- Allow multiple models with ordered fallback (error/size/timeout).
+- Opcional: pré-digerir mídia recebida em texto curto para roteamento mais rápido + melhor parsing de comandos.
+- Preservar entrega de mídia original ao modelo (sempre).
+- Suportar **APIs de provedores** e **fallbacks CLI**.
+- Permitir múltiplos modelos com fallback ordenado (erro/tamanho/timeout).
 
-## High‑level behavior
+## Comportamento de alto nível
 
-1. Collect inbound attachments (`MediaPaths`, `MediaUrls`, `MediaTypes`).
-2. For each enabled capability (image/audio/video), select attachments per policy (default: **first**).
-3. Choose the first eligible model entry (size + capability + auth).
-4. If a model fails or the media is too large, **fall back to the next entry**.
-5. On success:
-   - `Body` becomes `[Image]`, `[Audio]`, or `[Video]` block.
-   - Audio sets `{{Transcript}}`; command parsing uses caption text when present,
-     otherwise the transcript.
-   - Captions are preserved as `User text:` inside the block.
+1. Coletar anexos recebidos (`MediaPaths`, `MediaUrls`, `MediaTypes`).
+2. Para cada capacidade habilitada (imagem/áudio/vídeo), selecionar anexos por política (padrão: **primeiro**).
+3. Escolher a primeira entrada de modelo elegível (tamanho + capacidade + autenticação).
+4. Se um modelo falhar ou a mídia for muito grande, **fazer fallback para a próxima entrada**.
+5. Em caso de sucesso:
+   - `Body` se torna bloco `[Image]`, `[Audio]` ou `[Video]`.
+   - Áudio define `{{Transcript}}`; parsing de comandos usa texto de legenda quando presente,
+     caso contrário a transcrição.
+   - Legendas são preservadas como `User text:` dentro do bloco.
 
-If understanding fails or is disabled, **the reply flow continues** with the original body + attachments.
+Se a compreensão falhar ou estiver desabilitada, **o fluxo de resposta continua** com o corpo + anexos originais.
 
-## Config overview
+## Visão geral da configuração
 
-`tools.media` supports **shared models** plus per‑capability overrides:
+`tools.media` suporta **modelos compartilhados** mais overrides por capacidade:
 
-- `tools.media.models`: shared model list (use `capabilities` to gate).
+- `tools.media.models`: lista de modelos compartilhados (use `capabilities` para restringir).
 - `tools.media.image` / `tools.media.audio` / `tools.media.video`:
-  - defaults (`prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`)
-  - provider overrides (`baseUrl`, `headers`, `providerOptions`)
-  - Deepgram audio options via `tools.media.audio.providerOptions.deepgram`
-  - audio transcript echo controls (`echoTranscript`, default `false`; `echoFormat`)
-  - optional **per‑capability `models` list** (preferred before shared models)
-  - `attachments` policy (`mode`, `maxAttachments`, `prefer`)
-  - `scope` (optional gating by channel/chatType/session key)
-- `tools.media.concurrency`: max concurrent capability runs (default **2**).
+  - padrões (`prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`)
+  - overrides de provedor (`baseUrl`, `headers`, `providerOptions`)
+  - opções de áudio Deepgram via `tools.media.audio.providerOptions.deepgram`
+  - controles de eco de transcrição de áudio (`echoTranscript`, padrão `false`; `echoFormat`)
+  - lista opcional **de `models` por capacidade** (preferida antes dos modelos compartilhados)
+  - política de `attachments` (`mode`, `maxAttachments`, `prefer`)
+  - `scope` (restrição opcional por canal/chatType/chave de sessão)
+- `tools.media.concurrency`: execuções de capacidade concorrentes máximas (padrão **2**).
 
 ```json5
 {
   tools: {
     media: {
       models: [
-        /* shared list */
+        /* lista compartilhada */
       ],
       image: {
-        /* optional overrides */
+        /* overrides opcionais */
       },
       audio: {
-        /* optional overrides */
+        /* overrides opcionais */
         echoTranscript: true,
         echoFormat: '📝 "{transcript}"',
       },
       video: {
-        /* optional overrides */
+        /* overrides opcionais */
       },
     },
   },
 }
 ```
 
-### Model entries
+### Entradas de modelo
 
-Each `models[]` entry can be **provider** or **CLI**:
+Cada entrada `models[]` pode ser **provedor** ou **CLI**:
 
 ```json5
 {
-  type: "provider", // default if omitted
+  type: "provider", // padrão se omitido
   provider: "openai",
   model: "gpt-5.2",
   prompt: "Describe the image in <= 500 chars.",
   maxChars: 500,
   maxBytes: 10485760,
   timeoutSeconds: 60,
-  capabilities: ["image"], // optional, used for multi‑modal entries
+  capabilities: ["image"], // opcional, usado para entradas multi-modais
   profile: "vision-profile",
   preferredProfile: "vision-fallback",
 }
@@ -106,49 +106,49 @@ Each `models[]` entry can be **provider** or **CLI**:
 }
 ```
 
-CLI templates can also use:
+Templates CLI também podem usar:
 
-- `{{MediaDir}}` (directory containing the media file)
-- `{{OutputDir}}` (scratch dir created for this run)
-- `{{OutputBase}}` (scratch file base path, no extension)
+- `{{MediaDir}}` (diretório contendo o arquivo de mídia)
+- `{{OutputDir}}` (diretório scratch criado para esta execução)
+- `{{OutputBase}}` (caminho base do arquivo scratch, sem extensão)
 
-## Defaults and limits
+## Padrões e limites
 
-Recommended defaults:
+Padrões recomendados:
 
-- `maxChars`: **500** for image/video (short, command‑friendly)
-- `maxChars`: **unset** for audio (full transcript unless you set a limit)
+- `maxChars`: **500** para imagem/vídeo (curto, amigável para comandos)
+- `maxChars`: **não definido** para áudio (transcrição completa a menos que você defina um limite)
 - `maxBytes`:
-  - image: **10MB**
-  - audio: **20MB**
-  - video: **50MB**
+  - imagem: **10MB**
+  - áudio: **20MB**
+  - vídeo: **50MB**
 
-Rules:
+Regras:
 
-- If media exceeds `maxBytes`, that model is skipped and the **next model is tried**.
-- Audio files smaller than **1024 bytes** are treated as empty/corrupt and skipped before provider/CLI transcription.
-- If the model returns more than `maxChars`, output is trimmed.
-- `prompt` defaults to simple “Describe the {media}.” plus the `maxChars` guidance (image/video only).
-- If `<capability>.enabled: true` but no models are configured, OpenCraft tries the
-  **active reply model** when its provider supports the capability.
+- Se a mídia exceder `maxBytes`, esse modelo é pulado e o **próximo modelo é tentado**.
+- Arquivos de áudio menores que **1024 bytes** são tratados como vazios/corrompidos e pulados antes da transcrição por provedor/CLI.
+- Se o modelo retornar mais que `maxChars`, a saída é truncada.
+- `prompt` padrão é simples "Describe the {media}." mais a orientação de `maxChars` (somente imagem/vídeo).
+- Se `<capability>.enabled: true` mas nenhum modelo está configurado, o OpenCraft tenta o
+  **modelo ativo de resposta** quando seu provedor suporta a capacidade.
 
-### Auto-detect media understanding (default)
+### Auto-detecção de compreensão de mídia (padrão)
 
-If `tools.media.<capability>.enabled` is **not** set to `false` and you haven’t
-configured models, OpenCraft auto-detects in this order and **stops at the first
-working option**:
+Se `tools.media.<capability>.enabled` **não** estiver definido como `false` e você não configurou
+modelos, o OpenCraft auto-detecta nesta ordem e **para na primeira
+opção funcional**:
 
-1. **Local CLIs** (audio only; if installed)
-   - `sherpa-onnx-offline` (requires `SHERPA_ONNX_MODEL_DIR` with encoder/decoder/joiner/tokens)
-   - `whisper-cli` (`whisper-cpp`; uses `WHISPER_CPP_MODEL` or the bundled tiny model)
-   - `whisper` (Python CLI; downloads models automatically)
-2. **Gemini CLI** (`gemini`) using `read_many_files`
-3. **Provider keys**
-   - Audio: OpenAI → Groq → Deepgram → Google
-   - Image: OpenAI → Anthropic → Google → MiniMax
-   - Video: Google
+1. **CLIs locais** (somente áudio; se instalados)
+   - `sherpa-onnx-offline` (requer `SHERPA_ONNX_MODEL_DIR` com encoder/decoder/joiner/tokens)
+   - `whisper-cli` (`whisper-cpp`; usa `WHISPER_CPP_MODEL` ou o modelo tiny incluído)
+   - `whisper` (CLI Python; baixa modelos automaticamente)
+2. **Gemini CLI** (`gemini`) usando `read_many_files`
+3. **Chaves de provedor**
+   - Áudio: OpenAI → Groq → Deepgram → Google
+   - Imagem: OpenAI → Anthropic → Google → MiniMax
+   - Vídeo: Google
 
-To disable auto-detection, set:
+Para desabilitar auto-detecção, defina:
 
 ```json5
 {
@@ -162,64 +162,64 @@ To disable auto-detection, set:
 }
 ```
 
-Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI is on `PATH` (we expand `~`), or set an explicit CLI model with a full command path.
+Nota: A detecção de binários é melhor esforço entre macOS/Linux/Windows; certifique-se de que o CLI está no `PATH` (expandimos `~`), ou defina um modelo CLI explícito com caminho completo do comando.
 
-### Proxy environment support (provider models)
+### Suporte a proxy de ambiente (modelos de provedor)
 
-When provider-based **audio** and **video** media understanding is enabled, OpenCraft
-honors standard outbound proxy environment variables for provider HTTP calls:
+Quando a compreensão de mídia **áudio** e **vídeo** baseada em provedor está habilitada, o OpenCraft
+respeita variáveis de ambiente padrão de proxy de saída para chamadas HTTP de provedor:
 
 - `HTTPS_PROXY`
 - `HTTP_PROXY`
 - `https_proxy`
 - `http_proxy`
 
-If no proxy env vars are set, media understanding uses direct egress.
-If the proxy value is malformed, OpenCraft logs a warning and falls back to direct
-fetch.
+Se nenhuma variável de proxy estiver definida, a compreensão de mídia usa egresso direto.
+Se o valor do proxy estiver malformado, o OpenCraft registra um aviso e faz fallback para
+fetch direto.
 
-## Capabilities (optional)
+## Capacidades (opcional)
 
-If you set `capabilities`, the entry only runs for those media types. For shared
-lists, OpenCraft can infer defaults:
+Se você definir `capabilities`, a entrada só roda para esses tipos de mídia. Para listas
+compartilhadas, o OpenCraft pode inferir padrões:
 
-- `openai`, `anthropic`, `minimax`: **image**
-- `google` (Gemini API): **image + audio + video**
-- `groq`: **audio**
-- `deepgram`: **audio**
+- `openai`, `anthropic`, `minimax`: **imagem**
+- `google` (API Gemini): **imagem + áudio + vídeo**
+- `groq`: **áudio**
+- `deepgram`: **áudio**
 
-For CLI entries, **set `capabilities` explicitly** to avoid surprising matches.
-If you omit `capabilities`, the entry is eligible for the list it appears in.
+Para entradas CLI, **defina `capabilities` explicitamente** para evitar correspondências surpreendentes.
+Se você omitir `capabilities`, a entrada é elegível para a lista em que aparece.
 
-## Provider support matrix (OpenCraft integrations)
+## Matriz de suporte de provedores (integrações OpenCraft)
 
-| Capability | Provider integration                             | Notes                                                     |
-| ---------- | ------------------------------------------------ | --------------------------------------------------------- |
-| Image      | OpenAI / Anthropic / Google / others via `pi-ai` | Any image-capable model in the registry works.            |
-| Audio      | OpenAI, Groq, Deepgram, Google, Mistral          | Provider transcription (Whisper/Deepgram/Gemini/Voxtral). |
-| Video      | Google (Gemini API)                              | Provider video understanding.                             |
+| Capacidade | Integração de provedor                           | Notas                                                          |
+| ---------- | ------------------------------------------------ | -------------------------------------------------------------- |
+| Imagem     | OpenAI / Anthropic / Google / outros via `pi-ai` | Qualquer modelo com capacidade de imagem no registro funciona. |
+| Áudio      | OpenAI, Groq, Deepgram, Google, Mistral          | Transcrição por provedor (Whisper/Deepgram/Gemini/Voxtral).    |
+| Vídeo      | Google (API Gemini)                              | Compreensão de vídeo por provedor.                             |
 
-## Model selection guidance
+## Orientação para seleção de modelo
 
-- Prefer the strongest latest-generation model available for each media capability when quality and safety matter.
-- For tool-enabled agents handling untrusted inputs, avoid older/weaker media models.
-- Keep at least one fallback per capability for availability (quality model + faster/cheaper model).
-- CLI fallbacks (`whisper-cli`, `whisper`, `gemini`) are useful when provider APIs are unavailable.
-- `parakeet-mlx` note: with `--output-dir`, OpenCraft reads `<output-dir>/<media-basename>.txt` when output format is `txt` (or unspecified); non-`txt` formats fall back to stdout.
+- Prefira o modelo mais forte de última geração disponível para cada capacidade de mídia quando qualidade e segurança importam.
+- Para agentes com ferramentas lidando com entradas não confiáveis, evite modelos de mídia mais antigos/fracos.
+- Mantenha pelo menos um fallback por capacidade para disponibilidade (modelo de qualidade + modelo mais rápido/barato).
+- Fallbacks CLI (`whisper-cli`, `whisper`, `gemini`) são úteis quando APIs de provedores não estão disponíveis.
+- Nota sobre `parakeet-mlx`: com `--output-dir`, o OpenCraft lê `<output-dir>/<media-basename>.txt` quando o formato de saída é `txt` (ou não especificado); formatos não-`txt` fazem fallback para stdout.
 
-## Attachment policy
+## Política de anexos
 
-Per‑capability `attachments` controls which attachments are processed:
+`attachments` por capacidade controla quais anexos são processados:
 
-- `mode`: `first` (default) or `all`
-- `maxAttachments`: cap the number processed (default **1**)
+- `mode`: `first` (padrão) ou `all`
+- `maxAttachments`: limite do número processado (padrão **1**)
 - `prefer`: `first`, `last`, `path`, `url`
 
-When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
+Quando `mode: "all"`, as saídas são rotuladas `[Image 1/2]`, `[Audio 2/2]`, etc.
 
-## Config examples
+## Exemplos de configuração
 
-### 1) Shared models list + overrides
+### 1) Lista de modelos compartilhados + overrides
 
 ```json5
 {
@@ -256,7 +256,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 2) Audio + Video only (image off)
+### 2) Somente Áudio + Vídeo (imagem desligada)
 
 ```json5
 {
@@ -296,7 +296,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 3) Optional image understanding
+### 3) Compreensão de imagem opcional
 
 ```json5
 {
@@ -327,7 +327,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 4) Multi‑modal single entry (explicit capabilities)
+### 4) Entrada única multi-modal (capacidades explícitas)
 
 ```json5
 {
@@ -365,23 +365,23 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-## Status output
+## Saída de status
 
-When media understanding runs, `/status` includes a short summary line:
+Quando a compreensão de mídia roda, `/status` inclui uma linha de resumo curta:
 
 ```
 📎 Media: image ok (openai/gpt-5.2) · audio skipped (maxBytes)
 ```
 
-This shows per‑capability outcomes and the chosen provider/model when applicable.
+Isso mostra resultados por capacidade e o provedor/modelo escolhido quando aplicável.
 
-## Notes
+## Notas
 
-- Understanding is **best‑effort**. Errors do not block replies.
-- Attachments are still passed to models even when understanding is disabled.
-- Use `scope` to limit where understanding runs (e.g. only DMs).
+- A compreensão é **melhor esforço**. Erros não bloqueiam respostas.
+- Anexos ainda são passados aos modelos mesmo quando a compreensão está desabilitada.
+- Use `scope` para limitar onde a compreensão roda (ex.: apenas DMs).
 
-## Related docs
+## Documentação relacionada
 
-- [Configuration](/gateway/configuration)
-- [Image & Media Support](/nodes/images)
+- [Configuração](/gateway/configuration)
+- [Suporte a Imagem e Mídia](/nodes/images)

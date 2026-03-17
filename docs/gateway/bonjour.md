@@ -1,177 +1,165 @@
 ---
-summary: "Bonjour/mDNS discovery + debugging (Gateway beacons, clients, and common failure modes)"
+summary: "Descoberta Bonjour/mDNS + debugging (beacons do Gateway, clientes e modos de falha comuns)"
 read_when:
-  - Debugging Bonjour discovery issues on macOS/iOS
-  - Changing mDNS service types, TXT records, or discovery UX
+  - Debugando problemas de descoberta Bonjour no macOS/iOS
+  - Alterando tipos de serviço mDNS, registros TXT ou UX de descoberta
 title: "Bonjour Discovery"
 ---
 
-# Bonjour / mDNS discovery
+# Descoberta Bonjour / mDNS
 
-OpenCraft uses Bonjour (mDNS / DNS‑SD) as a **LAN‑only convenience** to discover
-an active Gateway (WebSocket endpoint). It is best‑effort and does **not** replace SSH or
-Tailnet-based connectivity.
+OpenCraft usa Bonjour (mDNS / DNS-SD) como uma **conveniência apenas de LAN** para descobrir um Gateway ativo (endpoint WebSocket). É best-effort e **não** substitui conectividade via SSH ou Tailnet.
 
-## Wide‑area Bonjour (Unicast DNS‑SD) over Tailscale
+## Bonjour de área ampla (Unicast DNS-SD) via Tailscale
 
-If the node and gateway are on different networks, multicast mDNS won’t cross the
-boundary. You can keep the same discovery UX by switching to **unicast DNS‑SD**
-("Wide‑Area Bonjour") over Tailscale.
+Se o node e o gateway estão em redes diferentes, mDNS multicast não cruzará a fronteira. Você pode manter a mesma UX de descoberta mudando para **unicast DNS-SD** ("Bonjour de Área Ampla") via Tailscale.
 
-High‑level steps:
+Etapas de alto nível:
 
-1. Run a DNS server on the gateway host (reachable over Tailnet).
-2. Publish DNS‑SD records for `_opencraft-gw._tcp` under a dedicated zone
-   (example: `opencraft.internal.`).
-3. Configure Tailscale **split DNS** so your chosen domain resolves via that
-   DNS server for clients (including iOS).
+1. Execute um servidor DNS no host do gateway (acessível via Tailnet).
+2. Publique registros DNS-SD para `_opencraft-gw._tcp` em uma zona dedicada (exemplo: `opencraft.internal.`).
+3. Configure **split DNS** do Tailscale para que seu domínio escolhido resolva via aquele servidor DNS para clientes (incluindo iOS).
 
-OpenCraft supports any discovery domain; `opencraft.internal.` is just an example.
-iOS/Android nodes browse both `local.` and your configured wide‑area domain.
+OpenCraft suporta qualquer domínio de descoberta; `opencraft.internal.` é apenas um exemplo.
+Nodes iOS/Android navegam tanto `local.` quanto seu domínio de área ampla configurado.
 
-### Gateway config (recommended)
+### Config do Gateway (recomendado)
 
 ```json5
 {
-  gateway: { bind: "tailnet" }, // tailnet-only (recommended)
-  discovery: { wideArea: { enabled: true } }, // enables wide-area DNS-SD publishing
+  gateway: { bind: "tailnet" }, // apenas tailnet (recomendado)
+  discovery: { wideArea: { enabled: true } }, // habilita publicação DNS-SD de área ampla
 }
 ```
 
-### One‑time DNS server setup (gateway host)
+### Setup único do servidor DNS (host do gateway)
 
 ```bash
 opencraft dns setup --apply
 ```
 
-This installs CoreDNS and configures it to:
+Isso instala o CoreDNS e o configura para:
 
-- listen on port 53 only on the gateway’s Tailscale interfaces
-- serve your chosen domain (example: `opencraft.internal.`) from `~/.opencraft/dns/<domain>.db`
+- escutar na porta 53 apenas nas interfaces Tailscale do gateway
+- servir seu domínio escolhido (exemplo: `opencraft.internal.`) a partir de `~/.opencraft/dns/<domain>.db`
 
-Validate from a tailnet‑connected machine:
+Valide de uma máquina conectada ao tailnet:
 
 ```bash
 dns-sd -B _opencraft-gw._tcp opencraft.internal.
 dig @<TAILNET_IPV4> -p 53 _opencraft-gw._tcp.opencraft.internal PTR +short
 ```
 
-### Tailscale DNS settings
+### Configurações DNS do Tailscale
 
-In the Tailscale admin console:
+No console admin do Tailscale:
 
-- Add a nameserver pointing at the gateway’s tailnet IP (UDP/TCP 53).
-- Add split DNS so your discovery domain uses that nameserver.
+- Adicione um nameserver apontando para o IP do tailnet do gateway (UDP/TCP 53).
+- Adicione split DNS para que seu domínio de descoberta use esse nameserver.
 
-Once clients accept tailnet DNS, iOS nodes can browse
-`_opencraft-gw._tcp` in your discovery domain without multicast.
+Quando os clientes aceitarem o DNS do tailnet, nodes iOS podem navegar `_opencraft-gw._tcp` no seu domínio de descoberta sem multicast.
 
-### Gateway listener security (recommended)
+### Segurança do listener do Gateway (recomendado)
 
-The Gateway WS port (default `18789`) binds to loopback by default. For LAN/tailnet
-access, bind explicitly and keep auth enabled.
+A porta WS do Gateway (padrão `18789`) faz bind para loopback por padrão. Para acesso LAN/tailnet, faça bind explicitamente e mantenha a auth habilitada.
 
-For tailnet‑only setups:
+Para setups apenas-tailnet:
 
-- Set `gateway.bind: "tailnet"` in `~/.editzffaleta/OpenCraft.json`.
-- Restart the Gateway (or restart the macOS menubar app).
+- Defina `gateway.bind: "tailnet"` em `~/.editzffaleta/OpenCraft.json`.
+- Reinicie o Gateway (ou reinicie o app de menubar do macOS).
 
-## What advertises
+## O que anuncia
 
-Only the Gateway advertises `_opencraft-gw._tcp`.
+Apenas o Gateway anuncia `_opencraft-gw._tcp`.
 
-## Service types
+## Tipos de serviço
 
-- `_opencraft-gw._tcp` — gateway transport beacon (used by macOS/iOS/Android nodes).
+- `_opencraft-gw._tcp` — beacon de transporte do gateway (usado por nodes macOS/iOS/Android).
 
-## TXT keys (non‑secret hints)
+## Chaves TXT (dicas não-secretas)
 
-The Gateway advertises small non‑secret hints to make UI flows convenient:
+O Gateway anuncia pequenas dicas não-secretas para tornar os fluxos de UI convenientes:
 
 - `role=gateway`
-- `displayName=<friendly name>`
+- `displayName=<nome amigável>`
 - `lanHost=<hostname>.local`
 - `gatewayPort=<port>` (Gateway WS + HTTP)
-- `gatewayTls=1` (only when TLS is enabled)
-- `gatewayTlsSha256=<sha256>` (only when TLS is enabled and fingerprint is available)
-- `canvasPort=<port>` (only when the canvas host is enabled; currently the same as `gatewayPort`)
-- `sshPort=<port>` (defaults to 22 when not overridden)
+- `gatewayTls=1` (apenas quando TLS está habilitado)
+- `gatewayTlsSha256=<sha256>` (apenas quando TLS está habilitado e fingerprint está disponível)
+- `canvasPort=<port>` (apenas quando o canvas host está habilitado; atualmente o mesmo que `gatewayPort`)
+- `sshPort=<port>` (padrão 22 quando não sobrescrito)
 - `transport=gateway`
-- `cliPath=<path>` (optional; absolute path to a runnable `opencraft` entrypoint)
-- `tailnetDns=<magicdns>` (optional hint when Tailnet is available)
+- `cliPath=<path>` (opcional; caminho absoluto para um entrypoint executável `opencraft`)
+- `tailnetDns=<magicdns>` (dica opcional quando Tailnet está disponível)
 
-Security notes:
+Notas de segurança:
 
-- Bonjour/mDNS TXT records are **unauthenticated**. Clients must not treat TXT as authoritative routing.
-- Clients should route using the resolved service endpoint (SRV + A/AAAA). Treat `lanHost`, `tailnetDns`, `gatewayPort`, and `gatewayTlsSha256` as hints only.
-- TLS pinning must never allow an advertised `gatewayTlsSha256` to override a previously stored pin.
-- iOS/Android nodes should treat discovery-based direct connects as **TLS-only** and require explicit user confirmation before trusting a first-time fingerprint.
+- Registros TXT do Bonjour/mDNS são **não autenticados**. Clientes não devem tratar TXT como roteamento autoritativo.
+- Clientes devem rotear usando o endpoint de serviço resolvido (SRV + A/AAAA). Trate `lanHost`, `tailnetDns`, `gatewayPort` e `gatewayTlsSha256` apenas como dicas.
+- O pinning de TLS nunca deve permitir que um `gatewayTlsSha256` anunciado sobrescreva um pin previamente armazenado.
+- Nodes iOS/Android devem tratar conexões diretas baseadas em descoberta como **apenas-TLS** e exigir confirmação explícita do usuário antes de confiar em um fingerprint pela primeira vez.
 
-## Debugging on macOS
+## Debugging no macOS
 
-Useful built‑in tools:
+Ferramentas built-in úteis:
 
-- Browse instances:
+- Navegar instâncias:
 
   ```bash
   dns-sd -B _opencraft-gw._tcp local.
   ```
 
-- Resolve one instance (replace `<instance>`):
+- Resolver uma instância (substitua `<instance>`):
 
   ```bash
   dns-sd -L "<instance>" _opencraft-gw._tcp local.
   ```
 
-If browsing works but resolving fails, you’re usually hitting a LAN policy or
-mDNS resolver issue.
+Se a navegação funciona mas a resolução falha, você geralmente está enfrentando uma política de LAN ou um problema de resolver mDNS.
 
-## Debugging in Gateway logs
+## Debugging nos logs do Gateway
 
-The Gateway writes a rolling log file (printed on startup as
-`gateway log file: ...`). Look for `bonjour:` lines, especially:
+O Gateway escreve um arquivo de log rotativo (impresso na inicialização como
+`gateway log file: ...`). Procure por linhas `bonjour:`, especialmente:
 
 - `bonjour: advertise failed ...`
 - `bonjour: ... name conflict resolved` / `hostname conflict resolved`
 - `bonjour: watchdog detected non-announced service ...`
 
-## Debugging on iOS node
+## Debugging no node iOS
 
-The iOS node uses `NWBrowser` to discover `_opencraft-gw._tcp`.
+O node iOS usa `NWBrowser` para descobrir `_opencraft-gw._tcp`.
 
-To capture logs:
+Para capturar logs:
 
-- Settings → Gateway → Advanced → **Discovery Debug Logs**
-- Settings → Gateway → Advanced → **Discovery Logs** → reproduce → **Copy**
+- Configurações → Gateway → Avançado → **Discovery Debug Logs**
+- Configurações → Gateway → Avançado → **Discovery Logs** → reproduza → **Copiar**
 
-The log includes browser state transitions and result‑set changes.
+O log inclui transições de estado do navegador e mudanças no conjunto de resultados.
 
-## Common failure modes
+## Modos de falha comuns
 
-- **Bonjour doesn’t cross networks**: use Tailnet or SSH.
-- **Multicast blocked**: some Wi‑Fi networks disable mDNS.
-- **Sleep / interface churn**: macOS may temporarily drop mDNS results; retry.
-- **Browse works but resolve fails**: keep machine names simple (avoid emojis or
-  punctuation), then restart the Gateway. The service instance name derives from
-  the host name, so overly complex names can confuse some resolvers.
+- **Bonjour não cruza redes**: use Tailnet ou SSH.
+- **Multicast bloqueado**: algumas redes Wi-Fi desabilitam mDNS.
+- **Sleep / churn de interface**: macOS pode temporariamente perder resultados mDNS; tente novamente.
+- **Navegação funciona mas resolução falha**: mantenha nomes de máquinas simples (evite emojis ou pontuação), depois reinicie o Gateway. O nome da instância de serviço é derivado do nome do host, então nomes excessivamente complexos podem confundir alguns resolvers.
 
-## Escaped instance names (`\032`)
+## Nomes de instância escapados (`\032`)
 
-Bonjour/DNS‑SD often escapes bytes in service instance names as decimal `\DDD`
-sequences (e.g. spaces become `\032`).
+Bonjour/DNS-SD frequentemente escapa bytes em nomes de instância de serviço como sequências decimais `\DDD` (ex. espaços se tornam `\032`).
 
-- This is normal at the protocol level.
-- UIs should decode for display (iOS uses `BonjourEscapes.decode`).
+- Isso é normal no nível do protocolo.
+- UIs devem decodificar para exibição (iOS usa `BonjourEscapes.decode`).
 
-## Disabling / configuration
+## Desabilitando / configuração
 
-- `OPENCRAFT_DISABLE_BONJOUR=1` disables advertising (legacy: `OPENCRAFT_DISABLE_BONJOUR`).
-- `gateway.bind` in `~/.editzffaleta/OpenCraft.json` controls the Gateway bind mode.
-- `OPENCRAFT_SSH_PORT` overrides the SSH port advertised in TXT (legacy: `OPENCRAFT_SSH_PORT`).
-- `OPENCRAFT_TAILNET_DNS` publishes a MagicDNS hint in TXT (legacy: `OPENCRAFT_TAILNET_DNS`).
-- `OPENCRAFT_CLI_PATH` overrides the advertised CLI path (legacy: `OPENCRAFT_CLI_PATH`).
+- `OPENCRAFT_DISABLE_BONJOUR=1` desabilita a publicação (legado: `OPENCRAFT_DISABLE_BONJOUR`).
+- `gateway.bind` em `~/.editzffaleta/OpenCraft.json` controla o modo de bind do Gateway.
+- `OPENCRAFT_SSH_PORT` sobrescreve a porta SSH anunciada no TXT (legado: `OPENCRAFT_SSH_PORT`).
+- `OPENCRAFT_TAILNET_DNS` publica uma dica MagicDNS no TXT (legado: `OPENCRAFT_TAILNET_DNS`).
+- `OPENCRAFT_CLI_PATH` sobrescreve o caminho do CLI anunciado (legado: `OPENCRAFT_CLI_PATH`).
 
-## Related docs
+## Documentação relacionada
 
-- Discovery policy and transport selection: [Discovery](/gateway/discovery)
-- Node pairing + approvals: [Gateway pairing](/gateway/pairing)
+- Política de descoberta e seleção de transporte: [Discovery](/gateway/discovery)
+- Pairing de node + aprovações: [Gateway pairing](/gateway/pairing)

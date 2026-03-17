@@ -1,16 +1,16 @@
 ---
-summary: "CLI reference for `opencraft completion` (generate/install shell completion scripts)"
+summary: "Referência CLI para `opencraft completion` (gerar/instalar scripts de completação de shell)"
 read_when:
-  - You want shell completions for zsh/bash/fish/PowerShell
-  - You need to cache completion scripts under OpenCraft state
+  - Você quer completações de shell para zsh/bash/fish/PowerShell
+  - Você precisa armazenar scripts de completação no estado do OpenCraft
 title: "completion"
 ---
 
 # `opencraft completion`
 
-Generate shell completion scripts and optionally install them into your shell profile.
+Gere scripts de completação de shell e opcionalmente instale-os no seu perfil de shell.
 
-## Usage
+## Uso
 
 ```bash
 opencraft completion
@@ -21,15 +21,15 @@ opencraft completion --write-state
 opencraft completion --shell bash --write-state
 ```
 
-## Options
+## Opções
 
-- `-s, --shell <shell>`: shell target (`zsh`, `bash`, `powershell`, `fish`; default: `zsh`)
-- `-i, --install`: install completion by adding a source line to your shell profile
-- `--write-state`: write completion script(s) to `$OPENCRAFT_STATE_DIR/completions` without printing to stdout
-- `-y, --yes`: skip install confirmation prompts
+- `-s, --shell <shell>`: shell alvo (`zsh`, `bash`, `powershell`, `fish`; padrão: `zsh`)
+- `-i, --install`: instalar completação adicionando uma linha de source ao seu perfil de shell
+- `--write-state`: gravar script(s) de completação em `$OPENCRAFT_STATE_DIR/completions` sem imprimir no stdout
+- `-y, --yes`: pular confirmações de instalação
 
-## Notes
+## Observações
 
-- `--install` writes a small "OpenCraft Completion" block into your shell profile and points it at the cached script.
-- Without `--install` or `--write-state`, the command prints the script to stdout.
-- Completion generation eagerly loads command trees so nested subcommands are included.
+- `--install` grava um pequeno bloco "OpenCraft Completion" no seu perfil de shell e aponta para o script em cache.
+- Sem `--install` ou `--write-state`, o comando imprime o script no stdout.
+- A geração de completação carrega árvores de comandos antecipadamente para que subcomandos aninhados sejam incluídos.

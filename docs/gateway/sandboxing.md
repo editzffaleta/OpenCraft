@@ -1,13 +1,13 @@
 ---
-summary: "How OpenCraft sandboxing works: modes, scopes, workspace access, and images"
+summary: "Como o sandboxing do OpenCraft funciona: modos, escopos, acesso ao workspace e imagens"
 title: Sandboxing
-read_when: "You want a dedicated explanation of sandboxing or need to tune agents.defaults.sandbox."
+read_when: "Você quer uma explicação dedicada do sandboxing ou precisa ajustar agents.defaults.sandbox."
 status: active
 ---
 
 # Sandboxing
 
-OpenCraft can run **tools inside sandbox backends** to reduce blast radius.
+OpenCraft pode executar **ferramentas dentro de backends de sandbox** para reduzir o raio de impacto.
 This is **optional** and controlled by configuration (`agents.defaults.sandbox` or
 `agents.list[].sandbox`). If sandboxing is off, tools run on the host.
 The Gateway stays on the host; tool execution runs in an isolated sandbox

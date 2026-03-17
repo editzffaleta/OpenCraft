@@ -1,16 +1,16 @@
 ---
-summary: "Troubleshoot node pairing, foreground requirements, permissions, and tool failures"
+summary: "Solucionar problemas de pareamento de nodes, requisitos de primeiro plano, permissões e falhas de ferramentas"
 read_when:
-  - Node is connected but camera/canvas/screen/exec tools fail
-  - You need the node pairing versus approvals mental model
-title: "Node Troubleshooting"
+  - Node está conectado mas ferramentas de câmera/canvas/tela/exec falham
+  - Você precisa entender o modelo mental de pareamento vs aprovações de nodes
+title: "Solução de Problemas de Nodes"
 ---
 
-# Node troubleshooting
+# Solução de problemas de nodes
 
-Use this page when a node is visible in status but node tools fail.
+Use esta página quando um node está visível no status mas as ferramentas do node falham.
 
-## Command ladder
+## Sequência de comandos
 
 ```bash
 opencraft status
@@ -20,7 +20,7 @@ opencraft doctor
 opencraft channels status --probe
 ```
 
-Then run node specific checks:
+Depois execute verificações específicas do node:
 
 ```bash
 opencraft nodes status
@@ -28,17 +28,17 @@ opencraft nodes describe --node <idOrNameOrIp>
 opencraft approvals get --node <idOrNameOrIp>
 ```
 
-Healthy signals:
+Sinais saudáveis:
 
-- Node is connected and paired for role `node`.
-- `nodes describe` includes the capability you are calling.
-- Exec approvals show expected mode/allowlist.
+- Node está conectado e pareado para a role `node`.
+- `nodes describe` inclui a capacidade que você está chamando.
+- Aprovações exec mostram modo/allowlist esperados.
 
-## Foreground requirements
+## Requisitos de primeiro plano
 
-`canvas.*`, `camera.*`, and `screen.*` are foreground only on iOS/Android nodes.
+`canvas.*`, `camera.*` e `screen.*` são somente primeiro plano em nodes iOS/Android.
 
-Quick check and fix:
+Verificação rápida e correção:
 
 ```bash
 opencraft nodes describe --node <idOrNameOrIp>
@@ -46,25 +46,25 @@ opencraft nodes canvas snapshot --node <idOrNameOrIp>
 opencraft logs --follow
 ```
 
-If you see `NODE_BACKGROUND_UNAVAILABLE`, bring the node app to the foreground and retry.
+Se você vir `NODE_BACKGROUND_UNAVAILABLE`, traga o app do node para o primeiro plano e tente novamente.
 
-## Permissions matrix
+## Matriz de permissões
 
-| Capability                   | iOS                                     | Android                                      | macOS node app                | Typical failure code           |
-| ---------------------------- | --------------------------------------- | -------------------------------------------- | ----------------------------- | ------------------------------ |
-| `camera.snap`, `camera.clip` | Camera (+ mic for clip audio)           | Camera (+ mic for clip audio)                | Camera (+ mic for clip audio) | `*_PERMISSION_REQUIRED`        |
-| `screen.record`              | Screen Recording (+ mic optional)       | Screen capture prompt (+ mic optional)       | Screen Recording              | `*_PERMISSION_REQUIRED`        |
-| `location.get`               | While Using or Always (depends on mode) | Foreground/Background location based on mode | Location permission           | `LOCATION_PERMISSION_REQUIRED` |
-| `system.run`                 | n/a (node host path)                    | n/a (node host path)                         | Exec approvals required       | `SYSTEM_RUN_DENIED`            |
+| Capacidade                   | iOS                                         | Android                                               | App node macOS                    | Código de falha típico         |
+| ---------------------------- | ------------------------------------------- | ----------------------------------------------------- | --------------------------------- | ------------------------------ |
+| `camera.snap`, `camera.clip` | Câmera (+ mic para áudio do clip)           | Câmera (+ mic para áudio do clip)                     | Câmera (+ mic para áudio do clip) | `*_PERMISSION_REQUIRED`        |
+| `screen.record`              | Gravação de Tela (+ mic opcional)           | Prompt de captura de tela (+ mic opcional)            | Gravação de Tela                  | `*_PERMISSION_REQUIRED`        |
+| `location.get`               | Enquanto Usando ou Sempre (depende do modo) | Localização Primeiro plano/Background baseado no modo | Permissão de Localização          | `LOCATION_PERMISSION_REQUIRED` |
+| `system.run`                 | n/a (caminho do host node)                  | n/a (caminho do host node)                            | Aprovações exec necessárias       | `SYSTEM_RUN_DENIED`            |
 
-## Pairing versus approvals
+## Pareamento versus aprovações
 
-These are different gates:
+Estas são barreiras diferentes:
 
-1. **Device pairing**: can this node connect to the gateway?
-2. **Exec approvals**: can this node run a specific shell command?
+1. **Pareamento de dispositivo**: este node pode se conectar ao gateway?
+2. **Aprovações exec**: este node pode executar um comando shell específico?
 
-Quick checks:
+Verificações rápidas:
 
 ```bash
 opencraft devices list
@@ -73,23 +73,23 @@ opencraft approvals get --node <idOrNameOrIp>
 opencraft approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 ```
 
-If pairing is missing, approve the node device first.
-If pairing is fine but `system.run` fails, fix exec approvals/allowlist.
+Se o pareamento estiver faltando, aprove o dispositivo node primeiro.
+Se o pareamento estiver ok mas `system.run` falhar, corrija aprovações/allowlist exec.
 
-## Common node error codes
+## Códigos de erro comuns de nodes
 
-- `NODE_BACKGROUND_UNAVAILABLE` → app is backgrounded; bring it foreground.
-- `CAMERA_DISABLED` → camera toggle disabled in node settings.
-- `*_PERMISSION_REQUIRED` → OS permission missing/denied.
-- `LOCATION_DISABLED` → location mode is off.
-- `LOCATION_PERMISSION_REQUIRED` → requested location mode not granted.
-- `LOCATION_BACKGROUND_UNAVAILABLE` → app is backgrounded but only While Using permission exists.
-- `SYSTEM_RUN_DENIED: approval required` → exec request needs explicit approval.
-- `SYSTEM_RUN_DENIED: allowlist miss` → command blocked by allowlist mode.
-  On Windows node hosts, shell-wrapper forms like `cmd.exe /c ...` are treated as allowlist misses in
-  allowlist mode unless approved via ask flow.
+- `NODE_BACKGROUND_UNAVAILABLE` → app está em background; traga para o primeiro plano.
+- `CAMERA_DISABLED` → toggle de câmera desabilitado nas configurações do node.
+- `*_PERMISSION_REQUIRED` → permissão do SO faltando/negada.
+- `LOCATION_DISABLED` → modo de localização está desligado.
+- `LOCATION_PERMISSION_REQUIRED` → modo de localização solicitado não concedido.
+- `LOCATION_BACKGROUND_UNAVAILABLE` → app está em background mas apenas permissão Enquanto Usando existe.
+- `SYSTEM_RUN_DENIED: approval required` → requisição exec precisa de aprovação explícita.
+- `SYSTEM_RUN_DENIED: allowlist miss` → comando bloqueado pelo modo allowlist.
+  Em hosts node Windows, formas de wrapper de shell como `cmd.exe /c ...` são tratadas como misses de allowlist no
+  modo allowlist a menos que aprovadas via fluxo ask.
 
-## Fast recovery loop
+## Loop de recuperação rápida
 
 ```bash
 opencraft nodes status
@@ -98,14 +98,14 @@ opencraft approvals get --node <idOrNameOrIp>
 opencraft logs --follow
 ```
 
-If still stuck:
+Se ainda estiver travado:
 
-- Re-approve device pairing.
-- Re-open node app (foreground).
-- Re-grant OS permissions.
-- Recreate/adjust exec approval policy.
+- Re-aprove pareamento de dispositivo.
+- Re-abra app do node (primeiro plano).
+- Re-conceda permissões do SO.
+- Recrie/ajuste política de aprovação exec.
 
-Related:
+Relacionado:
 
 - [/nodes/index](/nodes/index)
 - [/nodes/camera](/nodes/camera)

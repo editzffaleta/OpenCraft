@@ -1,32 +1,32 @@
 ---
-summary: "Use the OpenCode Go catalog with the shared OpenCode setup"
+summary: "Use o catálogo OpenCode Go com a configuração compartilhada do OpenCode"
 read_when:
-  - You want the OpenCode Go catalog
-  - You need the runtime model refs for Go-hosted models
+  - Você quer o catálogo OpenCode Go
+  - Você precisa das referências de modelo em tempo de execução para modelos hospedados via Go
 title: "OpenCode Go"
 ---
 
 # OpenCode Go
 
-OpenCode Go is the Go catalog within [OpenCode](/providers/opencode).
-It uses the same `OPENCODE_API_KEY` as the Zen catalog, but keeps the runtime
-provider id `opencode-go` so upstream per-model routing stays correct.
+OpenCode Go é o catálogo Go dentro do [OpenCode](/providers/opencode).
+Ele usa a mesma `OPENCODE_API_KEY` que o catálogo Zen, mas mantém o
+id de provider em tempo de execução `opencode-go` para que o roteamento por modelo do upstream permaneça correto.
 
-## Supported models
+## Modelos suportados
 
 - `opencode-go/kimi-k2.5`
 - `opencode-go/glm-5`
 - `opencode-go/minimax-m2.5`
 
-## CLI setup
+## Configuração via CLI
 
 ```bash
 opencraft onboard --auth-choice opencode-go
-# or non-interactive
+# ou não interativo
 opencraft onboard --opencode-go-api-key "$OPENCODE_API_KEY"
 ```
 
-## Config snippet
+## Trecho de config
 
 ```json5
 {
@@ -35,11 +35,11 @@ opencraft onboard --opencode-go-api-key "$OPENCODE_API_KEY"
 }
 ```
 
-## Routing behavior
+## Comportamento de roteamento
 
-OpenCraft handles per-model routing automatically when the model ref uses `opencode-go/...`.
+O OpenCraft trata o roteamento por modelo automaticamente quando a referência de modelo usa `opencode-go/...`.
 
-## Notes
+## Notas
 
-- Use [OpenCode](/providers/opencode) for the shared onboarding and catalog overview.
-- Runtime refs stay explicit: `opencode/...` for Zen, `opencode-go/...` for Go.
+- Use [OpenCode](/providers/opencode) para o onboarding compartilhado e visão geral do catálogo.
+- As referências em tempo de execução permanecem explícitas: `opencode/...` para Zen, `opencode-go/...` para Go.

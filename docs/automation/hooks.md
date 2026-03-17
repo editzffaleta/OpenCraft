@@ -1,72 +1,72 @@
 ---
-summary: "Hooks: event-driven automation for commands and lifecycle events"
+summary: "Hooks: automação orientada a eventos para comandos e eventos de ciclo de vida"
 read_when:
-  - You want event-driven automation for /new, /reset, /stop, and agent lifecycle events
-  - You want to build, install, or debug hooks
+  - Você quer automação orientada a eventos para /new, /reset, /stop e eventos de ciclo de vida do agente
+  - Você quer construir, instalar ou depurar hooks
 title: "Hooks"
 ---
 
 # Hooks
 
-Hooks provide an extensible event-driven system for automating actions in response to agent commands and events. Hooks are automatically discovered from directories and can be managed via CLI commands, similar to how skills work in OpenCraft.
+Hooks fornecem um sistema extensível orientado a eventos para automatizar ações em resposta a comandos e eventos do agente. Hooks são automaticamente descobertos a partir de diretórios e podem ser gerenciados via comandos CLI, similar a como Skills funcionam no OpenCraft.
 
-## Getting Oriented
+## Orientação Inicial
 
-Hooks are small scripts that run when something happens. There are two kinds:
+Hooks são pequenos scripts que executam quando algo acontece. Existem dois tipos:
 
-- **Hooks** (this page): run inside the Gateway when agent events fire, like `/new`, `/reset`, `/stop`, or lifecycle events.
-- **Webhooks**: external HTTP webhooks that let other systems trigger work in OpenCraft. See [Webhook Hooks](/automation/webhook) or use `opencraft webhooks` for Gmail helper commands.
+- **Hooks** (esta página): executam dentro do Gateway quando eventos do agente disparam, como `/new`, `/reset`, `/stop`, ou eventos de ciclo de vida.
+- **Webhooks**: Webhooks HTTP externos que permitem que outros sistemas disparem trabalho no OpenCraft. Veja [Webhook Hooks](/automation/webhook) ou use `opencraft webhooks` para comandos auxiliares de Gmail.
 
-Hooks can also be bundled inside plugins; see [Plugins](/tools/plugin#plugin-hooks).
+Hooks também podem ser empacotados dentro de Plugins; veja [Plugins](/tools/plugin#plugin-hooks).
 
-Common uses:
+Usos comuns:
 
-- Save a memory snapshot when you reset a session
-- Keep an audit trail of commands for troubleshooting or compliance
-- Trigger follow-up automation when a session starts or ends
-- Write files into the agent workspace or call external APIs when events fire
+- Salvar um snapshot de memória quando você reseta uma sessão
+- Manter uma trilha de auditoria de comandos para troubleshooting ou compliance
+- Disparar automação de acompanhamento quando uma sessão inicia ou termina
+- Escrever arquivos no workspace do agente ou chamar APIs externas quando eventos disparam
 
-If you can write a small TypeScript function, you can write a hook. Hooks are discovered automatically, and you enable or disable them via the CLI.
+Se você consegue escrever uma pequena função TypeScript, você consegue escrever um hook. Hooks são descobertos automaticamente, e você os habilita ou desabilita via CLI.
 
-## Overview
+## Visão Geral
 
-The hooks system allows you to:
+O sistema de hooks permite que você:
 
-- Save session context to memory when `/new` is issued
-- Log all commands for auditing
-- Trigger custom automations on agent lifecycle events
-- Extend OpenCraft's behavior without modifying core code
+- Salve contexto de sessão na memória quando `/new` é emitido
+- Registre todos os comandos para auditoria
+- Dispare automações personalizadas em eventos de ciclo de vida do agente
+- Estenda o comportamento do OpenCraft sem modificar o código principal
 
-## Getting Started
+## Começando
 
-### Bundled Hooks
+### Hooks Incluídos
 
-OpenCraft ships with four bundled hooks that are automatically discovered:
+O OpenCraft vem com quatro hooks incluídos que são automaticamente descobertos:
 
-- **💾 session-memory**: Saves session context to your agent workspace (default `~/.opencraft/workspace/memory/`) when you issue `/new`
-- **📎 bootstrap-extra-files**: Injects additional workspace bootstrap files from configured glob/path patterns during `agent:bootstrap`
-- **📝 command-logger**: Logs all command events to `~/.opencraft/logs/commands.log`
-- **🚀 boot-md**: Runs `BOOT.md` when the gateway starts (requires internal hooks enabled)
+- **session-memory**: Salva contexto de sessão no seu workspace de agente (padrão `~/.opencraft/workspace/memory/`) quando você emite `/new`
+- **bootstrap-extra-files**: Injeta arquivos de bootstrap de workspace adicionais a partir de padrões glob/caminho configurados durante `agent:bootstrap`
+- **command-logger**: Registra todos os eventos de comando em `~/.opencraft/logs/commands.log`
+- **boot-md**: Executa `BOOT.md` quando o Gateway inicia (requer hooks internos habilitados)
 
-List available hooks:
+Listar hooks disponíveis:
 
 ```bash
 opencraft hooks list
 ```
 
-Enable a hook:
+Habilitar um hook:
 
 ```bash
 opencraft hooks enable session-memory
 ```
 
-Check hook status:
+Verificar status do hook:
 
 ```bash
 opencraft hooks check
 ```
 
-Get detailed information:
+Obter informações detalhadas:
 
 ```bash
 opencraft hooks info session-memory
@@ -74,43 +74,43 @@ opencraft hooks info session-memory
 
 ### Onboarding
 
-During onboarding (`opencraft onboard`), you'll be prompted to enable recommended hooks. The wizard automatically discovers eligible hooks and presents them for selection.
+Durante o onboarding (`opencraft onboard`), você será solicitado a habilitar hooks recomendados. O assistente automaticamente descobre hooks elegíveis e os apresenta para seleção.
 
-## Hook Discovery
+## Descoberta de Hooks
 
-Hooks are automatically discovered from three directories (in order of precedence):
+Hooks são automaticamente descobertos a partir de três diretórios (em ordem de precedência):
 
-1. **Workspace hooks**: `<workspace>/hooks/` (per-agent, highest precedence)
-2. **Managed hooks**: `~/.opencraft/hooks/` (user-installed, shared across workspaces)
-3. **Bundled hooks**: `<opencraft>/dist/hooks/bundled/` (shipped with OpenCraft)
+1. **Hooks do workspace**: `<workspace>/hooks/` (por agente, maior precedência)
+2. **Hooks gerenciados**: `~/.opencraft/hooks/` (instalados pelo usuário, compartilhados entre workspaces)
+3. **Hooks incluídos**: `<opencraft>/dist/hooks/bundled/` (enviados com o OpenCraft)
 
-Managed hook directories can be either a **single hook** or a **hook pack** (package directory).
+Diretórios de hooks gerenciados podem ser um **hook único** ou um **pacote de hooks** (diretório de pacote).
 
-Each hook is a directory containing:
+Cada hook é um diretório contendo:
 
 ```
 my-hook/
-├── HOOK.md          # Metadata + documentation
-└── handler.ts       # Handler implementation
+├── HOOK.md          # Metadados + documentação
+└── handler.ts       # Implementação do handler
 ```
 
-## Hook Packs (npm/archives)
+## Pacotes de Hooks (npm/arquivos)
 
-Hook packs are standard npm packages that export one or more hooks via `opencraft.hooks` in
-`package.json`. Install them with:
+Pacotes de hooks são pacotes npm padrão que exportam um ou mais hooks via `opencraft.hooks` no
+`package.json`. Instale-os com:
 
 ```bash
 opencraft hooks install <path-or-spec>
 ```
 
-Npm specs are registry-only (package name + optional exact version or dist-tag).
-Git/URL/file specs and semver ranges are rejected.
+Specs npm são somente do registro (nome do pacote + versão exata ou dist-tag opcional).
+Specs git/URL/arquivo e ranges semver são rejeitados.
 
-Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenCraft stops and asks you to opt in explicitly with a
-prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
+Specs simples e `@latest` permanecem na trilha estável. Se o npm resolver qualquer
+um deles para um prerelease, o OpenCraft para e pede que você opte explicitamente com uma
+tag prerelease como `@beta`/`@rc` ou uma versão prerelease exata.
 
-Example `package.json`:
+Exemplo `package.json`:
 
 ```json
 {
@@ -122,73 +122,73 @@ Example `package.json`:
 }
 ```
 
-Each entry points to a hook directory containing `HOOK.md` and `handler.ts` (or `index.ts`).
-Hook packs can ship dependencies; they will be installed under `~/.opencraft/hooks/<id>`.
-Each `opencraft.hooks` entry must stay inside the package directory after symlink
-resolution; entries that escape are rejected.
+Cada entrada aponta para um diretório de hook contendo `HOOK.md` e `handler.ts` (ou `index.ts`).
+Pacotes de hooks podem incluir dependências; elas serão instaladas em `~/.opencraft/hooks/<id>`.
+Cada entrada de `opencraft.hooks` deve permanecer dentro do diretório do pacote após resolução de
+symlink; entradas que escapam são rejeitadas.
 
-Security note: `opencraft hooks install` installs dependencies with `npm install --ignore-scripts`
-(no lifecycle scripts). Keep hook pack dependency trees "pure JS/TS" and avoid packages that rely
-on `postinstall` builds.
+Nota de segurança: `opencraft hooks install` instala dependências com `npm install --ignore-scripts`
+(sem scripts de ciclo de vida). Mantenha árvores de dependência de pacotes de hooks como "JS/TS puro" e evite pacotes que dependem
+de builds `postinstall`.
 
-## Hook Structure
+## Estrutura do Hook
 
-### HOOK.md Format
+### Formato do HOOK.md
 
-The `HOOK.md` file contains metadata in YAML frontmatter plus Markdown documentation:
+O arquivo `HOOK.md` contém metadados em frontmatter YAML mais documentação Markdown:
 
 ```markdown
 ---
 name: my-hook
-description: "Short description of what this hook does"
+description: "Descrição curta do que este hook faz"
 homepage: https://docs.opencraft.ai/automation/hooks#my-hook
 metadata:
   { "opencraft": { "emoji": "🔗", "events": ["command:new"], "requires": { "bins": ["node"] } } }
 ---
 
-# My Hook
+# Meu Hook
 
-Detailed documentation goes here...
+Documentação detalhada vai aqui...
 
-## What It Does
+## O que Ele Faz
 
-- Listens for `/new` commands
-- Performs some action
-- Logs the result
+- Escuta comandos `/new`
+- Executa alguma ação
+- Registra o resultado
 
-## Requirements
+## Requisitos
 
-- Node.js must be installed
+- Node.js deve estar instalado
 
-## Configuration
+## Configuração
 
-No configuration needed.
+Nenhuma configuração necessária.
 ```
 
-### Metadata Fields
+### Campos de Metadados
 
-The `metadata.opencraft` object supports:
+O objeto `metadata.opencraft` suporta:
 
-- **`emoji`**: Display emoji for CLI (e.g., `"💾"`)
-- **`events`**: Array of events to listen for (e.g., `["command:new", "command:reset"]`)
-- **`export`**: Named export to use (defaults to `"default"`)
-- **`homepage`**: Documentation URL
-- **`requires`**: Optional requirements
-  - **`bins`**: Required binaries on PATH (e.g., `["git", "node"]`)
-  - **`anyBins`**: At least one of these binaries must be present
-  - **`env`**: Required environment variables
-  - **`config`**: Required config paths (e.g., `["workspace.dir"]`)
-  - **`os`**: Required platforms (e.g., `["darwin", "linux"]`)
-- **`always`**: Bypass eligibility checks (boolean)
-- **`install`**: Installation methods (for bundled hooks: `[{"id":"bundled","kind":"bundled"}]`)
+- **`emoji`**: Emoji de exibição para CLI (ex., `"💾"`)
+- **`events`**: Array de eventos para escutar (ex., `["command:new", "command:reset"]`)
+- **`export`**: Export nomeado a ser usado (padrão `"default"`)
+- **`homepage`**: URL de documentação
+- **`requires`**: Requisitos opcionais
+  - **`bins`**: Binários necessários no PATH (ex., `["git", "node"]`)
+  - **`anyBins`**: Pelo menos um desses binários deve estar presente
+  - **`env`**: Variáveis de ambiente necessárias
+  - **`config`**: Caminhos de configuração necessários (ex., `["workspace.dir"]`)
+  - **`os`**: Plataformas necessárias (ex., `["darwin", "linux"]`)
+- **`always`**: Ignorar verificações de elegibilidade (booleano)
+- **`install`**: Métodos de instalação (para hooks incluídos: `[{"id":"bundled","kind":"bundled"}]`)
 
-### Handler Implementation
+### Implementação do Handler
 
-The `handler.ts` file exports a `HookHandler` function:
+O arquivo `handler.ts` exporta uma função `HookHandler`:
 
 ```typescript
 const myHandler = async (event) => {
-  // Only trigger on 'new' command
+  // Disparar apenas no comando 'new'
   if (event.type !== "command" || event.action !== "new") {
     return;
   }
@@ -197,37 +197,37 @@ const myHandler = async (event) => {
   console.log(`  Session: ${event.sessionKey}`);
   console.log(`  Timestamp: ${event.timestamp.toISOString()}`);
 
-  // Your custom logic here
+  // Sua lógica personalizada aqui
 
-  // Optionally send message to user
+  // Opcionalmente enviar mensagem ao usuário
   event.messages.push("✨ My hook executed!");
 };
 
 export default myHandler;
 ```
 
-#### Event Context
+#### Contexto do Evento
 
-Each event includes:
+Cada evento inclui:
 
 ```typescript
 {
   type: 'command' | 'session' | 'agent' | 'gateway' | 'message',
-  action: string,              // e.g., 'new', 'reset', 'stop', 'received', 'sent'
-  sessionKey: string,          // Session identifier
-  timestamp: Date,             // When the event occurred
-  messages: string[],          // Push messages here to send to user
+  action: string,              // ex., 'new', 'reset', 'stop', 'received', 'sent'
+  sessionKey: string,          // Identificador da sessão
+  timestamp: Date,             // Quando o evento ocorreu
+  messages: string[],          // Adicione mensagens aqui para enviar ao usuário
   context: {
-    // Command events:
+    // Eventos de comando:
     sessionEntry?: SessionEntry,
     sessionId?: string,
     sessionFile?: string,
-    commandSource?: string,    // e.g., 'whatsapp', 'telegram'
+    commandSource?: string,    // ex., 'whatsapp', 'telegram'
     senderId?: string,
     workspaceDir?: string,
     bootstrapFiles?: WorkspaceBootstrapFile[],
     cfg?: OpenCraftConfig,
-    // Message events (see Message Events section for full details):
+    // Eventos de mensagem (veja seção Eventos de Mensagem para detalhes completos):
     from?: string,             // message:received
     to?: string,               // message:sent
     content?: string,
@@ -237,60 +237,60 @@ Each event includes:
 }
 ```
 
-## Event Types
+## Tipos de Eventos
 
-### Command Events
+### Eventos de Comando
 
-Triggered when agent commands are issued:
+Disparados quando comandos do agente são emitidos:
 
-- **`command`**: All command events (general listener)
-- **`command:new`**: When `/new` command is issued
-- **`command:reset`**: When `/reset` command is issued
-- **`command:stop`**: When `/stop` command is issued
+- **`command`**: Todos os eventos de comando (listener geral)
+- **`command:new`**: Quando o comando `/new` é emitido
+- **`command:reset`**: Quando o comando `/reset` é emitido
+- **`command:stop`**: Quando o comando `/stop` é emitido
 
-### Session Events
+### Eventos de Sessão
 
-- **`session:compact:before`**: Right before compaction summarizes history
-- **`session:compact:after`**: After compaction completes with summary metadata
+- **`session:compact:before`**: Logo antes da compactação resumir o histórico
+- **`session:compact:after`**: Após a compactação completar com metadados de resumo
 
-Internal hook payloads emit these as `type: "session"` with `action: "compact:before"` / `action: "compact:after"`; listeners subscribe with the combined keys above.
-Specific handler registration uses the literal key format `${type}:${action}`. For these events, register `session:compact:before` and `session:compact:after`.
+Payloads internos de hook emitem estes como `type: "session"` com `action: "compact:before"` / `action: "compact:after"`; listeners assinam com as chaves combinadas acima.
+Registro específico de handler usa o formato literal de chave `${type}:${action}`. Para estes eventos, registre `session:compact:before` e `session:compact:after`.
 
-### Agent Events
+### Eventos de Agente
 
-- **`agent:bootstrap`**: Before workspace bootstrap files are injected (hooks may mutate `context.bootstrapFiles`)
+- **`agent:bootstrap`**: Antes dos arquivos de bootstrap do workspace serem injetados (hooks podem mutar `context.bootstrapFiles`)
 
-### Gateway Events
+### Eventos do Gateway
 
-Triggered when the gateway starts:
+Disparados quando o Gateway inicia:
 
-- **`gateway:startup`**: After channels start and hooks are loaded
+- **`gateway:startup`**: Após canais iniciarem e hooks serem carregados
 
-### Message Events
+### Eventos de Mensagem
 
-Triggered when messages are received or sent:
+Disparados quando mensagens são recebidas ou enviadas:
 
-- **`message`**: All message events (general listener)
-- **`message:received`**: When an inbound message is received from any channel. Fires early in processing before media understanding. Content may contain raw placeholders like `<media:audio>` for media attachments that haven't been processed yet.
-- **`message:transcribed`**: When a message has been fully processed, including audio transcription and link understanding. At this point, `transcript` contains the full transcript text for audio messages. Use this hook when you need access to transcribed audio content.
-- **`message:preprocessed`**: Fires for every message after all media + link understanding completes, giving hooks access to the fully enriched body (transcripts, image descriptions, link summaries) before the agent sees it.
-- **`message:sent`**: When an outbound message is successfully sent
+- **`message`**: Todos os eventos de mensagem (listener geral)
+- **`message:received`**: Quando uma mensagem de entrada é recebida de qualquer canal. Dispara cedo no processamento antes da compreensão de mídia. O conteúdo pode conter placeholders brutos como `<media:audio>` para anexos de mídia que ainda não foram processados.
+- **`message:transcribed`**: Quando uma mensagem foi totalmente processada, incluindo transcrição de áudio e compreensão de link. Neste ponto, `transcript` contém o texto completo da transcrição para mensagens de áudio. Use este hook quando você precisa de acesso ao conteúdo de áudio transcrito.
+- **`message:preprocessed`**: Dispara para toda mensagem após toda compreensão de mídia + link completar, dando aos hooks acesso ao corpo totalmente enriquecido (transcrições, descrições de imagem, resumos de link) antes do agente ver.
+- **`message:sent`**: Quando uma mensagem de saída é enviada com sucesso
 
-#### Message Event Context
+#### Contexto de Evento de Mensagem
 
-Message events include rich context about the message:
+Eventos de mensagem incluem contexto rico sobre a mensagem:
 
 ```typescript
-// message:received context
+// contexto message:received
 {
-  from: string,           // Sender identifier (phone number, user ID, etc.)
-  content: string,        // Message content
-  timestamp?: number,     // Unix timestamp when received
-  channelId: string,      // Channel (e.g., "whatsapp", "telegram", "discord")
-  accountId?: string,     // Provider account ID for multi-account setups
-  conversationId?: string, // Chat/conversation ID
-  messageId?: string,     // Message ID from the provider
-  metadata?: {            // Additional provider-specific data
+  from: string,           // Identificador do remetente (número de telefone, ID do usuário, etc.)
+  content: string,        // Conteúdo da mensagem
+  timestamp?: number,     // Timestamp Unix quando recebida
+  channelId: string,      // Canal (ex., "whatsapp", "telegram", "discord")
+  accountId?: string,     // ID da conta do provedor para configurações multi-conta
+  conversationId?: string, // ID do chat/conversa
+  messageId?: string,     // ID da mensagem do provedor
+  metadata?: {            // Dados adicionais específicos do provedor
     to?: string,
     provider?: string,
     surface?: string,
@@ -302,36 +302,36 @@ Message events include rich context about the message:
   }
 }
 
-// message:sent context
+// contexto message:sent
 {
-  to: string,             // Recipient identifier
-  content: string,        // Message content that was sent
-  success: boolean,       // Whether the send succeeded
-  error?: string,         // Error message if sending failed
-  channelId: string,      // Channel (e.g., "whatsapp", "telegram", "discord")
-  accountId?: string,     // Provider account ID
-  conversationId?: string, // Chat/conversation ID
-  messageId?: string,     // Message ID returned by the provider
-  isGroup?: boolean,      // Whether this outbound message belongs to a group/channel context
-  groupId?: string,       // Group/channel identifier for correlation with message:received
+  to: string,             // Identificador do destinatário
+  content: string,        // Conteúdo da mensagem que foi enviada
+  success: boolean,       // Se o envio teve sucesso
+  error?: string,         // Mensagem de erro se o envio falhou
+  channelId: string,      // Canal (ex., "whatsapp", "telegram", "discord")
+  accountId?: string,     // ID da conta do provedor
+  conversationId?: string, // ID do chat/conversa
+  messageId?: string,     // ID da mensagem retornado pelo provedor
+  isGroup?: boolean,      // Se esta mensagem de saída pertence a um contexto de grupo/canal
+  groupId?: string,       // Identificador do grupo/canal para correlação com message:received
 }
 
-// message:transcribed context
+// contexto message:transcribed
 {
-  body?: string,          // Raw inbound body before enrichment
-  bodyForAgent?: string,  // Enriched body visible to the agent
-  transcript: string,     // Audio transcript text
-  channelId: string,      // Channel (e.g., "telegram", "whatsapp")
+  body?: string,          // Corpo bruto de entrada antes do enriquecimento
+  bodyForAgent?: string,  // Corpo enriquecido visível ao agente
+  transcript: string,     // Texto da transcrição de áudio
+  channelId: string,      // Canal (ex., "telegram", "whatsapp")
   conversationId?: string,
   messageId?: string,
 }
 
-// message:preprocessed context
+// contexto message:preprocessed
 {
-  body?: string,          // Raw inbound body
-  bodyForAgent?: string,  // Final enriched body after media/link understanding
-  transcript?: string,    // Transcript when audio was present
-  channelId: string,      // Channel (e.g., "telegram", "whatsapp")
+  body?: string,          // Corpo bruto de entrada
+  bodyForAgent?: string,  // Corpo final enriquecido após compreensão de mídia/link
+  transcript?: string,    // Transcrição quando áudio estava presente
+  channelId: string,      // Canal (ex., "telegram", "whatsapp")
   conversationId?: string,
   messageId?: string,
   isGroup?: boolean,
@@ -339,7 +339,7 @@ Message events include rich context about the message:
 }
 ```
 
-#### Example: Message Logger Hook
+#### Exemplo: Hook Logger de Mensagens
 
 ```typescript
 const isMessageReceivedEvent = (event: { type: string; action: string }) =>
@@ -358,56 +358,56 @@ const handler = async (event) => {
 export default handler;
 ```
 
-### Tool Result Hooks (Plugin API)
+### Hooks de Resultado de Ferramenta (API de Plugin)
 
-These hooks are not event-stream listeners; they let plugins synchronously adjust tool results before OpenCraft persists them.
+Estes hooks não são listeners de fluxo de eventos; eles permitem que Plugins ajustem sincronamente resultados de ferramentas antes do OpenCraft persisti-los.
 
-- **`tool_result_persist`**: transform tool results before they are written to the session transcript. Must be synchronous; return the updated tool result payload or `undefined` to keep it as-is. See [Agent Loop](/concepts/agent-loop).
+- **`tool_result_persist`**: transforma resultados de ferramentas antes de serem escritos na transcrição da sessão. Deve ser síncrono; retorne o payload atualizado do resultado da ferramenta ou `undefined` para mantê-lo como está. Veja [Agent Loop](/concepts/agent-loop).
 
-### Plugin Hook Events
+### Eventos de Hook de Plugin
 
-Compaction lifecycle hooks exposed through the plugin hook runner:
+Hooks de ciclo de vida de compactação expostos através do executor de hooks de Plugin:
 
-- **`before_compaction`**: Runs before compaction with count/token metadata
-- **`after_compaction`**: Runs after compaction with compaction summary metadata
+- **`before_compaction`**: Executa antes da compactação com metadados de contagem/Token
+- **`after_compaction`**: Executa após a compactação com metadados de resumo da compactação
 
-### Future Events
+### Eventos Futuros
 
-Planned event types:
+Tipos de eventos planejados:
 
-- **`session:start`**: When a new session begins
-- **`session:end`**: When a session ends
-- **`agent:error`**: When an agent encounters an error
+- **`session:start`**: Quando uma nova sessão começa
+- **`session:end`**: Quando uma sessão termina
+- **`agent:error`**: Quando um agente encontra um erro
 
-## Creating Custom Hooks
+## Criando Hooks Personalizados
 
-### 1. Choose Location
+### 1. Escolha a Localização
 
-- **Workspace hooks** (`<workspace>/hooks/`): Per-agent, highest precedence
-- **Managed hooks** (`~/.opencraft/hooks/`): Shared across workspaces
+- **Hooks do workspace** (`<workspace>/hooks/`): Por agente, maior precedência
+- **Hooks gerenciados** (`~/.opencraft/hooks/`): Compartilhados entre workspaces
 
-### 2. Create Directory Structure
+### 2. Crie a Estrutura de Diretórios
 
 ```bash
 mkdir -p ~/.opencraft/hooks/my-hook
 cd ~/.opencraft/hooks/my-hook
 ```
 
-### 3. Create HOOK.md
+### 3. Crie o HOOK.md
 
 ```markdown
 ---
 name: my-hook
-description: "Does something useful"
+description: "Faz algo útil"
 metadata: { "opencraft": { "emoji": "🎯", "events": ["command:new"] } }
 ---
 
-# My Custom Hook
+# Meu Hook Personalizado
 
-This hook does something useful when you issue `/new`.
+Este hook faz algo útil quando você emite `/new`.
 ```
 
-### 4. Create handler.ts
+### 4. Crie o handler.ts
 
 ```typescript
 const handler = async (event) => {
@@ -416,30 +416,30 @@ const handler = async (event) => {
   }
 
   console.log("[my-hook] Running!");
-  // Your logic here
+  // Sua lógica aqui
 };
 
 export default handler;
 ```
 
-### 5. Enable and Test
+### 5. Habilite e Teste
 
 ```bash
-# Verify hook is discovered
+# Verifique se o hook é descoberto
 opencraft hooks list
 
-# Enable it
+# Habilite-o
 opencraft hooks enable my-hook
 
-# Restart your gateway process (menu bar app restart on macOS, or restart your dev process)
+# Reinicie o processo do Gateway (reiniciar app da barra de menu no macOS, ou reiniciar o processo de dev)
 
-# Trigger the event
-# Send /new via your messaging channel
+# Dispare o evento
+# Envie /new via seu canal de mensagens
 ```
 
-## Configuration
+## Configuração
 
-### New Config Format (Recommended)
+### Novo Formato de Configuração (Recomendado)
 
 ```json
 {
@@ -455,9 +455,9 @@ opencraft hooks enable my-hook
 }
 ```
 
-### Per-Hook Configuration
+### Configuração por Hook
 
-Hooks can have custom configuration:
+Hooks podem ter configuração personalizada:
 
 ```json
 {
@@ -477,9 +477,9 @@ Hooks can have custom configuration:
 }
 ```
 
-### Extra Directories
+### Diretórios Extras
 
-Load hooks from additional directories:
+Carregar hooks de diretórios adicionais:
 
 ```json
 {
@@ -494,9 +494,9 @@ Load hooks from additional directories:
 }
 ```
 
-### Legacy Config Format (Still Supported)
+### Formato de Configuração Legado (Ainda Suportado)
 
-The old config format still works for backwards compatibility:
+O formato de configuração antigo ainda funciona para compatibilidade retroativa:
 
 ```json
 {
@@ -515,78 +515,78 @@ The old config format still works for backwards compatibility:
 }
 ```
 
-Note: `module` must be a workspace-relative path. Absolute paths and traversal outside the workspace are rejected.
+Nota: `module` deve ser um caminho relativo ao workspace. Caminhos absolutos e travessia fora do workspace são rejeitados.
 
-**Migration**: Use the new discovery-based system for new hooks. Legacy handlers are loaded after directory-based hooks.
+**Migração**: Use o novo sistema baseado em descoberta para novos hooks. Handlers legados são carregados após hooks baseados em diretório.
 
-## CLI Commands
+## Comandos CLI
 
-### List Hooks
+### Listar Hooks
 
 ```bash
-# List all hooks
+# Listar todos os hooks
 opencraft hooks list
 
-# Show only eligible hooks
+# Mostrar apenas hooks elegíveis
 opencraft hooks list --eligible
 
-# Verbose output (show missing requirements)
+# Saída verbosa (mostrar requisitos ausentes)
 opencraft hooks list --verbose
 
-# JSON output
+# Saída JSON
 opencraft hooks list --json
 ```
 
-### Hook Information
+### Informações do Hook
 
 ```bash
-# Show detailed info about a hook
+# Mostrar informações detalhadas sobre um hook
 opencraft hooks info session-memory
 
-# JSON output
+# Saída JSON
 opencraft hooks info session-memory --json
 ```
 
-### Check Eligibility
+### Verificar Elegibilidade
 
 ```bash
-# Show eligibility summary
+# Mostrar resumo de elegibilidade
 opencraft hooks check
 
-# JSON output
+# Saída JSON
 opencraft hooks check --json
 ```
 
-### Enable/Disable
+### Habilitar/Desabilitar
 
 ```bash
-# Enable a hook
+# Habilitar um hook
 opencraft hooks enable session-memory
 
-# Disable a hook
+# Desabilitar um hook
 opencraft hooks disable command-logger
 ```
 
-## Bundled hook reference
+## Referência de hooks incluídos
 
 ### session-memory
 
-Saves session context to memory when you issue `/new`.
+Salva contexto de sessão na memória quando você emite `/new`.
 
-**Events**: `command:new`
+**Eventos**: `command:new`
 
-**Requirements**: `workspace.dir` must be configured
+**Requisitos**: `workspace.dir` deve estar configurado
 
-**Output**: `<workspace>/memory/YYYY-MM-DD-slug.md` (defaults to `~/.opencraft/workspace`)
+**Saída**: `<workspace>/memory/YYYY-MM-DD-slug.md` (padrão `~/.opencraft/workspace`)
 
-**What it does**:
+**O que faz**:
 
-1. Uses the pre-reset session entry to locate the correct transcript
-2. Extracts the last 15 lines of conversation
-3. Uses LLM to generate a descriptive filename slug
-4. Saves session metadata to a dated memory file
+1. Usa a entrada de sessão pré-reset para localizar a transcrição correta
+2. Extrai as últimas 15 linhas de conversa
+3. Usa LLM para gerar um slug de nome de arquivo descritivo
+4. Salva metadados da sessão em um arquivo de memória datado
 
-**Example output**:
+**Exemplo de saída**:
 
 ```markdown
 # Session: 2026-01-16 14:30:00 UTC
@@ -596,13 +596,13 @@ Saves session context to memory when you issue `/new`.
 - **Source**: telegram
 ```
 
-**Filename examples**:
+**Exemplos de nome de arquivo**:
 
 - `2026-01-16-vendor-pitch.md`
 - `2026-01-16-api-design.md`
-- `2026-01-16-1430.md` (fallback timestamp if slug generation fails)
+- `2026-01-16-1430.md` (timestamp de fallback se geração de slug falhar)
 
-**Enable**:
+**Habilitar**:
 
 ```bash
 opencraft hooks enable session-memory
@@ -610,15 +610,15 @@ opencraft hooks enable session-memory
 
 ### bootstrap-extra-files
 
-Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TOOLS.md`) during `agent:bootstrap`.
+Injeta arquivos de bootstrap adicionais (por exemplo `AGENTS.md` / `TOOLS.md` locais de monorepo) durante `agent:bootstrap`.
 
-**Events**: `agent:bootstrap`
+**Eventos**: `agent:bootstrap`
 
-**Requirements**: `workspace.dir` must be configured
+**Requisitos**: `workspace.dir` deve estar configurado
 
-**Output**: No files written; bootstrap context is modified in-memory only.
+**Saída**: Nenhum arquivo escrito; contexto de bootstrap é modificado somente em memória.
 
-**Config**:
+**Configuração**:
 
 ```json
 {
@@ -636,14 +636,14 @@ Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TO
 }
 ```
 
-**Notes**:
+**Notas**:
 
-- Paths are resolved relative to workspace.
-- Files must stay inside workspace (realpath-checked).
-- Only recognized bootstrap basenames are loaded.
-- Subagent allowlist is preserved (`AGENTS.md` and `TOOLS.md` only).
+- Caminhos são resolvidos relativos ao workspace.
+- Arquivos devem permanecer dentro do workspace (verificação de realpath).
+- Apenas nomes base de bootstrap reconhecidos são carregados.
+- A lista de permissão de subagentes é preservada (somente `AGENTS.md` e `TOOLS.md`).
 
-**Enable**:
+**Habilitar**:
 
 ```bash
 opencraft hooks enable bootstrap-extra-files
@@ -651,41 +651,41 @@ opencraft hooks enable bootstrap-extra-files
 
 ### command-logger
 
-Logs all command events to a centralized audit file.
+Registra todos os eventos de comando em um arquivo de auditoria centralizado.
 
-**Events**: `command`
+**Eventos**: `command`
 
-**Requirements**: None
+**Requisitos**: Nenhum
 
-**Output**: `~/.opencraft/logs/commands.log`
+**Saída**: `~/.opencraft/logs/commands.log`
 
-**What it does**:
+**O que faz**:
 
-1. Captures event details (command action, timestamp, session key, sender ID, source)
-2. Appends to log file in JSONL format
-3. Runs silently in the background
+1. Captura detalhes do evento (ação do comando, timestamp, chave de sessão, ID do remetente, origem)
+2. Adiciona ao arquivo de log no formato JSONL
+3. Executa silenciosamente em segundo plano
 
-**Example log entries**:
+**Exemplos de entradas de log**:
 
 ```jsonl
 {"timestamp":"2026-01-16T14:30:00.000Z","action":"new","sessionKey":"agent:main:main","senderId":"+1234567890","source":"telegram"}
 {"timestamp":"2026-01-16T15:45:22.000Z","action":"stop","sessionKey":"agent:main:main","senderId":"user@example.com","source":"whatsapp"}
 ```
 
-**View logs**:
+**Visualizar logs**:
 
 ```bash
-# View recent commands
+# Ver comandos recentes
 tail -n 20 ~/.opencraft/logs/commands.log
 
-# Pretty-print with jq
+# Imprimir formatado com jq
 cat ~/.opencraft/logs/commands.log | jq .
 
-# Filter by action
+# Filtrar por ação
 grep '"action":"new"' ~/.opencraft/logs/commands.log | jq .
 ```
 
-**Enable**:
+**Habilitar**:
 
 ```bash
 opencraft hooks enable command-logger
@@ -693,47 +693,47 @@ opencraft hooks enable command-logger
 
 ### boot-md
 
-Runs `BOOT.md` when the gateway starts (after channels start).
-Internal hooks must be enabled for this to run.
+Executa `BOOT.md` quando o Gateway inicia (após canais iniciarem).
+Hooks internos devem estar habilitados para que isso execute.
 
-**Events**: `gateway:startup`
+**Eventos**: `gateway:startup`
 
-**Requirements**: `workspace.dir` must be configured
+**Requisitos**: `workspace.dir` deve estar configurado
 
-**What it does**:
+**O que faz**:
 
-1. Reads `BOOT.md` from your workspace
-2. Runs the instructions via the agent runner
-3. Sends any requested outbound messages via the message tool
+1. Lê `BOOT.md` do seu workspace
+2. Executa as instruções via o executor de agente
+3. Envia quaisquer mensagens de saída solicitadas via a ferramenta de mensagem
 
-**Enable**:
+**Habilitar**:
 
 ```bash
 opencraft hooks enable boot-md
 ```
 
-## Best Practices
+## Boas Práticas
 
-### Keep Handlers Fast
+### Mantenha Handlers Rápidos
 
-Hooks run during command processing. Keep them lightweight:
+Hooks executam durante o processamento de comandos. Mantenha-os leves:
 
 ```typescript
-// ✓ Good - async work, returns immediately
+// ✓ Bom - trabalho assíncrono, retorna imediatamente
 const handler: HookHandler = async (event) => {
-  void processInBackground(event); // Fire and forget
+  void processInBackground(event); // Disparar e esquecer
 };
 
-// ✗ Bad - blocks command processing
+// ✗ Ruim - bloqueia processamento de comandos
 const handler: HookHandler = async (event) => {
   await slowDatabaseQuery(event);
   await evenSlowerAPICall(event);
 };
 ```
 
-### Handle Errors Gracefully
+### Trate Erros com Elegância
 
-Always wrap risky operations:
+Sempre envolva operações arriscadas:
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -741,45 +741,45 @@ const handler: HookHandler = async (event) => {
     await riskyOperation(event);
   } catch (err) {
     console.error("[my-handler] Failed:", err instanceof Error ? err.message : String(err));
-    // Don't throw - let other handlers run
+    // Não lance - deixe outros handlers executarem
   }
 };
 ```
 
-### Filter Events Early
+### Filtre Eventos Cedo
 
-Return early if the event isn't relevant:
+Retorne cedo se o evento não é relevante:
 
 ```typescript
 const handler: HookHandler = async (event) => {
-  // Only handle 'new' commands
+  // Tratar apenas comandos 'new'
   if (event.type !== "command" || event.action !== "new") {
     return;
   }
 
-  // Your logic here
+  // Sua lógica aqui
 };
 ```
 
-### Use Specific Event Keys
+### Use Chaves de Evento Específicas
 
-Specify exact events in metadata when possible:
-
-```yaml
-metadata: { "opencraft": { "events": ["command:new"] } } # Specific
-```
-
-Rather than:
+Especifique eventos exatos nos metadados quando possível:
 
 ```yaml
-metadata: { "opencraft": { "events": ["command"] } } # General - more overhead
+metadata: { "opencraft": { "events": ["command:new"] } } # Específico
 ```
 
-## Debugging
+Em vez de:
 
-### Enable Hook Logging
+```yaml
+metadata: { "opencraft": { "events": ["command"] } } # Geral - mais overhead
+```
 
-The gateway logs hook loading at startup:
+## Depuração
+
+### Habilitar Logging de Hook
+
+O Gateway registra o carregamento de hooks na inicialização:
 
 ```
 Registered hook: session-memory -> command:new
@@ -788,52 +788,52 @@ Registered hook: command-logger -> command
 Registered hook: boot-md -> gateway:startup
 ```
 
-### Check Discovery
+### Verificar Descoberta
 
-List all discovered hooks:
+Listar todos os hooks descobertos:
 
 ```bash
 opencraft hooks list --verbose
 ```
 
-### Check Registration
+### Verificar Registro
 
-In your handler, log when it's called:
+No seu handler, registre quando é chamado:
 
 ```typescript
 const handler: HookHandler = async (event) => {
   console.log("[my-handler] Triggered:", event.type, event.action);
-  // Your logic
+  // Sua lógica
 };
 ```
 
-### Verify Eligibility
+### Verificar Elegibilidade
 
-Check why a hook isn't eligible:
+Verifique por que um hook não é elegível:
 
 ```bash
 opencraft hooks info my-hook
 ```
 
-Look for missing requirements in the output.
+Procure por requisitos ausentes na saída.
 
-## Testing
+## Testes
 
-### Gateway Logs
+### Logs do Gateway
 
-Monitor gateway logs to see hook execution:
+Monitore logs do Gateway para ver execução de hooks:
 
 ```bash
 # macOS
 ./scripts/clawlog.sh -f
 
-# Other platforms
+# Outras plataformas
 tail -f ~/.opencraft/gateway.log
 ```
 
-### Test Hooks Directly
+### Testar Hooks Diretamente
 
-Test your handlers in isolation:
+Teste seus handlers isoladamente:
 
 ```typescript
 import { test } from "vitest";
@@ -851,126 +851,126 @@ test("my handler works", async () => {
 
   await myHandler(event);
 
-  // Assert side effects
+  // Verificar efeitos colaterais
 });
 ```
 
-## Architecture
+## Arquitetura
 
-### Core Components
+### Componentes Principais
 
-- **`src/hooks/types.ts`**: Type definitions
-- **`src/hooks/workspace.ts`**: Directory scanning and loading
-- **`src/hooks/frontmatter.ts`**: HOOK.md metadata parsing
-- **`src/hooks/config.ts`**: Eligibility checking
-- **`src/hooks/hooks-status.ts`**: Status reporting
-- **`src/hooks/loader.ts`**: Dynamic module loader
-- **`src/cli/hooks-cli.ts`**: CLI commands
-- **`src/gateway/server-startup.ts`**: Loads hooks at gateway start
-- **`src/auto-reply/reply/commands-core.ts`**: Triggers command events
+- **`src/hooks/types.ts`**: Definições de tipos
+- **`src/hooks/workspace.ts`**: Escaneamento e carregamento de diretórios
+- **`src/hooks/frontmatter.ts`**: Parsing de metadados do HOOK.md
+- **`src/hooks/config.ts`**: Verificação de elegibilidade
+- **`src/hooks/hooks-status.ts`**: Reporte de status
+- **`src/hooks/loader.ts`**: Carregador dinâmico de módulos
+- **`src/cli/hooks-cli.ts`**: Comandos CLI
+- **`src/gateway/server-startup.ts`**: Carrega hooks na inicialização do Gateway
+- **`src/auto-reply/reply/commands-core.ts`**: Dispara eventos de comando
 
-### Discovery Flow
-
-```
-Gateway startup
-    ↓
-Scan directories (workspace → managed → bundled)
-    ↓
-Parse HOOK.md files
-    ↓
-Check eligibility (bins, env, config, os)
-    ↓
-Load handlers from eligible hooks
-    ↓
-Register handlers for events
-```
-
-### Event Flow
+### Fluxo de Descoberta
 
 ```
-User sends /new
+Inicialização do Gateway
     ↓
-Command validation
+Escanear diretórios (workspace → gerenciados → incluídos)
     ↓
-Create hook event
+Analisar arquivos HOOK.md
     ↓
-Trigger hook (all registered handlers)
+Verificar elegibilidade (bins, env, config, os)
     ↓
-Command processing continues
+Carregar handlers de hooks elegíveis
     ↓
-Session reset
+Registrar handlers para eventos
 ```
 
-## Troubleshooting
+### Fluxo de Eventos
 
-### Hook Not Discovered
+```
+Usuário envia /new
+    ↓
+Validação de comando
+    ↓
+Criar evento de hook
+    ↓
+Disparar hook (todos os handlers registrados)
+    ↓
+Processamento de comando continua
+    ↓
+Reset de sessão
+```
 
-1. Check directory structure:
+## Solução de Problemas
+
+### Hook Não Descoberto
+
+1. Verifique a estrutura de diretórios:
 
    ```bash
    ls -la ~/.opencraft/hooks/my-hook/
-   # Should show: HOOK.md, handler.ts
+   # Deve mostrar: HOOK.md, handler.ts
    ```
 
-2. Verify HOOK.md format:
+2. Verifique o formato do HOOK.md:
 
    ```bash
    cat ~/.opencraft/hooks/my-hook/HOOK.md
-   # Should have YAML frontmatter with name and metadata
+   # Deve ter frontmatter YAML com name e metadata
    ```
 
-3. List all discovered hooks:
+3. Liste todos os hooks descobertos:
 
    ```bash
    opencraft hooks list
    ```
 
-### Hook Not Eligible
+### Hook Não Elegível
 
-Check requirements:
+Verifique requisitos:
 
 ```bash
 opencraft hooks info my-hook
 ```
 
-Look for missing:
+Procure por:
 
-- Binaries (check PATH)
-- Environment variables
-- Config values
-- OS compatibility
+- Binários ausentes (verifique PATH)
+- Variáveis de ambiente
+- Valores de configuração
+- Compatibilidade de SO
 
-### Hook Not Executing
+### Hook Não Executando
 
-1. Verify hook is enabled:
+1. Verifique se o hook está habilitado:
 
    ```bash
    opencraft hooks list
-   # Should show ✓ next to enabled hooks
+   # Deve mostrar ✓ ao lado dos hooks habilitados
    ```
 
-2. Restart your gateway process so hooks reload.
+2. Reinicie o processo do Gateway para que os hooks recarreguem.
 
-3. Check gateway logs for errors:
+3. Verifique logs do Gateway para erros:
 
    ```bash
    ./scripts/clawlog.sh | grep hook
    ```
 
-### Handler Errors
+### Erros do Handler
 
-Check for TypeScript/import errors:
+Verifique erros de TypeScript/import:
 
 ```bash
-# Test import directly
+# Testar import diretamente
 node -e "import('./path/to/handler.ts').then(console.log)"
 ```
 
-## Migration Guide
+## Guia de Migração
 
-### From Legacy Config to Discovery
+### De Configuração Legada para Descoberta
 
-**Before**:
+**Antes**:
 
 ```json
 {
@@ -988,30 +988,30 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 }
 ```
 
-**After**:
+**Depois**:
 
-1. Create hook directory:
+1. Crie o diretório do hook:
 
    ```bash
    mkdir -p ~/.opencraft/hooks/my-hook
    mv ./hooks/handlers/my-handler.ts ~/.opencraft/hooks/my-hook/handler.ts
    ```
 
-2. Create HOOK.md:
+2. Crie o HOOK.md:
 
    ```markdown
    ---
    name: my-hook
-   description: "My custom hook"
+   description: "Meu hook personalizado"
    metadata: { "opencraft": { "emoji": "🎯", "events": ["command:new"] } }
    ---
 
-   # My Hook
+   # Meu Hook
 
-   Does something useful.
+   Faz algo útil.
    ```
 
-3. Update config:
+3. Atualize a configuração:
 
    ```json
    {
@@ -1026,24 +1026,24 @@ node -e "import('./path/to/handler.ts').then(console.log)"
    }
    ```
 
-4. Verify and restart your gateway process:
+4. Verifique e reinicie o processo do Gateway:
 
    ```bash
    opencraft hooks list
-   # Should show: 🎯 my-hook ✓
+   # Deve mostrar: 🎯 my-hook ✓
    ```
 
-**Benefits of migration**:
+**Benefícios da migração**:
 
-- Automatic discovery
-- CLI management
-- Eligibility checking
-- Better documentation
-- Consistent structure
+- Descoberta automática
+- Gerenciamento via CLI
+- Verificação de elegibilidade
+- Melhor documentação
+- Estrutura consistente
 
-## See Also
+## Veja Também
 
-- [CLI Reference: hooks](/cli/hooks)
-- [Bundled Hooks README](https://github.com/editzffaleta/OpenCraft/tree/main/src/hooks/bundled)
+- [Referência CLI: hooks](/cli/hooks)
+- [README dos Hooks Incluídos](https://github.com/editzffaleta/OpenCraft/tree/main/src/hooks/bundled)
 - [Webhook Hooks](/automation/webhook)
-- [Configuration](/gateway/configuration#hooks)
+- [Configuração](/gateway/configuration#hooks)

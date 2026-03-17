@@ -1,16 +1,14 @@
 ---
-summary: "Integrated Tailscale Serve/Funnel for the Gateway dashboard"
+summary: "Tailscale Serve/Funnel integrado para o dashboard do Gateway"
 read_when:
-  - Exposing the Gateway Control UI outside localhost
-  - Automating tailnet or public dashboard access
+  - Expondo a Control UI do Gateway fora do localhost
+  - Automatizando acesso ao dashboard via tailnet ou público
 title: "Tailscale"
 ---
 
-# Tailscale (Gateway dashboard)
+# Tailscale (dashboard do Gateway)
 
-OpenCraft can auto-configure Tailscale **Serve** (tailnet) or **Funnel** (public) for the
-Gateway dashboard and WebSocket port. This keeps the Gateway bound to loopback while
-Tailscale provides HTTPS, routing, and (for Serve) identity headers.
+OpenCraft pode auto-configurar Tailscale **Serve** (tailnet) ou **Funnel** (público) para o dashboard do Gateway e porta WebSocket. Isso mantém o Gateway vinculado a loopback enquanto Tailscale fornece HTTPS, roteamento e (para Serve) headers de identidade.
 
 ## Modes
 

@@ -1,16 +1,16 @@
 ---
-summary: "OpenCraft CLI reference for `opencraft` commands, subcommands, and options"
+summary: "Referência CLI do OpenCraft para comandos `opencraft`, subcomandos e opções"
 read_when:
-  - Adding or modifying CLI commands or options
-  - Documenting new command surfaces
-title: "CLI Reference"
+  - Adicionando ou modificando comandos ou opções da CLI
+  - Documentando novas superfícies de comando
+title: "Referência CLI"
 ---
 
-# CLI reference
+# Referência CLI
 
-This page describes the current CLI behavior. If commands change, update this doc.
+Esta página descreve o comportamento atual da CLI. Se os comandos mudarem, atualize esta documentação.
 
-## Command pages
+## Páginas de comandos
 
 - [`setup`](/cli/setup)
 - [`onboard`](/cli/onboard)
@@ -50,50 +50,50 @@ This page describes the current CLI behavior. If commands change, update this do
 - [`webhooks`](/cli/webhooks)
 - [`pairing`](/cli/pairing)
 - [`qr`](/cli/qr)
-- [`plugins`](/cli/plugins) (plugin commands)
+- [`plugins`](/cli/plugins) (comandos de plugin)
 - [`channels`](/cli/channels)
 - [`security`](/cli/security)
 - [`secrets`](/cli/secrets)
 - [`skills`](/cli/skills)
-- [`daemon`](/cli/daemon) (legacy alias for gateway service commands)
-- [`clawbot`](/cli/clawbot) (legacy alias namespace)
-- [`voicecall`](/cli/voicecall) (plugin; if installed)
+- [`daemon`](/cli/daemon) (alias legado para comandos de serviço do gateway)
+- [`clawbot`](/cli/clawbot) (namespace de alias legado)
+- [`voicecall`](/cli/voicecall) (plugin; se instalado)
 
-## Global flags
+## Flags globais
 
-- `--dev`: isolate state under `~/.opencraft-dev` and shift default ports.
-- `--profile <name>`: isolate state under `~/.opencraft-<name>`.
-- `--no-color`: disable ANSI colors.
-- `--update`: shorthand for `opencraft update` (source installs only).
-- `-V`, `--version`, `-v`: print version and exit.
+- `--dev`: isolar estado sob `~/.opencraft-dev` e deslocar portas padrão.
+- `--profile <nome>`: isolar estado sob `~/.opencraft-<nome>`.
+- `--no-color`: desabilitar cores ANSI.
+- `--update`: atalho para `opencraft update` (apenas instalações por fonte).
+- `-V`, `--version`, `-v`: imprimir versão e sair.
 
-## Output styling
+## Estilo de saída
 
-- ANSI colors and progress indicators only render in TTY sessions.
-- OSC-8 hyperlinks render as clickable links in supported terminals; otherwise we fall back to plain URLs.
-- `--json` (and `--plain` where supported) disables styling for clean output.
-- `--no-color` disables ANSI styling; `NO_COLOR=1` is also respected.
-- Long-running commands show a progress indicator (OSC 9;4 when supported).
+- Cores ANSI e indicadores de progresso só são renderizados em sessões TTY.
+- Hyperlinks OSC-8 são renderizados como links clicáveis em terminais suportados; caso contrário, recorremos a URLs em texto plano.
+- `--json` (e `--plain` quando suportado) desabilita estilo para saída limpa.
+- `--no-color` desabilita estilo ANSI; `NO_COLOR=1` também é respeitado.
+- Comandos de longa duração mostram um indicador de progresso (OSC 9;4 quando suportado).
 
-## Color palette
+## Paleta de cores
 
-OpenCraft uses a lobster palette for CLI output.
+O OpenCraft usa uma paleta lobster para saída da CLI.
 
-- `accent` (#FF5A2D): headings, labels, primary highlights.
-- `accentBright` (#FF7A3D): command names, emphasis.
-- `accentDim` (#D14A22): secondary highlight text.
-- `info` (#FF8A5B): informational values.
-- `success` (#2FBF71): success states.
-- `warn` (#FFB020): warnings, fallbacks, attention.
-- `error` (#E23D2D): errors, failures.
-- `muted` (#8B7F77): de-emphasis, metadata.
+- `accent` (#FF5A2D): títulos, rótulos, destaques primários.
+- `accentBright` (#FF7A3D): nomes de comandos, ênfase.
+- `accentDim` (#D14A22): texto de destaque secundário.
+- `info` (#FF8A5B): valores informativos.
+- `success` (#2FBF71): estados de sucesso.
+- `warn` (#FFB020): avisos, fallbacks, atenção.
+- `error` (#E23D2D): erros, falhas.
+- `muted` (#8B7F77): conteúdo de menor importância, metadados.
 
-Palette source of truth: `src/terminal/palette.ts` (aka “lobster seam”).
+Fonte de verdade da paleta: `src/terminal/palette.ts` (conhecido como "lobster seam").
 
-## Command tree
+## Árvore de comandos
 
 ```
-opencraft [--dev] [--profile <name>] <command>
+opencraft [--dev] [--profile <nome>] <comando>
   setup
   onboard
   configure
@@ -263,110 +263,110 @@ opencraft [--dev] [--profile <name>] <command>
   tui
 ```
 
-Note: plugins can add additional top-level commands (for example `opencraft voicecall`).
+Nota: plugins podem adicionar comandos adicionais de nível superior (por exemplo `opencraft voicecall`).
 
-## Security
+## Segurança
 
-- `opencraft security audit` — audit config + local state for common security foot-guns.
-- `opencraft security audit --deep` — best-effort live Gateway probe.
-- `opencraft security audit --fix` — tighten safe defaults and chmod state/config.
+- `opencraft security audit` — auditar config + estado local em busca de problemas comuns de segurança.
+- `opencraft security audit --deep` — verificação ao vivo do Gateway com melhor esforço.
+- `opencraft security audit --fix` — apertar padrões seguros e chmod de estado/config.
 
-## Secrets
+## Segredos
 
-- `opencraft secrets reload` — re-resolve refs and atomically swap the runtime snapshot.
-- `opencraft secrets audit` — scan for plaintext residues, unresolved refs, and precedence drift.
-- `opencraft secrets configure` — interactive helper for provider setup + SecretRef mapping + preflight/apply.
-- `opencraft secrets apply --from <plan.json>` — apply a previously generated plan (`--dry-run` supported).
+- `opencraft secrets reload` — re-resolver refs e trocar atomicamente o snapshot em tempo de execução.
+- `opencraft secrets audit` — varrer em busca de resíduos em texto plano, refs não resolvidos e desvio de precedência.
+- `opencraft secrets configure` — auxiliar interativo para configuração de provedor + mapeamento SecretRef + preflight/apply.
+- `opencraft secrets apply --from <plan.json>` — aplicar um plano gerado anteriormente (`--dry-run` suportado).
 
 ## Plugins
 
-Manage extensions and their config:
+Gerencie extensões e sua config:
 
-- `opencraft plugins list` — discover plugins (use `--json` for machine output).
-- `opencraft plugins info <id>` — show details for a plugin.
-- `opencraft plugins install <path|.tgz|npm-spec|plugin@marketplace>` — install a plugin (or add a plugin path to `plugins.load.paths`).
-- `opencraft plugins marketplace list <marketplace>` — list marketplace entries before install.
-- `opencraft plugins enable <id>` / `disable <id>` — toggle `plugins.entries.<id>.enabled`.
-- `opencraft plugins doctor` — report plugin load errors.
+- `opencraft plugins list` — descobrir plugins (use `--json` para saída de máquina).
+- `opencraft plugins info <id>` — mostrar detalhes de um plugin.
+- `opencraft plugins install <caminho|.tgz|npm-spec|plugin@marketplace>` — instalar um plugin (ou adicionar um caminho de plugin a `plugins.load.paths`).
+- `opencraft plugins marketplace list <marketplace>` — listar entradas do marketplace antes de instalar.
+- `opencraft plugins enable <id>` / `disable <id>` — alternar `plugins.entries.<id>.enabled`.
+- `opencraft plugins doctor` — reportar erros de carregamento de plugin.
 
-Most plugin changes require a gateway restart. See [/plugin](/tools/plugin).
+A maioria das mudanças de plugin requer reiniciar o gateway. Veja [/plugin](/tools/plugin).
 
-## Memory
+## Memória
 
-Vector search over `MEMORY.md` + `memory/*.md`:
+Busca vetorial sobre `MEMORY.md` + `memory/*.md`:
 
-- `opencraft memory status` — show index stats.
-- `opencraft memory index` — reindex memory files.
-- `opencraft memory search "<query>"` (or `--query "<query>"`) — semantic search over memory.
+- `opencraft memory status` — mostrar estatísticas do índice.
+- `opencraft memory index` — reindexar arquivos de memória.
+- `opencraft memory search "<consulta>"` (ou `--query "<consulta>"`) — busca semântica na memória.
 
-## Chat slash commands
+## Comandos slash do chat
 
-Chat messages support `/...` commands (text and native). See [/tools/slash-commands](/tools/slash-commands).
+Mensagens de chat suportam comandos `/...` (texto e nativo). Veja [/tools/slash-commands](/tools/slash-commands).
 
-Highlights:
+Destaques:
 
-- `/status` for quick diagnostics.
-- `/config` for persisted config changes.
-- `/debug` for runtime-only config overrides (memory, not disk; requires `commands.debug: true`).
+- `/status` para diagnósticos rápidos.
+- `/config` para mudanças de config persistidas.
+- `/debug` para substituições de config apenas em tempo de execução (memória, não disco; requer `commands.debug: true`).
 
-## Setup + onboarding
+## Configuração + onboarding
 
 ### `setup`
 
-Initialize config + workspace.
+Inicializar config + workspace.
 
-Options:
+Opções:
 
-- `--workspace <dir>`: agent workspace path (default `~/.opencraft/workspace`).
-- `--wizard`: run onboarding.
-- `--non-interactive`: run onboarding without prompts.
-- `--mode <local|remote>`: onboard mode.
-- `--remote-url <url>`: remote Gateway URL.
-- `--remote-token <token>`: remote Gateway token.
+- `--workspace <dir>`: caminho do workspace do agente (padrão `~/.opencraft/workspace`).
+- `--wizard`: executar onboarding.
+- `--non-interactive`: executar onboarding sem prompts.
+- `--mode <local|remote>`: modo de onboarding.
+- `--remote-url <url>`: URL do Gateway remoto.
+- `--remote-token <token>`: Token do Gateway remoto.
 
-Onboarding auto-runs when any onboarding flags are present (`--non-interactive`, `--mode`, `--remote-url`, `--remote-token`).
+O onboarding é executado automaticamente quando quaisquer flags de onboarding estão presentes (`--non-interactive`, `--mode`, `--remote-url`, `--remote-token`).
 
 ### `onboard`
 
-Interactive onboarding for gateway, workspace, and skills.
+Onboarding interativo para gateway, workspace e skills.
 
-Options:
+Opções:
 
 - `--workspace <dir>`
-- `--reset` (reset config + credentials + sessions before onboarding)
-- `--reset-scope <config|config+creds+sessions|full>` (default `config+creds+sessions`; use `full` to also remove workspace)
+- `--reset` (resetar config + credenciais + sessões antes do onboarding)
+- `--reset-scope <config|config+creds+sessions|full>` (padrão `config+creds+sessions`; use `full` para também remover workspace)
 - `--non-interactive`
 - `--mode <local|remote>`
-- `--flow <quickstart|advanced|manual>` (manual is an alias for advanced)
+- `--flow <quickstart|advanced|manual>` (manual é um alias para advanced)
 - `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ollama|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|opencode-go|custom-api-key|skip>`
-- `--token-provider <id>` (non-interactive; used with `--auth-choice token`)
-- `--token <token>` (non-interactive; used with `--auth-choice token`)
-- `--token-profile-id <id>` (non-interactive; default: `<provider>:manual`)
-- `--token-expires-in <duration>` (non-interactive; e.g. `365d`, `12h`)
-- `--secret-input-mode <plaintext|ref>` (default `plaintext`; use `ref` to store provider default env refs instead of plaintext keys)
-- `--anthropic-api-key <key>`
-- `--openai-api-key <key>`
-- `--mistral-api-key <key>`
-- `--openrouter-api-key <key>`
-- `--ai-gateway-api-key <key>`
-- `--moonshot-api-key <key>`
-- `--kimi-code-api-key <key>`
-- `--gemini-api-key <key>`
-- `--zai-api-key <key>`
-- `--minimax-api-key <key>`
-- `--opencode-zen-api-key <key>`
-- `--opencode-go-api-key <key>`
-- `--custom-base-url <url>` (non-interactive; used with `--auth-choice custom-api-key` or `--auth-choice ollama`)
-- `--custom-model-id <id>` (non-interactive; used with `--auth-choice custom-api-key` or `--auth-choice ollama`)
-- `--custom-api-key <key>` (non-interactive; optional; used with `--auth-choice custom-api-key`; falls back to `CUSTOM_API_KEY` when omitted)
-- `--custom-provider-id <id>` (non-interactive; optional custom provider id)
-- `--custom-compatibility <openai|anthropic>` (non-interactive; optional; default `openai`)
-- `--gateway-port <port>`
+- `--token-provider <id>` (não interativo; usado com `--auth-choice token`)
+- `--token <token>` (não interativo; usado com `--auth-choice token`)
+- `--token-profile-id <id>` (não interativo; padrão: `<provedor>:manual`)
+- `--token-expires-in <duração>` (não interativo; ex.: `365d`, `12h`)
+- `--secret-input-mode <plaintext|ref>` (padrão `plaintext`; use `ref` para armazenar refs de env padrão do provedor em vez de chaves em texto plano)
+- `--anthropic-api-key <chave>`
+- `--openai-api-key <chave>`
+- `--mistral-api-key <chave>`
+- `--openrouter-api-key <chave>`
+- `--ai-gateway-api-key <chave>`
+- `--moonshot-api-key <chave>`
+- `--kimi-code-api-key <chave>`
+- `--gemini-api-key <chave>`
+- `--zai-api-key <chave>`
+- `--minimax-api-key <chave>`
+- `--opencode-zen-api-key <chave>`
+- `--opencode-go-api-key <chave>`
+- `--custom-base-url <url>` (não interativo; usado com `--auth-choice custom-api-key` ou `--auth-choice ollama`)
+- `--custom-model-id <id>` (não interativo; usado com `--auth-choice custom-api-key` ou `--auth-choice ollama`)
+- `--custom-api-key <chave>` (não interativo; opcional; usado com `--auth-choice custom-api-key`; recorre a `CUSTOM_API_KEY` quando omitido)
+- `--custom-provider-id <id>` (não interativo; id de provedor personalizado opcional)
+- `--custom-compatibility <openai|anthropic>` (não interativo; opcional; padrão `openai`)
+- `--gateway-port <porta>`
 - `--gateway-bind <loopback|lan|tailnet|auto|custom>`
 - `--gateway-auth <token|password>`
 - `--gateway-token <token>`
-- `--gateway-token-ref-env <name>` (non-interactive; store `gateway.auth.token` as an env SecretRef; requires that env var to be set; cannot be combined with `--gateway-token`)
-- `--gateway-password <password>`
+- `--gateway-token-ref-env <nome>` (não interativo; armazena `gateway.auth.token` como SecretRef de env; requer que a variável de ambiente esteja definida; não pode ser combinado com `--gateway-token`)
+- `--gateway-password <senha>`
 - `--remote-url <url>`
 - `--remote-token <token>`
 - `--tailscale <off|serve|funnel>`
@@ -378,92 +378,92 @@ Options:
 - `--skip-skills`
 - `--skip-health`
 - `--skip-ui`
-- `--node-manager <npm|pnpm|bun>` (pnpm recommended; bun not recommended for Gateway runtime)
+- `--node-manager <npm|pnpm|bun>` (pnpm recomendado; bun não recomendado para runtime do Gateway)
 - `--json`
 
 ### `configure`
 
-Interactive configuration wizard (models, channels, skills, gateway).
+Assistente de configuração interativo (modelos, canais, skills, gateway).
 
 ### `config`
 
-Non-interactive config helpers (get/set/unset/file/validate). Running `opencraft config` with no
-subcommand launches the wizard.
+Auxiliares de config não interativos (get/set/unset/file/validate). Executar `opencraft config` sem
+subcomando abre o assistente.
 
-Subcommands:
+Subcomandos:
 
-- `config get <path>`: print a config value (dot/bracket path).
-- `config set <path> <value>`: set a value (JSON5 or raw string).
-- `config unset <path>`: remove a value.
-- `config file`: print the active config file path.
-- `config validate`: validate the current config against the schema without starting the gateway.
-- `config validate --json`: emit machine-readable JSON output.
+- `config get <caminho>`: imprimir um valor de config (caminho com ponto/colchetes).
+- `config set <caminho> <valor>`: definir um valor (JSON5 ou string bruta).
+- `config unset <caminho>`: remover um valor.
+- `config file`: imprimir o caminho do arquivo de config ativo.
+- `config validate`: validar a config atual contra o esquema sem iniciar o gateway.
+- `config validate --json`: emitir saída JSON legível por máquina.
 
 ### `doctor`
 
-Health checks + quick fixes (config + gateway + legacy services).
+Verificações de saúde + correções rápidas (config + gateway + serviços legados).
 
-Options:
+Opções:
 
-- `--no-workspace-suggestions`: disable workspace memory hints.
-- `--yes`: accept defaults without prompting (headless).
-- `--non-interactive`: skip prompts; apply safe migrations only.
-- `--deep`: scan system services for extra gateway installs.
+- `--no-workspace-suggestions`: desabilitar dicas de memória do workspace.
+- `--yes`: aceitar padrões sem perguntar (headless).
+- `--non-interactive`: pular prompts; aplicar apenas migrações seguras.
+- `--deep`: varrer serviços do sistema em busca de instalações extras de gateway.
 
-## Channel helpers
+## Auxiliares de canal
 
 ### `channels`
 
-Manage chat channel accounts (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage/MS Teams).
+Gerencie contas de canais de chat (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage/MS Teams).
 
-Subcommands:
+Subcomandos:
 
-- `channels list`: show configured channels and auth profiles.
-- `channels status`: check gateway reachability and channel health (`--probe` runs extra checks; use `opencraft health` or `opencraft status --deep` for gateway health probes).
-- Tip: `channels status` prints warnings with suggested fixes when it can detect common misconfigurations (then points you to `opencraft doctor`).
-- `channels logs`: show recent channel logs from the gateway log file.
-- `channels add`: wizard-style setup when no flags are passed; flags switch to non-interactive mode.
-  - When adding a non-default account to a channel still using single-account top-level config, OpenCraft moves account-scoped values into `channels.<channel>.accounts.default` before writing the new account.
-  - Non-interactive `channels add` does not auto-create/upgrade bindings; channel-only bindings continue to match the default account.
-- `channels remove`: disable by default; pass `--delete` to remove config entries without prompts.
-- `channels login`: interactive channel login (WhatsApp Web only).
-- `channels logout`: log out of a channel session (if supported).
+- `channels list`: mostrar canais configurados e perfis de autenticação.
+- `channels status`: verificar acessibilidade do gateway e saúde do canal (`--probe` executa verificações extras; use `opencraft health` ou `opencraft status --deep` para verificações de saúde do gateway).
+- Dica: `channels status` imprime avisos com correções sugeridas quando consegue detectar configurações incorretas comuns (e então aponta para `opencraft doctor`).
+- `channels logs`: mostrar logs recentes do canal a partir do arquivo de log do gateway.
+- `channels add`: configuração estilo assistente quando nenhuma flag é passada; flags mudam para modo não interativo.
+  - Ao adicionar uma conta não padrão a um canal ainda usando config de nível superior de conta única, o OpenCraft move valores com escopo de conta para `channels.<canal>.accounts.default` antes de gravar a nova conta.
+  - `channels add` não interativo não cria/atualiza vinculações automaticamente; vinculações apenas de canal continuam correspondendo à conta padrão.
+- `channels remove`: desabilitar por padrão; passe `--delete` para remover entradas de config sem prompts.
+- `channels login`: login interativo de canal (apenas WhatsApp Web).
+- `channels logout`: deslogar de uma sessão de canal (se suportado).
 
-Common options:
+Opções comuns:
 
-- `--channel <name>`: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`
-- `--account <id>`: channel account id (default `default`)
-- `--name <label>`: display name for the account
+- `--channel <nome>`: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`
+- `--account <id>`: id da conta do canal (padrão `default`)
+- `--name <rótulo>`: nome de exibição para a conta
 
-`channels login` options:
+Opções de `channels login`:
 
-- `--channel <channel>` (default `whatsapp`; supports `whatsapp`/`web`)
+- `--channel <canal>` (padrão `whatsapp`; suporta `whatsapp`/`web`)
 - `--account <id>`
 - `--verbose`
 
-`channels logout` options:
+Opções de `channels logout`:
 
-- `--channel <channel>` (default `whatsapp`)
+- `--channel <canal>` (padrão `whatsapp`)
 - `--account <id>`
 
-`channels list` options:
+Opções de `channels list`:
 
-- `--no-usage`: skip model provider usage/quota snapshots (OAuth/API-backed only).
-- `--json`: output JSON (includes usage unless `--no-usage` is set).
+- `--no-usage`: pular snapshots de uso/cota de provedor de modelo (apenas OAuth/API).
+- `--json`: saída JSON (inclui uso a menos que `--no-usage` esteja definido).
 
-`channels logs` options:
+Opções de `channels logs`:
 
-- `--channel <name|all>` (default `all`)
-- `--lines <n>` (default `200`)
+- `--channel <nome|all>` (padrão `all`)
+- `--lines <n>` (padrão `200`)
 - `--json`
 
-More detail: [/concepts/oauth](/concepts/oauth)
+Mais detalhes: [/concepts/oauth](/concepts/oauth)
 
-Examples:
+Exemplos:
 
 ```bash
-opencraft channels add --channel telegram --account alerts --name "Alerts Bot" --token $TELEGRAM_BOT_TOKEN
-opencraft channels add --channel discord --account work --name "Work Bot" --token $DISCORD_BOT_TOKEN
+opencraft channels add --channel telegram --account alerts --name "Bot de Alertas" --token $TELEGRAM_BOT_TOKEN
+opencraft channels add --channel discord --account work --name "Bot de Trabalho" --token $DISCORD_BOT_TOKEN
 opencraft channels remove --channel discord --account work --delete
 opencraft channels status --probe
 opencraft status --deep
@@ -471,37 +471,37 @@ opencraft status --deep
 
 ### `skills`
 
-List and inspect available skills plus readiness info.
+Liste e inspecione skills disponíveis mais informações de prontidão.
 
-Subcommands:
+Subcomandos:
 
-- `skills list`: list skills (default when no subcommand).
-- `skills info <name>`: show details for one skill.
-- `skills check`: summary of ready vs missing requirements.
+- `skills list`: listar skills (padrão quando sem subcomando).
+- `skills info <nome>`: mostrar detalhes de uma skill.
+- `skills check`: resumo de prontas vs requisitos faltantes.
 
-Options:
+Opções:
 
-- `--eligible`: show only ready skills.
-- `--json`: output JSON (no styling).
-- `-v`, `--verbose`: include missing requirements detail.
+- `--eligible`: mostrar apenas skills prontas.
+- `--json`: saída JSON (sem estilo).
+- `-v`, `--verbose`: incluir detalhes de requisitos faltantes.
 
-Tip: use `npx clawhub` to search, install, and sync skills.
+Dica: use `npx clawhub` para pesquisar, instalar e sincronizar skills.
 
 ### `pairing`
 
-Approve DM pairing requests across channels.
+Aprove solicitações de pareamento de DM entre canais.
 
-Subcommands:
+Subcomandos:
 
-- `pairing list [channel] [--channel <channel>] [--account <id>] [--json]`
-- `pairing approve <channel> <code> [--account <id>] [--notify]`
-- `pairing approve --channel <channel> [--account <id>] <code> [--notify]`
+- `pairing list [canal] [--channel <canal>] [--account <id>] [--json]`
+- `pairing approve <canal> <código> [--account <id>] [--notify]`
+- `pairing approve --channel <canal> [--account <id>] <código> [--notify]`
 
 ### `devices`
 
-Manage gateway device pairing entries and per-role device tokens.
+Gerencie entradas de pareamento de dispositivos do gateway e tokens de dispositivo por função.
 
-Subcommands:
+Subcomandos:
 
 - `devices list [--json]`
 - `devices approve [requestId] [--latest]`
@@ -513,30 +513,30 @@ Subcommands:
 
 ### `webhooks gmail`
 
-Gmail Pub/Sub hook setup + runner. See [/automation/gmail-pubsub](/automation/gmail-pubsub).
+Configuração + executor de hook Gmail Pub/Sub. Veja [/automation/gmail-pubsub](/automation/gmail-pubsub).
 
-Subcommands:
+Subcomandos:
 
-- `webhooks gmail setup` (requires `--account <email>`; supports `--project`, `--topic`, `--subscription`, `--label`, `--hook-url`, `--hook-token`, `--push-token`, `--bind`, `--port`, `--path`, `--include-body`, `--max-bytes`, `--renew-minutes`, `--tailscale`, `--tailscale-path`, `--tailscale-target`, `--push-endpoint`, `--json`)
-- `webhooks gmail run` (runtime overrides for the same flags)
+- `webhooks gmail setup` (requer `--account <email>`; suporta `--project`, `--topic`, `--subscription`, `--label`, `--hook-url`, `--hook-token`, `--push-token`, `--bind`, `--port`, `--path`, `--include-body`, `--max-bytes`, `--renew-minutes`, `--tailscale`, `--tailscale-path`, `--tailscale-target`, `--push-endpoint`, `--json`)
+- `webhooks gmail run` (substituições em tempo de execução para as mesmas flags)
 
 ### `dns setup`
 
-Wide-area discovery DNS helper (CoreDNS + Tailscale). See [/gateway/discovery](/gateway/discovery).
+Auxiliar de DNS para descoberta wide-area (CoreDNS + Tailscale). Veja [/gateway/discovery](/gateway/discovery).
 
-Options:
+Opções:
 
-- `--apply`: install/update CoreDNS config (requires sudo; macOS only).
+- `--apply`: instalar/atualizar config CoreDNS (requer sudo; apenas macOS).
 
-## Messaging + agent
+## Mensagens + agente
 
 ### `message`
 
-Unified outbound messaging + channel actions.
+Envio unificado de mensagens + ações de canal.
 
-See: [/cli/message](/cli/message)
+Veja: [/cli/message](/cli/message)
 
-Subcommands:
+Subcomandos:
 
 - `message send|poll|react|reactions|read|edit|delete|pin|unpin|pins|permissions|search|timeout|kick|ban`
 - `message thread <create|list|reply>`
@@ -548,144 +548,144 @@ Subcommands:
 - `message voice status`
 - `message event <list|create>`
 
-Examples:
+Exemplos:
 
-- `opencraft message send --target +15555550123 --message "Hi"`
-- `opencraft message poll --channel discord --target channel:123 --poll-question "Snack?" --poll-option Pizza --poll-option Sushi`
+- `opencraft message send --target +15555550123 --message "Oi"`
+- `opencraft message poll --channel discord --target channel:123 --poll-question "Lanche?" --poll-option Pizza --poll-option Sushi`
 
 ### `agent`
 
-Run one agent turn via the Gateway (or `--local` embedded).
+Execute um turno de agente via Gateway (ou `--local` embutido).
 
-Required:
+Obrigatório:
 
-- `--message <text>`
+- `--message <texto>`
 
-Options:
+Opções:
 
-- `--to <dest>` (for session key and optional delivery)
+- `--to <destino>` (para chave de sessão e entrega opcional)
 - `--session-id <id>`
-- `--thinking <off|minimal|low|medium|high|xhigh>` (GPT-5.2 + Codex models only)
+- `--thinking <off|minimal|low|medium|high|xhigh>` (apenas modelos GPT-5.2 + Codex)
 - `--verbose <on|full|off>`
 - `--channel <whatsapp|telegram|discord|slack|mattermost|signal|imessage|msteams>`
 - `--local`
 - `--deliver`
 - `--json`
-- `--timeout <seconds>`
+- `--timeout <segundos>`
 
 ### `agents`
 
-Manage isolated agents (workspaces + auth + routing).
+Gerencie agentes isolados (workspaces + autenticação + roteamento).
 
 #### `agents list`
 
-List configured agents.
+Liste agentes configurados.
 
-Options:
+Opções:
 
 - `--json`
 - `--bindings`
 
-#### `agents add [name]`
+#### `agents add [nome]`
 
-Add a new isolated agent. Runs the guided wizard unless flags (or `--non-interactive`) are passed; `--workspace` is required in non-interactive mode.
+Adicione um novo agente isolado. Executa o assistente guiado a menos que flags (ou `--non-interactive`) sejam passadas; `--workspace` é obrigatório no modo não interativo.
 
-Options:
+Opções:
 
 - `--workspace <dir>`
 - `--model <id>`
 - `--agent-dir <dir>`
-- `--bind <channel[:accountId]>` (repeatable)
+- `--bind <canal[:accountId]>` (repetível)
 - `--non-interactive`
 - `--json`
 
-Binding specs use `channel[:accountId]`. When `accountId` is omitted, OpenCraft may resolve account scope via channel defaults/plugin hooks; otherwise it is a channel binding without explicit account scope.
+Especificações de vinculação usam `canal[:accountId]`. Quando `accountId` é omitido, o OpenCraft pode resolver o escopo da conta via padrões do canal/hooks de plugin; caso contrário, é uma vinculação de canal sem escopo de conta explícito.
 
 #### `agents bindings`
 
-List routing bindings.
+Liste vinculações de roteamento.
 
-Options:
+Opções:
 
 - `--agent <id>`
 - `--json`
 
 #### `agents bind`
 
-Add routing bindings for an agent.
+Adicione vinculações de roteamento para um agente.
 
-Options:
+Opções:
 
 - `--agent <id>`
-- `--bind <channel[:accountId]>` (repeatable)
+- `--bind <canal[:accountId]>` (repetível)
 - `--json`
 
 #### `agents unbind`
 
-Remove routing bindings for an agent.
+Remova vinculações de roteamento para um agente.
 
-Options:
+Opções:
 
 - `--agent <id>`
-- `--bind <channel[:accountId]>` (repeatable)
+- `--bind <canal[:accountId]>` (repetível)
 - `--all`
 - `--json`
 
 #### `agents delete <id>`
 
-Delete an agent and prune its workspace + state.
+Delete um agente e limpe seu workspace + estado.
 
-Options:
+Opções:
 
 - `--force`
 - `--json`
 
 ### `acp`
 
-Run the ACP bridge that connects IDEs to the Gateway.
+Execute a ponte ACP que conecta IDEs ao Gateway.
 
-See [`acp`](/cli/acp) for full options and examples.
+Veja [`acp`](/cli/acp) para opções completas e exemplos.
 
 ### `status`
 
-Show linked session health and recent recipients.
+Mostre saúde da sessão vinculada e destinatários recentes.
 
-Options:
+Opções:
 
 - `--json`
-- `--all` (full diagnosis; read-only, pasteable)
-- `--deep` (probe channels)
-- `--usage` (show model provider usage/quota)
+- `--all` (diagnóstico completo; somente leitura, colável)
+- `--deep` (verificar canais)
+- `--usage` (mostrar uso/cota de provedor de modelo)
 - `--timeout <ms>`
 - `--verbose`
-- `--debug` (alias for `--verbose`)
+- `--debug` (alias para `--verbose`)
 
-Notes:
+Observações:
 
-- Overview includes Gateway + node host service status when available.
+- A visão geral inclui status do serviço Gateway + host node quando disponível.
 
-### Usage tracking
+### Rastreamento de uso
 
-OpenCraft can surface provider usage/quota when OAuth/API creds are available.
+O OpenCraft pode exibir uso/cota de provedor quando credenciais OAuth/API estão disponíveis.
 
-Surfaces:
+Superfícies:
 
-- `/status` (adds a short provider usage line when available)
-- `opencraft status --usage` (prints full provider breakdown)
-- macOS menu bar (Usage section under Context)
+- `/status` (adiciona uma linha curta de uso de provedor quando disponível)
+- `opencraft status --usage` (imprime detalhamento completo por provedor)
+- Barra de menu macOS (seção Uso em Contexto)
 
-Notes:
+Observações:
 
-- Data comes directly from provider usage endpoints (no estimates).
-- Providers: Anthropic, GitHub Copilot, OpenAI Codex OAuth, plus Gemini CLI via the bundled `google` plugin and Antigravity where configured.
-- If no matching credentials exist, usage is hidden.
-- Details: see [Usage tracking](/concepts/usage-tracking).
+- Os dados vêm diretamente dos endpoints de uso dos provedores (sem estimativas).
+- Provedores: Anthropic, GitHub Copilot, OpenAI Codex OAuth, mais Gemini CLI via plugin `google` integrado e Antigravity quando configurado.
+- Se nenhuma credencial correspondente existe, o uso é ocultado.
+- Detalhes: veja [Rastreamento de uso](/concepts/usage-tracking).
 
 ### `health`
 
-Fetch health from the running Gateway.
+Busque informações de saúde do Gateway em execução.
 
-Options:
+Opções:
 
 - `--json`
 - `--timeout <ms>`
@@ -693,37 +693,37 @@ Options:
 
 ### `sessions`
 
-List stored conversation sessions.
+Liste sessões de conversa armazenadas.
 
-Options:
+Opções:
 
 - `--json`
 - `--verbose`
-- `--store <path>`
-- `--active <minutes>`
+- `--store <caminho>`
+- `--active <minutos>`
 
-## Reset / Uninstall
+## Resetar / Desinstalar
 
 ### `reset`
 
-Reset local config/state (keeps the CLI installed).
+Resete config/estado local (mantém a CLI instalada).
 
-Options:
+Opções:
 
 - `--scope <config|config+creds+sessions|full>`
 - `--yes`
 - `--non-interactive`
 - `--dry-run`
 
-Notes:
+Observações:
 
-- `--non-interactive` requires `--scope` and `--yes`.
+- `--non-interactive` requer `--scope` e `--yes`.
 
 ### `uninstall`
 
-Uninstall the gateway service + local data (CLI remains).
+Desinstale o serviço do gateway + dados locais (a CLI permanece).
 
-Options:
+Opções:
 
 - `--service`
 - `--state`
@@ -734,72 +734,72 @@ Options:
 - `--non-interactive`
 - `--dry-run`
 
-Notes:
+Observações:
 
-- `--non-interactive` requires `--yes` and explicit scopes (or `--all`).
+- `--non-interactive` requer `--yes` e escopos explícitos (ou `--all`).
 
 ## Gateway
 
 ### `gateway`
 
-Run the WebSocket Gateway.
+Execute o Gateway WebSocket.
 
-Options:
+Opções:
 
-- `--port <port>`
+- `--port <porta>`
 - `--bind <loopback|tailnet|lan|auto|custom>`
 - `--token <token>`
 - `--auth <token|password>`
-- `--password <password>`
-- `--password-file <path>`
+- `--password <senha>`
+- `--password-file <caminho>`
 - `--tailscale <off|serve|funnel>`
 - `--tailscale-reset-on-exit`
 - `--allow-unconfigured`
 - `--dev`
-- `--reset` (reset dev config + credentials + sessions + workspace)
-- `--force` (kill existing listener on port)
+- `--reset` (resetar config + credenciais + sessões + workspace de dev)
+- `--force` (encerrar listener existente na porta)
 - `--verbose`
 - `--claude-cli-logs`
 - `--ws-log <auto|full|compact>`
-- `--compact` (alias for `--ws-log compact`)
+- `--compact` (alias para `--ws-log compact`)
 - `--raw-stream`
-- `--raw-stream-path <path>`
+- `--raw-stream-path <caminho>`
 
-### `gateway service`
+### Serviço do `gateway`
 
-Manage the Gateway service (launchd/systemd/schtasks).
+Gerencie o serviço do Gateway (launchd/systemd/schtasks).
 
-Subcommands:
+Subcomandos:
 
-- `gateway status` (probes the Gateway RPC by default)
-- `gateway install` (service install)
+- `gateway status` (verifica o RPC do Gateway por padrão)
+- `gateway install` (instalação de serviço)
 - `gateway uninstall`
 - `gateway start`
 - `gateway stop`
 - `gateway restart`
 
-Notes:
+Observações:
 
-- `gateway status` probes the Gateway RPC by default using the service’s resolved port/config (override with `--url/--token/--password`).
-- `gateway status` supports `--no-probe`, `--deep`, `--require-rpc`, and `--json` for scripting.
-- `gateway status` also surfaces legacy or extra gateway services when it can detect them (`--deep` adds system-level scans). Profile-named OpenCraft services are treated as first-class and aren't flagged as "extra".
-- `gateway status` prints which config path the CLI uses vs which config the service likely uses (service env), plus the resolved probe target URL.
-- If gateway auth SecretRefs are unresolved in the current command path, `gateway status --json` reports `rpc.authWarning` only when probe connectivity/auth fails (warnings are suppressed when probe succeeds).
-- On Linux systemd installs, status token-drift checks include both `Environment=` and `EnvironmentFile=` unit sources.
-- `gateway install|uninstall|start|stop|restart` support `--json` for scripting (default output stays human-friendly).
-- `gateway install` defaults to Node runtime; bun is **not recommended** (WhatsApp/Telegram bugs).
-- `gateway install` options: `--port`, `--runtime`, `--token`, `--force`, `--json`.
+- `gateway status` verifica o RPC do Gateway por padrão usando a porta/config resolvida do serviço (substitua com `--url/--token/--password`).
+- `gateway status` suporta `--no-probe`, `--deep`, `--require-rpc` e `--json` para scripts.
+- `gateway status` também exibe serviços de gateway legados ou extras quando consegue detectá-los (`--deep` adiciona varreduras em nível de sistema). Serviços OpenCraft com nome de perfil são tratados como de primeira classe e não são sinalizados como "extras".
+- `gateway status` imprime qual caminho de config a CLI usa versus qual config o serviço provavelmente usa (env do serviço), mais a URL alvo de verificação resolvida.
+- Se SecretRefs de autenticação do gateway não estão resolvidos no caminho de comando atual, `gateway status --json` reporta `rpc.authWarning` apenas quando a verificação de conectividade/autenticação falha (avisos são suprimidos quando a verificação é bem-sucedida).
+- Em instalações Linux systemd, verificações de desvio de token de status incluem tanto fontes `Environment=` quanto `EnvironmentFile=` da unidade.
+- `gateway install|uninstall|start|stop|restart` suportam `--json` para scripts (saída padrão permanece amigável para humanos).
+- `gateway install` usa runtime Node por padrão; bun **não é recomendado** (bugs no WhatsApp/Telegram).
+- Opções de `gateway install`: `--port`, `--runtime`, `--token`, `--force`, `--json`.
 
 ### `logs`
 
-Tail Gateway file logs via RPC.
+Acompanhe logs de arquivo do Gateway via RPC.
 
-Notes:
+Observações:
 
-- TTY sessions render a colorized, structured view; non-TTY falls back to plain text.
-- `--json` emits line-delimited JSON (one log event per line).
+- Sessões TTY renderizam uma visualização colorida e estruturada; não-TTY recorre a texto plano.
+- `--json` emite JSON delimitado por linha (um evento de log por linha).
 
-Examples:
+Exemplos:
 
 ```bash
 opencraft logs --follow
@@ -809,15 +809,15 @@ opencraft logs --json
 opencraft logs --no-color
 ```
 
-### `gateway <subcommand>`
+### `gateway <subcomando>`
 
-Gateway CLI helpers (use `--url`, `--token`, `--password`, `--timeout`, `--expect-final` for RPC subcommands).
-When you pass `--url`, the CLI does not auto-apply config or environment credentials.
-Include `--token` or `--password` explicitly. Missing explicit credentials is an error.
+Auxiliares CLI do Gateway (use `--url`, `--token`, `--password`, `--timeout`, `--expect-final` para subcomandos RPC).
+Quando você passa `--url`, a CLI não aplica automaticamente credenciais de config ou ambiente.
+Inclua `--token` ou `--password` explicitamente. Credenciais explícitas ausentes é um erro.
 
-Subcommands:
+Subcomandos:
 
-- `gateway call <method> [--params <json>]`
+- `gateway call <método> [--params <json>]`
 - `gateway health`
 - `gateway status`
 - `gateway probe`
@@ -825,20 +825,20 @@ Subcommands:
 - `gateway install|uninstall|start|stop|restart`
 - `gateway run`
 
-Common RPCs:
+RPCs comuns:
 
-- `config.apply` (validate + write config + restart + wake)
-- `config.patch` (merge a partial update + restart + wake)
-- `update.run` (run update + restart + wake)
+- `config.apply` (validar + gravar config + reiniciar + despertar)
+- `config.patch` (mesclar uma atualização parcial + reiniciar + despertar)
+- `update.run` (executar atualização + reiniciar + despertar)
 
-Tip: when calling `config.set`/`config.apply`/`config.patch` directly, pass `baseHash` from
-`config.get` if a config already exists.
+Dica: ao chamar `config.set`/`config.apply`/`config.patch` diretamente, passe `baseHash` de
+`config.get` se uma config já existe.
 
-## Models
+## Modelos
 
-See [/concepts/models](/concepts/models) for fallback behavior and scanning strategy.
+Veja [/concepts/models](/concepts/models) para comportamento de fallback e estratégia de varredura.
 
-Anthropic setup-token (supported):
+Configuração de setup-token da Anthropic (suportado):
 
 ```bash
 claude setup-token
@@ -846,87 +846,87 @@ opencraft models auth setup-token --provider anthropic
 opencraft models status
 ```
 
-Policy note: this is technical compatibility. Anthropic has blocked some
-subscription usage outside Claude Code in the past; verify current Anthropic
-terms before relying on setup-token in production.
+Nota de política: esta é compatibilidade técnica. A Anthropic bloqueou alguns
+usos de assinatura fora do Claude Code no passado; verifique os termos atuais da Anthropic
+antes de depender do setup-token em produção.
 
-### `models` (root)
+### `models` (raiz)
 
-`opencraft models` is an alias for `models status`.
+`opencraft models` é um alias para `models status`.
 
-Root options:
+Opções raiz:
 
-- `--status-json` (alias for `models status --json`)
-- `--status-plain` (alias for `models status --plain`)
+- `--status-json` (alias para `models status --json`)
+- `--status-plain` (alias para `models status --plain`)
 
 ### `models list`
 
-Options:
+Opções:
 
 - `--all`
 - `--local`
-- `--provider <name>`
+- `--provider <nome>`
 - `--json`
 - `--plain`
 
 ### `models status`
 
-Options:
+Opções:
 
 - `--json`
 - `--plain`
-- `--check` (exit 1=expired/missing, 2=expiring)
-- `--probe` (live probe of configured auth profiles)
-- `--probe-provider <name>`
-- `--probe-profile <id>` (repeat or comma-separated)
+- `--check` (saída 1=expirado/ausente, 2=expirando)
+- `--probe` (verificação ao vivo de perfis de autenticação configurados)
+- `--probe-provider <nome>`
+- `--probe-profile <id>` (repetir ou separado por vírgula)
 - `--probe-timeout <ms>`
 - `--probe-concurrency <n>`
 - `--probe-max-tokens <n>`
 
-Always includes the auth overview and OAuth expiry status for profiles in the auth store.
-`--probe` runs live requests (may consume tokens and trigger rate limits).
+Sempre inclui a visão geral de autenticação e status de expiração OAuth para perfis no armazenamento de autenticação.
+`--probe` executa requisições ao vivo (pode consumir tokens e acionar limites de taxa).
 
-### `models set <model>`
+### `models set <modelo>`
 
-Set `agents.defaults.model.primary`.
+Definir `agents.defaults.model.primary`.
 
-### `models set-image <model>`
+### `models set-image <modelo>`
 
-Set `agents.defaults.imageModel.primary`.
+Definir `agents.defaults.imageModel.primary`.
 
 ### `models aliases list|add|remove`
 
-Options:
+Opções:
 
 - `list`: `--json`, `--plain`
-- `add <alias> <model>`
+- `add <alias> <modelo>`
 - `remove <alias>`
 
 ### `models fallbacks list|add|remove|clear`
 
-Options:
+Opções:
 
 - `list`: `--json`, `--plain`
-- `add <model>`
-- `remove <model>`
+- `add <modelo>`
+- `remove <modelo>`
 - `clear`
 
 ### `models image-fallbacks list|add|remove|clear`
 
-Options:
+Opções:
 
 - `list`: `--json`, `--plain`
-- `add <model>`
-- `remove <model>`
+- `add <modelo>`
+- `remove <modelo>`
 - `clear`
 
 ### `models scan`
 
-Options:
+Opções:
 
 - `--min-params <b>`
-- `--max-age-days <days>`
-- `--provider <name>`
+- `--max-age-days <dias>`
+- `--provider <nome>`
 - `--max-candidates <n>`
 - `--timeout <ms>`
 - `--concurrency <n>`
@@ -939,31 +939,31 @@ Options:
 
 ### `models auth add|setup-token|paste-token`
 
-Options:
+Opções:
 
-- `add`: interactive auth helper
-- `setup-token`: `--provider <name>` (default `anthropic`), `--yes`
-- `paste-token`: `--provider <name>`, `--profile-id <id>`, `--expires-in <duration>`
+- `add`: auxiliar de autenticação interativo
+- `setup-token`: `--provider <nome>` (padrão `anthropic`), `--yes`
+- `paste-token`: `--provider <nome>`, `--profile-id <id>`, `--expires-in <duração>`
 
 ### `models auth order get|set|clear`
 
-Options:
+Opções:
 
-- `get`: `--provider <name>`, `--agent <id>`, `--json`
-- `set`: `--provider <name>`, `--agent <id>`, `<profileIds...>`
-- `clear`: `--provider <name>`, `--agent <id>`
+- `get`: `--provider <nome>`, `--agent <id>`, `--json`
+- `set`: `--provider <nome>`, `--agent <id>`, `<profileIds...>`
+- `clear`: `--provider <nome>`, `--agent <id>`
 
-## System
+## Sistema
 
 ### `system event`
 
-Enqueue a system event and optionally trigger a heartbeat (Gateway RPC).
+Enfileire um evento de sistema e opcionalmente acione um heartbeat (Gateway RPC).
 
-Required:
+Obrigatório:
 
-- `--text <text>`
+- `--text <texto>`
 
-Options:
+Opções:
 
 - `--mode <now|next-heartbeat>`
 - `--json`
@@ -971,111 +971,111 @@ Options:
 
 ### `system heartbeat last|enable|disable`
 
-Heartbeat controls (Gateway RPC).
+Controles de heartbeat (Gateway RPC).
 
-Options:
+Opções:
 
 - `--json`
 - `--url`, `--token`, `--timeout`, `--expect-final`
 
 ### `system presence`
 
-List system presence entries (Gateway RPC).
+Liste entradas de presença do sistema (Gateway RPC).
 
-Options:
+Opções:
 
 - `--json`
 - `--url`, `--token`, `--timeout`, `--expect-final`
 
 ## Cron
 
-Manage scheduled jobs (Gateway RPC). See [/automation/cron-jobs](/automation/cron-jobs).
+Gerencie tarefas agendadas (Gateway RPC). Veja [/automation/cron-jobs](/automation/cron-jobs).
 
-Subcommands:
+Subcomandos:
 
 - `cron status [--json]`
-- `cron list [--all] [--json]` (table output by default; use `--json` for raw)
-- `cron add` (alias: `create`; requires `--name` and exactly one of `--at` | `--every` | `--cron`, and exactly one payload of `--system-event` | `--message`)
-- `cron edit <id>` (patch fields)
+- `cron list [--all] [--json]` (saída em tabela por padrão; use `--json` para bruto)
+- `cron add` (alias: `create`; requer `--name` e exatamente um de `--at` | `--every` | `--cron`, e exatamente um payload de `--system-event` | `--message`)
+- `cron edit <id>` (atualizar campos)
 - `cron rm <id>` (aliases: `remove`, `delete`)
 - `cron enable <id>`
 - `cron disable <id>`
 - `cron runs --id <id> [--limit <n>]`
 - `cron run <id> [--force]`
 
-All `cron` commands accept `--url`, `--token`, `--timeout`, `--expect-final`.
+Todos os comandos `cron` aceitam `--url`, `--token`, `--timeout`, `--expect-final`.
 
-## Node host
+## Host node
 
-`node` runs a **headless node host** or manages it as a background service. See
+`node` executa um **host node headless** ou gerencia-o como serviço em segundo plano. Veja
 [`opencraft node`](/cli/node).
 
-Subcommands:
+Subcomandos:
 
-- `node run --host <gateway-host> --port 18789`
+- `node run --host <host-gateway> --port 18789`
 - `node status`
-- `node install [--host <gateway-host>] [--port <port>] [--tls] [--tls-fingerprint <sha256>] [--node-id <id>] [--display-name <name>] [--runtime <node|bun>] [--force]`
+- `node install [--host <host-gateway>] [--port <porta>] [--tls] [--tls-fingerprint <sha256>] [--node-id <id>] [--display-name <nome>] [--runtime <node|bun>] [--force]`
 - `node uninstall`
 - `node stop`
 - `node restart`
 
-Auth notes:
+Observações de autenticação:
 
-- `node` resolves gateway auth from env/config (no `--token`/`--password` flags): `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`, then `gateway.auth.*`. In local mode, node host intentionally ignores `gateway.remote.*`; in `gateway.mode=remote`, `gateway.remote.*` participates per remote precedence rules.
-- Legacy `CLAWDBOT_GATEWAY_*` env vars are intentionally ignored for node-host auth resolution.
+- `node` resolve autenticação do gateway a partir de env/config (sem flags `--token`/`--password`): `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`, depois `gateway.auth.*`. No modo local, o host node intencionalmente ignora `gateway.remote.*`; em `gateway.mode=remote`, `gateway.remote.*` participa conforme regras de precedência remota.
+- Variáveis de env legadas `CLAWDBOT_GATEWAY_*` são intencionalmente ignoradas para resolução de autenticação do host node.
 
 ## Nodes
 
-`nodes` talks to the Gateway and targets paired nodes. See [/nodes](/nodes).
+`nodes` comunica-se com o Gateway e direciona nodes pareados. Veja [/nodes](/nodes).
 
-Common options:
+Opções comuns:
 
 - `--url`, `--token`, `--timeout`, `--json`
 
-Subcommands:
+Subcomandos:
 
-- `nodes status [--connected] [--last-connected <duration>]`
-- `nodes describe --node <id|name|ip>`
-- `nodes list [--connected] [--last-connected <duration>]`
+- `nodes status [--connected] [--last-connected <duração>]`
+- `nodes describe --node <id|nome|ip>`
+- `nodes list [--connected] [--last-connected <duração>]`
 - `nodes pending`
 - `nodes approve <requestId>`
 - `nodes reject <requestId>`
-- `nodes rename --node <id|name|ip> --name <displayName>`
-- `nodes invoke --node <id|name|ip> --command <command> [--params <json>] [--invoke-timeout <ms>] [--idempotency-key <key>]`
-- `nodes run --node <id|name|ip> [--cwd <path>] [--env KEY=VAL] [--command-timeout <ms>] [--needs-screen-recording] [--invoke-timeout <ms>] <command...>` (mac node or headless node host)
-- `nodes notify --node <id|name|ip> [--title <text>] [--body <text>] [--sound <name>] [--priority <passive|active|timeSensitive>] [--delivery <system|overlay|auto>] [--invoke-timeout <ms>]` (mac only)
+- `nodes rename --node <id|nome|ip> --name <displayName>`
+- `nodes invoke --node <id|nome|ip> --command <comando> [--params <json>] [--invoke-timeout <ms>] [--idempotency-key <chave>]`
+- `nodes run --node <id|nome|ip> [--cwd <caminho>] [--env KEY=VAL] [--command-timeout <ms>] [--needs-screen-recording] [--invoke-timeout <ms>] <comando...>` (mac node ou host node headless)
+- `nodes notify --node <id|nome|ip> [--title <texto>] [--body <texto>] [--sound <nome>] [--priority <passive|active|timeSensitive>] [--delivery <system|overlay|auto>] [--invoke-timeout <ms>]` (apenas mac)
 
-Camera:
+Câmera:
 
-- `nodes camera list --node <id|name|ip>`
-- `nodes camera snap --node <id|name|ip> [--facing front|back|both] [--device-id <id>] [--max-width <px>] [--quality <0-1>] [--delay-ms <ms>] [--invoke-timeout <ms>]`
-- `nodes camera clip --node <id|name|ip> [--facing front|back] [--device-id <id>] [--duration <ms|10s|1m>] [--no-audio] [--invoke-timeout <ms>]`
+- `nodes camera list --node <id|nome|ip>`
+- `nodes camera snap --node <id|nome|ip> [--facing front|back|both] [--device-id <id>] [--max-width <px>] [--quality <0-1>] [--delay-ms <ms>] [--invoke-timeout <ms>]`
+- `nodes camera clip --node <id|nome|ip> [--facing front|back] [--device-id <id>] [--duration <ms|10s|1m>] [--no-audio] [--invoke-timeout <ms>]`
 
-Canvas + screen:
+Canvas + tela:
 
-- `nodes canvas snapshot --node <id|name|ip> [--format png|jpg|jpeg] [--max-width <px>] [--quality <0-1>] [--invoke-timeout <ms>]`
-- `nodes canvas present --node <id|name|ip> [--target <urlOrPath>] [--x <px>] [--y <px>] [--width <px>] [--height <px>] [--invoke-timeout <ms>]`
-- `nodes canvas hide --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes canvas navigate <url> --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes canvas eval [<js>] --node <id|name|ip> [--js <code>] [--invoke-timeout <ms>]`
-- `nodes canvas a2ui push --node <id|name|ip> (--jsonl <path> | --text <text>) [--invoke-timeout <ms>]`
-- `nodes canvas a2ui reset --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes screen record --node <id|name|ip> [--screen <index>] [--duration <ms|10s>] [--fps <n>] [--no-audio] [--out <path>] [--invoke-timeout <ms>]`
+- `nodes canvas snapshot --node <id|nome|ip> [--format png|jpg|jpeg] [--max-width <px>] [--quality <0-1>] [--invoke-timeout <ms>]`
+- `nodes canvas present --node <id|nome|ip> [--target <urlOuCaminho>] [--x <px>] [--y <px>] [--width <px>] [--height <px>] [--invoke-timeout <ms>]`
+- `nodes canvas hide --node <id|nome|ip> [--invoke-timeout <ms>]`
+- `nodes canvas navigate <url> --node <id|nome|ip> [--invoke-timeout <ms>]`
+- `nodes canvas eval [<js>] --node <id|nome|ip> [--js <código>] [--invoke-timeout <ms>]`
+- `nodes canvas a2ui push --node <id|nome|ip> (--jsonl <caminho> | --text <texto>) [--invoke-timeout <ms>]`
+- `nodes canvas a2ui reset --node <id|nome|ip> [--invoke-timeout <ms>]`
+- `nodes screen record --node <id|nome|ip> [--screen <índice>] [--duration <ms|10s>] [--fps <n>] [--no-audio] [--out <caminho>] [--invoke-timeout <ms>]`
 
-Location:
+Localização:
 
-- `nodes location get --node <id|name|ip> [--max-age <ms>] [--accuracy <coarse|balanced|precise>] [--location-timeout <ms>] [--invoke-timeout <ms>]`
+- `nodes location get --node <id|nome|ip> [--max-age <ms>] [--accuracy <coarse|balanced|precise>] [--location-timeout <ms>] [--invoke-timeout <ms>]`
 
-## Browser
+## Navegador
 
-Browser control CLI (dedicated Chrome/Brave/Edge/Chromium). See [`opencraft browser`](/cli/browser) and the [Browser tool](/tools/browser).
+CLI de controle de navegador (Chrome/Brave/Edge/Chromium dedicado). Veja [`opencraft browser`](/cli/browser) e a [Ferramenta de navegador](/tools/browser).
 
-Common options:
+Opções comuns:
 
 - `--url`, `--token`, `--timeout`, `--json`
-- `--browser-profile <name>`
+- `--browser-profile <nome>`
 
-Manage:
+Gerenciar:
 
 - `browser status`
 - `browser start`
@@ -1086,52 +1086,52 @@ Manage:
 - `browser focus <targetId>`
 - `browser close [targetId]`
 - `browser profiles`
-- `browser create-profile --name <name> [--color <hex>] [--cdp-url <url>]`
-- `browser delete-profile --name <name>`
+- `browser create-profile --name <nome> [--color <hex>] [--cdp-url <url>]`
+- `browser delete-profile --name <nome>`
 
-Inspect:
+Inspecionar:
 
-- `browser screenshot [targetId] [--full-page] [--ref <ref>] [--element <selector>] [--type png|jpeg]`
-- `browser snapshot [--format aria|ai] [--target-id <id>] [--limit <n>] [--interactive] [--compact] [--depth <n>] [--selector <sel>] [--out <path>]`
+- `browser screenshot [targetId] [--full-page] [--ref <ref>] [--element <seletor>] [--type png|jpeg]`
+- `browser snapshot [--format aria|ai] [--target-id <id>] [--limit <n>] [--interactive] [--compact] [--depth <n>] [--selector <sel>] [--out <caminho>]`
 
-Actions:
+Ações:
 
 - `browser navigate <url> [--target-id <id>]`
-- `browser resize <width> <height> [--target-id <id>]`
+- `browser resize <largura> <altura> [--target-id <id>]`
 - `browser click <ref> [--double] [--button <left|right|middle>] [--modifiers <csv>] [--target-id <id>]`
-- `browser type <ref> <text> [--submit] [--slowly] [--target-id <id>]`
-- `browser press <key> [--target-id <id>]`
+- `browser type <ref> <texto> [--submit] [--slowly] [--target-id <id>]`
+- `browser press <tecla> [--target-id <id>]`
 - `browser hover <ref> [--target-id <id>]`
 - `browser drag <startRef> <endRef> [--target-id <id>]`
-- `browser select <ref> <values...> [--target-id <id>]`
-- `browser upload <paths...> [--ref <ref>] [--input-ref <ref>] [--element <selector>] [--target-id <id>] [--timeout-ms <ms>]`
-- `browser fill [--fields <json>] [--fields-file <path>] [--target-id <id>]`
-- `browser dialog --accept|--dismiss [--prompt <text>] [--target-id <id>] [--timeout-ms <ms>]`
-- `browser wait [--time <ms>] [--text <value>] [--text-gone <value>] [--target-id <id>]`
-- `browser evaluate --fn <code> [--ref <ref>] [--target-id <id>]`
+- `browser select <ref> <valores...> [--target-id <id>]`
+- `browser upload <caminhos...> [--ref <ref>] [--input-ref <ref>] [--element <seletor>] [--target-id <id>] [--timeout-ms <ms>]`
+- `browser fill [--fields <json>] [--fields-file <caminho>] [--target-id <id>]`
+- `browser dialog --accept|--dismiss [--prompt <texto>] [--target-id <id>] [--timeout-ms <ms>]`
+- `browser wait [--time <ms>] [--text <valor>] [--text-gone <valor>] [--target-id <id>]`
+- `browser evaluate --fn <código> [--ref <ref>] [--target-id <id>]`
 - `browser console [--level <error|warn|info>] [--target-id <id>]`
 - `browser pdf [--target-id <id>]`
 
-## Docs search
+## Pesquisa de documentação
 
-### `docs [query...]`
+### `docs [consulta...]`
 
-Search the live docs index.
+Pesquise o índice de documentação ativo.
 
 ## TUI
 
 ### `tui`
 
-Open the terminal UI connected to the Gateway.
+Abra a interface de terminal conectada ao Gateway.
 
-Options:
+Opções:
 
 - `--url <url>`
 - `--token <token>`
-- `--password <password>`
-- `--session <key>`
+- `--password <senha>`
+- `--session <chave>`
 - `--deliver`
-- `--thinking <level>`
-- `--message <text>`
-- `--timeout-ms <ms>` (defaults to `agents.defaults.timeoutSeconds`)
+- `--thinking <nível>`
+- `--message <texto>`
+- `--timeout-ms <ms>` (padrão de `agents.defaults.timeoutSeconds`)
 - `--history-limit <n>`

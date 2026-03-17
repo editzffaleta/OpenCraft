@@ -1,16 +1,16 @@
 ---
-summary: Node + tsx "__name is not a function" crash notes and workarounds
+summary: 'Notas sobre crash "__name is not a function" do Node + tsx e soluções alternativas'
 read_when:
-  - Debugging Node-only dev scripts or watch mode failures
-  - Investigating tsx/esbuild loader crashes in OpenCraft
+  - Depurando scripts de desenvolvimento exclusivos do Node ou falhas no modo watch
+  - Investigando crashes do loader tsx/esbuild no OpenCraft
 title: "Node + tsx Crash"
 ---
 
-# Node + tsx "\_\_name is not a function" crash
+# Crash "\_\_name is not a function" do Node + tsx
 
-## Summary
+## Resumo
 
-Running OpenCraft via Node with `tsx` fails at startup with:
+Executar o OpenCraft via Node com `tsx` falha na inicialização com:
 
 ```
 [opencraft] Failed to start CLI: TypeError: __name is not a function
@@ -18,68 +18,68 @@ Running OpenCraft via Node with `tsx` fails at startup with:
     at .../src/agents/auth-profiles/constants.ts:25:20
 ```
 
-This began after switching dev scripts from Bun to `tsx` (commit `2871657e`, 2026-01-06). The same runtime path worked with Bun.
+Isso começou após trocar os scripts de desenvolvimento de Bun para `tsx` (commit `2871657e`, 06-01-2026). O mesmo caminho de runtime funcionava com Bun.
 
-## Environment
+## Ambiente
 
-- Node: v25.x (observed on v25.3.0)
+- Node: v25.x (observado no v25.3.0)
 - tsx: 4.21.0
-- OS: macOS (repro also likely on other platforms that run Node 25)
+- SO: macOS (reprodução provavelmente também em outras plataformas que executam Node 25)
 
-## Repro (Node-only)
+## Reprodução (somente Node)
 
 ```bash
-# in repo root
+# na raiz do repositório
 node --version
 pnpm install
 node --import tsx src/entry.ts status
 ```
 
-## Minimal repro in repo
+## Reprodução mínima no repositório
 
 ```bash
 node --import tsx scripts/repro/tsx-name-repro.ts
 ```
 
-## Node version check
+## Verificação de versão do Node
 
-- Node 25.3.0: fails
-- Node 22.22.0 (Homebrew `node@22`): fails
-- Node 24: not installed here yet; needs verification
+- Node 25.3.0: falha
+- Node 22.22.0 (Homebrew `node@22`): falha
+- Node 24: ainda não instalado aqui; necessita verificação
 
-## Notes / hypothesis
+## Notas / hipótese
 
-- `tsx` uses esbuild to transform TS/ESM. esbuild’s `keepNames` emits a `__name` helper and wraps function definitions with `__name(...)`.
-- The crash indicates `__name` exists but is not a function at runtime, which implies the helper is missing or overwritten for this module in the Node 25 loader path.
-- Similar `__name` helper issues have been reported in other esbuild consumers when the helper is missing or rewritten.
+- `tsx` usa esbuild para transformar TS/ESM. O `keepNames` do esbuild emite um helper `__name` e envolve definições de funções com `__name(...)`.
+- O crash indica que `__name` existe mas não é uma função em runtime, o que implica que o helper está ausente ou foi sobrescrito para este módulo no caminho do loader do Node 25.
+- Problemas similares com o helper `__name` foram reportados em outros consumidores do esbuild quando o helper está ausente ou reescrito.
 
-## Regression history
+## Histórico de regressão
 
-- `2871657e` (2026-01-06): scripts changed from Bun to tsx to make Bun optional.
-- Before that (Bun path), `opencraft status` and `gateway:watch` worked.
+- `2871657e` (06-01-2026): scripts mudaram de Bun para tsx para tornar Bun opcional.
+- Antes disso (caminho Bun), `opencraft status` e `gateway:watch` funcionavam.
 
-## Workarounds
+## Soluções alternativas
 
-- Use Bun for dev scripts (current temporary revert).
-- Use Node + tsc watch, then run compiled output:
+- Use Bun para scripts de desenvolvimento (reversão temporária atual).
+- Use Node + tsc watch, depois execute a saída compilada:
 
   ```bash
   pnpm exec tsc --watch --preserveWatchOutput
   node --watch openclaw.mjs status
   ```
 
-- Confirmed locally: `pnpm exec tsc -p tsconfig.json` + `node openclaw.mjs status` works on Node 25.
-- Disable esbuild keepNames in the TS loader if possible (prevents `__name` helper insertion); tsx does not currently expose this.
-- Test Node LTS (22/24) with `tsx` to see if the issue is Node 25–specific.
+- Confirmado localmente: `pnpm exec tsc -p tsconfig.json` + `node openclaw.mjs status` funciona no Node 25.
+- Desabilitar esbuild keepNames no loader TS se possível (previne inserção do helper `__name`); tsx atualmente não expõe isso.
+- Testar Node LTS (22/24) com `tsx` para ver se o problema é específico do Node 25.
 
-## References
+## Referências
 
 - [https://opennext.js.org/cloudflare/howtos/keep_names](https://opennext.js.org/cloudflare/howtos/keep_names)
 - [https://esbuild.github.io/api/#keep-names](https://esbuild.github.io/api/#keep-names)
 - [https://github.com/evanw/esbuild/issues/1031](https://github.com/evanw/esbuild/issues/1031)
 
-## Next steps
+## Próximos passos
 
-- Repro on Node 22/24 to confirm Node 25 regression.
-- Test `tsx` nightly or pin to earlier version if a known regression exists.
-- If reproduces on Node LTS, file a minimal repro upstream with the `__name` stack trace.
+- Reproduzir no Node 22/24 para confirmar regressão do Node 25.
+- Testar `tsx` nightly ou fixar em versão anterior se uma regressão conhecida existir.
+- Se reproduzir no Node LTS, registrar uma reprodução mínima upstream com o stack trace do `__name`.

@@ -1,63 +1,63 @@
 ---
-summary: "Elevated exec mode and /elevated directives"
+summary: "Modo exec elevado e diretivas /elevated"
 read_when:
-  - Adjusting elevated mode defaults, allowlists, or slash command behavior
-title: "Elevated Mode"
+  - Ajustando padrões do modo elevado, allowlists ou comportamento de slash command
+title: "Modo Elevado"
 ---
 
-# Elevated Mode (/elevated directives)
+# Modo Elevado (diretivas /elevated)
 
-## What it does
+## O que faz
 
-- `/elevated on` runs on the gateway host and keeps exec approvals (same as `/elevated ask`).
-- `/elevated full` runs on the gateway host **and** auto-approves exec (skips exec approvals).
-- `/elevated ask` runs on the gateway host but keeps exec approvals (same as `/elevated on`).
-- `on`/`ask` do **not** force `exec.security=full`; configured security/ask policy still applies.
-- Only changes behavior when the agent is **sandboxed** (otherwise exec already runs on the host).
-- Directive forms: `/elevated on|off|ask|full`, `/elev on|off|ask|full`.
-- Only `on|off|ask|full` are accepted; anything else returns a hint and does not change state.
+- `/elevated on` roda no host do Gateway e mantém aprovações de exec (igual a `/elevated ask`).
+- `/elevated full` roda no host do Gateway **e** auto-aprova exec (pula aprovações de exec).
+- `/elevated ask` roda no host do Gateway mas mantém aprovações de exec (igual a `/elevated on`).
+- `on`/`ask` **não** forçam `exec.security=full`; a política configurada de security/ask ainda se aplica.
+- Só muda o comportamento quando o agente está **em sandbox** (caso contrário exec já roda no host).
+- Formas de diretiva: `/elevated on|off|ask|full`, `/elev on|off|ask|full`.
+- Apenas `on|off|ask|full` são aceitos; qualquer outra coisa retorna uma dica e não muda o estado.
 
-## What it controls (and what it doesn’t)
+## O que controla (e o que não controla)
 
-- **Availability gates**: `tools.elevated` is the global baseline. `agents.list[].tools.elevated` can further restrict elevated per agent (both must allow).
-- **Per-session state**: `/elevated on|off|ask|full` sets the elevated level for the current session key.
-- **Inline directive**: `/elevated on|ask|full` inside a message applies to that message only.
-- **Groups**: In group chats, elevated directives are only honored when the agent is mentioned. Command-only messages that bypass mention requirements are treated as mentioned.
-- **Host execution**: elevated forces `exec` onto the gateway host; `full` also sets `security=full`.
-- **Approvals**: `full` skips exec approvals; `on`/`ask` honor them when allowlist/ask rules require.
-- **Unsandboxed agents**: no-op for location; only affects gating, logging, and status.
-- **Tool policy still applies**: if `exec` is denied by tool policy, elevated cannot be used.
-- **Separate from `/exec`**: `/exec` adjusts per-session defaults for authorized senders and does not require elevated.
+- **Gates de disponibilidade**: `tools.elevated` é a linha de base global. `agents.list[].tools.elevated` pode restringir ainda mais o elevado por agente (ambos devem permitir).
+- **Estado por sessão**: `/elevated on|off|ask|full` define o nível elevado para a chave de sessão atual.
+- **Diretiva inline**: `/elevated on|ask|full` dentro de uma mensagem se aplica apenas àquela mensagem.
+- **Grupos**: Em chats de grupo, diretivas elevadas são honradas apenas quando o agente é mencionado. Mensagens apenas de comando que ignoram requisitos de menção são tratadas como mencionadas.
+- **Execução no host**: elevado força `exec` no host do Gateway; `full` também define `security=full`.
+- **Aprovações**: `full` pula aprovações de exec; `on`/`ask` as honram quando regras de allowlist/ask exigem.
+- **Agentes sem sandbox**: sem efeito para localização; afeta apenas gating, logging e status.
+- **Política de ferramenta ainda se aplica**: se `exec` é negado por política de ferramenta, elevado não pode ser usado.
+- **Separado de `/exec`**: `/exec` ajusta padrões por sessão para remetentes autorizados e não requer elevado.
 
-## Resolution order
+## Ordem de resolução
 
-1. Inline directive on the message (applies only to that message).
-2. Session override (set by sending a directive-only message).
-3. Global default (`agents.defaults.elevatedDefault` in config).
+1. Diretiva inline na mensagem (aplica-se apenas àquela mensagem).
+2. Substituição de sessão (definida enviando uma mensagem apenas de diretiva).
+3. Padrão global (`agents.defaults.elevatedDefault` na config).
 
-## Setting a session default
+## Definindo um padrão de sessão
 
-- Send a message that is **only** the directive (whitespace allowed), e.g. `/elevated full`.
-- Confirmation reply is sent (`Elevated mode set to full...` / `Elevated mode disabled.`).
-- If elevated access is disabled or the sender is not on the approved allowlist, the directive replies with an actionable error and does not change session state.
-- Send `/elevated` (or `/elevated:`) with no argument to see the current elevated level.
+- Envie uma mensagem que seja **apenas** a diretiva (espaço em branco permitido), ex. `/elevated full`.
+- Resposta de confirmação é enviada (`Elevated mode set to full...` / `Elevated mode disabled.`).
+- Se o acesso elevado estiver desabilitado ou o remetente não estiver na allowlist aprovada, a diretiva responde com um erro acionável e não muda o estado da sessão.
+- Envie `/elevated` (ou `/elevated:`) sem argumento para ver o nível elevado atual.
 
-## Availability + allowlists
+## Disponibilidade + allowlists
 
-- Feature gate: `tools.elevated.enabled` (default can be off via config even if the code supports it).
-- Sender allowlist: `tools.elevated.allowFrom` with per-provider allowlists (e.g. `discord`, `whatsapp`).
-- Unprefixed allowlist entries match sender-scoped identity values only (`SenderId`, `SenderE164`, `From`); recipient routing fields are never used for elevated authorization.
-- Mutable sender metadata requires explicit prefixes:
-  - `name:<value>` matches `SenderName`
-  - `username:<value>` matches `SenderUsername`
-  - `tag:<value>` matches `SenderTag`
-  - `id:<value>`, `from:<value>`, `e164:<value>` are available for explicit identity targeting
-- Per-agent gate: `agents.list[].tools.elevated.enabled` (optional; can only further restrict).
-- Per-agent allowlist: `agents.list[].tools.elevated.allowFrom` (optional; when set, the sender must match **both** global + per-agent allowlists).
-- Discord fallback: if `tools.elevated.allowFrom.discord` is omitted, the `channels.discord.allowFrom` list is used as a fallback (legacy: `channels.discord.dm.allowFrom`). Set `tools.elevated.allowFrom.discord` (even `[]`) to override. Per-agent allowlists do **not** use the fallback.
-- All gates must pass; otherwise elevated is treated as unavailable.
+- Gate de funcionalidade: `tools.elevated.enabled` (padrão pode estar desligado via config mesmo que o código suporte).
+- Allowlist de remetente: `tools.elevated.allowFrom` com allowlists por provedor (ex. `discord`, `whatsapp`).
+- Entradas de allowlist sem prefixo correspondem apenas a valores de identidade com escopo de remetente (`SenderId`, `SenderE164`, `From`); campos de roteamento de destinatário nunca são usados para autorização elevada.
+- Metadados mutáveis de remetente requerem prefixos explícitos:
+  - `name:<value>` corresponde a `SenderName`
+  - `username:<value>` corresponde a `SenderUsername`
+  - `tag:<value>` corresponde a `SenderTag`
+  - `id:<value>`, `from:<value>`, `e164:<value>` estão disponíveis para targeting explícito de identidade
+- Gate por agente: `agents.list[].tools.elevated.enabled` (opcional; pode apenas restringir mais).
+- Allowlist por agente: `agents.list[].tools.elevated.allowFrom` (opcional; quando definida, o remetente deve corresponder **ambas** allowlists global + por agente).
+- Fallback do Discord: se `tools.elevated.allowFrom.discord` for omitido, a lista `channels.discord.allowFrom` é usada como fallback (legacy: `channels.discord.dm.allowFrom`). Defina `tools.elevated.allowFrom.discord` (mesmo `[]`) para substituir. Allowlists por agente **não** usam o fallback.
+- Todos os gates devem passar; caso contrário, elevado é tratado como indisponível.
 
 ## Logging + status
 
-- Elevated exec calls are logged at info level.
-- Session status includes elevated mode (e.g. `elevated=ask`, `elevated=full`).
+- Chamadas exec elevadas são registradas no nível info.
+- Status da sessão inclui modo elevado (ex. `elevated=ask`, `elevated=full`).

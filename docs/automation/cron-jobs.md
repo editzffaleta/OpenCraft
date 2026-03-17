@@ -1,41 +1,41 @@
 ---
-summary: "Cron jobs + wakeups for the Gateway scheduler"
+summary: "Cron jobs + wakeups para o agendador do Gateway"
 read_when:
-  - Scheduling background jobs or wakeups
-  - Wiring automation that should run with or alongside heartbeats
-  - Deciding between heartbeat and cron for scheduled tasks
+  - Agendando jobs em segundo plano ou wakeups
+  - Conectando automação que deve executar com ou junto aos heartbeats
+  - Decidindo entre heartbeat e Cron para tarefas agendadas
 title: "Cron Jobs"
 ---
 
-# Cron jobs (Gateway scheduler)
+# Cron jobs (agendador do Gateway)
 
-> **Cron vs Heartbeat?** See [Cron vs Heartbeat](/automation/cron-vs-heartbeat) for guidance on when to use each.
+> **Cron vs Heartbeat?** Veja [Cron vs Heartbeat](/automation/cron-vs-heartbeat) para orientação sobre quando usar cada um.
 
-Cron is the Gateway’s built-in scheduler. It persists jobs, wakes the agent at
-the right time, and can optionally deliver output back to a chat.
+Cron é o agendador integrado do Gateway. Ele persiste jobs, acorda o agente no
+horário certo e pode opcionalmente entregar a saída de volta para um chat.
 
-If you want _“run this every morning”_ or _“poke the agent in 20 minutes”_,
-cron is the mechanism.
+Se você quer _"executar isso toda manhã"_ ou _"cutucar o agente em 20 minutos"_,
+Cron é o mecanismo.
 
-Troubleshooting: [/automation/troubleshooting](/automation/troubleshooting)
+Solução de problemas: [/automation/troubleshooting](/automation/troubleshooting)
 
-## TL;DR
+## Resumo
 
-- Cron runs **inside the Gateway** (not inside the model).
-- Jobs persist under `~/.opencraft/cron/` so restarts don’t lose schedules.
-- Two execution styles:
-  - **Main session**: enqueue a system event, then run on the next heartbeat.
-  - **Isolated**: run a dedicated agent turn in `cron:<jobId>` or a custom session, with delivery (announce by default or none).
-  - **Current session**: bind to the session where the cron is created (`sessionTarget: "current"`).
-  - **Custom session**: run in a persistent named session (`sessionTarget: "session:custom-id"`).
-- Wakeups are first-class: a job can request “wake now” vs “next heartbeat”.
-- Webhook posting is per job via `delivery.mode = "webhook"` + `delivery.to = "<url>"`.
-- Legacy fallback remains for stored jobs with `notify: true` when `cron.webhook` is set, migrate those jobs to webhook delivery mode.
-- For upgrades, `opencraft doctor --fix` can normalize legacy cron store fields before the scheduler touches them.
+- Cron executa **dentro do Gateway** (não dentro do modelo).
+- Jobs persistem em `~/.opencraft/cron/` para que reinicializações não percam agendamentos.
+- Dois estilos de execução:
+  - **Sessão principal**: enfileira um evento do sistema, depois executa no próximo heartbeat.
+  - **Isolado**: executa uma rodada dedicada do agente em `cron:<jobId>` ou uma sessão personalizada, com entrega (announce por padrão ou nenhuma).
+  - **Sessão atual**: vincula à sessão onde o Cron é criado (`sessionTarget: "current"`).
+  - **Sessão personalizada**: executa em uma sessão nomeada persistente (`sessionTarget: "session:custom-id"`).
+- Wakeups são de primeira classe: um job pode solicitar "acordar agora" vs "próximo heartbeat".
+- Postagem via Webhook é por job via `delivery.mode = "webhook"` + `delivery.to = "<url>"`.
+- Fallback legado permanece para jobs armazenados com `notify: true` quando `cron.webhook` está definido, migre esses jobs para o modo de entrega Webhook.
+- Para upgrades, `opencraft doctor --fix` pode normalizar campos legados do armazenamento Cron antes que o agendador os toque.
 
-## Quick start (actionable)
+## Início rápido (acionável)
 
-Create a one-shot reminder, verify it exists, and run it immediately:
+Crie um lembrete único, verifique se ele existe e execute-o imediatamente:
 
 ```bash
 opencraft cron add \
@@ -51,7 +51,7 @@ opencraft cron run <job-id>
 opencraft cron runs --id <job-id>
 ```
 
-Schedule a recurring isolated job with delivery:
+Agende um job isolado recorrente com entrega:
 
 ```bash
 opencraft cron add \
@@ -65,239 +65,239 @@ opencraft cron add \
   --to "channel:C1234567890"
 ```
 
-## Tool-call equivalents (Gateway cron tool)
+## Equivalentes de chamada de ferramenta (ferramenta Cron do Gateway)
 
-For the canonical JSON shapes and examples, see [JSON schema for tool calls](/automation/cron-jobs#json-schema-for-tool-calls).
+Para os formatos JSON canônicos e exemplos, veja [Esquema JSON para chamadas de ferramenta](/automation/cron-jobs#json-schema-for-tool-calls).
 
-## Where cron jobs are stored
+## Onde os Cron jobs são armazenados
 
-Cron jobs are persisted on the Gateway host at `~/.opencraft/cron/jobs.json` by default.
-The Gateway loads the file into memory and writes it back on changes, so manual edits
-are only safe when the Gateway is stopped. Prefer `opencraft cron add/edit` or the cron
-tool call API for changes.
+Cron jobs são persistidos no host do Gateway em `~/.opencraft/cron/jobs.json` por padrão.
+O Gateway carrega o arquivo na memória e o escreve de volta nas alterações, então edições manuais
+são seguras apenas quando o Gateway está parado. Prefira `opencraft cron add/edit` ou a API de
+chamada de ferramenta Cron para alterações.
 
-## Beginner-friendly overview
+## Visão geral amigável para iniciantes
 
-Think of a cron job as: **when** to run + **what** to do.
+Pense em um Cron job como: **quando** executar + **o que** fazer.
 
-1. **Choose a schedule**
-   - One-shot reminder → `schedule.kind = "at"` (CLI: `--at`)
-   - Repeating job → `schedule.kind = "every"` or `schedule.kind = "cron"`
-   - If your ISO timestamp omits a timezone, it is treated as **UTC**.
+1. **Escolha um agendamento**
+   - Lembrete único → `schedule.kind = "at"` (CLI: `--at`)
+   - Job recorrente → `schedule.kind = "every"` ou `schedule.kind = "cron"`
+   - Se seu timestamp ISO omitir um fuso horário, ele é tratado como **UTC**.
 
-2. **Choose where it runs**
-   - `sessionTarget: "main"` → run during the next heartbeat with main context.
-   - `sessionTarget: "isolated"` → run a dedicated agent turn in `cron:<jobId>`.
-   - `sessionTarget: "current"` → bind to the current session (resolved at creation time to `session:<sessionKey>`).
-   - `sessionTarget: "session:custom-id"` → run in a persistent named session that maintains context across runs.
+2. **Escolha onde ele executa**
+   - `sessionTarget: "main"` → executar durante o próximo heartbeat com contexto principal.
+   - `sessionTarget: "isolated"` → executar uma rodada dedicada do agente em `cron:<jobId>`.
+   - `sessionTarget: "current"` → vincular à sessão atual (resolvido no momento da criação para `session:<sessionKey>`).
+   - `sessionTarget: "session:custom-id"` → executar em uma sessão nomeada persistente que mantém contexto entre execuções.
 
-   Default behavior (unchanged):
-   - `systemEvent` payloads default to `main`
-   - `agentTurn` payloads default to `isolated`
+   Comportamento padrão (inalterado):
+   - Payloads `systemEvent` usam `main` por padrão
+   - Payloads `agentTurn` usam `isolated` por padrão
 
-   To use current session binding, explicitly set `sessionTarget: "current"`.
+   Para usar vinculação à sessão atual, defina explicitamente `sessionTarget: "current"`.
 
-3. **Choose the payload**
-   - Main session → `payload.kind = "systemEvent"`
-   - Isolated session → `payload.kind = "agentTurn"`
+3. **Escolha o payload**
+   - Sessão principal → `payload.kind = "systemEvent"`
+   - Sessão isolada → `payload.kind = "agentTurn"`
 
-Optional: one-shot jobs (`schedule.kind = "at"`) delete after success by default. Set
-`deleteAfterRun: false` to keep them (they will disable after success).
+Opcional: jobs únicos (`schedule.kind = "at"`) são deletados após sucesso por padrão. Defina
+`deleteAfterRun: false` para mantê-los (eles serão desabilitados após sucesso).
 
-## Concepts
+## Conceitos
 
 ### Jobs
 
-A cron job is a stored record with:
+Um Cron job é um registro armazenado com:
 
-- a **schedule** (when it should run),
-- a **payload** (what it should do),
-- optional **delivery mode** (`announce`, `webhook`, or `none`).
-- optional **agent binding** (`agentId`): run the job under a specific agent; if
-  missing or unknown, the gateway falls back to the default agent.
+- um **agendamento** (quando deve executar),
+- um **payload** (o que deve fazer),
+- **modo de entrega** opcional (`announce`, `webhook`, ou `none`).
+- **vinculação de agente** opcional (`agentId`): executar o job sob um agente específico; se
+  ausente ou desconhecido, o Gateway recorre ao agente padrão.
 
-Jobs are identified by a stable `jobId` (used by CLI/Gateway APIs).
-In agent tool calls, `jobId` is canonical; legacy `id` is accepted for compatibility.
-One-shot jobs auto-delete after success by default; set `deleteAfterRun: false` to keep them.
+Jobs são identificados por um `jobId` estável (usado pelas APIs do CLI/Gateway).
+Em chamadas de ferramenta do agente, `jobId` é canônico; `id` legado é aceito por compatibilidade.
+Jobs únicos são auto-deletados após sucesso por padrão; defina `deleteAfterRun: false` para mantê-los.
 
-### Schedules
+### Agendamentos
 
-Cron supports three schedule kinds:
+Cron suporta três tipos de agendamento:
 
-- `at`: one-shot timestamp via `schedule.at` (ISO 8601).
-- `every`: fixed interval (ms).
-- `cron`: 5-field cron expression (or 6-field with seconds) with optional IANA timezone.
+- `at`: timestamp único via `schedule.at` (ISO 8601).
+- `every`: intervalo fixo (ms).
+- `cron`: expressão Cron de 5 campos (ou 6 campos com segundos) com fuso horário IANA opcional.
 
-Cron expressions use `croner`. If a timezone is omitted, the Gateway host’s
-local timezone is used.
+Expressões Cron usam `croner`. Se um fuso horário for omitido, o
+fuso horário local do host do Gateway é usado.
 
-To reduce top-of-hour load spikes across many gateways, OpenCraft applies a
-deterministic per-job stagger window of up to 5 minutes for recurring
-top-of-hour expressions (for example `0 * * * *`, `0 */2 * * *`). Fixed-hour
-expressions such as `0 7 * * *` remain exact.
+Para reduzir picos de carga no topo da hora em muitos Gateways, o OpenCraft aplica uma
+janela de escalonamento determinística por job de até 5 minutos para expressões recorrentes
+no topo da hora (por exemplo `0 * * * *`, `0 */2 * * *`). Expressões de hora fixa
+como `0 7 * * *` permanecem exatas.
 
-For any cron schedule, you can set an explicit stagger window with `schedule.staggerMs`
-(`0` keeps exact timing). CLI shortcuts:
+Para qualquer agendamento Cron, você pode definir uma janela de escalonamento explícita com `schedule.staggerMs`
+(`0` mantém temporização exata). Atalhos do CLI:
 
-- `--stagger 30s` (or `1m`, `5m`) to set an explicit stagger window.
-- `--exact` to force `staggerMs = 0`.
+- `--stagger 30s` (ou `1m`, `5m`) para definir uma janela de escalonamento explícita.
+- `--exact` para forçar `staggerMs = 0`.
 
-### Main vs isolated execution
+### Execução principal vs isolada
 
-#### Main session jobs (system events)
+#### Jobs de sessão principal (eventos do sistema)
 
-Main jobs enqueue a system event and optionally wake the heartbeat runner.
-They must use `payload.kind = "systemEvent"`.
+Jobs principais enfileiram um evento do sistema e opcionalmente acordam o executor de heartbeat.
+Eles devem usar `payload.kind = "systemEvent"`.
 
-- `wakeMode: "now"` (default): event triggers an immediate heartbeat run.
-- `wakeMode: "next-heartbeat"`: event waits for the next scheduled heartbeat.
+- `wakeMode: "now"` (padrão): evento dispara uma execução imediata de heartbeat.
+- `wakeMode: "next-heartbeat"`: evento espera o próximo heartbeat agendado.
 
-This is the best fit when you want the normal heartbeat prompt + main-session context.
-See [Heartbeat](/gateway/heartbeat).
+Esta é a melhor opção quando você quer o prompt normal do heartbeat + contexto da sessão principal.
+Veja [Heartbeat](/gateway/heartbeat).
 
-#### Isolated jobs (dedicated cron sessions)
+#### Jobs isolados (sessões Cron dedicadas)
 
-Isolated jobs run a dedicated agent turn in session `cron:<jobId>` or a custom session.
+Jobs isolados executam uma rodada dedicada do agente na sessão `cron:<jobId>` ou uma sessão personalizada.
 
-Key behaviors:
+Comportamentos principais:
 
-- Prompt is prefixed with `[cron:<jobId> <job name>]` for traceability.
-- Each run starts a **fresh session id** (no prior conversation carry-over), unless using a custom session.
-- Custom sessions (`session:xxx`) persist context across runs, enabling workflows like daily standups that build on previous summaries.
-- Default behavior: if `delivery` is omitted, isolated jobs announce a summary (`delivery.mode = "announce"`).
-- `delivery.mode` chooses what happens:
-  - `announce`: deliver a summary to the target channel and post a brief summary to the main session.
-  - `webhook`: POST the finished event payload to `delivery.to` when the finished event includes a summary.
-  - `none`: internal only (no delivery, no main-session summary).
-- `wakeMode` controls when the main-session summary posts:
-  - `now`: immediate heartbeat.
-  - `next-heartbeat`: waits for the next scheduled heartbeat.
+- O prompt é prefixado com `[cron:<jobId> <nome do job>]` para rastreabilidade.
+- Cada execução inicia um **id de sessão novo** (sem continuação de conversa anterior), a menos que use uma sessão personalizada.
+- Sessões personalizadas (`session:xxx`) persistem contexto entre execuções, habilitando fluxos de trabalho como standups diários que se baseiam em resumos anteriores.
+- Comportamento padrão: se `delivery` for omitido, jobs isolados anunciam um resumo (`delivery.mode = "announce"`).
+- `delivery.mode` escolhe o que acontece:
+  - `announce`: entrega um resumo para o canal alvo e publica um breve resumo na sessão principal.
+  - `webhook`: POST do payload do evento finalizado para `delivery.to` quando o evento finalizado inclui um resumo.
+  - `none`: somente interno (sem entrega, sem resumo na sessão principal).
+- `wakeMode` controla quando o resumo da sessão principal é publicado:
+  - `now`: heartbeat imediato.
+  - `next-heartbeat`: espera o próximo heartbeat agendado.
 
-Use isolated jobs for noisy, frequent, or "background chores" that shouldn't spam
-your main chat history.
+Use jobs isolados para tarefas ruidosas, frequentes ou "trabalhos de fundo" que não devem poluir
+seu histórico de chat principal.
 
-### Payload shapes (what runs)
+### Formatos de payload (o que executa)
 
-Two payload kinds are supported:
+Dois tipos de payload são suportados:
 
-- `systemEvent`: main-session only, routed through the heartbeat prompt.
-- `agentTurn`: isolated-session only, runs a dedicated agent turn.
+- `systemEvent`: somente sessão principal, roteado através do prompt de heartbeat.
+- `agentTurn`: somente sessão isolada, executa uma rodada dedicada do agente.
 
-Common `agentTurn` fields:
+Campos comuns de `agentTurn`:
 
-- `message`: required text prompt.
-- `model` / `thinking`: optional overrides (see below).
-- `timeoutSeconds`: optional timeout override.
-- `lightContext`: optional lightweight bootstrap mode for jobs that do not need workspace bootstrap file injection.
+- `message`: prompt de texto obrigatório.
+- `model` / `thinking`: sobrescritas opcionais (veja abaixo).
+- `timeoutSeconds`: sobrescrita opcional de timeout.
+- `lightContext`: modo opcional de bootstrap leve para jobs que não precisam de injeção de arquivos de bootstrap do workspace.
 
-Delivery config:
+Configuração de entrega:
 
 - `delivery.mode`: `none` | `announce` | `webhook`.
-- `delivery.channel`: `last` or a specific channel.
-- `delivery.to`: channel-specific target (announce) or webhook URL (webhook mode).
-- `delivery.bestEffort`: avoid failing the job if announce delivery fails.
+- `delivery.channel`: `last` ou um canal específico.
+- `delivery.to`: alvo específico do canal (announce) ou URL do Webhook (modo webhook).
+- `delivery.bestEffort`: evitar falhar o job se a entrega announce falhar.
 
-Announce delivery suppresses messaging tool sends for the run; use `delivery.channel`/`delivery.to`
-to target the chat instead. When `delivery.mode = "none"`, no summary is posted to the main session.
+A entrega announce suprime envios de ferramenta de mensagens para a execução; use `delivery.channel`/`delivery.to`
+para direcionar o chat em vez disso. Quando `delivery.mode = "none"`, nenhum resumo é publicado na sessão principal.
 
-If `delivery` is omitted for isolated jobs, OpenCraft defaults to `announce`.
+Se `delivery` for omitido para jobs isolados, o OpenCraft usa `announce` por padrão.
 
-#### Announce delivery flow
+#### Fluxo de entrega announce
 
-When `delivery.mode = "announce"`, cron delivers directly via the outbound channel adapters.
-The main agent is not spun up to craft or forward the message.
+Quando `delivery.mode = "announce"`, o Cron entrega diretamente via os adaptadores de canal de saída.
+O agente principal não é iniciado para elaborar ou encaminhar a mensagem.
 
-Behavior details:
+Detalhes do comportamento:
 
-- Content: delivery uses the isolated run's outbound payloads (text/media) with normal chunking and
-  channel formatting.
-- Heartbeat-only responses (`HEARTBEAT_OK` with no real content) are not delivered.
-- If the isolated run already sent a message to the same target via the message tool, delivery is
-  skipped to avoid duplicates.
-- Missing or invalid delivery targets fail the job unless `delivery.bestEffort = true`.
-- A short summary is posted to the main session only when `delivery.mode = "announce"`.
-- The main-session summary respects `wakeMode`: `now` triggers an immediate heartbeat and
-  `next-heartbeat` waits for the next scheduled heartbeat.
+- Conteúdo: a entrega usa os payloads de saída da execução isolada (texto/mídia) com chunking normal e
+  formatação de canal.
+- Respostas somente de heartbeat (`HEARTBEAT_OK` sem conteúdo real) não são entregues.
+- Se a execução isolada já enviou uma mensagem para o mesmo alvo via a ferramenta de mensagem, a entrega é
+  pulada para evitar duplicatas.
+- Alvos de entrega ausentes ou inválidos falham o job a menos que `delivery.bestEffort = true`.
+- Um resumo curto é publicado na sessão principal somente quando `delivery.mode = "announce"`.
+- O resumo da sessão principal respeita `wakeMode`: `now` dispara um heartbeat imediato e
+  `next-heartbeat` espera o próximo heartbeat agendado.
 
-#### Webhook delivery flow
+#### Fluxo de entrega Webhook
 
-When `delivery.mode = "webhook"`, cron posts the finished event payload to `delivery.to` when the finished event includes a summary.
+Quando `delivery.mode = "webhook"`, o Cron posta o payload do evento finalizado para `delivery.to` quando o evento finalizado inclui um resumo.
 
-Behavior details:
+Detalhes do comportamento:
 
-- The endpoint must be a valid HTTP(S) URL.
-- No channel delivery is attempted in webhook mode.
-- No main-session summary is posted in webhook mode.
-- If `cron.webhookToken` is set, auth header is `Authorization: Bearer <cron.webhookToken>`.
-- Deprecated fallback: stored legacy jobs with `notify: true` still post to `cron.webhook` (if configured), with a warning so you can migrate to `delivery.mode = "webhook"`.
+- O endpoint deve ser uma URL HTTP(S) válida.
+- Nenhuma entrega de canal é tentada no modo Webhook.
+- Nenhum resumo de sessão principal é publicado no modo Webhook.
+- Se `cron.webhookToken` estiver definido, o cabeçalho de autenticação é `Authorization: Bearer <cron.webhookToken>`.
+- Fallback descontinuado: jobs legados armazenados com `notify: true` ainda postam para `cron.webhook` (se configurado), com um aviso para que você possa migrar para `delivery.mode = "webhook"`.
 
-### Model and thinking overrides
+### Sobrescritas de modelo e pensamento
 
-Isolated jobs (`agentTurn`) can override the model and thinking level:
+Jobs isolados (`agentTurn`) podem sobrescrever o modelo e nível de pensamento:
 
-- `model`: Provider/model string (e.g., `anthropic/claude-sonnet-4-20250514`) or alias (e.g., `opus`)
-- `thinking`: Thinking level (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`; GPT-5.2 + Codex models only)
+- `model`: String provedor/modelo (ex., `anthropic/claude-sonnet-4-20250514`) ou alias (ex., `opus`)
+- `thinking`: Nível de pensamento (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`; somente modelos GPT-5.2 + Codex)
 
-Note: You can set `model` on main-session jobs too, but it changes the shared main
-session model. We recommend model overrides only for isolated jobs to avoid
-unexpected context shifts.
+Nota: Você pode definir `model` em jobs de sessão principal também, mas isso muda o
+modelo compartilhado da sessão principal. Recomendamos sobrescritas de modelo somente para jobs isolados para evitar
+mudanças inesperadas de contexto.
 
-Resolution priority:
+Prioridade de resolução:
 
-1. Job payload override (highest)
-2. Hook-specific defaults (e.g., `hooks.gmail.model`)
-3. Agent config default
+1. Sobrescrita do payload do job (maior prioridade)
+2. Padrões específicos do hook (ex., `hooks.gmail.model`)
+3. Padrão de configuração do agente
 
-### Lightweight bootstrap context
+### Contexto de bootstrap leve
 
-Isolated jobs (`agentTurn`) can set `lightContext: true` to run with lightweight bootstrap context.
+Jobs isolados (`agentTurn`) podem definir `lightContext: true` para executar com contexto de bootstrap leve.
 
-- Use this for scheduled chores that do not need workspace bootstrap file injection.
-- In practice, the embedded runtime runs with `bootstrapContextMode: "lightweight"`, which keeps cron bootstrap context empty on purpose.
-- CLI equivalents: `opencraft cron add --light-context ...` and `opencraft cron edit --light-context`.
+- Use isso para tarefas agendadas que não precisam de injeção de arquivos de bootstrap do workspace.
+- Na prática, o runtime embarcado executa com `bootstrapContextMode: "lightweight"`, que mantém o contexto de bootstrap do Cron vazio propositalmente.
+- Equivalentes no CLI: `opencraft cron add --light-context ...` e `opencraft cron edit --light-context`.
 
-### Delivery (channel + target)
+### Entrega (canal + alvo)
 
-Isolated jobs can deliver output to a channel via the top-level `delivery` config:
+Jobs isolados podem entregar saída para um canal via a configuração de `delivery` de nível superior:
 
-- `delivery.mode`: `announce` (channel delivery), `webhook` (HTTP POST), or `none`.
-- `delivery.channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost` (plugin) / `signal` / `imessage` / `last`.
-- `delivery.to`: channel-specific recipient target.
+- `delivery.mode`: `announce` (entrega de canal), `webhook` (HTTP POST), ou `none`.
+- `delivery.channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost` (Plugin) / `signal` / `imessage` / `last`.
+- `delivery.to`: alvo destinatário específico do canal.
 
-`announce` delivery is only valid for isolated jobs (`sessionTarget: "isolated"`).
-`webhook` delivery is valid for both main and isolated jobs.
+Entrega `announce` é válida apenas para jobs isolados (`sessionTarget: "isolated"`).
+Entrega `webhook` é válida tanto para jobs principais quanto isolados.
 
-If `delivery.channel` or `delivery.to` is omitted, cron can fall back to the main session’s
-“last route” (the last place the agent replied).
+Se `delivery.channel` ou `delivery.to` for omitido, o Cron pode recorrer à
+"última rota" da sessão principal (o último lugar onde o agente respondeu).
 
-Target format reminders:
+Lembretes de formato de alvo:
 
-- Slack/Discord/Mattermost (plugin) targets should use explicit prefixes (e.g. `channel:<id>`, `user:<id>`) to avoid ambiguity.
-  Mattermost bare 26-char IDs are resolved **user-first** (DM if user exists, channel otherwise) — use `user:<id>` or `channel:<id>` for deterministic routing.
-- Telegram topics should use the `:topic:` form (see below).
+- Alvos Slack/Discord/Mattermost (Plugin) devem usar prefixos explícitos (ex. `channel:<id>`, `user:<id>`) para evitar ambiguidade.
+  IDs de 26 caracteres do Mattermost são resolvidos **usuário primeiro** (DM se o usuário existir, canal caso contrário) — use `user:<id>` ou `channel:<id>` para roteamento determinístico.
+- Tópicos do Telegram devem usar o formato `:topic:` (veja abaixo).
 
-#### Telegram delivery targets (topics / forum threads)
+#### Alvos de entrega do Telegram (tópicos / threads de fórum)
 
-Telegram supports forum topics via `message_thread_id`. For cron delivery, you can encode
-the topic/thread into the `to` field:
+O Telegram suporta tópicos de fórum via `message_thread_id`. Para entrega Cron, você pode codificar
+o tópico/thread no campo `to`:
 
-- `-1001234567890` (chat id only)
-- `-1001234567890:topic:123` (preferred: explicit topic marker)
-- `-1001234567890:123` (shorthand: numeric suffix)
+- `-1001234567890` (somente id do chat)
+- `-1001234567890:topic:123` (preferido: marcador explícito de tópico)
+- `-1001234567890:123` (abreviação: sufixo numérico)
 
-Prefixed targets like `telegram:...` / `telegram:group:...` are also accepted:
+Alvos prefixados como `telegram:...` / `telegram:group:...` também são aceitos:
 
 - `telegram:group:-1001234567890:topic:123`
 
-## JSON schema for tool calls
+## Esquema JSON para chamadas de ferramenta
 
-Use these shapes when calling Gateway `cron.*` tools directly (agent tool calls or RPC).
-CLI flags accept human durations like `20m`, but tool calls should use an ISO 8601 string
-for `schedule.at` and milliseconds for `schedule.everyMs`.
+Use estes formatos ao chamar ferramentas `cron.*` do Gateway diretamente (chamadas de ferramenta do agente ou RPC).
+Flags do CLI aceitam durações humanas como `20m`, mas chamadas de ferramenta devem usar uma string ISO 8601
+para `schedule.at` e milissegundos para `schedule.everyMs`.
 
-### cron.add params
+### Parâmetros de cron.add
 
-One-shot, main session job (system event):
+Job único, sessão principal (evento do sistema):
 
 ```json
 {
@@ -310,7 +310,7 @@ One-shot, main session job (system event):
 }
 ```
 
-Recurring, isolated job with delivery:
+Job isolado recorrente com entrega:
 
 ```json
 {
@@ -332,7 +332,7 @@ Recurring, isolated job with delivery:
 }
 ```
 
-Recurring job bound to current session (auto-resolved at creation):
+Job recorrente vinculado à sessão atual (auto-resolvido na criação):
 
 ```json
 {
@@ -346,7 +346,7 @@ Recurring job bound to current session (auto-resolved at creation):
 }
 ```
 
-Recurring job in a custom persistent session:
+Job recorrente em uma sessão persistente personalizada:
 
 ```json
 {
@@ -360,19 +360,19 @@ Recurring job in a custom persistent session:
 }
 ```
 
-Notes:
+Notas:
 
-- `schedule.kind`: `at` (`at`), `every` (`everyMs`), or `cron` (`expr`, optional `tz`).
-- `schedule.at` accepts ISO 8601 (timezone optional; treated as UTC when omitted).
-- `everyMs` is milliseconds.
-- `sessionTarget`: `"main"`, `"isolated"`, `"current"`, or `"session:<custom-id>"`.
-- `"current"` is resolved to `"session:<sessionKey>"` at creation time.
-- Custom sessions (`session:xxx`) maintain persistent context across runs.
-- Optional fields: `agentId`, `description`, `enabled`, `deleteAfterRun` (defaults to true for `at`),
+- `schedule.kind`: `at` (`at`), `every` (`everyMs`), ou `cron` (`expr`, `tz` opcional).
+- `schedule.at` aceita ISO 8601 (fuso horário opcional; tratado como UTC quando omitido).
+- `everyMs` é em milissegundos.
+- `sessionTarget`: `"main"`, `"isolated"`, `"current"`, ou `"session:<custom-id>"`.
+- `"current"` é resolvido para `"session:<sessionKey>"` no momento da criação.
+- Sessões personalizadas (`session:xxx`) mantêm contexto persistente entre execuções.
+- Campos opcionais: `agentId`, `description`, `enabled`, `deleteAfterRun` (padrão true para `at`),
   `delivery`.
-- `wakeMode` defaults to `"now"` when omitted.
+- `wakeMode` padrão é `"now"` quando omitido.
 
-### cron.update params
+### Parâmetros de cron.update
 
 ```json
 {
@@ -384,12 +384,12 @@ Notes:
 }
 ```
 
-Notes:
+Notas:
 
-- `jobId` is canonical; `id` is accepted for compatibility.
-- Use `agentId: null` in the patch to clear an agent binding.
+- `jobId` é canônico; `id` é aceito por compatibilidade.
+- Use `agentId: null` no patch para limpar uma vinculação de agente.
 
-### cron.run and cron.remove params
+### Parâmetros de cron.run e cron.remove
 
 ```json
 { "jobId": "job-123", "mode": "force" }
@@ -399,129 +399,129 @@ Notes:
 { "jobId": "job-123" }
 ```
 
-## Storage & history
+## Armazenamento e histórico
 
-- Job store: `~/.opencraft/cron/jobs.json` (Gateway-managed JSON).
-- Run history: `~/.opencraft/cron/runs/<jobId>.jsonl` (JSONL, auto-pruned by size and line count).
-- Isolated cron run sessions in `sessions.json` are pruned by `cron.sessionRetention` (default `24h`; set `false` to disable).
-- Override store path: `cron.store` in config.
+- Armazenamento de jobs: `~/.opencraft/cron/jobs.json` (JSON gerenciado pelo Gateway).
+- Histórico de execuções: `~/.opencraft/cron/runs/<jobId>.jsonl` (JSONL, podado automaticamente por tamanho e contagem de linhas).
+- Sessões de execução Cron isoladas em `sessions.json` são podadas por `cron.sessionRetention` (padrão `24h`; defina `false` para desabilitar).
+- Sobrescrever caminho do armazenamento: `cron.store` na configuração.
 
-## Retry policy
+## Política de retry
 
-When a job fails, OpenCraft classifies errors as **transient** (retryable) or **permanent** (disable immediately).
+Quando um job falha, o OpenCraft classifica erros como **transientes** (podem ser retentados) ou **permanentes** (desabilitar imediatamente).
 
-### Transient errors (retried)
+### Erros transientes (retentados)
 
-- Rate limit (429, too many requests, resource exhausted)
-- Provider overload (for example Anthropic `529 overloaded_error`, overload fallback summaries)
-- Network errors (timeout, ECONNRESET, fetch failed, socket)
-- Server errors (5xx)
-- Cloudflare-related errors
+- Limite de taxa (429, muitas requisições, recurso esgotado)
+- Sobrecarga do provedor (por exemplo Anthropic `529 overloaded_error`, resumos de fallback de sobrecarga)
+- Erros de rede (timeout, ECONNRESET, falha de fetch, socket)
+- Erros de servidor (5xx)
+- Erros relacionados ao Cloudflare
 
-### Permanent errors (no retry)
+### Erros permanentes (sem retry)
 
-- Auth failures (invalid API key, unauthorized)
-- Config or validation errors
-- Other non-transient errors
+- Falhas de autenticação (API key inválida, não autorizado)
+- Erros de configuração ou validação
+- Outros erros não transientes
 
-### Default behavior (no config)
+### Comportamento padrão (sem configuração)
 
-**One-shot jobs (`schedule.kind: "at"`):**
+**Jobs únicos (`schedule.kind: "at"`):**
 
-- On transient error: retry up to 3 times with exponential backoff (30s → 1m → 5m).
-- On permanent error: disable immediately.
-- On success or skip: disable (or delete if `deleteAfterRun: true`).
+- Em erro transiente: retenta até 3 vezes com backoff exponencial (30s → 1m → 5m).
+- Em erro permanente: desabilita imediatamente.
+- Em sucesso ou pulo: desabilita (ou deleta se `deleteAfterRun: true`).
 
-**Recurring jobs (`cron` / `every`):**
+**Jobs recorrentes (`cron` / `every`):**
 
-- On any error: apply exponential backoff (30s → 1m → 5m → 15m → 60m) before the next scheduled run.
-- Job stays enabled; backoff resets after the next successful run.
+- Em qualquer erro: aplica backoff exponencial (30s → 1m → 5m → 15m → 60m) antes da próxima execução agendada.
+- Job permanece habilitado; backoff reinicia após a próxima execução bem-sucedida.
 
-Configure `cron.retry` to override these defaults (see [Configuration](/automation/cron-jobs#configuration)).
+Configure `cron.retry` para sobrescrever esses padrões (veja [Configuração](/automation/cron-jobs#configuration)).
 
-## Configuration
+## Configuração
 
 ```json5
 {
   cron: {
-    enabled: true, // default true
+    enabled: true, // padrão true
     store: "~/.opencraft/cron/jobs.json",
-    maxConcurrentRuns: 1, // default 1
-    // Optional: override retry policy for one-shot jobs
+    maxConcurrentRuns: 1, // padrão 1
+    // Opcional: sobrescrever política de retry para jobs únicos
     retry: {
       maxAttempts: 3,
       backoffMs: [60000, 120000, 300000],
       retryOn: ["rate_limit", "overloaded", "network", "server_error"],
     },
-    webhook: "https://example.invalid/legacy", // deprecated fallback for stored notify:true jobs
-    webhookToken: "replace-with-dedicated-webhook-token", // optional bearer token for webhook mode
-    sessionRetention: "24h", // duration string or false
+    webhook: "https://example.invalid/legacy", // fallback descontinuado para jobs armazenados com notify:true
+    webhookToken: "replace-with-dedicated-webhook-token", // Token bearer opcional para modo Webhook
+    sessionRetention: "24h", // string de duração ou false
     runLog: {
-      maxBytes: "2mb", // default 2_000_000 bytes
-      keepLines: 2000, // default 2000
+      maxBytes: "2mb", // padrão 2_000_000 bytes
+      keepLines: 2000, // padrão 2000
     },
   },
 }
 ```
 
-Run-log pruning behavior:
+Comportamento de poda do log de execução:
 
-- `cron.runLog.maxBytes`: max run-log file size before pruning.
-- `cron.runLog.keepLines`: when pruning, keep only the newest N lines.
-- Both apply to `cron/runs/<jobId>.jsonl` files.
+- `cron.runLog.maxBytes`: tamanho máximo do arquivo de log de execução antes da poda.
+- `cron.runLog.keepLines`: ao podar, manter apenas as N linhas mais recentes.
+- Ambos se aplicam a arquivos `cron/runs/<jobId>.jsonl`.
 
-Webhook behavior:
+Comportamento do Webhook:
 
-- Preferred: set `delivery.mode: "webhook"` with `delivery.to: "https://..."` per job.
-- Webhook URLs must be valid `http://` or `https://` URLs.
-- When posted, payload is the cron finished event JSON.
-- If `cron.webhookToken` is set, auth header is `Authorization: Bearer <cron.webhookToken>`.
-- If `cron.webhookToken` is not set, no `Authorization` header is sent.
-- Deprecated fallback: stored legacy jobs with `notify: true` still use `cron.webhook` when present.
+- Preferido: defina `delivery.mode: "webhook"` com `delivery.to: "https://..."` por job.
+- URLs de Webhook devem ser URLs `http://` ou `https://` válidas.
+- Quando postado, o payload é o JSON do evento Cron finalizado.
+- Se `cron.webhookToken` estiver definido, o cabeçalho de autenticação é `Authorization: Bearer <cron.webhookToken>`.
+- Se `cron.webhookToken` não estiver definido, nenhum cabeçalho `Authorization` é enviado.
+- Fallback descontinuado: jobs legados armazenados com `notify: true` ainda usam `cron.webhook` quando presente.
 
-Disable cron entirely:
+Desabilitar Cron completamente:
 
-- `cron.enabled: false` (config)
+- `cron.enabled: false` (configuração)
 - `OPENCRAFT_SKIP_CRON=1` (env)
 
-## Maintenance
+## Manutenção
 
-Cron has two built-in maintenance paths: isolated run-session retention and run-log pruning.
+Cron tem dois caminhos de manutenção integrados: retenção de sessão de execução isolada e poda de log de execução.
 
-### Defaults
+### Padrões
 
-- `cron.sessionRetention`: `24h` (set `false` to disable run-session pruning)
+- `cron.sessionRetention`: `24h` (defina `false` para desabilitar poda de sessão de execução)
 - `cron.runLog.maxBytes`: `2_000_000` bytes
 - `cron.runLog.keepLines`: `2000`
 
-### How it works
+### Como funciona
 
-- Isolated runs create session entries (`...:cron:<jobId>:run:<uuid>`) and transcript files.
-- The reaper removes expired run-session entries older than `cron.sessionRetention`.
-- For removed run sessions no longer referenced by the session store, OpenCraft archives transcript files and purges old deleted archives on the same retention window.
-- After each run append, `cron/runs/<jobId>.jsonl` is size-checked:
-  - if file size exceeds `runLog.maxBytes`, it is trimmed to the newest `runLog.keepLines` lines.
+- Execuções isoladas criam entradas de sessão (`...:cron:<jobId>:run:<uuid>`) e arquivos de transcrição.
+- O ceifador remove entradas de sessão de execução expiradas mais antigas que `cron.sessionRetention`.
+- Para sessões de execução removidas que não são mais referenciadas pelo armazenamento de sessão, o OpenCraft arquiva arquivos de transcrição e limpa arquivos deletados antigos na mesma janela de retenção.
+- Após cada adição de execução, `cron/runs/<jobId>.jsonl` é verificado por tamanho:
+  - se o tamanho do arquivo exceder `runLog.maxBytes`, é reduzido para as `runLog.keepLines` linhas mais recentes.
 
-### Performance caveat for high volume schedulers
+### Aviso de desempenho para agendadores de alto volume
 
-High-frequency cron setups can generate large run-session and run-log footprints. Maintenance is built in, but loose limits can still create avoidable IO and cleanup work.
+Configurações de Cron de alta frequência podem gerar grandes volumes de sessão de execução e log de execução. A manutenção é integrada, mas limites soltos ainda podem criar trabalho evitável de IO e limpeza.
 
-What to watch:
+O que observar:
 
-- long `cron.sessionRetention` windows with many isolated runs
-- high `cron.runLog.keepLines` combined with large `runLog.maxBytes`
-- many noisy recurring jobs writing to the same `cron/runs/<jobId>.jsonl`
+- janelas longas de `cron.sessionRetention` com muitas execuções isoladas
+- `cron.runLog.keepLines` alto combinado com `runLog.maxBytes` grande
+- muitos jobs recorrentes ruidosos escrevendo no mesmo `cron/runs/<jobId>.jsonl`
 
-What to do:
+O que fazer:
 
-- keep `cron.sessionRetention` as short as your debugging/audit needs allow
-- keep run logs bounded with moderate `runLog.maxBytes` and `runLog.keepLines`
-- move noisy background jobs to isolated mode with delivery rules that avoid unnecessary chatter
-- review growth periodically with `opencraft cron runs` and adjust retention before logs become large
+- mantenha `cron.sessionRetention` o mais curto que suas necessidades de depuração/auditoria permitirem
+- mantenha logs de execução limitados com `runLog.maxBytes` e `runLog.keepLines` moderados
+- mova jobs de fundo ruidosos para modo isolado com regras de entrega que evitem conversa desnecessária
+- revise o crescimento periodicamente com `opencraft cron runs` e ajuste a retenção antes que os logs fiquem grandes
 
-### Customize examples
+### Exemplos de personalização
 
-Keep run sessions for a week and allow bigger run logs:
+Manter sessões de execução por uma semana e permitir logs de execução maiores:
 
 ```json5
 {
@@ -535,7 +535,7 @@ Keep run sessions for a week and allow bigger run logs:
 }
 ```
 
-Disable isolated run-session pruning but keep run-log pruning:
+Desabilitar poda de sessão de execução isolada mas manter poda de log de execução:
 
 ```json5
 {
@@ -549,7 +549,7 @@ Disable isolated run-session pruning but keep run-log pruning:
 }
 ```
 
-Tune for high-volume cron usage (example):
+Ajustar para uso de Cron de alto volume (exemplo):
 
 ```json5
 {
@@ -563,9 +563,9 @@ Tune for high-volume cron usage (example):
 }
 ```
 
-## CLI quickstart
+## Início rápido do CLI
 
-One-shot reminder (UTC ISO, auto-delete after success):
+Lembrete único (UTC ISO, auto-deletar após sucesso):
 
 ```bash
 opencraft cron add \
@@ -577,7 +577,7 @@ opencraft cron add \
   --delete-after-run
 ```
 
-One-shot reminder (main session, wake immediately):
+Lembrete único (sessão principal, acordar imediatamente):
 
 ```bash
 opencraft cron add \
@@ -588,7 +588,7 @@ opencraft cron add \
   --wake now
 ```
 
-Recurring isolated job (announce to WhatsApp):
+Job isolado recorrente (anunciar no WhatsApp):
 
 ```bash
 opencraft cron add \
@@ -602,7 +602,7 @@ opencraft cron add \
   --to "+15551234567"
 ```
 
-Recurring cron job with explicit 30-second stagger:
+Cron job recorrente com escalonamento explícito de 30 segundos:
 
 ```bash
 opencraft cron add \
@@ -615,7 +615,7 @@ opencraft cron add \
   --announce
 ```
 
-Recurring isolated job (deliver to a Telegram topic):
+Job isolado recorrente (entregar para um tópico do Telegram):
 
 ```bash
 opencraft cron add \
@@ -629,7 +629,7 @@ opencraft cron add \
   --to "-1001234567890:topic:123"
 ```
 
-Isolated job with model and thinking override:
+Job isolado com sobrescrita de modelo e pensamento:
 
 ```bash
 opencraft cron add \
@@ -645,27 +645,27 @@ opencraft cron add \
   --to "+15551234567"
 ```
 
-Agent selection (multi-agent setups):
+Seleção de agente (configurações multi-agente):
 
 ```bash
-# Pin a job to agent "ops" (falls back to default if that agent is missing)
+# Fixar um job ao agente "ops" (recorre ao padrão se esse agente estiver ausente)
 opencraft cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --message "Check ops queue" --agent ops
 
-# Switch or clear the agent on an existing job
+# Trocar ou limpar o agente em um job existente
 opencraft cron edit <jobId> --agent ops
 opencraft cron edit <jobId> --clear-agent
 ```
 
-Manual run (force is the default, use `--due` to only run when due):
+Execução manual (force é o padrão, use `--due` para executar apenas quando no horário):
 
 ```bash
 opencraft cron run <jobId>
 opencraft cron run <jobId> --due
 ```
 
-`cron.run` now acknowledges once the manual run is queued, not after the job finishes. Successful queue responses look like `{ ok: true, enqueued: true, runId }`. If the job is already running or `--due` finds nothing due, the response stays `{ ok: true, ran: false, reason }`. Use `opencraft cron runs --id <jobId>` or the `cron.runs` gateway method to inspect the eventual finished entry.
+`cron.run` agora confirma assim que a execução manual é enfileirada, não após o job terminar. Respostas de enfileiramento bem-sucedidas se parecem com `{ ok: true, enqueued: true, runId }`. Se o job já está executando ou `--due` não encontra nada no horário, a resposta permanece `{ ok: true, ran: false, reason }`. Use `opencraft cron runs --id <jobId>` ou o método `cron.runs` do Gateway para inspecionar a entrada finalizada eventual.
 
-Edit an existing job (patch fields):
+Editar um job existente (campos de patch):
 
 ```bash
 opencraft cron edit <jobId> \
@@ -674,54 +674,54 @@ opencraft cron edit <jobId> \
   --thinking low
 ```
 
-Force an existing cron job to run exactly on schedule (no stagger):
+Forçar um Cron job existente a executar exatamente no agendamento (sem escalonamento):
 
 ```bash
 opencraft cron edit <jobId> --exact
 ```
 
-Run history:
+Histórico de execução:
 
 ```bash
 opencraft cron runs --id <jobId> --limit 50
 ```
 
-Immediate system event without creating a job:
+Evento do sistema imediato sem criar um job:
 
 ```bash
 opencraft system event --mode now --text "Next heartbeat: check battery."
 ```
 
-## Gateway API surface
+## Superfície da API do Gateway
 
 - `cron.list`, `cron.status`, `cron.add`, `cron.update`, `cron.remove`
-- `cron.run` (force or due), `cron.runs`
-  For immediate system events without a job, use [`opencraft system event`](/cli/system).
+- `cron.run` (force ou due), `cron.runs`
+  Para eventos do sistema imediatos sem um job, use [`opencraft system event`](/cli/system).
 
-## Troubleshooting
+## Solução de problemas
 
-### “Nothing runs”
+### "Nada executa"
 
-- Check cron is enabled: `cron.enabled` and `OPENCRAFT_SKIP_CRON`.
-- Check the Gateway is running continuously (cron runs inside the Gateway process).
-- For `cron` schedules: confirm timezone (`--tz`) vs the host timezone.
+- Verifique se o Cron está habilitado: `cron.enabled` e `OPENCRAFT_SKIP_CRON`.
+- Verifique se o Gateway está executando continuamente (Cron executa dentro do processo do Gateway).
+- Para agendamentos `cron`: confirme fuso horário (`--tz`) vs o fuso horário do host.
 
-### A recurring job keeps delaying after failures
+### Um job recorrente continua atrasando após falhas
 
-- OpenCraft applies exponential retry backoff for recurring jobs after consecutive errors:
-  30s, 1m, 5m, 15m, then 60m between retries.
-- Backoff resets automatically after the next successful run.
-- One-shot (`at`) jobs retry transient errors (rate limit, overloaded, network, server_error) up to 3 times with backoff; permanent errors disable immediately. See [Retry policy](/automation/cron-jobs#retry-policy).
+- O OpenCraft aplica backoff exponencial de retry para jobs recorrentes após erros consecutivos:
+  30s, 1m, 5m, 15m, depois 60m entre retentativas.
+- O backoff reinicia automaticamente após a próxima execução bem-sucedida.
+- Jobs únicos (`at`) retentam erros transientes (limite de taxa, sobrecarregado, rede, erro de servidor) até 3 vezes com backoff; erros permanentes desabilitam imediatamente. Veja [Política de retry](/automation/cron-jobs#retry-policy).
 
-### Telegram delivers to the wrong place
+### Telegram entrega no lugar errado
 
-- For forum topics, use `-100…:topic:<id>` so it’s explicit and unambiguous.
-- If you see `telegram:...` prefixes in logs or stored “last route” targets, that’s normal;
-  cron delivery accepts them and still parses topic IDs correctly.
+- Para tópicos de fórum, use `-100…:topic:<id>` para que seja explícito e inequívoco.
+- Se você vê prefixos `telegram:...` em logs ou alvos de "última rota" armazenados, isso é normal;
+  entrega Cron os aceita e ainda analisa IDs de tópico corretamente.
 
-### Subagent announce delivery retries
+### Retentativas de entrega announce de subagente
 
-- When a subagent run completes, the gateway announces the result to the requester session.
-- If the announce flow returns `false` (e.g. requester session is busy), the gateway retries up to 3 times with tracking via `announceRetryCount`.
-- Announces older than 5 minutes past `endedAt` are force-expired to prevent stale entries from looping indefinitely.
-- If you see repeated announce deliveries in logs, check the subagent registry for entries with high `announceRetryCount` values.
+- Quando uma execução de subagente completa, o Gateway anuncia o resultado para a sessão solicitante.
+- Se o fluxo de announce retorna `false` (ex. sessão solicitante está ocupada), o Gateway retenta até 3 vezes com rastreamento via `announceRetryCount`.
+- Announces mais antigos que 5 minutos após `endedAt` são expirados à força para evitar que entradas obsoletas fiquem em loop indefinidamente.
+- Se você vê entregas announce repetidas nos logs, verifique o registro de subagentes para entradas com valores altos de `announceRetryCount`.

@@ -1,159 +1,159 @@
 ---
-summary: "Run OpenCraft in a sandboxed macOS VM (local or hosted) when you need isolation or iMessage"
+summary: "Execute o OpenCraft em uma VM macOS sandboxed (local ou hospedada) quando você precisa de isolamento ou iMessage"
 read_when:
-  - You want OpenCraft isolated from your main macOS environment
-  - You want iMessage integration (BlueBubbles) in a sandbox
-  - You want a resettable macOS environment you can clone
-  - You want to compare local vs hosted macOS VM options
-title: "macOS VMs"
+  - Você quer o OpenCraft isolado do seu ambiente macOS principal
+  - Você quer integração com iMessage (BlueBubbles) em um sandbox
+  - Você quer um ambiente macOS resetável que pode clonar
+  - Você quer comparar opções de VM macOS local vs hospedada
+title: "VMs macOS"
 ---
 
-# OpenCraft on macOS VMs (Sandboxing)
+# OpenCraft em VMs macOS (Sandboxing)
 
-## Recommended default (most users)
+## Padrão recomendado (maioria dos usuários)
 
-- **Small Linux VPS** for an always-on Gateway and low cost. See [VPS hosting](/vps).
-- **Dedicated hardware** (Mac mini or Linux box) if you want full control and a **residential IP** for browser automation. Many sites block data center IPs, so local browsing often works better.
-- **Hybrid:** keep the Gateway on a cheap VPS, and connect your Mac as a **node** when you need browser/UI automation. See [Nodes](/nodes) and [Gateway remote](/gateway/remote).
+- **Pequeno VPS Linux** para um Gateway sempre ativo e baixo custo. Veja [Hospedagem VPS](/vps).
+- **Hardware dedicado** (Mac mini ou máquina Linux) se você quer controle total e um **IP residencial** para automação de navegador. Muitos sites bloqueiam IPs de data center, então navegação local frequentemente funciona melhor.
+- **Híbrido:** mantenha o Gateway em um VPS barato, e conecte seu Mac como **node** quando precisar de automação de navegador/UI. Veja [Nodes](/nodes) e [Gateway remoto](/gateway/remote).
 
-Use a macOS VM when you specifically need macOS-only capabilities (iMessage/BlueBubbles) or want strict isolation from your daily Mac.
+Use uma VM macOS quando você especificamente precisa de capacidades exclusivas do macOS (iMessage/BlueBubbles) ou quer isolamento rigoroso do seu Mac do dia a dia.
 
-## macOS VM options
+## Opções de VM macOS
 
-### Local VM on your Apple Silicon Mac (Lume)
+### VM local no seu Mac Apple Silicon (Lume)
 
-Run OpenCraft in a sandboxed macOS VM on your existing Apple Silicon Mac using [Lume](https://cua.ai/docs/lume).
+Execute o OpenCraft em uma VM macOS sandboxed no seu Mac Apple Silicon existente usando [Lume](https://cua.ai/docs/lume).
 
-This gives you:
+Isso oferece:
 
-- Full macOS environment in isolation (your host stays clean)
-- iMessage support via BlueBubbles (impossible on Linux/Windows)
-- Instant reset by cloning VMs
-- No extra hardware or cloud costs
+- Ambiente macOS completo em isolamento (seu host fica limpo)
+- Suporte a iMessage via BlueBubbles (impossível no Linux/Windows)
+- Reset instantâneo clonando VMs
+- Sem custos extras de hardware ou nuvem
 
-### Hosted Mac providers (cloud)
+### Provedores Mac hospedados (nuvem)
 
-If you want macOS in the cloud, hosted Mac providers work too:
+Se você quer macOS na nuvem, provedores Mac hospedados também funcionam:
 
-- [MacStadium](https://www.macstadium.com/) (hosted Macs)
-- Other hosted Mac vendors also work; follow their VM + SSH docs
+- [MacStadium](https://www.macstadium.com/) (Macs hospedados)
+- Outros fornecedores de Mac hospedado também funcionam; siga a documentação de VM + SSH deles
 
-Once you have SSH access to a macOS VM, continue at step 6 below.
+Uma vez que você tenha acesso SSH a uma VM macOS, continue na etapa 6 abaixo.
 
 ---
 
-## Quick path (Lume, experienced users)
+## Caminho rápido (Lume, usuários experientes)
 
-1. Install Lume
+1. Instalar Lume
 2. `lume create opencraft --os macos --ipsw latest`
-3. Complete Setup Assistant, enable Remote Login (SSH)
+3. Completar o Assistente de Configuração, habilitar Login Remoto (SSH)
 4. `lume run opencraft --no-display`
-5. SSH in, install OpenCraft, configure channels
-6. Done
+5. Conectar via SSH, instalar OpenCraft, configurar canais
+6. Pronto
 
 ---
 
-## What you need (Lume)
+## O que você precisa (Lume)
 
-- Apple Silicon Mac (M1/M2/M3/M4)
-- macOS Sequoia or later on the host
-- ~60 GB free disk space per VM
-- ~20 minutes
+- Mac Apple Silicon (M1/M2/M3/M4)
+- macOS Sequoia ou posterior no host
+- ~60 GB de espaço livre em disco por VM
+- ~20 minutos
 
 ---
 
-## 1) Install Lume
+## 1) Instalar Lume
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/lume/scripts/install.sh)"
 ```
 
-If `~/.local/bin` isn't in your PATH:
+Se `~/.local/bin` não estiver no seu PATH:
 
 ```bash
 echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.zshrc && source ~/.zshrc
 ```
 
-Verify:
+Verifique:
 
 ```bash
 lume --version
 ```
 
-Docs: [Lume Installation](https://cua.ai/docs/lume/guide/getting-started/installation)
+Documentação: [Instalação do Lume](https://cua.ai/docs/lume/guide/getting-started/installation)
 
 ---
 
-## 2) Create the macOS VM
+## 2) Criar a VM macOS
 
 ```bash
 lume create opencraft --os macos --ipsw latest
 ```
 
-This downloads macOS and creates the VM. A VNC window opens automatically.
+Isso baixa o macOS e cria a VM. Uma janela VNC abre automaticamente.
 
-Note: The download can take a while depending on your connection.
-
----
-
-## 3) Complete Setup Assistant
-
-In the VNC window:
-
-1. Select language and region
-2. Skip Apple ID (or sign in if you want iMessage later)
-3. Create a user account (remember the username and password)
-4. Skip all optional features
-
-After setup completes, enable SSH:
-
-1. Open System Settings → General → Sharing
-2. Enable "Remote Login"
+Nota: O download pode demorar dependendo da sua conexão.
 
 ---
 
-## 4) Get the VM's IP address
+## 3) Completar o Assistente de Configuração
+
+Na janela VNC:
+
+1. Selecione idioma e região
+2. Pule o Apple ID (ou faça login se quiser iMessage depois)
+3. Crie uma conta de usuário (lembre do nome de usuário e senha)
+4. Pule todos os recursos opcionais
+
+Após a configuração completar, habilite SSH:
+
+1. Abra Ajustes do Sistema → Geral → Compartilhamento
+2. Habilite "Login Remoto"
+
+---
+
+## 4) Obter o endereço IP da VM
 
 ```bash
 lume get opencraft
 ```
 
-Look for the IP address (usually `192.168.64.x`).
+Procure pelo endereço IP (geralmente `192.168.64.x`).
 
 ---
 
-## 5) SSH into the VM
+## 5) Conectar via SSH na VM
 
 ```bash
 ssh youruser@192.168.64.X
 ```
 
-Replace `youruser` with the account you created, and the IP with your VM's IP.
+Substitua `youruser` pela conta que você criou, e o IP pelo IP da sua VM.
 
 ---
 
-## 6) Install OpenCraft
+## 6) Instalar o OpenCraft
 
-Inside the VM:
+Dentro da VM:
 
 ```bash
 npm install -g opencraft@latest
 opencraft onboard --install-daemon
 ```
 
-Follow the onboarding prompts to set up your model provider (Anthropic, OpenAI, etc.).
+Siga os prompts de onboarding para configurar seu provedor de modelo (Anthropic, OpenAI, etc.).
 
 ---
 
-## 7) Configure channels
+## 7) Configurar canais
 
-Edit the config file:
+Edite o arquivo de configuração:
 
 ```bash
 nano ~/.editzffaleta/OpenCraft.json
 ```
 
-Add your channels:
+Adicione seus canais:
 
 ```json
 {
@@ -169,7 +169,7 @@ Add your channels:
 }
 ```
 
-Then login to WhatsApp (scan QR):
+Depois faça login no WhatsApp (escaneie QR):
 
 ```bash
 opencraft channels login
@@ -177,18 +177,18 @@ opencraft channels login
 
 ---
 
-## 8) Run the VM headlessly
+## 8) Executar a VM sem interface gráfica
 
-Stop the VM and restart without display:
+Pare a VM e reinicie sem display:
 
 ```bash
 lume stop opencraft
 lume run opencraft --no-display
 ```
 
-The VM runs in the background. OpenCraft's daemon keeps the gateway running.
+A VM roda em background. O daemon do OpenCraft mantém o gateway rodando.
 
-To check status:
+Para verificar o status:
 
 ```bash
 ssh youruser@192.168.64.X "opencraft status"
@@ -196,18 +196,18 @@ ssh youruser@192.168.64.X "opencraft status"
 
 ---
 
-## Bonus: iMessage integration
+## Extra: integração com iMessage
 
-This is the killer feature of running on macOS. Use [BlueBubbles](https://bluebubbles.app) to add iMessage to OpenCraft.
+Este é o recurso matador de rodar no macOS. Use [BlueBubbles](https://bluebubbles.app) para adicionar iMessage ao OpenCraft.
 
-Inside the VM:
+Dentro da VM:
 
-1. Download BlueBubbles from bluebubbles.app
-2. Sign in with your Apple ID
-3. Enable the Web API and set a password
-4. Point BlueBubbles webhooks at your gateway (example: `https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`)
+1. Baixe BlueBubbles de bluebubbles.app
+2. Faça login com seu Apple ID
+3. Habilite a Web API e defina uma senha
+4. Aponte os webhooks do BlueBubbles para seu gateway (exemplo: `https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`)
 
-Add to your OpenCraft config:
+Adicione à sua configuração do OpenCraft:
 
 ```json
 {
@@ -221,22 +221,22 @@ Add to your OpenCraft config:
 }
 ```
 
-Restart the gateway. Now your agent can send and receive iMessages.
+Reinicie o gateway. Agora seu agente pode enviar e receber iMessages.
 
-Full setup details: [BlueBubbles channel](/channels/bluebubbles)
+Detalhes completos da configuração: [Canal BlueBubbles](/channels/bluebubbles)
 
 ---
 
-## Save a golden image
+## Salvar uma imagem golden
 
-Before customizing further, snapshot your clean state:
+Antes de personalizar mais, faça um snapshot do seu estado limpo:
 
 ```bash
 lume stop opencraft
 lume clone opencraft opencraft-golden
 ```
 
-Reset anytime:
+Resete a qualquer momento:
 
 ```bash
 lume stop opencraft && lume delete opencraft
@@ -246,36 +246,36 @@ lume run opencraft --no-display
 
 ---
 
-## Running 24/7
+## Rodando 24/7
 
-Keep the VM running by:
+Mantenha a VM rodando:
 
-- Keeping your Mac plugged in
-- Disabling sleep in System Settings → Energy Saver
-- Using `caffeinate` if needed
+- Mantendo seu Mac conectado na tomada
+- Desabilitando suspensão em Ajustes do Sistema → Economia de Energia
+- Usando `caffeinate` se necessário
 
-For true always-on, consider a dedicated Mac mini or a small VPS. See [VPS hosting](/vps).
-
----
-
-## Troubleshooting
-
-| Problem                  | Solution                                                                            |
-| ------------------------ | ----------------------------------------------------------------------------------- |
-| Can't SSH into VM        | Check "Remote Login" is enabled in VM's System Settings                             |
-| VM IP not showing        | Wait for VM to fully boot, run `lume get opencraft` again                           |
-| Lume command not found   | Add `~/.local/bin` to your PATH                                                     |
-| WhatsApp QR not scanning | Ensure you're logged into the VM (not host) when running `opencraft channels login` |
+Para sempre ativo de verdade, considere um Mac mini dedicado ou um pequeno VPS. Veja [Hospedagem VPS](/vps).
 
 ---
 
-## Related docs
+## Solução de problemas
 
-- [VPS hosting](/vps)
+| Problema                    | Solução                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Não consigo SSH na VM       | Verifique se "Login Remoto" está habilitado nos Ajustes do Sistema da VM                 |
+| IP da VM não aparece        | Aguarde a VM iniciar completamente, execute `lume get opencraft` novamente               |
+| Comando Lume não encontrado | Adicione `~/.local/bin` ao seu PATH                                                      |
+| QR do WhatsApp não escaneia | Certifique-se de estar logado na VM (não no host) ao executar `opencraft channels login` |
+
+---
+
+## Documentação relacionada
+
+- [Hospedagem VPS](/vps)
 - [Nodes](/nodes)
-- [Gateway remote](/gateway/remote)
-- [BlueBubbles channel](/channels/bluebubbles)
-- [Lume Quickstart](https://cua.ai/docs/lume/guide/getting-started/quickstart)
-- [Lume CLI Reference](https://cua.ai/docs/lume/reference/cli-reference)
-- [Unattended VM Setup](https://cua.ai/docs/lume/guide/fundamentals/unattended-setup) (advanced)
-- [Docker Sandboxing](/install/docker) (alternative isolation approach)
+- [Gateway remoto](/gateway/remote)
+- [Canal BlueBubbles](/channels/bluebubbles)
+- [Início Rápido do Lume](https://cua.ai/docs/lume/guide/getting-started/quickstart)
+- [Referência CLI do Lume](https://cua.ai/docs/lume/reference/cli-reference)
+- [Configuração de VM sem Supervisão](https://cua.ai/docs/lume/guide/fundamentals/unattended-setup) (avançado)
+- [Sandboxing Docker](/install/docker) (abordagem alternativa de isolamento)

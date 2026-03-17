@@ -1,17 +1,17 @@
 ---
 title: "Configuration Reference"
-description: "Complete field-by-field reference for ~/.editzffaleta/OpenCraft.json"
-summary: "Complete reference for every OpenCraft config key, defaults, and channel settings"
+description: "Referência completa campo a campo para ~/.editzffaleta/OpenCraft.json"
+summary: "Referência completa para toda chave de config do OpenCraft, padrões e configurações de canal"
 read_when:
-  - You need exact field-level config semantics or defaults
-  - You are validating channel, model, gateway, or tool config blocks
+  - Você precisa de semântica exata de config no nível de campo ou padrões
+  - Você está validando blocos de config de canal, modelo, gateway ou ferramenta
 ---
 
-# Configuration Reference
+# Referência de Configuração
 
-Every field available in `~/.editzffaleta/OpenCraft.json`. For a task-oriented overview, see [Configuration](/gateway/configuration).
+Todos os campos disponíveis em `~/.editzffaleta/OpenCraft.json`. Para uma visão geral orientada a tarefas, veja [Configuration](/gateway/configuration).
 
-Config format is **JSON5** (comments + trailing commas allowed). All fields are optional — OpenCraft uses safe defaults when omitted.
+O formato de config é **JSON5** (comentários + trailing commas permitidos). Todos os campos são opcionais — OpenCraft usa padrões seguros quando omitidos.
 
 ---
 

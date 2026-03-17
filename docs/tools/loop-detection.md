@@ -1,29 +1,29 @@
 ---
-title: "Tool-loop detection"
-description: "Configure optional guardrails for preventing repetitive or stalled tool-call loops"
-summary: "How to enable and tune guardrails that detect repetitive tool-call loops"
+title: "Detecção de loop de ferramentas"
+description: "Configurar proteções opcionais para prevenir loops repetitivos ou travados de chamadas de ferramenta"
+summary: "Como habilitar e ajustar proteções que detectam loops repetitivos de chamadas de ferramenta"
 read_when:
-  - A user reports agents getting stuck repeating tool calls
-  - You need to tune repetitive-call protection
-  - You are editing agent tool/runtime policies
+  - Um usuário reporta agentes travados repetindo chamadas de ferramenta
+  - Você precisa ajustar a proteção contra chamadas repetitivas
+  - Você está editando políticas de ferramentas/runtime de agentes
 ---
 
-# Tool-loop detection
+# Detecção de loop de ferramentas
 
-OpenCraft can keep agents from getting stuck in repeated tool-call patterns.
-The guard is **disabled by default**.
+O OpenCraft pode impedir que agentes fiquem presos em padrões repetidos de chamadas de ferramenta.
+A proteção está **desabilitada por padrão**.
 
-Enable it only where needed, because it can block legitimate repeated calls with strict settings.
+Habilite apenas onde necessário, porque pode bloquear chamadas repetidas legítimas com configurações rigorosas.
 
-## Why this exists
+## Por que isso existe
 
-- Detect repetitive sequences that do not make progress.
-- Detect high-frequency no-result loops (same tool, same inputs, repeated errors).
-- Detect specific repeated-call patterns for known polling tools.
+- Detectar sequências repetitivas que não fazem progresso.
+- Detectar loops de alta frequência sem resultado (mesma ferramenta, mesmas entradas, erros repetidos).
+- Detectar padrões específicos de chamadas repetidas para ferramentas de polling conhecidas.
 
-## Configuration block
+## Bloco de configuração
 
-Global defaults:
+Padrões globais:
 
 ```json5
 {
@@ -44,7 +44,7 @@ Global defaults:
 }
 ```
 
-Per-agent override (optional):
+Substituição por agente (opcional):
 
 ```json5
 {
@@ -65,37 +65,37 @@ Per-agent override (optional):
 }
 ```
 
-### Field behavior
+### Comportamento dos campos
 
-- `enabled`: Master switch. `false` means no loop detection is performed.
-- `historySize`: number of recent tool calls kept for analysis.
-- `warningThreshold`: threshold before classifying a pattern as warning-only.
-- `criticalThreshold`: threshold for blocking repetitive loop patterns.
-- `globalCircuitBreakerThreshold`: global no-progress breaker threshold.
-- `detectors.genericRepeat`: detects repeated same-tool + same-params patterns.
-- `detectors.knownPollNoProgress`: detects known polling-like patterns with no state change.
-- `detectors.pingPong`: detects alternating ping-pong patterns.
+- `enabled`: Interruptor principal. `false` significa que nenhuma detecção de loop é realizada.
+- `historySize`: número de chamadas de ferramenta recentes mantidas para análise.
+- `warningThreshold`: limiar antes de classificar um padrão como apenas aviso.
+- `criticalThreshold`: limiar para bloquear padrões de loop repetitivos.
+- `globalCircuitBreakerThreshold`: limiar global de disjuntor sem progresso.
+- `detectors.genericRepeat`: detecta padrões repetidos de mesma ferramenta + mesmos parâmetros.
+- `detectors.knownPollNoProgress`: detecta padrões conhecidos de polling sem mudança de estado.
+- `detectors.pingPong`: detecta padrões alternados de ping-pong.
 
-## Recommended setup
+## Configuração recomendada
 
-- Start with `enabled: true`, defaults unchanged.
-- Keep thresholds ordered as `warningThreshold < criticalThreshold < globalCircuitBreakerThreshold`.
-- If false positives occur:
-  - raise `warningThreshold` and/or `criticalThreshold`
-  - (optionally) raise `globalCircuitBreakerThreshold`
-  - disable only the detector causing issues
-  - reduce `historySize` for less strict historical context
+- Comece com `enabled: true`, padrões inalterados.
+- Mantenha os limiares ordenados como `warningThreshold < criticalThreshold < globalCircuitBreakerThreshold`.
+- Se falsos positivos ocorrerem:
+  - aumente `warningThreshold` e/ou `criticalThreshold`
+  - (opcionalmente) aumente `globalCircuitBreakerThreshold`
+  - desabilite apenas o detector causando problemas
+  - reduza `historySize` para contexto histórico menos rigoroso
 
-## Logs and expected behavior
+## Logs e comportamento esperado
 
-When a loop is detected, OpenCraft reports a loop event and blocks or dampens the next tool-cycle depending on severity.
-This protects users from runaway token spend and lockups while preserving normal tool access.
+Quando um loop é detectado, o OpenCraft reporta um evento de loop e bloqueia ou atenua o próximo ciclo de ferramenta dependendo da gravidade.
+Isso protege os usuários de gastos descontrolados de tokens e travamentos enquanto preserva o acesso normal a ferramentas.
 
-- Prefer warning and temporary suppression first.
-- Escalate only when repeated evidence accumulates.
+- Prefira aviso e supressão temporária primeiro.
+- Escale apenas quando evidências repetidas se acumularem.
 
-## Notes
+## Notas
 
-- `tools.loopDetection` is merged with agent-level overrides.
-- Per-agent config fully overrides or extends global values.
-- If no config exists, guardrails stay off.
+- `tools.loopDetection` é mesclado com substituições no nível do agente.
+- Config por agente substitui completamente ou estende valores globais.
+- Se nenhuma config existir, as proteções permanecem desligadas.

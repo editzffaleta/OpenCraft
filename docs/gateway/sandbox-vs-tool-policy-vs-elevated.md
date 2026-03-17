@@ -1,13 +1,13 @@
 ---
 title: Sandbox vs Tool Policy vs Elevated
-summary: "Why a tool is blocked: sandbox runtime, tool allow/deny policy, and elevated exec gates"
-read_when: "You hit 'sandbox jail' or see a tool/elevated refusal and want the exact config key to change."
+summary: "Por que uma ferramenta está bloqueada: runtime sandbox, política de allow/deny de ferramentas e gates de exec elevated"
+read_when: "Você encontrou 'sandbox jail' ou viu uma recusa de ferramenta/elevated e quer a chave de config exata para mudar."
 status: active
 ---
 
 # Sandbox vs Tool Policy vs Elevated
 
-OpenCraft has three related (but different) controls:
+OpenCraft tem três controles relacionados (mas diferentes):
 
 1. **Sandbox** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`) decides **where tools run** (Docker vs host).
 2. **Tool policy** (`tools.*`, `tools.sandbox.tools.*`, `agents.list[].tools.*`) decides **which tools are available/allowed**.

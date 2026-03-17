@@ -1,76 +1,76 @@
 ---
-summary: "Research notes: offline memory system for Clawd workspaces (Markdown source-of-truth + derived index)"
+summary: "Notas de pesquisa: sistema de memória offline para workspaces Clawd (Markdown como fonte da verdade + índice derivado)"
 read_when:
-  - Designing workspace memory (~/.opencraft/workspace) beyond daily Markdown logs
-  - Deciding: standalone CLI vs deep OpenCraft integration
-  - Adding offline recall + reflection (retain/recall/reflect)
+  - Projetando memória de workspace (~/.opencraft/workspace) além de logs Markdown diários
+  - Decidindo: CLI standalone vs integração profunda com o OpenCraft
+  - Adicionando recall + reflexão offline (retain/recall/reflect)
 title: "Workspace Memory Research"
 ---
 
-# Workspace Memory v2 (offline): research notes
+# Memória de Workspace v2 (offline): notas de pesquisa
 
-Target: Clawd-style workspace (`agents.defaults.workspace`, default `~/.opencraft/workspace`) where “memory” is stored as one Markdown file per day (`memory/YYYY-MM-DD.md`) plus a small set of stable files (e.g. `memory.md`, `SOUL.md`).
+Alvo: workspace estilo Clawd (`agents.defaults.workspace`, padrão `~/.opencraft/workspace`) onde "memória" é armazenada como um arquivo Markdown por dia (`memory/YYYY-MM-DD.md`) mais um pequeno conjunto de arquivos estáveis (ex. `memory.md`, `SOUL.md`).
 
-This doc proposes an **offline-first** memory architecture that keeps Markdown as the canonical, reviewable source of truth, but adds **structured recall** (search, entity summaries, confidence updates) via a derived index.
+Este documento propõe uma arquitetura de memória **offline-first** que mantém Markdown como a fonte da verdade canônica e revisável, mas adiciona **recall estruturado** (busca, resumos de entidade, atualizações de confiança) via um índice derivado.
 
-## Why change?
+## Por que mudar?
 
-The current setup (one file per day) is excellent for:
+A configuração atual (um arquivo por dia) é excelente para:
 
-- “append-only” journaling
-- human editing
-- git-backed durability + auditability
-- low-friction capture (“just write it down”)
+- journaling "somente-adição"
+- edição humana
+- durabilidade + auditabilidade baseada em git
+- captura de baixa fricção ("apenas escreva")
 
-It’s weak for:
+É fraca para:
 
-- high-recall retrieval (“what did we decide about X?”, “last time we tried Y?”)
-- entity-centric answers (“tell me about Alice / The Castle / warelay”) without rereading many files
-- opinion/preference stability (and evidence when it changes)
-- time constraints (“what was true during Nov 2025?”) and conflict resolution
+- recuperação de alto recall ("o que decidimos sobre X?", "última vez que tentamos Y?")
+- respostas centradas em entidade ("me fale sobre Alice / O Castelo / warelay") sem reler muitos arquivos
+- estabilidade de opinião/preferência (e evidência quando muda)
+- restrições temporais ("o que era verdade durante Nov 2025?") e resolução de conflitos
 
-## Design goals
+## Objetivos de design
 
-- **Offline**: works without network; can run on laptop/Castle; no cloud dependency.
-- **Explainable**: retrieved items should be attributable (file + location) and separable from inference.
-- **Low ceremony**: daily logging stays Markdown, no heavy schema work.
-- **Incremental**: v1 is useful with FTS only; semantic/vector and graphs are optional upgrades.
-- **Agent-friendly**: makes “recall within token budgets” easy (return small bundles of facts).
+- **Offline**: funciona sem rede; pode rodar em laptop/Castle; sem dependência de nuvem.
+- **Explicável**: itens recuperados devem ser atribuíveis (arquivo + localização) e separáveis de inferência.
+- **Baixa cerimônia**: logging diário permanece Markdown, sem trabalho pesado de esquema.
+- **Incremental**: v1 é útil somente com FTS; semântico/vetor e grafos são upgrades opcionais.
+- **Amigável ao agente**: facilita "recall dentro de orçamentos de Token" (retornar pequenos pacotes de fatos).
 
-## North star model (Hindsight × Letta)
+## Modelo norte-estrela (Hindsight x Letta)
 
-Two pieces to blend:
+Duas peças para mesclar:
 
-1. **Letta/MemGPT-style control loop**
+1. **Loop de controle estilo Letta/MemGPT**
 
-- keep a small “core” always in context (persona + key user facts)
-- everything else is out-of-context and retrieved via tools
-- memory writes are explicit tool calls (append/replace/insert), persisted, then re-injected next turn
+- manter um "core" pequeno sempre em contexto (persona + fatos chave do usuário)
+- todo o resto é fora de contexto e recuperado via ferramentas
+- escritas de memória são chamadas de ferramenta explícitas (append/replace/insert), persistidas, depois reinjetadas no próximo turno
 
-2. **Hindsight-style memory substrate**
+2. **Substrato de memória estilo Hindsight**
 
-- separate what’s observed vs what’s believed vs what’s summarized
-- support retain/recall/reflect
-- confidence-bearing opinions that can evolve with evidence
-- entity-aware retrieval + temporal queries (even without full knowledge graphs)
+- separar o que é observado vs o que é acreditado vs o que é resumido
+- suportar retain/recall/reflect
+- opiniões com confiança que podem evoluir com evidência
+- recuperação ciente de entidade + consultas temporais (mesmo sem grafos de conhecimento completos)
 
-## Proposed architecture (Markdown source-of-truth + derived index)
+## Arquitetura proposta (Markdown como fonte da verdade + índice derivado)
 
-### Canonical store (git-friendly)
+### Armazenamento canônico (amigável a git)
 
-Keep `~/.opencraft/workspace` as canonical human-readable memory.
+Manter `~/.opencraft/workspace` como memória canônica legível por humanos.
 
-Suggested workspace layout:
+Layout de workspace sugerido:
 
 ```
 ~/.opencraft/workspace/
-  memory.md                    # small: durable facts + preferences (core-ish)
+  memory.md                    # pequeno: fatos duráveis + preferências (core-ish)
   memory/
-    YYYY-MM-DD.md              # daily log (append; narrative)
-  bank/                        # “typed” memory pages (stable, reviewable)
-    world.md                   # objective facts about the world
-    experience.md              # what the agent did (first-person)
-    opinions.md                # subjective prefs/judgments + confidence + evidence pointers
+    YYYY-MM-DD.md              # log diário (adição; narrativa)
+  bank/                        # páginas de memória "tipadas" (estáveis, revisáveis)
+    world.md                   # fatos objetivos sobre o mundo
+    experience.md              # o que o agente fez (primeira pessoa)
+    opinions.md                # preferências/julgamentos subjetivos + confiança + ponteiros de evidência
     entities/
       Peter.md
       The-Castle.md
@@ -78,151 +78,151 @@ Suggested workspace layout:
       ...
 ```
 
-Notes:
+Notas:
 
-- **Daily log stays daily log**. No need to turn it into JSON.
-- The `bank/` files are **curated**, produced by reflection jobs, and can still be edited by hand.
-- `memory.md` remains “small + core-ish”: the things you want Clawd to see every session.
+- **Log diário permanece log diário**. Não precisa transformar em JSON.
+- Os arquivos `bank/` são **curados**, produzidos por jobs de reflexão, e ainda podem ser editados manualmente.
+- `memory.md` permanece "pequeno + core-ish": as coisas que você quer que Clawd veja toda sessão.
 
-### Derived store (machine recall)
+### Armazenamento derivado (recall de máquina)
 
-Add a derived index under the workspace (not necessarily git tracked):
+Adicionar um índice derivado sob o workspace (não necessariamente rastreado pelo git):
 
 ```
 ~/.opencraft/workspace/.memory/index.sqlite
 ```
 
-Back it with:
+Apoiar com:
 
-- SQLite schema for facts + entity links + opinion metadata
-- SQLite **FTS5** for lexical recall (fast, tiny, offline)
-- optional embeddings table for semantic recall (still offline)
+- Esquema SQLite para fatos + links de entidade + metadados de opinião
+- **FTS5** SQLite para recall lexical (rápido, minúsculo, offline)
+- tabela opcional de embeddings para recall semântico (ainda offline)
 
-The index is always **rebuildable from Markdown**.
+O índice é sempre **reconstruível a partir do Markdown**.
 
-## Retain / Recall / Reflect (operational loop)
+## Retain / Recall / Reflect (loop operacional)
 
-### Retain: normalize daily logs into “facts”
+### Retain: normalizar logs diários em "fatos"
 
-Hindsight’s key insight that matters here: store **narrative, self-contained facts**, not tiny snippets.
+O insight chave do Hindsight que importa aqui: armazenar **fatos narrativos, autocontidos**, não trechos pequenos.
 
-Practical rule for `memory/YYYY-MM-DD.md`:
+Regra prática para `memory/YYYY-MM-DD.md`:
 
-- at end of day (or during), add a `## Retain` section with 2–5 bullets that are:
-  - narrative (cross-turn context preserved)
-  - self-contained (standalone makes sense later)
-  - tagged with type + entity mentions
+- no final do dia (ou durante), adicionar uma seção `## Retain` com 2-5 bullets que são:
+  - narrativos (contexto entre turnos preservado)
+  - autocontidos (fazem sentido sozinhos depois)
+  - marcados com tipo + menções de entidade
 
-Example:
+Exemplo:
 
 ```
 ## Retain
-- W @Peter: Currently in Marrakech (Nov 27–Dec 1, 2025) for Andy’s birthday.
+- W @Peter: Currently in Marrakech (Nov 27–Dec 1, 2025) for Andy's birthday.
 - B @warelay: I fixed the Baileys WS crash by wrapping connection.update handlers in try/catch (see memory/2025-11-27.md).
-- O(c=0.95) @Peter: Prefers concise replies (&lt;1500 chars) on WhatsApp; long content goes into files.
+- O(c=0.95) @Peter: Prefers concise replies (<1500 chars) on WhatsApp; long content goes into files.
 ```
 
-Minimal parsing:
+Parsing mínimo:
 
-- Type prefix: `W` (world), `B` (experience/biographical), `O` (opinion), `S` (observation/summary; usually generated)
-- Entities: `@Peter`, `@warelay`, etc (slugs map to `bank/entities/*.md`)
-- Opinion confidence: `O(c=0.0..1.0)` optional
+- Prefixo de tipo: `W` (mundo), `B` (experiência/biográfico), `O` (opinião), `S` (observação/resumo; geralmente gerado)
+- Entidades: `@Peter`, `@warelay`, etc (slugs mapeiam para `bank/entities/*.md`)
+- Confiança de opinião: `O(c=0.0..1.0)` opcional
 
-If you don’t want authors to think about it: the reflect job can infer these bullets from the rest of the log, but having an explicit `## Retain` section is the easiest “quality lever”.
+Se você não quer que autores pensem nisso: o job de reflexão pode inferir esses bullets do resto do log, mas ter uma seção `## Retain` explícita é a "alavanca de qualidade" mais fácil.
 
-### Recall: queries over the derived index
+### Recall: consultas sobre o índice derivado
 
-Recall should support:
+Recall deve suportar:
 
-- **lexical**: “find exact terms / names / commands” (FTS5)
-- **entity**: “tell me about X” (entity pages + entity-linked facts)
-- **temporal**: “what happened around Nov 27” / “since last week”
-- **opinion**: “what does Peter prefer?” (with confidence + evidence)
+- **lexical**: "encontrar termos/nomes/comandos exatos" (FTS5)
+- **entidade**: "me fale sobre X" (páginas de entidade + fatos vinculados a entidade)
+- **temporal**: "o que aconteceu por volta de Nov 27" / "desde semana passada"
+- **opinião**: "o que Peter prefere?" (com confiança + evidência)
 
-Return format should be agent-friendly and cite sources:
+Formato de retorno deve ser amigável ao agente e citar fontes:
 
 - `kind` (`world|experience|opinion|observation`)
-- `timestamp` (source day, or extracted time range if present)
+- `timestamp` (dia de origem, ou faixa de tempo extraída se presente)
 - `entities` (`["Peter","warelay"]`)
-- `content` (the narrative fact)
+- `content` (o fato narrativo)
 - `source` (`memory/2025-11-27.md#L12` etc)
 
-### Reflect: produce stable pages + update beliefs
+### Reflect: produzir páginas estáveis + atualizar crenças
 
-Reflection is a scheduled job (daily or heartbeat `ultrathink`) that:
+Reflexão é um job agendado (diário ou heartbeat `ultrathink`) que:
 
-- updates `bank/entities/*.md` from recent facts (entity summaries)
-- updates `bank/opinions.md` confidence based on reinforcement/contradiction
-- optionally proposes edits to `memory.md` (“core-ish” durable facts)
+- atualiza `bank/entities/*.md` a partir de fatos recentes (resumos de entidade)
+- atualiza confiança de `bank/opinions.md` baseado em reforço/contradição
+- opcionalmente propõe edições em `memory.md` (fatos duráveis "core-ish")
 
-Opinion evolution (simple, explainable):
+Evolução de opinião (simples, explicável):
 
-- each opinion has:
-  - statement
-  - confidence `c ∈ [0,1]`
+- cada opinião tem:
+  - declaração
+  - confiança `c ∈ [0,1]`
   - last_updated
-  - evidence links (supporting + contradicting fact IDs)
-- when new facts arrive:
-  - find candidate opinions by entity overlap + similarity (FTS first, embeddings later)
-  - update confidence by small deltas; big jumps require strong contradiction + repeated evidence
+  - links de evidência (IDs de fatos de suporte + contradição)
+- quando novos fatos chegam:
+  - encontrar opiniões candidatas por sobreposição de entidade + similaridade (FTS primeiro, embeddings depois)
+  - atualizar confiança por deltas pequenos; saltos grandes requerem contradição forte + evidência repetida
 
-## CLI integration: standalone vs deep integration
+## Integração CLI: standalone vs integração profunda
 
-Recommendation: **deep integration in OpenCraft**, but keep a separable core library.
+Recomendação: **integração profunda no OpenCraft**, mas manter uma biblioteca core separável.
 
-### Why integrate into OpenCraft?
+### Por que integrar no OpenCraft?
 
-- OpenCraft already knows:
-  - the workspace path (`agents.defaults.workspace`)
-  - the session model + heartbeats
-  - logging + troubleshooting patterns
-- You want the agent itself to call the tools:
+- O OpenCraft já conhece:
+  - o caminho do workspace (`agents.defaults.workspace`)
+  - o modelo de sessão + heartbeats
+  - padrões de logging + troubleshooting
+- Você quer que o próprio agente chame as ferramentas:
   - `opencraft memory recall "…" --k 25 --since 30d`
   - `opencraft memory reflect --since 7d`
 
-### Why still split a library?
+### Por que ainda separar uma biblioteca?
 
-- keep memory logic testable without gateway/runtime
-- reuse from other contexts (local scripts, future desktop app, etc.)
+- manter lógica de memória testável sem Gateway/runtime
+- reusar de outros contextos (scripts locais, futuro app desktop, etc.)
 
-Shape:
-The memory tooling is intended to be a small CLI + library layer, but this is exploratory only.
+Formato:
+A ferramenta de memória é planejada para ser uma pequena camada de CLI + biblioteca, mas isso é somente exploratório.
 
-## “S-Collide” / SuCo: when to use it (research)
+## "S-Collide" / SuCo: quando usar (pesquisa)
 
-If “S-Collide” refers to **SuCo (Subspace Collision)**: it’s an ANN retrieval approach that targets strong recall/latency tradeoffs by using learned/structured collisions in subspaces (paper: arXiv 2411.14754, 2024).
+Se "S-Collide" se refere a **SuCo (Subspace Collision)**: é uma abordagem de recuperação ANN que visa tradeoffs fortes de recall/latência usando colisões aprendidas/estruturadas em subespaços (paper: arXiv 2411.14754, 2024).
 
-Pragmatic take for `~/.opencraft/workspace`:
+Visão pragmática para `~/.opencraft/workspace`:
 
-- **don’t start** with SuCo.
-- start with SQLite FTS + (optional) simple embeddings; you’ll get most UX wins immediately.
-- consider SuCo/HNSW/ScaNN-class solutions only once:
-  - corpus is big (tens/hundreds of thousands of chunks)
-  - brute-force embedding search becomes too slow
-  - recall quality is meaningfully bottlenecked by lexical search
+- **não comece** com SuCo.
+- comece com FTS SQLite + (opcional) embeddings simples; você terá a maioria dos ganhos de UX imediatamente.
+- considere soluções da classe SuCo/HNSW/ScaNN somente quando:
+  - corpus é grande (dezenas/centenas de milhares de chunks)
+  - busca de embeddings por força bruta se torna muito lenta
+  - qualidade de recall é significativamente gargalada por busca lexical
 
-Offline-friendly alternatives (in increasing complexity):
+Alternativas amigáveis ao offline (em complexidade crescente):
 
-- SQLite FTS5 + metadata filters (zero ML)
-- Embeddings + brute force (works surprisingly far if chunk count is low)
-- HNSW index (common, robust; needs a library binding)
-- SuCo (research-grade; attractive if there’s a solid implementation you can embed)
+- FTS5 SQLite + filtros de metadados (zero ML)
+- Embeddings + força bruta (funciona surpreendentemente bem se a contagem de chunks é baixa)
+- Índice HNSW (comum, robusto; precisa de binding de biblioteca)
+- SuCo (grau de pesquisa; atraente se houver implementação sólida que você pode embutir)
 
-Open question:
+Pergunta em aberto:
 
-- what’s the **best** offline embedding model for “personal assistant memory” on your machines (laptop + desktop)?
-  - if you already have Ollama: embed with a local model; otherwise ship a small embedding model in the toolchain.
+- qual é o **melhor** modelo de embedding offline para "memória de assistente pessoal" nas suas máquinas (laptop + desktop)?
+  - se você já tem Ollama: embutir com modelo local; caso contrário enviar um modelo de embedding pequeno na toolchain.
 
-## Smallest useful pilot
+## Menor piloto útil
 
-If you want a minimal, still-useful version:
+Se você quer uma versão mínima, ainda útil:
 
-- Add `bank/` entity pages and a `## Retain` section in daily logs.
-- Use SQLite FTS for recall with citations (path + line numbers).
-- Add embeddings only if recall quality or scale demands it.
+- Adicione páginas de entidade `bank/` e uma seção `## Retain` nos logs diários.
+- Use FTS SQLite para recall com citações (caminho + números de linha).
+- Adicione embeddings somente se qualidade de recall ou escala demandar.
 
-## References
+## Referências
 
-- Letta / MemGPT concepts: “core memory blocks” + “archival memory” + tool-driven self-editing memory.
-- Hindsight Technical Report: “retain / recall / reflect”, four-network memory, narrative fact extraction, opinion confidence evolution.
-- SuCo: arXiv 2411.14754 (2024): “Subspace Collision” approximate nearest neighbor retrieval.
+- Conceitos Letta / MemGPT: "blocos de memória core" + "memória de arquivo" + memória de auto-edição orientada a ferramentas.
+- Relatório Técnico Hindsight: "retain / recall / reflect", memória de quatro redes, extração de fatos narrativos, evolução de confiança de opinião.
+- SuCo: arXiv 2411.14754 (2024): recuperação de vizinho mais próximo aproximado por "Subspace Collision".

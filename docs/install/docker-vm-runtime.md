@@ -1,57 +1,57 @@
 ---
-summary: "Shared Docker VM runtime steps for long-lived OpenCraft Gateway hosts"
+summary: "Etapas compartilhadas de runtime Docker VM para hosts de Gateway OpenCraft de longa duração"
 read_when:
-  - You are deploying OpenCraft on a cloud VM with Docker
-  - You need the shared binary bake, persistence, and update flow
+  - Você está implantando o OpenCraft em uma VM na nuvem com Docker
+  - Você precisa do fluxo compartilhado de bake de binários, persistência e atualização
 title: "Docker VM Runtime"
 ---
 
 # Docker VM Runtime
 
-Shared runtime steps for VM-based Docker installs such as GCP, Hetzner, and similar VPS providers.
+Etapas de runtime compartilhadas para instalações Docker baseadas em VM, como GCP, Hetzner e provedores VPS similares.
 
-## Bake required binaries into the image
+## Incorporar binários necessários na imagem
 
-Installing binaries inside a running container is a trap.
-Anything installed at runtime will be lost on restart.
+Instalar binários dentro de um contêiner em execução é uma armadilha.
+Qualquer coisa instalada em tempo de execução será perdida na reinicialização.
 
-All external binaries required by skills must be installed at image build time.
+Todos os binários externos necessários por Skills devem ser instalados no momento do build da imagem.
 
-The examples below show three common binaries only:
+Os exemplos abaixo mostram apenas três binários comuns:
 
-- `gog` for Gmail access
-- `goplaces` for Google Places
-- `wacli` for WhatsApp
+- `gog` para acesso ao Gmail
+- `goplaces` para Google Places
+- `wacli` para WhatsApp
 
-These are examples, not a complete list.
-You may install as many binaries as needed using the same pattern.
+Estes são exemplos, não uma lista completa.
+Você pode instalar quantos binários precisar usando o mesmo padrão.
 
-If you add new skills later that depend on additional binaries, you must:
+Se você adicionar novos Skills posteriormente que dependam de binários adicionais, você deve:
 
-1. Update the Dockerfile
-2. Rebuild the image
-3. Restart the containers
+1. Atualizar o Dockerfile
+2. Reconstruir a imagem
+3. Reiniciar os contêineres
 
-**Example Dockerfile**
+**Exemplo de Dockerfile**
 
 ```dockerfile
 FROM node:24-bookworm
 
 RUN apt-get update && apt-get install -y socat && rm -rf /var/lib/apt/lists/*
 
-# Example binary 1: Gmail CLI
+# Exemplo de binário 1: Gmail CLI
 RUN curl -L https://github.com/steipete/gog/releases/latest/download/gog_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/gog
 
-# Example binary 2: Google Places CLI
+# Exemplo de binário 2: Google Places CLI
 RUN curl -L https://github.com/steipete/goplaces/releases/latest/download/goplaces_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/goplaces
 
-# Example binary 3: WhatsApp CLI
+# Exemplo de binário 3: WhatsApp CLI
 RUN curl -L https://github.com/steipete/wacli/releases/latest/download/wacli_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/wacli
 
-# Add more binaries below using the same pattern
+# Adicione mais binários abaixo usando o mesmo padrão
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -71,17 +71,17 @@ ENV NODE_ENV=production
 CMD ["node","dist/index.js"]
 ```
 
-## Build and launch
+## Build e inicialização
 
 ```bash
 docker compose build
 docker compose up -d opencraft-gateway
 ```
 
-If build fails with `Killed` or `exit code 137` during `pnpm install --frozen-lockfile`, the VM is out of memory.
-Use a larger machine class before retrying.
+Se o build falhar com `Killed` ou `exit code 137` durante `pnpm install --frozen-lockfile`, a VM está sem memória.
+Use uma máquina maior antes de tentar novamente.
 
-Verify binaries:
+Verificar binários:
 
 ```bash
 docker compose exec opencraft-gateway which gog
@@ -89,7 +89,7 @@ docker compose exec opencraft-gateway which goplaces
 docker compose exec opencraft-gateway which wacli
 ```
 
-Expected output:
+Saída esperada:
 
 ```
 /usr/local/bin/gog
@@ -97,39 +97,39 @@ Expected output:
 /usr/local/bin/wacli
 ```
 
-Verify Gateway:
+Verificar o Gateway:
 
 ```bash
 docker compose logs -f opencraft-gateway
 ```
 
-Expected output:
+Saída esperada:
 
 ```
 [gateway] listening on ws://0.0.0.0:18789
 ```
 
-## What persists where
+## O que persiste e onde
 
-OpenCraft runs in Docker, but Docker is not the source of truth.
-All long-lived state must survive restarts, rebuilds, and reboots.
+O OpenCraft roda em Docker, mas o Docker não é a fonte de verdade.
+Todo estado de longa duração deve sobreviver a reinicializações, rebuilds e reboots.
 
-| Component           | Location                           | Persistence mechanism  | Notes                             |
-| ------------------- | ---------------------------------- | ---------------------- | --------------------------------- |
-| Gateway config      | `/home/node/.opencraft/`           | Host volume mount      | Includes `opencraft.json`, tokens |
-| Model auth profiles | `/home/node/.opencraft/`           | Host volume mount      | OAuth tokens, API keys            |
-| Skill configs       | `/home/node/.opencraft/skills/`    | Host volume mount      | Skill-level state                 |
-| Agent workspace     | `/home/node/.opencraft/workspace/` | Host volume mount      | Code and agent artifacts          |
-| WhatsApp session    | `/home/node/.opencraft/`           | Host volume mount      | Preserves QR login                |
-| Gmail keyring       | `/home/node/.opencraft/`           | Host volume + password | Requires `GOG_KEYRING_PASSWORD`   |
-| External binaries   | `/usr/local/bin/`                  | Docker image           | Must be baked at build time       |
-| Node runtime        | Container filesystem               | Docker image           | Rebuilt every image build         |
-| OS packages         | Container filesystem               | Docker image           | Do not install at runtime         |
-| Docker container    | Ephemeral                          | Restartable            | Safe to destroy                   |
+| Componente          | Localização                        | Mecanismo de persistência | Notas                           |
+| ------------------- | ---------------------------------- | ------------------------- | ------------------------------- |
+| Config do Gateway   | `/home/node/.opencraft/`           | Volume do host montado    | Inclui `opencraft.json`, tokens |
+| Perfis de auth      | `/home/node/.opencraft/`           | Volume do host montado    | Tokens OAuth, chaves de API     |
+| Configs de Skills   | `/home/node/.opencraft/skills/`    | Volume do host montado    | Estado por Skill                |
+| Workspace do agente | `/home/node/.opencraft/workspace/` | Volume do host montado    | Código e artefatos do agente    |
+| Sessão WhatsApp     | `/home/node/.opencraft/`           | Volume do host montado    | Preserva login por QR           |
+| Keyring do Gmail    | `/home/node/.opencraft/`           | Volume do host + senha    | Requer `GOG_KEYRING_PASSWORD`   |
+| Binários externos   | `/usr/local/bin/`                  | Imagem Docker             | Deve ser incorporado no build   |
+| Runtime Node.js     | Sistema de arquivos do contêiner   | Imagem Docker             | Reconstruído a cada build       |
+| Pacotes do SO       | Sistema de arquivos do contêiner   | Imagem Docker             | Não instale em runtime          |
+| Contêiner Docker    | Efêmero                            | Reiniciável               | Seguro para destruir            |
 
-## Updates
+## Atualizações
 
-To update OpenCraft on the VM:
+Para atualizar o OpenCraft na VM:
 
 ```bash
 git pull

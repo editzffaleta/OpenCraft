@@ -1,126 +1,126 @@
 ---
-summary: "Troubleshoot WSL2 Gateway + Windows Chrome remote CDP in layers"
+summary: "Solucionar problemas de Gateway WSL2 + Chrome Windows CDP remoto em camadas"
 read_when:
-  - Running OpenCraft Gateway in WSL2 while Chrome lives on Windows
-  - Seeing overlapping browser/control-ui errors across WSL2 and Windows
-  - Deciding between host-local Chrome MCP and raw remote CDP in split-host setups
-title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
+  - Executando OpenCraft Gateway no WSL2 enquanto Chrome está no Windows
+  - Vendo erros sobrepostos de browser/control-ui entre WSL2 e Windows
+  - Decidindo entre Chrome MCP local do host e CDP remoto bruto em configurações divididas
+title: "Solução de problemas WSL2 + Windows + Chrome CDP remoto"
 ---
 
-# WSL2 + Windows + remote Chrome CDP troubleshooting
+# Solução de problemas WSL2 + Windows + Chrome CDP remoto
 
-This guide covers the common split-host setup where:
+Este guia cobre a configuração comum de host dividido onde:
 
-- OpenCraft Gateway runs inside WSL2
-- Chrome runs on Windows
-- browser control must cross the WSL2/Windows boundary
+- O Gateway do OpenCraft roda dentro do WSL2
+- O Chrome roda no Windows
+- O controle do browser precisa cruzar a fronteira WSL2/Windows
 
-It also covers the layered failure pattern from [issue #39369](https://github.com/editzffaleta/OpenCraft/issues/39369): several independent problems can show up at once, which makes the wrong layer look broken first.
+Também cobre o padrão de falha em camadas do [issue #39369](https://github.com/editzffaleta/OpenCraft/issues/39369): vários problemas independentes podem aparecer ao mesmo tempo, fazendo a camada errada parecer quebrada primeiro.
 
-## Choose the right browser mode first
+## Escolha o modo de browser correto primeiro
 
-You have two valid patterns:
+Você tem dois padrões válidos:
 
-### Option 1: Raw remote CDP from WSL2 to Windows
+### Opção 1: CDP remoto bruto do WSL2 para o Windows
 
-Use a remote browser profile that points from WSL2 to a Windows Chrome CDP endpoint.
+Use um perfil de browser remoto que aponte do WSL2 para um endpoint CDP do Chrome no Windows.
 
-Choose this when:
+Escolha quando:
 
-- the Gateway stays inside WSL2
-- Chrome runs on Windows
-- you need browser control to cross the WSL2/Windows boundary
+- o Gateway permanece dentro do WSL2
+- o Chrome roda no Windows
+- você precisa que o controle do browser cruze a fronteira WSL2/Windows
 
-### Option 2: Host-local Chrome MCP
+### Opção 2: Chrome MCP local do host
 
-Use `existing-session` / `user` only when the Gateway itself runs on the same host as Chrome.
+Use `existing-session` / `user` apenas quando o Gateway roda no mesmo host que o Chrome.
 
-Choose this when:
+Escolha quando:
 
-- OpenCraft and Chrome are on the same machine
-- you want the local signed-in browser state
-- you do not need cross-host browser transport
+- OpenCraft e Chrome estão na mesma máquina
+- você quer o estado de login do browser local
+- você não precisa de transporte de browser entre hosts
 
-For WSL2 Gateway + Windows Chrome, prefer raw remote CDP. Chrome MCP is host-local, not a WSL2-to-Windows bridge.
+Para Gateway WSL2 + Chrome Windows, prefira CDP remoto bruto. Chrome MCP é local do host, não uma ponte WSL2-para-Windows.
 
-## Working architecture
+## Arquitetura funcional
 
-Reference shape:
+Formato de referência:
 
-- WSL2 runs the Gateway on `127.0.0.1:18789`
-- Windows opens the Control UI in a normal browser at `http://127.0.0.1:18789/`
-- Windows Chrome exposes a CDP endpoint on port `9222`
-- WSL2 can reach that Windows CDP endpoint
-- OpenCraft points a browser profile at the address that is reachable from WSL2
+- WSL2 roda o Gateway em `127.0.0.1:18789`
+- Windows abre a Control UI em um browser normal em `http://127.0.0.1:18789/`
+- Chrome do Windows expõe um endpoint CDP na porta `9222`
+- WSL2 pode alcançar o endpoint CDP do Windows
+- OpenCraft aponta um perfil de browser para o endereço acessível pelo WSL2
 
-## Why this setup is confusing
+## Por que esta configuração é confusa
 
-Several failures can overlap:
+Várias falhas podem se sobrepor:
 
-- WSL2 cannot reach the Windows CDP endpoint
-- the Control UI is opened from a non-secure origin
-- `gateway.controlUi.allowedOrigins` does not match the page origin
-- token or pairing is missing
-- the browser profile points at the wrong address
+- WSL2 não consegue alcançar o endpoint CDP do Windows
+- A Control UI é aberta de uma origem não segura
+- `gateway.controlUi.allowedOrigins` não corresponde à origem da página
+- Token ou pareamento está faltando
+- O perfil do browser aponta para o endereço errado
 
-Because of that, fixing one layer can still leave a different error visible.
+Por causa disso, corrigir uma camada ainda pode deixar um erro diferente visível.
 
-## Critical rule for the Control UI
+## Regra crítica para a Control UI
 
-When the UI is opened from Windows, use Windows localhost unless you have a deliberate HTTPS setup.
+Quando a UI é aberta do Windows, use localhost do Windows a menos que você tenha uma configuração HTTPS deliberada.
 
 Use:
 
 `http://127.0.0.1:18789/`
 
-Do not default to a LAN IP for the Control UI. Plain HTTP on a LAN or tailnet address can trigger insecure-origin/device-auth behavior that is unrelated to CDP itself. See [Control UI](/web/control-ui).
+Não use um IP de LAN por padrão para a Control UI. HTTP simples em um endereço de LAN ou tailnet pode disparar comportamento de origem insegura/autenticação de dispositivo que não está relacionado ao CDP em si. Veja [Control UI](/web/control-ui).
 
-## Validate in layers
+## Valide em camadas
 
-Work top to bottom. Do not skip ahead.
+Trabalhe de cima para baixo. Não pule etapas.
 
-### Layer 1: Verify Chrome is serving CDP on Windows
+### Camada 1: Verifique se o Chrome está servindo CDP no Windows
 
-Start Chrome on Windows with remote debugging enabled:
+Inicie o Chrome no Windows com depuração remota habilitada:
 
 ```powershell
 chrome.exe --remote-debugging-port=9222
 ```
 
-From Windows, verify Chrome itself first:
+Do Windows, verifique o Chrome primeiro:
 
 ```powershell
 curl http://127.0.0.1:9222/json/version
 curl http://127.0.0.1:9222/json/list
 ```
 
-If this fails on Windows, OpenCraft is not the problem yet.
+Se isso falhar no Windows, o OpenCraft ainda não é o problema.
 
-### Layer 2: Verify WSL2 can reach that Windows endpoint
+### Camada 2: Verifique se o WSL2 consegue alcançar o endpoint do Windows
 
-From WSL2, test the exact address you plan to use in `cdpUrl`:
+Do WSL2, teste o endereço exato que você planeja usar em `cdpUrl`:
 
 ```bash
 curl http://WINDOWS_HOST_OR_IP:9222/json/version
 curl http://WINDOWS_HOST_OR_IP:9222/json/list
 ```
 
-Good result:
+Bom resultado:
 
-- `/json/version` returns JSON with Browser / Protocol-Version metadata
-- `/json/list` returns JSON (empty array is fine if no pages are open)
+- `/json/version` retorna JSON com metadados de Browser / Protocol-Version
+- `/json/list` retorna JSON (array vazio é ok se não houver páginas abertas)
 
-If this fails:
+Se isso falhar:
 
-- Windows is not exposing the port to WSL2 yet
-- the address is wrong for the WSL2 side
-- firewall / port forwarding / local proxying is still missing
+- O Windows não está expondo a porta para o WSL2 ainda
+- O endereço está errado para o lado do WSL2
+- Firewall / encaminhamento de porta / proxy local ainda está faltando
 
-Fix that before touching OpenCraft config.
+Corrija isso antes de mexer na config do OpenCraft.
 
-### Layer 3: Configure the correct browser profile
+### Camada 3: Configure o perfil de browser correto
 
-For raw remote CDP, point OpenCraft at the address that is reachable from WSL2:
+Para CDP remoto bruto, aponte o OpenCraft para o endereço acessível pelo WSL2:
 
 ```json5
 {
@@ -138,74 +138,74 @@ For raw remote CDP, point OpenCraft at the address that is reachable from WSL2:
 }
 ```
 
-Notes:
+Notas:
 
-- use the WSL2-reachable address, not whatever only works on Windows
-- keep `attachOnly: true` for externally managed browsers
-- test the same URL with `curl` before expecting OpenCraft to succeed
+- use o endereço acessível pelo WSL2, não aquele que só funciona no Windows
+- mantenha `attachOnly: true` para browsers gerenciados externamente
+- teste a mesma URL com `curl` antes de esperar que o OpenCraft funcione
 
-### Layer 4: Verify the Control UI layer separately
+### Camada 4: Verifique a camada da Control UI separadamente
 
-Open the UI from Windows:
+Abra a UI do Windows:
 
 `http://127.0.0.1:18789/`
 
-Then verify:
+Depois verifique:
 
-- the page origin matches what `gateway.controlUi.allowedOrigins` expects
-- token auth or pairing is configured correctly
-- you are not debugging a Control UI auth problem as if it were a browser problem
+- a origem da página corresponde ao que `gateway.controlUi.allowedOrigins` espera
+- autenticação por Token ou pareamento está configurado corretamente
+- você não está depurando um problema de autenticação da Control UI como se fosse um problema do browser
 
-Helpful page:
+Página útil:
 
 - [Control UI](/web/control-ui)
 
-### Layer 5: Verify end-to-end browser control
+### Camada 5: Verifique o controle de browser de ponta a ponta
 
-From WSL2:
+Do WSL2:
 
 ```bash
 opencraft browser open https://example.com --browser-profile remote
 opencraft browser tabs --browser-profile remote
 ```
 
-Good result:
+Bom resultado:
 
-- the tab opens in Windows Chrome
-- `opencraft browser tabs` returns the target
-- later actions (`snapshot`, `screenshot`, `navigate`) work from the same profile
+- a aba abre no Chrome do Windows
+- `opencraft browser tabs` retorna o alvo
+- ações posteriores (`snapshot`, `screenshot`, `navigate`) funcionam do mesmo perfil
 
-## Common misleading errors
+## Erros enganosos comuns
 
-Treat each message as a layer-specific clue:
+Trate cada mensagem como uma pista específica da camada:
 
 - `control-ui-insecure-auth`
-  - UI origin / secure-context problem, not a CDP transport problem
+  - Problema de origem da UI / contexto seguro, não um problema de transporte CDP
 - `token_missing`
-  - auth configuration problem
+  - Problema de configuração de autenticação
 - `pairing required`
-  - device approval problem
+  - Problema de aprovação de dispositivo
 - `Remote CDP for profile "remote" is not reachable`
-  - WSL2 cannot reach the configured `cdpUrl`
+  - WSL2 não consegue alcançar o `cdpUrl` configurado
 - `gateway timeout after 1500ms`
-  - often still CDP reachability or a slow/unreachable remote endpoint
+  - frequentemente ainda é acessibilidade do CDP ou um endpoint remoto lento/inacessível
 - `No Chrome tabs found for profile="user"`
-  - local Chrome MCP profile selected where no host-local tabs are available
+  - Perfil Chrome MCP local selecionado onde nenhuma aba local do host está disponível
 
-## Fast triage checklist
+## Checklist de triagem rápida
 
-1. Windows: does `curl http://127.0.0.1:9222/json/version` work?
-2. WSL2: does `curl http://WINDOWS_HOST_OR_IP:9222/json/version` work?
-3. OpenCraft config: does `browser.profiles.<name>.cdpUrl` use that exact WSL2-reachable address?
-4. Control UI: are you opening `http://127.0.0.1:18789/` instead of a LAN IP?
-5. Are you trying to use `existing-session` across WSL2 and Windows instead of raw remote CDP?
+1. Windows: `curl http://127.0.0.1:9222/json/version` funciona?
+2. WSL2: `curl http://WINDOWS_HOST_OR_IP:9222/json/version` funciona?
+3. Config do OpenCraft: `browser.profiles.<name>.cdpUrl` usa exatamente o endereço acessível pelo WSL2?
+4. Control UI: você está abrindo `http://127.0.0.1:18789/` em vez de um IP de LAN?
+5. Você está tentando usar `existing-session` entre WSL2 e Windows em vez de CDP remoto bruto?
 
-## Practical takeaway
+## Conclusão prática
 
-The setup is usually viable. The hard part is that browser transport, Control UI origin security, and token/pairing can each fail independently while looking similar from the user side.
+A configuração geralmente é viável. A parte difícil é que transporte do browser, segurança de origem da Control UI e Token/pareamento podem falhar independentemente enquanto parecem similares do lado do usuário.
 
-When in doubt:
+Em caso de dúvida:
 
-- verify the Windows Chrome endpoint locally first
-- verify the same endpoint from WSL2 second
-- only then debug OpenCraft config or Control UI auth
+- verifique o endpoint do Chrome Windows localmente primeiro
+- verifique o mesmo endpoint do WSL2 em segundo lugar
+- só depois depure a config do OpenCraft ou autenticação da Control UI

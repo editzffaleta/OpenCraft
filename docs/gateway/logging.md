@@ -1,113 +1,109 @@
 ---
-summary: "Logging surfaces, file logs, WS log styles, and console formatting"
+summary: "Superfícies de logging, logs em arquivo, estilos de log WS e formatação de console"
 read_when:
-  - Changing logging output or formats
-  - Debugging CLI or gateway output
+  - Alterando saída ou formatos de logging
+  - Debugando saída do CLI ou gateway
 title: "Logging"
 ---
 
 # Logging
 
-For a user-facing overview (CLI + Control UI + config), see [/logging](/logging).
+Para uma visão geral voltada ao usuário (CLI + Control UI + config), veja [/logging](/logging).
 
-OpenCraft has two log “surfaces”:
+OpenCraft tem duas "superfícies" de log:
 
-- **Console output** (what you see in the terminal / Debug UI).
-- **File logs** (JSON lines) written by the gateway logger.
+- **Saída no console** (o que você vê no terminal / Debug UI).
+- **Logs em arquivo** (linhas JSON) escritos pelo logger do gateway.
 
-## File-based logger
+## Logger baseado em arquivo
 
-- Default rolling log file is under `/tmp/opencraft/` (one file per day): `opencraft-YYYY-MM-DD.log`
-  - Date uses the gateway host's local timezone.
-- The log file path and level can be configured via `~/.editzffaleta/OpenCraft.json`:
+- Arquivo de log rotativo padrão está em `/tmp/opencraft/` (um arquivo por dia): `opencraft-YYYY-MM-DD.log`
+  - A data usa o fuso horário local do host do gateway.
+- O caminho do arquivo de log e o nível podem ser configurados via `~/.editzffaleta/OpenCraft.json`:
   - `logging.file`
   - `logging.level`
 
-The file format is one JSON object per line.
+O formato do arquivo é um objeto JSON por linha.
 
-The Control UI Logs tab tails this file via the gateway (`logs.tail`).
-CLI can do the same:
+A aba Logs da Control UI faz tail deste arquivo via o gateway (`logs.tail`).
+O CLI pode fazer o mesmo:
 
 ```bash
 opencraft logs --follow
 ```
 
-**Verbose vs. log levels**
+**Verbose vs. níveis de log**
 
-- **File logs** are controlled exclusively by `logging.level`.
-- `--verbose` only affects **console verbosity** (and WS log style); it does **not**
-  raise the file log level.
-- To capture verbose-only details in file logs, set `logging.level` to `debug` or
-  `trace`.
+- **Logs em arquivo** são controlados exclusivamente por `logging.level`.
+- `--verbose` afeta apenas a **verbosidade do console** (e o estilo de log WS); ele **não** eleva o nível de log do arquivo.
+- Para capturar detalhes exclusivos do verbose em logs de arquivo, defina `logging.level` para `debug` ou `trace`.
 
-## Console capture
+## Captura de console
 
-The CLI captures `console.log/info/warn/error/debug/trace` and writes them to file logs,
-while still printing to stdout/stderr.
+O CLI captura `console.log/info/warn/error/debug/trace` e os escreve em logs de arquivo, enquanto ainda imprime no stdout/stderr.
 
-You can tune console verbosity independently via:
+Você pode ajustar a verbosidade do console independentemente via:
 
-- `logging.consoleLevel` (default `info`)
+- `logging.consoleLevel` (padrão `info`)
 - `logging.consoleStyle` (`pretty` | `compact` | `json`)
 
-## Tool summary redaction
+## Redação de resumo de ferramentas
 
-Verbose tool summaries (e.g. `🛠️ Exec: ...`) can mask sensitive tokens before they hit the
-console stream. This is **tools-only** and does not alter file logs.
+Resumos verbosos de ferramentas (ex. `🛠️ Exec: ...`) podem mascarar tokens sensíveis antes de chegarem ao stream do console. Isso é **apenas para ferramentas** e não altera logs de arquivo.
 
-- `logging.redactSensitive`: `off` | `tools` (default: `tools`)
-- `logging.redactPatterns`: array of regex strings (overrides defaults)
-  - Use raw regex strings (auto `gi`), or `/pattern/flags` if you need custom flags.
-  - Matches are masked by keeping the first 6 + last 4 chars (length >= 18), otherwise `***`.
-  - Defaults cover common key assignments, CLI flags, JSON fields, bearer headers, PEM blocks, and popular token prefixes.
+- `logging.redactSensitive`: `off` | `tools` (padrão: `tools`)
+- `logging.redactPatterns`: array de strings regex (sobrescreve os padrões)
+  - Use strings de regex cruas (auto `gi`), ou `/pattern/flags` se precisar de flags customizadas.
+  - Matches são mascarados mantendo os primeiros 6 + últimos 4 caracteres (comprimento >= 18), caso contrário `***`.
+  - Os padrões cobrem atribuições comuns de chaves, flags de CLI, campos JSON, headers bearer, blocos PEM e prefixos populares de tokens.
 
-## Gateway WebSocket logs
+## Logs WebSocket do Gateway
 
-The gateway prints WebSocket protocol logs in two modes:
+O gateway imprime logs de protocolo WebSocket em dois modos:
 
-- **Normal mode (no `--verbose`)**: only “interesting” RPC results are printed:
-  - errors (`ok=false`)
-  - slow calls (default threshold: `>= 50ms`)
-  - parse errors
-- **Verbose mode (`--verbose`)**: prints all WS request/response traffic.
+- **Modo normal (sem `--verbose`)**: apenas resultados RPC "interessantes" são impressos:
+  - erros (`ok=false`)
+  - chamadas lentas (threshold padrão: `>= 50ms`)
+  - erros de parse
+- **Modo verbose (`--verbose`)**: imprime todo o tráfego WS de request/response.
 
-### WS log style
+### Estilo de log WS
 
-`opencraft gateway` supports a per-gateway style switch:
+`opencraft gateway` suporta um switch de estilo por gateway:
 
-- `--ws-log auto` (default): normal mode is optimized; verbose mode uses compact output
-- `--ws-log compact`: compact output (paired request/response) when verbose
-- `--ws-log full`: full per-frame output when verbose
-- `--compact`: alias for `--ws-log compact`
+- `--ws-log auto` (padrão): modo normal é otimizado; modo verbose usa saída compacta
+- `--ws-log compact`: saída compacta (request/response pareados) quando verbose
+- `--ws-log full`: saída completa por frame quando verbose
+- `--compact`: alias para `--ws-log compact`
 
-Examples:
+Exemplos:
 
 ```bash
-# optimized (only errors/slow)
+# otimizado (apenas erros/lentos)
 opencraft gateway
 
-# show all WS traffic (paired)
+# mostrar todo tráfego WS (pareado)
 opencraft gateway --verbose --ws-log compact
 
-# show all WS traffic (full meta)
+# mostrar todo tráfego WS (meta completo)
 opencraft gateway --verbose --ws-log full
 ```
 
-## Console formatting (subsystem logging)
+## Formatação de console (logging por subsistema)
 
-The console formatter is **TTY-aware** and prints consistent, prefixed lines.
-Subsystem loggers keep output grouped and scannable.
+O formatador de console é **sensível a TTY** e imprime linhas consistentes e prefixadas.
+Loggers de subsistema mantêm a saída agrupada e escaneável.
 
-Behavior:
+Comportamento:
 
-- **Subsystem prefixes** on every line (e.g. `[gateway]`, `[canvas]`, `[tailscale]`)
-- **Subsystem colors** (stable per subsystem) plus level coloring
-- **Color when output is a TTY or the environment looks like a rich terminal** (`TERM`/`COLORTERM`/`TERM_PROGRAM`), respects `NO_COLOR`
-- **Shortened subsystem prefixes**: drops leading `gateway/` + `channels/`, keeps last 2 segments (e.g. `whatsapp/outbound`)
-- **Sub-loggers by subsystem** (auto prefix + structured field `{ subsystem }`)
-- **`logRaw()`** for QR/UX output (no prefix, no formatting)
-- **Console styles** (e.g. `pretty | compact | json`)
-- **Console log level** separate from file log level (file keeps full detail when `logging.level` is set to `debug`/`trace`)
-- **WhatsApp message bodies** are logged at `debug` (use `--verbose` to see them)
+- **Prefixos de subsistema** em cada linha (ex. `[gateway]`, `[canvas]`, `[tailscale]`)
+- **Cores de subsistema** (estáveis por subsistema) mais coloração de nível
+- **Cor quando saída é um TTY ou o ambiente parece um terminal rico** (`TERM`/`COLORTERM`/`TERM_PROGRAM`), respeita `NO_COLOR`
+- **Prefixos de subsistema encurtados**: remove `gateway/` + `channels/` iniciais, mantém os últimos 2 segmentos (ex. `whatsapp/outbound`)
+- **Sub-loggers por subsistema** (prefixo automático + campo estruturado `{ subsystem }`)
+- **`logRaw()`** para saída QR/UX (sem prefixo, sem formatação)
+- **Estilos de console** (ex. `pretty | compact | json`)
+- **Nível de log do console** separado do nível de log de arquivo (arquivo mantém detalhes completos quando `logging.level` está definido como `debug`/`trace`)
+- **Corpos de mensagens WhatsApp** são logados em `debug` (use `--verbose` para vê-los)
 
-This keeps existing file logs stable while making interactive output scannable.
+Isso mantém logs de arquivo existentes estáveis enquanto torna a saída interativa escaneável.

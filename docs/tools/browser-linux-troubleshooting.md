@@ -1,43 +1,43 @@
 ---
-summary: "Fix Chrome/Brave/Edge/Chromium CDP startup issues for OpenCraft browser control on Linux"
-read_when: "Browser control fails on Linux, especially with snap Chromium"
-title: "Browser Troubleshooting"
+summary: "Corrigir problemas de inicialização CDP do Chrome/Brave/Edge/Chromium para controle de browser do OpenCraft no Linux"
+read_when: "Controle de browser falha no Linux, especialmente com Chromium snap"
+title: "Solução de Problemas do Browser"
 ---
 
-# Browser Troubleshooting (Linux)
+# Solução de Problemas do Browser (Linux)
 
-## Problem: "Failed to start Chrome CDP on port 18800"
+## Problema: "Failed to start Chrome CDP on port 18800"
 
-OpenCraft's browser control server fails to launch Chrome/Brave/Edge/Chromium with the error:
+O servidor de controle de browser do OpenCraft falha ao iniciar Chrome/Brave/Edge/Chromium com o erro:
 
 ```
 {"error":"Error: Failed to start Chrome CDP on port 18800 for profile \"opencraft\"."}
 ```
 
-### Root Cause
+### Causa Raiz
 
-On Ubuntu (and many Linux distros), the default Chromium installation is a **snap package**. Snap's AppArmor confinement interferes with how OpenCraft spawns and monitors the browser process.
+No Ubuntu (e muitas distribuições Linux), a instalação padrão do Chromium é um **pacote snap**. O confinamento AppArmor do snap interfere na forma como o OpenCraft inicia e monitora o processo do browser.
 
-The `apt install chromium` command installs a stub package that redirects to snap:
+O comando `apt install chromium` instala um pacote stub que redireciona para o snap:
 
 ```
 Note, selecting 'chromium-browser' instead of 'chromium'
 chromium-browser is already the newest version (2:1snap1-0ubuntu2).
 ```
 
-This is NOT a real browser - it's just a wrapper.
+Isso NÃO é um browser real - é apenas um wrapper.
 
-### Solution 1: Install Google Chrome (Recommended)
+### Solução 1: Instalar Google Chrome (Recomendado)
 
-Install the official Google Chrome `.deb` package, which is not sandboxed by snap:
+Instale o pacote `.deb` oficial do Google Chrome, que não é confinado pelo snap:
 
 ```bash
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome-stable_current_amd64.deb
-sudo apt --fix-broken install -y  # if there are dependency errors
+sudo apt --fix-broken install -y  # se houver erros de dependência
 ```
 
-Then update your OpenCraft config (`~/.editzffaleta/OpenCraft.json`):
+Depois atualize sua config do OpenCraft (`~/.editzffaleta/OpenCraft.json`):
 
 ```json
 {
@@ -50,11 +50,11 @@ Then update your OpenCraft config (`~/.editzffaleta/OpenCraft.json`):
 }
 ```
 
-### Solution 2: Use Snap Chromium with Attach-Only Mode
+### Solução 2: Usar Chromium Snap com Modo Attach-Only
 
-If you must use snap Chromium, configure OpenCraft to attach to a manually-started browser:
+Se você precisar usar o Chromium snap, configure o OpenCraft para se conectar a um browser iniciado manualmente:
 
-1. Update config:
+1. Atualize a config:
 
 ```json
 {
@@ -67,7 +67,7 @@ If you must use snap Chromium, configure OpenCraft to attach to a manually-start
 }
 ```
 
-2. Start Chromium manually:
+2. Inicie o Chromium manualmente:
 
 ```bash
 chromium-browser --headless --no-sandbox --disable-gpu \
@@ -76,7 +76,7 @@ chromium-browser --headless --no-sandbox --disable-gpu \
   about:blank &
 ```
 
-3. Optionally create a systemd user service to auto-start Chrome:
+3. Opcionalmente crie um serviço systemd de usuário para iniciar o Chrome automaticamente:
 
 ```ini
 # ~/.config/systemd/user/opencraft-browser.service
@@ -93,46 +93,46 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-Enable with: `systemctl --user enable --now opencraft-browser.service`
+Habilite com: `systemctl --user enable --now opencraft-browser.service`
 
-### Verifying the Browser Works
+### Verificando se o Browser Funciona
 
-Check status:
+Verifique o status:
 
 ```bash
 curl -s http://127.0.0.1:18791/ | jq '{running, pid, chosenBrowser}'
 ```
 
-Test browsing:
+Teste a navegação:
 
 ```bash
 curl -s -X POST http://127.0.0.1:18791/start
 curl -s http://127.0.0.1:18791/tabs
 ```
 
-### Config Reference
+### Referência de Config
 
-| Option                   | Description                                                          | Default                                                     |
-| ------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `browser.enabled`        | Enable browser control                                               | `true`                                                      |
-| `browser.executablePath` | Path to a Chromium-based browser binary (Chrome/Brave/Edge/Chromium) | auto-detected (prefers default browser when Chromium-based) |
-| `browser.headless`       | Run without GUI                                                      | `false`                                                     |
-| `browser.noSandbox`      | Add `--no-sandbox` flag (needed for some Linux setups)               | `false`                                                     |
-| `browser.attachOnly`     | Don't launch browser, only attach to existing                        | `false`                                                     |
-| `browser.cdpPort`        | Chrome DevTools Protocol port                                        | `18800`                                                     |
+| Opção                    | Descrição                                                                           | Padrão                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `browser.enabled`        | Habilitar controle de browser                                                       | `true`                                                             |
+| `browser.executablePath` | Caminho para um binário de browser baseado em Chromium (Chrome/Brave/Edge/Chromium) | auto-detectado (prefere browser padrão quando baseado em Chromium) |
+| `browser.headless`       | Executar sem GUI                                                                    | `false`                                                            |
+| `browser.noSandbox`      | Adicionar flag `--no-sandbox` (necessário para algumas configurações Linux)         | `false`                                                            |
+| `browser.attachOnly`     | Não iniciar browser, apenas conectar ao existente                                   | `false`                                                            |
+| `browser.cdpPort`        | Porta do Chrome DevTools Protocol                                                   | `18800`                                                            |
 
-### Problem: "No Chrome tabs found for profile=\"user\""
+### Problema: "No Chrome tabs found for profile=\"user\""
 
-You're using an `existing-session` / Chrome MCP profile. OpenCraft can see local Chrome,
-but there are no open tabs available to attach to.
+Você está usando um perfil Chrome MCP `existing-session` / `user`. O OpenCraft pode ver o Chrome local,
+mas não há abas abertas disponíveis para conexão.
 
-Fix options:
+Opções de correção:
 
-1. **Use the managed browser:** `opencraft browser start --browser-profile opencraft`
-   (or set `browser.defaultProfile: "opencraft"`).
-2. **Use Chrome MCP:** make sure local Chrome is running with at least one open tab, then retry with `--browser-profile user`.
+1. **Use o browser gerenciado:** `opencraft browser start --browser-profile opencraft`
+   (ou defina `browser.defaultProfile: "opencraft"`).
+2. **Use Chrome MCP:** certifique-se de que o Chrome local está em execução com pelo menos uma aba aberta, depois tente novamente com `--browser-profile user`.
 
-Notes:
+Notas:
 
-- `user` is host-only. For Linux servers, containers, or remote hosts, prefer CDP profiles.
-- Local `opencraft` profiles auto-assign `cdpPort`/`cdpUrl`; only set those for remote CDP.
+- `user` é apenas para host local. Para servidores Linux, containers ou hosts remotos, prefira perfis CDP.
+- Perfis `opencraft` locais atribuem automaticamente `cdpPort`/`cdpUrl`; defina esses apenas para CDP remoto.

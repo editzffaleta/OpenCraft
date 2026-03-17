@@ -1,23 +1,23 @@
 ---
-summary: "Use OpenRouter's unified API to access many models in OpenCraft"
+summary: "Use a API unificada do OpenRouter para acessar diversos modelos no OpenCraft"
 read_when:
-  - You want a single API key for many LLMs
-  - You want to run models via OpenRouter in OpenCraft
+  - Você quer uma única API key para vários LLMs
+  - Você quer executar modelos via OpenRouter no OpenCraft
 title: "OpenRouter"
 ---
 
 # OpenRouter
 
-OpenRouter provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+O OpenRouter fornece uma **API unificada** que roteia requisições para diversos modelos por trás de um único
+endpoint e API key. É compatível com OpenAI, então a maioria dos SDKs OpenAI funciona trocando a URL base.
 
-## CLI setup
+## Configuração via CLI
 
 ```bash
 opencraft onboard --auth-choice apiKey --token-provider openrouter --token "$OPENROUTER_API_KEY"
 ```
 
-## Config snippet
+## Trecho de config
 
 ```json5
 {
@@ -30,8 +30,8 @@ opencraft onboard --auth-choice apiKey --token-provider openrouter --token "$OPE
 }
 ```
 
-## Notes
+## Notas
 
-- Model refs are `openrouter/<provider>/<model>`.
-- For more model/provider options, see [/concepts/model-providers](/concepts/model-providers).
-- OpenRouter uses a Bearer token with your API key under the hood.
+- As referências de modelo são `openrouter/<provider>/<model>`.
+- Para mais opções de modelo/provider, veja [/concepts/model-providers](/concepts/model-providers).
+- O OpenRouter usa um Bearer Token com sua API key internamente.

@@ -1,64 +1,64 @@
 ---
-summary: "Expose an OpenAI-compatible /v1/chat/completions HTTP endpoint from the Gateway"
+summary: "Expor um endpoint HTTP /v1/chat/completions compatível com OpenAI a partir do Gateway"
 read_when:
-  - Integrating tools that expect OpenAI Chat Completions
+  - Integrando ferramentas que esperam OpenAI Chat Completions
 title: "OpenAI Chat Completions"
 ---
 
 # OpenAI Chat Completions (HTTP)
 
-OpenCraft’s Gateway can serve a small OpenAI-compatible Chat Completions endpoint.
+O Gateway do OpenCraft pode servir um pequeno endpoint de Chat Completions compatível com OpenAI.
 
-This endpoint is **disabled by default**. Enable it in config first.
+Este endpoint está **desabilitado por padrão**. Habilite-o na config primeiro.
 
 - `POST /v1/chat/completions`
-- Same port as the Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/chat/completions`
+- Mesma porta que o Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/chat/completions`
 
-Under the hood, requests are executed as a normal Gateway agent run (same codepath as `opencraft agent`), so routing/permissions/config match your Gateway.
+Por baixo, as requisições são executadas como uma execução normal de agente do Gateway (mesmo codepath que `opencraft agent`), então roteamento/permissões/config correspondem ao seu Gateway.
 
-## Authentication
+## Autenticação
 
-Uses the Gateway auth configuration. Send a bearer token:
+Usa a configuração de auth do Gateway. Envie um bearer token:
 
 - `Authorization: Bearer <token>`
 
-Notes:
+Notas:
 
-- When `gateway.auth.mode="token"`, use `gateway.auth.token` (or `OPENCLAW_GATEWAY_TOKEN`).
-- When `gateway.auth.mode="password"`, use `gateway.auth.password` (or `OPENCLAW_GATEWAY_PASSWORD`).
-- If `gateway.auth.rateLimit` is configured and too many auth failures occur, the endpoint returns `429` with `Retry-After`.
+- Quando `gateway.auth.mode="token"`, use `gateway.auth.token` (ou `OPENCLAW_GATEWAY_TOKEN`).
+- Quando `gateway.auth.mode="password"`, use `gateway.auth.password` (ou `OPENCLAW_GATEWAY_PASSWORD`).
+- Se `gateway.auth.rateLimit` está configurado e muitas falhas de auth ocorrem, o endpoint retorna `429` com `Retry-After`.
 
-## Security boundary (important)
+## Limite de segurança (importante)
 
-Treat this endpoint as a **full operator-access** surface for the gateway instance.
+Trate este endpoint como uma superfície de **acesso completo de operador** para a instância do gateway.
 
-- HTTP bearer auth here is not a narrow per-user scope model.
-- A valid Gateway token/password for this endpoint should be treated like an owner/operator credential.
-- Requests run through the same control-plane agent path as trusted operator actions.
-- There is no separate non-owner/per-user tool boundary on this endpoint; once a caller passes Gateway auth here, OpenCraft treats that caller as a trusted operator for this gateway.
-- If the target agent policy allows sensitive tools, this endpoint can use them.
-- Keep this endpoint on loopback/tailnet/private ingress only; do not expose it directly to the public internet.
+- A auth de bearer HTTP aqui não é um modelo de escopo restrito por usuário.
+- Um token/password de Gateway válido para este endpoint deve ser tratado como uma credencial de proprietário/operador.
+- Requisições passam pelo mesmo caminho de agente do control-plane que ações confiáveis de operador.
+- Não há um limite de ferramenta separado não-proprietário/por-usuário neste endpoint; uma vez que um chamador passa a auth do Gateway aqui, OpenCraft trata esse chamador como um operador confiável para este gateway.
+- Se a política do agente alvo permite ferramentas sensíveis, este endpoint pode usá-las.
+- Mantenha este endpoint em loopback/tailnet/ingress privado apenas; não o exponha diretamente à internet pública.
 
-See [Security](/gateway/security) and [Remote access](/gateway/remote).
+Veja [Security](/gateway/security) e [Remote access](/gateway/remote).
 
-## Choosing an agent
+## Escolhendo um agente
 
-No custom headers required: encode the agent id in the OpenAI `model` field:
+Nenhum header customizado necessário: codifique o id do agente no campo `model` do OpenAI:
 
-- `model: "opencraft:<agentId>"` (example: `"opencraft:main"`, `"opencraft:beta"`)
+- `model: "opencraft:<agentId>"` (exemplo: `"opencraft:main"`, `"opencraft:beta"`)
 - `model: "agent:<agentId>"` (alias)
 
-Or target a specific OpenCraft agent by header:
+Ou direcione um agente OpenCraft específico por header:
 
-- `x-opencraft-agent-id: <agentId>` (default: `main`)
+- `x-opencraft-agent-id: <agentId>` (padrão: `main`)
 
-Advanced:
+Avançado:
 
-- `x-opencraft-session-key: <sessionKey>` to fully control session routing.
+- `x-opencraft-session-key: <sessionKey>` para controlar totalmente o roteamento de sessão.
 
-## Enabling the endpoint
+## Habilitando o endpoint
 
-Set `gateway.http.endpoints.chatCompletions.enabled` to `true`:
+Defina `gateway.http.endpoints.chatCompletions.enabled` como `true`:
 
 ```json5
 {
@@ -72,9 +72,9 @@ Set `gateway.http.endpoints.chatCompletions.enabled` to `true`:
 }
 ```
 
-## Disabling the endpoint
+## Desabilitando o endpoint
 
-Set `gateway.http.endpoints.chatCompletions.enabled` to `false`:
+Defina `gateway.http.endpoints.chatCompletions.enabled` como `false`:
 
 ```json5
 {
@@ -88,23 +88,23 @@ Set `gateway.http.endpoints.chatCompletions.enabled` to `false`:
 }
 ```
 
-## Session behavior
+## Comportamento de sessão
 
-By default the endpoint is **stateless per request** (a new session key is generated each call).
+Por padrão o endpoint é **stateless por requisição** (uma nova chave de sessão é gerada a cada chamada).
 
-If the request includes an OpenAI `user` string, the Gateway derives a stable session key from it, so repeated calls can share an agent session.
+Se a requisição inclui uma string `user` do OpenAI, o Gateway deriva uma chave de sessão estável a partir dela, para que chamadas repetidas possam compartilhar uma sessão de agente.
 
 ## Streaming (SSE)
 
-Set `stream: true` to receive Server-Sent Events (SSE):
+Defina `stream: true` para receber Server-Sent Events (SSE):
 
 - `Content-Type: text/event-stream`
-- Each event line is `data: <json>`
-- Stream ends with `data: [DONE]`
+- Cada linha de evento é `data: <json>`
+- Stream termina com `data: [DONE]`
 
-## Examples
+## Exemplos
 
-Non-streaming:
+Sem streaming:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/chat/completions \
@@ -117,7 +117,7 @@ curl -sS http://127.0.0.1:18789/v1/chat/completions \
   }'
 ```
 
-Streaming:
+Com streaming:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/chat/completions \
