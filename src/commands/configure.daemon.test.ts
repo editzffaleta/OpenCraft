@@ -117,7 +117,7 @@ describe("maybeInstallDaemon", () => {
     });
 
     expect(note).toHaveBeenCalledWith(
-      expect.stringContaining("Gateway install blocked"),
+      expect.stringContaining("Instalação do Gateway bloqueada"),
       "Gateway",
     );
     expect(buildGatewayInstallPlan).not.toHaveBeenCalled();
@@ -181,6 +181,8 @@ describe("maybeInstallDaemon", () => {
 
     expect(serviceRestart).toHaveBeenCalledTimes(1);
     expect(serviceInstall).not.toHaveBeenCalled();
-    expect(progressSetLabel).toHaveBeenLastCalledWith("Gateway service restart scheduled.");
+    expect(progressSetLabel).toHaveBeenLastCalledWith(
+      "Reinicialização do serviço Gateway agendada.",
+    );
   });
 });

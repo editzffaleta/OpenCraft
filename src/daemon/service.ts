@@ -79,15 +79,15 @@ export function describeGatewayServiceRestart(
     return {
       scheduled: true,
       daemonActionResult: "scheduled",
-      message: `restart scheduled, ${serviceNoun.toLowerCase()} will restart momentarily`,
-      progressMessage: `${serviceNoun} service restart scheduled.`,
+      message: `reinicialização agendada, ${serviceNoun.toLowerCase()} será reiniciado em breve`,
+      progressMessage: `Reinicialização do serviço ${serviceNoun} agendada.`,
     };
   }
   return {
     scheduled: false,
     daemonActionResult: "restarted",
-    message: `${serviceNoun} service restarted.`,
-    progressMessage: `${serviceNoun} service restarted.`,
+    message: `serviço ${serviceNoun} reiniciado.`,
+    progressMessage: `Serviço ${serviceNoun} reiniciado.`,
   };
 }
 

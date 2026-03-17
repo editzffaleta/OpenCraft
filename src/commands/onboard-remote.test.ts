@@ -77,12 +77,12 @@ describe("promptRemoteGatewayConfig", () => {
     ]);
 
     const text: WizardPrompter["text"] = vi.fn(async (params) => {
-      if (params.message === "Gateway WebSocket URL") {
+      if (params.message === "URL WebSocket do gateway") {
         expect(params.initialValue).toBe("wss://gateway.tailnet.ts.net:18789");
         expect(params.validate?.(String(params.initialValue))).toBeUndefined();
         return String(params.initialValue);
       }
-      if (params.message === "Gateway token") {
+      if (params.message === "Token do gateway") {
         return "token-123";
       }
       return "";
@@ -92,9 +92,9 @@ describe("promptRemoteGatewayConfig", () => {
       text,
       confirm: true,
       selectResponses: {
-        "Select gateway": "0",
-        "Connection method": "direct",
-        "Gateway auth": "token",
+        "Selecionar gateway": "0",
+        "Método de conexão": "direct",
+        "Autenticação do gateway": "token",
       },
     });
 
@@ -102,14 +102,14 @@ describe("promptRemoteGatewayConfig", () => {
     expect(next.gateway?.remote?.url).toBe("wss://gateway.tailnet.ts.net:18789");
     expect(next.gateway?.remote?.token).toBe("token-123");
     expect(prompter.note).toHaveBeenCalledWith(
-      expect.stringContaining("Direct remote access defaults to TLS."),
-      "Direct remote",
+      expect.stringContaining("O acesso remoto direto usa TLS por padrão."),
+      "Remoto direto",
     );
   });
 
   it("validates insecure ws:// remote URLs and allows only loopback ws:// by default", async () => {
     const text: WizardPrompter["text"] = vi.fn(async (params) => {
-      if (params.message === "Gateway WebSocket URL") {
+      if (params.message === "URL WebSocket do gateway") {
         // ws:// to public IPs is rejected
         expect(params.validate?.("ws://203.0.113.10:18789")).toContain("Use wss://");
         // ws:// to private IPs remains blocked by default
@@ -124,7 +124,7 @@ describe("promptRemoteGatewayConfig", () => {
     const { next } = await runRemotePrompt({
       text,
       confirm: false,
-      selectResponses: { "Gateway auth": "off" },
+      selectResponses: { "Autenticação do gateway": "off" },
     });
 
     expect(next.gateway?.mode).toBe("remote");
@@ -135,7 +135,7 @@ describe("promptRemoteGatewayConfig", () => {
   it("allows ws:// hostname remote URLs when OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1", async () => {
     process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS = "1";
     const text: WizardPrompter["text"] = vi.fn(async (params) => {
-      if (params.message === "Gateway WebSocket URL") {
+      if (params.message === "URL WebSocket do gateway") {
         expect(params.validate?.("ws://opencraft-gateway.ai:18789")).toBeUndefined();
         expect(params.validate?.("ws://1.1.1.1:18789")).toContain("Use wss://");
         return "ws://opencraft-gateway.ai:18789";
@@ -146,7 +146,7 @@ describe("promptRemoteGatewayConfig", () => {
     const { next } = await runRemotePrompt({
       text,
       confirm: false,
-      selectResponses: { "Gateway auth": "off" },
+      selectResponses: { "Autenticação do gateway": "off" },
     });
 
     expect(next.gateway?.mode).toBe("remote");
@@ -156,7 +156,7 @@ describe("promptRemoteGatewayConfig", () => {
   it("supports storing remote auth as an external env secret ref", async () => {
     process.env.OPENCLAW_GATEWAY_TOKEN = "remote-token-value";
     const text: WizardPrompter["text"] = vi.fn(async (params) => {
-      if (params.message === "Gateway WebSocket URL") {
+      if (params.message === "URL WebSocket do gateway") {
         return "wss://remote.example.com:18789";
       }
       if (params.message === "Environment variable name") {
@@ -166,13 +166,13 @@ describe("promptRemoteGatewayConfig", () => {
     }) as WizardPrompter["text"];
 
     const select: WizardPrompter["select"] = vi.fn(async (params) => {
-      if (params.message === "Gateway auth") {
+      if (params.message === "Autenticação do gateway") {
         return "token" as never;
       }
-      if (params.message === "How do you want to provide this gateway token?") {
+      if (params.message === "Como você quer fornecer este token do gateway?") {
         return "ref" as never;
       }
-      if (params.message === "Where is this gateway token stored?") {
+      if (params.message === "Onde este token do gateway está armazenado?") {
         return "env" as never;
       }
       return (params.options[0]?.value ?? "") as never;

@@ -178,11 +178,11 @@ export async function setupSearch(
 ): Promise<OpenCraftConfig> {
   await prompter.note(
     [
-      "Web search lets your agent look things up online.",
-      "Choose a provider and paste your API key.",
+      "A busca na web permite que seu agente pesquise online.",
+      "Escolha um provedor e cole sua chave de API.",
       "Docs: https://docs.opencraft.ai/tools/web",
     ].join("\n"),
-    "Web search",
+    "Busca na web",
   );
 
   const existingProvider = config.tools?.web?.search?.provider;
@@ -208,13 +208,13 @@ export async function setupSearch(
 
   type PickerValue = SearchProvider | "__skip__";
   const choice = await prompter.select<PickerValue>({
-    message: "Search provider",
+    message: "Provedor de busca",
     options: [
       ...options,
       {
         value: "__skip__" as const,
-        label: "Skip for now",
-        hint: "Configure later with opencraft configure --section web",
+        label: "Pular por enquanto",
+        hint: "Configure depois com opencraft configure --section web",
       },
     ],
     initialValue: defaultProvider,
@@ -244,23 +244,23 @@ export async function setupSearch(
     const ref = buildSearchEnvRef(choice);
     await prompter.note(
       [
-        "Secret references enabled — OpenCraft will store a reference instead of the API key.",
-        `Env var: ${ref.id}${envAvailable ? " (detected)" : ""}.`,
-        ...(envAvailable ? [] : [`Set ${ref.id} in the Gateway environment.`]),
+        "Referências de secret ativadas — o OpenCraft armazenará uma referência em vez da chave de API.",
+        `Variável de ambiente: ${ref.id}${envAvailable ? " (detectada)" : ""}.`,
+        ...(envAvailable ? [] : [`Defina ${ref.id} no ambiente do Gateway.`]),
         "Docs: https://docs.opencraft.ai/tools/web",
       ].join("\n"),
-      "Web search",
+      "Busca na web",
     );
     return applySearchKey(config, choice, ref);
   }
 
   const keyInput = await prompter.text({
     message: keyConfigured
-      ? `${entry.label} API key (leave blank to keep current)`
+      ? `Chave de API ${entry.label} (deixe em branco para manter a atual)`
       : envAvailable
-        ? `${entry.label} API key (leave blank to use env var)`
-        : `${entry.label} API key`,
-    placeholder: keyConfigured ? "Leave blank to keep current" : entry.placeholder,
+        ? `Chave de API ${entry.label} (deixe em branco para usar a variável de ambiente)`
+        : `Chave de API ${entry.label}`,
+    placeholder: keyConfigured ? "Deixe em branco para manter a atual" : entry.placeholder,
   });
 
   const key = keyInput?.trim() ?? "";
@@ -279,11 +279,11 @@ export async function setupSearch(
 
   await prompter.note(
     [
-      "No API key stored — web_search won't work until a key is available.",
-      `Get your key at: ${entry.signupUrl}`,
+      "Nenhuma chave de API armazenada — web_search não funcionará até que uma chave esteja disponível.",
+      `Obtenha sua chave em: ${entry.signupUrl}`,
       "Docs: https://docs.opencraft.ai/tools/web",
     ].join("\n"),
-    "Web search",
+    "Busca na web",
   );
 
   return {

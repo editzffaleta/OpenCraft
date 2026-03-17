@@ -39,7 +39,7 @@ function ensureWsUrl(value: string): string {
 function validateGatewayWebSocketUrl(value: string): string | undefined {
   const trimmed = value.trim();
   if (!trimmed.startsWith("ws://") && !trimmed.startsWith("wss://")) {
-    return "URL must start with ws:// or wss://";
+    return "A URL deve começar com ws:// ou wss://";
   }
   if (
     !isSecureWebSocketUrl(trimmed, {
@@ -47,8 +47,8 @@ function validateGatewayWebSocketUrl(value: string): string | undefined {
     })
   ) {
     return (
-      "Use wss:// for remote hosts, or ws://127.0.0.1/localhost via SSH tunnel. " +
-      "Break-glass: OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1 for trusted private networks."
+      "Use wss:// para hosts remotos, ou ws://127.0.0.1/localhost via Túnel SSH. " +
+      "Break-glass: OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1 para redes privadas confiáveis."
     );
   }
   return undefined;
@@ -65,7 +65,7 @@ export async function promptRemoteGatewayConfig(
   const hasBonjourTool = (await detectBinary("dns-sd")) || (await detectBinary("avahi-browse"));
   const wantsDiscover = hasBonjourTool
     ? await prompter.confirm({
-        message: "Discover gateway on LAN (Bonjour)?",
+        message: "Descobrir gateway na LAN (Bonjour)?",
         initialValue: true,
       })
     : false;
@@ -73,10 +73,10 @@ export async function promptRemoteGatewayConfig(
   if (!hasBonjourTool) {
     await prompter.note(
       [
-        "Bonjour discovery requires dns-sd (macOS) or avahi-browse (Linux).",
+        "A descoberta Bonjour requer dns-sd (macOS) ou avahi-browse (Linux).",
         "Docs: https://docs.opencraft.ai/gateway/discovery",
       ].join("\n"),
-      "Discovery",
+      "Descoberta",
     );
   }
 
@@ -84,19 +84,23 @@ export async function promptRemoteGatewayConfig(
     const wideAreaDomain = resolveWideAreaDiscoveryDomain({
       configDomain: cfg.discovery?.wideArea?.domain,
     });
-    const spin = prompter.progress("Searching for gateways…");
+    const spin = prompter.progress("Procurando gateways…");
     const beacons = await discoverGatewayBeacons({ timeoutMs: 2000, wideAreaDomain });
-    spin.stop(beacons.length > 0 ? `Found ${beacons.length} gateway(s)` : "No gateways found");
+    spin.stop(
+      beacons.length > 0
+        ? `Encontrado(s) ${beacons.length} gateway(s)`
+        : "Nenhum gateway encontrado",
+    );
 
     if (beacons.length > 0) {
       const selection = await prompter.select({
-        message: "Select gateway",
+        message: "Selecionar gateway",
         options: [
           ...beacons.map((beacon, index) => ({
             value: String(index),
             label: buildLabel(beacon),
           })),
-          { value: "manual", label: "Enter URL manually" },
+          { value: "manual", label: "Inserir URL manualmente" },
         ],
       });
       if (selection !== "manual") {
@@ -111,54 +115,54 @@ export async function promptRemoteGatewayConfig(
     const port = selectedBeacon.port ?? selectedBeacon.gatewayPort ?? 18789;
     if (host) {
       const mode = await prompter.select({
-        message: "Connection method",
+        message: "Método de conexão",
         options: [
           {
             value: "direct",
-            label: `Direct gateway WS (${host}:${port})`,
+            label: `WebSocket direto do gateway (${host}:${port})`,
           },
-          { value: "ssh", label: "SSH tunnel (loopback)" },
+          { value: "ssh", label: "Túnel SSH (loopback)" },
         ],
       });
       if (mode === "direct") {
         suggestedUrl = `wss://${host}:${port}`;
         await prompter.note(
           [
-            "Direct remote access defaults to TLS.",
-            `Using: ${suggestedUrl}`,
-            "If your gateway is loopback-only, choose SSH tunnel and keep ws://127.0.0.1:18789.",
+            "O acesso remoto direto usa TLS por padrão.",
+            `Usando: ${suggestedUrl}`,
+            "Se seu gateway é apenas loopback, escolha Túnel SSH e mantenha ws://127.0.0.1:18789.",
           ].join("\n"),
-          "Direct remote",
+          "Remoto direto",
         );
       } else {
         suggestedUrl = DEFAULT_GATEWAY_URL;
         await prompter.note(
           [
-            "Start a tunnel before using the CLI:",
+            "Inicie um túnel antes de usar o CLI:",
             `ssh -N -L 18789:127.0.0.1:18789 <user>@${host}${
               selectedBeacon.sshPort ? ` -p ${selectedBeacon.sshPort}` : ""
             }`,
             "Docs: https://docs.opencraft.ai/gateway/remote",
           ].join("\n"),
-          "SSH tunnel",
+          "Túnel SSH",
         );
       }
     }
   }
 
   const urlInput = await prompter.text({
-    message: "Gateway WebSocket URL",
+    message: "URL WebSocket do gateway",
     initialValue: suggestedUrl,
     validate: (value) => validateGatewayWebSocketUrl(String(value)),
   });
   const url = ensureWsUrl(String(urlInput));
 
   const authChoice = await prompter.select({
-    message: "Gateway auth",
+    message: "Autenticação do gateway",
     options: [
-      { value: "token", label: "Token (recommended)" },
-      { value: "password", label: "Password" },
-      { value: "off", label: "No auth" },
+      { value: "token", label: "Token (recomendado)" },
+      { value: "password", label: "Senha" },
+      { value: "off", label: "Sem autenticação" },
     ],
   });
 
@@ -169,9 +173,9 @@ export async function promptRemoteGatewayConfig(
       prompter,
       explicitMode: options?.secretInputMode,
       copy: {
-        modeMessage: "How do you want to provide this gateway token?",
-        plaintextLabel: "Enter token now",
-        plaintextHint: "Stores the token directly in OpenCraft config",
+        modeMessage: "Como você quer fornecer este token do gateway?",
+        plaintextLabel: "Inserir token agora",
+        plaintextHint: "Armazena o token diretamente na configuração do OpenCraft",
       },
     });
     if (selectedMode === "ref") {
@@ -181,7 +185,7 @@ export async function promptRemoteGatewayConfig(
         prompter,
         preferredEnvVar: "OPENCLAW_GATEWAY_TOKEN",
         copy: {
-          sourceMessage: "Where is this gateway token stored?",
+          sourceMessage: "Onde este token do gateway está armazenado?",
           envVarPlaceholder: "OPENCLAW_GATEWAY_TOKEN",
         },
       });
@@ -189,9 +193,9 @@ export async function promptRemoteGatewayConfig(
     } else {
       token = String(
         await prompter.text({
-          message: "Gateway token",
+          message: "Token do gateway",
           initialValue: typeof token === "string" ? token : undefined,
-          validate: (value) => (value?.trim() ? undefined : "Required"),
+          validate: (value) => (value?.trim() ? undefined : "Obrigatório"),
         }),
       ).trim();
     }
@@ -201,9 +205,9 @@ export async function promptRemoteGatewayConfig(
       prompter,
       explicitMode: options?.secretInputMode,
       copy: {
-        modeMessage: "How do you want to provide this gateway password?",
-        plaintextLabel: "Enter password now",
-        plaintextHint: "Stores the password directly in OpenCraft config",
+        modeMessage: "Como você quer fornecer esta senha do gateway?",
+        plaintextLabel: "Inserir senha agora",
+        plaintextHint: "Armazena a senha diretamente na configuração do OpenCraft",
       },
     });
     if (selectedMode === "ref") {
@@ -213,7 +217,7 @@ export async function promptRemoteGatewayConfig(
         prompter,
         preferredEnvVar: "OPENCLAW_GATEWAY_PASSWORD",
         copy: {
-          sourceMessage: "Where is this gateway password stored?",
+          sourceMessage: "Onde esta senha do gateway está armazenada?",
           envVarPlaceholder: "OPENCLAW_GATEWAY_PASSWORD",
         },
       });
@@ -221,9 +225,9 @@ export async function promptRemoteGatewayConfig(
     } else {
       password = String(
         await prompter.text({
-          message: "Gateway password",
+          message: "Senha do gateway",
           initialValue: typeof password === "string" ? password : undefined,
-          validate: (value) => (value?.trim() ? undefined : "Required"),
+          validate: (value) => (value?.trim() ? undefined : "Obrigatório"),
         }),
       ).trim();
     }

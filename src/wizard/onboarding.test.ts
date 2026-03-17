@@ -40,7 +40,7 @@ const finalizeOnboardingWizard = vi.hoisted(() =>
     }
 
     const hatch = await options.prompter.select({
-      message: "How do you want to hatch your bot?",
+      message: "Como você quer inicializar seu bot?",
       options: [],
     });
     if (hatch !== "tui") {
@@ -319,7 +319,7 @@ describe("runOnboardingWizard", () => {
     }
 
     const select = vi.fn(async (opts: WizardSelectParams<unknown>) => {
-      if (opts.message === "How do you want to hatch your bot?") {
+      if (opts.message === "Como você quer inicializar seu bot?") {
         return "tui";
       }
       return "quickstart";
@@ -426,7 +426,7 @@ describe("runOnboardingWizard", () => {
       legacyIssues: [],
     });
     const select = vi.fn(async (opts: WizardSelectParams<unknown>) => {
-      if (opts.message === "Config handling") {
+      if (opts.message === "Gerenciamento de configuração") {
         return "keep";
       }
       return "quickstart";

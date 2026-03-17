@@ -28,7 +28,7 @@ export async function promptAuthChoiceGrouped(params: {
     ];
 
     const providerSelection = (await params.prompter.select({
-      message: "Model/auth provider",
+      message: "Provedor de modelo/autenticação",
       options: providerOptions,
     })) as string;
 
@@ -40,8 +40,8 @@ export async function promptAuthChoiceGrouped(params: {
 
     if (!group || group.options.length === 0) {
       await params.prompter.note(
-        "No auth methods available for that provider.",
-        "Model/auth choice",
+        "Nenhum método de autenticação disponível para esse provedor.",
+        "Escolha de modelo/autenticação",
       );
       continue;
     }
@@ -51,8 +51,8 @@ export async function promptAuthChoiceGrouped(params: {
     }
 
     const methodSelection = await params.prompter.select({
-      message: `${group.label} auth method`,
-      options: [...group.options, { value: BACK_VALUE, label: "Back" }],
+      message: `${group.label} — método de autenticação`,
+      options: [...group.options, { value: BACK_VALUE, label: "Voltar" }],
     });
 
     if (methodSelection === BACK_VALUE) {

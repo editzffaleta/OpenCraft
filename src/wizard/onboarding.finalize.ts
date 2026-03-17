@@ -70,7 +70,7 @@ export async function finalizeOnboardingWizard(
     process.platform === "linux" ? await isSystemdUserServiceAvailable() : true;
   if (process.platform === "linux" && !systemdAvailable) {
     await prompter.note(
-      "Systemd user services are unavailable. Skipping lingering checks and service install.",
+      "Serviços de usuário systemd não estão disponíveis. Pulando verificações de linger e instalação do serviço.",
       "Systemd",
     );
   }
@@ -84,7 +84,7 @@ export async function finalizeOnboardingWizard(
         note: prompter.note,
       },
       reason:
-        "Linux installs use a systemd user service by default. Without lingering, systemd stops the user session on logout/idle and kills the Gateway.",
+        "As instalações Linux usam um serviço de usuário systemd por padrão. Sem lingering, o systemd encerra a sessão de usuário no logout/inatividade e mata o Gateway.",
       requireConfirm: false,
     });
   }
@@ -100,15 +100,15 @@ export async function finalizeOnboardingWizard(
     installDaemon = true;
   } else {
     installDaemon = await prompter.confirm({
-      message: "Install Gateway service (recommended)",
+      message: "Instalar serviço do Gateway (recomendado)",
       initialValue: true,
     });
   }
 
   if (process.platform === "linux" && !systemdAvailable && installDaemon) {
     await prompter.note(
-      "Systemd user services are unavailable; skipping service install. Use your container supervisor or `docker compose up -d`.",
-      "Gateway service",
+      "Serviços de usuário systemd não estão disponíveis; pulando instalação do serviço. Use seu supervisor de containers ou `docker compose up -d`.",
+      "Serviço do Gateway",
     );
     installDaemon = false;
   }
@@ -118,14 +118,14 @@ export async function finalizeOnboardingWizard(
       flow === "quickstart"
         ? DEFAULT_GATEWAY_DAEMON_RUNTIME
         : await prompter.select({
-            message: "Gateway service runtime",
+            message: "Runtime do serviço do Gateway",
             options: GATEWAY_DAEMON_RUNTIME_OPTIONS,
             initialValue: opts.daemonRuntime ?? DEFAULT_GATEWAY_DAEMON_RUNTIME,
           });
     if (flow === "quickstart") {
       await prompter.note(
-        "QuickStart uses Node for the Gateway service (stable + supported).",
-        "Gateway service runtime",
+        "O QuickStart usa Node para o serviço do Gateway (estável e suportado).",
+        "Runtime do serviço do Gateway",
       );
     }
     const service = resolveGatewayService();
@@ -133,20 +133,20 @@ export async function finalizeOnboardingWizard(
     let restartWasScheduled = false;
     if (loaded) {
       const action = await prompter.select({
-        message: "Gateway service already installed",
+        message: "Serviço do Gateway já instalado",
         options: [
-          { value: "restart", label: "Restart" },
-          { value: "reinstall", label: "Reinstall" },
-          { value: "skip", label: "Skip" },
+          { value: "restart", label: "Reiniciar" },
+          { value: "reinstall", label: "Reinstalar" },
+          { value: "skip", label: "Pular" },
         ],
       });
       if (action === "restart") {
-        let restartDoneMessage = "Gateway service restarted.";
+        let restartDoneMessage = "Serviço do Gateway reiniciado.";
         await withWizardProgress(
-          "Gateway service",
+          "Serviço do Gateway",
           { doneMessage: () => restartDoneMessage },
           async (progress) => {
-            progress.update("Restarting Gateway service…");
+            progress.update("Reiniciando o serviço do Gateway…");
             const restartResult = await service.restart({
               env: process.env,
               stdout: process.stdout,
@@ -158,10 +158,10 @@ export async function finalizeOnboardingWizard(
         );
       } else if (action === "reinstall") {
         await withWizardProgress(
-          "Gateway service",
-          { doneMessage: "Gateway service uninstalled." },
+          "Serviço do Gateway",
+          { doneMessage: "Serviço do Gateway desinstalado." },
           async (progress) => {
-            progress.update("Uninstalling Gateway service…");
+            progress.update("Desinstalando o serviço do Gateway…");
             await service.uninstall({ env: process.env, stdout: process.stdout });
           },
         );
@@ -172,22 +172,22 @@ export async function finalizeOnboardingWizard(
       !loaded ||
       (!restartWasScheduled && loaded && !(await service.isLoaded({ env: process.env })))
     ) {
-      const progress = prompter.progress("Gateway service");
+      const progress = prompter.progress("Serviço do Gateway");
       let installError: string | null = null;
       try {
-        progress.update("Preparing Gateway service…");
+        progress.update("Preparando o serviço do Gateway…");
         const tokenResolution = await resolveGatewayInstallToken({
           config: nextConfig,
           env: process.env,
         });
         for (const warning of tokenResolution.warnings) {
-          await prompter.note(warning, "Gateway service");
+          await prompter.note(warning, "Serviço do Gateway");
         }
         if (tokenResolution.unavailableReason) {
           installError = [
-            "Gateway install blocked:",
+            "Instalação do Gateway bloqueada:",
             tokenResolution.unavailableReason,
-            "Fix gateway auth config/token input and rerun onboarding.",
+            "Corrija a configuração de autenticação do gateway e execute o onboarding novamente.",
           ].join(" ");
         } else {
           const { programArguments, workingDirectory, environment } = await buildGatewayInstallPlan(
@@ -200,7 +200,7 @@ export async function finalizeOnboardingWizard(
             },
           );
 
-          progress.update("Installing Gateway service…");
+          progress.update("Instalando o serviço do Gateway…");
           await service.install({
             env: process.env,
             stdout: process.stdout,
@@ -213,11 +213,16 @@ export async function finalizeOnboardingWizard(
         installError = err instanceof Error ? err.message : String(err);
       } finally {
         progress.stop(
-          installError ? "Gateway service install failed." : "Gateway service installed.",
+          installError
+            ? "Falha na instalação do serviço do Gateway."
+            : "Serviço do Gateway instalado.",
         );
       }
       if (installError) {
-        await prompter.note(`Gateway service install failed: ${installError}`, "Gateway");
+        await prompter.note(
+          `Falha na instalação do serviço do Gateway: ${installError}`,
+          "Gateway",
+        );
         await prompter.note(gatewayInstallErrorHint(), "Gateway");
       }
     }
@@ -246,7 +251,7 @@ export async function finalizeOnboardingWizard(
           "https://docs.opencraft.ai/gateway/health",
           "https://docs.opencraft.ai/gateway/troubleshooting",
         ].join("\n"),
-        "Health check help",
+        "Ajuda com verificação de saúde",
       );
     }
   }
@@ -262,12 +267,12 @@ export async function finalizeOnboardingWizard(
 
   await prompter.note(
     [
-      "Add nodes for extra features:",
+      "Adicione nós para funcionalidades extras:",
       "- macOS app (system + notifications)",
       "- iOS app (camera/canvas)",
       "- Android app (camera/canvas)",
     ].join("\n"),
-    "Optional apps",
+    "Aplicativos opcionais",
   );
 
   const controlUiBasePath =
@@ -295,7 +300,7 @@ export async function finalizeOnboardingWizard(
     } catch (error) {
       await prompter.note(
         [
-          "Could not resolve gateway.auth.password SecretRef for onboarding auth.",
+          "Não foi possível resolver o SecretRef gateway.auth.password para autenticação de onboarding.",
           error instanceof Error ? error.message : String(error),
         ].join("\n"),
         "Gateway auth",
@@ -322,9 +327,9 @@ export async function finalizeOnboardingWizard(
 
   await prompter.note(
     [
-      `Web UI: ${links.httpUrl}`,
+      `Interface web: ${links.httpUrl}`,
       settings.authMode === "token" && settings.gatewayToken
-        ? `Web UI (with token): ${authedUrl}`
+        ? `Interface web (com token): ${authedUrl}`
         : undefined,
       `Gateway WS: ${links.wsUrl}`,
       gatewayStatusLine,
@@ -332,7 +337,7 @@ export async function finalizeOnboardingWizard(
     ]
       .filter(Boolean)
       .join("\n"),
-    "Control UI",
+    "Interface de Controle",
   );
 
   let controlUiOpened = false;
@@ -345,34 +350,34 @@ export async function finalizeOnboardingWizard(
     if (hasBootstrap) {
       await prompter.note(
         [
-          "This is the defining action that makes your agent you.",
-          "Please take your time.",
-          "The more you tell it, the better the experience will be.",
-          'We will send: "Wake up, my friend!"',
+          "Esta é a ação que define a identidade do seu agente.",
+          "Por favor, dedique seu tempo.",
+          "Quanto mais você contar, melhor será a experiência.",
+          'Enviaremos: "Wake up, my friend!"',
         ].join("\n"),
-        "Start TUI (best option!)",
+        "Iniciar TUI (melhor opção!)",
       );
     }
 
     await prompter.note(
       [
-        "Gateway token: shared auth for the Gateway + Control UI.",
-        "Stored in: ~/.opencraft/opencraft.json (gateway.auth.token) or OPENCRAFT_GATEWAY_TOKEN.",
-        `View token: ${formatCliCommand("opencraft config get gateway.auth.token")}`,
-        `Generate token: ${formatCliCommand("opencraft doctor --generate-gateway-token")}`,
-        "Web UI keeps dashboard URL tokens in memory for the current tab and strips them from the URL after load.",
-        `Open the dashboard anytime: ${formatCliCommand("opencraft dashboard --no-open")}`,
-        "If prompted: paste the token into Control UI settings (or use the tokenized dashboard URL).",
+        "Token do Gateway: autenticação compartilhada para o Gateway + Interface de Controle.",
+        "Armazenado em: ~/.opencraft/opencraft.json (gateway.auth.token) ou OPENCRAFT_GATEWAY_TOKEN.",
+        `Ver token: ${formatCliCommand("opencraft config get gateway.auth.token")}`,
+        `Gerar token: ${formatCliCommand("opencraft doctor --generate-gateway-token")}`,
+        "A interface web mantém os tokens de URL do dashboard em memória para a aba atual e os remove da URL após o carregamento.",
+        `Abra o dashboard a qualquer momento: ${formatCliCommand("opencraft dashboard --no-open")}`,
+        "Se solicitado: cole o token nas configurações da Interface de Controle (ou use a URL do dashboard com token).",
       ].join("\n"),
       "Token",
     );
 
     hatchChoice = await prompter.select({
-      message: "How do you want to hatch your bot?",
+      message: "Como você quer inicializar seu bot?",
       options: [
-        { value: "tui", label: "Hatch in TUI (recommended)" },
-        { value: "web", label: "Open the Web UI" },
-        { value: "later", label: "Do this later" },
+        { value: "tui", label: "Inicializar no TUI (recomendado)" },
+        { value: "web", label: "Abrir a Interface Web" },
+        { value: "later", label: "Fazer isso depois" },
       ],
       initialValue: "tui",
     });
@@ -408,37 +413,37 @@ export async function finalizeOnboardingWizard(
       }
       await prompter.note(
         [
-          `Dashboard link (with token): ${authedUrl}`,
+          `Link do dashboard (com token): ${authedUrl}`,
           controlUiOpened
-            ? "Opened in your browser. Keep that tab to control OpenCraft."
-            : "Copy/paste this URL in a browser on this machine to control OpenCraft.",
+            ? "Aberto no seu navegador. Mantenha essa aba para controlar o OpenCraft."
+            : "Copie/cole esta URL em um navegador nesta máquina para controlar o OpenCraft.",
           controlUiOpenHint,
         ]
           .filter(Boolean)
           .join("\n"),
-        "Dashboard ready",
+        "Dashboard pronto",
       );
     } else {
       await prompter.note(
-        `When you're ready: ${formatCliCommand("opencraft dashboard --no-open")}`,
-        "Later",
+        `Quando estiver pronto: ${formatCliCommand("opencraft dashboard --no-open")}`,
+        "Depois",
       );
     }
   } else if (opts.skipUi) {
-    await prompter.note("Skipping Control UI/TUI prompts.", "Control UI");
+    await prompter.note("Pulando prompts da Interface de Controle/TUI.", "Interface de Controle");
   }
 
   await prompter.note(
     [
-      "Back up your agent workspace.",
+      "Faça backup do workspace do seu agente.",
       "Docs: https://docs.opencraft.ai/concepts/agent-workspace",
     ].join("\n"),
-    "Workspace backup",
+    "Backup do workspace",
   );
 
   await prompter.note(
-    "Running agents on your computer is risky — harden your setup: https://docs.opencraft.ai/security",
-    "Security",
+    "Executar agentes no seu computador é arriscado — proteja sua configuração: https://docs.opencraft.ai/security",
+    "Segurança",
   );
 
   await setupOnboardingShellCompletion({ flow, prompter });
@@ -469,15 +474,15 @@ export async function finalizeOnboardingWizard(
 
     await prompter.note(
       [
-        `Dashboard link (with token): ${authedUrl}`,
+        `Link do dashboard (com token): ${authedUrl}`,
         controlUiOpened
-          ? "Opened in your browser. Keep that tab to control OpenCraft."
-          : "Copy/paste this URL in a browser on this machine to control OpenCraft.",
+          ? "Aberto no seu navegador. Mantenha essa aba para controlar o OpenCraft."
+          : "Copie/cole esta URL em um navegador nesta máquina para controlar o OpenCraft.",
         controlUiOpenHint,
       ]
         .filter(Boolean)
         .join("\n"),
-      "Dashboard ready",
+      "Dashboard pronto",
     );
   }
 
@@ -493,44 +498,44 @@ export async function finalizeOnboardingWizard(
     const envAvailable = entry ? hasKeyInEnv(entry) : false;
     const hasKey = keyConfigured || envAvailable;
     const keySource = storedKey
-      ? "API key: stored in config."
+      ? "Chave de API: armazenada na configuração."
       : keyConfigured
-        ? "API key: configured via secret reference."
+        ? "Chave de API: configurada via referência de secret."
         : envAvailable
-          ? `API key: provided via ${entry?.envKeys.join(" / ")} env var.`
+          ? `Chave de API: fornecida via variável de ambiente ${entry?.envKeys.join(" / ")}.`
           : undefined;
     if (webSearchEnabled !== false && hasKey) {
       await prompter.note(
         [
-          "Web search is enabled, so your agent can look things up online when needed.",
+          "A busca na web está ativada, então seu agente pode pesquisar online quando necessário.",
           "",
-          `Provider: ${label}`,
+          `Provedor: ${label}`,
           ...(keySource ? [keySource] : []),
           "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
-        "Web search",
+        "Busca na web",
       );
     } else if (!hasKey) {
       await prompter.note(
         [
-          `Provider ${label} is selected but no API key was found.`,
-          "web_search will not work until a key is added.",
+          `O provedor ${label} está selecionado mas nenhuma chave de API foi encontrada.`,
+          "web_search não funcionará até que uma chave seja adicionada.",
           `  ${formatCliCommand("opencraft configure --section web")}`,
           "",
-          `Get your key at: ${entry?.signupUrl ?? "https://docs.opencraft.ai/tools/web"}`,
+          `Obtenha sua chave em: ${entry?.signupUrl ?? "https://docs.opencraft.ai/tools/web"}`,
           "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
-        "Web search",
+        "Busca na web",
       );
     } else {
       await prompter.note(
         [
-          `Web search (${label}) is configured but disabled.`,
-          `Re-enable: ${formatCliCommand("opencraft configure --section web")}`,
+          `Busca na web (${label}) está configurada mas desativada.`,
+          `Reativar: ${formatCliCommand("opencraft configure --section web")}`,
           "",
           "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
-        "Web search",
+        "Busca na web",
       );
     }
   } else {
@@ -544,35 +549,35 @@ export async function finalizeOnboardingWizard(
     if (legacyDetected) {
       await prompter.note(
         [
-          `Web search is available via ${legacyDetected.label} (auto-detected).`,
+          `Busca na web disponível via ${legacyDetected.label} (detectada automaticamente).`,
           "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
-        "Web search",
+        "Busca na web",
       );
     } else {
       await prompter.note(
         [
-          "Web search was skipped. You can enable it later:",
+          "Busca na web foi pulada. Você pode ativá-la depois:",
           `  ${formatCliCommand("opencraft configure --section web")}`,
           "",
           "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
-        "Web search",
+        "Busca na web",
       );
     }
   }
 
   await prompter.note(
-    'What now: https://opencraft.ai/showcase ("What People Are Building").',
-    "What now",
+    'O que fazer agora: https://opencraft.ai/showcase ("O Que as Pessoas Estão Construindo").',
+    "E agora",
   );
 
   await prompter.outro(
     controlUiOpened
-      ? "Onboarding complete. Dashboard opened; keep that tab to control OpenCraft."
+      ? "Configuração concluída. Dashboard aberto; mantenha essa aba para controlar o OpenCraft."
       : seededInBackground
-        ? "Onboarding complete. Web UI seeded in the background; open it anytime with the dashboard link above."
-        : "Onboarding complete. Use the dashboard link above to control OpenCraft.",
+        ? "Configuração concluída. Interface web iniciada em segundo plano; abra-a a qualquer momento com o link do dashboard acima."
+        : "Configuração concluída. Use o link do dashboard acima para controlar o OpenCraft.",
   );
 
   return { launchedTui };

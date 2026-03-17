@@ -172,7 +172,7 @@ describe("runServiceRestart token drift", () => {
     expect(postRestartCheck).not.toHaveBeenCalled();
     const payload = readJsonLog<{ result?: string; message?: string }>();
     expect(payload.result).toBe("scheduled");
-    expect(payload.message).toBe("restart scheduled, gateway will restart momentarily");
+    expect(payload.message).toBe("reinicialização agendada, gateway será reiniciado em breve");
   });
 
   it("emits scheduled when service start routes through a scheduled restart", async () => {
@@ -188,6 +188,6 @@ describe("runServiceRestart token drift", () => {
     expect(service.isLoaded).toHaveBeenCalledTimes(1);
     const payload = readJsonLog<{ result?: string; message?: string }>();
     expect(payload.result).toBe("scheduled");
-    expect(payload.message).toBe("restart scheduled, gateway will restart momentarily");
+    expect(payload.message).toBe("reinicialização agendada, gateway será reiniciado em breve");
   });
 });

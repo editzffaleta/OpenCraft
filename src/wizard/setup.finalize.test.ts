@@ -138,7 +138,7 @@ describe("finalizeSetupWizard", () => {
     const previous = process.env.OPENCLAW_GATEWAY_PASSWORD;
     process.env.OPENCLAW_GATEWAY_PASSWORD = "resolved-gateway-password"; // pragma: allowlist secret
     const select = vi.fn(async (params: { message: string }) => {
-      if (params.message === "How do you want to hatch your bot?") {
+      if (params.message === "Como você quer inicializar seu bot?") {
         return "tui";
       }
       return "later";
@@ -268,7 +268,7 @@ describe("finalizeSetupWizard", () => {
     gatewayServiceRestart.mockResolvedValueOnce({ outcome: "scheduled" });
     const prompter = buildWizardPrompter({
       select: vi.fn(async (params: { message: string }) => {
-        if (params.message === "Gateway service already installed") {
+        if (params.message === "Serviço do Gateway já instalado") {
           return "restart";
         }
         return "later";
@@ -304,7 +304,7 @@ describe("finalizeSetupWizard", () => {
     expect(gatewayServiceRestart).toHaveBeenCalledTimes(1);
     expect(gatewayServiceInstall).not.toHaveBeenCalled();
     expect(gatewayServiceUninstall).not.toHaveBeenCalled();
-    expect(progressUpdate).toHaveBeenCalledWith("Restarting Gateway service…");
-    expect(progressStop).toHaveBeenCalledWith("Gateway service restart scheduled.");
+    expect(progressUpdate).toHaveBeenCalledWith("Reiniciando o serviço do Gateway…");
+    expect(progressStop).toHaveBeenCalledWith("Reinicialização do serviço Gateway agendada.");
   });
 });

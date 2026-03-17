@@ -65,7 +65,7 @@ Chaves suportadas:
 Padrões:
 
 - `interruptOnSpeech`: true
-- `silenceTimeoutMs`: quando não definido, Talk mantém a janela de pausa padrão da plataforma antes de enviar a transcrição (`700 ms no macOS e Android, 900 ms no iOS`)
+- `silenceTimeoutMs`: quando não definido, Talk mantém a janela de pausa padrão da plataforma antes de enviar a transcrição (`700 ms on macOS and Android, 900 ms on iOS`)
 - `voiceId`: faz fallback para `ELEVENLABS_VOICE_ID` / `SAG_VOICE_ID` (ou primeira voz ElevenLabs quando a chave de API está disponível)
 - `modelId`: padrão `eleven_v3` quando não definido
 - `apiKey`: faz fallback para `ELEVENLABS_API_KEY` (ou perfil shell do gateway se disponível)

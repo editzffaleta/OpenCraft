@@ -157,16 +157,16 @@ export async function maybeRepairGatewayDaemon(params: {
         return;
       }
     }
-    note("Gateway service not installed.", "Gateway");
+    note("Serviço do Gateway não instalado.", "Gateway");
     if (params.cfg.gateway?.mode !== "remote") {
       const install = await params.prompter.confirmSkipInNonInteractive({
-        message: "Install gateway service now?",
+        message: "Instalar serviço do Gateway agora?",
         initialValue: true,
       });
       if (install) {
         const daemonRuntime = await params.prompter.select<GatewayDaemonRuntime>(
           {
-            message: "Gateway service runtime",
+            message: "Runtime do serviço do Gateway",
             options: GATEWAY_DAEMON_RUNTIME_OPTIONS,
             initialValue: DEFAULT_GATEWAY_DAEMON_RUNTIME,
           },
@@ -182,9 +182,9 @@ export async function maybeRepairGatewayDaemon(params: {
         if (tokenResolution.unavailableReason) {
           note(
             [
-              "Gateway service install aborted.",
+              "Instalação do serviço do Gateway abortada.",
               tokenResolution.unavailableReason,
-              "Fix gateway auth config/token input and rerun doctor.",
+              "Corrija a configuração de autenticação do gateway e execute o doctor novamente.",
             ].join("\n"),
             "Gateway",
           );
@@ -207,7 +207,7 @@ export async function maybeRepairGatewayDaemon(params: {
             environment,
           });
         } catch (err) {
-          note(`Gateway service install failed: ${String(err)}`, "Gateway");
+          note(`Falha na instalação do serviço do Gateway: ${String(err)}`, "Gateway");
           note(gatewayInstallErrorHint(), "Gateway");
         }
       }
@@ -231,7 +231,7 @@ export async function maybeRepairGatewayDaemon(params: {
 
   if (serviceRuntime?.status !== "running") {
     const start = await params.prompter.confirmSkipInNonInteractive({
-      message: "Start gateway service now?",
+      message: "Iniciar serviço do Gateway agora?",
       initialValue: true,
     });
     if (start) {
@@ -258,7 +258,7 @@ export async function maybeRepairGatewayDaemon(params: {
 
   if (serviceRuntime?.status === "running") {
     const restart = await params.prompter.confirmSkipInNonInteractive({
-      message: "Restart gateway service now?",
+      message: "Reiniciar serviço do Gateway agora?",
       initialValue: true,
     });
     if (restart) {

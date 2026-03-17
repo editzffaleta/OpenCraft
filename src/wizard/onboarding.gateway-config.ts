@@ -61,9 +61,9 @@ export async function configureGatewayForOnboarding(
       : Number.parseInt(
           String(
             await prompter.text({
-              message: "Gateway port",
+              message: "Porta do gateway",
               initialValue: String(localPort),
-              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Invalid port"),
+              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Porta inválida"),
             }),
           ),
           10,
@@ -73,7 +73,7 @@ export async function configureGatewayForOnboarding(
     flow === "quickstart"
       ? quickstartGateway.bind
       : await prompter.select<GatewayWizardSettings["bind"]>({
-          message: "Gateway bind",
+          message: "Bind do gateway",
           options: [
             { value: "loopback", label: "Loopback (127.0.0.1)" },
             { value: "lan", label: "LAN (0.0.0.0)" },
@@ -101,12 +101,12 @@ export async function configureGatewayForOnboarding(
     flow === "quickstart"
       ? quickstartGateway.authMode
       : ((await prompter.select({
-          message: "Gateway auth",
+          message: "Autenticação do gateway",
           options: [
             {
               value: "token",
               label: "Token",
-              hint: "Recommended default (local + remote)",
+              hint: "Padrão recomendado (local + remoto)",
             },
             { value: "password", label: "Password" },
           ],
@@ -117,7 +117,7 @@ export async function configureGatewayForOnboarding(
     flow === "quickstart"
       ? quickstartGateway.tailscaleMode
       : await prompter.select<GatewayWizardSettings["tailscaleMode"]>({
-          message: "Tailscale exposure",
+          message: "Exposição Tailscale",
           options: [...TAILSCALE_EXPOSURE_OPTIONS],
         });
 
@@ -127,7 +127,7 @@ export async function configureGatewayForOnboarding(
   if (tailscaleMode !== "off") {
     tailscaleBin = await findTailscaleBinary();
     if (!tailscaleBin) {
-      await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale Warning");
+      await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Aviso Tailscale");
     }
   }
 
@@ -136,7 +136,7 @@ export async function configureGatewayForOnboarding(
     await prompter.note(TAILSCALE_DOCS_LINES.join("\n"), "Tailscale");
     tailscaleResetOnExit = Boolean(
       await prompter.confirm({
-        message: "Reset Tailscale serve/funnel on exit?",
+        message: "Redefinir Tailscale serve/funnel ao sair?",
         initialValue: false,
       }),
     );
@@ -146,13 +146,13 @@ export async function configureGatewayForOnboarding(
   // - Tailscale wants bind=loopback so we never expose a non-loopback server + tailscale serve/funnel at once.
   // - Funnel requires password auth.
   if (tailscaleMode !== "off" && bind !== "loopback") {
-    await prompter.note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
+    await prompter.note("Tailscale requer bind=loopback. Ajustando bind para loopback.", "Nota");
     bind = "loopback";
     customBindHost = undefined;
   }
 
   if (tailscaleMode === "funnel" && authMode !== "password") {
-    await prompter.note("Tailscale funnel requires password auth.", "Note");
+    await prompter.note("O Tailscale funnel requer autenticação por senha.", "Nota");
     authMode = "password";
   }
 
@@ -173,11 +173,11 @@ export async function configureGatewayForOnboarding(
             prompter,
             explicitMode: opts.secretInputMode,
             copy: {
-              modeMessage: "How do you want to provide the gateway token?",
-              plaintextLabel: "Generate/store plaintext token",
-              plaintextHint: "Default",
-              refLabel: "Use SecretRef",
-              refHint: "Store a reference instead of plaintext",
+              modeMessage: "Como você quer fornecer o token do gateway?",
+              plaintextLabel: "Gerar/armazenar token em texto simples",
+              plaintextHint: "Padrão",
+              refLabel: "Usar SecretRef",
+              refHint: "Armazenar uma referência em vez de texto simples",
             },
           });
     if (tokenMode === "ref") {
@@ -196,7 +196,7 @@ export async function configureGatewayForOnboarding(
           prompter,
           preferredEnvVar: "OPENCRAFT_GATEWAY_TOKEN",
           copy: {
-            sourceMessage: "Where is this gateway token stored?",
+            sourceMessage: "Onde este token do gateway está armazenado?",
             envVarPlaceholder: "OPENCRAFT_GATEWAY_TOKEN",
           },
         });
@@ -211,8 +211,8 @@ export async function configureGatewayForOnboarding(
       gatewayTokenInput = gatewayToken;
     } else {
       const tokenInput = await prompter.text({
-        message: "Gateway token (blank to generate)",
-        placeholder: "Needed for multi-machine or non-loopback access",
+        message: "Token do gateway (em branco para gerar)",
+        placeholder: "Necessário para acesso em múltiplas máquinas ou não-loopback",
         initialValue:
           quickstartTokenString ??
           normalizeGatewayTokenInput(process.env.OPENCRAFT_GATEWAY_TOKEN) ??
@@ -231,9 +231,9 @@ export async function configureGatewayForOnboarding(
         prompter,
         explicitMode: opts.secretInputMode,
         copy: {
-          modeMessage: "How do you want to provide the gateway password?",
-          plaintextLabel: "Enter password now",
-          plaintextHint: "Stores the password directly in OpenCraft config",
+          modeMessage: "Como você quer fornecer a senha do gateway?",
+          plaintextLabel: "Inserir senha agora",
+          plaintextHint: "Armazena a senha diretamente na configuração do OpenCraft",
         },
       });
       if (selectedMode === "ref") {
@@ -243,7 +243,7 @@ export async function configureGatewayForOnboarding(
           prompter,
           preferredEnvVar: "OPENCRAFT_GATEWAY_PASSWORD",
           copy: {
-            sourceMessage: "Where is this gateway password stored?",
+            sourceMessage: "Onde esta senha do gateway está armazenada?",
             envVarPlaceholder: "OPENCRAFT_GATEWAY_PASSWORD",
           },
         });
@@ -251,7 +251,7 @@ export async function configureGatewayForOnboarding(
       } else {
         password = String(
           (await prompter.text({
-            message: "Gateway password",
+            message: "Senha do gateway",
             validate: validateGatewayPasswordInput,
           })) ?? "",
         ).trim();

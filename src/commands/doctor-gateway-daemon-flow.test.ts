@@ -154,7 +154,7 @@ describe("maybeRepairGatewayDaemon", () => {
     await maybeRepairGatewayDaemon({
       cfg: { gateway: {} },
       runtime: { log: vi.fn(), error: vi.fn(), exit: vi.fn() },
-      prompter: createPrompter((message) => message === "Restart gateway service now?"),
+      prompter: createPrompter((message) => message === "Reiniciar serviço do Gateway agora?"),
       options: { deep: false },
       gatewayDetailsMessage: "details",
       healthOk: false,
@@ -162,7 +162,7 @@ describe("maybeRepairGatewayDaemon", () => {
 
     expect(service.restart).toHaveBeenCalledTimes(1);
     expect(note).toHaveBeenCalledWith(
-      "restart scheduled, gateway will restart momentarily",
+      "reinicialização agendada, gateway será reiniciado em breve",
       "Gateway",
     );
     expect(sleep).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe("maybeRepairGatewayDaemon", () => {
     await maybeRepairGatewayDaemon({
       cfg: { gateway: {} },
       runtime: { log: vi.fn(), error: vi.fn(), exit: vi.fn() },
-      prompter: createPrompter((message) => message === "Start gateway service now?"),
+      prompter: createPrompter((message) => message === "Iniciar serviço do Gateway agora?"),
       options: { deep: false },
       gatewayDetailsMessage: "details",
       healthOk: false,
@@ -185,7 +185,7 @@ describe("maybeRepairGatewayDaemon", () => {
 
     expect(service.restart).toHaveBeenCalledTimes(1);
     expect(note).toHaveBeenCalledWith(
-      "restart scheduled, gateway will restart momentarily",
+      "reinicialização agendada, gateway será reiniciado em breve",
       "Gateway",
     );
     expect(sleep).not.toHaveBeenCalled();
