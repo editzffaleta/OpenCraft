@@ -1,20 +1,20 @@
 ---
-summary: "CLI reference for `opencraft voicecall` (voice-call plugin command surface)"
+summary: "Referência CLI para `opencraft voicecall` (superfície de comandos do Plugin de chamada de voz)"
 read_when:
-  - You use the voice-call plugin and want the CLI entry points
-  - You want quick examples for `voicecall call|continue|status|tail|expose`
+  - Você usa o Plugin de chamada de voz e quer os pontos de entrada CLI
+  - Você quer exemplos rápidos para `voicecall call|continue|status|tail|expose`
 title: "voicecall"
 ---
 
 # `opencraft voicecall`
 
-`voicecall` is a plugin-provided command. It only appears if the voice-call plugin is installed and enabled.
+`voicecall` é um comando fornecido por Plugin. Ele só aparece se o Plugin de chamada de voz estiver instalado e habilitado.
 
-Primary doc:
+Documentação principal:
 
-- Voice-call plugin: [Voice Call](/plugins/voice-call)
+- Plugin de chamada de voz: [Voice Call](/plugins/voice-call)
 
-## Common commands
+## Comandos comuns
 
 ```bash
 opencraft voicecall status --call-id <id>
@@ -23,7 +23,7 @@ opencraft voicecall continue --call-id <id> --message "Any questions?"
 opencraft voicecall end --call-id <id>
 ```
 
-## Exposing webhooks (Tailscale)
+## Expondo Webhooks (Tailscale)
 
 ```bash
 opencraft voicecall expose --mode serve
@@ -31,4 +31,4 @@ opencraft voicecall expose --mode funnel
 opencraft voicecall expose --mode off
 ```
 
-Security note: only expose the webhook endpoint to networks you trust. Prefer Tailscale Serve over Funnel when possible.
+Nota de segurança: exponha o endpoint de Webhook apenas para redes em que você confia. Prefira Tailscale Serve em vez de Funnel quando possível.

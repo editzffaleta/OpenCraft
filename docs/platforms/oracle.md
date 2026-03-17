@@ -1,252 +1,252 @@
 ---
-summary: "OpenCraft on Oracle Cloud (Always Free ARM)"
+summary: "OpenCraft no Oracle Cloud (Always Free ARM)"
 read_when:
-  - Setting up OpenCraft on Oracle Cloud
-  - Looking for low-cost VPS hosting for OpenCraft
-  - Want 24/7 OpenCraft on a small server
+  - Configurando OpenCraft no Oracle Cloud
+  - Procurando hospedagem VPS de baixo custo para OpenCraft
+  - Quer OpenCraft 24/7 em um servidor pequeno
 title: "Oracle Cloud"
 ---
 
-# OpenCraft on Oracle Cloud (OCI)
+# OpenCraft no Oracle Cloud (OCI)
 
-## Goal
+## Objetivo
 
-Run a persistent OpenCraft Gateway on Oracle Cloud's **Always Free** ARM tier.
+Execute um Gateway OpenCraft persistente no nível **Always Free** ARM do Oracle Cloud.
 
-Oracle’s free tier can be a great fit for OpenCraft (especially if you already have an OCI account), but it comes with tradeoffs:
+O nível gratuito do Oracle pode ser uma ótima opção para o OpenCraft (especialmente se você já tem uma conta OCI), mas vem com tradeoffs:
 
-- ARM architecture (most things work, but some binaries may be x86-only)
-- Capacity and signup can be finicky
+- Arquitetura ARM (a maioria das coisas funciona, mas alguns binários podem ser somente x86)
+- Capacidade e cadastro podem ser complicados
 
-## Cost Comparison (2026)
+## Comparação de custos (2026)
 
-| Provider     | Plan            | Specs                  | Price/mo | Notes                 |
-| ------------ | --------------- | ---------------------- | -------- | --------------------- |
-| Oracle Cloud | Always Free ARM | up to 4 OCPU, 24GB RAM | $0       | ARM, limited capacity |
-| Hetzner      | CX22            | 2 vCPU, 4GB RAM        | ~ $4     | Cheapest paid option  |
-| DigitalOcean | Basic           | 1 vCPU, 1GB RAM        | $6       | Easy UI, good docs    |
-| Vultr        | Cloud Compute   | 1 vCPU, 1GB RAM        | $6       | Many locations        |
-| Linode       | Nanode          | 1 vCPU, 1GB RAM        | $5       | Now part of Akamai    |
+| Provedor     | Plano           | Especificações           | Preço/mês | Notas                 |
+| ------------ | --------------- | ------------------------ | --------- | --------------------- |
+| Oracle Cloud | Always Free ARM | até 4 OCPU, 24GB RAM    | $0        | ARM, capacidade limitada |
+| Hetzner      | CX22            | 2 vCPU, 4GB RAM         | ~ $4      | Opção paga mais barata  |
+| DigitalOcean | Basic           | 1 vCPU, 1GB RAM         | $6        | UI fácil, boa documentação |
+| Vultr        | Cloud Compute   | 1 vCPU, 1GB RAM         | $6        | Muitas localizações     |
+| Linode       | Nanode          | 1 vCPU, 1GB RAM         | $5        | Agora parte da Akamai   |
 
 ---
 
-## Prerequisites
+## Pré-requisitos
 
-- Oracle Cloud account ([signup](https://www.oracle.com/cloud/free/)) — see [community signup guide](https://gist.github.com/rssnyder/51e3cfedd730e7dd5f4a816143b25dbd) if you hit issues
-- Tailscale account (free at [tailscale.com](https://tailscale.com))
-- ~30 minutes
+- Conta Oracle Cloud ([cadastro](https://www.oracle.com/cloud/free/)) — veja o [guia de cadastro da comunidade](https://gist.github.com/rssnyder/51e3cfedd730e7dd5f4a816143b25dbd) se tiver problemas
+- Conta Tailscale (gratuita em [tailscale.com](https://tailscale.com))
+- ~30 minutos
 
-## 1) Create an OCI Instance
+## 1) Crie uma instância OCI
 
-1. Log into [Oracle Cloud Console](https://cloud.oracle.com/)
-2. Navigate to **Compute → Instances → Create Instance**
+1. Faça login no [Oracle Cloud Console](https://cloud.oracle.com/)
+2. Navegue para **Compute → Instances → Create Instance**
 3. Configure:
-   - **Name:** `opencraft`
-   - **Image:** Ubuntu 24.04 (aarch64)
+   - **Nome:** `opencraft`
+   - **Imagem:** Ubuntu 24.04 (aarch64)
    - **Shape:** `VM.Standard.A1.Flex` (Ampere ARM)
-   - **OCPUs:** 2 (or up to 4)
-   - **Memory:** 12 GB (or up to 24 GB)
-   - **Boot volume:** 50 GB (up to 200 GB free)
-   - **SSH key:** Add your public key
-4. Click **Create**
-5. Note the public IP address
+   - **OCPUs:** 2 (ou até 4)
+   - **Memória:** 12 GB (ou até 24 GB)
+   - **Volume de boot:** 50 GB (até 200 GB grátis)
+   - **Chave SSH:** Adicione sua chave pública
+4. Clique em **Create**
+5. Anote o endereço IP público
 
-**Tip:** If instance creation fails with "Out of capacity", try a different availability domain or retry later. Free tier capacity is limited.
+**Dica:** Se a criação da instância falhar com "Out of capacity", tente um domínio de disponibilidade diferente ou tente novamente mais tarde. A capacidade do nível gratuito é limitada.
 
-## 2) Connect and Update
+## 2) Conecte e atualize
 
 ```bash
-# Connect via public IP
-ssh ubuntu@YOUR_PUBLIC_IP
+# Conecte via IP público
+ssh ubuntu@SEU_IP_PÚBLICO
 
-# Update system
+# Atualize o sistema
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y build-essential
 ```
 
-**Note:** `build-essential` is required for ARM compilation of some dependencies.
+**Nota:** `build-essential` é necessário para compilação ARM de algumas dependências.
 
-## 3) Configure User and Hostname
+## 3) Configure usuário e hostname
 
 ```bash
-# Set hostname
+# Defina o hostname
 sudo hostnamectl set-hostname opencraft
 
-# Set password for ubuntu user
+# Defina a senha do usuário ubuntu
 sudo passwd ubuntu
 
-# Enable lingering (keeps user services running after logout)
+# Ative lingering (mantém serviços do usuário em execução após logout)
 sudo loginctl enable-linger ubuntu
 ```
 
-## 4) Install Tailscale
+## 4) Instale o Tailscale
 
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up --ssh --hostname=opencraft
 ```
 
-This enables Tailscale SSH, so you can connect via `ssh opencraft` from any device on your tailnet — no public IP needed.
+Isso ativa o SSH do Tailscale, permitindo que você conecte via `ssh opencraft` de qualquer dispositivo na sua tailnet — sem IP público necessário.
 
-Verify:
+Verifique:
 
 ```bash
 tailscale status
 ```
 
-**From now on, connect via Tailscale:** `ssh ubuntu@opencraft` (or use the Tailscale IP).
+**A partir de agora, conecte via Tailscale:** `ssh ubuntu@opencraft` (ou use o IP do Tailscale).
 
-## 5) Install OpenCraft
+## 5) Instale o OpenCraft
 
 ```bash
 curl -fsSL https://opencraft.ai/install.sh | bash
 source ~/.bashrc
 ```
 
-When prompted "How do you want to hatch your bot?", select **"Do this later"**.
+Quando perguntado "How do you want to hatch your bot?", selecione **"Do this later"**.
 
-> Note: If you hit ARM-native build issues, start with system packages (e.g. `sudo apt install -y build-essential`) before reaching for Homebrew.
+> Nota: Se você tiver problemas de build nativo ARM, comece com pacotes do sistema (por exemplo `sudo apt install -y build-essential`) antes de recorrer ao Homebrew.
 
-## 6) Configure Gateway (loopback + token auth) and enable Tailscale Serve
+## 6) Configure o Gateway (loopback + autenticação por token) e ative o Tailscale Serve
 
-Use token auth as the default. It’s predictable and avoids needing any “insecure auth” Control UI flags.
+Use autenticação por token como padrão. É previsível e evita a necessidade de flags de "autenticação insegura" na Control UI.
 
 ```bash
-# Keep the Gateway private on the VM
+# Mantenha o Gateway privado na VM
 opencraft config set gateway.bind loopback
 
-# Require auth for the Gateway + Control UI
+# Exija autenticação para o Gateway + Control UI
 opencraft config set gateway.auth.mode token
 opencraft doctor --generate-gateway-token
 
-# Expose over Tailscale Serve (HTTPS + tailnet access)
+# Exponha via Tailscale Serve (HTTPS + acesso pela tailnet)
 opencraft config set gateway.tailscale.mode serve
 opencraft config set gateway.trustedProxies '["127.0.0.1"]'
 
 systemctl --user restart opencraft-gateway
 ```
 
-## 7) Verify
+## 7) Verifique
 
 ```bash
-# Check version
+# Verifique a versão
 opencraft --version
 
-# Check daemon status
+# Verifique o status do daemon
 systemctl --user status opencraft-gateway
 
-# Check Tailscale Serve
+# Verifique o Tailscale Serve
 tailscale serve status
 
-# Test local response
+# Teste a resposta local
 curl http://localhost:18789
 ```
 
-## 8) Lock Down VCN Security
+## 8) Bloqueie a segurança da VCN
 
-Now that everything is working, lock down the VCN to block all traffic except Tailscale. OCI's Virtual Cloud Network acts as a firewall at the network edge — traffic is blocked before it reaches your instance.
+Agora que tudo está funcionando, bloqueie a VCN para bloquear todo o tráfego exceto Tailscale. A Virtual Cloud Network do OCI atua como um firewall na borda da rede — o tráfego é bloqueado antes de chegar à sua instância.
 
-1. Go to **Networking → Virtual Cloud Networks** in the OCI Console
-2. Click your VCN → **Security Lists** → Default Security List
-3. **Remove** all ingress rules except:
+1. Vá para **Networking → Virtual Cloud Networks** no Console OCI
+2. Clique na sua VCN → **Security Lists** → Default Security List
+3. **Remova** todas as regras de ingress exceto:
    - `0.0.0.0/0 UDP 41641` (Tailscale)
-4. Keep default egress rules (allow all outbound)
+4. Mantenha as regras de egress padrão (permitir todo tráfego de saída)
 
-This blocks SSH on port 22, HTTP, HTTPS, and everything else at the network edge. From now on, you can only connect via Tailscale.
-
----
-
-## Access the Control UI
-
-From any device on your Tailscale network:
-
-```
-https://opencraft.<tailnet-name>.ts.net/
-```
-
-Replace `<tailnet-name>` with your tailnet name (visible in `tailscale status`).
-
-No SSH tunnel needed. Tailscale provides:
-
-- HTTPS encryption (automatic certs)
-- Authentication via Tailscale identity
-- Access from any device on your tailnet (laptop, phone, etc.)
+Isso bloqueia SSH na porta 22, HTTP, HTTPS e todo o resto na borda da rede. A partir de agora, você só pode conectar via Tailscale.
 
 ---
 
-## Security: VCN + Tailscale (recommended baseline)
+## Acesse a Control UI
 
-With the VCN locked down (only UDP 41641 open) and the Gateway bound to loopback, you get strong defense-in-depth: public traffic is blocked at the network edge, and admin access happens over your tailnet.
+De qualquer dispositivo na sua rede Tailscale:
 
-This setup often removes the _need_ for extra host-based firewall rules purely to stop Internet-wide SSH brute force — but you should still keep the OS updated, run `opencraft security audit`, and verify you aren’t accidentally listening on public interfaces.
+```
+https://opencraft.<nome-da-tailnet>.ts.net/
+```
 
-### What's Already Protected
+Substitua `<nome-da-tailnet>` pelo nome da sua tailnet (visível em `tailscale status`).
 
-| Traditional Step   | Needed?     | Why                                                                          |
-| ------------------ | ----------- | ---------------------------------------------------------------------------- |
-| UFW firewall       | No          | VCN blocks before traffic reaches instance                                   |
-| fail2ban           | No          | No brute force if port 22 blocked at VCN                                     |
-| sshd hardening     | No          | Tailscale SSH doesn't use sshd                                               |
-| Disable root login | No          | Tailscale uses Tailscale identity, not system users                          |
-| SSH key-only auth  | No          | Tailscale authenticates via your tailnet                                     |
-| IPv6 hardening     | Usually not | Depends on your VCN/subnet settings; verify what’s actually assigned/exposed |
+Sem necessidade de túnel SSH. O Tailscale fornece:
 
-### Still Recommended
+- Criptografia HTTPS (certificados automáticos)
+- Autenticação via identidade Tailscale
+- Acesso de qualquer dispositivo na sua tailnet (laptop, telefone, etc.)
 
-- **Credential permissions:** `chmod 700 ~/.opencraft`
-- **Security audit:** `opencraft security audit`
-- **System updates:** `sudo apt update && sudo apt upgrade` regularly
-- **Monitor Tailscale:** Review devices in [Tailscale admin console](https://login.tailscale.com/admin)
+---
 
-### Verify Security Posture
+## Segurança: VCN + Tailscale (baseline recomendado)
+
+Com a VCN bloqueada (apenas UDP 41641 aberto) e o Gateway vinculado ao loopback, você tem uma forte defesa em profundidade: tráfego público é bloqueado na borda da rede, e acesso administrativo acontece pela sua tailnet.
+
+Esta configuração frequentemente remove a _necessidade_ de regras extras de firewall no host puramente para parar ataques de força bruta SSH da Internet — mas você ainda deve manter o SO atualizado, executar `opencraft security audit` e verificar que não está acidentalmente escutando em interfaces públicas.
+
+### O que já está protegido
+
+| Etapa tradicional         | Necessário? | Por quê                                                                          |
+| ------------------------- | ----------- | -------------------------------------------------------------------------------- |
+| Firewall UFW              | Não         | VCN bloqueia antes do tráfego chegar à instância                                 |
+| fail2ban                  | Não         | Sem força bruta se a porta 22 estiver bloqueada na VCN                           |
+| Endurecimento do sshd     | Não         | SSH do Tailscale não usa sshd                                                    |
+| Desativar login root      | Não         | Tailscale usa identidade Tailscale, não usuários do sistema                      |
+| Auth somente por chave SSH| Não         | Tailscale autentica via sua tailnet                                              |
+| Endurecimento IPv6        | Geralmente não | Depende das configurações da sua VCN/subnet; verifique o que está realmente atribuído/exposto |
+
+### Ainda recomendado
+
+- **Permissões de credenciais:** `chmod 700 ~/.opencraft`
+- **Auditoria de segurança:** `opencraft security audit`
+- **Atualizações do sistema:** `sudo apt update && sudo apt upgrade` regularmente
+- **Monitore o Tailscale:** Revise dispositivos no [console admin do Tailscale](https://login.tailscale.com/admin)
+
+### Verifique a postura de segurança
 
 ```bash
-# Confirm no public ports listening
+# Confirme que não há portas públicas escutando
 sudo ss -tlnp | grep -v '127.0.0.1\|::1'
 
-# Verify Tailscale SSH is active
+# Verifique que SSH do Tailscale está ativo
 tailscale status | grep -q 'offers: ssh' && echo "Tailscale SSH active"
 
-# Optional: disable sshd entirely
+# Opcional: desative o sshd inteiramente
 sudo systemctl disable --now ssh
 ```
 
 ---
 
-## Fallback: SSH Tunnel
+## Fallback: túnel SSH
 
-If Tailscale Serve isn't working, use an SSH tunnel:
+Se o Tailscale Serve não estiver funcionando, use um túnel SSH:
 
 ```bash
-# From your local machine (via Tailscale)
+# Da sua máquina local (via Tailscale)
 ssh -L 18789:127.0.0.1:18789 ubuntu@opencraft
 ```
 
-Then open `http://localhost:18789`.
+Depois abra `http://localhost:18789`.
 
 ---
 
-## Troubleshooting
+## Solução de problemas
 
-### Instance creation fails ("Out of capacity")
+### Criação da instância falha ("Out of capacity")
 
-Free tier ARM instances are popular. Try:
+Instâncias ARM do nível gratuito são populares. Tente:
 
-- Different availability domain
-- Retry during off-peak hours (early morning)
-- Use the "Always Free" filter when selecting shape
+- Domínio de disponibilidade diferente
+- Tente novamente em horários de baixa demanda (madrugada)
+- Use o filtro "Always Free" ao selecionar o shape
 
-### Tailscale won't connect
+### Tailscale não conecta
 
 ```bash
-# Check status
+# Verifique o status
 sudo tailscale status
 
-# Re-authenticate
+# Re-autentique
 sudo tailscale up --ssh --hostname=opencraft --reset
 ```
 
-### Gateway won't start
+### O Gateway não inicia
 
 ```bash
 opencraft gateway status
@@ -254,39 +254,39 @@ opencraft doctor --non-interactive
 journalctl --user -u opencraft-gateway -n 50
 ```
 
-### Can't reach Control UI
+### Não consegue acessar a Control UI
 
 ```bash
-# Verify Tailscale Serve is running
+# Verifique se o Tailscale Serve está em execução
 tailscale serve status
 
-# Check gateway is listening
+# Verifique se o Gateway está escutando
 curl http://localhost:18789
 
-# Restart if needed
+# Reinicie se necessário
 systemctl --user restart opencraft-gateway
 ```
 
-### ARM binary issues
+### Problemas com binários ARM
 
-Some tools may not have ARM builds. Check:
+Algumas ferramentas podem não ter builds ARM. Verifique:
 
 ```bash
-uname -m  # Should show aarch64
+uname -m  # Deve mostrar aarch64
 ```
 
-Most npm packages work fine. For binaries, look for `linux-arm64` or `aarch64` releases.
+A maioria dos pacotes npm funciona normalmente. Para binários, procure releases `linux-arm64` ou `aarch64`.
 
 ---
 
-## Persistence
+## Persistência
 
-All state lives in:
+Todo o estado fica em:
 
-- `~/.opencraft/` — config, credentials, session data
-- `~/.opencraft/workspace/` — workspace (SOUL.md, memory, artifacts)
+- `~/.opencraft/` — config, credenciais, dados de sessão
+- `~/.opencraft/workspace/` — workspace (SOUL.md, memória, artefatos)
 
-Back up periodically:
+Faça backup periodicamente:
 
 ```bash
 tar -czvf opencraft-backup.tar.gz ~/.opencraft ~/.opencraft/workspace
@@ -294,10 +294,10 @@ tar -czvf opencraft-backup.tar.gz ~/.opencraft ~/.opencraft/workspace
 
 ---
 
-## See Also
+## Veja também
 
-- [Gateway remote access](/gateway/remote) — other remote access patterns
-- [Tailscale integration](/gateway/tailscale) — full Tailscale docs
-- [Gateway configuration](/gateway/configuration) — all config options
-- [DigitalOcean guide](/platforms/digitalocean) — if you want paid + easier signup
-- [Hetzner guide](/install/hetzner) — Docker-based alternative
+- [Acesso remoto ao Gateway](/gateway/remote) — outros padrões de acesso remoto
+- [Integração Tailscale](/gateway/tailscale) — documentação completa do Tailscale
+- [Configuração do Gateway](/gateway/configuration) — todas as opções de configuração
+- [Guia do DigitalOcean](/platforms/digitalocean) — se quiser pago + cadastro mais fácil
+- [Guia do Hetzner](/install/hetzner) — alternativa baseada em Docker

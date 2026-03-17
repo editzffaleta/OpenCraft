@@ -1,23 +1,23 @@
 ---
-summary: "Run OpenCraft through LiteLLM Proxy for unified model access and cost tracking"
+summary: "Execute o OpenCraft através do LiteLLM Proxy para acesso unificado a modelos e rastreamento de custos"
 read_when:
-  - You want to route OpenCraft through a LiteLLM proxy
-  - You need cost tracking, logging, or model routing through LiteLLM
+  - Você quer rotear o OpenCraft através de um proxy LiteLLM
+  - Você precisa de rastreamento de custos, logging ou roteamento de modelos através do LiteLLM
 ---
 
 # LiteLLM
 
-[LiteLLM](https://litellm.ai) is an open-source LLM gateway that provides a unified API to 100+ model providers. Route OpenCraft through LiteLLM to get centralized cost tracking, logging, and the flexibility to switch backends without changing your OpenCraft config.
+O [LiteLLM](https://litellm.ai) é um gateway de LLM open-source que fornece uma API unificada para mais de 100 providers de modelo. Roteie o OpenCraft através do LiteLLM para obter rastreamento centralizado de custos, logging e a flexibilidade de trocar backends sem alterar a configuração do OpenCraft.
 
-## Why use LiteLLM with OpenCraft?
+## Por que usar o LiteLLM com o OpenCraft?
 
-- **Cost tracking** — See exactly what OpenCraft spends across all models
-- **Model routing** — Switch between Claude, GPT-4, Gemini, Bedrock without config changes
-- **Virtual keys** — Create keys with spend limits for OpenCraft
-- **Logging** — Full request/response logs for debugging
-- **Fallbacks** — Automatic failover if your primary provider is down
+- **Rastreamento de custos** -- Veja exatamente quanto o OpenCraft gasta em todos os modelos
+- **Roteamento de modelos** -- Troque entre Claude, GPT-4, Gemini, Bedrock sem alterações de configuração
+- **Chaves virtuais** -- Crie chaves com limites de gasto para o OpenCraft
+- **Logging** -- Logs completos de requisição/resposta para depuração
+- **Fallbacks** -- Failover automático se seu provider primário estiver fora do ar
 
-## Quick start
+## Início rápido
 
 ### Via onboarding
 
@@ -25,16 +25,16 @@ read_when:
 opencraft onboard --auth-choice litellm-api-key
 ```
 
-### Manual setup
+### Configuração manual
 
-1. Start LiteLLM Proxy:
+1. Inicie o LiteLLM Proxy:
 
 ```bash
 pip install 'litellm[proxy]'
 litellm --model claude-opus-4-6
 ```
 
-2. Point OpenCraft to LiteLLM:
+2. Aponte o OpenCraft para o LiteLLM:
 
 ```bash
 export LITELLM_API_KEY="your-litellm-key"
@@ -42,17 +42,17 @@ export LITELLM_API_KEY="your-litellm-key"
 opencraft
 ```
 
-That's it. OpenCraft now routes through LiteLLM.
+Pronto. O OpenCraft agora roteia através do LiteLLM.
 
-## Configuration
+## Configuração
 
-### Environment variables
+### Variáveis de ambiente
 
 ```bash
 export LITELLM_API_KEY="sk-litellm-key"
 ```
 
-### Config file
+### Arquivo de configuração
 
 ```json5
 {
@@ -91,9 +91,9 @@ export LITELLM_API_KEY="sk-litellm-key"
 }
 ```
 
-## Virtual keys
+## Chaves virtuais
 
-Create a dedicated key for OpenCraft with spend limits:
+Crie uma chave dedicada para o OpenCraft com limites de gasto:
 
 ```bash
 curl -X POST "http://localhost:4000/key/generate" \
@@ -106,11 +106,11 @@ curl -X POST "http://localhost:4000/key/generate" \
   }'
 ```
 
-Use the generated key as `LITELLM_API_KEY`.
+Use a chave gerada como `LITELLM_API_KEY`.
 
-## Model routing
+## Roteamento de modelos
 
-LiteLLM can route model requests to different backends. Configure in your LiteLLM `config.yaml`:
+O LiteLLM pode rotear requisições de modelo para diferentes backends. Configure no seu `config.yaml` do LiteLLM:
 
 ```yaml
 model_list:
@@ -125,29 +125,29 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-OpenCraft keeps requesting `claude-opus-4-6` — LiteLLM handles the routing.
+O OpenCraft continua solicitando `claude-opus-4-6` -- o LiteLLM cuida do roteamento.
 
-## Viewing usage
+## Visualizando o uso
 
-Check LiteLLM's dashboard or API:
+Verifique o painel ou a API do LiteLLM:
 
 ```bash
-# Key info
+# Informações da chave
 curl "http://localhost:4000/key/info" \
   -H "Authorization: Bearer sk-litellm-key"
 
-# Spend logs
+# Logs de gasto
 curl "http://localhost:4000/spend/logs" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY"
 ```
 
-## Notes
+## Notas
 
-- LiteLLM runs on `http://localhost:4000` by default
-- OpenCraft connects via the OpenAI-compatible `/v1/chat/completions` endpoint
-- All OpenCraft features work through LiteLLM — no limitations
+- O LiteLLM roda em `http://localhost:4000` por padrão
+- O OpenCraft se conecta via o endpoint compatível com OpenAI `/v1/chat/completions`
+- Todos os recursos do OpenCraft funcionam através do LiteLLM -- sem limitações
 
-## See also
+## Veja também
 
-- [LiteLLM Docs](https://docs.litellm.ai)
-- [Model Providers](/concepts/model-providers)
+- [Documentação do LiteLLM](https://docs.litellm.ai)
+- [Providers de Modelo](/concepts/model-providers)

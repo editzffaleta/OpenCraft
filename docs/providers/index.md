@@ -1,22 +1,22 @@
 ---
-summary: "Model providers (LLMs) supported by OpenCraft"
+summary: "Providers de modelo (LLMs) suportados pelo OpenCraft"
 read_when:
-  - You want to choose a model provider
-  - You need a quick overview of supported LLM backends
-title: "Model Providers"
+  - Você quer escolher um provider de modelo
+  - Você precisa de uma visão geral rápida dos backends de LLM suportados
+title: "Providers de Modelo"
 ---
 
-# Model Providers
+# Providers de Modelo
 
-OpenCraft can use many LLM providers. Pick a provider, authenticate, then set the
-default model as `provider/model`.
+O OpenCraft pode usar muitos providers de LLM. Escolha um provider, autentique-se e depois defina o
+modelo padrão como `provider/model`.
 
-Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugin)/etc.)? See [Channels](/channels).
+Procurando documentação de canais de chat (WhatsApp/Telegram/Discord/Slack/Mattermost (plugin)/etc.)? Veja [Canais](/channels).
 
-## Quick start
+## Início rápido
 
-1. Authenticate with the provider (usually via `opencraft onboard`).
-2. Set the default model:
+1. Autentique-se com o provider (geralmente via `opencraft onboard`).
+2. Defina o modelo padrão:
 
 ```json5
 {
@@ -24,20 +24,20 @@ Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugi
 }
 ```
 
-## Provider docs
+## Documentação dos providers
 
 - [Amazon Bedrock](/providers/bedrock)
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-- [GLM models](/providers/glm)
+- [Modelos GLM](/providers/glm)
 - [Hugging Face (Inference)](/providers/huggingface)
 - [Kilocode](/providers/kilocode)
-- [LiteLLM (unified gateway)](/providers/litellm)
+- [LiteLLM (gateway unificado)](/providers/litellm)
 - [MiniMax](/providers/minimax)
 - [Mistral](/providers/mistral)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [NVIDIA](/providers/nvidia)
-- [Ollama (cloud + local models)](/providers/ollama)
+- [Ollama (modelos em nuvem + locais)](/providers/ollama)
 - [OpenAI (API + Codex)](/providers/openai)
 - [OpenCode (Zen + Go)](/providers/opencode)
 - [OpenRouter](/providers/openrouter)
@@ -45,18 +45,18 @@ Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugi
 - [Qwen (OAuth)](/providers/qwen)
 - [Together AI](/providers/together)
 - [Vercel AI Gateway](/providers/vercel-ai-gateway)
-- [Venice (Venice AI, privacy-focused)](/providers/venice)
-- [vLLM (local models)](/providers/vllm)
+- [Venice (Venice AI, foco em privacidade)](/providers/venice)
+- [vLLM (modelos locais)](/providers/vllm)
 - [Xiaomi](/providers/xiaomi)
 - [Z.AI](/providers/zai)
 
-## Transcription providers
+## Providers de transcrição
 
-- [Deepgram (audio transcription)](/providers/deepgram)
+- [Deepgram (transcrição de áudio)](/providers/deepgram)
 
-## Community tools
+## Ferramentas comunitárias
 
-- [Claude Max API Proxy](/providers/claude-max-api-proxy) - Community proxy for Claude subscription credentials (verify Anthropic policy/terms before use)
+- [Claude Max API Proxy](/providers/claude-max-api-proxy) - Proxy comunitário para credenciais de assinatura Claude (verifique a política/termos da Anthropic antes de usar)
 
-For the full provider catalog (xAI, Groq, Mistral, etc.) and advanced configuration,
-see [Model providers](/concepts/model-providers).
+Para o catálogo completo de providers (xAI, Groq, Mistral, etc.) e configuração avançada,
+veja [Providers de modelo](/concepts/model-providers).

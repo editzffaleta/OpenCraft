@@ -1,16 +1,16 @@
 ---
-summary: "CLI reference for `opencraft webhooks` (webhook helpers + Gmail Pub/Sub)"
+summary: "Referência CLI para `opencraft webhooks` (auxiliares de Webhook + Gmail Pub/Sub)"
 read_when:
-  - You want to wire Gmail Pub/Sub events into OpenCraft
-  - You want webhook helper commands
+  - Você quer conectar eventos Gmail Pub/Sub ao OpenCraft
+  - Você quer comandos auxiliares de Webhook
 title: "webhooks"
 ---
 
 # `opencraft webhooks`
 
-Webhook helpers and integrations (Gmail Pub/Sub, webhook helpers).
+Auxiliares de Webhook e integrações (Gmail Pub/Sub, auxiliares de Webhook).
 
-Related:
+Relacionado:
 
 - Webhooks: [Webhook](/automation/webhook)
 - Gmail Pub/Sub: [Gmail Pub/Sub](/automation/gmail-pubsub)
@@ -22,4 +22,4 @@ opencraft webhooks gmail setup --account you@example.com
 opencraft webhooks gmail run
 ```
 
-See [Gmail Pub/Sub documentation](/automation/gmail-pubsub) for details.
+Veja a [documentação do Gmail Pub/Sub](/automation/gmail-pubsub) para detalhes.

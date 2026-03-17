@@ -1,84 +1,84 @@
 ---
-summary: "macOS app flow for controlling a remote OpenCraft gateway over SSH"
+summary: "Fluxo do aplicativo macOS para controlar um Gateway OpenCraft remoto via SSH"
 read_when:
-  - Setting up or debugging remote mac control
-title: "Remote Control"
+  - Configurando ou depurando controle remoto no macOS
+title: "Controle Remoto"
 ---
 
-# Remote OpenCraft (macOS ⇄ remote host)
+# OpenCraft Remoto (macOS ⇄ host remoto)
 
-This flow lets the macOS app act as a full remote control for a OpenCraft gateway running on another host (desktop/server). It’s the app’s **Remote over SSH** (remote run) feature. All features—health checks, Voice Wake forwarding, and Web Chat—reuse the same remote SSH configuration from _Settings → General_.
+Este fluxo permite que o aplicativo macOS atue como um controle remoto completo para um Gateway OpenCraft em execução em outro host (desktop/servidor). Este é o recurso **Remote over SSH** (execução remota) do aplicativo. Todos os recursos — verificações de integridade, encaminhamento de Voice Wake e Web Chat — reutilizam a mesma configuração SSH remota de _Configurações → General_.
 
-## Modes
+## Modos
 
-- **Local (this Mac)**: Everything runs on the laptop. No SSH involved.
-- **Remote over SSH (default)**: OpenCraft commands are executed on the remote host. The mac app opens an SSH connection with `-o BatchMode` plus your chosen identity/key and a local port-forward.
-- **Remote direct (ws/wss)**: No SSH tunnel. The mac app connects to the gateway URL directly (for example, via Tailscale Serve or a public HTTPS reverse proxy).
+- **Local (este Mac)**: Tudo roda no laptop. Sem SSH envolvido.
+- **Remote over SSH (padrão)**: Comandos do OpenCraft são executados no host remoto. O aplicativo macOS abre uma conexão SSH com `-o BatchMode` mais sua identidade/chave escolhida e um encaminhamento de porta local.
+- **Remote direct (ws/wss)**: Sem túnel SSH. O aplicativo macOS se conecta diretamente à URL do Gateway (por exemplo, via Tailscale Serve ou um proxy reverso HTTPS público).
 
-## Remote transports
+## Transportes remotos
 
-Remote mode supports two transports:
+O modo remoto suporta dois transportes:
 
-- **SSH tunnel** (default): Uses `ssh -N -L ...` to forward the gateway port to localhost. The gateway will see the node’s IP as `127.0.0.1` because the tunnel is loopback.
-- **Direct (ws/wss)**: Connects straight to the gateway URL. The gateway sees the real client IP.
+- **Túnel SSH** (padrão): Usa `ssh -N -L ...` para encaminhar a porta do Gateway para localhost. O Gateway verá o IP do nó como `127.0.0.1` porque o túnel é loopback.
+- **Direct (ws/wss)**: Conecta direto à URL do Gateway. O Gateway vê o IP real do cliente.
 
-## Prereqs on the remote host
+## Pré-requisitos no host remoto
 
-1. Install Node + pnpm and build/install the OpenCraft CLI (`pnpm install && pnpm build && pnpm link --global`).
-2. Ensure `opencraft` is on PATH for non-interactive shells (symlink into `/usr/local/bin` or `/opt/homebrew/bin` if needed).
-3. Open SSH with key auth. We recommend **Tailscale** IPs for stable reachability off-LAN.
+1. Instale Node + pnpm e compile/instale a CLI do OpenCraft (`pnpm install && pnpm build && pnpm link --global`).
+2. Certifique-se de que `opencraft` está no PATH para shells não-interativos (faça um symlink em `/usr/local/bin` ou `/opt/homebrew/bin` se necessário).
+3. Abra SSH com autenticação por chave. Recomendamos IPs do **Tailscale** para alcançabilidade estável fora da LAN.
 
-## macOS app setup
+## Configuração do aplicativo macOS
 
-1. Open _Settings → General_.
-2. Under **OpenCraft runs**, pick **Remote over SSH** and set:
-   - **Transport**: **SSH tunnel** or **Direct (ws/wss)**.
-   - **SSH target**: `user@host` (optional `:port`).
-     - If the gateway is on the same LAN and advertises Bonjour, pick it from the discovered list to auto-fill this field.
-   - **Gateway URL** (Direct only): `wss://gateway.example.ts.net` (or `ws://...` for local/LAN).
-   - **Identity file** (advanced): path to your key.
-   - **Project root** (advanced): remote checkout path used for commands.
-   - **CLI path** (advanced): optional path to a runnable `opencraft` entrypoint/binary (auto-filled when advertised).
-3. Hit **Test remote**. Success indicates the remote `opencraft status --json` runs correctly. Failures usually mean PATH/CLI issues; exit 127 means the CLI isn’t found remotely.
-4. Health checks and Web Chat will now run through this SSH tunnel automatically.
+1. Abra _Configurações → General_.
+2. Em **OpenCraft runs**, escolha **Remote over SSH** e defina:
+   - **Transport**: **SSH tunnel** ou **Direct (ws/wss)**.
+   - **SSH target**: `user@host` (`:porta` opcional).
+     - Se o Gateway estiver na mesma LAN e anunciar Bonjour, escolha-o da lista descoberta para preencher automaticamente este campo.
+   - **Gateway URL** (somente Direct): `wss://gateway.example.ts.net` (ou `ws://...` para local/LAN).
+   - **Identity file** (avançado): caminho para sua chave.
+   - **Project root** (avançado): caminho do checkout remoto usado para comandos.
+   - **CLI path** (avançado): caminho opcional para um executável/binário `opencraft` (preenchido automaticamente quando anunciado).
+3. Clique em **Test remote**. O sucesso indica que `opencraft status --json` remoto executou corretamente. Falhas geralmente significam problemas de PATH/CLI; exit 127 significa que a CLI não foi encontrada remotamente.
+4. Verificações de integridade e Web Chat agora funcionarão automaticamente através deste túnel SSH.
 
 ## Web Chat
 
-- **SSH tunnel**: Web Chat connects to the gateway over the forwarded WebSocket control port (default 18789).
-- **Direct (ws/wss)**: Web Chat connects straight to the configured gateway URL.
-- There is no separate WebChat HTTP server anymore.
+- **Túnel SSH**: O Web Chat se conecta ao Gateway pela porta de controle WebSocket encaminhada (padrão 18789).
+- **Direct (ws/wss)**: O Web Chat se conecta diretamente à URL do Gateway configurada.
+- Não existe mais um servidor HTTP de WebChat separado.
 
-## Permissions
+## Permissões
 
-- The remote host needs the same TCC approvals as local (Automation, Accessibility, Screen Recording, Microphone, Speech Recognition, Notifications). Run onboarding on that machine to grant them once.
-- Nodes advertise their permission state via `node.list` / `node.describe` so agents know what’s available.
+- O host remoto precisa das mesmas aprovações TCC que o local (Automação, Acessibilidade, Gravação de Tela, Microfone, Reconhecimento de Fala, Notificações). Execute o onboarding nessa máquina para concedê-las uma vez.
+- Os nós anunciam seu estado de permissão via `node.list` / `node.describe` para que os agentes saibam o que está disponível.
 
-## Security notes
+## Notas de segurança
 
-- Prefer loopback binds on the remote host and connect via SSH or Tailscale.
-- SSH tunneling uses strict host-key checking; trust the host key first so it exists in `~/.ssh/known_hosts`.
-- If you bind the Gateway to a non-loopback interface, require token/password auth.
-- See [Security](/gateway/security) and [Tailscale](/gateway/tailscale).
+- Prefira binds em loopback no host remoto e conecte via SSH ou Tailscale.
+- O túnel SSH usa verificação estrita de chave do host; confie na chave do host primeiro para que ela exista em `~/.ssh/known_hosts`.
+- Se você vincular o Gateway a uma interface não-loopback, exija autenticação por token/senha.
+- Veja [Segurança](/gateway/security) e [Tailscale](/gateway/tailscale).
 
-## WhatsApp login flow (remote)
+## Fluxo de login do WhatsApp (remoto)
 
-- Run `opencraft channels login --verbose` **on the remote host**. Scan the QR with WhatsApp on your phone.
-- Re-run login on that host if auth expires. Health check will surface link problems.
+- Execute `opencraft channels login --verbose` **no host remoto**. Escaneie o QR com o WhatsApp no seu telefone.
+- Execute o login novamente nesse host se a autenticação expirar. A verificação de integridade exibirá problemas de vinculação.
 
-## Troubleshooting
+## Solução de problemas
 
-- **exit 127 / not found**: `opencraft` isn’t on PATH for non-login shells. Add it to `/etc/paths`, your shell rc, or symlink into `/usr/local/bin`/`/opt/homebrew/bin`.
-- **Health probe failed**: check SSH reachability, PATH, and that Baileys is logged in (`opencraft status --json`).
-- **Web Chat stuck**: confirm the gateway is running on the remote host and the forwarded port matches the gateway WS port; the UI requires a healthy WS connection.
-- **Node IP shows 127.0.0.1**: expected with the SSH tunnel. Switch **Transport** to **Direct (ws/wss)** if you want the gateway to see the real client IP.
-- **Voice Wake**: trigger phrases are forwarded automatically in remote mode; no separate forwarder is needed.
+- **exit 127 / not found**: `opencraft` não está no PATH para shells não-login. Adicione-o a `/etc/paths`, seu shell rc, ou faça um symlink em `/usr/local/bin`/`/opt/homebrew/bin`.
+- **Sondagem de integridade falhou**: verifique alcançabilidade SSH, PATH, e se o Baileys está logado (`opencraft status --json`).
+- **Web Chat travado**: confirme que o Gateway está em execução no host remoto e a porta encaminhada corresponde à porta WS do Gateway; a UI requer uma conexão WS saudável.
+- **IP do nó mostra 127.0.0.1**: esperado com o túnel SSH. Mude o **Transport** para **Direct (ws/wss)** se quiser que o Gateway veja o IP real do cliente.
+- **Voice Wake**: frases de ativação são encaminhadas automaticamente no modo remoto; nenhum encaminhador separado é necessário.
 
-## Notification sounds
+## Sons de notificação
 
-Pick sounds per notification from scripts with `opencraft` and `node.invoke`, e.g.:
+Escolha sons por notificação a partir de scripts com `opencraft` e `node.invoke`, por exemplo:
 
 ```bash
 opencraft nodes notify --node <id> --title "Ping" --body "Remote gateway ready" --sound Glass
 ```
 
-There is no global “default sound” toggle in the app anymore; callers choose a sound (or none) per request.
+Não existe mais um toggle global de "som padrão" no aplicativo; os chamadores escolhem um som (ou nenhum) por solicitação.

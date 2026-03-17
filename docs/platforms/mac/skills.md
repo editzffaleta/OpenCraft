@@ -1,33 +1,33 @@
 ---
-summary: "macOS Skills settings UI and gateway-backed status"
+summary: "UI de configurações de Skills do macOS e status baseado no Gateway"
 read_when:
-  - Updating the macOS Skills settings UI
-  - Changing skills gating or install behavior
+  - Atualizando a UI de configurações de Skills do macOS
+  - Alterando comportamento de restrição ou instalação de Skills
 title: "Skills"
 ---
 
 # Skills (macOS)
 
-The macOS app surfaces OpenCraft skills via the gateway; it does not parse skills locally.
+O aplicativo macOS exibe as Skills do OpenCraft via Gateway; ele não analisa as Skills localmente.
 
-## Data source
+## Fonte de dados
 
-- `skills.status` (gateway) returns all skills plus eligibility and missing requirements
-  (including allowlist blocks for bundled skills).
-- Requirements are derived from `metadata.opencraft.requires` in each `SKILL.md`.
+- `skills.status` (Gateway) retorna todas as Skills mais elegibilidade e requisitos ausentes
+  (incluindo bloqueios de lista de permissão para Skills integradas).
+- Os requisitos são derivados de `metadata.opencraft.requires` em cada `SKILL.md`.
 
-## Install actions
+## Ações de instalação
 
-- `metadata.opencraft.install` defines install options (brew/node/go/uv).
-- The app calls `skills.install` to run installers on the gateway host.
-- The gateway surfaces only one preferred installer when multiple are provided
-  (brew when available, otherwise node manager from `skills.install`, default npm).
+- `metadata.opencraft.install` define as opções de instalação (brew/node/go/uv).
+- O aplicativo chama `skills.install` para executar instaladores no host do Gateway.
+- O Gateway exibe apenas um instalador preferido quando múltiplos são fornecidos
+  (brew quando disponível, caso contrário gerenciador de nó de `skills.install`, padrão npm).
 
-## Env/API keys
+## Env/chaves API
 
-- The app stores keys in `~/.editzffaleta/OpenCraft.json` under `skills.entries.<skillKey>`.
-- `skills.update` patches `enabled`, `apiKey`, and `env`.
+- O aplicativo armazena chaves em `~/.editzffaleta/OpenCraft.json` em `skills.entries.<skillKey>`.
+- `skills.update` atualiza `enabled`, `apiKey` e `env`.
 
-## Remote mode
+## Modo remoto
 
-- Install + config updates happen on the gateway host (not the local Mac).
+- Instalação + atualizações de configuração acontecem no host do Gateway (não no Mac local).

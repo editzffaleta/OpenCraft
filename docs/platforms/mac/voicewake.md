@@ -1,67 +1,67 @@
 ---
-summary: "Voice wake and push-to-talk modes plus routing details in the mac app"
+summary: "Modos Voice Wake e push-to-talk além de detalhes de roteamento no aplicativo macOS"
 read_when:
-  - Working on voice wake or PTT pathways
+  - Trabalhando nos caminhos de Voice Wake ou PTT
 title: "Voice Wake"
 ---
 
-# Voice Wake & Push-to-Talk
+# Voice Wake e Push-to-Talk
 
-## Modes
+## Modos
 
-- **Wake-word mode** (default): always-on Speech recognizer waits for trigger tokens (`swabbleTriggerWords`). On match it starts capture, shows the overlay with partial text, and auto-sends after silence.
-- **Push-to-talk (Right Option hold)**: hold the right Option key to capture immediately—no trigger needed. The overlay appears while held; releasing finalizes and forwards after a short delay so you can tweak text.
+- **Modo wake-word** (padrão): reconhecedor de fala sempre ativo aguarda tokens de ativação (`swabbleTriggerWords`). Ao corresponder, inicia a captura, mostra o overlay com texto parcial e envia automaticamente após silêncio.
+- **Push-to-talk (segurar Option direito)**: segure a tecla Option direita para capturar imediatamente — sem necessidade de ativação. O overlay aparece enquanto segura; soltar finaliza e encaminha após um curto atraso para que você possa ajustar o texto.
 
-## Runtime behavior (wake-word)
+## Comportamento do runtime (wake-word)
 
-- Speech recognizer lives in `VoiceWakeRuntime`.
-- Trigger only fires when there’s a **meaningful pause** between the wake word and the next word (~0.55s gap). The overlay/chime can start on the pause even before the command begins.
-- Silence windows: 2.0s when speech is flowing, 5.0s if only the trigger was heard.
-- Hard stop: 120s to prevent runaway sessions.
-- Debounce between sessions: 350ms.
-- Overlay is driven via `VoiceWakeOverlayController` with committed/volatile coloring.
-- After send, recognizer restarts cleanly to listen for the next trigger.
+- O reconhecedor de fala reside em `VoiceWakeRuntime`.
+- A ativação só dispara quando há uma **pausa significativa** entre a wake word e a próxima palavra (~0,55s de intervalo). O overlay/chime pode começar na pausa mesmo antes do comando iniciar.
+- Janelas de silêncio: 2,0s quando a fala está fluindo, 5,0s se apenas a ativação foi ouvida.
+- Parada forçada: 120s para evitar sessões descontroladas.
+- Debounce entre sessões: 350ms.
+- O overlay é controlado via `VoiceWakeOverlayController` com coloração committed/volatile.
+- Após enviar, o reconhecedor reinicia limpo para ouvir a próxima ativação.
 
-## Lifecycle invariants
+## Invariantes do ciclo de vida
 
-- If Voice Wake is enabled and permissions are granted, the wake-word recognizer should be listening (except during an explicit push-to-talk capture).
-- Overlay visibility (including manual dismiss via the X button) must never prevent the recognizer from resuming.
+- Se Voice Wake está ativado e as permissões foram concedidas, o reconhecedor de wake-word deve estar ouvindo (exceto durante uma captura push-to-talk explícita).
+- A visibilidade do overlay (incluindo descarte manual via botão X) nunca deve impedir o reconhecedor de retomar.
 
-## Sticky overlay failure mode (previous)
+## Modo de falha do overlay travado (anterior)
 
-Previously, if the overlay got stuck visible and you manually closed it, Voice Wake could appear “dead” because the runtime’s restart attempt could be blocked by overlay visibility and no subsequent restart was scheduled.
+Anteriormente, se o overlay ficasse travado visível e você o fechasse manualmente, o Voice Wake poderia parecer "morto" porque a tentativa de reinicialização do runtime poderia ser bloqueada pela visibilidade do overlay e nenhuma reinicialização subsequente era agendada.
 
-Hardening:
+Endurecimento:
 
-- Wake runtime restart is no longer blocked by overlay visibility.
-- Overlay dismiss completion triggers a `VoiceWakeRuntime.refresh(...)` via `VoiceSessionCoordinator`, so manual X-dismiss always resumes listening.
+- A reinicialização do runtime de wake não é mais bloqueada pela visibilidade do overlay.
+- O descarte do overlay dispara um `VoiceWakeRuntime.refresh(...)` via `VoiceSessionCoordinator`, então descarte manual via X sempre retoma a escuta.
 
-## Push-to-talk specifics
+## Especificidades do push-to-talk
 
-- Hotkey detection uses a global `.flagsChanged` monitor for **right Option** (`keyCode 61` + `.option`). We only observe events (no swallowing).
-- Capture pipeline lives in `VoicePushToTalk`: starts Speech immediately, streams partials to the overlay, and calls `VoiceWakeForwarder` on release.
-- When push-to-talk starts we pause the wake-word runtime to avoid dueling audio taps; it restarts automatically after release.
-- Permissions: requires Microphone + Speech; seeing events needs Accessibility/Input Monitoring approval.
-- External keyboards: some may not expose right Option as expected—offer a fallback shortcut if users report misses.
+- A detecção de atalho usa um monitor global `.flagsChanged` para **Option direito** (`keyCode 61` + `.option`). Apenas observamos eventos (sem engolir).
+- O pipeline de captura reside em `VoicePushToTalk`: inicia Speech imediatamente, transmite parciais para o overlay e chama `VoiceWakeForwarder` ao soltar.
+- Quando push-to-talk inicia, pausamos o runtime de wake-word para evitar capturas de áudio em conflito; ele reinicia automaticamente após soltar.
+- Permissões: requer Microfone + Fala; ver eventos precisa de aprovação de Acessibilidade/Input Monitoring.
+- Teclados externos: alguns podem não expor Option direito como esperado — ofereça um atalho alternativo se os usuários relatarem falhas.
 
-## User-facing settings
+## Configurações voltadas ao usuário
 
-- **Voice Wake** toggle: enables wake-word runtime.
-- **Hold Cmd+Fn to talk**: enables the push-to-talk monitor. Disabled on macOS < 26.
-- Language & mic pickers, live level meter, trigger-word table, tester (local-only; does not forward).
-- Mic picker preserves the last selection if a device disconnects, shows a disconnected hint, and temporarily falls back to the system default until it returns.
-- **Sounds**: chimes on trigger detect and on send; defaults to the macOS “Glass” system sound. You can pick any `NSSound`-loadable file (e.g. MP3/WAV/AIFF) for each event or choose **No Sound**.
+- Toggle **Voice Wake**: ativa o runtime de wake-word.
+- **Segurar Cmd+Fn para falar**: ativa o monitor push-to-talk. Desativado no macOS < 26.
+- Seletores de idioma e microfone, medidor de nível ao vivo, tabela de palavras de ativação, testador (somente local; não encaminha).
+- O seletor de microfone preserva a última seleção se um dispositivo desconectar, mostra uma dica de desconectado e recorre temporariamente ao padrão do sistema até que retorne.
+- **Sons**: chimes na detecção de ativação e no envio; padrão para o som de sistema "Glass" do macOS. Você pode escolher qualquer arquivo carregável por `NSSound` (por exemplo MP3/WAV/AIFF) para cada evento ou escolher **No Sound**.
 
-## Forwarding behavior
+## Comportamento de encaminhamento
 
-- When Voice Wake is enabled, transcripts are forwarded to the active gateway/agent (the same local vs remote mode used by the rest of the mac app).
-- Replies are delivered to the **last-used main provider** (WhatsApp/Telegram/Discord/WebChat). If delivery fails, the error is logged and the run is still visible via WebChat/session logs.
+- Quando Voice Wake está ativado, transcrições são encaminhadas para o Gateway/agente ativo (o mesmo modo local vs remoto usado pelo resto do aplicativo macOS).
+- Respostas são entregues ao **último provedor principal usado** (WhatsApp/Telegram/Discord/WebChat). Se a entrega falhar, o erro é registrado e a execução ainda é visível via WebChat/logs de sessão.
 
-## Forwarding payload
+## Payload de encaminhamento
 
-- `VoiceWakeForwarder.prefixedTranscript(_:)` prepends the machine hint before sending. Shared between wake-word and push-to-talk paths.
+- `VoiceWakeForwarder.prefixedTranscript(_:)` adiciona a dica da máquina antes de enviar. Compartilhado entre os caminhos de wake-word e push-to-talk.
 
-## Quick verification
+## Verificação rápida
 
-- Toggle push-to-talk on, hold Cmd+Fn, speak, release: overlay should show partials then send.
-- While holding, menu-bar ears should stay enlarged (uses `triggerVoiceEars(ttl:nil)`); they drop after release.
+- Ative push-to-talk, segure Cmd+Fn, fale, solte: o overlay deve mostrar parciais e depois enviar.
+- Enquanto segura, as orelhas da barra de menus devem permanecer aumentadas (usa `triggerVoiceEars(ttl:nil)`); elas diminuem após soltar.

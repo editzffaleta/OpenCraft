@@ -1,23 +1,23 @@
 ---
-summary: "CLI reference for `opencraft onboard` (interactive onboarding)"
+summary: "Referência CLI para `opencraft onboard` (onboarding interativo)"
 read_when:
-  - You want guided setup for gateway, workspace, auth, channels, and skills
+  - Você quer configuração guiada para Gateway, workspace, autenticação, canais e Skills
 title: "onboard"
 ---
 
 # `opencraft onboard`
 
-Interactive onboarding for local or remote Gateway setup.
+Onboarding interativo para configuração de Gateway local ou remoto.
 
-## Related guides
+## Guias relacionados
 
-- CLI onboarding hub: [Onboarding (CLI)](/start/wizard)
-- Onboarding overview: [Onboarding Overview](/start/onboarding-overview)
-- CLI onboarding reference: [CLI Setup Reference](/start/wizard-cli-reference)
-- CLI automation: [CLI Automation](/start/wizard-cli-automation)
-- macOS onboarding: [Onboarding (macOS App)](/start/onboarding)
+- Hub de onboarding CLI: [Onboarding (CLI)](/start/wizard)
+- Visão geral do onboarding: [Onboarding Overview](/start/onboarding-overview)
+- Referência de onboarding CLI: [CLI Setup Reference](/start/wizard-cli-reference)
+- Automação CLI: [CLI Automation](/start/wizard-cli-automation)
+- Onboarding macOS: [Onboarding (macOS App)](/start/onboarding)
 
-## Examples
+## Exemplos
 
 ```bash
 opencraft onboard
@@ -26,10 +26,10 @@ opencraft onboard --flow manual
 opencraft onboard --mode remote --remote-url wss://gateway-host:18789
 ```
 
-For plaintext private-network `ws://` targets (trusted networks only), set
-`OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` in the onboarding process environment.
+Para destinos `ws://` em texto puro em redes privadas (apenas redes confiáveis), defina
+`OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` no ambiente do processo de onboarding.
 
-Non-interactive custom provider:
+Provedor customizado não interativo:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -41,9 +41,9 @@ opencraft onboard --non-interactive \
   --custom-compatibility openai
 ```
 
-`--custom-api-key` is optional in non-interactive mode. If omitted, onboarding checks `CUSTOM_API_KEY`.
+`--custom-api-key` é opcional no modo não interativo. Se omitido, o onboarding verifica `CUSTOM_API_KEY`.
 
-Non-interactive Ollama:
+Ollama não interativo:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -53,9 +53,9 @@ opencraft onboard --non-interactive \
   --accept-risk
 ```
 
-`--custom-base-url` defaults to `http://127.0.0.1:11434`. `--custom-model-id` is optional; if omitted, onboarding uses Ollama's suggested defaults. Cloud model IDs such as `kimi-k2.5:cloud` also work here.
+`--custom-base-url` tem como padrão `http://127.0.0.1:11434`. `--custom-model-id` é opcional; se omitido, o onboarding usa os padrões sugeridos pelo Ollama. IDs de modelo na nuvem como `kimi-k2.5:cloud` também funcionam aqui.
 
-Store provider keys as refs instead of plaintext:
+Armazenar chaves de provedor como referências em vez de texto puro:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -64,26 +64,26 @@ opencraft onboard --non-interactive \
   --accept-risk
 ```
 
-With `--secret-input-mode ref`, onboarding writes env-backed refs instead of plaintext key values.
-For auth-profile backed providers this writes `keyRef` entries; for custom providers this writes `models.providers.<id>.apiKey` as an env ref (for example `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`).
+Com `--secret-input-mode ref`, o onboarding escreve referências baseadas em env em vez de valores de chave em texto puro.
+Para provedores baseados em perfil de autenticação, isso escreve entradas `keyRef`; para provedores customizados, isso escreve `models.providers.<id>.apiKey` como referência env (por exemplo `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`).
 
-Non-interactive `ref` mode contract:
+Contrato do modo `ref` não interativo:
 
-- Set the provider env var in the onboarding process environment (for example `OPENAI_API_KEY`).
-- Do not pass inline key flags (for example `--openai-api-key`) unless that env var is also set.
-- If an inline key flag is passed without the required env var, onboarding fails fast with guidance.
+- Defina a variável de ambiente do provedor no ambiente do processo de onboarding (por exemplo `OPENAI_API_KEY`).
+- Não passe flags de chave inline (por exemplo `--openai-api-key`) a menos que essa variável de ambiente também esteja definida.
+- Se uma flag de chave inline for passada sem a variável de ambiente necessária, o onboarding falha imediatamente com orientação.
 
-Gateway token options in non-interactive mode:
+Opções de Token do Gateway no modo não interativo:
 
-- `--gateway-auth token --gateway-token <token>` stores a plaintext token.
-- `--gateway-auth token --gateway-token-ref-env <name>` stores `gateway.auth.token` as an env SecretRef.
-- `--gateway-token` and `--gateway-token-ref-env` are mutually exclusive.
-- `--gateway-token-ref-env` requires a non-empty env var in the onboarding process environment.
-- With `--install-daemon`, when token auth requires a token, SecretRef-managed gateway tokens are validated but not persisted as resolved plaintext in supervisor service environment metadata.
-- With `--install-daemon`, if token mode requires a token and the configured token SecretRef is unresolved, onboarding fails closed with remediation guidance.
-- With `--install-daemon`, if both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, onboarding blocks install until mode is set explicitly.
+- `--gateway-auth token --gateway-token <token>` armazena um Token em texto puro.
+- `--gateway-auth token --gateway-token-ref-env <name>` armazena `gateway.auth.token` como SecretRef de env.
+- `--gateway-token` e `--gateway-token-ref-env` são mutuamente exclusivos.
+- `--gateway-token-ref-env` requer uma variável de ambiente não vazia no ambiente do processo de onboarding.
+- Com `--install-daemon`, quando autenticação por Token requer um Token, Tokens de Gateway gerenciados por SecretRef são validados mas não persistidos como texto puro resolvido nos metadados de ambiente do serviço supervisor.
+- Com `--install-daemon`, se o modo de Token requer um Token e o SecretRef de Token configurado não está resolvido, o onboarding falha de forma fechada com orientação de remediação.
+- Com `--install-daemon`, se tanto `gateway.auth.token` quanto `gateway.auth.password` estão configurados e `gateway.auth.mode` não está definido, o onboarding bloqueia a instalação até que o modo seja definido explicitamente.
 
-Example:
+Exemplo:
 
 ```bash
 export OPENCLAW_GATEWAY_TOKEN="your-token"
@@ -95,40 +95,40 @@ opencraft onboard --non-interactive \
   --accept-risk
 ```
 
-Non-interactive local gateway health:
+Saúde do Gateway local não interativo:
 
-- Unless you pass `--skip-health`, onboarding waits for a reachable local gateway before it exits successfully.
-- `--install-daemon` starts the managed gateway install path first. Without it, you must already have a local gateway running, for example `opencraft gateway run`.
-- If you only want config/workspace/bootstrap writes in automation, use `--skip-health`.
-- On native Windows, `--install-daemon` tries Scheduled Tasks first and falls back to a per-user Startup-folder login item if task creation is denied.
+- A menos que você passe `--skip-health`, o onboarding aguarda um Gateway local acessível antes de sair com sucesso.
+- `--install-daemon` inicia o caminho de instalação do Gateway gerenciado primeiro. Sem ele, você já deve ter um Gateway local em execução, por exemplo `opencraft gateway run`.
+- Se você quer apenas escritas de config/workspace/bootstrap em automação, use `--skip-health`.
+- No Windows nativo, `--install-daemon` tenta Tarefas Agendadas primeiro e volta para um item de login da pasta Startup por usuário se a criação da tarefa for negada.
 
-Interactive onboarding behavior with reference mode:
+Comportamento do onboarding interativo com modo de referência:
 
-- Choose **Use secret reference** when prompted.
-- Then choose either:
-  - Environment variable
-  - Configured secret provider (`file` or `exec`)
-- Onboarding performs a fast preflight validation before saving the ref.
-  - If validation fails, onboarding shows the error and lets you retry.
+- Escolha **Usar referência secreta** quando solicitado.
+- Em seguida, escolha:
+  - Variável de ambiente
+  - Provedor de segredos configurado (`file` ou `exec`)
+- O onboarding realiza uma validação rápida de pré-voo antes de salvar a referência.
+  - Se a validação falhar, o onboarding mostra o erro e permite que você tente novamente.
 
-Non-interactive Z.AI endpoint choices:
+Escolhas de endpoint Z.AI não interativas:
 
-Note: `--auth-choice zai-api-key` now auto-detects the best Z.AI endpoint for your key (prefers the general API with `zai/glm-5`).
-If you specifically want the GLM Coding Plan endpoints, pick `zai-coding-global` or `zai-coding-cn`.
+Nota: `--auth-choice zai-api-key` agora detecta automaticamente o melhor endpoint Z.AI para sua chave (prefere a API geral com `zai/glm-5`).
+Se você quer especificamente os endpoints do GLM Coding Plan, escolha `zai-coding-global` ou `zai-coding-cn`.
 
 ```bash
-# Promptless endpoint selection
+# Seleção de endpoint sem prompts
 opencraft onboard --non-interactive \
   --auth-choice zai-coding-global \
   --zai-api-key "$ZAI_API_KEY"
 
-# Other Z.AI endpoint choices:
+# Outras opções de endpoint Z.AI:
 # --auth-choice zai-coding-cn
 # --auth-choice zai-global
 # --auth-choice zai-cn
 ```
 
-Non-interactive Mistral example:
+Exemplo não interativo Mistral:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -136,16 +136,16 @@ opencraft onboard --non-interactive \
   --mistral-api-key "$MISTRAL_API_KEY"
 ```
 
-Flow notes:
+Notas sobre fluxos:
 
-- `quickstart`: minimal prompts, auto-generates a gateway token.
-- `manual`: full prompts for port/bind/auth (alias of `advanced`).
-- Local onboarding DM scope behavior: [CLI Setup Reference](/start/wizard-cli-reference#outputs-and-internals).
-- Fastest first chat: `opencraft dashboard` (Control UI, no channel setup).
-- Custom Provider: connect any OpenAI or Anthropic compatible endpoint,
-  including hosted providers not listed. Use Unknown to auto-detect.
+- `quickstart`: prompts mínimos, gera automaticamente um Token de Gateway.
+- `manual`: prompts completos para porta/bind/autenticação (alias de `advanced`).
+- Comportamento de escopo de DM do onboarding local: [CLI Setup Reference](/start/wizard-cli-reference#outputs-and-internals).
+- Chat mais rápido: `opencraft dashboard` (Interface de Controle, sem configuração de canal).
+- Provedor Customizado: conecte qualquer endpoint compatível com OpenAI ou Anthropic,
+  incluindo provedores hospedados não listados. Use Unknown para detectar automaticamente.
 
-## Common follow-up commands
+## Comandos de acompanhamento comuns
 
 ```bash
 opencraft configure
@@ -153,5 +153,5 @@ opencraft agents add <name>
 ```
 
 <Note>
-`--json` does not imply non-interactive mode. Use `--non-interactive` for scripts.
+`--json` não implica modo não interativo. Use `--non-interactive` para scripts.
 </Note>

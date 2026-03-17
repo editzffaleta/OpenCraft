@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for `opencraft status` (diagnostics, probes, usage snapshots)"
+summary: "Referência CLI para `opencraft status` (diagnósticos, sondagens, snapshots de uso)"
 read_when:
-  - You want a quick diagnosis of channel health + recent session recipients
-  - You want a pasteable “all” status for debugging
+  - Você quer um diagnóstico rápido da saúde do canal + destinatários recentes da sessão
+  - Você quer um status "all" colável para depuração
 title: "status"
 ---
 
 # `opencraft status`
 
-Diagnostics for channels + sessions.
+Diagnósticos para canais + sessões.
 
 ```bash
 opencraft status
@@ -17,13 +17,13 @@ opencraft status --deep
 opencraft status --usage
 ```
 
-Notes:
+Notas:
 
-- `--deep` runs live probes (WhatsApp Web + Telegram + Discord + Google Chat + Slack + Signal).
-- Output includes per-agent session stores when multiple agents are configured.
-- Overview includes Gateway + node host service install/runtime status when available.
-- Overview includes update channel + git SHA (for source checkouts).
-- Update info surfaces in the Overview; if an update is available, status prints a hint to run `opencraft update` (see [Updating](/install/updating)).
-- Read-only status surfaces (`status`, `status --json`, `status --all`) resolve supported SecretRefs for their targeted config paths when possible.
-- If a supported channel SecretRef is configured but unavailable in the current command path, status stays read-only and reports degraded output instead of crashing. Human output shows warnings such as “configured token unavailable in this command path”, and JSON output includes `secretDiagnostics`.
-- When command-local SecretRef resolution succeeds, status prefers the resolved snapshot and clears transient “secret unavailable” channel markers from the final output.
+- `--deep` executa sondagens ao vivo (WhatsApp Web + Telegram + Discord + Google Chat + Slack + Signal).
+- A saída inclui armazenamentos de sessão por agente quando múltiplos agentes estão configurados.
+- A visão geral inclui status de instalação/runtime do serviço Gateway + host de nó quando disponível.
+- A visão geral inclui canal de atualização + SHA git (para checkouts de código-fonte).
+- Informações de atualização aparecem na Visão Geral; se uma atualização estiver disponível, o status imprime uma dica para executar `opencraft update` (veja [Updating](/install/updating)).
+- Superfícies de status somente leitura (`status`, `status --json`, `status --all`) resolvem SecretRefs suportados para seus caminhos de config direcionados quando possível.
+- Se um SecretRef de canal suportado estiver configurado mas indisponível no caminho de comando atual, o status permanece somente leitura e reporta saída degradada em vez de travar. A saída humana mostra avisos como "configured token unavailable in this command path", e a saída JSON inclui `secretDiagnostics`.
+- Quando a resolução de SecretRef local ao comando tem sucesso, o status prefere o snapshot resolvido e limpa marcadores transitórios de "secret unavailable" do canal na saída final.

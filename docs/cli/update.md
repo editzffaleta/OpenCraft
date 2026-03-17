@@ -1,18 +1,18 @@
 ---
-summary: "CLI reference for `opencraft update` (safe-ish source update + gateway auto-restart)"
+summary: "Referência CLI para `opencraft update` (atualização segura de código-fonte + reinício automático do Gateway)"
 read_when:
-  - You want to update a source checkout safely
-  - You need to understand `--update` shorthand behavior
+  - Você quer atualizar um checkout de código-fonte com segurança
+  - Você precisa entender o comportamento do atalho `--update`
 title: "update"
 ---
 
 # `opencraft update`
 
-Safely update OpenCraft and switch between stable/beta/dev channels.
+Atualizar o OpenCraft com segurança e alternar entre canais stable/beta/dev.
 
-If you installed via **npm/pnpm** (global install, no git metadata), updates happen via the package manager flow in [Updating](/install/updating).
+Se você instalou via **npm/pnpm** (instalação global, sem metadados git), atualizações acontecem pelo fluxo do gerenciador de pacotes em [Updating](/install/updating).
 
-## Usage
+## Uso
 
 ```bash
 opencraft update
@@ -28,20 +28,20 @@ opencraft update --json
 opencraft --update
 ```
 
-## Options
+## Opções
 
-- `--no-restart`: skip restarting the Gateway service after a successful update.
-- `--channel <stable|beta|dev>`: set the update channel (git + npm; persisted in config).
-- `--tag <dist-tag|version|spec>`: override the package target for this update only. For package installs, `main` maps to `github:editzffaleta/OpenCraft#main`.
-- `--dry-run`: preview planned update actions (channel/tag/target/restart flow) without writing config, installing, syncing plugins, or restarting.
-- `--json`: print machine-readable `UpdateRunResult` JSON.
-- `--timeout <seconds>`: per-step timeout (default is 1200s).
+- `--no-restart`: pular reinício do serviço Gateway após atualização bem-sucedida.
+- `--channel <stable|beta|dev>`: definir o canal de atualização (git + npm; persistido no config).
+- `--tag <dist-tag|version|spec>`: sobrepor o alvo do pacote apenas para esta atualização. Para instalações de pacote, `main` mapeia para `github:editzffaleta/OpenCraft#main`.
+- `--dry-run`: pré-visualizar ações de atualização planejadas (canal/tag/alvo/fluxo de reinício) sem escrever config, instalar, sincronizar Plugins ou reiniciar.
+- `--json`: imprimir JSON `UpdateRunResult` legível por máquina.
+- `--timeout <seconds>`: timeout por etapa (padrão é 1200s).
 
-Note: downgrades require confirmation because older versions can break configuration.
+Nota: downgrades requerem confirmação porque versões mais antigas podem quebrar a configuração.
 
 ## `update status`
 
-Show the active update channel + git tag/branch/SHA (for source checkouts), plus update availability.
+Mostrar o canal de atualização ativo + tag/branch/SHA git (para checkouts de código-fonte), mais disponibilidade de atualização.
 
 ```bash
 opencraft update status
@@ -49,55 +49,55 @@ opencraft update status --json
 opencraft update status --timeout 10
 ```
 
-Options:
+Opções:
 
-- `--json`: print machine-readable status JSON.
-- `--timeout <seconds>`: timeout for checks (default is 3s).
+- `--json`: imprimir JSON de status legível por máquina.
+- `--timeout <seconds>`: timeout para verificações (padrão é 3s).
 
 ## `update wizard`
 
-Interactive flow to pick an update channel and confirm whether to restart the Gateway
-after updating (default is to restart). If you select `dev` without a git checkout, it
-offers to create one.
+Fluxo interativo para escolher um canal de atualização e confirmar se deve reiniciar o Gateway
+após atualizar (padrão é reiniciar). Se você selecionar `dev` sem um checkout git, ele
+oferece criar um.
 
-## What it does
+## O que ele faz
 
-When you switch channels explicitly (`--channel ...`), OpenCraft also keeps the
-install method aligned:
+Quando você alterna canais explicitamente (`--channel ...`), o OpenCraft também mantém o
+método de instalação alinhado:
 
-- `dev` → ensures a git checkout (default: `~/opencraft`, override with `OPENCRAFT_GIT_DIR`),
-  updates it, and installs the global CLI from that checkout.
-- `stable`/`beta` → installs from npm using the matching dist-tag.
+- `dev` → garante um checkout git (padrão: `~/opencraft`, sobrescrever com `OPENCRAFT_GIT_DIR`),
+  atualiza-o e instala o CLI global a partir desse checkout.
+- `stable`/`beta` → instala via npm usando a dist-tag correspondente.
 
-The Gateway core auto-updater (when enabled via config) reuses this same update path.
+O auto-atualizador principal do Gateway (quando habilitado via config) reutiliza este mesmo caminho de atualização.
 
-## Git checkout flow
+## Fluxo de checkout git
 
-Channels:
+Canais:
 
-- `stable`: checkout the latest non-beta tag, then build + doctor.
-- `beta`: checkout the latest `-beta` tag, then build + doctor.
-- `dev`: checkout `main`, then fetch + rebase.
+- `stable`: checkout da tag não-beta mais recente, depois build + doctor.
+- `beta`: checkout da tag `-beta` mais recente, depois build + doctor.
+- `dev`: checkout de `main`, depois fetch + rebase.
 
-High-level:
+Visão de alto nível:
 
-1. Requires a clean worktree (no uncommitted changes).
-2. Switches to the selected channel (tag or branch).
-3. Fetches upstream (dev only).
-4. Dev only: preflight lint + TypeScript build in a temp worktree; if the tip fails, walks back up to 10 commits to find the newest clean build.
-5. Rebases onto the selected commit (dev only).
-6. Installs deps (pnpm preferred; npm fallback).
-7. Builds + builds the Control UI.
-8. Runs `opencraft doctor` as the final “safe update” check.
-9. Syncs plugins to the active channel (dev uses bundled extensions; stable/beta uses npm) and updates npm-installed plugins.
+1. Requer uma árvore de trabalho limpa (sem mudanças não commitadas).
+2. Alterna para o canal selecionado (tag ou branch).
+3. Busca upstream (apenas dev).
+4. Apenas dev: lint + build TypeScript de pré-voo em uma árvore de trabalho temporária; se a ponta falhar, volta até 10 commits para encontrar o build limpo mais recente.
+5. Faz rebase no commit selecionado (apenas dev).
+6. Instala dependências (pnpm preferido; fallback npm).
+7. Faz build + build da Interface de Controle.
+8. Executa `opencraft doctor` como verificação final de "atualização segura".
+9. Sincroniza Plugins com o canal ativo (dev usa extensões incluídas; stable/beta usa npm) e atualiza Plugins instalados via npm.
 
-## `--update` shorthand
+## Atalho `--update`
 
-`opencraft --update` rewrites to `opencraft update` (useful for shells and launcher scripts).
+`opencraft --update` é reescrito para `opencraft update` (útil para shells e scripts de lançamento).
 
-## See also
+## Veja também
 
-- `opencraft doctor` (offers to run update first on git checkouts)
+- `opencraft doctor` (oferece executar atualização primeiro em checkouts git)
 - [Development channels](/install/development-channels)
 - [Updating](/install/updating)
 - [CLI reference](/cli)

@@ -1,30 +1,30 @@
 ---
-summary: "CLI reference for `opencraft tui` (terminal UI connected to the Gateway)"
+summary: "Referência CLI para `opencraft tui` (interface de terminal conectada ao Gateway)"
 read_when:
-  - You want a terminal UI for the Gateway (remote-friendly)
-  - You want to pass url/token/session from scripts
+  - Você quer uma interface de terminal para o Gateway (compatível com acesso remoto)
+  - Você quer passar url/Token/sessão a partir de scripts
 title: "tui"
 ---
 
 # `opencraft tui`
 
-Open the terminal UI connected to the Gateway.
+Abrir a interface de terminal conectada ao Gateway.
 
-Related:
+Relacionado:
 
-- TUI guide: [TUI](/web/tui)
+- Guia TUI: [TUI](/web/tui)
 
-Notes:
+Notas:
 
-- `tui` resolves configured gateway auth SecretRefs for token/password auth when possible (`env`/`file`/`exec` providers).
-- When launched from inside a configured agent workspace directory, TUI auto-selects that agent for the session key default (unless `--session` is explicitly `agent:<id>:...`).
+- `tui` resolve SecretRefs de autenticação do Gateway configurados para autenticação por Token/senha quando possível (provedores `env`/`file`/`exec`).
+- Quando iniciado de dentro de um diretório de workspace de agente configurado, o TUI seleciona automaticamente aquele agente para o padrão de chave de sessão (a menos que `--session` seja explicitamente `agent:<id>:...`).
 
-## Examples
+## Exemplos
 
 ```bash
 opencraft tui
 opencraft tui --url ws://127.0.0.1:18789 --token <token>
 opencraft tui --session main --deliver
-# when run inside an agent workspace, infers that agent automatically
+# quando executado dentro de um workspace de agente, infere aquele agente automaticamente
 opencraft tui --session bugfix
 ```

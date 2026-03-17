@@ -1,91 +1,91 @@
 ---
-summary: "First-run setup flow for OpenCraft (macOS app)"
+summary: "Fluxo de configuração de primeira execução do OpenCraft (app macOS)"
 read_when:
-  - Designing the macOS onboarding assistant
-  - Implementing auth or identity setup
-title: "Onboarding (macOS App)"
-sidebarTitle: "Onboarding: macOS App"
+  - Projetando o assistente de onboarding do macOS
+  - Implementando configuração de autenticação ou identidade
+title: "Onboarding (App macOS)"
+sidebarTitle: "Onboarding: App macOS"
 ---
 
-# Onboarding (macOS App)
+# Onboarding (App macOS)
 
-This doc describes the **current** first‑run setup flow. The goal is a
-smooth “day 0” experience: pick where the Gateway runs, connect auth, run the
-wizard, and let the agent bootstrap itself.
-For a general overview of onboarding paths, see [Onboarding Overview](/start/onboarding-overview).
+Este documento descreve o fluxo de configuração de **primeira execução** atual. O objetivo é uma
+experiência "dia 0" suave: escolha onde o Gateway executa, conecte a autenticação, execute o
+wizard e deixe o agente fazer o bootstrap sozinho.
+Para uma visão geral dos caminhos de onboarding, veja [Visão Geral do Onboarding](/start/onboarding-overview).
 
 <Steps>
-<Step title="Approve macOS warning">
+<Step title="Aprove o aviso do macOS">
 <Frame>
 <img src="/assets/macos-onboarding/01-macos-warning.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Approve find local networks">
+<Step title="Aprove encontrar redes locais">
 <Frame>
 <img src="/assets/macos-onboarding/02-local-networks.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Welcome and security notice">
-<Frame caption="Read the security notice displayed and decide accordingly">
+<Step title="Boas-vindas e aviso de segurança">
+<Frame caption="Leia o aviso de segurança exibido e decida adequadamente">
 <img src="/assets/macos-onboarding/03-security-notice.png" alt="" />
 </Frame>
 
-Security trust model:
+Modelo de confiança de segurança:
 
-- By default, OpenCraft is a personal agent: one trusted operator boundary.
-- Shared/multi-user setups require lock-down (split trust boundaries, keep tool access minimal, and follow [Security](/gateway/security)).
-- Local onboarding now defaults new configs to `tools.profile: "coding"` so fresh local setups keep filesystem/runtime tools without forcing the unrestricted `full` profile.
-- If hooks/webhooks or other untrusted content feeds are enabled, use a strong modern model tier and keep strict tool policy/sandboxing.
+- Por padrão, o OpenCraft é um agente pessoal: uma fronteira de operador confiável.
+- Configurações compartilhadas/multi-usuário requerem bloqueio (separar fronteiras de confiança, manter acesso a ferramentas mínimo e seguir [Segurança](/gateway/security)).
+- O onboarding local agora define novas configurações como `tools.profile: "coding"` para que configurações locais novas mantenham ferramentas de sistema de arquivos/runtime sem forçar o perfil irrestrito `full`.
+- Se hooks/webhooks ou outros feeds de conteúdo não confiável estiverem habilitados, use um nível de modelo moderno forte e mantenha política de ferramentas/sandboxing rigorosos.
 
 </Step>
-<Step title="Local vs Remote">
+<Step title="Local vs Remoto">
 <Frame>
 <img src="/assets/macos-onboarding/04-choose-gateway.png" alt="" />
 </Frame>
 
-Where does the **Gateway** run?
+Onde o **Gateway** executa?
 
-- **This Mac (Local only):** onboarding can configure auth and write credentials
-  locally.
-- **Remote (over SSH/Tailnet):** onboarding does **not** configure local auth;
-  credentials must exist on the gateway host.
-- **Configure later:** skip setup and leave the app unconfigured.
+- **Este Mac (Apenas local):** o onboarding pode configurar autenticação e escrever credenciais
+  localmente.
+- **Remoto (via SSH/Tailnet):** o onboarding **não** configura autenticação local;
+  credenciais devem existir no gateway host.
+- **Configurar depois:** pular a configuração e deixar o app sem configurar.
 
 <Tip>
-**Gateway auth tip:**
+**Dica de autenticação do Gateway:**
 
-- The wizard now generates a **token** even for loopback, so local WS clients must authenticate.
-- If you disable auth, any local process can connect; use that only on fully trusted machines.
-- Use a **token** for multi‑machine access or non‑loopback binds.
+- O wizard agora gera um **token** mesmo para loopback, então clientes WS locais devem se autenticar.
+- Se você desabilitar a autenticação, qualquer processo local pode se conectar; use isso apenas em máquinas totalmente confiáveis.
+- Use um **token** para acesso multi-máquina ou binds não-loopback.
 
 </Tip>
 </Step>
-<Step title="Permissions">
-<Frame caption="Choose what permissions do you want to give OpenCraft">
+<Step title="Permissões">
+<Frame caption="Escolha quais permissões você quer dar ao OpenCraft">
 <img src="/assets/macos-onboarding/05-permissions.png" alt="" />
 </Frame>
 
-Onboarding requests TCC permissions needed for:
+O onboarding solicita permissões TCC necessárias para:
 
-- Automation (AppleScript)
-- Notifications
-- Accessibility
-- Screen Recording
-- Microphone
-- Speech Recognition
-- Camera
-- Location
+- Automação (AppleScript)
+- Notificações
+- Acessibilidade
+- Gravação de Tela
+- Microfone
+- Reconhecimento de Fala
+- Câmera
+- Localização
 
 </Step>
 <Step title="CLI">
-  <Info>This step is optional</Info>
-  The app can install the global `opencraft` CLI via npm/pnpm so terminal
-  workflows and launchd tasks work out of the box.
+  <Info>Este passo é opcional</Info>
+  O app pode instalar o CLI global `opencraft` via npm/pnpm para que fluxos de trabalho
+  no terminal e tarefas launchd funcionem imediatamente.
 </Step>
-<Step title="Onboarding Chat (dedicated session)">
-  After setup, the app opens a dedicated onboarding chat session so the agent can
-  introduce itself and guide next steps. This keeps first‑run guidance separate
-  from your normal conversation. See [Bootstrapping](/start/bootstrapping) for
-  what happens on the gateway host during the first agent run.
+<Step title="Chat de Onboarding (sessão dedicada)">
+  Após a configuração, o app abre uma sessão de chat dedicada de onboarding para que o agente possa
+  se apresentar e guiar os próximos passos. Isso mantém a orientação de primeira execução separada
+  da sua conversa normal. Veja [Bootstrapping](/start/bootstrapping) para
+  o que acontece no gateway host durante a primeira execução do agente.
 </Step>
 </Steps>

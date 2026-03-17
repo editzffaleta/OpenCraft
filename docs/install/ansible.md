@@ -1,208 +1,208 @@
 ---
-summary: "Automated, hardened OpenCraft installation with Ansible, Tailscale VPN, and firewall isolation"
+summary: "Instalação automatizada e reforçada do OpenCraft com Ansible, VPN Tailscale e isolamento por firewall"
 read_when:
-  - You want automated server deployment with security hardening
-  - You need firewall-isolated setup with VPN access
-  - You're deploying to remote Debian/Ubuntu servers
+  - Você quer deployment automatizado de servidor com reforço de segurança
+  - Você precisa de setup isolado por firewall com acesso VPN
+  - Você está fazendo deploy em servidores Debian/Ubuntu remotos
 title: "Ansible"
 ---
 
-# Ansible Installation
+# Instalação com Ansible
 
-The recommended way to deploy OpenCraft to production servers is via **[opencraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible)** — an automated installer with security-first architecture.
+A forma recomendada de fazer deploy do OpenCraft em servidores de produção é via **[opencraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible)** — um instalador automatizado com arquitetura security-first.
 
-## Quick Start
+## Início Rápido
 
-One-command install:
+Instalação com um comando:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/editzffaleta/OpenCraft-ansible/main/install.sh | bash
 ```
 
-> **📦 Full guide: [github.com/editzffaleta/OpenCraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible)**
+> **📦 Guia completo: [github.com/editzffaleta/OpenCraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible)**
 >
-> The opencraft-ansible repo is the source of truth for Ansible deployment. This page is a quick overview.
+> O repositório opencraft-ansible é a fonte da verdade para deployment com Ansible. Esta página é apenas uma visão geral rápida.
 
-## What You Get
+## O Que Você Recebe
 
-- 🔒 **Firewall-first security**: UFW + Docker isolation (only SSH + Tailscale accessible)
-- 🔐 **Tailscale VPN**: Secure remote access without exposing services publicly
-- 🐳 **Docker**: Isolated sandbox containers, localhost-only bindings
-- 🛡️ **Defense in depth**: 4-layer security architecture
-- 🚀 **One-command setup**: Complete deployment in minutes
-- 🔧 **Systemd integration**: Auto-start on boot with hardening
+- 🔒 **Segurança com firewall primeiro**: UFW + isolamento Docker (apenas SSH + Tailscale acessíveis)
+- 🔐 **VPN Tailscale**: Acesso remoto seguro sem expor serviços publicamente
+- 🐳 **Docker**: Containers sandbox isolados, bindings apenas em localhost
+- 🛡️ **Defesa em profundidade**: Arquitetura de segurança em 4 camadas
+- 🚀 **Setup com um comando**: Deployment completo em minutos
+- 🔧 **Integração com Systemd**: Auto-start na inicialização com reforço
 
-## Requirements
+## Requisitos
 
-- **OS**: Debian 11+ or Ubuntu 20.04+
-- **Access**: Root or sudo privileges
-- **Network**: Internet connection for package installation
-- **Ansible**: 2.14+ (installed automatically by quick-start script)
+- **SO**: Debian 11+ ou Ubuntu 20.04+
+- **Acesso**: Privilégios root ou sudo
+- **Rede**: Conexão com internet para instalação de pacotes
+- **Ansible**: 2.14+ (instalado automaticamente pelo script de início rápido)
 
-## What Gets Installed
+## O Que É Instalado
 
-The Ansible playbook installs and configures:
+O playbook Ansible instala e configura:
 
-1. **Tailscale** (mesh VPN for secure remote access)
-2. **UFW firewall** (SSH + Tailscale ports only)
-3. **Docker CE + Compose V2** (for agent sandboxes)
-4. **Node.js 24 + pnpm** (runtime dependencies; Node 22 LTS, currently `22.16+`, remains supported for compatibility)
-5. **OpenCraft** (host-based, not containerized)
-6. **Systemd service** (auto-start with security hardening)
+1. **Tailscale** (VPN mesh para acesso remoto seguro)
+2. **Firewall UFW** (apenas portas SSH + Tailscale)
+3. **Docker CE + Compose V2** (para sandboxes de agent)
+4. **Node.js 24 + pnpm** (dependências de runtime; Node 22 LTS, atualmente `22.16+`, permanece suportado para compatibilidade)
+5. **OpenCraft** (baseado no host, não containerizado)
+6. **Serviço Systemd** (auto-start com reforço de segurança)
 
-Note: The gateway runs **directly on the host** (not in Docker), but agent sandboxes use Docker for isolation. See [Sandboxing](/gateway/sandboxing) for details.
+Nota: O Gateway roda **diretamente no host** (não em Docker), mas sandboxes de agent usam Docker para isolamento. Veja [Sandboxing](/gateway/sandboxing) para detalhes.
 
-## Post-Install Setup
+## Setup Pós-Instalação
 
-After installation completes, switch to the opencraft user:
+Após a instalação completar, mude para o usuário opencraft:
 
 ```bash
 sudo -i -u opencraft
 ```
 
-The post-install script will guide you through:
+O script pós-instalação irá guiá-lo através de:
 
-1. **Onboarding wizard**: Configure OpenCraft settings
-2. **Provider login**: Connect WhatsApp/Telegram/Discord/Signal
-3. **Gateway testing**: Verify the installation
-4. **Tailscale setup**: Connect to your VPN mesh
+1. **Assistente de onboarding**: Configure as definições do OpenCraft
+2. **Login de provider**: Conecte WhatsApp/Telegram/Discord/Signal
+3. **Teste do Gateway**: Verifique a instalação
+4. **Setup do Tailscale**: Conecte à sua mesh VPN
 
-### Quick commands
+### Comandos rápidos
 
 ```bash
-# Check service status
+# Verificar status do serviço
 sudo systemctl status opencraft
 
-# View live logs
+# Ver logs ao vivo
 sudo journalctl -u opencraft -f
 
-# Restart gateway
+# Reiniciar gateway
 sudo systemctl restart opencraft
 
-# Provider login (run as opencraft user)
+# Login de provider (execute como usuário opencraft)
 sudo -i -u opencraft
 opencraft channels login
 ```
 
-## Security Architecture
+## Arquitetura de Segurança
 
-### 4-Layer Defense
+### Defesa em 4 Camadas
 
-1. **Firewall (UFW)**: Only SSH (22) + Tailscale (41641/udp) exposed publicly
-2. **VPN (Tailscale)**: Gateway accessible only via VPN mesh
-3. **Docker Isolation**: DOCKER-USER iptables chain prevents external port exposure
-4. **Systemd Hardening**: NoNewPrivileges, PrivateTmp, unprivileged user
+1. **Firewall (UFW)**: Apenas SSH (22) + Tailscale (41641/udp) expostos publicamente
+2. **VPN (Tailscale)**: Gateway acessível apenas via mesh VPN
+3. **Isolamento Docker**: Cadeia iptables DOCKER-USER previne exposição de porta externa
+4. **Reforço Systemd**: NoNewPrivileges, PrivateTmp, usuário não-privilegiado
 
-### Verification
+### Verificação
 
-Test external attack surface:
+Teste a superfície de ataque externa:
 
 ```bash
 nmap -p- YOUR_SERVER_IP
 ```
 
-Should show **only port 22** (SSH) open. All other services (gateway, Docker) are locked down.
+Deve mostrar **apenas a porta 22** (SSH) aberta. Todos os outros serviços (Gateway, Docker) estão bloqueados.
 
-### Docker Availability
+### Disponibilidade do Docker
 
-Docker is installed for **agent sandboxes** (isolated tool execution), not for running the gateway itself. The gateway binds to localhost only and is accessible via Tailscale VPN.
+Docker é instalado para **sandboxes de agent** (execução isolada de ferramentas), não para rodar o Gateway em si. O Gateway faz bind apenas em localhost e é acessível via VPN Tailscale.
 
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for sandbox configuration.
+Veja [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) para configuração de sandbox.
 
-## Manual Installation
+## Instalação Manual
 
-If you prefer manual control over the automation:
+Se você preferir controle manual sobre a automação:
 
 ```bash
-# 1. Install prerequisites
+# 1. Instalar pré-requisitos
 sudo apt update && sudo apt install -y ansible git
 
-# 2. Clone repository
+# 2. Clonar repositório
 git clone https://github.com/editzffaleta/OpenCraft-ansible.git
 cd opencraft-ansible
 
-# 3. Install Ansible collections
+# 3. Instalar coleções Ansible
 ansible-galaxy collection install -r requirements.yml
 
-# 4. Run playbook
+# 4. Executar playbook
 ./run-playbook.sh
 
-# Or run directly (then manually execute /tmp/opencraft-setup.sh after)
+# Ou execute diretamente (depois execute manualmente /tmp/opencraft-setup.sh após)
 # ansible-playbook playbook.yml --ask-become-pass
 ```
 
-## Updating OpenCraft
+## Atualizando o OpenCraft
 
-The Ansible installer sets up OpenCraft for manual updates. See [Updating](/install/updating) for the standard update flow.
+O instalador Ansible configura o OpenCraft para atualizações manuais. Veja [Atualizando](/install/updating) para o fluxo padrão de atualização.
 
-To re-run the Ansible playbook (e.g., for configuration changes):
+Para re-executar o playbook Ansible (por exemplo, para mudanças de configuração):
 
 ```bash
 cd opencraft-ansible
 ./run-playbook.sh
 ```
 
-Note: This is idempotent and safe to run multiple times.
+Nota: Isto é idempotente e seguro para executar múltiplas vezes.
 
-## Troubleshooting
+## Solução de Problemas
 
-### Firewall blocks my connection
+### Firewall bloqueia minha conexão
 
-If you're locked out:
+Se você está bloqueado:
 
-- Ensure you can access via Tailscale VPN first
-- SSH access (port 22) is always allowed
-- The gateway is **only** accessible via Tailscale by design
+- Certifique-se de que pode acessar via VPN Tailscale primeiro
+- Acesso SSH (porta 22) é sempre permitido
+- O Gateway é **apenas** acessível via Tailscale por design
 
-### Service won't start
+### Serviço não inicia
 
 ```bash
-# Check logs
+# Verificar logs
 sudo journalctl -u opencraft -n 100
 
-# Verify permissions
+# Verificar permissões
 sudo ls -la /opt/opencraft
 
-# Test manual start
+# Testar inicialização manual
 sudo -i -u opencraft
 cd ~/opencraft
 pnpm start
 ```
 
-### Docker sandbox issues
+### Problemas com sandbox Docker
 
 ```bash
-# Verify Docker is running
+# Verificar se Docker está rodando
 sudo systemctl status docker
 
-# Check sandbox image
+# Verificar imagem de sandbox
 sudo docker images | grep openclaw-sandbox
 
-# Build sandbox image if missing
+# Construir imagem de sandbox se ausente
 cd /opt/editzffaleta/OpenCraft
 sudo -u opencraft ./scripts/sandbox-setup.sh
 ```
 
-### Provider login fails
+### Login de provider falha
 
-Make sure you're running as the `opencraft` user:
+Certifique-se de que está rodando como o usuário `opencraft`:
 
 ```bash
 sudo -i -u opencraft
 opencraft channels login
 ```
 
-## Advanced Configuration
+## Configuração Avançada
 
-For detailed security architecture and troubleshooting:
+Para arquitetura de segurança detalhada e solução de problemas:
 
-- [Security Architecture](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/security.md)
-- [Technical Details](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/architecture.md)
-- [Troubleshooting Guide](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/troubleshooting.md)
+- [Arquitetura de Segurança](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/security.md)
+- [Detalhes Técnicos](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/architecture.md)
+- [Guia de Solução de Problemas](https://github.com/editzffaleta/OpenCraft-ansible/blob/main/docs/troubleshooting.md)
 
-## Related
+## Relacionado
 
-- [opencraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible) — full deployment guide
-- [Docker](/install/docker) — containerized gateway setup
-- [Sandboxing](/gateway/sandboxing) — agent sandbox configuration
-- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — per-agent isolation
+- [opencraft-ansible](https://github.com/editzffaleta/OpenCraft-ansible) — guia completo de deployment
+- [Docker](/install/docker) — setup containerizado do Gateway
+- [Sandboxing](/gateway/sandboxing) — configuração de sandbox de agent
+- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — isolamento por agent

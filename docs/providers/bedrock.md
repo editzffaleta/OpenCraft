@@ -1,31 +1,31 @@
 ---
-summary: "Use Amazon Bedrock (Converse API) models with OpenCraft"
+summary: "Use modelos Amazon Bedrock (Converse API) com OpenCraft"
 read_when:
-  - You want to use Amazon Bedrock models with OpenCraft
-  - You need AWS credential/region setup for model calls
+  - Você quer usar modelos Amazon Bedrock com OpenCraft
+  - Você precisa configurar credenciais/região AWS para chamadas de modelo
 title: "Amazon Bedrock"
 ---
 
 # Amazon Bedrock
 
-OpenCraft can use **Amazon Bedrock** models via pi‑ai’s **Bedrock Converse**
-streaming provider. Bedrock auth uses the **AWS SDK default credential chain**,
-not an API key.
+O OpenCraft pode usar modelos do **Amazon Bedrock** via o provider **Bedrock Converse** com
+streaming do pi-ai. A autenticação do Bedrock usa a **cadeia de credenciais padrão do AWS SDK**,
+não uma chave de API.
 
-## What pi‑ai supports
+## O que o pi-ai suporta
 
 - Provider: `amazon-bedrock`
 - API: `bedrock-converse-stream`
-- Auth: AWS credentials (env vars, shared config, or instance role)
-- Region: `AWS_REGION` or `AWS_DEFAULT_REGION` (default: `us-east-1`)
+- Autenticação: credenciais AWS (variáveis de ambiente, configuração compartilhada ou role de instância)
+- Região: `AWS_REGION` ou `AWS_DEFAULT_REGION` (padrão: `us-east-1`)
 
-## Automatic model discovery
+## Descoberta automática de modelos
 
-If AWS credentials are detected, OpenCraft can automatically discover Bedrock
-models that support **streaming** and **text output**. Discovery uses
-`bedrock:ListFoundationModels` and is cached (default: 1 hour).
+Se credenciais AWS forem detectadas, o OpenCraft pode descobrir automaticamente modelos Bedrock
+que suportam **streaming** e **saída de texto**. A descoberta usa
+`bedrock:ListFoundationModels` e é cacheada (padrão: 1 hora).
 
-Config options live under `models.bedrockDiscovery`:
+As opções de configuração ficam em `models.bedrockDiscovery`:
 
 ```json5
 {
@@ -42,31 +42,31 @@ Config options live under `models.bedrockDiscovery`:
 }
 ```
 
-Notes:
+Notas:
 
-- `enabled` defaults to `true` when AWS credentials are present.
-- `region` defaults to `AWS_REGION` or `AWS_DEFAULT_REGION`, then `us-east-1`.
-- `providerFilter` matches Bedrock provider names (for example `anthropic`).
-- `refreshInterval` is seconds; set to `0` to disable caching.
-- `defaultContextWindow` (default: `32000`) and `defaultMaxTokens` (default: `4096`)
-  are used for discovered models (override if you know your model limits).
+- `enabled` é `true` por padrão quando credenciais AWS estão presentes.
+- `region` usa `AWS_REGION` ou `AWS_DEFAULT_REGION` como padrão, depois `us-east-1`.
+- `providerFilter` corresponde a nomes de providers do Bedrock (por exemplo `anthropic`).
+- `refreshInterval` é em segundos; defina como `0` para desabilitar o cache.
+- `defaultContextWindow` (padrão: `32000`) e `defaultMaxTokens` (padrão: `4096`)
+  são usados para modelos descobertos (sobrescreva se você conhece os limites do seu modelo).
 
 ## Onboarding
 
-1. Ensure AWS credentials are available on the **gateway host**:
+1. Certifique-se de que as credenciais AWS estão disponíveis no **host do gateway**:
 
 ```bash
 export AWS_ACCESS_KEY_ID="AKIA..."
 export AWS_SECRET_ACCESS_KEY="..."
 export AWS_REGION="us-east-1"
-# Optional:
+# Opcional:
 export AWS_SESSION_TOKEN="..."
 export AWS_PROFILE="your-profile"
-# Optional (Bedrock API key/bearer token):
+# Opcional (chave/bearer token da API Bedrock):
 export AWS_BEARER_TOKEN_BEDROCK="..."
 ```
 
-2. Add a Bedrock provider and model to your config (no `apiKey` required):
+2. Adicione um provider e modelo Bedrock à sua configuração (sem `apiKey` necessário):
 
 ```json5
 {
@@ -98,34 +98,34 @@ export AWS_BEARER_TOKEN_BEDROCK="..."
 }
 ```
 
-## EC2 Instance Roles
+## Roles de Instância EC2
 
-When running OpenCraft on an EC2 instance with an IAM role attached, the AWS SDK
-will automatically use the instance metadata service (IMDS) for authentication.
-However, OpenCraft's credential detection currently only checks for environment
-variables, not IMDS credentials.
+Ao executar o OpenCraft em uma instância EC2 com uma role IAM anexada, o AWS SDK
+usará automaticamente o serviço de metadados da instância (IMDS) para autenticação.
+No entanto, a detecção de credenciais do OpenCraft atualmente só verifica variáveis
+de ambiente, não credenciais IMDS.
 
-**Workaround:** Set `AWS_PROFILE=default` to signal that AWS credentials are
-available. The actual authentication still uses the instance role via IMDS.
+**Solução alternativa:** Defina `AWS_PROFILE=default` para sinalizar que credenciais AWS estão
+disponíveis. A autenticação real ainda usa a role da instância via IMDS.
 
 ```bash
-# Add to ~/.bashrc or your shell profile
+# Adicione ao ~/.bashrc ou seu perfil de shell
 export AWS_PROFILE=default
 export AWS_REGION=us-east-1
 ```
 
-**Required IAM permissions** for the EC2 instance role:
+**Permissões IAM necessárias** para a role da instância EC2:
 
 - `bedrock:InvokeModel`
 - `bedrock:InvokeModelWithResponseStream`
-- `bedrock:ListFoundationModels` (for automatic discovery)
+- `bedrock:ListFoundationModels` (para descoberta automática)
 
-Or attach the managed policy `AmazonBedrockFullAccess`.
+Ou anexe a política gerenciada `AmazonBedrockFullAccess`.
 
-## Quick setup (AWS path)
+## Configuração rápida (caminho AWS)
 
 ```bash
-# 1. Create IAM role and instance profile
+# 1. Criar role IAM e perfil de instância
 aws iam create-role --role-name EC2-Bedrock-Access \
   --assume-role-policy-document '{
     "Version": "2012-10-17",
@@ -144,33 +144,33 @@ aws iam add-role-to-instance-profile \
   --instance-profile-name EC2-Bedrock-Access \
   --role-name EC2-Bedrock-Access
 
-# 2. Attach to your EC2 instance
+# 2. Anexar à sua instância EC2
 aws ec2 associate-iam-instance-profile \
   --instance-id i-xxxxx \
   --iam-instance-profile Name=EC2-Bedrock-Access
 
-# 3. On the EC2 instance, enable discovery
+# 3. Na instância EC2, habilitar a descoberta
 opencraft config set models.bedrockDiscovery.enabled true
 opencraft config set models.bedrockDiscovery.region us-east-1
 
-# 4. Set the workaround env vars
+# 4. Definir as variáveis de ambiente da solução alternativa
 echo 'export AWS_PROFILE=default' >> ~/.bashrc
 echo 'export AWS_REGION=us-east-1' >> ~/.bashrc
 source ~/.bashrc
 
-# 5. Verify models are discovered
+# 5. Verificar se os modelos foram descobertos
 opencraft models list
 ```
 
-## Notes
+## Notas
 
-- Bedrock requires **model access** enabled in your AWS account/region.
-- Automatic discovery needs the `bedrock:ListFoundationModels` permission.
-- If you use profiles, set `AWS_PROFILE` on the gateway host.
-- OpenCraft surfaces the credential source in this order: `AWS_BEARER_TOKEN_BEDROCK`,
-  then `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`, then `AWS_PROFILE`, then the
-  default AWS SDK chain.
-- Reasoning support depends on the model; check the Bedrock model card for
-  current capabilities.
-- If you prefer a managed key flow, you can also place an OpenAI‑compatible
-  proxy in front of Bedrock and configure it as an OpenAI provider instead.
+- O Bedrock requer **acesso ao modelo** habilitado na sua conta/região AWS.
+- A descoberta automática precisa da permissão `bedrock:ListFoundationModels`.
+- Se você usa perfis, defina `AWS_PROFILE` no host do gateway.
+- O OpenCraft exibe a fonte de credencial nesta ordem: `AWS_BEARER_TOKEN_BEDROCK`,
+  depois `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`, depois `AWS_PROFILE`, depois a
+  cadeia padrão do AWS SDK.
+- O suporte a raciocínio depende do modelo; verifique a ficha do modelo Bedrock para
+  as capacidades atuais.
+- Se você preferir um fluxo de chave gerenciada, também pode colocar um proxy
+  compatível com OpenAI na frente do Bedrock e configurá-lo como um provider OpenAI.

@@ -1,61 +1,61 @@
 ---
-summary: "Sign in to GitHub Copilot from OpenCraft using the device flow"
+summary: "Faça login no GitHub Copilot a partir do OpenCraft usando o fluxo de dispositivo"
 read_when:
-  - You want to use GitHub Copilot as a model provider
-  - You need the `opencraft models auth login-github-copilot` flow
+  - Você quer usar o GitHub Copilot como provider de modelo
+  - Você precisa do fluxo `opencraft models auth login-github-copilot`
 title: "GitHub Copilot"
 ---
 
 # GitHub Copilot
 
-## What is GitHub Copilot?
+## O que é o GitHub Copilot?
 
-GitHub Copilot is GitHub's AI coding assistant. It provides access to Copilot
-models for your GitHub account and plan. OpenCraft can use Copilot as a model
-provider in two different ways.
+O GitHub Copilot é o assistente de codificação com IA do GitHub. Ele fornece acesso a modelos
+do Copilot para sua conta e plano do GitHub. O OpenCraft pode usar o Copilot como provider
+de modelo de duas formas diferentes.
 
-## Two ways to use Copilot in OpenCraft
+## Duas formas de usar o Copilot no OpenCraft
 
-### 1) Built-in GitHub Copilot provider (`github-copilot`)
+### 1) Provider GitHub Copilot integrado (`github-copilot`)
 
-Use the native device-login flow to obtain a GitHub token, then exchange it for
-Copilot API tokens when OpenCraft runs. This is the **default** and simplest path
-because it does not require VS Code.
+Use o fluxo nativo de login por dispositivo para obter um token do GitHub, depois troque-o por
+tokens da API do Copilot quando o OpenCraft executar. Este é o caminho **padrão** e mais simples
+porque não requer o VS Code.
 
-### 2) Copilot Proxy plugin (`copilot-proxy`)
+### 2) Plugin Copilot Proxy (`copilot-proxy`)
 
-Use the **Copilot Proxy** VS Code extension as a local bridge. OpenCraft talks to
-the proxy’s `/v1` endpoint and uses the model list you configure there. Choose
-this when you already run Copilot Proxy in VS Code or need to route through it.
-You must enable the plugin and keep the VS Code extension running.
+Use a extensão **Copilot Proxy** do VS Code como ponte local. O OpenCraft se comunica com
+o endpoint `/v1` do proxy e usa a lista de modelos que você configura lá. Escolha
+esta opção quando você já executa o Copilot Proxy no VS Code ou precisa rotear através dele.
+Você deve habilitar o plugin e manter a extensão do VS Code em execução.
 
-Use GitHub Copilot as a model provider (`github-copilot`). The login command runs
-the GitHub device flow, saves an auth profile, and updates your config to use that
-profile.
+Use o GitHub Copilot como provider de modelo (`github-copilot`). O comando de login executa
+o fluxo de dispositivo do GitHub, salva um perfil de autenticação e atualiza sua configuração para usar aquele
+perfil.
 
-## CLI setup
+## Configuração via CLI
 
 ```bash
 opencraft models auth login-github-copilot
 ```
 
-You'll be prompted to visit a URL and enter a one-time code. Keep the terminal
-open until it completes.
+Você será solicitado a visitar uma URL e inserir um código único. Mantenha o terminal
+aberto até que seja concluído.
 
-### Optional flags
+### Flags opcionais
 
 ```bash
 opencraft models auth login-github-copilot --profile-id github-copilot:work
 opencraft models auth login-github-copilot --yes
 ```
 
-## Set a default model
+## Definir um modelo padrão
 
 ```bash
 opencraft models set github-copilot/gpt-4o
 ```
 
-### Config snippet
+### Trecho de configuração
 
 ```json5
 {
@@ -63,10 +63,10 @@ opencraft models set github-copilot/gpt-4o
 }
 ```
 
-## Notes
+## Notas
 
-- Requires an interactive TTY; run it directly in a terminal.
-- Copilot model availability depends on your plan; if a model is rejected, try
-  another ID (for example `github-copilot/gpt-4.1`).
-- The login stores a GitHub token in the auth profile store and exchanges it for a
-  Copilot API token when OpenCraft runs.
+- Requer um TTY interativo; execute diretamente em um terminal.
+- A disponibilidade de modelos do Copilot depende do seu plano; se um modelo for rejeitado, tente
+  outro ID (por exemplo `github-copilot/gpt-4.1`).
+- O login armazena um token do GitHub no repositório de perfis de autenticação e o troca por um
+  token da API do Copilot quando o OpenCraft executa.

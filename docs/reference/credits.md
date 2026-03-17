@@ -1,28 +1,28 @@
 ---
-summary: "Project origin, contributors, and license."
+summary: "Origem do projeto, contribuidores e licença."
 read_when:
-  - You want the project backstory or contributor credits
-title: "Credits"
+  - Você quer a história do projeto ou créditos dos contribuidores
+title: "Créditos"
 ---
 
-## The name
+## O nome
 
-OpenCraft = CLAW + TARDIS, because every space lobster needs a time and space machine.
+OpenCraft = CLAW + TARDIS, porque toda lagosta espacial precisa de uma máquina do tempo e espaço.
 
-## Credits
+## Créditos
 
-- **Peter Steinberger** ([@steipete](https://x.com/steipete)) - Creator, lobster whisperer
-- **Mario Zechner** ([@badlogicc](https://x.com/badlogicgames)) - Pi creator, security pen tester
-- **Clawd** - The space lobster who demanded a better name
+- **Peter Steinberger** ([@steipete](https://x.com/steipete)) - Criador, domador de lagostas
+- **Mario Zechner** ([@badlogicc](https://x.com/badlogicgames)) - Criador do Pi, testador de penetração de segurança
+- **Clawd** - A lagosta espacial que exigiu um nome melhor
 
-## Core contributors
+## Contribuidores principais
 
-- **Maxim Vovshin** (@Hyaxia, [36747317+Hyaxia@users.noreply.github.com](mailto:36747317+Hyaxia@users.noreply.github.com)) - Blogwatcher skill
-- **Nacho Iacovino** (@nachoiacovino, [nacho.iacovino@gmail.com](mailto:nacho.iacovino@gmail.com)) - Location parsing (Telegram and WhatsApp)
-- **Vincent Koc** ([@vincentkoc](https://github.com/vincentkoc), [@vincent_koc](https://x.com/vincent_koc)) - Agents, Telemetry, Hooks, Security
+- **Maxim Vovshin** (@Hyaxia, [36747317+Hyaxia@users.noreply.github.com](mailto:36747317+Hyaxia@users.noreply.github.com)) - Skill Blogwatcher
+- **Nacho Iacovino** (@nachoiacovino, [nacho.iacovino@gmail.com](mailto:nacho.iacovino@gmail.com)) - Parsing de localização (Telegram e WhatsApp)
+- **Vincent Koc** ([@vincentkoc](https://github.com/vincentkoc), [@vincent_koc](https://x.com/vincent_koc)) - Agentes, Telemetria, Hooks, Segurança
 
-## License
+## Licença
 
-MIT - Free as a lobster in the ocean.
+MIT - Livre como uma lagosta no oceano.
 
-> "We are all just playing with our own prompts." (An AI, probably high on tokens)
+> "Estamos todos apenas brincando com nossos próprios prompts." (Uma IA, provavelmente chapada de tokens)

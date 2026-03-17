@@ -1,22 +1,22 @@
 ---
-summary: "CLI reference for `opencraft memory` (status/index/search)"
+summary: "Referência CLI para `opencraft memory` (status/index/search)"
 read_when:
-  - You want to index or search semantic memory
-  - You’re debugging memory availability or indexing
+  - Você quer indexar ou pesquisar memória semântica
+  - Você está depurando disponibilidade ou indexação de memória
 title: "memory"
 ---
 
 # `opencraft memory`
 
-Manage semantic memory indexing and search.
-Provided by the active memory plugin (default: `memory-core`; set `plugins.slots.memory = "none"` to disable).
+Gerenciar indexação e pesquisa de memória semântica.
+Fornecido pelo Plugin de memória ativo (padrão: `memory-core`; defina `plugins.slots.memory = "none"` para desativar).
 
-Related:
+Relacionado:
 
-- Memory concept: [Memory](/concepts/memory)
+- Conceito de memória: [Memory](/concepts/memory)
 - Plugins: [Plugins](/tools/plugin)
 
-## Examples
+## Exemplos
 
 ```bash
 opencraft memory status
@@ -31,36 +31,36 @@ opencraft memory status --agent main
 opencraft memory index --agent main --verbose
 ```
 
-## Options
+## Opções
 
-`memory status` and `memory index`:
+`memory status` e `memory index`:
 
-- `--agent <id>`: scope to a single agent. Without it, these commands run for each configured agent; if no agent list is configured, they fall back to the default agent.
-- `--verbose`: emit detailed logs during probes and indexing.
+- `--agent <id>`: escopo para um único agente. Sem isso, esses comandos executam para cada agente configurado; se nenhuma lista de agentes estiver configurada, eles usam o agente padrão.
+- `--verbose`: emitir logs detalhados durante sondagens e indexação.
 
 `memory status`:
 
-- `--deep`: probe vector + embedding availability.
-- `--index`: run a reindex if the store is dirty (implies `--deep`).
-- `--json`: print JSON output.
+- `--deep`: sondar disponibilidade de vetor + embedding.
+- `--index`: executar reindexação se o armazenamento estiver sujo (implica `--deep`).
+- `--json`: imprimir saída JSON.
 
 `memory index`:
 
-- `--force`: force a full reindex.
+- `--force`: forçar reindexação completa.
 
 `memory search`:
 
-- Query input: pass either positional `[query]` or `--query <text>`.
-- If both are provided, `--query` wins.
-- If neither is provided, the command exits with an error.
-- `--agent <id>`: scope to a single agent (default: the default agent).
-- `--max-results <n>`: limit the number of results returned.
-- `--min-score <n>`: filter out low-score matches.
-- `--json`: print JSON results.
+- Entrada de consulta: passe posicional `[query]` ou `--query <text>`.
+- Se ambos forem fornecidos, `--query` prevalece.
+- Se nenhum for fornecido, o comando encerra com erro.
+- `--agent <id>`: escopo para um único agente (padrão: o agente padrão).
+- `--max-results <n>`: limitar o número de resultados retornados.
+- `--min-score <n>`: filtrar correspondências de baixa pontuação.
+- `--json`: imprimir resultados JSON.
 
-Notes:
+Notas:
 
-- `memory index --verbose` prints per-phase details (provider, model, sources, batch activity).
-- `memory status` includes any extra paths configured via `memorySearch.extraPaths`.
-- If effectively active memory remote API key fields are configured as SecretRefs, the command resolves those values from the active gateway snapshot. If gateway is unavailable, the command fails fast.
-- Gateway version skew note: this command path requires a gateway that supports `secrets.resolve`; older gateways return an unknown-method error.
+- `memory index --verbose` imprime detalhes por fase (provedor, modelo, fontes, atividade em lote).
+- `memory status` inclui quaisquer caminhos extras configurados via `memorySearch.extraPaths`.
+- Se os campos de chave de API remota de memória ativa efetivamente configurados estiverem como SecretRefs, o comando resolve esses valores do snapshot do Gateway ativo. Se o Gateway estiver indisponível, o comando falha imediatamente.
+- Nota sobre diferença de versão do Gateway: este caminho de comando requer um Gateway que suporte `secrets.resolve`; Gateways mais antigos retornam erro de método desconhecido.

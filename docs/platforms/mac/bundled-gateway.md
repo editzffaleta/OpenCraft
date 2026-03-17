@@ -1,62 +1,62 @@
 ---
-summary: "Gateway runtime on macOS (external launchd service)"
+summary: "Tempo de execução do Gateway no macOS (serviço launchd externo)"
 read_when:
-  - Packaging OpenCraft.app
-  - Debugging the macOS gateway launchd service
-  - Installing the gateway CLI for macOS
-title: "Gateway on macOS"
+  - Empacotando o OpenCraft.app
+  - Depurando o serviço launchd do Gateway no macOS
+  - Instalando a CLI do Gateway para macOS
+title: "Gateway no macOS"
 ---
 
-# Gateway on macOS (external launchd)
+# Gateway no macOS (launchd externo)
 
-OpenCraft.app no longer bundles Node/Bun or the Gateway runtime. The macOS app
-expects an **external** `opencraft` CLI install, does not spawn the Gateway as a
-child process, and manages a per‑user launchd service to keep the Gateway
-running (or attaches to an existing local Gateway if one is already running).
+O OpenCraft.app não inclui mais Node/Bun ou o tempo de execução do Gateway. O aplicativo macOS
+espera uma instalação **externa** da CLI `opencraft`, não gera o Gateway como um
+processo filho, e gerencia um serviço launchd por usuário para manter o Gateway
+em execução (ou se conecta a um Gateway local existente se um já estiver em execução).
 
-## Install the CLI (required for local mode)
+## Instale a CLI (obrigatório para modo local)
 
-Node 24 is the default runtime on the Mac. Node 22 LTS, currently `22.16+`, still works for compatibility. Then install `opencraft` globally:
+Node 24 é o tempo de execução padrão no Mac. Node 22 LTS, atualmente `22.16+`, ainda funciona para compatibilidade. Depois instale `opencraft` globalmente:
 
 ```bash
-npm install -g opencraft@<version>
+npm install -g opencraft@<versão>
 ```
 
-The macOS app’s **Install CLI** button runs the same flow via npm/pnpm (bun not recommended for Gateway runtime).
+O botão **Install CLI** do aplicativo macOS executa o mesmo fluxo via npm/pnpm (bun não é recomendado para o tempo de execução do Gateway).
 
-## Launchd (Gateway as LaunchAgent)
+## Launchd (Gateway como LaunchAgent)
 
-Label:
+Rótulo:
 
-- `ai.opencraft.gateway` (or `ai.opencraft.<profile>`; legacy `com.opencraft.*` may remain)
+- `ai.opencraft.gateway` (ou `ai.opencraft.<profile>`; o legado `com.opencraft.*` pode permanecer)
 
-Plist location (per‑user):
+Localização do plist (por usuário):
 
 - `~/Library/LaunchAgents/ai.opencraft.gateway.plist`
-  (or `~/Library/LaunchAgents/ai.opencraft.<profile>.plist`)
+  (ou `~/Library/LaunchAgents/ai.opencraft.<profile>.plist`)
 
-Manager:
+Gerenciador:
 
-- The macOS app owns LaunchAgent install/update in Local mode.
-- The CLI can also install it: `opencraft gateway install`.
+- O aplicativo macOS possui a instalação/atualização do LaunchAgent no modo Local.
+- A CLI também pode instalá-lo: `opencraft gateway install`.
 
-Behavior:
+Comportamento:
 
-- “OpenCraft Active” enables/disables the LaunchAgent.
-- App quit does **not** stop the gateway (launchd keeps it alive).
-- If a Gateway is already running on the configured port, the app attaches to
-  it instead of starting a new one.
+- "OpenCraft Active" ativa/desativa o LaunchAgent.
+- Fechar o aplicativo **não** para o Gateway (o launchd o mantém ativo).
+- Se um Gateway já estiver em execução na porta configurada, o aplicativo se conecta a
+  ele em vez de iniciar um novo.
 
 Logging:
 
-- launchd stdout/err: `/tmp/editzffaleta/OpenCraft-gateway.log`
+- stdout/err do launchd: `/tmp/editzffaleta/OpenCraft-gateway.log`
 
-## Version compatibility
+## Compatibilidade de versão
 
-The macOS app checks the gateway version against its own version. If they’re
-incompatible, update the global CLI to match the app version.
+O aplicativo macOS verifica a versão do Gateway contra sua própria versão. Se forem
+incompatíveis, atualize a CLI global para corresponder à versão do aplicativo.
 
-## Smoke check
+## Verificação rápida
 
 ```bash
 opencraft --version
@@ -66,7 +66,7 @@ OPENCRAFT_SKIP_CANVAS_HOST=1 \
 opencraft gateway --port 18999 --bind loopback
 ```
 
-Then:
+Depois:
 
 ```bash
 opencraft gateway call health --url ws://127.0.0.1:18999 --timeout 3000

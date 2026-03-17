@@ -1,151 +1,151 @@
 ---
-summary: "Reference: provider-specific transcript sanitization and repair rules"
+summary: "Referência: regras de sanitização e reparo de transcrição específicas por provedor"
 read_when:
-  - You are debugging provider request rejections tied to transcript shape
-  - You are changing transcript sanitization or tool-call repair logic
-  - You are investigating tool-call id mismatches across providers
-title: "Transcript Hygiene"
+  - Você está depurando rejeições de requisições do provedor ligadas ao formato da transcrição
+  - Você está alterando lógica de sanitização de transcrição ou reparo de chamadas de ferramentas
+  - Você está investigando incompatibilidades de id de chamadas de ferramentas entre provedores
+title: "Higiene de Transcrição"
 ---
 
-# Transcript Hygiene (Provider Fixups)
+# Higiene de Transcrição (Correções por Provedor)
 
-This document describes **provider-specific fixes** applied to transcripts before a run
-(building model context). These are **in-memory** adjustments used to satisfy strict
-provider requirements. These hygiene steps do **not** rewrite the stored JSONL transcript
-on disk; however, a separate session-file repair pass may rewrite malformed JSONL files
-by dropping invalid lines before the session is loaded. When a repair occurs, the original
-file is backed up alongside the session file.
+Este documento descreve **correções específicas por provedor** aplicadas às transcrições antes de uma execução
+(construção do contexto do modelo). Estes são ajustes **em memória** usados para satisfazer requisitos
+estritos do provedor. Estas etapas de higiene **não** reescrevem a transcrição JSONL armazenada
+em disco; porém, uma passagem separada de reparo de arquivo de sessão pode reescrever arquivos JSONL malformados
+removendo linhas inválidas antes da sessão ser carregada. Quando um reparo ocorre, o arquivo
+original é salvo como backup junto ao arquivo de sessão.
 
-Scope includes:
+O escopo inclui:
 
-- Tool call id sanitization
-- Tool call input validation
-- Tool result pairing repair
-- Turn validation / ordering
-- Thought signature cleanup
-- Image payload sanitization
-- User-input provenance tagging (for inter-session routed prompts)
+- Sanitização de id de chamada de ferramenta
+- Validação de entrada de chamada de ferramenta
+- Reparo de pareamento de resultado de ferramenta
+- Validação / ordenação de turnos
+- Limpeza de assinatura de pensamento
+- Sanitização de payload de imagem
+- Marcação de proveniência de entrada de usuário (para prompts roteados entre sessões)
 
-If you need transcript storage details, see:
+Se você precisa de detalhes de armazenamento de transcrição, veja:
 
 - [/reference/session-management-compaction](/reference/session-management-compaction)
 
 ---
 
-## Where this runs
+## Onde isso executa
 
-All transcript hygiene is centralized in the embedded runner:
+Toda a higiene de transcrição está centralizada no runner embutido:
 
-- Policy selection: `src/agents/transcript-policy.ts`
-- Sanitization/repair application: `sanitizeSessionHistory` in `src/agents/pi-embedded-runner/google.ts`
+- Seleção de política: `src/agents/transcript-policy.ts`
+- Aplicação de sanitização/reparo: `sanitizeSessionHistory` em `src/agents/pi-embedded-runner/google.ts`
 
-The policy uses `provider`, `modelApi`, and `modelId` to decide what to apply.
+A política usa `provider`, `modelApi` e `modelId` para decidir o que aplicar.
 
-Separate from transcript hygiene, session files are repaired (if needed) before load:
+Separado da higiene de transcrição, arquivos de sessão são reparados (se necessário) antes do carregamento:
 
-- `repairSessionFileIfNeeded` in `src/agents/session-file-repair.ts`
-- Called from `run/attempt.ts` and `compact.ts` (embedded runner)
-
----
-
-## Global rule: image sanitization
-
-Image payloads are always sanitized to prevent provider-side rejection due to size
-limits (downscale/recompress oversized base64 images).
-
-This also helps control image-driven token pressure for vision-capable models.
-Lower max dimensions generally reduce token usage; higher dimensions preserve detail.
-
-Implementation:
-
-- `sanitizeSessionMessagesImages` in `src/agents/pi-embedded-helpers/images.ts`
-- `sanitizeContentBlocksImages` in `src/agents/tool-images.ts`
-- Max image side is configurable via `agents.defaults.imageMaxDimensionPx` (default: `1200`).
+- `repairSessionFileIfNeeded` em `src/agents/session-file-repair.ts`
+- Chamado de `run/attempt.ts` e `compact.ts` (runner embutido)
 
 ---
 
-## Global rule: malformed tool calls
+## Regra global: sanitização de imagem
 
-Assistant tool-call blocks that are missing both `input` and `arguments` are dropped
-before model context is built. This prevents provider rejections from partially
-persisted tool calls (for example, after a rate limit failure).
+Payloads de imagem são sempre sanitizados para prevenir rejeição do lado do provedor devido a limites
+de tamanho (redução de escala/recompressão de imagens base64 superdimensionadas).
 
-Implementation:
+Isso também ajuda a controlar a pressão de tokens causada por imagens para modelos com capacidade de visão.
+Dimensões máximas menores geralmente reduzem o uso de tokens; dimensões maiores preservam detalhes.
 
-- `sanitizeToolCallInputs` in `src/agents/session-transcript-repair.ts`
-- Applied in `sanitizeSessionHistory` in `src/agents/pi-embedded-runner/google.ts`
+Implementação:
+
+- `sanitizeSessionMessagesImages` em `src/agents/pi-embedded-helpers/images.ts`
+- `sanitizeContentBlocksImages` em `src/agents/tool-images.ts`
+- Lado máximo da imagem é configurável via `agents.defaults.imageMaxDimensionPx` (padrão: `1200`).
 
 ---
 
-## Global rule: inter-session input provenance
+## Regra global: chamadas de ferramenta malformadas
 
-When an agent sends a prompt into another session via `sessions_send` (including
-agent-to-agent reply/announce steps), OpenCraft persists the created user turn with:
+Blocos de chamada de ferramenta do assistente que estão faltando tanto `input` quanto `arguments` são descartados
+antes do contexto do modelo ser construído. Isso previne rejeições do provedor de chamadas de ferramenta
+parcialmente persistidas (por exemplo, após uma falha de rate limit).
+
+Implementação:
+
+- `sanitizeToolCallInputs` em `src/agents/session-transcript-repair.ts`
+- Aplicado em `sanitizeSessionHistory` em `src/agents/pi-embedded-runner/google.ts`
+
+---
+
+## Regra global: proveniência de entrada entre sessões
+
+Quando um agente envia um prompt para outra sessão via `sessions_send` (incluindo
+etapas de reply/announce agente-para-agente), o OpenCraft persiste o turno de usuário criado com:
 
 - `message.provenance.kind = "inter_session"`
 
-This metadata is written at transcript append time and does not change role
-(`role: "user"` remains for provider compatibility). Transcript readers can use
-this to avoid treating routed internal prompts as end-user-authored instructions.
+Estes metadados são escritos no momento de append da transcrição e não alteram a role
+(`role: "user"` permanece para compatibilidade com o provedor). Leitores de transcrição podem usar
+isso para evitar tratar prompts internos roteados como instruções autoradas pelo usuário final.
 
-During context rebuild, OpenCraft also prepends a short `[Inter-session message]`
-marker to those user turns in-memory so the model can distinguish them from
-external end-user instructions.
+Durante a reconstrução de contexto, o OpenCraft também prepende um breve marcador `[Inter-session message]`
+a esses turnos de usuário em memória para que o modelo possa distingui-los de
+instruções de usuário final externo.
 
 ---
 
-## Provider matrix (current behavior)
+## Matriz de provedores (comportamento atual)
 
 **OpenAI / OpenAI Codex**
 
-- Image sanitization only.
-- Drop orphaned reasoning signatures (standalone reasoning items without a following content block) for OpenAI Responses/Codex transcripts.
-- No tool call id sanitization.
-- No tool result pairing repair.
-- No turn validation or reordering.
-- No synthetic tool results.
-- No thought signature stripping.
+- Apenas sanitização de imagem.
+- Descarta assinaturas de raciocínio órfãs (itens de raciocínio independentes sem bloco de conteúdo seguinte) para transcrições OpenAI Responses/Codex.
+- Sem sanitização de id de chamada de ferramenta.
+- Sem reparo de pareamento de resultado de ferramenta.
+- Sem validação ou reordenação de turnos.
+- Sem resultados sintéticos de ferramenta.
+- Sem remoção de assinatura de pensamento.
 
 **Google (Generative AI / Gemini CLI / Antigravity)**
 
-- Tool call id sanitization: strict alphanumeric.
-- Tool result pairing repair and synthetic tool results.
-- Turn validation (Gemini-style turn alternation).
-- Google turn ordering fixup (prepend a tiny user bootstrap if history starts with assistant).
-- Antigravity Claude: normalize thinking signatures; drop unsigned thinking blocks.
+- Sanitização de id de chamada de ferramenta: alfanumérico estrito.
+- Reparo de pareamento de resultado de ferramenta e resultados sintéticos de ferramenta.
+- Validação de turnos (alternação de turnos estilo Gemini).
+- Correção de ordenação de turnos Google (prepend um pequeno bootstrap de usuário se o histórico começa com assistente).
+- Antigravity Claude: normalizar assinaturas de pensamento; descartar blocos de pensamento não assinados.
 
-**Anthropic / Minimax (Anthropic-compatible)**
+**Anthropic / Minimax (compatível com Anthropic)**
 
-- Tool result pairing repair and synthetic tool results.
-- Turn validation (merge consecutive user turns to satisfy strict alternation).
+- Reparo de pareamento de resultado de ferramenta e resultados sintéticos de ferramenta.
+- Validação de turnos (mesclar turnos consecutivos de usuário para satisfazer alternação estrita).
 
-**Mistral (including model-id based detection)**
+**Mistral (incluindo detecção baseada em model-id)**
 
-- Tool call id sanitization: strict9 (alphanumeric length 9).
+- Sanitização de id de chamada de ferramenta: strict9 (alfanumérico comprimento 9).
 
 **OpenRouter Gemini**
 
-- Thought signature cleanup: strip non-base64 `thought_signature` values (keep base64).
+- Limpeza de assinatura de pensamento: remover valores `thought_signature` não-base64 (manter base64).
 
-**Everything else**
+**Todos os outros**
 
-- Image sanitization only.
+- Apenas sanitização de imagem.
 
 ---
 
-## Historical behavior (pre-2026.1.22)
+## Comportamento histórico (pré-2026.1.22)
 
-Before the 2026.1.22 release, OpenCraft applied multiple layers of transcript hygiene:
+Antes do lançamento 2026.1.22, o OpenCraft aplicava múltiplas camadas de higiene de transcrição:
 
-- A **transcript-sanitize extension** ran on every context build and could:
-  - Repair tool use/result pairing.
-  - Sanitize tool call ids (including a non-strict mode that preserved `_`/`-`).
-- The runner also performed provider-specific sanitization, which duplicated work.
-- Additional mutations occurred outside the provider policy, including:
-  - Stripping `<final>` tags from assistant text before persistence.
-  - Dropping empty assistant error turns.
-  - Trimming assistant content after tool calls.
+- Uma **extensão de sanitização de transcrição** executava em cada construção de contexto e podia:
+  - Reparar pareamento de tool use/result.
+  - Sanitizar ids de chamada de ferramenta (incluindo um modo não estrito que preservava `_`/`-`).
+- O runner também realizava sanitização específica por provedor, que duplicava trabalho.
+- Mutações adicionais ocorriam fora da política de provedor, incluindo:
+  - Remoção de tags `<final>` do texto do assistente antes da persistência.
+  - Descarte de turnos de erro vazios do assistente.
+  - Corte do conteúdo do assistente após chamadas de ferramenta.
 
-This complexity caused cross-provider regressions (notably `openai-responses`
-`call_id|fc_id` pairing). The 2026.1.22 cleanup removed the extension, centralized
-logic in the runner, and made OpenAI **no-touch** beyond image sanitization.
+Essa complexidade causava regressões entre provedores (notavelmente pareamento `call_id|fc_id` do
+`openai-responses`). A limpeza de 2026.1.22 removeu a extensão, centralizou
+a lógica no runner e tornou o OpenAI **sem toque** além da sanitização de imagem.

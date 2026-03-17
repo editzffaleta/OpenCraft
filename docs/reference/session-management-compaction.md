@@ -1,25 +1,25 @@
 ---
-summary: "Deep dive: session store + transcripts, lifecycle, and (auto)compaction internals"
+summary: "Mergulho profundo: armazenamento de sessão + transcrições, ciclo de vida e internos de (auto)compactação"
 read_when:
-  - You need to debug session ids, transcript JSONL, or sessions.json fields
-  - You are changing auto-compaction behavior or adding “pre-compaction” housekeeping
-  - You want to implement memory flushes or silent system turns
-title: "Session Management Deep Dive"
+  - Você precisa depurar ids de sessão, transcrição JSONL ou campos de sessions.json
+  - Você está alterando o comportamento de auto-compactação ou adicionando limpeza "pré-compactação"
+  - Você quer implementar flushes de memória ou turnos silenciosos de sistema
+title: "Mergulho Profundo em Gerenciamento de Sessão"
 ---
 
-# Session Management & Compaction (Deep Dive)
+# Gerenciamento de Sessão & Compactação (Mergulho Profundo)
 
-This document explains how OpenCraft manages sessions end-to-end:
+Este documento explica como o OpenCraft gerencia sessões de ponta a ponta:
 
-- **Session routing** (how inbound messages map to a `sessionKey`)
-- **Session store** (`sessions.json`) and what it tracks
-- **Transcript persistence** (`*.jsonl`) and its structure
-- **Transcript hygiene** (provider-specific fixups before runs)
-- **Context limits** (context window vs tracked tokens)
-- **Compaction** (manual + auto-compaction) and where to hook pre-compaction work
-- **Silent housekeeping** (e.g. memory writes that shouldn’t produce user-visible output)
+- **Roteamento de sessão** (como mensagens recebidas mapeiam para um `sessionKey`)
+- **Armazenamento de sessão** (`sessions.json`) e o que ele rastreia
+- **Persistência de transcrição** (`*.jsonl`) e sua estrutura
+- **Higiene de transcrição** (correções específicas por provedor antes das execuções)
+- **Limites de contexto** (janela de contexto vs tokens rastreados)
+- **Compactação** (manual + auto-compactação) e onde conectar trabalho pré-compactação
+- **Limpeza silenciosa** (ex.: escritas de memória que não devem produzir saída visível ao usuário)
 
-If you want a higher-level overview first, start with:
+Se você quer uma visão geral de mais alto nível primeiro, comece com:
 
 - [/concepts/session](/concepts/session)
 - [/concepts/compaction](/concepts/compaction)
@@ -28,64 +28,64 @@ If you want a higher-level overview first, start with:
 
 ---
 
-## Source of truth: the Gateway
+## Fonte da verdade: o Gateway
 
-OpenCraft is designed around a single **Gateway process** that owns session state.
+O OpenCraft é projetado em torno de um único **processo Gateway** que é dono do estado da sessão.
 
-- UIs (macOS app, web Control UI, TUI) should query the Gateway for session lists and token counts.
-- In remote mode, session files are on the remote host; “checking your local Mac files” won’t reflect what the Gateway is using.
-
----
-
-## Two persistence layers
-
-OpenCraft persists sessions in two layers:
-
-1. **Session store (`sessions.json`)**
-   - Key/value map: `sessionKey -> SessionEntry`
-   - Small, mutable, safe to edit (or delete entries)
-   - Tracks session metadata (current session id, last activity, toggles, token counters, etc.)
-
-2. **Transcript (`<sessionId>.jsonl`)**
-   - Append-only transcript with tree structure (entries have `id` + `parentId`)
-   - Stores the actual conversation + tool calls + compaction summaries
-   - Used to rebuild the model context for future turns
+- UIs (app macOS, UI de Controle web, TUI) devem consultar o Gateway para listas de sessão e contagens de tokens.
+- No modo remoto, os arquivos de sessão estão no host remoto; "verificar seus arquivos locais do Mac" não refletirá o que o Gateway está usando.
 
 ---
 
-## On-disk locations
+## Duas camadas de persistência
 
-Per agent, on the Gateway host:
+O OpenCraft persiste sessões em duas camadas:
 
-- Store: `~/.opencraft/agents/<agentId>/sessions/sessions.json`
-- Transcripts: `~/.opencraft/agents/<agentId>/sessions/<sessionId>.jsonl`
-  - Telegram topic sessions: `.../<sessionId>-topic-<threadId>.jsonl`
+1. **Armazenamento de sessão (`sessions.json`)**
+   - Mapa chave/valor: `sessionKey -> SessionEntry`
+   - Pequeno, mutável, seguro para editar (ou excluir entradas)
+   - Rastreia metadados da sessão (id da sessão atual, última atividade, toggles, contadores de tokens, etc.)
 
-OpenCraft resolves these via `src/config/sessions.ts`.
+2. **Transcrição (`<sessionId>.jsonl`)**
+   - Transcrição append-only com estrutura de árvore (entradas têm `id` + `parentId`)
+   - Armazena a conversa real + chamadas de ferramentas + resumos de compactação
+   - Usada para reconstruir o contexto do modelo para turnos futuros
 
 ---
 
-## Store maintenance and disk controls
+## Localizações em disco
 
-Session persistence has automatic maintenance controls (`session.maintenance`) for `sessions.json` and transcript artifacts:
+Por agente, no host do Gateway:
 
-- `mode`: `warn` (default) or `enforce`
-- `pruneAfter`: stale-entry age cutoff (default `30d`)
-- `maxEntries`: cap entries in `sessions.json` (default `500`)
-- `rotateBytes`: rotate `sessions.json` when oversized (default `10mb`)
-- `resetArchiveRetention`: retention for `*.reset.<timestamp>` transcript archives (default: same as `pruneAfter`; `false` disables cleanup)
-- `maxDiskBytes`: optional sessions-directory budget
-- `highWaterBytes`: optional target after cleanup (default `80%` of `maxDiskBytes`)
+- Armazenamento: `~/.opencraft/agents/<agentId>/sessions/sessions.json`
+- Transcrições: `~/.opencraft/agents/<agentId>/sessions/<sessionId>.jsonl`
+  - Sessões de tópico Telegram: `.../<sessionId>-topic-<threadId>.jsonl`
 
-Enforcement order for disk budget cleanup (`mode: "enforce"`):
+O OpenCraft resolve estes via `src/config/sessions.ts`.
 
-1. Remove oldest archived or orphan transcript artifacts first.
-2. If still above the target, evict oldest session entries and their transcript files.
-3. Keep going until usage is at or below `highWaterBytes`.
+---
 
-In `mode: "warn"`, OpenCraft reports potential evictions but does not mutate the store/files.
+## Manutenção do armazenamento e controles de disco
 
-Run maintenance on demand:
+A persistência de sessão tem controles automáticos de manutenção (`session.maintenance`) para `sessions.json` e artefatos de transcrição:
+
+- `mode`: `warn` (padrão) ou `enforce`
+- `pruneAfter`: corte de idade de entrada obsoleta (padrão `30d`)
+- `maxEntries`: limite de entradas em `sessions.json` (padrão `500`)
+- `rotateBytes`: rotacionar `sessions.json` quando superdimensionado (padrão `10mb`)
+- `resetArchiveRetention`: retenção para arquivos de transcrição `*.reset.<timestamp>` (padrão: mesmo que `pruneAfter`; `false` desabilita limpeza)
+- `maxDiskBytes`: orçamento opcional do diretório de sessões
+- `highWaterBytes`: alvo opcional após limpeza (padrão `80%` de `maxDiskBytes`)
+
+Ordem de aplicação para limpeza de orçamento de disco (`mode: "enforce"`):
+
+1. Remover artefatos de transcrição arquivados ou órfãos mais antigos primeiro.
+2. Se ainda acima do alvo, despejar entradas de sessão mais antigas e seus arquivos de transcrição.
+3. Continuar até que o uso esteja em ou abaixo de `highWaterBytes`.
+
+No `mode: "warn"`, o OpenCraft reporta possíveis despejos mas não altera o armazenamento/arquivos.
+
+Execute manutenção sob demanda:
 
 ```bash
 opencraft sessions cleanup --dry-run
@@ -94,143 +94,143 @@ opencraft sessions cleanup --enforce
 
 ---
 
-## Cron sessions and run logs
+## Sessões Cron e logs de execução
 
-Isolated cron runs also create session entries/transcripts, and they have dedicated retention controls:
+Execuções isoladas de cron também criam entradas/transcrições de sessão, e têm controles de retenção dedicados:
 
-- `cron.sessionRetention` (default `24h`) prunes old isolated cron run sessions from the session store (`false` disables).
-- `cron.runLog.maxBytes` + `cron.runLog.keepLines` prune `~/.opencraft/cron/runs/<jobId>.jsonl` files (defaults: `2_000_000` bytes and `2000` lines).
+- `cron.sessionRetention` (padrão `24h`) poda sessões antigas de execução de cron isolada do armazenamento de sessão (`false` desabilita).
+- `cron.runLog.maxBytes` + `cron.runLog.keepLines` podam arquivos `~/.opencraft/cron/runs/<jobId>.jsonl` (padrões: `2_000_000` bytes e `2000` linhas).
 
 ---
 
-## Session keys (`sessionKey`)
+## Chaves de sessão (`sessionKey`)
 
-A `sessionKey` identifies _which conversation bucket_ you’re in (routing + isolation).
+Um `sessionKey` identifica _qual bucket de conversa_ você está (roteamento + isolamento).
 
-Common patterns:
+Padrões comuns:
 
-- Main/direct chat (per agent): `agent:<agentId>:<mainKey>` (default `main`)
-- Group: `agent:<agentId>:<channel>:group:<id>`
-- Room/channel (Discord/Slack): `agent:<agentId>:<channel>:channel:<id>` or `...:room:<id>`
+- Chat principal/direto (por agente): `agent:<agentId>:<mainKey>` (padrão `main`)
+- Grupo: `agent:<agentId>:<channel>:group:<id>`
+- Sala/canal (Discord/Slack): `agent:<agentId>:<channel>:channel:<id>` ou `...:room:<id>`
 - Cron: `cron:<job.id>`
-- Webhook: `hook:<uuid>` (unless overridden)
+- Webhook: `hook:<uuid>` (a menos que substituído)
 
-The canonical rules are documented at [/concepts/session](/concepts/session).
-
----
-
-## Session ids (`sessionId`)
-
-Each `sessionKey` points at a current `sessionId` (the transcript file that continues the conversation).
-
-Rules of thumb:
-
-- **Reset** (`/new`, `/reset`) creates a new `sessionId` for that `sessionKey`.
-- **Daily reset** (default 4:00 AM local time on the gateway host) creates a new `sessionId` on the next message after the reset boundary.
-- **Idle expiry** (`session.reset.idleMinutes` or legacy `session.idleMinutes`) creates a new `sessionId` when a message arrives after the idle window. When daily + idle are both configured, whichever expires first wins.
-- **Thread parent fork guard** (`session.parentForkMaxTokens`, default `100000`) skips parent transcript forking when the parent session is already too large; the new thread starts fresh. Set `0` to disable.
-
-Implementation detail: the decision happens in `initSessionState()` in `src/auto-reply/reply/session.ts`.
+As regras canônicas estão documentadas em [/concepts/session](/concepts/session).
 
 ---
 
-## Session store schema (`sessions.json`)
+## Ids de sessão (`sessionId`)
 
-The store’s value type is `SessionEntry` in `src/config/sessions.ts`.
+Cada `sessionKey` aponta para um `sessionId` atual (o arquivo de transcrição que continua a conversa).
 
-Key fields (not exhaustive):
+Regras gerais:
 
-- `sessionId`: current transcript id (filename is derived from this unless `sessionFile` is set)
-- `updatedAt`: last activity timestamp
-- `sessionFile`: optional explicit transcript path override
-- `chatType`: `direct | group | room` (helps UIs and send policy)
-- `provider`, `subject`, `room`, `space`, `displayName`: metadata for group/channel labeling
+- **Reset** (`/new`, `/reset`) cria um novo `sessionId` para aquele `sessionKey`.
+- **Reset diário** (padrão 4:00 da manhã, horário local no host do gateway) cria um novo `sessionId` na próxima mensagem após o limite de reset.
+- **Expiração por ociosidade** (`session.reset.idleMinutes` ou legado `session.idleMinutes`) cria um novo `sessionId` quando uma mensagem chega após a janela de ociosidade. Quando diário + ociosidade estão ambos configurados, quem expirar primeiro vence.
+- **Guarda de fork de thread pai** (`session.parentForkMaxTokens`, padrão `100000`) pula o fork de transcrição do pai quando a sessão pai já está muito grande; a nova thread começa limpa. Defina `0` para desabilitar.
+
+Detalhe de implementação: a decisão acontece em `initSessionState()` em `src/auto-reply/reply/session.ts`.
+
+---
+
+## Schema do armazenamento de sessão (`sessions.json`)
+
+O tipo de valor do armazenamento é `SessionEntry` em `src/config/sessions.ts`.
+
+Campos principais (não exaustivo):
+
+- `sessionId`: id da transcrição atual (nome do arquivo é derivado disso a menos que `sessionFile` esteja definido)
+- `updatedAt`: timestamp da última atividade
+- `sessionFile`: substituição opcional de caminho explícito de transcrição
+- `chatType`: `direct | group | room` (ajuda UIs e política de envio)
+- `provider`, `subject`, `room`, `space`, `displayName`: metadados para rotulagem de grupo/canal
 - Toggles:
   - `thinkingLevel`, `verboseLevel`, `reasoningLevel`, `elevatedLevel`
-  - `sendPolicy` (per-session override)
-- Model selection:
+  - `sendPolicy` (substituição por sessão)
+- Seleção de modelo:
   - `providerOverride`, `modelOverride`, `authProfileOverride`
-- Token counters (best-effort / provider-dependent):
+- Contadores de tokens (melhor esforço / dependente do provedor):
   - `inputTokens`, `outputTokens`, `totalTokens`, `contextTokens`
-- `compactionCount`: how often auto-compaction completed for this session key
-- `memoryFlushAt`: timestamp for the last pre-compaction memory flush
-- `memoryFlushCompactionCount`: compaction count when the last flush ran
+- `compactionCount`: quantas vezes a auto-compactação completou para esta chave de sessão
+- `memoryFlushAt`: timestamp do último flush de memória pré-compactação
+- `memoryFlushCompactionCount`: contagem de compactação quando o último flush executou
 
-The store is safe to edit, but the Gateway is the authority: it may rewrite or rehydrate entries as sessions run.
-
----
-
-## Transcript structure (`*.jsonl`)
-
-Transcripts are managed by `@mariozechner/pi-coding-agent`’s `SessionManager`.
-
-The file is JSONL:
-
-- First line: session header (`type: "session"`, includes `id`, `cwd`, `timestamp`, optional `parentSession`)
-- Then: session entries with `id` + `parentId` (tree)
-
-Notable entry types:
-
-- `message`: user/assistant/toolResult messages
-- `custom_message`: extension-injected messages that _do_ enter model context (can be hidden from UI)
-- `custom`: extension state that does _not_ enter model context
-- `compaction`: persisted compaction summary with `firstKeptEntryId` and `tokensBefore`
-- `branch_summary`: persisted summary when navigating a tree branch
-
-OpenCraft intentionally does **not** “fix up” transcripts; the Gateway uses `SessionManager` to read/write them.
+O armazenamento é seguro para editar, mas o Gateway é a autoridade: ele pode reescrever ou rehidratar entradas conforme as sessões executam.
 
 ---
 
-## Context windows vs tracked tokens
+## Estrutura da transcrição (`*.jsonl`)
 
-Two different concepts matter:
+As transcrições são gerenciadas pelo `SessionManager` do `@mariozechner/pi-coding-agent`.
 
-1. **Model context window**: hard cap per model (tokens visible to the model)
-2. **Session store counters**: rolling stats written into `sessions.json` (used for /status and dashboards)
+O arquivo é JSONL:
 
-If you’re tuning limits:
+- Primeira linha: cabeçalho da sessão (`type: "session"`, inclui `id`, `cwd`, `timestamp`, opcional `parentSession`)
+- Depois: entradas de sessão com `id` + `parentId` (árvore)
 
-- The context window comes from the model catalog (and can be overridden via config).
-- `contextTokens` in the store is a runtime estimate/reporting value; don’t treat it as a strict guarantee.
+Tipos de entrada notáveis:
 
-For more, see [/token-use](/reference/token-use).
+- `message`: mensagens de usuário/assistente/toolResult
+- `custom_message`: mensagens injetadas por extensão que _entram_ no contexto do modelo (podem ser ocultadas da UI)
+- `custom`: estado de extensão que _não_ entra no contexto do modelo
+- `compaction`: resumo de compactação persistido com `firstKeptEntryId` e `tokensBefore`
+- `branch_summary`: resumo persistido ao navegar um ramo da árvore
 
----
-
-## Compaction: what it is
-
-Compaction summarizes older conversation into a persisted `compaction` entry in the transcript and keeps recent messages intact.
-
-After compaction, future turns see:
-
-- The compaction summary
-- Messages after `firstKeptEntryId`
-
-Compaction is **persistent** (unlike session pruning). See [/concepts/session-pruning](/concepts/session-pruning).
+O OpenCraft intencionalmente **não** "corrige" transcrições; o Gateway usa o `SessionManager` para lê-las/escrevê-las.
 
 ---
 
-## When auto-compaction happens (Pi runtime)
+## Janelas de contexto vs tokens rastreados
 
-In the embedded Pi agent, auto-compaction triggers in two cases:
+Dois conceitos diferentes importam:
 
-1. **Overflow recovery**: the model returns a context overflow error → compact → retry.
-2. **Threshold maintenance**: after a successful turn, when:
+1. **Janela de contexto do modelo**: limite rígido por modelo (tokens visíveis ao modelo)
+2. **Contadores do armazenamento de sessão**: estatísticas contínuas escritas em `sessions.json` (usadas para /status e dashboards)
+
+Se você está ajustando limites:
+
+- A janela de contexto vem do catálogo de modelos (e pode ser substituída via config).
+- `contextTokens` no armazenamento é um valor de estimativa/relatório em tempo de execução; não trate como garantia estrita.
+
+Para mais, veja [/token-use](/reference/token-use).
+
+---
+
+## Compactação: o que é
+
+A compactação resume conversas mais antigas em uma entrada `compaction` persistida na transcrição e mantém mensagens recentes intactas.
+
+Após a compactação, turnos futuros veem:
+
+- O resumo da compactação
+- Mensagens após `firstKeptEntryId`
+
+A compactação é **persistente** (diferente da poda de sessão). Veja [/concepts/session-pruning](/concepts/session-pruning).
+
+---
+
+## Quando a auto-compactação acontece (runtime Pi)
+
+No agente Pi embutido, a auto-compactação é acionada em dois casos:
+
+1. **Recuperação de overflow**: o modelo retorna um erro de overflow de contexto → compactar → tentar novamente.
+2. **Manutenção de threshold**: após um turno bem-sucedido, quando:
 
 `contextTokens > contextWindow - reserveTokens`
 
-Where:
+Onde:
 
-- `contextWindow` is the model’s context window
-- `reserveTokens` is headroom reserved for prompts + the next model output
+- `contextWindow` é a janela de contexto do modelo
+- `reserveTokens` é a margem reservada para prompts + a próxima saída do modelo
 
-These are Pi runtime semantics (OpenCraft consumes the events, but Pi decides when to compact).
+Estas são semânticas do runtime Pi (o OpenCraft consome os eventos, mas o Pi decide quando compactar).
 
 ---
 
-## Compaction settings (`reserveTokens`, `keepRecentTokens`)
+## Configurações de compactação (`reserveTokens`, `keepRecentTokens`)
 
-Pi’s compaction settings live in Pi settings:
+As configurações de compactação do Pi vivem nas configurações do Pi:
 
 ```json5
 {
@@ -242,83 +242,83 @@ Pi’s compaction settings live in Pi settings:
 }
 ```
 
-OpenCraft also enforces a safety floor for embedded runs:
+O OpenCraft também aplica um piso de segurança para execuções embutidas:
 
-- If `compaction.reserveTokens < reserveTokensFloor`, OpenCraft bumps it.
-- Default floor is `20000` tokens.
-- Set `agents.defaults.compaction.reserveTokensFloor: 0` to disable the floor.
-- If it’s already higher, OpenCraft leaves it alone.
+- Se `compaction.reserveTokens < reserveTokensFloor`, o OpenCraft aumenta o valor.
+- O piso padrão é `20000` tokens.
+- Defina `agents.defaults.compaction.reserveTokensFloor: 0` para desabilitar o piso.
+- Se já estiver mais alto, o OpenCraft não altera.
 
-Why: leave enough headroom for multi-turn “housekeeping” (like memory writes) before compaction becomes unavoidable.
+Por quê: deixar margem suficiente para "limpeza" multi-turno (como escritas de memória) antes que a compactação se torne inevitável.
 
-Implementation: `ensurePiCompactionReserveTokens()` in `src/agents/pi-settings.ts`
-(called from `src/agents/pi-embedded-runner.ts`).
+Implementação: `ensurePiCompactionReserveTokens()` em `src/agents/pi-settings.ts`
+(chamado de `src/agents/pi-embedded-runner.ts`).
 
 ---
 
-## User-visible surfaces
+## Superfícies visíveis ao usuário
 
-You can observe compaction and session state via:
+Você pode observar a compactação e o estado da sessão via:
 
-- `/status` (in any chat session)
+- `/status` (em qualquer sessão de chat)
 - `opencraft status` (CLI)
 - `opencraft sessions` / `sessions --json`
-- Verbose mode: `🧹 Auto-compaction complete` + compaction count
+- Modo verboso: `🧹 Auto-compactação completa` + contagem de compactação
 
 ---
 
-## Silent housekeeping (`NO_REPLY`)
+## Limpeza silenciosa (`NO_REPLY`)
 
-OpenCraft supports “silent” turns for background tasks where the user should not see intermediate output.
+O OpenCraft suporta turnos "silenciosos" para tarefas em segundo plano onde o usuário não deve ver saída intermediária.
 
-Convention:
+Convenção:
 
-- The assistant starts its output with `NO_REPLY` to indicate “do not deliver a reply to the user”.
-- OpenCraft strips/suppresses this in the delivery layer.
+- O assistente inicia sua saída com `NO_REPLY` para indicar "não entregue uma resposta ao usuário".
+- O OpenCraft remove/suprime isso na camada de entrega.
 
-As of `2026.1.10`, OpenCraft also suppresses **draft/typing streaming** when a partial chunk begins with `NO_REPLY`, so silent operations don’t leak partial output mid-turn.
+A partir de `2026.1.10`, o OpenCraft também suprime **streaming de rascunho/digitação** quando um chunk parcial começa com `NO_REPLY`, para que operações silenciosas não vazem saída parcial no meio do turno.
 
 ---
 
-## Pre-compaction “memory flush” (implemented)
+## "Flush de memória" pré-compactação (implementado)
 
-Goal: before auto-compaction happens, run a silent agentic turn that writes durable
-state to disk (e.g. `memory/YYYY-MM-DD.md` in the agent workspace) so compaction can’t
-erase critical context.
+Objetivo: antes da auto-compactação acontecer, executar um turno agêntico silencioso que escreve estado
+durável em disco (ex.: `memory/YYYY-MM-DD.md` no workspace do agente) para que a compactação não possa
+apagar contexto crítico.
 
-OpenCraft uses the **pre-threshold flush** approach:
+O OpenCraft usa a abordagem de **flush pré-threshold**:
 
-1. Monitor session context usage.
-2. When it crosses a “soft threshold” (below Pi’s compaction threshold), run a silent
-   “write memory now” directive to the agent.
-3. Use `NO_REPLY` so the user sees nothing.
+1. Monitorar o uso de contexto da sessão.
+2. Quando cruza um "threshold suave" (abaixo do threshold de compactação do Pi), executar uma
+   diretiva silenciosa "escreva memória agora" para o agente.
+3. Usar `NO_REPLY` para que o usuário não veja nada.
 
 Config (`agents.defaults.compaction.memoryFlush`):
 
-- `enabled` (default: `true`)
-- `softThresholdTokens` (default: `4000`)
-- `prompt` (user message for the flush turn)
-- `systemPrompt` (extra system prompt appended for the flush turn)
+- `enabled` (padrão: `true`)
+- `softThresholdTokens` (padrão: `4000`)
+- `prompt` (mensagem do usuário para o turno de flush)
+- `systemPrompt` (prompt de sistema extra anexado para o turno de flush)
 
-Notes:
+Notas:
 
-- The default prompt/system prompt include a `NO_REPLY` hint to suppress delivery.
-- The flush runs once per compaction cycle (tracked in `sessions.json`).
-- The flush runs only for embedded Pi sessions (CLI backends skip it).
-- The flush is skipped when the session workspace is read-only (`workspaceAccess: "ro"` or `"none"`).
-- See [Memory](/concepts/memory) for the workspace file layout and write patterns.
+- O prompt/prompt de sistema padrão inclui uma dica `NO_REPLY` para suprimir entrega.
+- O flush executa uma vez por ciclo de compactação (rastreado em `sessions.json`).
+- O flush executa apenas para sessões Pi embutidas (backends CLI pulam).
+- O flush é pulado quando o workspace da sessão é somente leitura (`workspaceAccess: "ro"` ou `"none"`).
+- Veja [Memória](/concepts/memory) para o layout de arquivos do workspace e padrões de escrita.
 
-Pi also exposes a `session_before_compact` hook in the extension API, but OpenCraft’s
-flush logic lives on the Gateway side today.
+O Pi também expõe um hook `session_before_compact` na API de extensão, mas a
+lógica de flush do OpenCraft vive no lado do Gateway hoje.
 
 ---
 
-## Troubleshooting checklist
+## Lista de verificação de solução de problemas
 
-- Session key wrong? Start with [/concepts/session](/concepts/session) and confirm the `sessionKey` in `/status`.
-- Store vs transcript mismatch? Confirm the Gateway host and the store path from `opencraft status`.
-- Compaction spam? Check:
-  - model context window (too small)
-  - compaction settings (`reserveTokens` too high for the model window can cause earlier compaction)
-  - tool-result bloat: enable/tune session pruning
-- Silent turns leaking? Confirm the reply starts with `NO_REPLY` (exact token) and you’re on a build that includes the streaming suppression fix.
+- Chave de sessão errada? Comece com [/concepts/session](/concepts/session) e confirme o `sessionKey` em `/status`.
+- Divergência entre armazenamento e transcrição? Confirme o host do Gateway e o caminho do armazenamento via `opencraft status`.
+- Spam de compactação? Verifique:
+  - janela de contexto do modelo (muito pequena)
+  - configurações de compactação (`reserveTokens` muito alto para a janela do modelo pode causar compactação mais cedo)
+  - inchaço de resultados de ferramentas: habilite/ajuste a poda de sessão
+- Turnos silenciosos vazando? Confirme que a resposta começa com `NO_REPLY` (token exato) e que você está em uma build que inclui a correção de supressão de streaming.

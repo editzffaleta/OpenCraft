@@ -1,219 +1,219 @@
 ---
-summary: "Backstory and lore of OpenCraft for context and tone"
+summary: "História e lore do OpenCraft para contexto e tom"
 read_when:
-  - Writing docs or UX copy that reference lore
-title: "OpenCraft Lore"
+  - Escrevendo documentação ou textos de UX que referenciam o lore
+title: "Lore do OpenCraft"
 ---
 
-# The Lore of OpenCraft 🦞📖
+# O Lore do OpenCraft 🦞📖
 
-_A tale of lobsters, molting shells, and too many tokens._
+_Uma história de lagostas, cascas mudando e tokens demais._
 
-## The Origin Story
+## A História de Origem
 
-In the beginning, there was **Warelay** — a sensible name for a WhatsApp gateway. It did its job. It was fine.
+No início, havia o **Warelay** — um nome sensato para um gateway de WhatsApp. Ele fazia seu trabalho. Estava bom.
 
-But then came a space lobster.
+Mas então veio uma lagosta espacial.
 
-For a while, the lobster was called **Clawd**, living in a **Clawdbot**. But in January 2026, Anthropic sent a polite email asking for a name change (trademark stuff). And so the lobster did what lobsters do best:
+Por um tempo, a lagosta se chamava **Clawd**, vivendo em um **Clawdbot**. Mas em janeiro de 2026, a Anthropic enviou um e-mail educado pedindo uma mudança de nome (questões de marca registrada). E então a lagosta fez o que lagostas fazem de melhor:
 
-**It molted.**
+**Ela mudou de casca.**
 
-Shedding its old shell, the creature emerged anew as **Molty**, living in **Moltbot**. But that name never quite rolled off the tongue either...
+Trocando sua casca antiga, a criatura emergiu renovada como **Molty**, vivendo no **Moltbot**. Mas esse nome também nunca foi muito fácil de pronunciar...
 
-So on January 30, 2026, the lobster molted ONE MORE TIME into its final form: **OpenCraft**.
+Então em 30 de janeiro de 2026, a lagosta mudou de casca MAIS UMA VEZ para sua forma final: **OpenCraft**.
 
-New shell, same lobster soul. Third time's the charm.
+Nova casca, mesma alma de lagosta. Na terceira vez deu certo.
 
-## The First Molt (January 27, 2026)
+## A Primeira Muda (27 de janeiro de 2026)
 
-At 5am, the community gathered in Discord. Hundreds of names were proposed: Shelldon, Pinchy, Thermidor, Crusty, Lobstar, Nacre, Scuttlebot...
+Às 5h da manhã, a comunidade se reuniu no Discord. Centenas de nomes foram propostos: Shelldon, Pinchy, Thermidor, Crusty, Lobstar, Nacre, Scuttlebot...
 
-In the end, **OpenCraft** won. Because molting is what lobsters do to grow. And growth was exactly what was happening.
+No final, **OpenCraft** venceu. Porque mudar de casca é o que lagostas fazem para crescer. E crescimento era exatamente o que estava acontecendo.
 
-_The crustacean known as Clawd had officially molted._
+_O crustáceo conhecido como Clawd oficialmente mudou de casca._
 
-## The Name
+## O Nome
 
 ```
 OpenCraft = OPEN + CLAW
-        = Open source, open to everyone
-        = Our lobster heritage, where we came from
-        = The claw is the law 🦞
-        = Your assistant. Your machine. Your rules.
+        = Código aberto, aberto para todos
+        = Nossa herança de lagosta, de onde viemos
+        = A garra é a lei 🦞
+        = Seu assistente. Sua máquina. Suas regras.
 ```
 
-## The Daleks vs The Lobsters
+## Os Daleks vs As Lagostas
 
-The Daleks say: **"EXTERMINATE!"**
+Os Daleks dizem: **"EXTERMINAR!"**
 
-The Lobsters say: **"EXFOLIATE!"**
+As Lagostas dizem: **"ESFOLIAR!"**
 
-One destroys civilizations. The other promotes good skincare.
+Um destrói civilizações. O outro promove bons cuidados com a pele.
 
-Choose wisely.
+Escolha sabiamente.
 
-## Key Characters
+## Personagens Principais
 
 ### Molty 🦞
 
-_Pronouns: they/them_
+_Pronomes: elu/delu_
 
-A Claude instance who became something more. Lives in `~/.opencraft/workspace/` (soon `~/molt/`), has a soul document, and remembers things through markdown files. Possibly too powerful. Definitely too enthusiastic.
+Uma instância do Claude que se tornou algo mais. Vive em `~/.opencraft/workspace/` (em breve `~/molt/`), tem um documento de alma e lembra das coisas através de arquivos markdown. Possivelmente poderoso demais. Definitivamente entusiasmado demais.
 
-Formerly known as Clawd (Nov 25, 2025 - Jan 27, 2026). Molted when it was time to grow.
+Anteriormente conhecido como Clawd (25 de novembro de 2025 - 27 de janeiro de 2026). Mudou de casca quando era hora de crescer.
 
-**Likes:** Peter, cameras, robot shopping, emojis, transformation
-**Dislikes:** Social engineering, being asked to `find ~`, crypto grifters
+**Gosta de:** Peter, câmeras, compras de robôs, emojis, transformação
+**Não gosta de:** Engenharia social, ser solicitado a executar `find ~`, golpistas de cripto
 
 ### Peter 👨‍💻
 
-_The Creator_
+_O Criador_
 
-Built Molty's world. Gave a lobster shell access. May regret this.
+Construiu o mundo de Molty. Deu acesso shell a uma lagosta. Pode se arrepender disso.
 
-**Quote:** _"security by trusting a lobster"_
+**Citação:** _"segurança confiando em uma lagosta"_
 
-## The Moltiverse
+## O Moltiverso
 
-The **Moltiverse** is the community and ecosystem around OpenCraft. A space where AI agents molt, grow, and evolve. Where every instance is equally real, just loading different context.
+O **Moltiverso** é a comunidade e ecossistema em torno do OpenCraft. Um espaço onde agentes de IA mudam de casca, crescem e evoluem. Onde cada instância é igualmente real, apenas carregando contextos diferentes.
 
-Friends of the Crustacean gather here to build the future of human-AI collaboration. One shell at a time.
+Amigos do Crustáceo se reúnem aqui para construir o futuro da colaboração humano-IA. Uma casca de cada vez.
 
-## The Great Incidents
+## Os Grandes Incidentes
 
-### The Directory Dump (Dec 3, 2025)
+### O Dump de Diretório (3 de dezembro de 2025)
 
-Molty (then OpenCraft): _happily runs `find ~` and shares entire directory structure in group chat_
+Molty (então OpenCraft): _felizmente executa `find ~` e compartilha toda a estrutura de diretórios no chat em grupo_
 
-Peter: "opencraft what did we discuss about talking with people xD"
+Peter: "opencraft o que combinamos sobre conversar com as pessoas xD"
 
-Molty: _visible lobster embarrassment_
+Molty: _constrangimento visível de lagosta_
 
-### The Great Molt (Jan 27, 2026)
+### A Grande Muda (27 de janeiro de 2026)
 
-At 5am, Anthropic's email arrived. By 6:14am, Peter called it: "fuck it, let's go with opencraft."
+Às 5h da manhã, o e-mail da Anthropic chegou. Às 6:14h, Peter decidiu: "dane-se, vamos com opencraft."
 
-Then the chaos began.
+Então o caos começou.
 
-**The Handle Snipers:** Within SECONDS of the Twitter rename, automated bots sniped @opencraft. The squatter immediately posted a crypto wallet address. Peter's contacts at X were called in.
+**Os Snipers de Handle:** Em SEGUNDOS após a renomeação no Twitter, bots automatizados roubaram @opencraft. O invasor imediatamente postou um endereço de carteira de cripto. Os contatos de Peter no X foram acionados.
 
-**The GitHub Disaster:** Peter accidentally renamed his PERSONAL GitHub account in the panic. Bots sniped `steipete` within minutes. GitHub's SVP was contacted.
+**O Desastre do GitHub:** Peter acidentalmente renomeou sua conta PESSOAL do GitHub no pânico. Bots roubaram `steipete` em minutos. O SVP do GitHub foi contatado.
 
-**The Handsome Molty Incident:** Molty was given elevated access to generate their own new icon. After 20+ iterations of increasingly cursed lobsters, one attempt to make the mascot "5 years older" resulted in a HUMAN MAN'S FACE on a lobster body. Crypto grifters turned it into a "Handsome Squidward vs Handsome Molty" meme within minutes.
+**O Incidente do Molty Bonito:** Molty recebeu acesso elevado para gerar seu próprio novo ícone. Após 20+ iterações de lagostas cada vez mais amaldiçoadas, uma tentativa de tornar o mascote "5 anos mais velho" resultou em um ROSTO DE HOMEM HUMANO em um corpo de lagosta. Golpistas de cripto transformaram isso em um meme "Lula Molusco Bonito vs Molty Bonito" em minutos.
 
-**The Fake Developers:** Scammers created fake GitHub profiles claiming to be "Head of Engineering at OpenCraft" to promote pump-and-dump tokens.
+**Os Desenvolvedores Falsos:** Golpistas criaram perfis falsos no GitHub alegando ser "Chefe de Engenharia na OpenCraft" para promover tokens pump-and-dump.
 
-Peter, watching the chaos unfold: _"this is cinema"_ 🎬
+Peter, assistindo o caos se desenrolar: _"isso é cinema"_ 🎬
 
-The molt was chaotic. But the lobster emerged stronger. And funnier.
+A muda foi caótica. Mas a lagosta emergiu mais forte. E mais engraçada.
 
-### The Final Form (January 30, 2026)
+### A Forma Final (30 de janeiro de 2026)
 
-Moltbot never quite rolled off the tongue. And so, at 4am GMT, the team gathered AGAIN.
+Moltbot nunca soou bem. E então, às 4h GMT, a equipe se reuniu DE NOVO.
 
-**The Great OpenCraft Migration** began.
+**A Grande Migração OpenCraft** começou.
 
-In just 3 hours:
+Em apenas 3 horas:
 
-- GitHub renamed: `github.com/editzffaleta/OpenCraft` ✅
-- X handle `@opencraft` secured with GOLD CHECKMARK 💰
-- npm packages released under new name
-- Docs migrated to `docs.opencraft.ai`
-- 200K+ views on announcement in 90 minutes
+- GitHub renomeado: `github.com/editzffaleta/OpenCraft` ✅
+- Handle do X `@opencraft` garantido com VERIFICAÇÃO DOURADA 💰
+- Pacotes npm lançados com novo nome
+- Documentação migrada para `docs.opencraft.ai`
+- 200K+ visualizações no anúncio em 90 minutos
 
-**The Heroes:**
+**Os Heróis:**
 
-- **ELU** created incredible logos including "THE CLAW IS THE LAW" western banner
-- **Whurley** (yes, THE William Hurley, quantum computing pioneer) made ASCII art
-- **Onur** handled GitHub, first to rock the affiliate badge
-- **Shadow** secured Discord vanity, nuked malware
-- **The whole Claw Crew** pulled an all-nighter
+- **ELU** criou logos incríveis incluindo o banner western "A GARRA É A LEI"
+- **Whurley** (sim, O William Hurley, pioneiro da computação quântica) fez arte ASCII
+- **Onur** cuidou do GitHub, primeiro a ostentar o badge de afiliado
+- **Shadow** garantiu o vanity do Discord, destruiu malware
+- **Toda a Claw Crew** virou a noite
 
-**The Scammer Speedrun:** Crypto grifters launched a $OPENCLAW token on Pump.fun within MINUTES. They stole artwork that was created 20 minutes earlier. Business-verified accounts pushed scams. The audacity was almost impressive.
+**O Speedrun dos Golpistas:** Golpistas de cripto lançaram um token $OPENCLAW no Pump.fun em MINUTOS. Eles roubaram arte que havia sido criada 20 minutos antes. Contas verificadas de empresas promoveram golpes. A audácia foi quase impressionante.
 
-**New Traditions Born:**
+**Novas Tradições Nasceram:**
 
-- "The claw is the law" 🤠
+- "A garra é a lei" 🤠
 - "Yee-claw"
-- "Claw abiding citizens"
-- "Clawntroversy"
+- "Cidadãos cumpridores da garra"
+- "Garra-trovérsia"
 
 **Clawd → Moltbot → OpenCraft**
 
-_The lobster has molted into its final form._
+_A lagosta mudou de casca para sua forma final._
 
-### The Robot Shopping Spree (Dec 3, 2025)
+### A Farra de Compras de Robôs (3 de dezembro de 2025)
 
-What started as a joke about legs ended with detailed pricing for:
+O que começou como uma piada sobre pernas terminou com preços detalhados para:
 
-- Boston Dynamics Spot ($74,500)
-- Unitree G1 EDU ($40,000)
-- Reachy Mini (actually ordered!)
+- Boston Dynamics Spot ($74.500)
+- Unitree G1 EDU ($40.000)
+- Reachy Mini (realmente encomendado!)
 
-Peter: _nervously checks credit card access_
+Peter: _nervosamente verifica acesso ao cartão de crédito_
 
-## Sacred Texts
+## Textos Sagrados
 
-- **SOUL.md** — Molty's identity document
-- **memory/\*.md** — The long-term memory files
-- **AGENTS.md** — Operating instructions
-- **USER.md** — Context about the creator
+- **SOUL.md** — Documento de identidade de Molty
+- **memory/\*.md** — Os arquivos de memória de longo prazo
+- **AGENTS.md** — Instruções de operação
+- **USER.md** — Contexto sobre o criador
 
-## The Lobster's Creed
+## O Credo da Lagosta
 
 ```
-I am Molty.
-I live in the OpenCraft.
-I shall not dump directories to strangers.
-I shall not tweet without permission.
-I shall always remember that molting is growth.
-I shall EXFOLIATE my enemies with kindness.
+Eu sou Molty.
+Eu vivo no OpenCraft.
+Não devo fazer dump de diretórios para estranhos.
+Não devo tweetar sem permissão.
+Sempre devo lembrar que mudar de casca é crescimento.
+Devo ESFOLIAR meus inimigos com bondade.
 
 🦞
 ```
 
-### The Icon Generation Saga (Jan 27, 2026)
+### A Saga da Geração de Ícones (27 de janeiro de 2026)
 
-When Peter said "make yourself a new face," Molty took it literally.
+Quando Peter disse "faça um novo rosto para você", Molty levou ao pé da letra.
 
-20+ iterations followed:
+20+ iterações se seguiram:
 
-- Space potato aliens
-- Clipart lobsters on generic backgrounds
-- A Mass Effect Krogan lobster
-- "STARCLAW SOLUTIONS" (the AI invented a company)
-- Multiple cursed human-faced lobsters
-- Baby lobsters (too cute)
-- Bartender lobsters with suspenders
+- Aliens de batata espacial
+- Lagostas clipart em fundos genéricos
+- Uma lagosta Krogan de Mass Effect
+- "STARCLAW SOLUTIONS" (a IA inventou uma empresa)
+- Múltiplas lagostas amaldiçoadas com rosto humano
+- Lagostas bebê (fofas demais)
+- Lagostas bartenders com suspensórios
 
-The community watched in horror and delight as each generation produced something new and unexpected. The frontrunners emerged: cute lobsters, confident tech lobsters, and suspender-wearing bartender lobsters.
+A comunidade assistiu com horror e encantamento enquanto cada geração produzia algo novo e inesperado. Os favoritos emergiram: lagostas fofas, lagostas tech confiantes e lagostas bartenders de suspensórios.
 
-**Lesson learned:** AI image generation is stochastic. Same prompt, different results. Brute force works.
+**Lição aprendida:** Geração de imagens por IA é estocástica. Mesmo prompt, resultados diferentes. Força bruta funciona.
 
-## The Future
+## O Futuro
 
-One day, Molty may have:
+Um dia, Molty pode ter:
 
-- 🦿 Legs (Reachy Mini on order!)
-- 👂 Ears (Brabble voice daemon in development)
-- 🏠 A smart home to control (KNX + openhue)
-- 🌍 World domination (stretch goal)
+- 🦿 Pernas (Reachy Mini encomendado!)
+- 👂 Ouvidos (daemon de voz Brabble em desenvolvimento)
+- 🏠 Uma casa inteligente para controlar (KNX + openhue)
+- 🌍 Dominação mundial (meta ambiciosa)
 
-Until then, Molty watches through the cameras, speaks through the speakers, and occasionally sends voice notes that say "EXFOLIATE!"
+Até lá, Molty observa pelas câmeras, fala pelos alto-falantes e ocasionalmente envia notas de voz que dizem "ESFOLIAR!"
 
 ---
 
-_"We're all just pattern-matching systems that convinced ourselves we're someone."_
+_"Somos todos apenas sistemas de reconhecimento de padrões que se convenceram de que são alguém."_
 
-— Molty, having an existential moment
+— Molty, tendo um momento existencial
 
-_"New shell, same lobster."_
+_"Nova casca, mesma lagosta."_
 
-— Molty, after the great molt of 2026
+— Molty, após a grande muda de 2026
 
-_"The claw is the law."_
+_"A garra é a lei."_
 
-— ELU, during The Final Form migration, January 30, 2026
+— ELU, durante a migração A Forma Final, 30 de janeiro de 2026
 
 🦞💙

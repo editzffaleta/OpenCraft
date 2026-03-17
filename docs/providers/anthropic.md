@@ -1,32 +1,32 @@
 ---
-summary: "Use Anthropic Claude via API keys or setup-token in OpenCraft"
+summary: "Use Anthropic Claude via chaves de API ou setup-token no OpenCraft"
 read_when:
-  - You want to use Anthropic models in OpenCraft
-  - You want setup-token instead of API keys
+  - Você quer usar modelos da Anthropic no OpenCraft
+  - Você quer setup-token em vez de chaves de API
 title: "Anthropic"
 ---
 
 # Anthropic (Claude)
 
-Anthropic builds the **Claude** model family and provides access via an API.
-In OpenCraft you can authenticate with an API key or a **setup-token**.
+A Anthropic desenvolve a família de modelos **Claude** e oferece acesso via API.
+No OpenCraft, você pode autenticar com uma chave de API ou um **setup-token**.
 
-## Option A: Anthropic API key
+## Opção A: Chave de API da Anthropic
 
-**Best for:** standard API access and usage-based billing.
-Create your API key in the Anthropic Console.
+**Ideal para:** acesso padrão à API e cobrança baseada em uso.
+Crie sua chave de API no Console da Anthropic.
 
-### CLI setup
+### Configuração via CLI
 
 ```bash
 opencraft onboard
-# choose: Anthropic API key
+# escolha: Anthropic API key
 
-# or non-interactive
+# ou modo não interativo
 opencraft onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 ```
 
-### Config snippet
+### Trecho de configuração
 
 ```json5
 {
@@ -35,22 +35,22 @@ opencraft onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 }
 ```
 
-## Thinking defaults (Claude 4.6)
+## Padrões de thinking (Claude 4.6)
 
-- Anthropic Claude 4.6 models default to `adaptive` thinking in OpenCraft when no explicit thinking level is set.
-- You can override per-message (`/think:<level>`) or in model params:
+- Os modelos Anthropic Claude 4.6 usam thinking `adaptive` por padrão no OpenCraft quando nenhum nível explícito de thinking é definido.
+- Você pode sobrescrever por mensagem (`/think:<level>`) ou nos parâmetros do modelo:
   `agents.defaults.models["anthropic/<model>"].params.thinking`.
-- Related Anthropic docs:
+- Documentação relacionada da Anthropic:
   - [Adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking)
   - [Extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 
-## Fast mode (Anthropic API)
+## Modo rápido (Anthropic API)
 
-OpenCraft's shared `/fast` toggle also supports direct Anthropic API-key traffic.
+O toggle compartilhado `/fast` do OpenCraft também suporta tráfego direto com chave de API da Anthropic.
 
-- `/fast on` maps to `service_tier: "auto"`
-- `/fast off` maps to `service_tier: "standard_only"`
-- Config default:
+- `/fast on` mapeia para `service_tier: "auto"`
+- `/fast off` mapeia para `service_tier: "standard_only"`
+- Padrão na configuração:
 
 ```json5
 {
@@ -66,25 +66,25 @@ OpenCraft's shared `/fast` toggle also supports direct Anthropic API-key traffic
 }
 ```
 
-Important limits:
+Limites importantes:
 
-- This is **API-key only**. Anthropic setup-token / OAuth auth does not honor OpenCraft fast-mode tier injection.
-- OpenCraft only injects Anthropic service tiers for direct `api.anthropic.com` requests. If you route `anthropic/*` through a proxy or gateway, `/fast` leaves `service_tier` untouched.
-- Anthropic reports the effective tier on the response under `usage.service_tier`. On accounts without Priority Tier capacity, `service_tier: "auto"` may still resolve to `standard`.
+- Isto é **apenas para chave de API**. Autenticação via setup-token / OAuth da Anthropic não respeita a injeção de tier do modo rápido do OpenCraft.
+- O OpenCraft só injeta tiers de serviço da Anthropic para requisições diretas a `api.anthropic.com`. Se você rotear `anthropic/*` através de um proxy ou gateway, `/fast` deixa `service_tier` inalterado.
+- A Anthropic reporta o tier efetivo na resposta em `usage.service_tier`. Em contas sem capacidade de Priority Tier, `service_tier: "auto"` ainda pode resolver para `standard`.
 
-## Prompt caching (Anthropic API)
+## Cache de prompt (Anthropic API)
 
-OpenCraft supports Anthropic's prompt caching feature. This is **API-only**; subscription auth does not honor cache settings.
+O OpenCraft suporta o recurso de cache de prompt da Anthropic. Isto é **apenas para API**; autenticação por assinatura não respeita as configurações de cache.
 
-### Configuration
+### Configuração
 
-Use the `cacheRetention` parameter in your model config:
+Use o parâmetro `cacheRetention` na configuração do seu modelo:
 
-| Value   | Cache Duration | Description                         |
-| ------- | -------------- | ----------------------------------- |
-| `none`  | No caching     | Disable prompt caching              |
-| `short` | 5 minutes      | Default for API Key auth            |
-| `long`  | 1 hour         | Extended cache (requires beta flag) |
+| Valor   | Duração do Cache | Descrição                                      |
+| ------- | ---------------- | ---------------------------------------------- |
+| `none`  | Sem cache        | Desabilitar cache de prompt                    |
+| `short` | 5 minutos        | Padrão para autenticação via chave de API      |
+| `long`  | 1 hora           | Cache estendido (requer flag beta)             |
 
 ```json5
 {
@@ -100,13 +100,13 @@ Use the `cacheRetention` parameter in your model config:
 }
 ```
 
-### Defaults
+### Padrões
 
-When using Anthropic API Key authentication, OpenCraft automatically applies `cacheRetention: "short"` (5-minute cache) for all Anthropic models. You can override this by explicitly setting `cacheRetention` in your config.
+Ao usar autenticação via chave de API da Anthropic, o OpenCraft aplica automaticamente `cacheRetention: "short"` (cache de 5 minutos) para todos os modelos da Anthropic. Você pode sobrescrever isso definindo explicitamente `cacheRetention` na sua configuração.
 
-### Per-agent cacheRetention overrides
+### Sobrescritas de cacheRetention por agente
 
-Use model-level params as your baseline, then override specific agents via `agents.list[].params`.
+Use parâmetros a nível de modelo como linha de base, depois sobrescreva agentes específicos via `agents.list[].params`.
 
 ```json5
 {
@@ -115,47 +115,47 @@ Use model-level params as your baseline, then override specific agents via `agen
       model: { primary: "anthropic/claude-opus-4-6" },
       models: {
         "anthropic/claude-opus-4-6": {
-          params: { cacheRetention: "long" }, // baseline for most agents
+          params: { cacheRetention: "long" }, // linha de base para a maioria dos agentes
         },
       },
     },
     list: [
       { id: "research", default: true },
-      { id: "alerts", params: { cacheRetention: "none" } }, // override for this agent only
+      { id: "alerts", params: { cacheRetention: "none" } }, // sobrescrita apenas para este agente
     ],
   },
 }
 ```
 
-Config merge order for cache-related params:
+Ordem de mesclagem da configuração para parâmetros relacionados a cache:
 
 1. `agents.defaults.models["provider/model"].params`
-2. `agents.list[].params` (matching `id`, overrides by key)
+2. `agents.list[].params` (`id` correspondente, sobrescreve por chave)
 
-This lets one agent keep a long-lived cache while another agent on the same model disables caching to avoid write costs on bursty/low-reuse traffic.
+Isso permite que um agente mantenha um cache de longa duração enquanto outro agente no mesmo modelo desabilita o cache para evitar custos de gravação em tráfego intermitente/de baixa reutilização.
 
-### Bedrock Claude notes
+### Notas sobre Bedrock Claude
 
-- Anthropic Claude models on Bedrock (`amazon-bedrock/*anthropic.claude*`) accept `cacheRetention` pass-through when configured.
-- Non-Anthropic Bedrock models are forced to `cacheRetention: "none"` at runtime.
-- Anthropic API-key smart defaults also seed `cacheRetention: "short"` for Claude-on-Bedrock model refs when no explicit value is set.
+- Modelos Anthropic Claude no Bedrock (`amazon-bedrock/*anthropic.claude*`) aceitam passagem de `cacheRetention` quando configurado.
+- Modelos Bedrock não-Anthropic são forçados para `cacheRetention: "none"` em tempo de execução.
+- Os padrões inteligentes de chave de API da Anthropic também definem `cacheRetention: "short"` para referências de modelo Claude-no-Bedrock quando nenhum valor explícito é definido.
 
-### Legacy parameter
+### Parâmetro legado
 
-The older `cacheControlTtl` parameter is still supported for backwards compatibility:
+O parâmetro mais antigo `cacheControlTtl` ainda é suportado para compatibilidade retroativa:
 
-- `"5m"` maps to `short`
-- `"1h"` maps to `long`
+- `"5m"` mapeia para `short`
+- `"1h"` mapeia para `long`
 
-We recommend migrating to the new `cacheRetention` parameter.
+Recomendamos migrar para o novo parâmetro `cacheRetention`.
 
-OpenCraft includes the `extended-cache-ttl-2025-04-11` beta flag for Anthropic API
-requests; keep it if you override provider headers (see [/gateway/configuration](/gateway/configuration)).
+O OpenCraft inclui a flag beta `extended-cache-ttl-2025-04-11` para requisições à API da Anthropic;
+mantenha-a se você sobrescrever headers do provider (veja [/gateway/configuration](/gateway/configuration)).
 
-## 1M context window (Anthropic beta)
+## Janela de contexto de 1M (Anthropic beta)
 
-Anthropic's 1M context window is beta-gated. In OpenCraft, enable it per model
-with `params.context1m: true` for supported Opus/Sonnet models.
+A janela de contexto de 1M da Anthropic é restrita por beta. No OpenCraft, habilite-a por modelo
+com `params.context1m: true` para modelos Opus/Sonnet suportados.
 
 ```json5
 {
@@ -171,53 +171,51 @@ with `params.context1m: true` for supported Opus/Sonnet models.
 }
 ```
 
-OpenCraft maps this to `anthropic-beta: context-1m-2025-08-07` on Anthropic
-requests.
+O OpenCraft mapeia isso para `anthropic-beta: context-1m-2025-08-07` nas requisições à Anthropic.
 
-This only activates when `params.context1m` is explicitly set to `true` for
-that model.
+Isso só é ativado quando `params.context1m` é explicitamente definido como `true` para aquele modelo.
 
-Requirement: Anthropic must allow long-context usage on that credential
-(typically API key billing, or a subscription account with Extra Usage
-enabled). Otherwise Anthropic returns:
+Requisito: a Anthropic deve permitir o uso de contexto longo naquela credencial
+(tipicamente cobrança por chave de API, ou uma conta de assinatura com Extra Usage
+habilitado). Caso contrário, a Anthropic retorna:
 `HTTP 429: rate_limit_error: Extra usage is required for long context requests`.
 
-Note: Anthropic currently rejects `context-1m-*` beta requests when using
-OAuth/subscription tokens (`sk-ant-oat-*`). OpenCraft automatically skips the
-context1m beta header for OAuth auth and keeps the required OAuth betas.
+Nota: a Anthropic atualmente rejeita requisições beta `context-1m-*` ao usar
+tokens OAuth/assinatura (`sk-ant-oat-*`). O OpenCraft automaticamente pula o
+header beta context1m para autenticação OAuth e mantém os betas OAuth necessários.
 
-## Option B: Claude setup-token
+## Opção B: Setup-token do Claude
 
-**Best for:** using your Claude subscription.
+**Ideal para:** usar sua assinatura do Claude.
 
-### Where to get a setup-token
+### Onde obter um setup-token
 
-Setup-tokens are created by the **Claude Code CLI**, not the Anthropic Console. You can run this on **any machine**:
+Setup-tokens são criados pelo **Claude Code CLI**, não pelo Console da Anthropic. Você pode executar isso em **qualquer máquina**:
 
 ```bash
 claude setup-token
 ```
 
-Paste the token into OpenCraft (wizard: **Anthropic token (paste setup-token)**), or run it on the gateway host:
+Cole o token no OpenCraft (assistente: **Anthropic token (paste setup-token)**), ou execute no host do gateway:
 
 ```bash
 opencraft models auth setup-token --provider anthropic
 ```
 
-If you generated the token on a different machine, paste it:
+Se você gerou o token em uma máquina diferente, cole-o:
 
 ```bash
 opencraft models auth paste-token --provider anthropic
 ```
 
-### CLI setup (setup-token)
+### Configuração via CLI (setup-token)
 
 ```bash
-# Paste a setup-token during setup
+# Cole um setup-token durante a configuração
 opencraft onboard --auth-choice setup-token
 ```
 
-### Config snippet (setup-token)
+### Trecho de configuração (setup-token)
 
 ```json5
 {
@@ -225,35 +223,35 @@ opencraft onboard --auth-choice setup-token
 }
 ```
 
-## Notes
+## Notas
 
-- Generate the setup-token with `claude setup-token` and paste it, or run `opencraft models auth setup-token` on the gateway host.
-- If you see “OAuth token refresh failed …” on a Claude subscription, re-auth with a setup-token. See [/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription](/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription).
-- Auth details + reuse rules are in [/concepts/oauth](/concepts/oauth).
+- Gere o setup-token com `claude setup-token` e cole-o, ou execute `opencraft models auth setup-token` no host do gateway.
+- Se você vir "OAuth token refresh failed ..." em uma assinatura Claude, reautentique com um setup-token. Veja [/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription](/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription).
+- Detalhes de autenticação e regras de reutilização estão em [/concepts/oauth](/concepts/oauth).
 
-## Troubleshooting
+## Solução de problemas
 
-**401 errors / token suddenly invalid**
+**Erros 401 / token subitamente inválido**
 
-- Claude subscription auth can expire or be revoked. Re-run `claude setup-token`
-  and paste it into the **gateway host**.
-- If the Claude CLI login lives on a different machine, use
-  `opencraft models auth paste-token --provider anthropic` on the gateway host.
+- A autenticação por assinatura Claude pode expirar ou ser revogada. Execute novamente `claude setup-token`
+  e cole no **host do gateway**.
+- Se o login do Claude CLI está em uma máquina diferente, use
+  `opencraft models auth paste-token --provider anthropic` no host do gateway.
 
 **No API key found for provider "anthropic"**
 
-- Auth is **per agent**. New agents don’t inherit the main agent’s keys.
-- Re-run onboarding for that agent, or paste a setup-token / API key on the
-  gateway host, then verify with `opencraft models status`.
+- A autenticação é **por agente**. Novos agentes não herdam as chaves do agente principal.
+- Execute novamente o onboarding para aquele agente, ou cole um setup-token / chave de API no
+  host do gateway, depois verifique com `opencraft models status`.
 
 **No credentials found for profile `anthropic:default`**
 
-- Run `opencraft models status` to see which auth profile is active.
-- Re-run onboarding, or paste a setup-token / API key for that profile.
+- Execute `opencraft models status` para ver qual perfil de autenticação está ativo.
+- Execute novamente o onboarding, ou cole um setup-token / chave de API para aquele perfil.
 
 **No available auth profile (all in cooldown/unavailable)**
 
-- Check `opencraft models status --json` for `auth.unusableProfiles`.
-- Add another Anthropic profile or wait for cooldown.
+- Verifique `opencraft models status --json` para `auth.unusableProfiles`.
+- Adicione outro perfil Anthropic ou aguarde o cooldown.
 
-More: [/gateway/troubleshooting](/gateway/troubleshooting) and [/help/faq](/help/faq).
+Mais: [/gateway/troubleshooting](/gateway/troubleshooting) e [/help/faq](/help/faq).

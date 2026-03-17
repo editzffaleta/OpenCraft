@@ -1,104 +1,104 @@
 ---
-summary: "Setup guide for developers working on the OpenCraft macOS app"
+summary: "Guia de configuração para desenvolvedores trabalhando no aplicativo macOS do OpenCraft"
 read_when:
-  - Setting up the macOS development environment
-title: "macOS Dev Setup"
+  - Configurando o ambiente de desenvolvimento macOS
+title: "Configuração de Desenvolvimento macOS"
 ---
 
-# macOS Developer Setup
+# Configuração de Desenvolvimento macOS
 
-This guide covers the necessary steps to build and run the OpenCraft macOS application from source.
+Este guia cobre os passos necessários para compilar e executar o aplicativo macOS do OpenCraft a partir do código-fonte.
 
-## Prerequisites
+## Pré-requisitos
 
-Before building the app, ensure you have the following installed:
+Antes de compilar o aplicativo, certifique-se de ter o seguinte instalado:
 
-1. **Xcode 26.2+**: Required for Swift development.
-2. **Node.js 24 & pnpm**: Recommended for the gateway, CLI, and packaging scripts. Node 22 LTS, currently `22.16+`, remains supported for compatibility.
+1. **Xcode 26.2+**: Necessário para desenvolvimento em Swift.
+2. **Node.js 24 & pnpm**: Recomendado para o Gateway, CLI e scripts de empacotamento. Node 22 LTS, atualmente `22.16+`, permanece suportado para compatibilidade.
 
-## 1. Install Dependencies
+## 1. Instale as dependências
 
-Install the project-wide dependencies:
+Instale as dependências de todo o projeto:
 
 ```bash
 pnpm install
 ```
 
-## 2. Build and Package the App
+## 2. Compile e empacote o aplicativo
 
-To build the macOS app and package it into `dist/OpenCraft.app`, run:
+Para compilar o aplicativo macOS e empacotá-lo em `dist/OpenCraft.app`, execute:
 
 ```bash
 ./scripts/package-mac-app.sh
 ```
 
-If you don't have an Apple Developer ID certificate, the script will automatically use **ad-hoc signing** (`-`).
+Se você não tiver um certificado Apple Developer ID, o script usará automaticamente **assinatura ad-hoc** (`-`).
 
-For dev run modes, signing flags, and Team ID troubleshooting, see the macOS app README:
+Para modos de execução de desenvolvimento, flags de assinatura e solução de problemas de Team ID, veja o README do aplicativo macOS:
 [https://github.com/editzffaleta/OpenCraft/blob/main/apps/macos/README.md](https://github.com/editzffaleta/OpenCraft/blob/main/apps/macos/README.md)
 
-> **Note**: Ad-hoc signed apps may trigger security prompts. If the app crashes immediately with "Abort trap 6", see the [Troubleshooting](#troubleshooting) section.
+> **Nota**: Aplicativos assinados ad-hoc podem gerar avisos de segurança. Se o aplicativo travar imediatamente com "Abort trap 6", veja a seção [Solução de problemas](#solução-de-problemas).
 
-## 3. Install the CLI
+## 3. Instale a CLI
 
-The macOS app expects a global `opencraft` CLI install to manage background tasks.
+O aplicativo macOS espera uma instalação global da CLI `opencraft` para gerenciar tarefas em segundo plano.
 
-**To install it (recommended):**
+**Para instalá-la (recomendado):**
 
-1. Open the OpenCraft app.
-2. Go to the **General** settings tab.
-3. Click **"Install CLI"**.
+1. Abra o aplicativo OpenCraft.
+2. Vá para a aba **General** nas configurações.
+3. Clique em **"Install CLI"**.
 
-Alternatively, install it manually:
+Alternativamente, instale manualmente:
 
 ```bash
-npm install -g opencraft@<version>
+npm install -g opencraft@<versão>
 ```
 
-## Troubleshooting
+## Solução de problemas
 
-### Build Fails: Toolchain or SDK Mismatch
+### Falha na compilação: incompatibilidade de Toolchain ou SDK
 
-The macOS app build expects the latest macOS SDK and Swift 6.2 toolchain.
+A compilação do aplicativo macOS espera o SDK macOS mais recente e o toolchain Swift 6.2.
 
-**System dependencies (required):**
+**Dependências do sistema (obrigatórias):**
 
-- **Latest macOS version available in Software Update** (required by Xcode 26.2 SDKs)
-- **Xcode 26.2** (Swift 6.2 toolchain)
+- **Última versão do macOS disponível no Software Update** (necessária pelos SDKs do Xcode 26.2)
+- **Xcode 26.2** (toolchain Swift 6.2)
 
-**Checks:**
+**Verificações:**
 
 ```bash
 xcodebuild -version
 xcrun swift --version
 ```
 
-If versions don’t match, update macOS/Xcode and re-run the build.
+Se as versões não corresponderem, atualize o macOS/Xcode e execute novamente a compilação.
 
-### App Crashes on Permission Grant
+### Aplicativo trava ao conceder permissão
 
-If the app crashes when you try to allow **Speech Recognition** or **Microphone** access, it may be due to a corrupted TCC cache or signature mismatch.
+Se o aplicativo travar quando você tentar permitir acesso ao **Reconhecimento de Fala** ou **Microfone**, pode ser devido a um cache TCC corrompido ou incompatibilidade de assinatura.
 
-**Fix:**
+**Correção:**
 
-1. Reset the TCC permissions:
+1. Redefina as permissões TCC:
 
    ```bash
    tccutil reset All ai.opencraft.mac.debug
    ```
 
-2. If that fails, change the `BUNDLE_ID` temporarily in [`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) to force a "clean slate" from macOS.
+2. Se isso falhar, altere o `BUNDLE_ID` temporariamente em [`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) para forçar uma "tela limpa" do macOS.
 
-### Gateway "Starting..." indefinitely
+### Gateway "Starting..." indefinidamente
 
-If the gateway status stays on "Starting...", check if a zombie process is holding the port:
+Se o status do Gateway ficar em "Starting...", verifique se um processo zumbi está ocupando a porta:
 
 ```bash
 opencraft gateway status
 opencraft gateway stop
 
-# If you’re not using a LaunchAgent (dev mode / manual runs), find the listener:
+# Se você não estiver usando um LaunchAgent (modo dev / execução manual), encontre o ouvinte:
 lsof -nP -iTCP:18789 -sTCP:LISTEN
 ```
 
-If a manual run is holding the port, stop that process (Ctrl+C). As a last resort, kill the PID you found above.
+Se uma execução manual estiver ocupando a porta, pare esse processo (Ctrl+C). Como último recurso, mate o PID encontrado acima.

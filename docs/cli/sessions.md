@@ -1,13 +1,13 @@
 ---
-summary: "CLI reference for `opencraft sessions` (list stored sessions + usage)"
+summary: "Referência CLI para `opencraft sessions` (listar sessões armazenadas + uso)"
 read_when:
-  - You want to list stored sessions and see recent activity
+  - Você quer listar sessões armazenadas e ver atividade recente
 title: "sessions"
 ---
 
 # `opencraft sessions`
 
-List stored conversation sessions.
+Listar sessões de conversa armazenadas.
 
 ```bash
 opencraft sessions
@@ -17,20 +17,20 @@ opencraft sessions --active 120
 opencraft sessions --json
 ```
 
-Scope selection:
+Seleção de escopo:
 
-- default: configured default agent store
-- `--agent <id>`: one configured agent store
-- `--all-agents`: aggregate all configured agent stores
-- `--store <path>`: explicit store path (cannot be combined with `--agent` or `--all-agents`)
+- padrão: armazenamento do agente padrão configurado
+- `--agent <id>`: um armazenamento de agente configurado
+- `--all-agents`: agregar todos os armazenamentos de agentes configurados
+- `--store <path>`: caminho de armazenamento explícito (não pode ser combinado com `--agent` ou `--all-agents`)
 
-`opencraft sessions --all-agents` reads configured agent stores. Gateway and ACP
-session discovery are broader: they also include disk-only stores found under
-the default `agents/` root or a templated `session.store` root. Those
-discovered stores must resolve to regular `sessions.json` files inside the
-agent root; symlinks and out-of-root paths are skipped.
+`opencraft sessions --all-agents` lê armazenamentos de agentes configurados. A descoberta de sessão
+do Gateway e ACP é mais ampla: ela também inclui armazenamentos somente em disco encontrados sob
+a raiz padrão `agents/` ou uma raiz `session.store` modelada. Esses
+armazenamentos descobertos devem resolver para arquivos `sessions.json` regulares dentro da
+raiz do agente; symlinks e caminhos fora da raiz são ignorados.
 
-JSON examples:
+Exemplos JSON:
 
 `opencraft sessions --all-agents --json`:
 
@@ -51,9 +51,9 @@ JSON examples:
 }
 ```
 
-## Cleanup maintenance
+## Manutenção de limpeza
 
-Run maintenance now (instead of waiting for the next write cycle):
+Executar manutenção agora (em vez de esperar pelo próximo ciclo de escrita):
 
 ```bash
 opencraft sessions cleanup --dry-run
@@ -64,18 +64,18 @@ opencraft sessions cleanup --enforce --active-key "agent:main:telegram:direct:12
 opencraft sessions cleanup --json
 ```
 
-`opencraft sessions cleanup` uses `session.maintenance` settings from config:
+`opencraft sessions cleanup` usa configurações de `session.maintenance` do config:
 
-- Scope note: `opencraft sessions cleanup` maintains session stores/transcripts only. It does not prune cron run logs (`cron/runs/<jobId>.jsonl`), which are managed by `cron.runLog.maxBytes` and `cron.runLog.keepLines` in [Cron configuration](/automation/cron-jobs#configuration) and explained in [Cron maintenance](/automation/cron-jobs#maintenance).
+- Nota de escopo: `opencraft sessions cleanup` mantém apenas armazenamentos de sessão/transcrições. Ele não remove logs de execução Cron (`cron/runs/<jobId>.jsonl`), que são gerenciados por `cron.runLog.maxBytes` e `cron.runLog.keepLines` em [Configuração Cron](/automation/cron-jobs#configuration) e explicados em [Manutenção Cron](/automation/cron-jobs#maintenance).
 
-- `--dry-run`: preview how many entries would be pruned/capped without writing.
-  - In text mode, dry-run prints a per-session action table (`Action`, `Key`, `Age`, `Model`, `Flags`) so you can see what would be kept vs removed.
-- `--enforce`: apply maintenance even when `session.maintenance.mode` is `warn`.
-- `--active-key <key>`: protect a specific active key from disk-budget eviction.
-- `--agent <id>`: run cleanup for one configured agent store.
-- `--all-agents`: run cleanup for all configured agent stores.
-- `--store <path>`: run against a specific `sessions.json` file.
-- `--json`: print a JSON summary. With `--all-agents`, output includes one summary per store.
+- `--dry-run`: pré-visualizar quantas entradas seriam removidas/limitadas sem escrever.
+  - No modo texto, dry-run imprime uma tabela de ação por sessão (`Action`, `Key`, `Age`, `Model`, `Flags`) para que você possa ver o que seria mantido vs removido.
+- `--enforce`: aplicar manutenção mesmo quando `session.maintenance.mode` é `warn`.
+- `--active-key <key>`: proteger uma chave ativa específica de despejo por orçamento de disco.
+- `--agent <id>`: executar limpeza para um armazenamento de agente configurado.
+- `--all-agents`: executar limpeza para todos os armazenamentos de agentes configurados.
+- `--store <path>`: executar contra um arquivo `sessions.json` específico.
+- `--json`: imprimir resumo JSON. Com `--all-agents`, a saída inclui um resumo por armazenamento.
 
 `opencraft sessions cleanup --all-agents --dry-run --json`:
 
@@ -105,6 +105,6 @@ opencraft sessions cleanup --json
 }
 ```
 
-Related:
+Relacionado:
 
-- Session config: [Configuration reference](/gateway/configuration-reference#session)
+- Configuração de sessão: [Configuration reference](/gateway/configuration-reference#session)

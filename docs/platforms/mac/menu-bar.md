@@ -1,81 +1,81 @@
 ---
-summary: "Menu bar status logic and what is surfaced to users"
+summary: "Lógica de status da barra de menus e o que é exibido aos usuários"
 read_when:
-  - Tweaking mac menu UI or status logic
-title: "Menu Bar"
+  - Ajustando a UI do menu do macOS ou lógica de status
+title: "Barra de Menus"
 ---
 
-# Menu Bar Status Logic
+# Lógica de Status da Barra de Menus
 
-## What is shown
+## O que é exibido
 
-- We surface the current agent work state in the menu bar icon and in the first status row of the menu.
-- Health status is hidden while work is active; it returns when all sessions are idle.
-- The “Nodes” block in the menu lists **devices** only (paired nodes via `node.list`), not client/presence entries.
-- A “Usage” section appears under Context when provider usage snapshots are available.
+- Exibimos o estado atual de trabalho do agente no ícone da barra de menus e na primeira linha de status do menu.
+- O status de integridade fica oculto enquanto o trabalho está ativo; ele retorna quando todas as sessões estão inativas.
+- O bloco "Nodes" no menu lista apenas **dispositivos** (nós emparelhados via `node.list`), não entradas de cliente/presença.
+- Uma seção "Usage" aparece em Context quando snapshots de uso do provedor estão disponíveis.
 
-## State model
+## Modelo de estado
 
-- Sessions: events arrive with `runId` (per-run) plus `sessionKey` in the payload. The “main” session is the key `main`; if absent, we fall back to the most recently updated session.
-- Priority: main always wins. If main is active, its state is shown immediately. If main is idle, the most recently active non‑main session is shown. We do not flip‑flop mid‑activity; we only switch when the current session goes idle or main becomes active.
-- Activity kinds:
-  - `job`: high‑level command execution (`state: started|streaming|done|error`).
-  - `tool`: `phase: start|result` with `toolName` and `meta/args`.
+- Sessões: eventos chegam com `runId` (por execução) mais `sessionKey` no payload. A sessão "main" é a chave `main`; se ausente, recorremos à sessão atualizada mais recentemente.
+- Prioridade: main sempre vence. Se main está ativa, seu estado é mostrado imediatamente. Se main está inativa, a sessão não-main mais recentemente ativa é mostrada. Não alternamos durante a atividade; só trocamos quando a sessão atual fica inativa ou main se torna ativa.
+- Tipos de atividade:
+  - `job`: execução de comando de alto nível (`state: started|streaming|done|error`).
+  - `tool`: `phase: start|result` com `toolName` e `meta/args`.
 
-## IconState enum (Swift)
+## Enum IconState (Swift)
 
 - `idle`
 - `workingMain(ActivityKind)`
 - `workingOther(ActivityKind)`
-- `overridden(ActivityKind)` (debug override)
+- `overridden(ActivityKind)` (substituição de debug)
 
-### ActivityKind → glyph
+### ActivityKind → glifo
 
 - `exec` → 💻
 - `read` → 📄
 - `write` → ✍️
 - `edit` → 📝
 - `attach` → 📎
-- default → 🛠️
+- padrão → 🛠️
 
-### Visual mapping
+### Mapeamento visual
 
-- `idle`: normal critter.
-- `workingMain`: badge with glyph, full tint, leg “working” animation.
-- `workingOther`: badge with glyph, muted tint, no scurry.
-- `overridden`: uses the chosen glyph/tint regardless of activity.
+- `idle`: critter normal.
+- `workingMain`: badge com glifo, tinta completa, animação de "trabalhando" nas pernas.
+- `workingOther`: badge com glifo, tinta atenuada, sem corrida.
+- `overridden`: usa o glifo/tinta escolhido independentemente da atividade.
 
-## Status row text (menu)
+## Texto da linha de status (menu)
 
-- While work is active: `<Session role> · <activity label>`
-  - Examples: `Main · exec: pnpm test`, `Other · read: apps/macos/Sources/OpenCraft/AppState.swift`.
-- When idle: falls back to the health summary.
+- Enquanto o trabalho está ativo: `<Papel da sessão> · <rótulo de atividade>`
+  - Exemplos: `Main · exec: pnpm test`, `Other · read: apps/macos/Sources/OpenCraft/AppState.swift`.
+- Quando inativo: recorre ao resumo de integridade.
 
-## Event ingestion
+## Ingestão de eventos
 
-- Source: control‑channel `agent` events (`ControlChannel.handleAgentEvent`).
-- Parsed fields:
-  - `stream: "job"` with `data.state` for start/stop.
-  - `stream: "tool"` with `data.phase`, `name`, optional `meta`/`args`.
-- Labels:
-  - `exec`: first line of `args.command`.
-  - `read`/`write`: shortened path.
-  - `edit`: path plus inferred change kind from `meta`/diff counts.
-  - fallback: tool name.
+- Fonte: eventos `agent` do canal de controle (`ControlChannel.handleAgentEvent`).
+- Campos analisados:
+  - `stream: "job"` com `data.state` para início/parada.
+  - `stream: "tool"` com `data.phase`, `name`, `meta`/`args` opcionais.
+- Rótulos:
+  - `exec`: primeira linha de `args.command`.
+  - `read`/`write`: caminho abreviado.
+  - `edit`: caminho mais tipo de mudança inferido de `meta`/contagens de diff.
+  - fallback: nome da ferramenta.
 
-## Debug override
+## Substituição de debug
 
-- Settings ▸ Debug ▸ “Icon override” picker:
-  - `System (auto)` (default)
-  - `Working: main` (per tool kind)
-  - `Working: other` (per tool kind)
+- Configurações → Debug → Seletor "Icon override":
+  - `System (auto)` (padrão)
+  - `Working: main` (por tipo de ferramenta)
+  - `Working: other` (por tipo de ferramenta)
   - `Idle`
-- Stored via `@AppStorage("iconOverride")`; mapped to `IconState.overridden`.
+- Armazenado via `@AppStorage("iconOverride")`; mapeado para `IconState.overridden`.
 
-## Testing checklist
+## Lista de verificação de testes
 
-- Trigger main session job: verify icon switches immediately and status row shows main label.
-- Trigger non‑main session job while main idle: icon/status shows non‑main; stays stable until it finishes.
-- Start main while other active: icon flips to main instantly.
-- Rapid tool bursts: ensure badge does not flicker (TTL grace on tool results).
-- Health row reappears once all sessions idle.
+- Dispare um job de sessão main: verifique se o ícone muda imediatamente e a linha de status mostra o rótulo main.
+- Dispare um job de sessão não-main enquanto main está inativa: ícone/status mostra não-main; permanece estável até terminar.
+- Inicie main enquanto outra está ativa: ícone muda para main instantaneamente.
+- Rajadas rápidas de ferramentas: certifique-se de que o badge não oscile (TTL de tolerância nos resultados da ferramenta).
+- A linha de integridade reaparece quando todas as sessões estão inativas.

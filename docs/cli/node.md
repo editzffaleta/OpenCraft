@@ -1,37 +1,37 @@
 ---
-summary: "CLI reference for `opencraft node` (headless node host)"
+summary: "Referência CLI para `opencraft node` (host de nó headless)"
 read_when:
-  - Running the headless node host
-  - Pairing a non-macOS node for system.run
+  - Executando o host de nó headless
+  - Pareando um nó não-macOS para system.run
 title: "node"
 ---
 
 # `opencraft node`
 
-Run a **headless node host** that connects to the Gateway WebSocket and exposes
-`system.run` / `system.which` on this machine.
+Executar um **host de nó headless** que conecta ao WebSocket do Gateway e expõe
+`system.run` / `system.which` nesta máquina.
 
-## Why use a node host?
+## Por que usar um host de nó?
 
-Use a node host when you want agents to **run commands on other machines** in your
-network without installing a full macOS companion app there.
+Use um host de nó quando você quiser que agentes **executem comandos em outras máquinas** na sua
+rede sem instalar o aplicativo companion completo do macOS lá.
 
-Common use cases:
+Casos de uso comuns:
 
-- Run commands on remote Linux/Windows boxes (build servers, lab machines, NAS).
-- Keep exec **sandboxed** on the gateway, but delegate approved runs to other hosts.
-- Provide a lightweight, headless execution target for automation or CI nodes.
+- Executar comandos em máquinas Linux/Windows remotas (servidores de build, máquinas de laboratório, NAS).
+- Manter a execução em **sandbox** no Gateway, mas delegar execuções aprovadas para outros hosts.
+- Fornecer um alvo de execução leve e headless para automação ou nós de CI.
 
-Execution is still guarded by **exec approvals** and per‑agent allowlists on the
-node host, so you can keep command access scoped and explicit.
+A execução ainda é protegida por **aprovações de execução** e listas de permissão por agente no
+host do nó, então você pode manter o acesso a comandos com escopo definido e explícito.
 
-## Browser proxy (zero-config)
+## Proxy de navegador (configuração zero)
 
-Node hosts automatically advertise a browser proxy if `browser.enabled` is not
-disabled on the node. This lets the agent use browser automation on that node
-without extra configuration.
+Hosts de nó automaticamente anunciam um proxy de navegador se `browser.enabled` não estiver
+desativado no nó. Isso permite que o agente use automação de navegador naquele nó
+sem configuração extra.
 
-Disable it on the node if needed:
+Desative no nó se necessário:
 
 ```json5
 {
@@ -43,52 +43,52 @@ Disable it on the node if needed:
 }
 ```
 
-## Run (foreground)
+## Executar (primeiro plano)
 
 ```bash
 opencraft node run --host <gateway-host> --port 18789
 ```
 
-Options:
+Opções:
 
-- `--host <host>`: Gateway WebSocket host (default: `127.0.0.1`)
-- `--port <port>`: Gateway WebSocket port (default: `18789`)
-- `--tls`: Use TLS for the gateway connection
-- `--tls-fingerprint <sha256>`: Expected TLS certificate fingerprint (sha256)
-- `--node-id <id>`: Override node id (clears pairing token)
-- `--display-name <name>`: Override the node display name
+- `--host <host>`: Host WebSocket do Gateway (padrão: `127.0.0.1`)
+- `--port <port>`: Porta WebSocket do Gateway (padrão: `18789`)
+- `--tls`: Usar TLS para a conexão com o Gateway
+- `--tls-fingerprint <sha256>`: Fingerprint esperado do certificado TLS (sha256)
+- `--node-id <id>`: Sobrepor o id do nó (limpa o Token de pareamento)
+- `--display-name <name>`: Sobrepor o nome de exibição do nó
 
-## Gateway auth for node host
+## Autenticação do Gateway para host de nó
 
-`opencraft node run` and `opencraft node install` resolve gateway auth from config/env (no `--token`/`--password` flags on node commands):
+`opencraft node run` e `opencraft node install` resolvem autenticação do Gateway a partir de config/env (sem flags `--token`/`--password` nos comandos de nó):
 
-- `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` are checked first.
-- Then local config fallback: `gateway.auth.token` / `gateway.auth.password`.
-- In local mode, node host intentionally does not inherit `gateway.remote.token` / `gateway.remote.password`.
-- If `gateway.auth.token` / `gateway.auth.password` is explicitly configured via SecretRef and unresolved, node auth resolution fails closed (no remote fallback masking).
-- In `gateway.mode=remote`, remote client fields (`gateway.remote.token` / `gateway.remote.password`) are also eligible per remote precedence rules.
-- Legacy `CLAWDBOT_GATEWAY_*` env vars are ignored for node host auth resolution.
+- `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` são verificados primeiro.
+- Em seguida, fallback de config local: `gateway.auth.token` / `gateway.auth.password`.
+- No modo local, o host do nó intencionalmente não herda `gateway.remote.token` / `gateway.remote.password`.
+- Se `gateway.auth.token` / `gateway.auth.password` estiver explicitamente configurado via SecretRef e não resolvido, a resolução de autenticação do nó falha de forma fechada (sem fallback remoto mascarando).
+- No `gateway.mode=remote`, campos de cliente remoto (`gateway.remote.token` / `gateway.remote.password`) também são elegíveis conforme regras de precedência remota.
+- Variáveis de ambiente legadas `CLAWDBOT_GATEWAY_*` são ignoradas para resolução de autenticação do host de nó.
 
-## Service (background)
+## Serviço (segundo plano)
 
-Install a headless node host as a user service.
+Instalar um host de nó headless como serviço de usuário.
 
 ```bash
 opencraft node install --host <gateway-host> --port 18789
 ```
 
-Options:
+Opções:
 
-- `--host <host>`: Gateway WebSocket host (default: `127.0.0.1`)
-- `--port <port>`: Gateway WebSocket port (default: `18789`)
-- `--tls`: Use TLS for the gateway connection
-- `--tls-fingerprint <sha256>`: Expected TLS certificate fingerprint (sha256)
-- `--node-id <id>`: Override node id (clears pairing token)
-- `--display-name <name>`: Override the node display name
-- `--runtime <runtime>`: Service runtime (`node` or `bun`)
-- `--force`: Reinstall/overwrite if already installed
+- `--host <host>`: Host WebSocket do Gateway (padrão: `127.0.0.1`)
+- `--port <port>`: Porta WebSocket do Gateway (padrão: `18789`)
+- `--tls`: Usar TLS para a conexão com o Gateway
+- `--tls-fingerprint <sha256>`: Fingerprint esperado do certificado TLS (sha256)
+- `--node-id <id>`: Sobrepor o id do nó (limpa o Token de pareamento)
+- `--display-name <name>`: Sobrepor o nome de exibição do nó
+- `--runtime <runtime>`: Runtime do serviço (`node` ou `bun`)
+- `--force`: Reinstalar/sobrescrever se já instalado
 
-Manage the service:
+Gerenciar o serviço:
 
 ```bash
 opencraft node status
@@ -97,27 +97,27 @@ opencraft node restart
 opencraft node uninstall
 ```
 
-Use `opencraft node run` for a foreground node host (no service).
+Use `opencraft node run` para um host de nó em primeiro plano (sem serviço).
 
-Service commands accept `--json` for machine-readable output.
+Comandos de serviço aceitam `--json` para saída legível por máquina.
 
-## Pairing
+## Pareamento
 
-The first connection creates a pending device pairing request (`role: node`) on the Gateway.
-Approve it via:
+A primeira conexão cria uma solicitação de pareamento de dispositivo pendente (`role: node`) no Gateway.
+Aprove via:
 
 ```bash
 opencraft devices list
 opencraft devices approve <requestId>
 ```
 
-The node host stores its node id, token, display name, and gateway connection info in
+O host do nó armazena seu id de nó, Token, nome de exibição e informações de conexão do Gateway em
 `~/.opencraft/node.json`.
 
-## Exec approvals
+## Aprovações de execução
 
-`system.run` is gated by local exec approvals:
+`system.run` é controlado por aprovações de execução locais:
 
 - `~/.opencraft/exec-approvals.json`
 - [Exec approvals](/tools/exec-approvals)
-- `opencraft approvals --node <id|name|ip>` (edit from the Gateway)
+- `opencraft approvals --node <id|name|ip>` (editar a partir do Gateway)
