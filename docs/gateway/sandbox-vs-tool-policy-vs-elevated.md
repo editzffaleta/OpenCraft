@@ -9,13 +9,13 @@ status: active
 
 OpenCraft tem três controles relacionados (mas diferentes):
 
-1. **Sandbox** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`) decides **where tools run** (Docker vs host).
-2. **Tool policy** (`tools.*`, `tools.sandbox.tools.*`, `agents.list[].tools.*`) decides **which tools are available/allowed**.
-3. **Elevated** (`tools.elevated.*`, `agents.list[].tools.elevated.*`) is an **exec-only escape hatch** to run on the host when you’re sandboxed.
+1. **Sandbox** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`) decide **onde as ferramentas executam** (Docker vs host).
+2. **Política de ferramentas** (`tools.*`, `tools.sandbox.tools.*`, `agents.list[].tools.*`) decide **quais ferramentas estão disponíveis/permitidas**.
+3. **Elevated** (`tools.elevated.*`, `agents.list[].tools.elevated.*`) é uma **saída de emergência somente para exec** para executar no host quando você está em sandbox.
 
-## Quick debug
+## Debug rápido
 
-Use the inspector to see what OpenCraft is _actually_ doing:
+Use o inspetor para ver o que o OpenCraft está _realmente_ fazendo:
 
 ```bash
 opencraft sandbox explain
@@ -24,52 +24,52 @@ opencraft sandbox explain --agent work
 opencraft sandbox explain --json
 ```
 
-It prints:
+Ele exibe:
 
-- effective sandbox mode/scope/workspace access
-- whether the session is currently sandboxed (main vs non-main)
-- effective sandbox tool allow/deny (and whether it came from agent/global/default)
-- elevated gates and fix-it key paths
+- modo/escopo/acesso ao workspace efetivo do sandbox
+- se a sessão está atualmente em sandbox (main vs não-main)
+- política de ferramentas do sandbox efetiva (allow/deny) e se veio de agent/global/default
+- gates de elevated e caminhos de chaves para correção
 
-## Sandbox: where tools run
+## Sandbox: onde as ferramentas executam
 
-Sandboxing is controlled by `agents.defaults.sandbox.mode`:
+O sandboxing é controlado por `agents.defaults.sandbox.mode`:
 
-- `"off"`: everything runs on the host.
-- `"non-main"`: only non-main sessions are sandboxed (common “surprise” for groups/channels).
-- `"all"`: everything is sandboxed.
+- `"off"`: tudo executa no host.
+- `"non-main"`: apenas sessões não-main ficam em sandbox (surpresa comum para grupos/canais).
+- `"all"`: tudo fica em sandbox.
 
-See [Sandboxing](/gateway/sandboxing) for the full matrix (scope, workspace mounts, images).
+Veja [Sandboxing](/gateway/sandboxing) para a matriz completa (escopo, montagens de workspace, imagens).
 
-### Bind mounts (security quick check)
+### Montagens de bind (verificação rápida de segurança)
 
-- `docker.binds` _pierces_ the sandbox filesystem: whatever you mount is visible inside the container with the mode you set (`:ro` or `:rw`).
-- Default is read-write if you omit the mode; prefer `:ro` for source/secrets.
-- `scope: "shared"` ignores per-agent binds (only global binds apply).
-- Binding `/var/run/docker.sock` effectively hands host control to the sandbox; only do this intentionally.
-- Workspace access (`workspaceAccess: "ro"`/`"rw"`) is independent of bind modes.
+- `docker.binds` _atravessa_ o filesystem do sandbox: o que você montar fica visível dentro do container com o modo que você definiu (`:ro` ou `:rw`).
+- O padrão é leitura-escrita se você omitir o modo; prefira `:ro` para código fonte/secrets.
+- `scope: "shared"` ignora binds por agente (apenas binds globais se aplicam).
+- Montar `/var/run/docker.sock` efetivamente entrega o controle do host ao sandbox; faça isso apenas intencionalmente.
+- Acesso ao workspace (`workspaceAccess: "ro"`/`"rw"`) é independente dos modos de bind.
 
-## Tool policy: which tools exist/are callable
+## Política de ferramentas: quais ferramentas existem/são chamáveis
 
-Two layers matter:
+Duas camadas importam:
 
-- **Tool profile**: `tools.profile` and `agents.list[].tools.profile` (base allowlist)
-- **Provider tool profile**: `tools.byProvider[provider].profile` and `agents.list[].tools.byProvider[provider].profile`
-- **Global/per-agent tool policy**: `tools.allow`/`tools.deny` and `agents.list[].tools.allow`/`agents.list[].tools.deny`
-- **Provider tool policy**: `tools.byProvider[provider].allow/deny` and `agents.list[].tools.byProvider[provider].allow/deny`
-- **Sandbox tool policy** (only applies when sandboxed): `tools.sandbox.tools.allow`/`tools.sandbox.tools.deny` and `agents.list[].tools.sandbox.tools.*`
+- **Perfil de ferramentas**: `tools.profile` e `agents.list[].tools.profile` (allowlist base)
+- **Perfil de ferramentas por provider**: `tools.byProvider[provider].profile` e `agents.list[].tools.byProvider[provider].profile`
+- **Política global/por agente de ferramentas**: `tools.allow`/`tools.deny` e `agents.list[].tools.allow`/`agents.list[].tools.deny`
+- **Política de ferramentas por provider**: `tools.byProvider[provider].allow/deny` e `agents.list[].tools.byProvider[provider].allow/deny`
+- **Política de ferramentas do sandbox** (aplica-se apenas quando em sandbox): `tools.sandbox.tools.allow`/`tools.sandbox.tools.deny` e `agents.list[].tools.sandbox.tools.*`
 
-Rules of thumb:
+Regras práticas:
 
-- `deny` always wins.
-- If `allow` is non-empty, everything else is treated as blocked.
-- Tool policy is the hard stop: `/exec` cannot override a denied `exec` tool.
-- `/exec` only changes session defaults for authorized senders; it does not grant tool access.
-  Provider tool keys accept either `provider` (e.g. `google-antigravity`) or `provider/model` (e.g. `openai/gpt-5.2`).
+- `deny` sempre vence.
+- Se `allow` não estiver vazio, todo o resto é tratado como bloqueado.
+- A política de ferramentas é a parada final: `/exec` não pode sobrescrever uma ferramenta `exec` negada.
+- `/exec` apenas muda os padrões da sessão para remetentes autorizados; não concede acesso a ferramentas.
+  Chaves de ferramentas por provider aceitam tanto `provider` (ex: `google-antigravity`) quanto `provider/model` (ex: `openai/gpt-5.2`).
 
-### Tool groups (shorthands)
+### Grupos de ferramentas (atalhos)
 
-Tool policies (global, agent, sandbox) support `group:*` entries that expand to multiple tools:
+Políticas de ferramentas (global, agente, sandbox) suportam entradas `group:*` que expandem para múltiplas ferramentas:
 
 ```json5
 {
@@ -83,7 +83,7 @@ Tool policies (global, agent, sandbox) support `group:*` entries that expand to 
 }
 ```
 
-Available groups:
+Grupos disponíveis:
 
 - `group:runtime`: `exec`, `bash`, `process`
 - `group:fs`: `read`, `write`, `edit`, `apply_patch`
@@ -93,36 +93,36 @@ Available groups:
 - `group:automation`: `cron`, `gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:opencraft`: all built-in OpenCraft tools (excludes provider plugins)
+- `group:opencraft`: todas as ferramentas built-in do OpenCraft (exclui plugins de provider)
 
-## Elevated: exec-only “run on host”
+## Elevated: "executar no host" somente para exec
 
-Elevated does **not** grant extra tools; it only affects `exec`.
+Elevated **não** concede ferramentas extras; afeta apenas `exec`.
 
-- If you’re sandboxed, `/elevated on` (or `exec` with `elevated: true`) runs on the host (approvals may still apply).
-- Use `/elevated full` to skip exec approvals for the session.
-- If you’re already running direct, elevated is effectively a no-op (still gated).
-- Elevated is **not** skill-scoped and does **not** override tool allow/deny.
-- `/exec` is separate from elevated. It only adjusts per-session exec defaults for authorized senders.
+- Se você está em sandbox, `/elevated on` (ou `exec` com `elevated: true`) executa no host (aprovações ainda podem se aplicar).
+- Use `/elevated full` para pular aprovações de exec na sessão.
+- Se você já está executando direto, elevated é efetivamente um no-op (ainda com gate).
+- Elevated **não** tem escopo de Skill e **não** sobrescreve allow/deny de ferramentas.
+- `/exec` é separado de elevated. Ele apenas ajusta os padrões de exec por sessão para remetentes autorizados.
 
 Gates:
 
-- Enablement: `tools.elevated.enabled` (and optionally `agents.list[].tools.elevated.enabled`)
-- Sender allowlists: `tools.elevated.allowFrom.<provider>` (and optionally `agents.list[].tools.elevated.allowFrom.<provider>`)
+- Habilitação: `tools.elevated.enabled` (e opcionalmente `agents.list[].tools.elevated.enabled`)
+- Allowlists de remetentes: `tools.elevated.allowFrom.<provider>` (e opcionalmente `agents.list[].tools.elevated.allowFrom.<provider>`)
 
-See [Elevated Mode](/tools/elevated).
+Veja [Modo Elevated](/tools/elevated).
 
-## Common “sandbox jail” fixes
+## Correções comuns de "sandbox jail"
 
-### “Tool X blocked by sandbox tool policy”
+### "Ferramenta X bloqueada pela política de ferramentas do sandbox"
 
-Fix-it keys (pick one):
+Chaves de correção (escolha uma):
 
-- Disable sandbox: `agents.defaults.sandbox.mode=off` (or per-agent `agents.list[].sandbox.mode=off`)
-- Allow the tool inside sandbox:
-  - remove it from `tools.sandbox.tools.deny` (or per-agent `agents.list[].tools.sandbox.tools.deny`)
-  - or add it to `tools.sandbox.tools.allow` (or per-agent allow)
+- Desabilitar sandbox: `agents.defaults.sandbox.mode=off` (ou por agente `agents.list[].sandbox.mode=off`)
+- Permitir a ferramenta dentro do sandbox:
+  - remova-a de `tools.sandbox.tools.deny` (ou por agente `agents.list[].tools.sandbox.tools.deny`)
+  - ou adicione-a em `tools.sandbox.tools.allow` (ou allow por agente)
 
-### “I thought this was main, why is it sandboxed?”
+### "Eu achei que era main, por que está em sandbox?"
 
-In `"non-main"` mode, group/channel keys are _not_ main. Use the main session key (shown by `sandbox explain`) or switch mode to `"off"`.
+No modo `"non-main"`, chaves de grupo/canal _não_ são main. Use a chave de sessão main (mostrada por `sandbox explain`) ou mude o modo para `"off"`.

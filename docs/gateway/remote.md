@@ -1,91 +1,91 @@
 ---
-summary: “Acesso remoto usando SSH tunnels (Gateway WS) e tailnets”
+summary: "Acesso remoto usando SSH tunnels (Gateway WS) e tailnets"
 read_when:
   - Executando ou solucionando problemas de setups de gateway remoto
-title: “Remote Access”
+title: "Remote Access"
 ---
 
 # Acesso remoto (SSH, tunnels e tailnets)
 
-Este repo suporta “remoto via SSH” mantendo um único Gateway (o master) executando em um host dedicado (desktop/servidor) e conectando clientes a ele.
+Este repo suporta "remoto via SSH" mantendo um único Gateway (o master) executando em um host dedicado (desktop/servidor) e conectando clientes a ele.
 
-- For **operators (you / the macOS app)**: SSH tunneling is the universal fallback.
-- For **nodes (iOS/Android and future devices)**: connect to the Gateway **WebSocket** (LAN/tailnet or SSH tunnel as needed).
+- Para **operadores (você / o app macOS)**: SSH tunneling é o fallback universal.
+- Para **nodes (iOS/Android e dispositivos futuros)**: conecte ao **WebSocket** do Gateway (LAN/tailnet ou SSH tunnel conforme necessário).
 
-## The core idea
+## A ideia central
 
-- The Gateway WebSocket binds to **loopback** on your configured port (defaults to 18789).
-- For remote use, you forward that loopback port over SSH (or use a tailnet/VPN and tunnel less).
+- O WebSocket do Gateway faz bind em **loopback** na porta configurada (padrão 18789).
+- Para uso remoto, você encaminha essa porta loopback via SSH (ou usa uma tailnet/VPN e faz menos tunneling).
 
-## Common VPN/tailnet setups (where the agent lives)
+## Setups comuns de VPN/tailnet (onde o agente reside)
 
-Think of the **Gateway host** as “where the agent lives.” It owns sessions, auth profiles, channels, and state.
-Your laptop/desktop (and nodes) connect to that host.
+Pense no **host do Gateway** como "onde o agente reside." Ele é dono das sessões, perfis de autenticação, canais e estado.
+Seu laptop/desktop (e nodes) conectam a esse host.
 
-### 1) Always-on Gateway in your tailnet (VPS or home server)
+### 1) Gateway sempre ativo na sua tailnet (VPS ou servidor doméstico)
 
-Run the Gateway on a persistent host and reach it via **Tailscale** or SSH.
+Execute o Gateway em um host persistente e acesse via **Tailscale** ou SSH.
 
-- **Best UX:** keep `gateway.bind: "loopback"` and use **Tailscale Serve** for the Control UI.
-- **Fallback:** keep loopback + SSH tunnel from any machine that needs access.
-- **Examples:** [exe.dev](/install/exe-dev) (easy VM) or [Hetzner](/install/hetzner) (production VPS).
+- **Melhor UX:** mantenha `gateway.bind: "loopback"` e use **Tailscale Serve** para a Control UI.
+- **Fallback:** mantenha loopback + SSH tunnel de qualquer máquina que precise de acesso.
+- **Exemplos:** [exe.dev](/install/exe-dev) (VM fácil) ou [Hetzner](/install/hetzner) (VPS de produção).
 
-This is ideal when your laptop sleeps often but you want the agent always-on.
+Isso é ideal quando seu laptop dorme frequentemente mas você quer o agente sempre ativo.
 
-### 2) Home desktop runs the Gateway, laptop is remote control
+### 2) Desktop doméstico executa o Gateway, laptop é controle remoto
 
-The laptop does **not** run the agent. It connects remotely:
+O laptop **não** executa o agente. Ele conecta remotamente:
 
-- Use the macOS app’s **Remote over SSH** mode (Settings → General → “OpenCraft runs”).
-- The app opens and manages the tunnel, so WebChat + health checks “just work.”
+- Use o modo **Remoto via SSH** do app macOS (Configurações → Geral → "OpenCraft executa").
+- O app abre e gerencia o tunnel, então WebChat + verificações de saúde "simplesmente funcionam."
 
-Runbook: [macOS remote access](/platforms/mac/remote).
+Runbook: [Acesso remoto macOS](/platforms/mac/remote).
 
-### 3) Laptop runs the Gateway, remote access from other machines
+### 3) Laptop executa o Gateway, acesso remoto de outras máquinas
 
-Keep the Gateway local but expose it safely:
+Mantenha o Gateway local mas exponha-o com segurança:
 
-- SSH tunnel to the laptop from other machines, or
-- Tailscale Serve the Control UI and keep the Gateway loopback-only.
+- SSH tunnel para o laptop de outras máquinas, ou
+- Tailscale Serve a Control UI e mantenha o Gateway somente em loopback.
 
-Guide: [Tailscale](/gateway/tailscale) and [Web overview](/web).
+Guia: [Tailscale](/gateway/tailscale) e [Visão geral Web](/web).
 
-## Command flow (what runs where)
+## Fluxo de comandos (o que executa onde)
 
-One gateway service owns state + channels. Nodes are peripherals.
+Um serviço gateway é dono do estado + canais. Nodes são periféricos.
 
-Flow example (Telegram → node):
+Exemplo de fluxo (Telegram → node):
 
-- Telegram message arrives at the **Gateway**.
-- Gateway runs the **agent** and decides whether to call a node tool.
-- Gateway calls the **node** over the Gateway WebSocket (`node.*` RPC).
-- Node returns the result; Gateway replies back out to Telegram.
+- Mensagem do Telegram chega no **Gateway**.
+- Gateway executa o **agente** e decide se chama uma ferramenta do node.
+- Gateway chama o **node** via WebSocket do Gateway (RPC `node.*`).
+- Node retorna o resultado; Gateway responde de volta ao Telegram.
 
-Notes:
+Notas:
 
-- **Nodes do not run the gateway service.** Only one gateway should run per host unless you intentionally run isolated profiles (see [Multiple gateways](/gateway/multiple-gateways)).
-- macOS app “node mode” is just a node client over the Gateway WebSocket.
+- **Nodes não executam o serviço gateway.** Apenas um gateway deve executar por host a menos que você intencionalmente execute perfis isolados (veja [Múltiplos gateways](/gateway/multiple-gateways)).
+- O "modo node" do app macOS é apenas um cliente node via WebSocket do Gateway.
 
-## SSH tunnel (CLI + tools)
+## SSH tunnel (CLI + ferramentas)
 
-Create a local tunnel to the remote Gateway WS:
+Crie um tunnel local para o WebSocket do Gateway remoto:
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 user@host
 ```
 
-With the tunnel up:
+Com o tunnel ativo:
 
-- `opencraft health` and `opencraft status --deep` now reach the remote gateway via `ws://127.0.0.1:18789`.
-- `opencraft gateway {status,health,send,agent,call}` can also target the forwarded URL via `--url` when needed.
+- `opencraft health` e `opencraft status --deep` agora alcançam o gateway remoto via `ws://127.0.0.1:18789`.
+- `opencraft gateway {status,health,send,agent,call}` também podem direcionar a URL encaminhada via `--url` quando necessário.
 
-Note: replace `18789` with your configured `gateway.port` (or `--port`/`OPENCRAFT_GATEWAY_PORT`).
-Note: when you pass `--url`, the CLI does not fall back to config or environment credentials.
-Include `--token` or `--password` explicitly. Missing explicit credentials is an error.
+Nota: substitua `18789` pela sua `gateway.port` configurada (ou `--port`/`OPENCRAFT_GATEWAY_PORT`).
+Nota: quando você passa `--url`, o CLI não faz fallback para credenciais de config ou ambiente.
+Inclua `--token` ou `--password` explicitamente. Credenciais explícitas ausentes é um erro.
 
-## CLI remote defaults
+## Padrões remotos do CLI
 
-You can persist a remote target so CLI commands use it by default:
+Você pode persistir um alvo remoto para que comandos CLI o usem por padrão:
 
 ```json5
 {
@@ -99,55 +99,55 @@ You can persist a remote target so CLI commands use it by default:
 }
 ```
 
-When the gateway is loopback-only, keep the URL at `ws://127.0.0.1:18789` and open the SSH tunnel first.
+Quando o gateway é somente loopback, mantenha a URL em `ws://127.0.0.1:18789` e abra o SSH tunnel primeiro.
 
-## Credential precedence
+## Precedência de credenciais
 
-Gateway credential resolution follows one shared contract across call/probe/status paths and Discord exec-approval monitoring. Node-host uses the same base contract with one local-mode exception (it intentionally ignores `gateway.remote.*`):
+A resolução de credenciais do Gateway segue um contrato compartilhado entre caminhos de call/probe/status e monitoramento de exec-approval do Discord. Node-host usa o mesmo contrato base com uma exceção de modo local (ele intencionalmente ignora `gateway.remote.*`):
 
-- Explicit credentials (`--token`, `--password`, or tool `gatewayToken`) always win on call paths that accept explicit auth.
-- URL override safety:
-  - CLI URL overrides (`--url`) never reuse implicit config/env credentials.
-  - Env URL overrides (`OPENCRAFT_GATEWAY_URL`) may use env credentials only (`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
-- Local mode defaults:
-  - token: `OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token` -> `gateway.remote.token` (remote fallback applies only when local auth token input is unset)
-  - password: `OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password` -> `gateway.remote.password` (remote fallback applies only when local auth password input is unset)
-- Remote mode defaults:
+- Credenciais explícitas (`--token`, `--password`, ou `gatewayToken` da ferramenta) sempre vencem em caminhos de call que aceitam auth explícito.
+- Segurança de override de URL:
+  - Overrides de URL do CLI (`--url`) nunca reutilizam credenciais implícitas de config/env.
+  - Overrides de URL do env (`OPENCRAFT_GATEWAY_URL`) podem usar apenas credenciais do env (`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
+- Padrões do modo local:
+  - token: `OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token` -> `gateway.remote.token` (fallback remoto se aplica apenas quando a entrada de auth token local não está definida)
+  - password: `OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password` -> `gateway.remote.password` (fallback remoto se aplica apenas quando a entrada de auth password local não está definida)
+- Padrões do modo remoto:
   - token: `gateway.remote.token` -> `OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token`
   - password: `OPENCLAW_GATEWAY_PASSWORD` -> `gateway.remote.password` -> `gateway.auth.password`
-- Node-host local-mode exception: `gateway.remote.token` / `gateway.remote.password` are ignored.
-- Remote probe/status token checks are strict by default: they use `gateway.remote.token` only (no local token fallback) when targeting remote mode.
-- Legacy `CLAWDBOT_GATEWAY_*` env vars are only used by compatibility call paths; probe/status/auth resolution uses `OPENCRAFT_GATEWAY_*` only.
+- Exceção do node-host em modo local: `gateway.remote.token` / `gateway.remote.password` são ignorados.
+- Verificações de probe/status com token remoto são estritas por padrão: usam apenas `gateway.remote.token` (sem fallback de token local) ao direcionar o modo remoto.
+- Variáveis de env legadas `CLAWDBOT_GATEWAY_*` são usadas apenas por caminhos de call de compatibilidade; resolução de probe/status/auth usa apenas `OPENCRAFT_GATEWAY_*`.
 
-## Chat UI over SSH
+## Chat UI via SSH
 
-WebChat no longer uses a separate HTTP port. The SwiftUI chat UI connects directly to the Gateway WebSocket.
+O WebChat não usa mais uma porta HTTP separada. A chat UI do SwiftUI conecta diretamente ao WebSocket do Gateway.
 
-- Forward `18789` over SSH (see above), then connect clients to `ws://127.0.0.1:18789`.
-- On macOS, prefer the app’s “Remote over SSH” mode, which manages the tunnel automatically.
+- Encaminhe `18789` via SSH (veja acima), depois conecte clientes a `ws://127.0.0.1:18789`.
+- No macOS, prefira o modo "Remoto via SSH" do app, que gerencia o tunnel automaticamente.
 
-## macOS app “Remote over SSH”
+## App macOS "Remoto via SSH"
 
-The macOS menu bar app can drive the same setup end-to-end (remote status checks, WebChat, and Voice Wake forwarding).
+O app de barra de menu do macOS pode conduzir o mesmo setup de ponta a ponta (verificações de status remoto, WebChat e encaminhamento de Voice Wake).
 
-Runbook: [macOS remote access](/platforms/mac/remote).
+Runbook: [Acesso remoto macOS](/platforms/mac/remote).
 
-## Security rules (remote/VPN)
+## Regras de segurança (remoto/VPN)
 
-Short version: **keep the Gateway loopback-only** unless you’re sure you need a bind.
+Versão curta: **mantenha o Gateway somente em loopback** a menos que tenha certeza de que precisa de um bind.
 
-- **Loopback + SSH/Tailscale Serve** is the safest default (no public exposure).
-- Plaintext `ws://` is loopback-only by default. For trusted private networks,
-  set `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` on the client process as break-glass.
-- **Non-loopback binds** (`lan`/`tailnet`/`custom`, or `auto` when loopback is unavailable) must use auth tokens/passwords.
-- `gateway.remote.token` / `.password` are client credential sources. They do **not** configure server auth by themselves.
-- Local call paths can use `gateway.remote.*` as fallback only when `gateway.auth.*` is unset.
-- If `gateway.auth.token` / `gateway.auth.password` is explicitly configured via SecretRef and unresolved, resolution fails closed (no remote fallback masking).
-- `gateway.remote.tlsFingerprint` pins the remote TLS cert when using `wss://`.
-- **Tailscale Serve** can authenticate Control UI/WebSocket traffic via identity
-  headers when `gateway.auth.allowTailscale: true`; HTTP API endpoints still
-  require token/password auth. This tokenless flow assumes the gateway host is
-  trusted. Set it to `false` if you want tokens/passwords everywhere.
-- Treat browser control like operator access: tailnet-only + deliberate node pairing.
+- **Loopback + SSH/Tailscale Serve** é o padrão mais seguro (sem exposição pública).
+- `ws://` em texto puro é somente loopback por padrão. Para redes privadas confiáveis,
+  defina `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` no processo cliente como break-glass.
+- **Binds não-loopback** (`lan`/`tailnet`/`custom`, ou `auto` quando loopback não está disponível) devem usar tokens/passwords de autenticação.
+- `gateway.remote.token` / `.password` são fontes de credenciais do cliente. Eles **não** configuram a autenticação do servidor por si só.
+- Caminhos de call locais podem usar `gateway.remote.*` como fallback apenas quando `gateway.auth.*` não está definido.
+- Se `gateway.auth.token` / `gateway.auth.password` estiver explicitamente configurado via SecretRef e não resolvido, a resolução falha de forma fechada (sem fallback remoto mascarando).
+- `gateway.remote.tlsFingerprint` fixa o certificado TLS remoto ao usar `wss://`.
+- **Tailscale Serve** pode autenticar tráfego da Control UI/WebSocket via headers de identidade
+  quando `gateway.auth.allowTailscale: true`; endpoints da API HTTP ainda
+  requerem autenticação por token/password. Esse fluxo sem token assume que o host do gateway é
+  confiável. Defina como `false` se quiser tokens/passwords em todo lugar.
+- Trate o controle via navegador como acesso de operador: somente tailnet + pareamento deliberado de nodes.
 
-Deep dive: [Security](/gateway/security).
+Mais detalhes: [Segurança](/gateway/security).
