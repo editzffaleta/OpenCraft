@@ -16,11 +16,11 @@ describe("cli json stdout contract", () => {
           ...process.env,
           HOME: tempHome,
           USERPROFILE: tempHome,
-          OPENCLAW_TEST_FAST: "1",
+          OPENCRAFT_TEST_FAST: "1",
         };
-        delete env.OPENCLAW_HOME;
-        delete env.OPENCLAW_STATE_DIR;
-        delete env.OPENCLAW_CONFIG_PATH;
+        delete env.OPENCRAFT_HOME;
+        delete env.OPENCRAFT_STATE_DIR;
+        delete env.OPENCRAFT_CONFIG_PATH;
         delete env.VITEST;
 
         const entry = path.resolve(process.cwd(), "openclaw.mjs");
@@ -38,7 +38,7 @@ describe("cli json stdout contract", () => {
         expect(stdout).not.toContain("Doctor changes");
         expect(stdout).not.toContain("Config invalid");
       },
-      { prefix: "openclaw-json-e2e-" },
+      { prefix: "opencraft-json-e2e-" },
     );
   });
 });

@@ -5,7 +5,7 @@ import {
   noteChannelLookupFailure,
   noteChannelLookupSummary,
   normalizeAccountId,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   parseMentionOrPrefixedId,
   patchChannelConfigForAccount,
   promptLegacyChannelAllowFrom,
@@ -37,7 +37,7 @@ import {
   SLACK_CHANNEL as channel,
 } from "./shared.js";
 
-function enableSlackAccount(cfg: OpenClawConfig, accountId: string): OpenClawConfig {
+function enableSlackAccount(cfg: OpenCraftConfig, accountId: string): OpenCraftConfig {
   return patchChannelConfigForAccount({
     cfg,
     channel,
@@ -69,10 +69,10 @@ async function resolveSlackAllowFromEntries(params: {
 }
 
 async function promptSlackAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   const accountId = resolveSetupAccountId({
     accountId: params.accountId,
     defaultAccountId: resolveDefaultSlackAccountId(params.cfg),
@@ -233,14 +233,17 @@ export const slackSetupWizard: ChannelSetupWizard = {
   dmPolicy: slackDmPolicy,
   allowFrom: {
     helpTitle: "Slack allowlist",
-    helpLines: [
-      "Allowlist Slack DMs by username (we resolve to user ids).",
-      "Examples:",
-      "- U12345678",
-      "- @alice",
-      "Multiple entries: comma-separated.",
-      `Docs: ${formatDocsLink("/slack", "slack")}`,
-    ],
+    // Lazy getter avoids calling formatDocsLink at module load time during CJS circular-dep init.
+    get helpLines() {
+      return [
+        "Allowlist Slack DMs by username (we resolve to user ids).",
+        "Examples:",
+        "- U12345678",
+        "- @alice",
+        "Multiple entries: comma-separated.",
+        `Docs: ${formatDocsLink("/slack", "slack")}`,
+      ];
+    },
     credentialInputKey: "botToken",
     message: "Slack allowFrom (usernames or ids)",
     placeholder: "@alice, U12345678",

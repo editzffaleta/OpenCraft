@@ -1,7 +1,7 @@
 import {
   DEFAULT_ACCOUNT_ID,
   hasConfiguredSecretInput,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   patchChannelConfigForAccount,
   setChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
@@ -17,8 +17,8 @@ import {
   parseTelegramAllowFromId,
   promptTelegramAllowFromForAccount,
   resolveTelegramAllowFromEntries,
-  TELEGRAM_TOKEN_HELP_LINES,
-  TELEGRAM_USER_ID_HELP_LINES,
+  getTelegramTokenHelpLines,
+  getTelegramUserIdHelpLines,
   telegramSetupAdapter,
 } from "./setup-core.js";
 
@@ -61,7 +61,9 @@ export const telegramSetupWizard: ChannelSetupWizard = {
       credentialLabel: "Telegram bot token",
       preferredEnvVar: "TELEGRAM_BOT_TOKEN",
       helpTitle: "Telegram bot token",
-      helpLines: TELEGRAM_TOKEN_HELP_LINES,
+      get helpLines() {
+        return getTelegramTokenHelpLines();
+      },
       envPrompt: "TELEGRAM_BOT_TOKEN detected. Use env var?",
       keepPrompt: "Telegram token already configured. Keep it?",
       inputPrompt: "Enter Telegram bot token",
@@ -85,7 +87,9 @@ export const telegramSetupWizard: ChannelSetupWizard = {
   ],
   allowFrom: {
     helpTitle: "Telegram user id",
-    helpLines: TELEGRAM_USER_ID_HELP_LINES,
+    get helpLines() {
+      return getTelegramUserIdHelpLines();
+    },
     credentialInputKey: "token",
     message: "Telegram allowFrom (numeric sender id; @username resolves to id)",
     placeholder: "@username",

@@ -1,9 +1,9 @@
 import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   type DiscordAccountConfig,
-} from "openclaw/plugin-sdk/discord";
+} from "opencraft/plugin-sdk/discord";
 import {
   hasConfiguredSecretInput,
   normalizeSecretInputString,
@@ -51,7 +51,7 @@ function inspectDiscordTokenValue(value: unknown): {
 }
 
 export function inspectDiscordAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   envToken?: string | null;
 }): InspectedDiscordAccount {

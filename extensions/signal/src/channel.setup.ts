@@ -2,7 +2,7 @@ import {
   createScopedAccountConfigAccessors,
   buildAccountScopedDmSecurityPolicy,
   collectAllowlistProviderRestrictSendersWarnings,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildChannelConfigSchema,
   DEFAULT_ACCOUNT_ID,
@@ -12,7 +12,7 @@ import {
   setAccountEnabledInConfigSection,
   SignalConfigSchema,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/signal";
+} from "opencraft/plugin-sdk/signal";
 import {
   listSignalAccountIds,
   resolveDefaultSignalAccountId,

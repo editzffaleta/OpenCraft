@@ -15,7 +15,7 @@ enum LogLocator {
     }
 
     private static var gatewayLog: URL {
-        logDir.appendingPathComponent("openclaw-gateway.log")
+        logDir.appendingPathComponent("opencraft-gateway.log")
     }
 
     private static func ensureLogDirExists() {

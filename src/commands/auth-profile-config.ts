@@ -1,7 +1,7 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 
 export function applyAuthProfileConfig(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   params: {
     profileId: string;
     provider: string;
@@ -9,7 +9,7 @@ export function applyAuthProfileConfig(
     email?: string;
     preferProfileFirst?: boolean;
   },
-): OpenClawConfig {
+): OpenCraftConfig {
   const normalizedProvider = params.provider.toLowerCase();
   const profiles = {
     ...cfg.auth?.profiles,

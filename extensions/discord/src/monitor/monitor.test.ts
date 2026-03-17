@@ -8,7 +8,7 @@ import type { Client } from "@buape/carbon";
 import { ChannelType } from "discord-api-types/v10";
 import type { GatewayPresenceUpdate } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../../src/config/config.js";
 import type { DiscordAccountConfig } from "../../../../src/config/types.discord.js";
 import { buildPluginBindingApprovalCustomId } from "../../../../src/plugins/conversation-binding.js";
 import { buildAgentSessionKey } from "../../../../src/routing/resolve-route.js";
@@ -115,7 +115,7 @@ vi.mock("../../../../src/plugins/interactive.js", async (importOriginal) => {
 });
 
 describe("agent components", () => {
-  const createCfg = (): OpenClawConfig => ({}) as OpenClawConfig;
+  const createCfg = (): OpenCraftConfig => ({}) as OpenCraftConfig;
 
   const createBaseDmInteraction = (overrides: Record<string, unknown> = {}) => {
     const reply = vi.fn().mockResolvedValue(undefined);
@@ -249,14 +249,14 @@ describe("agent components", () => {
 });
 
 describe("discord component interactions", () => {
-  const createCfg = (): OpenClawConfig =>
+  const createCfg = (): OpenCraftConfig =>
     ({
       channels: {
         discord: {
           replyToMode: "first",
         },
       },
-    }) as OpenClawConfig;
+    }) as OpenCraftConfig;
 
   const createDiscordConfig = (overrides?: Partial<DiscordAccountConfig>): DiscordAccountConfig =>
     ({
@@ -366,7 +366,7 @@ describe("discord component interactions", () => {
     deliverDiscordReplyMock.mockClear();
     recordInboundSessionMock.mockClear().mockResolvedValue(undefined);
     readSessionUpdatedAtMock.mockClear().mockReturnValue(undefined);
-    resolveStorePathMock.mockClear().mockReturnValue("/tmp/openclaw-sessions-test.json");
+    resolveStorePathMock.mockClear().mockReturnValue("/tmp/opencraft-sessions-test.json");
     dispatchPluginInteractiveHandlerMock.mockReset().mockResolvedValue({
       matched: false,
       handled: false,
@@ -376,8 +376,8 @@ describe("discord component interactions", () => {
       status: "approved",
       binding: {
         bindingId: "binding-1",
-        pluginId: "openclaw-codex-app-server",
-        pluginName: "OpenClaw App Server",
+        pluginId: "opencraft-codex-app-server",
+        pluginName: "OpenCraft App Server",
         pluginRoot: "/plugins/codex",
         channel: "discord",
         accountId: "default",
@@ -386,8 +386,8 @@ describe("discord component interactions", () => {
       },
       request: {
         id: "approval-1",
-        pluginId: "openclaw-codex-app-server",
-        pluginName: "OpenClaw App Server",
+        pluginId: "opencraft-codex-app-server",
+        pluginName: "OpenCraft App Server",
         pluginRoot: "/plugins/codex",
         requestedAt: Date.now(),
         conversation: {
@@ -498,7 +498,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         allowFrom: ["owner-1"],
       }),
     );
@@ -530,7 +530,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         allowFrom: ["123456789"],
       }),
     );
@@ -574,7 +574,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         allowFrom: ["owner-1"],
       }),
     );
@@ -616,7 +616,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         allowFrom: ["123456789"],
       }),
     );
@@ -995,14 +995,14 @@ describe("resolveDiscordPresenceUpdate", () => {
     const presence = resolveDiscordPresenceUpdate({
       activity: "Live",
       activityType: 1,
-      activityUrl: "https://twitch.tv/openclaw",
+      activityUrl: "https://twitch.tv/opencraft",
     });
     expect(presence).not.toBeNull();
     expect(presence?.activities).toHaveLength(1);
     expect(presence?.activities[0]).toMatchObject({
       type: 1,
       name: "Live",
-      url: "https://twitch.tv/openclaw",
+      url: "https://twitch.tv/opencraft",
     });
   });
 });

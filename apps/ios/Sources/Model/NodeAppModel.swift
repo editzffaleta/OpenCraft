@@ -697,7 +697,7 @@ final class NodeAppModel {
                         paramsJSON: nil,
                         timeoutSeconds: 6
                     )
-                    guard let decoded = try? JSONDecoder().decode(OpenClawGatewayHealthOK.self, from: data) else {
+                    guard let decoded = try? JSONDecoder().decode(OpenCraftGatewayHealthOK.self, from: data) else {
                         return false
                     }
                     return decoded.ok ?? false
@@ -1150,7 +1150,7 @@ final class NodeAppModel {
         if finalStatus == .authorized || finalStatus == .provisional || finalStatus == .ephemeral {
             let addResult = await self.runNotificationCall(timeoutSeconds: 2.0) { [notificationCenter] in
                 let content = UNMutableNotificationContent()
-                content.title = "OpenClaw"
+                content.title = "OpenCraft"
                 content.body = text
                 content.sound = .default
                 content.userInfo = ["messageId": messageId]
@@ -2229,7 +2229,7 @@ extension NodeAppModel {
 
         let payload = SharedContentPayload(
             title: "OpenClaw Share Self-Test",
-            url: URL(string: "https://openclaw.ai/share-self-test"),
+            url: URL(string: "https://opencraft.ai/share-self-test"),
             text: "Validate iOS share->deep-link->gateway forwarding.")
         guard let deepLink = ShareToAgentDeepLink.buildURL(
             from: payload,

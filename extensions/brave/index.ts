@@ -4,14 +4,14 @@ import {
   setTopLevelCredentialValue,
 } from "../../src/agents/tools/web-search-plugin-factory.js";
 import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
 
 const bravePlugin = {
   id: "brave",
   name: "Brave Plugin",
   description: "Bundled Brave plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerWebSearchProvider(
       createPluginBackedWebSearchProvider({
         id: "brave",
@@ -20,7 +20,7 @@ const bravePlugin = {
         envVars: ["BRAVE_API_KEY"],
         placeholder: "BSA...",
         signupUrl: "https://brave.com/search/api/",
-        docsUrl: "https://docs.openclaw.ai/brave-search",
+        docsUrl: "https://docs.opencraft.ai/brave-search",
         autoDetectOrder: 10,
         getCredentialValue: getTopLevelCredentialValue,
         setCredentialValue: setTopLevelCredentialValue,

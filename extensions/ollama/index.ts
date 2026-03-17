@@ -1,11 +1,11 @@
 import {
   emptyPluginConfigSchema,
-  type OpenClawPluginApi,
+  type OpenCraftPluginApi,
   type ProviderAuthContext,
   type ProviderAuthMethodNonInteractiveContext,
   type ProviderAuthResult,
   type ProviderDiscoveryContext,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import { OLLAMA_DEFAULT_BASE_URL } from "../../src/agents/ollama-defaults.js";
 import { resolveOllamaApiBase } from "../../src/agents/ollama-models.js";
 
@@ -13,7 +13,7 @@ const PROVIDER_ID = "ollama";
 const DEFAULT_API_KEY = "ollama-local";
 
 async function loadProviderSetup() {
-  return await import("openclaw/plugin-sdk/ollama-setup");
+  return await import("opencraft/plugin-sdk/ollama-setup");
 }
 
 const ollamaPlugin = {
@@ -21,7 +21,7 @@ const ollamaPlugin = {
   name: "Ollama Provider",
   description: "Bundled Ollama provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Ollama",

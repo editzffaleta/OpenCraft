@@ -139,8 +139,8 @@ private struct ChatBubbleShape: InsettableShape {
 
 @MainActor
 struct ChatMessageBubble: View {
-    let message: OpenClawChatMessage
-    let style: OpenClawChatView.Style
+    let message: OpenCraftChatMessage
+    let style: OpenCraftChatView.Style
     let markdownVariant: ChatMarkdownVariant
     let userAccent: Color?
     let showsAssistantTrace: Bool
@@ -163,16 +163,16 @@ struct ChatMessageBubble: View {
 
 @MainActor
 private struct ChatMessageBody: View {
-    let message: OpenClawChatMessage
+    let message: OpenCraftChatMessage
     let isUser: Bool
-    let style: OpenClawChatView.Style
+    let style: OpenCraftChatView.Style
     let markdownVariant: ChatMarkdownVariant
     let userAccent: Color?
     let showsAssistantTrace: Bool
 
     var body: some View {
         let text = self.primaryText
-        let textColor = self.isUser ? OpenClawChatTheme.userText : OpenClawChatTheme.assistantText
+        let textColor = self.isUser ? OpenCraftChatTheme.userText : OpenCraftChatTheme.assistantText
 
         VStack(alignment: .leading, spacing: 10) {
             if self.isToolResultMessage, self.showsAssistantTrace {
@@ -244,7 +244,7 @@ private struct ChatMessageBody: View {
         return parts.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var inlineAttachments: [OpenClawChatMessageContent] {
+    private var inlineAttachments: [OpenCraftChatMessageContent] {
         self.message.content.filter { content in
             switch content.type ?? "text" {
             case "file", "attachment":
@@ -255,7 +255,7 @@ private struct ChatMessageBody: View {
         }
     }
 
-    private var toolCalls: [OpenClawChatMessageContent] {
+    private var toolCalls: [OpenCraftChatMessageContent] {
         self.message.content.filter { content in
             let kind = (content.type ?? "").lowercased()
             if ["toolcall", "tool_call", "tooluse", "tool_use"].contains(kind) {
@@ -265,7 +265,7 @@ private struct ChatMessageBody: View {
         }
     }
 
-    private var inlineToolResults: [OpenClawChatMessageContent] {
+    private var inlineToolResults: [OpenCraftChatMessageContent] {
         self.message.content.filter { content in
             let kind = (content.type ?? "").lowercased()
             return kind == "toolresult" || kind == "tool_result"
@@ -288,12 +288,12 @@ private struct ChatMessageBody: View {
 
     private var bubbleFillColor: Color {
         if self.isUser {
-            return self.userAccent ?? OpenClawChatTheme.userBubble
+            return self.userAccent ?? OpenCraftChatTheme.userBubble
         }
         if self.style == .onboarding {
-            return OpenClawChatTheme.onboardingAssistantBubble
+            return OpenCraftChatTheme.onboardingAssistantBubble
         }
-        return OpenClawChatTheme.assistantBubble
+        return OpenCraftChatTheme.assistantBubble
     }
 
     private var bubbleBackground: AnyShapeStyle {
@@ -305,7 +305,7 @@ private struct ChatMessageBody: View {
             return Color.white.opacity(0.12)
         }
         if self.style == .onboarding {
-            return OpenClawChatTheme.onboardingAssistantBorder
+            return OpenCraftChatTheme.onboardingAssistantBorder
         }
         return Color.white.opacity(0.08)
     }
@@ -351,7 +351,7 @@ private struct ChatMessageBody: View {
 }
 
 private struct AttachmentRow: View {
-    let att: OpenClawChatMessageContent
+    let att: OpenCraftChatMessageContent
     let isUser: Bool
 
     var body: some View {
@@ -360,7 +360,7 @@ private struct AttachmentRow: View {
             Text(self.att.fileName ?? "Attachment")
                 .font(.footnote)
                 .lineLimit(1)
-                .foregroundStyle(self.isUser ? OpenClawChatTheme.userText : OpenClawChatTheme.assistantText)
+                .foregroundStyle(self.isUser ? OpenCraftChatTheme.userText : OpenCraftChatTheme.assistantText)
             Spacer()
         }
         .padding(10)
@@ -370,7 +370,7 @@ private struct AttachmentRow: View {
 }
 
 private struct ToolCallCard: View {
-    let content: OpenClawChatMessageContent
+    let content: OpenCraftChatMessageContent
     let isUser: Bool
 
     var body: some View {
@@ -391,7 +391,7 @@ private struct ToolCallCard: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(OpenClawChatTheme.subtleCard)
+                .fill(OpenCraftChatTheme.subtleCard)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)))
@@ -428,7 +428,7 @@ private struct ToolResultCard: View {
 
                 Text(self.displayText)
                     .font(.footnote.monospaced())
-                    .foregroundStyle(self.isUser ? OpenClawChatTheme.userText : OpenClawChatTheme.assistantText)
+                    .foregroundStyle(self.isUser ? OpenCraftChatTheme.userText : OpenCraftChatTheme.assistantText)
                     .lineLimit(self.expanded ? nil : Self.previewLineLimit)
 
                 if self.shouldShowToggle {
@@ -443,7 +443,7 @@ private struct ToolResultCard: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(OpenClawChatTheme.subtleCard)
+                    .fill(OpenCraftChatTheme.subtleCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)))
@@ -472,7 +472,7 @@ private struct ToolResultCard: View {
 
 @MainActor
 struct ChatTypingIndicatorBubble: View {
-    let style: OpenClawChatView.Style
+    let style: OpenCraftChatView.Style
 
     var body: some View {
         HStack(spacing: 10) {
@@ -483,7 +483,7 @@ struct ChatTypingIndicatorBubble: View {
         .padding(.horizontal, self.style == .standard ? 12 : 14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(OpenClawChatTheme.assistantBubble))
+                .fill(OpenCraftChatTheme.assistantBubble))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
@@ -503,7 +503,7 @@ private extension View {
         self
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(OpenClawChatTheme.assistantBubble))
+                    .fill(OpenCraftChatTheme.assistantBubble))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
@@ -532,7 +532,7 @@ struct ChatStreamingAssistantBubble: View {
 
 @MainActor
 struct ChatPendingToolsBubble: View {
-    let toolCalls: [OpenClawChatPendingToolCall]
+    let toolCalls: [OpenCraftChatPendingToolCall]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -628,7 +628,7 @@ private struct ChatAssistantTextBody: View {
                     context: .assistant,
                     variant: self.markdownVariant,
                     font: font,
-                    textColor: OpenClawChatTheme.assistantText)
+                    textColor: OpenCraftChatTheme.assistantText)
             }
         }
     }

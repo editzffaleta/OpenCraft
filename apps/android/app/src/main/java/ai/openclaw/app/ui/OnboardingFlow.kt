@@ -517,7 +517,7 @@ fun OnboardingFlow(viewModel: MainViewModel, modifier: Modifier = Modifier) {
           verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
           Text(
-            "OpenClaw",
+            "OpenCraft",
             style = onboardingDisplayStyle,
             color = onboardingText,
           )

@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/openai-provider",
+  "name": "@opencraft/openai-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw OpenAI provider plugins",
+  "description": "OpenCraft OpenAI provider plugins",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

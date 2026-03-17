@@ -1,5 +1,5 @@
 import Foundation
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import OpenClawKit
 import OpenClawProtocol
 

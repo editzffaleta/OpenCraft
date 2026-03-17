@@ -154,7 +154,7 @@ struct MacGatewayChatTransport: OpenClawChatTransport {
         switch push {
         case let .snapshot(hello):
             let ok = (try? JSONDecoder().decode(
-                OpenClawGatewayHealthOK.self,
+                OpenCraftGatewayHealthOK.self,
                 from: JSONEncoder().encode(hello.snapshot.health)))?.ok ?? true
             return .health(ok: ok)
 
@@ -163,7 +163,7 @@ struct MacGatewayChatTransport: OpenClawChatTransport {
             case "health":
                 guard let payload = evt.payload else { return nil }
                 let ok = (try? JSONDecoder().decode(
-                    OpenClawGatewayHealthOK.self,
+                    OpenCraftGatewayHealthOK.self,
                     from: JSONEncoder().encode(payload)))?.ok ?? true
                 return .health(ok: ok)
             case "tick":
@@ -180,7 +180,7 @@ struct MacGatewayChatTransport: OpenClawChatTransport {
             case "agent":
                 guard let payload = evt.payload else { return nil }
                 guard let agent = try? JSONDecoder().decode(
-                    OpenClawAgentEventPayload.self,
+                    OpenCraftAgentEventPayload.self,
                     from: JSONEncoder().encode(payload))
                 else {
                     return nil

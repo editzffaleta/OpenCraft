@@ -1,5 +1,5 @@
-import type { OpenClawConfig } from "../config/config.js";
-import { loadOpenClawPlugins } from "../plugins/loader.js";
+import type { OpenCraftConfig } from "../config/config.js";
+import { loadOpenCraftPlugins } from "../plugins/loader.js";
 import { getActivePluginRegistry } from "../plugins/runtime.js";
 import type { SpeechProviderPlugin } from "../plugins/types.js";
 import type { SpeechProviderId } from "./provider-types.js";
@@ -7,11 +7,14 @@ import { buildElevenLabsSpeechProvider } from "./providers/elevenlabs.js";
 import { buildMicrosoftSpeechProvider } from "./providers/microsoft.js";
 import { buildOpenAISpeechProvider } from "./providers/openai.js";
 
-const BUILTIN_SPEECH_PROVIDERS: readonly SpeechProviderPlugin[] = [
-  buildOpenAISpeechProvider(),
-  buildElevenLabsSpeechProvider(),
-  buildMicrosoftSpeechProvider(),
-];
+// Lazy to avoid calling builders at module load time during CJS circular-dep init.
+function getBuiltinSpeechProviders(): readonly SpeechProviderPlugin[] {
+  return [
+    buildOpenAISpeechProvider(),
+    buildElevenLabsSpeechProvider(),
+    buildMicrosoftSpeechProvider(),
+  ];
+}
 
 function trimToUndefined(value: string | undefined): string | undefined {
   const trimmed = value?.trim().toLowerCase();
@@ -28,16 +31,16 @@ export function normalizeSpeechProviderId(
   return normalized === "edge" ? "microsoft" : normalized;
 }
 
-function resolveSpeechProviderPluginEntries(cfg?: OpenClawConfig): SpeechProviderPlugin[] {
+function resolveSpeechProviderPluginEntries(cfg?: OpenCraftConfig): SpeechProviderPlugin[] {
   const active = getActivePluginRegistry();
   const registry =
     (active?.speechProviders?.length ?? 0) > 0 || !cfg
       ? active
-      : loadOpenClawPlugins({ config: cfg });
+      : loadOpenCraftPlugins({ config: cfg });
   return registry?.speechProviders?.map((entry) => entry.provider) ?? [];
 }
 
-function buildProviderMaps(cfg?: OpenClawConfig): {
+function buildProviderMaps(cfg?: OpenCraftConfig): {
   canonical: Map<string, SpeechProviderPlugin>;
   aliases: Map<string, SpeechProviderPlugin>;
 } {
@@ -58,7 +61,7 @@ function buildProviderMaps(cfg?: OpenClawConfig): {
     }
   };
 
-  for (const provider of BUILTIN_SPEECH_PROVIDERS) {
+  for (const provider of getBuiltinSpeechProviders()) {
     register(provider);
   }
   for (const provider of resolveSpeechProviderPluginEntries(cfg)) {
@@ -68,13 +71,13 @@ function buildProviderMaps(cfg?: OpenClawConfig): {
   return { canonical, aliases };
 }
 
-export function listSpeechProviders(cfg?: OpenClawConfig): SpeechProviderPlugin[] {
+export function listSpeechProviders(cfg?: OpenCraftConfig): SpeechProviderPlugin[] {
   return [...buildProviderMaps(cfg).canonical.values()];
 }
 
 export function getSpeechProvider(
   providerId: string | undefined,
-  cfg?: OpenClawConfig,
+  cfg?: OpenCraftConfig,
 ): SpeechProviderPlugin | undefined {
   const normalized = normalizeSpeechProviderId(providerId);
   if (!normalized) {

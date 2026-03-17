@@ -1,5 +1,5 @@
 import type { ApiKeyCredential } from "../../../agents/auth-profiles/types.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { OpenCraftConfig } from "../../../config/config.js";
 import type { SecretInput } from "../../../config/types.secrets.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { resolveDefaultSecretProviderAlias } from "../../../secrets/ref-contract.js";
@@ -26,12 +26,12 @@ type ResolvedNonInteractiveApiKey = NonNullable<
 >;
 
 export async function applyNonInteractiveAuthChoice(params: {
-  nextConfig: OpenClawConfig;
+  nextConfig: OpenCraftConfig;
   authChoice: AuthChoice;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: OpenClawConfig;
-}): Promise<OpenClawConfig | null> {
+  baseConfig: OpenCraftConfig;
+}): Promise<OpenCraftConfig | null> {
   const { opts, runtime, baseConfig } = params;
   const authChoice = normalizeApiKeyTokenProviderAuthChoice({
     authChoice: params.authChoice,

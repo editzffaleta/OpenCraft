@@ -4,14 +4,14 @@
  */
 
 import crypto from "node:crypto";
-import type { SessionEntry } from "openclaw/plugin-sdk/voice-call";
+import type { SessionEntry } from "opencraft/plugin-sdk/voice-call";
 import type { VoiceCallConfig } from "./config.js";
 import type { CoreAgentDeps, CoreConfig } from "./core-bridge.js";
 
 export type VoiceResponseParams = {
   /** Voice call config */
   voiceConfig: VoiceCallConfig;
-  /** Core OpenClaw config */
+  /** Core OpenCraft config */
   coreConfig: CoreConfig;
   /** Injected host agent runtime */
   agentRuntime: CoreAgentDeps;

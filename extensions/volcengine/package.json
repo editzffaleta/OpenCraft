@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/volcengine-provider",
+  "name": "@opencraft/volcengine-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Volcengine provider plugin",
+  "description": "OpenCraft Volcengine provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

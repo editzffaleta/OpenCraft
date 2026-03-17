@@ -3,7 +3,7 @@ import type { AgentTool, AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { TSchema } from "@sinclair/typebox";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import type { ReplyPayload } from "../../auto-reply/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import type { PollInput } from "../../polls.js";
 import type { GatewayClientMode, GatewayClientName } from "../../utils/message-channel.js";
 import type { ChatType } from "../chat-type.js";
@@ -19,7 +19,7 @@ export type ChannelAgentTool = AgentTool<TSchema, unknown> & {
   ownerOnly?: boolean;
 };
 
-export type ChannelAgentToolFactory = (params: { cfg?: OpenClawConfig }) => ChannelAgentTool[];
+export type ChannelAgentToolFactory = (params: { cfg?: OpenCraftConfig }) => ChannelAgentTool[];
 
 export type ChannelSetupInput = {
   name?: string;
@@ -171,7 +171,7 @@ export type ChannelLogSink = {
 };
 
 export type ChannelGroupContext = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   groupId?: string | null;
   /** Human label for channel-like group conversations (e.g. #general). */
   groupChannel?: string | null;
@@ -208,7 +208,7 @@ export type ChannelSecurityDmPolicy = {
 };
 
 export type ChannelSecurityContext<ResolvedAccount = unknown> = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   account: ResolvedAccount;
 };
@@ -216,18 +216,18 @@ export type ChannelSecurityContext<ResolvedAccount = unknown> = {
 export type ChannelMentionAdapter = {
   stripRegexes?: (params: {
     ctx: MsgContext;
-    cfg: OpenClawConfig | undefined;
+    cfg: OpenCraftConfig | undefined;
     agentId?: string;
   }) => RegExp[];
   stripPatterns?: (params: {
     ctx: MsgContext;
-    cfg: OpenClawConfig | undefined;
+    cfg: OpenCraftConfig | undefined;
     agentId?: string;
   }) => string[];
   stripMentions?: (params: {
     text: string;
     ctx: MsgContext;
-    cfg: OpenClawConfig | undefined;
+    cfg: OpenCraftConfig | undefined;
     agentId?: string;
   }) => string;
 };
@@ -242,7 +242,7 @@ export type ChannelStreamingAdapter = {
 export type ChannelCrossContextComponentsFactory = (params: {
   originLabel: string;
   message: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }) => TopLevelComponents[];
 
@@ -273,7 +273,7 @@ export type ChannelOutboundSessionRoute = {
 
 export type ChannelThreadingAdapter = {
   resolveReplyToMode?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     chatType?: string | null;
   }) => "off" | "first" | "all";
@@ -289,26 +289,26 @@ export type ChannelThreadingAdapter = {
    */
   allowTagsWhenOff?: boolean;
   buildToolContext?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     context: ChannelThreadingContext;
     hasRepliedRef?: { value: boolean };
   }) => ChannelThreadingToolContext | undefined;
   resolveAutoThreadId?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     to: string;
     toolContext?: ChannelThreadingToolContext;
     replyToId?: string | null;
   }) => string | undefined;
   resolveReplyTransport?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     threadId?: string | number | null;
     replyToId?: string | null;
   }) => ChannelReplyTransport | null;
   resolveFocusedBinding?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     context: ChannelThreadingContext;
   }) => ChannelFocusedBindingContext | null;
@@ -353,7 +353,7 @@ export type ChannelMessagingAdapter = {
   inferTargetChatType?: (params: { to: string }) => ChatType | undefined;
   buildCrossContextComponents?: ChannelCrossContextComponentsFactory;
   enableInteractiveReplies?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
   }) => boolean;
   hasStructuredReplyPayload?: (params: { payload: ReplyPayload }) => boolean;
@@ -361,7 +361,7 @@ export type ChannelMessagingAdapter = {
     looksLikeId?: (raw: string, normalized?: string) => boolean;
     hint?: string;
     resolveTarget?: (params: {
-      cfg: OpenClawConfig;
+      cfg: OpenCraftConfig;
       accountId?: string | null;
       input: string;
       normalized: string;
@@ -379,7 +379,7 @@ export type ChannelMessagingAdapter = {
     kind?: ChannelDirectoryEntryKind;
   }) => string;
   resolveOutboundSessionRoute?: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     agentId: string;
     accountId?: string | null;
     target: string;
@@ -395,7 +395,7 @@ export type ChannelMessagingAdapter = {
 };
 
 export type ChannelAgentPromptAdapter = {
-  messageToolHints?: (params: { cfg: OpenClawConfig; accountId?: string | null }) => string[];
+  messageToolHints?: (params: { cfg: OpenCraftConfig; accountId?: string | null }) => string[];
 };
 
 export type ChannelDirectoryEntryKind = "user" | "group" | "channel";
@@ -415,7 +415,7 @@ export type ChannelMessageActionName = ChannelMessageActionNameFromList;
 export type ChannelMessageActionContext = {
   channel: ChannelId;
   action: ChannelMessageActionName;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   params: Record<string, unknown>;
   mediaLocalRoots?: readonly string[];
   accountId?: string | null;
@@ -449,9 +449,9 @@ export type ChannelMessageActionAdapter = {
    * not inferred from `outbound.sendPoll`, so channels that want agents to
    * create polls should include `"poll"` here when enabled.
    */
-  listActions?: (params: { cfg: OpenClawConfig }) => ChannelMessageActionName[];
+  listActions?: (params: { cfg: OpenCraftConfig }) => ChannelMessageActionName[];
   supportsAction?: (params: { action: ChannelMessageActionName }) => boolean;
-  getCapabilities?: (params: { cfg: OpenClawConfig }) => readonly ChannelMessageCapability[];
+  getCapabilities?: (params: { cfg: OpenCraftConfig }) => readonly ChannelMessageCapability[];
   requiresTrustedRequesterSender?: (params: {
     action: ChannelMessageActionName;
     toolContext?: ChannelThreadingToolContext;
@@ -469,7 +469,7 @@ export type ChannelPollResult = {
 };
 
 export type ChannelPollContext = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   to: string;
   poll: PollInput;
   accountId?: string | null;

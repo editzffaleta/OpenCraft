@@ -1459,7 +1459,7 @@ final class TalkModeManager: NSObject {
             guard evt.event == "agent", let payload = evt.payload else { continue }
             guard let agentEvent = try? GatewayPayloadDecoding.decode(
                 payload,
-                as: OpenClawAgentEventPayload.self
+                as: OpenCraftAgentEventPayload.self
             ) else {
                 continue
             }

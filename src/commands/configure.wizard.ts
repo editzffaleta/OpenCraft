@@ -1,7 +1,7 @@
 import fsPromises from "node:fs/promises";
 import nodePath from "node:path";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { readConfigFileSnapshot, resolveGatewayPort, writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
 import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
@@ -49,7 +49,7 @@ import { setupSkills } from "./onboard-skills.js";
 type ConfigureSectionChoice = WizardSection | "__continue";
 
 async function resolveGatewaySecretInputForWizard(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   value: unknown;
   path: string;
 }): Promise<string | undefined> {
@@ -66,7 +66,7 @@ async function resolveGatewaySecretInputForWizard(params: {
 }
 
 async function runGatewayHealthCheck(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   runtime: RuntimeEnv;
   port: number;
 }): Promise<void> {
@@ -109,8 +109,8 @@ async function runGatewayHealthCheck(params: {
     note(
       [
         "Docs:",
-        "https://docs.openclaw.ai/gateway/health",
-        "https://docs.openclaw.ai/gateway/troubleshooting",
+        "https://docs.opencraft.ai/gateway/health",
+        "https://docs.opencraft.ai/gateway/troubleshooting",
       ].join("\n"),
       "Health check help",
     );
@@ -151,7 +151,7 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
         {
           value: "remove",
           label: "Remove channel config",
-          hint: "Delete channel tokens/settings from openclaw.json",
+          hint: "Delete channel tokens/settings from opencraft.json",
         },
       ],
       initialValue: "configure",
@@ -161,9 +161,9 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
 }
 
 async function promptWebToolsConfig(
-  nextConfig: OpenClawConfig,
+  nextConfig: OpenCraftConfig,
   runtime: RuntimeEnv,
-): Promise<OpenClawConfig> {
+): Promise<OpenCraftConfig> {
   const existingSearch = nextConfig.tools?.web?.search;
   const existingFetch = nextConfig.tools?.web?.fetch;
   const {
@@ -201,7 +201,7 @@ async function promptWebToolsConfig(
     [
       "Web search lets your agent look things up online using the `web_search` tool.",
       "Choose a provider and paste your API key.",
-      "Docs: https://docs.openclaw.ai/tools/web",
+      "Docs: https://docs.opencraft.ai/tools/web",
     ].join("\n"),
     "Web search",
   );
@@ -273,7 +273,7 @@ async function promptWebToolsConfig(
           "No key stored yet — web_search won't work until a key is available.",
           `Store a key here or set ${envVarNames} in the Gateway environment.`,
           `Get your API key at: ${entry.signupUrl}`,
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://docs.opencraft.ai/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -312,11 +312,11 @@ export async function runConfigureWizard(
 ) {
   try {
     printWizardHeader(runtime);
-    intro(opts.command === "update" ? "OpenClaw update wizard" : "OpenClaw configure");
+    intro(opts.command === "update" ? "OpenCraft update wizard" : "OpenCraft configure");
     const prompter = createClackPrompter();
 
     const snapshot = await readConfigFileSnapshot();
-    const baseConfig: OpenClawConfig = snapshot.valid ? snapshot.config : {};
+    const baseConfig: OpenCraftConfig = snapshot.valid ? snapshot.config : {};
 
     if (snapshot.exists) {
       const title = snapshot.valid ? "Existing config detected" : "Invalid config";
@@ -326,14 +326,14 @@ export async function runConfigureWizard(
           [
             ...snapshot.issues.map((iss) => `- ${iss.path}: ${iss.message}`),
             "",
-            "Docs: https://docs.openclaw.ai/gateway/configuration",
+            "Docs: https://docs.opencraft.ai/gateway/configuration",
           ].join("\n"),
           "Config issues",
         );
       }
       if (!snapshot.valid) {
         outro(
-          `Config invalid. Run \`${formatCliCommand("openclaw doctor")}\` to repair it, then re-run configure.`,
+          `Config invalid. Run \`${formatCliCommand("opencraft doctor")}\` to repair it, then re-run configure.`,
         );
         runtime.exit(1);
         return;
@@ -692,7 +692,7 @@ export async function runConfigureWizard(
         `Web UI: ${links.httpUrl}`,
         `Gateway WS: ${links.wsUrl}`,
         gatewayStatusLine,
-        "Docs: https://docs.openclaw.ai/web/control-ui",
+        "Docs: https://docs.opencraft.ai/web/control-ui",
       ].join("\n"),
       "Control UI",
     );

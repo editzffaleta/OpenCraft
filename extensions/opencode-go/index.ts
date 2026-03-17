@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import { applyOpencodeGoConfig } from "../../src/commands/onboard-auth.config-opencode-go.js";
 import { OPENCODE_GO_DEFAULT_MODEL_REF } from "../../src/commands/opencode-go-model-default.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
@@ -10,7 +10,7 @@ const opencodeGoPlugin = {
   name: "OpenCode Go Provider",
   description: "Bundled OpenCode Go provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "OpenCode Go",

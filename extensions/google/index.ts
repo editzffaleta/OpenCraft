@@ -9,7 +9,7 @@ import {
 } from "../../src/commands/google-gemini-model-default.js";
 import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
 import { registerGoogleGeminiCliProvider } from "./gemini-cli-provider.js";
 import { isModernGoogleModel, resolveGoogle31ForwardCompatModel } from "./provider-models.js";
 
@@ -18,7 +18,7 @@ const googlePlugin = {
   name: "Google Plugin",
   description: "Bundled Google plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: "google",
       label: "Google AI Studio",
@@ -59,7 +59,7 @@ const googlePlugin = {
         envVars: ["GEMINI_API_KEY"],
         placeholder: "AIza...",
         signupUrl: "https://aistudio.google.com/apikey",
-        docsUrl: "https://docs.openclaw.ai/tools/web",
+        docsUrl: "https://docs.opencraft.ai/tools/web",
         autoDetectOrder: 20,
         getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "gemini"),
         setCredentialValue: (searchConfigTarget, value) =>

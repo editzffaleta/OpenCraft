@@ -1,5 +1,5 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk/matrix";
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/matrix";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/matrix";
+import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/matrix";
 import { matrixPlugin } from "./src/channel.js";
 import { setMatrixRuntime } from "./src/runtime.js";
 
@@ -8,7 +8,7 @@ const plugin = {
   name: "Matrix",
   description: "Matrix channel plugin (matrix-js-sdk)",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     setMatrixRuntime(api.runtime);
     api.registerChannel({ plugin: matrixPlugin });
   },

@@ -1,5 +1,5 @@
-import type { PluginRuntime } from "openclaw/plugin-sdk/test-utils";
-import { removeAckReactionAfterReply, shouldAckReaction } from "openclaw/plugin-sdk/test-utils";
+import type { PluginRuntime } from "opencraft/plugin-sdk/test-utils";
+import { removeAckReactionAfterReply, shouldAckReaction } from "opencraft/plugin-sdk/test-utils";
 import { vi } from "vitest";
 import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../../src/agents/defaults.js";
 
@@ -296,7 +296,7 @@ export function createPluginRuntimeMock(overrides: DeepPartial<PluginRuntime> = 
       })),
     },
     state: {
-      resolveStateDir: vi.fn(() => "/tmp/openclaw"),
+      resolveStateDir: vi.fn(() => "/tmp/opencraft"),
     },
     modelAuth: {
       getApiKeyForModel: vi.fn() as unknown as PluginRuntime["modelAuth"]["getApiKeyForModel"],

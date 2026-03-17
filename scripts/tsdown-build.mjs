@@ -2,7 +2,7 @@
 
 import { spawnSync } from "node:child_process";
 
-const logLevel = process.env.OPENCLAW_BUILD_VERBOSE ? "info" : "warn";
+const logLevel = process.env.OPENCRAFT_BUILD_VERBOSE ? "info" : "warn";
 const extraArgs = process.argv.slice(2);
 const result = spawnSync(
   "pnpm",

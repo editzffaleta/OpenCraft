@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/signal",
+  "name": "@opencraft/signal",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Signal channel plugin",
+  "description": "OpenCraft Signal channel plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ],

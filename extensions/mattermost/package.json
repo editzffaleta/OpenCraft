@@ -1,13 +1,13 @@
 {
-  "name": "@openclaw/mattermost",
+  "name": "@opencraft/mattermost",
   "version": "2026.3.14",
-  "description": "OpenClaw Mattermost channel plugin",
+  "description": "OpenCraft Mattermost channel plugin",
   "type": "module",
   "dependencies": {
     "ws": "^8.19.0",
     "zod": "^4.3.6"
   },
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ],
@@ -22,7 +22,7 @@
       "order": 65
     },
     "install": {
-      "npmSpec": "@openclaw/mattermost",
+      "npmSpec": "@opencraft/mattermost",
       "localPath": "extensions/mattermost",
       "defaultChoice": "npm"
     }

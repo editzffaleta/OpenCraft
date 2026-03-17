@@ -2,8 +2,8 @@ import {
   buildAccountScopedAllowlistConfigEditor,
   buildAccountScopedDmSecurityPolicy,
   collectAllowlistProviderRestrictSendersWarnings,
-} from "openclaw/plugin-sdk/compat";
-import { buildAgentSessionKey, type RoutePeer } from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/compat";
+import { buildAgentSessionKey, type RoutePeer } from "opencraft/plugin-sdk/core";
 import {
   buildChannelConfigSchema,
   collectStatusIssuesFromLastError,
@@ -22,7 +22,7 @@ import {
   resolveIMessageGroupToolPolicy,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/imessage";
+} from "opencraft/plugin-sdk/imessage";
 import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";
 import { buildPassiveProbedChannelStatusSummary } from "../../shared/channel-status-summary.js";
 import {

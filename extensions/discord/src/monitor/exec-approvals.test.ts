@@ -16,7 +16,7 @@ import {
   type ExecApprovalButtonContext,
 } from "./exec-approvals.js";
 
-const STORE_PATH = path.join(os.tmpdir(), "openclaw-exec-approvals-test.json");
+const STORE_PATH = path.join(os.tmpdir(), "opencraft-exec-approvals-test.json");
 
 const writeStore = (store: Record<string, unknown>) => {
   fs.writeFileSync(STORE_PATH, `${JSON.stringify(store, null, 2)}\n`, "utf8");
@@ -932,9 +932,9 @@ describe("DiscordExecApprovalHandler gateway auth resolution", () => {
   });
 
   it("passes env URL overrides to shared gateway auth resolver", async () => {
-    const previousGatewayUrl = process.env.OPENCLAW_GATEWAY_URL;
+    const previousGatewayUrl = process.env.OPENCRAFT_GATEWAY_URL;
     try {
-      process.env.OPENCLAW_GATEWAY_URL = "wss://gateway-from-env.example/ws";
+      process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-from-env.example/ws";
       const handler = new DiscordExecApprovalHandler({
         token: "test-token",
         accountId: "default",
@@ -951,9 +951,9 @@ describe("DiscordExecApprovalHandler gateway auth resolution", () => {
       await handler.stop();
     } finally {
       if (typeof previousGatewayUrl === "string") {
-        process.env.OPENCLAW_GATEWAY_URL = previousGatewayUrl;
+        process.env.OPENCRAFT_GATEWAY_URL = previousGatewayUrl;
       } else {
-        delete process.env.OPENCLAW_GATEWAY_URL;
+        delete process.env.OPENCRAFT_GATEWAY_URL;
       }
     }
   });

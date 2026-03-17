@@ -6,7 +6,7 @@ import { resolveBundledPluginsDir } from "./bundled-dir.js";
 
 const tempDirs: string[] = [];
 const originalCwd = process.cwd();
-const originalBundledDir = process.env.OPENCLAW_BUNDLED_PLUGINS_DIR;
+const originalBundledDir = process.env.OPENCRAFT_BUNDLED_PLUGINS_DIR;
 
 function makeRepoRoot(prefix: string): string {
   const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -17,9 +17,9 @@ function makeRepoRoot(prefix: string): string {
 afterEach(() => {
   process.chdir(originalCwd);
   if (originalBundledDir === undefined) {
-    delete process.env.OPENCLAW_BUNDLED_PLUGINS_DIR;
+    delete process.env.OPENCRAFT_BUNDLED_PLUGINS_DIR;
   } else {
-    process.env.OPENCLAW_BUNDLED_PLUGINS_DIR = originalBundledDir;
+    process.env.OPENCRAFT_BUNDLED_PLUGINS_DIR = originalBundledDir;
   }
   for (const dir of tempDirs.splice(0, tempDirs.length)) {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -28,12 +28,12 @@ afterEach(() => {
 
 describe("resolveBundledPluginsDir", () => {
   it("prefers the staged runtime bundled plugin tree from the package root", () => {
-    const repoRoot = makeRepoRoot("openclaw-bundled-dir-runtime-");
+    const repoRoot = makeRepoRoot("opencraft-bundled-dir-runtime-");
     fs.mkdirSync(path.join(repoRoot, "dist-runtime", "extensions"), { recursive: true });
     fs.mkdirSync(path.join(repoRoot, "dist", "extensions"), { recursive: true });
     fs.writeFileSync(
       path.join(repoRoot, "package.json"),
-      `${JSON.stringify({ name: "openclaw" }, null, 2)}\n`,
+      `${JSON.stringify({ name: "opencraft" }, null, 2)}\n`,
       "utf8",
     );
 

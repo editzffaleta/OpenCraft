@@ -33,7 +33,7 @@ const BUNDLED_WEB_SEARCH_PROVIDER_REGISTRY = [
       envVars: ["BRAVE_API_KEY"],
       placeholder: "BSA...",
       signupUrl: "https://brave.com/search/api/",
-      docsUrl: "https://docs.openclaw.ai/brave-search",
+      docsUrl: "https://docs.opencraft.ai/brave-search",
       autoDetectOrder: 10,
       getCredentialValue: getTopLevelCredentialValue,
       setCredentialValue: setTopLevelCredentialValue,
@@ -48,7 +48,7 @@ const BUNDLED_WEB_SEARCH_PROVIDER_REGISTRY = [
       envVars: ["GEMINI_API_KEY"],
       placeholder: "AIza...",
       signupUrl: "https://aistudio.google.com/apikey",
-      docsUrl: "https://docs.openclaw.ai/tools/web",
+      docsUrl: "https://docs.opencraft.ai/tools/web",
       autoDetectOrder: 20,
       getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "gemini"),
       setCredentialValue: (searchConfigTarget, value) =>
@@ -64,7 +64,7 @@ const BUNDLED_WEB_SEARCH_PROVIDER_REGISTRY = [
       envVars: ["XAI_API_KEY"],
       placeholder: "xai-...",
       signupUrl: "https://console.x.ai/",
-      docsUrl: "https://docs.openclaw.ai/tools/web",
+      docsUrl: "https://docs.opencraft.ai/tools/web",
       autoDetectOrder: 30,
       getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "grok"),
       setCredentialValue: (searchConfigTarget, value) =>
@@ -80,7 +80,7 @@ const BUNDLED_WEB_SEARCH_PROVIDER_REGISTRY = [
       envVars: ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
       placeholder: "sk-...",
       signupUrl: "https://platform.moonshot.cn/",
-      docsUrl: "https://docs.openclaw.ai/tools/web",
+      docsUrl: "https://docs.opencraft.ai/tools/web",
       autoDetectOrder: 40,
       getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "kimi"),
       setCredentialValue: (searchConfigTarget, value) =>
@@ -96,7 +96,7 @@ const BUNDLED_WEB_SEARCH_PROVIDER_REGISTRY = [
       envVars: ["PERPLEXITY_API_KEY", "OPENROUTER_API_KEY"],
       placeholder: "pplx-...",
       signupUrl: "https://www.perplexity.ai/settings/api",
-      docsUrl: "https://docs.openclaw.ai/perplexity",
+      docsUrl: "https://docs.opencraft.ai/perplexity",
       autoDetectOrder: 50,
       getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "perplexity"),
       setCredentialValue: (searchConfigTarget, value) =>

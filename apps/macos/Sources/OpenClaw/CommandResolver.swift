@@ -101,7 +101,7 @@ enum CommandResolver {
 
     private static func openclawManagedPaths(home: URL) -> [String] {
         let bases = [
-            home.appendingPathComponent(".openclaw"),
+            home.appendingPathComponent(".opencraft"),
         ]
         var paths: [String] = []
         for base in bases {
@@ -417,7 +417,7 @@ enum CommandResolver {
         defaults: UserDefaults = .standard,
         configRoot: [String: Any]? = nil) -> RemoteSettings
     {
-        let root = configRoot ?? OpenClawConfigFile.loadDict()
+        let root = configRoot ?? OpenCraftConfigFile.loadDict()
         let mode = ConnectionModeResolver.resolve(root: root, defaults: defaults).mode
         let target = defaults.string(forKey: remoteTargetKey) ?? ""
         let identity = defaults.string(forKey: remoteIdentityKey) ?? ""

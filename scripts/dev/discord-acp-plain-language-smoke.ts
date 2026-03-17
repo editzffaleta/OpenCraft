@@ -42,7 +42,7 @@ type DiscordUser = {
 
 const execFileAsync = promisify(execFile);
 
-type DriverMode = "token" | "webhook" | "openclaw";
+type DriverMode = "token" | "webhook" | "opencraft";
 
 type Args = {
   channelId: string;
@@ -57,7 +57,7 @@ type Args = {
   mentionUserId?: string;
   instruction?: string;
   threadBindingsPath: string;
-  openclawBin: string;
+  opencraftBin: string;
   json: boolean;
 };
 
@@ -121,14 +121,15 @@ function parseNumber(value: string | undefined, fallback: number): number {
 }
 
 function resolveStateDir(): string {
-  const override = process.env.OPENCLAW_STATE_DIR?.trim() || process.env.CLAWDBOT_STATE_DIR?.trim();
+  const override =
+    process.env.OPENCRAFT_STATE_DIR?.trim() || process.env.CLAWDBOT_STATE_DIR?.trim();
   if (override) {
     return override.startsWith("~")
       ? path.resolve(process.env.HOME || "", override.slice(1))
       : path.resolve(override);
   }
-  const home = process.env.OPENCLAW_HOME?.trim() || process.env.HOME || "";
-  return path.join(home, ".openclaw");
+  const home = process.env.OPENCRAFT_HOME?.trim() || process.env.HOME || "";
+  return path.join(home, ".opencraft");
 }
 
 function resolveArg(flag: string): string | undefined {
@@ -151,13 +152,13 @@ function hasFlag(flag: string): boolean {
 function usage(): string {
   return (
     "Usage: bun scripts/dev/discord-acp-plain-language-smoke.ts " +
-    "--channel <discord-channel-id> [--token <driver-token> | --driver webhook --bot-token <bot-token> | --driver openclaw] [options]\n\n" +
+    "--channel <discord-channel-id> [--token <driver-token> | --driver webhook --bot-token <bot-token> | --driver opencraft] [options]\n\n" +
     "Manual live smoke only (not CI). Sends a plain-language instruction in Discord and verifies:\n" +
-    "1) OpenClaw spawned an ACP thread binding\n" +
+    "1) OpenCraft spawned an ACP thread binding\n" +
     "2) agent replied in that bound thread with the expected ACK token\n\n" +
     "Options:\n" +
     "  --channel <id>               Parent Discord channel id (required)\n" +
-    "  --driver <token|webhook|openclaw> Driver transport mode (default: token)\n" +
+    "  --driver <token|webhook|opencraft> Driver transport mode (default: token)\n" +
     "  --token <token>              Driver Discord token (required for driver=token)\n" +
     "  --token-prefix <prefix>      Auth prefix for --token (default: Bot)\n" +
     "  --bot-token <token>          Bot token for webhook driver mode\n" +
@@ -168,92 +169,96 @@ function usage(): string {
     "  --timeout-ms <n>             Total timeout in ms (default: 240000)\n" +
     "  --poll-ms <n>                Poll interval in ms (default: 1500)\n" +
     "  --thread-bindings-path <p>   Override thread-bindings json path\n" +
-    "  --openclaw-bin <path>        OpenClaw CLI binary for driver=openclaw (default: openclaw)\n" +
+    "  --opencraft-bin <path>        OpenCraft CLI binary for driver=opencraft (default: opencraft)\n" +
     "  --json                       Emit JSON output\n" +
     "\n" +
     "Environment fallbacks:\n" +
-    "  OPENCLAW_DISCORD_SMOKE_CHANNEL_ID\n" +
-    "  OPENCLAW_DISCORD_SMOKE_DRIVER\n" +
-    "  OPENCLAW_DISCORD_SMOKE_DRIVER_TOKEN\n" +
-    "  OPENCLAW_DISCORD_SMOKE_DRIVER_TOKEN_PREFIX\n" +
-    "  OPENCLAW_DISCORD_SMOKE_BOT_TOKEN\n" +
-    "  OPENCLAW_DISCORD_SMOKE_BOT_TOKEN_PREFIX\n" +
-    "  OPENCLAW_DISCORD_SMOKE_AGENT\n" +
-    "  OPENCLAW_DISCORD_SMOKE_MENTION_USER_ID\n" +
-    "  OPENCLAW_DISCORD_SMOKE_TIMEOUT_MS\n" +
-    "  OPENCLAW_DISCORD_SMOKE_POLL_MS\n" +
-    "  OPENCLAW_DISCORD_SMOKE_THREAD_BINDINGS_PATH\n" +
-    "  OPENCLAW_DISCORD_SMOKE_OPENCLAW_BIN"
+    "  OPENCRAFT_DISCORD_SMOKE_CHANNEL_ID\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_DRIVER\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_DRIVER_TOKEN\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_DRIVER_TOKEN_PREFIX\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_BOT_TOKEN\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_BOT_TOKEN_PREFIX\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_AGENT\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_MENTION_USER_ID\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_TIMEOUT_MS\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_POLL_MS\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_THREAD_BINDINGS_PATH\n" +
+    "  OPENCRAFT_DISCORD_SMOKE_OPENCRAFT_BIN"
   );
 }
 
 function parseArgs(): Args {
   const channelId =
     resolveArg("--channel") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_CHANNEL_ID ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_CHANNEL_ID ||
     process.env.CLAWDBOT_DISCORD_SMOKE_CHANNEL_ID ||
     "";
   const driverModeRaw =
     resolveArg("--driver") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_DRIVER ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_DRIVER ||
     process.env.CLAWDBOT_DISCORD_SMOKE_DRIVER ||
     "token";
   const normalizedDriverMode = driverModeRaw.trim().toLowerCase();
   const driverMode: DriverMode =
     normalizedDriverMode === "webhook"
       ? "webhook"
-      : normalizedDriverMode === "openclaw"
-        ? "openclaw"
+      : normalizedDriverMode === "opencraft"
+        ? "opencraft"
         : normalizedDriverMode === "token"
           ? "token"
           : "token";
   const driverToken =
     resolveArg("--token") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_DRIVER_TOKEN ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_DRIVER_TOKEN ||
     process.env.CLAWDBOT_DISCORD_SMOKE_DRIVER_TOKEN ||
     "";
   const driverTokenPrefix =
-    resolveArg("--token-prefix") || process.env.OPENCLAW_DISCORD_SMOKE_DRIVER_TOKEN_PREFIX || "Bot";
+    resolveArg("--token-prefix") ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_DRIVER_TOKEN_PREFIX ||
+    "Bot";
   const botToken =
     resolveArg("--bot-token") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_BOT_TOKEN ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_BOT_TOKEN ||
     process.env.CLAWDBOT_DISCORD_SMOKE_BOT_TOKEN ||
     process.env.DISCORD_BOT_TOKEN ||
     "";
   const botTokenPrefix =
     resolveArg("--bot-token-prefix") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_BOT_TOKEN_PREFIX ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_BOT_TOKEN_PREFIX ||
     "Bot";
   const targetAgent =
     resolveArg("--agent") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_AGENT ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_AGENT ||
     process.env.CLAWDBOT_DISCORD_SMOKE_AGENT ||
     "codex";
   const mentionUserId =
     resolveArg("--mention") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_MENTION_USER_ID ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_MENTION_USER_ID ||
     process.env.CLAWDBOT_DISCORD_SMOKE_MENTION_USER_ID ||
     undefined;
   const instruction =
     resolveArg("--instruction") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_INSTRUCTION ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_INSTRUCTION ||
     process.env.CLAWDBOT_DISCORD_SMOKE_INSTRUCTION ||
     undefined;
   const timeoutMs = parseNumber(
-    resolveArg("--timeout-ms") || process.env.OPENCLAW_DISCORD_SMOKE_TIMEOUT_MS,
+    resolveArg("--timeout-ms") || process.env.OPENCRAFT_DISCORD_SMOKE_TIMEOUT_MS,
     240_000,
   );
   const pollMs = parseNumber(
-    resolveArg("--poll-ms") || process.env.OPENCLAW_DISCORD_SMOKE_POLL_MS,
+    resolveArg("--poll-ms") || process.env.OPENCRAFT_DISCORD_SMOKE_POLL_MS,
     1_500,
   );
   const defaultBindingsPath = path.join(resolveStateDir(), "discord", "thread-bindings.json");
   const threadBindingsPath =
     resolveArg("--thread-bindings-path") ||
-    process.env.OPENCLAW_DISCORD_SMOKE_THREAD_BINDINGS_PATH ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_THREAD_BINDINGS_PATH ||
     defaultBindingsPath;
-  const openclawBin =
-    resolveArg("--openclaw-bin") || process.env.OPENCLAW_DISCORD_SMOKE_OPENCLAW_BIN || "openclaw";
+  const opencraftBin =
+    resolveArg("--opencraft-bin") ||
+    process.env.OPENCRAFT_DISCORD_SMOKE_OPENCRAFT_BIN ||
+    "opencraft";
   const json = hasFlag("--json");
 
   if (!channelId) {
@@ -279,34 +284,34 @@ function parseArgs(): Args {
     mentionUserId,
     instruction,
     threadBindingsPath,
-    openclawBin,
+    opencraftBin,
     json,
   };
 }
 
-async function openclawCliJson<T>(params: { openclawBin: string; args: string[] }): Promise<T> {
-  const result = await execFileAsync(params.openclawBin, params.args, {
+async function opencraftCliJson<T>(params: { opencraftBin: string; args: string[] }): Promise<T> {
+  const result = await execFileAsync(params.opencraftBin, params.args, {
     maxBuffer: 8 * 1024 * 1024,
     env: process.env,
   });
   const stdout = (result.stdout || "").trim();
   if (!stdout) {
-    throw new Error(`openclaw ${params.args.join(" ")} returned empty stdout`);
+    throw new Error(`opencraft ${params.args.join(" ")} returned empty stdout`);
   }
   return JSON.parse(stdout) as T;
 }
 
 async function readMessagesWithOpenclaw(params: {
-  openclawBin: string;
+  opencraftBin: string;
   target: string;
   limit: number;
 }): Promise<DiscordMessage[]> {
-  const response = await openclawCliJson<{
+  const response = await opencraftCliJson<{
     payload?: {
       messages?: DiscordMessage[];
     };
   }>({
-    openclawBin: params.openclawBin,
+    opencraftBin: params.opencraftBin,
     args: [
       "message",
       "read",
@@ -487,9 +492,9 @@ async function loadParentRecentMessages(params: {
   args: Args;
   readAuthHeader: string;
 }): Promise<DiscordMessage[]> {
-  if (params.args.driverMode === "openclaw") {
+  if (params.args.driverMode === "opencraft") {
     return await readMessagesWithOpenclaw({
-      openclawBin: params.args.openclawBin,
+      opencraftBin: params.args.opencraftBin,
       target: params.args.channelId,
       limit: 20,
     });
@@ -637,7 +642,7 @@ async function run(): Promise<SuccessResult | FailureResult> {
         path: `/channels/${encodeURIComponent(args.channelId)}/webhooks`,
         authHeader: botAuthHeader,
         body: {
-          name: `openclaw-acp-smoke-${smokeId.slice(-8)}`,
+          name: `opencraft-acp-smoke-${smokeId.slice(-8)}`,
         },
       });
       if (!webhook.id || !webhook.token) {
@@ -667,14 +672,14 @@ async function run(): Promise<SuccessResult | FailureResult> {
       senderAuthorId = sent.author?.id;
     } else {
       setupStage = "send-message";
-      const sent = await openclawCliJson<{
+      const sent = await opencraftCliJson<{
         payload?: {
           result?: {
             messageId?: string;
           };
         };
       }>({
-        openclawBin: args.openclawBin,
+        opencraftBin: args.opencraftBin,
         args: [
           "message",
           "send",
@@ -689,7 +694,7 @@ async function run(): Promise<SuccessResult | FailureResult> {
       });
       sentMessageId = String(sent.payload?.result?.messageId || "");
       if (!sentMessageId) {
-        throw new Error("openclaw message send did not return payload.result.messageId");
+        throw new Error("opencraft message send did not return payload.result.messageId");
       }
     }
   } catch (err) {
@@ -755,9 +760,9 @@ async function run(): Promise<SuccessResult | FailureResult> {
     while (Date.now() < deadline && !ackMessage) {
       try {
         const threadMessages =
-          args.driverMode === "openclaw"
+          args.driverMode === "opencraft"
             ? await readMessagesWithOpenclaw({
-                openclawBin: args.openclawBin,
+                opencraftBin: args.opencraftBin,
                 target: threadId,
                 limit: 50,
               })
@@ -794,7 +799,7 @@ async function run(): Promise<SuccessResult | FailureResult> {
         ok: false,
         stage: "wait-ack",
         smokeId,
-        error: `Thread bound (${threadId}) but timed out waiting for ACK token "${ackToken}" from OpenClaw.`,
+        error: `Thread bound (${threadId}) but timed out waiting for ACK token "${ackToken}" from OpenCraft.`,
         diagnostics: {
           bindingCandidates: [
             {

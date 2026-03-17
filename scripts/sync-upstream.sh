@@ -20,7 +20,7 @@ BOLD='\033[1m'
 RESET='\033[0m'
 
 # ── Constantes ───────────────────────────────────────────────────────────────
-UPSTREAM_URL="https://github.com/openclaw/openclaw.git"
+UPSTREAM_URL="https://github.com/editzffaleta/OpenCraft.git"
 UPSTREAM_REMOTE="upstream"
 UPSTREAM_BRANCH="main"
 DEFAULT_N=20
@@ -56,15 +56,15 @@ apply_renames() {
     # Renaming em cascata (mais específico primeiro para não fazer double-replace)
     # OpenClaw → OpenCraft (title case)
     sed -i '' \
-        -e 's/OpenClawDiscovery/OpenCraftDiscovery/g' \
-        -e 's/OpenClawMacCLI/OpenCraftMacCLI/g' \
-        -e 's|openclaw/openclaw|editzffaleta/OpenCraft|g' \
+        -e 's/OpenCraftDiscovery/OpenCraftDiscovery/g' \
+        -e 's/OpenCraftMacCLI/OpenCraftMacCLI/g' \
+        -e 's|editzffaleta/OpenCraft|editzffaleta/OpenCraft|g' \
         -e 's|openclaw\.ai|opencraft\.ai|g' \
         -e 's|docs\.openclaw\.ai|docs\.opencraft\.ai|g' \
-        -e 's|"OpenClaw"|"OpenCraft"|g' \
-        -e "s/'OpenClaw'/'OpenCraft'/g" \
-        -e 's/OpenClaw Gateway/OpenCraft Gateway/g' \
-        -e 's/OpenClaw CLI/OpenCraft CLI/g' \
+        -e 's|"OpenCraft"|"OpenCraft"|g' \
+        -e "s/'OpenCraft'/'OpenCraft'/g" \
+        -e 's/OpenCraft Gateway/OpenCraft Gateway/g' \
+        -e 's/OpenCraft CLI/OpenCraft CLI/g' \
         "$file" 2>/dev/null || true
 
     # openclaw → opencraft (lowercase) — exceto exceções
@@ -83,31 +83,31 @@ apply_renames() {
     # OPENCLAW_* build-time vars (Dockerfile ARGs, scripts internos) → OPENCRAFT_*
     # Exceção: manter OPENCLAW_GATEWAY_TOKEN e outros runtime env vars intactos
     sed -i '' \
-        -e 's/OPENCLAW_NODE_BOOKWORM/OPENCRAFT_NODE_BOOKWORM/g' \
-        -e 's/OPENCLAW_EXTENSIONS/OPENCRAFT_EXTENSIONS/g' \
-        -e 's/OPENCLAW_VARIANT/OPENCRAFT_VARIANT/g' \
-        -e 's/OPENCLAW_PREFER_PNPM/OPENCRAFT_PREFER_PNPM/g' \
-        -e 's/OPENCLAW_INSTALL_BROWSER/OPENCRAFT_INSTALL_BROWSER/g' \
-        -e 's/OPENCLAW_INSTALL_DOCKER_CLI/OPENCRAFT_INSTALL_DOCKER_CLI/g' \
-        -e 's/OPENCLAW_DOCKER_APT_PACKAGES/OPENCRAFT_DOCKER_APT_PACKAGES/g' \
-        -e 's/OPENCLAW_DOCKER_GPG_FINGERPRINT/OPENCRAFT_DOCKER_GPG_FINGERPRINT/g' \
-        -e 's/OPENCLAW_A2UI_/OPENCRAFT_A2UI_/g' \
-        -e 's/OPENCLAW_WATCH_MODE/OPENCRAFT_WATCH_MODE/g' \
-        -e 's/OPENCLAW_WATCH_SESSION/OPENCRAFT_WATCH_SESSION/g' \
-        -e 's/OPENCLAW_WATCH_COMMAND/OPENCRAFT_WATCH_COMMAND/g' \
-        -e 's/OPENCLAW_TEST_FAST/OPENCRAFT_TEST_FAST/g' \
-        -e 's/OPENCLAW_STATE_DIR/OPENCRAFT_STATE_DIR/g' \
-        -e 's/OPENCLAW_CONFIG_PATH/OPENCRAFT_CONFIG_PATH/g' \
-        -e 's/OPENCLAW_GATEWAY_PORT/OPENCRAFT_GATEWAY_PORT/g' \
-        -e 's/OPENCLAW_BIN/OPENCRAFT_BIN/g' \
-        -e 's/OPENCLAW_INSTALL_SH_NO_RUN/OPENCRAFT_INSTALL_SH_NO_RUN/g' \
-        -e 's/OPENCLAW_HOME/OPENCRAFT_HOME/g' \
-        -e 's/OPENCLAW_LIVE_TEST/OPENCRAFT_LIVE_TEST/g' \
-        -e 's/OPENCLAW_LIVE_GATEWAY/OPENCRAFT_LIVE_GATEWAY/g' \
-        -e 's/OPENCLAW_BRIDGE_/OPENCRAFT_BRIDGE_/g' \
-        -e 's/OPENCLAW_CANVAS_HOST_PORT/OPENCRAFT_CANVAS_HOST_PORT/g' \
-        -e 's/OPENCLAW_TEST_HOME/OPENCRAFT_TEST_HOME/g' \
-        -e 's/OPENCLAW_TEST_MEMORY/OPENCRAFT_TEST_MEMORY/g' \
+        -e 's/OPENCRAFT_NODE_BOOKWORM/OPENCRAFT_NODE_BOOKWORM/g' \
+        -e 's/OPENCRAFT_EXTENSIONS/OPENCRAFT_EXTENSIONS/g' \
+        -e 's/OPENCRAFT_VARIANT/OPENCRAFT_VARIANT/g' \
+        -e 's/OPENCRAFT_PREFER_PNPM/OPENCRAFT_PREFER_PNPM/g' \
+        -e 's/OPENCRAFT_INSTALL_BROWSER/OPENCRAFT_INSTALL_BROWSER/g' \
+        -e 's/OPENCRAFT_INSTALL_DOCKER_CLI/OPENCRAFT_INSTALL_DOCKER_CLI/g' \
+        -e 's/OPENCRAFT_DOCKER_APT_PACKAGES/OPENCRAFT_DOCKER_APT_PACKAGES/g' \
+        -e 's/OPENCRAFT_DOCKER_GPG_FINGERPRINT/OPENCRAFT_DOCKER_GPG_FINGERPRINT/g' \
+        -e 's/OPENCRAFT_A2UI_/OPENCRAFT_A2UI_/g' \
+        -e 's/OPENCRAFT_WATCH_MODE/OPENCRAFT_WATCH_MODE/g' \
+        -e 's/OPENCRAFT_WATCH_SESSION/OPENCRAFT_WATCH_SESSION/g' \
+        -e 's/OPENCRAFT_WATCH_COMMAND/OPENCRAFT_WATCH_COMMAND/g' \
+        -e 's/OPENCRAFT_TEST_FAST/OPENCRAFT_TEST_FAST/g' \
+        -e 's/OPENCRAFT_STATE_DIR/OPENCRAFT_STATE_DIR/g' \
+        -e 's/OPENCRAFT_CONFIG_PATH/OPENCRAFT_CONFIG_PATH/g' \
+        -e 's/OPENCRAFT_GATEWAY_PORT/OPENCRAFT_GATEWAY_PORT/g' \
+        -e 's/OPENCRAFT_BIN/OPENCRAFT_BIN/g' \
+        -e 's/OPENCRAFT_INSTALL_SH_NO_RUN/OPENCRAFT_INSTALL_SH_NO_RUN/g' \
+        -e 's/OPENCRAFT_HOME/OPENCRAFT_HOME/g' \
+        -e 's/OPENCRAFT_LIVE_TEST/OPENCRAFT_LIVE_TEST/g' \
+        -e 's/OPENCRAFT_LIVE_GATEWAY/OPENCRAFT_LIVE_GATEWAY/g' \
+        -e 's/OPENCRAFT_BRIDGE_/OPENCRAFT_BRIDGE_/g' \
+        -e 's/OPENCRAFT_CANVAS_HOST_PORT/OPENCRAFT_CANVAS_HOST_PORT/g' \
+        -e 's/OPENCRAFT_TEST_HOME/OPENCRAFT_TEST_HOME/g' \
+        -e 's/OPENCRAFT_TEST_MEMORY/OPENCRAFT_TEST_MEMORY/g' \
         "$file" 2>/dev/null || true
 }
 

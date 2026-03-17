@@ -1,5 +1,5 @@
 import { patchChannelConfigForAccount } from "../../../src/channels/plugins/setup-wizard-helpers.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import { hasConfiguredSecretInput } from "../../../src/config/types.secrets.js";
 import { formatAllowFromLowercase } from "../../../src/plugin-sdk/allow-from.js";
 import {
@@ -18,11 +18,11 @@ import {
 export const SLACK_CHANNEL = "slack" as const;
 
 function buildSlackManifest(botName: string) {
-  const safeName = botName.trim() || "OpenClaw";
+  const safeName = botName.trim() || "OpenCraft";
   const manifest = {
     display_information: {
       name: safeName,
-      description: `${safeName} connector for OpenClaw`,
+      description: `${safeName} connector for OpenCraft`,
     },
     features: {
       bot_user: {
@@ -35,8 +35,8 @@ function buildSlackManifest(botName: string) {
       },
       slash_commands: [
         {
-          command: "/openclaw",
-          description: "Send a message to OpenClaw",
+          command: "/opencraft",
+          description: "Send a message to OpenCraft",
           should_escape: false,
         },
       ],
@@ -86,7 +86,7 @@ function buildSlackManifest(botName: string) {
   return JSON.stringify(manifest, null, 2);
 }
 
-export function buildSlackSetupLines(botName = "OpenClaw"): string[] {
+export function buildSlackSetupLines(botName = "OpenCraft"): string[] {
   return [
     "1) Slack API -> Create App -> From scratch or From manifest (with the JSON below)",
     "2) Add Socket Mode + enable it to get the app-level token (xapp-...)",
@@ -102,10 +102,10 @@ export function buildSlackSetupLines(botName = "OpenClaw"): string[] {
 }
 
 export function setSlackChannelAllowlist(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   accountId: string,
   channelKeys: string[],
-): OpenClawConfig {
+): OpenCraftConfig {
   const channels = Object.fromEntries(channelKeys.map((key) => [key, { allow: true }]));
   return patchChannelConfigForAccount({
     cfg,

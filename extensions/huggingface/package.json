@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/huggingface-provider",
+  "name": "@opencraft/huggingface-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Hugging Face provider plugin",
+  "description": "OpenCraft Hugging Face provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

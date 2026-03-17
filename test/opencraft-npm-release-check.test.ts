@@ -112,7 +112,7 @@ describe("collectReleasePackageMetadataErrors", () => {
         description: "Multi-channel AI gateway with extensible messaging integrations",
         license: "MIT",
         repository: { url: "git+https://github.com/editzffaleta/OpenCraft.git" },
-        bin: { opencraft: "opencraft.mjs" },
+        bin: { opencraft: "openclaw.mjs" },
         peerDependencies: { "node-llama-cpp": "3.16.2" },
         peerDependenciesMeta: { "node-llama-cpp": { optional: true } },
       }),
@@ -126,7 +126,7 @@ describe("collectReleasePackageMetadataErrors", () => {
         description: "Multi-channel AI gateway with extensible messaging integrations",
         license: "MIT",
         repository: { url: "git+https://github.com/editzffaleta/OpenCraft.git" },
-        bin: { opencraft: "opencraft.mjs" },
+        bin: { opencraft: "openclaw.mjs" },
         peerDependencies: { "node-llama-cpp": "3.16.2" },
       }),
     ).toContain('package.json peerDependenciesMeta["node-llama-cpp"].optional must be true.');

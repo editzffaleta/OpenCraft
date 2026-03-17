@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { writeConfigFile, type OpenClawConfig } from "../config/config.js";
+import { writeConfigFile, type OpenCraftConfig } from "../config/config.js";
 import { resolveGatewayPort, resolveIsNixMode } from "../config/paths.js";
 import { resolveSecretInputRef } from "../config/types.secrets.js";
 import {
@@ -191,7 +191,7 @@ async function cleanupLegacyLinuxUserServices(
 }
 
 export async function maybeRepairGatewayServiceConfig(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   mode: "local" | "remote",
   runtime: RuntimeEnv,
   prompter: DoctorPrompter,
@@ -336,7 +336,7 @@ export async function maybeRepairGatewayServiceConfig(
       : undefined;
   let cfgForServiceInstall = cfg;
   if (!tokenRefConfigured && !configuredGatewayToken && gatewayTokenForRepair) {
-    const nextCfg: OpenClawConfig = {
+    const nextCfg: OpenCraftConfig = {
       ...cfg,
       gateway: {
         ...cfg.gateway,
@@ -431,7 +431,7 @@ export async function maybeScanExtraGatewayServices(
         note(failed.map((line) => `- ${line}`).join("\n"), "Legacy gateway cleanup skipped");
       }
       if (removed.length > 0) {
-        runtime.log("Legacy gateway services removed. Installing OpenClaw gateway next.");
+        runtime.log("Legacy gateway services removed. Installing OpenCraft gateway next.");
       }
     }
   }

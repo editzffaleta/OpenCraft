@@ -25,7 +25,7 @@ actor PortGuardian {
     private let logger = Logger(subsystem: "ai.openclaw", category: "portguard")
     private nonisolated static let appSupportDir: URL = {
         let base = FileManager().urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return base.appendingPathComponent("OpenClaw", isDirectory: true)
+        return base.appendingPathComponent("OpenCraft", isDirectory: true)
     }()
 
     private nonisolated static var recordPath: URL {

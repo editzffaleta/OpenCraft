@@ -7,11 +7,11 @@ import {
   createExitThrowingRuntime,
   createWizardPrompter,
   readAuthProfilesForAgent,
-  requireOpenClawAgentDir,
+  requireOpenCraftAgentDir,
   setupAuthTestEnv,
 } from "../../commands/test-wizard-helpers.js";
 import { createCapturedPluginRegistration } from "../../test-utils/plugin-registration.js";
-import type { OpenClawPluginApi, ProviderPlugin } from "../types.js";
+import type { OpenCraftPluginApi, ProviderPlugin } from "../types.js";
 import { providerContractRegistry } from "./registry.js";
 
 type ResolvePluginProviders =
@@ -67,7 +67,7 @@ type StoredAuthProfile = {
 
 const qwenPortalPlugin = (await import("../../../extensions/qwen-portal-auth/index.js")).default;
 
-function registerProviders(...plugins: Array<{ register(api: OpenClawPluginApi): void }>) {
+function registerProviders(...plugins: Array<{ register(api: OpenCraftPluginApi): void }>) {
   const captured = createCapturedPluginRegistration();
   for (const plugin of plugins) {
     plugin.register(captured.api);
@@ -85,8 +85,8 @@ function requireProvider(providers: ProviderPlugin[], providerId: string) {
 
 describe("provider auth-choice contract", () => {
   const lifecycle = createAuthTestLifecycle([
-    "OPENCLAW_STATE_DIR",
-    "OPENCLAW_AGENT_DIR",
+    "OPENCRAFT_STATE_DIR",
+    "OPENCRAFT_AGENT_DIR",
     "PI_CODING_AGENT_DIR",
   ]);
   let activeStateDir: string | null = null;
@@ -95,7 +95,7 @@ describe("provider auth-choice contract", () => {
     if (activeStateDir) {
       await lifecycle.cleanup();
     }
-    const env = await setupAuthTestEnv("openclaw-provider-auth-choice-");
+    const env = await setupAuthTestEnv("opencraft-provider-auth-choice-");
     activeStateDir = env.stateDir;
     lifecycle.setStateDir(env.stateDir);
   }
@@ -180,7 +180,7 @@ describe("provider auth-choice contract", () => {
     );
 
     const stored = await readAuthProfilesForAgent<{ profiles?: Record<string, StoredAuthProfile> }>(
-      requireOpenClawAgentDir(),
+      requireOpenCraftAgentDir(),
     );
     expect(stored.profiles?.["qwen-portal:default"]).toMatchObject({
       type: "oauth",
@@ -248,7 +248,7 @@ describe("provider auth-choice contract", () => {
 
     const stored = await readAuthProfilesForAgent<{
       profiles?: Record<string, StoredAuthProfile>;
-    }>(requireOpenClawAgentDir());
+    }>(requireOpenCraftAgentDir());
     expect(stored.profiles?.["qwen-portal:default"]).toMatchObject({
       type: "oauth",
       provider: "qwen-portal",

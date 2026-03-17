@@ -1,6 +1,6 @@
 import AppKit
 import Foundation
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import OpenClawIPC
 import SwiftUI
 

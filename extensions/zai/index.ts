@@ -3,13 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import {
   emptyPluginConfigSchema,
-  type OpenClawPluginApi,
+  type OpenCraftPluginApi,
   type ProviderAuthContext,
   type ProviderAuthMethod,
   type ProviderAuthMethodNonInteractiveContext,
   type ProviderResolveDynamicModelContext,
   type ProviderRuntimeModel,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import { upsertAuthProfile } from "../../src/agents/auth-profiles.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../src/agents/defaults.js";
 import { normalizeModelCompat } from "../../src/agents/model-compat.js";
@@ -260,7 +260,7 @@ const zaiPlugin = {
   name: "Z.AI Provider",
   description: "Bundled Z.AI provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Z.AI",

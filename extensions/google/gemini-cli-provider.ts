@@ -1,7 +1,7 @@
 import { fetchGeminiUsage } from "../../src/infra/provider-usage.fetch.js";
 import { buildOauthProviderAuthResult } from "../../src/plugin-sdk/provider-auth-result.js";
 import type {
-  OpenClawPluginApi,
+  OpenCraftPluginApi,
   ProviderAuthContext,
   ProviderFetchUsageSnapshotContext,
 } from "../../src/plugins/types.js";
@@ -12,8 +12,8 @@ const PROVIDER_ID = "google-gemini-cli";
 const PROVIDER_LABEL = "Gemini CLI OAuth";
 const DEFAULT_MODEL = "google-gemini-cli/gemini-3.1-pro-preview";
 const ENV_VARS = [
-  "OPENCLAW_GEMINI_OAUTH_CLIENT_ID",
-  "OPENCLAW_GEMINI_OAUTH_CLIENT_SECRET",
+  "OPENCRAFT_GEMINI_OAUTH_CLIENT_ID",
+  "OPENCRAFT_GEMINI_OAUTH_CLIENT_SECRET",
   "GEMINI_CLI_OAUTH_CLIENT_ID",
   "GEMINI_CLI_OAUTH_CLIENT_SECRET",
 ];
@@ -48,7 +48,7 @@ async function fetchGeminiCliUsage(ctx: ProviderFetchUsageSnapshotContext) {
   return await fetchGeminiUsage(ctx.token, ctx.timeoutMs, ctx.fetchFn, PROVIDER_ID);
 }
 
-export function registerGoogleGeminiCliProvider(api: OpenClawPluginApi) {
+export function registerGoogleGeminiCliProvider(api: OpenCraftPluginApi) {
   api.registerProvider({
     id: PROVIDER_ID,
     label: PROVIDER_LABEL,

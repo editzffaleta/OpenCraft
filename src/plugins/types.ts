@@ -19,7 +19,7 @@ import type { ReplyPayload } from "../auto-reply/types.js";
 import type { ChannelId, ChannelPlugin } from "../channels/plugins/types.js";
 import type { createVpsAwareOAuthHandlers } from "../commands/oauth-flow.js";
 import type { OnboardOptions } from "../commands/onboard-types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import type { ModelProviderConfig } from "../config/types.js";
 import type { GatewayRequestHandler } from "../gateway/server-methods/types.js";
 import type { InternalHookHandler } from "../hooks/internal-hooks.js";
@@ -63,7 +63,7 @@ export type PluginConfigValidation =
   | { ok: true; value?: unknown }
   | { ok: false; errors: string[] };
 
-export type OpenClawPluginConfigSchema = {
+export type OpenCraftPluginConfigSchema = {
   safeParse?: (value: unknown) => {
     success: boolean;
     data?: unknown;
@@ -77,8 +77,8 @@ export type OpenClawPluginConfigSchema = {
   jsonSchema?: Record<string, unknown>;
 };
 
-export type OpenClawPluginToolContext = {
-  config?: OpenClawConfig;
+export type OpenCraftPluginToolContext = {
+  config?: OpenCraftConfig;
   workspaceDir?: string;
   agentDir?: string;
   agentId?: string;
@@ -94,17 +94,17 @@ export type OpenClawPluginToolContext = {
   sandboxed?: boolean;
 };
 
-export type OpenClawPluginToolFactory = (
-  ctx: OpenClawPluginToolContext,
+export type OpenCraftPluginToolFactory = (
+  ctx: OpenCraftPluginToolContext,
 ) => AnyAgentTool | AnyAgentTool[] | null | undefined;
 
-export type OpenClawPluginToolOptions = {
+export type OpenCraftPluginToolOptions = {
   name?: string;
   names?: string[];
   optional?: boolean;
 };
 
-export type OpenClawPluginHookOptions = {
+export type OpenCraftPluginHookOptions = {
   entry?: HookEntry;
   name?: string;
   description?: string;
@@ -122,13 +122,13 @@ export type ProviderAuthResult = {
    * `models.providers.<id>` entries, default aliases, or agent model helpers.
    * The caller still persists auth-profile bindings separately.
    */
-  configPatch?: Partial<OpenClawConfig>;
+  configPatch?: Partial<OpenCraftConfig>;
   defaultModel?: string;
   notes?: string[];
 };
 
 export type ProviderAuthContext = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   prompter: WizardPrompter;
@@ -191,8 +191,8 @@ export type ProviderNonInteractiveApiKeyCredentialParams = {
 
 export type ProviderAuthMethodNonInteractiveContext = {
   authChoice: string;
-  config: OpenClawConfig;
-  baseConfig: OpenClawConfig;
+  config: OpenCraftConfig;
+  baseConfig: OpenCraftConfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
   agentDir?: string;
@@ -214,20 +214,20 @@ export type ProviderAuthMethod = {
    * Optional wizard/onboarding metadata for this specific auth method.
    *
    * Use this when one provider exposes multiple setup entries (for example API
-   * key + OAuth, or region-specific login flows). OpenClaw uses this to expose
+   * key + OAuth, or region-specific login flows). OpenCraft uses this to expose
    * method-specific auth choices while keeping the provider id stable.
    */
   wizard?: ProviderPluginWizardSetup;
   run: (ctx: ProviderAuthContext) => Promise<ProviderAuthResult>;
   runNonInteractive?: (
     ctx: ProviderAuthMethodNonInteractiveContext,
-  ) => Promise<OpenClawConfig | null>;
+  ) => Promise<OpenCraftConfig | null>;
 };
 
 export type ProviderCatalogOrder = "simple" | "profile" | "paired" | "late";
 
 export type ProviderCatalogContext = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -273,7 +273,7 @@ export type ProviderRuntimeProviderConfig = {
  * belong in `prepareDynamicModel`.
  */
 export type ProviderResolveDynamicModelContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   provider: string;
@@ -294,12 +294,12 @@ export type ProviderPrepareDynamicModelContext = ProviderResolveDynamicModelCont
 /**
  * Last-chance rewrite hook for provider-owned transport normalization.
  *
- * Runs after OpenClaw resolves an explicit/discovered/dynamic model and before
+ * Runs after OpenCraft resolves an explicit/discovered/dynamic model and before
  * the embedded runner uses it. Typical uses: swap API ids, fix base URLs, or
  * patch provider-specific compat bits.
  */
 export type ProviderNormalizeResolvedModelContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   provider: string;
@@ -314,7 +314,7 @@ export type ProviderNormalizeResolvedModelContext = {
  * for the request.
  */
 export type ProviderPrepareRuntimeAuthContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -347,7 +347,7 @@ export type ProviderPreparedRuntimeAuth = {
  * snapshots often need a different credential source than live inference
  * requests, and they run outside the embedded runner.
  *
- * The helper methods cover the common OpenClaw auth resolution paths:
+ * The helper methods cover the common OpenCraft auth resolution paths:
  *
  * - `resolveApiKeyFromConfigAndStore`: env/config/plain token/api_key profiles
  * - `resolveOAuthToken`: oauth/token profiles resolved through the auth store
@@ -356,7 +356,7 @@ export type ProviderPreparedRuntimeAuth = {
  * token blob, read a legacy credential file, or pick between aliases).
  */
 export type ProviderResolveUsageAuthContext = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -388,7 +388,7 @@ export type ProviderResolvedUsageAuth = {
  * owns the provider-specific HTTP request + response normalization.
  */
 export type ProviderFetchUsageSnapshotContext = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -402,26 +402,26 @@ export type ProviderFetchUsageSnapshotContext = {
 /**
  * Provider-owned auth-doctor hint input.
  *
- * Called when OAuth refresh fails and OpenClaw wants a provider-specific repair
+ * Called when OAuth refresh fails and OpenCraft wants a provider-specific repair
  * hint to append to the generic re-auth message. Use this for legacy profile-id
  * migrations or other provider-owned auth-store cleanup guidance.
  */
 export type ProviderAuthDoctorHintContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   store: AuthProfileStore;
   provider: string;
   profileId?: string;
 };
 
 /**
- * Provider-owned extra-param normalization before OpenClaw builds its generic
+ * Provider-owned extra-param normalization before OpenCraft builds its generic
  * stream option wrapper.
  *
  * Use this to set provider defaults or rewrite provider-specific config keys
  * into the merged `extraParams` object. Return the full next extraParams object.
  */
 export type ProviderPrepareExtraParamsContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   provider: string;
@@ -431,7 +431,7 @@ export type ProviderPrepareExtraParamsContext = {
 };
 
 /**
- * Provider-owned stream wrapper hook after OpenClaw applies its generic
+ * Provider-owned stream wrapper hook after OpenCraft applies its generic
  * transport-independent wrappers.
  *
  * Use this for provider-specific payload/header/model mutations that still run
@@ -444,7 +444,7 @@ export type ProviderWrapStreamFnContext = ProviderPrepareExtraParamsContext & {
 /**
  * Provider-owned prompt-cache eligibility.
  *
- * Return `true` or `false` to override OpenClaw's built-in provider cache TTL
+ * Return `true` or `false` to override OpenCraft's built-in provider cache TTL
  * detection for this provider. Return `undefined` to fall back to core rules.
  */
 export type ProviderCacheTtlEligibilityContext = {
@@ -455,12 +455,12 @@ export type ProviderCacheTtlEligibilityContext = {
 /**
  * Provider-owned missing-auth message override.
  *
- * Runs only after OpenClaw exhausts normal env/profile/config auth resolution
+ * Runs only after OpenCraft exhausts normal env/profile/config auth resolution
  * for the requested provider. Return a custom message to replace the generic
  * "No API key found" error.
  */
 export type ProviderBuildMissingAuthMessageContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -476,7 +476,7 @@ export type ProviderBuildMissingAuthMessageContext = {
  * resolution, model listing, and catalog loading.
  */
 export type ProviderBuiltInModelSuppressionContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -526,13 +526,13 @@ export type ProviderModernModelPolicyContext = {
 /**
  * Final catalog augmentation hook.
  *
- * Runs after OpenClaw loads the discovered model catalog and merges configured
+ * Runs after OpenCraft loads the discovered model catalog and merges configured
  * opt-in providers. Use this for forward-compat rows or vendor-owned synthetic
  * entries that should appear in `models list` and model pickers even when the
  * upstream registry has not caught up yet.
  */
 export type ProviderAugmentModelCatalogContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -593,7 +593,7 @@ export type ProviderPluginWizard = {
 };
 
 export type ProviderModelSelectedContext = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   model: string;
   prompter: WizardPrompter;
   agentDir?: string;
@@ -642,7 +642,7 @@ export type ProviderPlugin = {
   /**
    * Optional async prefetch for dynamic model resolution.
    *
-   * OpenClaw calls this only from async model resolution paths. After it
+   * OpenCraft calls this only from async model resolution paths. After it
    * completes, `resolveDynamicModel` is called again.
    */
   prepareDynamicModel?: (ctx: ProviderPrepareDynamicModelContext) => Promise<void>;
@@ -676,7 +676,7 @@ export type ProviderPlugin = {
     ctx: ProviderPrepareExtraParamsContext,
   ) => Record<string, unknown> | null | undefined;
   /**
-   * Provider-owned stream wrapper applied after generic OpenClaw wrappers.
+   * Provider-owned stream wrapper applied after generic OpenCraft wrappers.
    *
    * Typical uses: provider attribution headers, request-body rewrites, or
    * provider-specific compat payload patches that do not justify a separate
@@ -686,7 +686,7 @@ export type ProviderPlugin = {
   /**
    * Runtime auth exchange hook.
    *
-   * Called after OpenClaw resolves the raw configured credential but before the
+   * Called after OpenCraft resolves the raw configured credential but before the
    * runner stores it in runtime auth storage. This lets plugins exchange a
    * source credential (for example a GitHub token) into a short-lived runtime
    * token plus optional base URL override.
@@ -730,7 +730,7 @@ export type ProviderPlugin = {
    * Provider-owned missing-auth message override.
    *
    * Return a custom message when the provider wants a more specific recovery
-   * hint than OpenClaw's generic auth-store guidance.
+   * hint than OpenCraft's generic auth-store guidance.
    */
   buildMissingAuthMessage?: (
     ctx: ProviderBuildMissingAuthMessageContext,
@@ -739,7 +739,7 @@ export type ProviderPlugin = {
    * Provider-owned built-in model suppression.
    *
    * Return `{ suppress: true }` to hide a stale upstream row. Include
-   * `errorMessage` when OpenClaw should surface a provider-specific hint for
+   * `errorMessage` when OpenCraft should surface a provider-specific hint for
    * direct model resolution failures.
    */
   suppressBuiltInModel?: (
@@ -749,7 +749,7 @@ export type ProviderPlugin = {
    * Provider-owned final catalog augmentation.
    *
    * Return extra rows to append to the final catalog after discovery/config
-   * merging. OpenClaw deduplicates by `provider/id`, so plugins only need to
+   * merging. OpenCraft deduplicates by `provider/id`, so plugins only need to
    * describe the desired supplemental rows.
    */
   augmentModelCatalog?: (
@@ -793,14 +793,14 @@ export type ProviderPlugin = {
   /**
    * Provider-owned auth-profile API-key formatter.
    *
-   * OpenClaw uses this when a stored auth profile is already valid and needs to
+   * OpenCraft uses this when a stored auth profile is already valid and needs to
    * be converted into the runtime `apiKey` string expected by the provider. Use
    * this for providers whose auth profile stores extra metadata alongside the
    * bearer token (for example Gemini CLI's `{ token, projectId }` payload).
    */
   formatApiKey?: (cred: AuthProfileCredential) => string;
   /**
-   * Legacy auth-profile ids that should be retired by `openclaw doctor`.
+   * Legacy auth-profile ids that should be retired by `opencraft doctor`.
    *
    * Use this when a provider plugin replaces an older core-managed profile id
    * and wants cleanup/migration messaging to live with the provider instead of
@@ -810,7 +810,7 @@ export type ProviderPlugin = {
   /**
    * Provider-owned OAuth refresh.
    *
-   * OpenClaw calls this before falling back to the shared `pi-ai` OAuth
+   * OpenCraft calls this before falling back to the shared `pi-ai` OAuth
    * refreshers. Use it when the provider has a custom refresh endpoint, or when
    * the provider needs custom refresh-failure behavior that should stay out of
    * core auth-profile code.
@@ -821,7 +821,7 @@ export type ProviderPlugin = {
    *
    * Return a multiline repair hint when OAuth refresh fails and the provider
    * wants to steer users toward a specific auth-profile migration or recovery
-   * path. Return nothing to keep OpenClaw's generic error text.
+   * path. Return nothing to keep OpenCraft's generic error text.
    */
   buildAuthDoctorHint?: (
     ctx: ProviderAuthDoctorHintContext,
@@ -838,7 +838,7 @@ export type WebSearchProviderToolDefinition = {
 };
 
 export type WebSearchProviderContext = {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   searchConfig?: Record<string, unknown>;
   runtimeMetadata?: RuntimeWebSearchMetadata;
 };
@@ -878,7 +878,7 @@ export type PluginSpeechProviderEntry = SpeechProviderPlugin & {
   pluginId: string;
 };
 
-export type OpenClawPluginGatewayMethod = {
+export type OpenCraftPluginGatewayMethod = {
   method: string;
   handler: GatewayRequestHandler;
 };
@@ -903,8 +903,8 @@ export type PluginCommandContext = {
   args?: string;
   /** The full normalized command body */
   commandBody: string;
-  /** Current OpenClaw configuration */
-  config: OpenClawConfig;
+  /** Current OpenCraft configuration */
+  config: OpenCraftConfig;
   /** Raw "From" value (channel-scoped id) */
   from?: string;
   /** Raw "To" value (channel-scoped id) */
@@ -970,7 +970,7 @@ export type PluginCommandHandler = (
 /**
  * Definition for a plugin-registered command.
  */
-export type OpenClawPluginCommandDefinition = {
+export type OpenCraftPluginCommandDefinition = {
   /** Command name without leading slash (e.g., "tts") */
   name: string;
   /**
@@ -1150,66 +1150,66 @@ export type PluginInteractiveHandlerRegistration =
   | PluginInteractiveDiscordHandlerRegistration
   | PluginInteractiveSlackHandlerRegistration;
 
-export type OpenClawPluginHttpRouteAuth = "gateway" | "plugin";
-export type OpenClawPluginHttpRouteMatch = "exact" | "prefix";
+export type OpenCraftPluginHttpRouteAuth = "gateway" | "plugin";
+export type OpenCraftPluginHttpRouteMatch = "exact" | "prefix";
 
-export type OpenClawPluginHttpRouteHandler = (
+export type OpenCraftPluginHttpRouteHandler = (
   req: IncomingMessage,
   res: ServerResponse,
 ) => Promise<boolean | void> | boolean | void;
 
-export type OpenClawPluginHttpRouteParams = {
+export type OpenCraftPluginHttpRouteParams = {
   path: string;
-  handler: OpenClawPluginHttpRouteHandler;
-  auth: OpenClawPluginHttpRouteAuth;
-  match?: OpenClawPluginHttpRouteMatch;
+  handler: OpenCraftPluginHttpRouteHandler;
+  auth: OpenCraftPluginHttpRouteAuth;
+  match?: OpenCraftPluginHttpRouteMatch;
   replaceExisting?: boolean;
 };
 
-export type OpenClawPluginCliContext = {
+export type OpenCraftPluginCliContext = {
   program: Command;
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   workspaceDir?: string;
   logger: PluginLogger;
 };
 
-export type OpenClawPluginCliRegistrar = (ctx: OpenClawPluginCliContext) => void | Promise<void>;
+export type OpenCraftPluginCliRegistrar = (ctx: OpenCraftPluginCliContext) => void | Promise<void>;
 
-export type OpenClawPluginServiceContext = {
-  config: OpenClawConfig;
+export type OpenCraftPluginServiceContext = {
+  config: OpenCraftConfig;
   workspaceDir?: string;
   stateDir: string;
   logger: PluginLogger;
 };
 
-export type OpenClawPluginService = {
+export type OpenCraftPluginService = {
   id: string;
-  start: (ctx: OpenClawPluginServiceContext) => void | Promise<void>;
-  stop?: (ctx: OpenClawPluginServiceContext) => void | Promise<void>;
+  start: (ctx: OpenCraftPluginServiceContext) => void | Promise<void>;
+  stop?: (ctx: OpenCraftPluginServiceContext) => void | Promise<void>;
 };
 
-export type OpenClawPluginChannelRegistration = {
+export type OpenCraftPluginChannelRegistration = {
   plugin: ChannelPlugin;
 };
 
-export type OpenClawPluginDefinition = {
+export type OpenCraftPluginDefinition = {
   id?: string;
   name?: string;
   description?: string;
   version?: string;
   kind?: PluginKind;
-  configSchema?: OpenClawPluginConfigSchema;
-  register?: (api: OpenClawPluginApi) => void | Promise<void>;
-  activate?: (api: OpenClawPluginApi) => void | Promise<void>;
+  configSchema?: OpenCraftPluginConfigSchema;
+  register?: (api: OpenCraftPluginApi) => void | Promise<void>;
+  activate?: (api: OpenCraftPluginApi) => void | Promise<void>;
 };
 
-export type OpenClawPluginModule =
-  | OpenClawPluginDefinition
-  | ((api: OpenClawPluginApi) => void | Promise<void>);
+export type OpenCraftPluginModule =
+  | OpenCraftPluginDefinition
+  | ((api: OpenCraftPluginApi) => void | Promise<void>);
 
 export type PluginRegistrationMode = "full" | "setup-only" | "setup-runtime";
 
-export type OpenClawPluginApi = {
+export type OpenCraftPluginApi = {
   id: string;
   name: string;
   version?: string;
@@ -1217,24 +1217,24 @@ export type OpenClawPluginApi = {
   source: string;
   rootDir?: string;
   registrationMode: PluginRegistrationMode;
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   pluginConfig?: Record<string, unknown>;
   runtime: PluginRuntime;
   logger: PluginLogger;
   registerTool: (
-    tool: AnyAgentTool | OpenClawPluginToolFactory,
-    opts?: OpenClawPluginToolOptions,
+    tool: AnyAgentTool | OpenCraftPluginToolFactory,
+    opts?: OpenCraftPluginToolOptions,
   ) => void;
   registerHook: (
     events: string | string[],
     handler: InternalHookHandler,
-    opts?: OpenClawPluginHookOptions,
+    opts?: OpenCraftPluginHookOptions,
   ) => void;
-  registerHttpRoute: (params: OpenClawPluginHttpRouteParams) => void;
-  registerChannel: (registration: OpenClawPluginChannelRegistration | ChannelPlugin) => void;
+  registerHttpRoute: (params: OpenCraftPluginHttpRouteParams) => void;
+  registerChannel: (registration: OpenCraftPluginChannelRegistration | ChannelPlugin) => void;
   registerGatewayMethod: (method: string, handler: GatewayRequestHandler) => void;
-  registerCli: (registrar: OpenClawPluginCliRegistrar, opts?: { commands?: string[] }) => void;
-  registerService: (service: OpenClawPluginService) => void;
+  registerCli: (registrar: OpenCraftPluginCliRegistrar, opts?: { commands?: string[] }) => void;
+  registerService: (service: OpenCraftPluginService) => void;
   registerProvider: (provider: ProviderPlugin) => void;
   registerSpeechProvider: (provider: SpeechProviderPlugin) => void;
   registerWebSearchProvider: (provider: WebSearchProviderPlugin) => void;
@@ -1244,7 +1244,7 @@ export type OpenClawPluginApi = {
    * Plugin commands are processed before built-in commands and before agent invocation.
    * Use this for simple state-toggling or status commands that don't need AI reasoning.
    */
-  registerCommand: (command: OpenClawPluginCommandDefinition) => void;
+  registerCommand: (command: OpenCraftPluginCommandDefinition) => void;
   /** Register a context engine implementation (exclusive slot — only one active at a time). */
   registerContextEngine: (
     id: string,
@@ -1261,7 +1261,7 @@ export type OpenClawPluginApi = {
 
 export type PluginOrigin = "bundled" | "global" | "workspace" | "config";
 
-export type PluginFormat = "openclaw" | "bundle";
+export type PluginFormat = "opencraft" | "bundle";
 
 export type PluginBundleFormat = "codex" | "claude" | "cursor";
 

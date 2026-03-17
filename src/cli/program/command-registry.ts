@@ -97,7 +97,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "backup",
-        description: "Create and verify local backup archives for OpenClaw state",
+        description: "Create and verify local backup archives for OpenCraft state",
         hasSubcommands: true,
       },
     ],
@@ -207,7 +207,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "browser",
-        description: "Manage OpenClaw's dedicated browser (Chrome/Chromium)",
+        description: "Manage OpenCraft's dedicated browser (Chrome/Chromium)",
         hasSubcommands: true,
       },
     ],

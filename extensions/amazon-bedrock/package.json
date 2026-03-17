@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/amazon-bedrock-provider",
+  "name": "@opencraft/amazon-bedrock-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Amazon Bedrock provider plugin",
+  "description": "OpenCraft Amazon Bedrock provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

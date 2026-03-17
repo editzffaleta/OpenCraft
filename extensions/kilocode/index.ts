@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import {
   createKilocodeWrapper,
   isProxyReasoningUnsupported,
@@ -17,7 +17,7 @@ const kilocodePlugin = {
   name: "Kilo Gateway Provider",
   description: "Bundled Kilo Gateway provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Kilo Gateway",

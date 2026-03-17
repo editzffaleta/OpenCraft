@@ -3,12 +3,12 @@ import {
   buildAccountScopedDmSecurityPolicy,
   collectOpenProviderGroupPolicyWarnings,
   collectOpenGroupPolicyConfiguredRouteWarnings,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildAgentSessionKey,
   resolveThreadSessionKeys,
   type RoutePeer,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import {
   buildComputedAccountStatusSnapshot,
   buildChannelConfigSchema,
@@ -25,8 +25,8 @@ import {
   resolveSlackGroupToolPolicy,
   SlackConfigSchema,
   type ChannelPlugin,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/slack";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/slack";
 import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";
 import { buildPassiveProbedChannelStatusSummary } from "../../shared/channel-status-summary.js";
 import {
@@ -151,7 +151,7 @@ function normalizeOutboundThreadId(value?: string | number | null): string | und
 }
 
 function buildSlackBaseSessionKey(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   peer: RoutePeer;
@@ -167,7 +167,7 @@ function buildSlackBaseSessionKey(params: {
 }
 
 async function resolveSlackChannelType(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   channelId: string;
 }): Promise<"channel" | "group" | "dm" | "unknown"> {
@@ -230,7 +230,7 @@ async function resolveSlackChannelType(params: {
 }
 
 async function resolveSlackOutboundSessionRoute(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   target: string;

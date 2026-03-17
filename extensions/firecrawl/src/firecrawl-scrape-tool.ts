@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import { optionalStringEnum } from "../../../src/agents/schema/typebox.js";
 import { jsonResult, readNumberParam, readStringParam } from "../../../src/agents/tools/common.js";
-import type { OpenClawPluginApi } from "../../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../../src/plugins/types.js";
 import { runFirecrawlScrape } from "./firecrawl-client.js";
 
 const FirecrawlScrapeToolSchema = Type.Object(
@@ -45,7 +45,7 @@ const FirecrawlScrapeToolSchema = Type.Object(
   { additionalProperties: false },
 );
 
-export function createFirecrawlScrapeTool(api: OpenClawPluginApi) {
+export function createFirecrawlScrapeTool(api: OpenCraftPluginApi) {
   return {
     name: "firecrawl_scrape",
     label: "Firecrawl Scrape",

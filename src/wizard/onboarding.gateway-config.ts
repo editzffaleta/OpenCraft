@@ -1,5 +1,5 @@
 import {
-  promptSecretRefForOnboarding,
+  promptSecretRefForSetup,
   resolveSecretInputModeForEnvSelection,
 } from "../commands/auth-choice.apply-helpers.js";
 import {
@@ -190,7 +190,7 @@ export async function configureGatewayForOnboarding(
           env: process.env,
         });
       } else {
-        const resolved = await promptSecretRefForOnboarding({
+        const resolved = await promptSecretRefForSetup({
           provider: "gateway-auth-token",
           config: nextConfig,
           prompter,
@@ -205,7 +205,8 @@ export async function configureGatewayForOnboarding(
       }
     } else if (flow === "quickstart") {
       gatewayToken =
-        (quickstartTokenString ?? normalizeGatewayTokenInput(process.env.OPENCRAFT_GATEWAY_TOKEN)) ||
+        (quickstartTokenString ??
+          normalizeGatewayTokenInput(process.env.OPENCRAFT_GATEWAY_TOKEN)) ||
         randomToken();
       gatewayTokenInput = gatewayToken;
     } else {
@@ -236,7 +237,7 @@ export async function configureGatewayForOnboarding(
         },
       });
       if (selectedMode === "ref") {
-        const resolved = await promptSecretRefForOnboarding({
+        const resolved = await promptSecretRefForSetup({
           provider: "gateway-auth-password",
           config: nextConfig,
           prompter,

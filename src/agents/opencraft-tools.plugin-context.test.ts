@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { resolvePluginToolsMock } = vi.hoisted(() => ({
   resolvePluginToolsMock: vi.fn((params?: unknown) => {
@@ -9,11 +9,17 @@ const { resolvePluginToolsMock } = vi.hoisted(() => ({
 
 vi.mock("../plugins/tools.js", () => ({
   resolvePluginTools: resolvePluginToolsMock,
+  getPluginToolMeta: vi.fn(() => undefined),
 }));
 
 import { createOpenCraftTools } from "./opencraft-tools.js";
+import { createOpenCraftCodingTools } from "./pi-tools.js";
 
 describe("createOpenCraftTools plugin context", () => {
+  beforeEach(() => {
+    resolvePluginToolsMock.mockClear();
+  });
+
   it("forwards trusted requester sender identity to plugin tool context", () => {
     createOpenCraftTools({
       config: {} as never,
@@ -44,6 +50,32 @@ describe("createOpenCraftTools plugin context", () => {
           sessionKey: "agent:main:telegram:direct:12345",
           sessionId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         }),
+      }),
+    );
+  });
+
+  it("forwards gateway subagent binding for plugin tools", () => {
+    createOpenCraftTools({
+      config: {} as never,
+      allowGatewaySubagentBinding: true,
+    });
+
+    expect(resolvePluginToolsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowGatewaySubagentBinding: true,
+      }),
+    );
+  });
+
+  it("forwards gateway subagent binding through coding tools", () => {
+    createOpenCraftCodingTools({
+      config: {} as never,
+      allowGatewaySubagentBinding: true,
+    });
+
+    expect(resolvePluginToolsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowGatewaySubagentBinding: true,
       }),
     );
   });

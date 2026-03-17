@@ -1,4 +1,4 @@
-import type { ChannelPlugin, OpenClawConfig } from "openclaw/plugin-sdk/tlon";
+import type { ChannelPlugin, OpenCraftConfig } from "opencraft/plugin-sdk/tlon";
 import { tlonChannelConfigSchema } from "./config-schema.js";
 import { tlonSetupAdapter } from "./setup-core.js";
 import { applyTlonSetupConfig } from "./setup-core.js";
@@ -41,7 +41,7 @@ const tlonSetupWizardProxy = {
       "Example URL: https://your-ship-host",
       "Example ship: ~sampel-palnet",
       "If your ship URL is on a private network (LAN/localhost), you must explicitly allow it during setup.",
-      "Docs: https://docs.openclaw.ai/channels/tlon",
+      "Docs: https://docs.opencraft.ai/channels/tlon",
     ],
   },
   credentials: [],
@@ -139,7 +139,7 @@ export const tlonPlugin: ChannelPlugin = {
               enabled,
             },
           },
-        } as OpenClawConfig;
+        } as OpenCraftConfig;
       }
       return {
         ...cfg,
@@ -156,7 +156,7 @@ export const tlonPlugin: ChannelPlugin = {
             },
           },
         },
-      } as OpenClawConfig;
+      } as OpenCraftConfig;
     },
     deleteAccount: ({ cfg, accountId }) => {
       const useDefault = !accountId || accountId === "default";
@@ -174,7 +174,7 @@ export const tlonPlugin: ChannelPlugin = {
             ...cfg.channels,
             tlon: rest,
           },
-        } as OpenClawConfig;
+        } as OpenCraftConfig;
       }
       const { [accountId]: _removed, ...remainingAccounts } = cfg.channels?.tlon?.accounts ?? {};
       return {
@@ -186,7 +186,7 @@ export const tlonPlugin: ChannelPlugin = {
             accounts: remainingAccounts,
           },
         },
-      } as OpenClawConfig;
+      } as OpenCraftConfig;
     },
     isConfigured: (account) => account.configured,
     describeAccount: (account) => ({
@@ -291,7 +291,7 @@ export const tlonPlugin: ChannelPlugin = {
         lastError: runtime?.lastError ?? null,
         probe,
       };
-      return snapshot as import("openclaw/plugin-sdk/tlon").ChannelAccountSnapshot;
+      return snapshot as import("opencraft/plugin-sdk/tlon").ChannelAccountSnapshot;
     },
   },
   gateway: {

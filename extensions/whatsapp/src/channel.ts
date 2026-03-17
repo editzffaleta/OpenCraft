@@ -1,4 +1,4 @@
-import { buildAccountScopedAllowlistConfigEditor } from "openclaw/plugin-sdk/compat";
+import { buildAccountScopedAllowlistConfigEditor } from "opencraft/plugin-sdk/compat";
 import {
   buildChannelConfigSchema,
   buildAccountScopedDmSecurityPolicy,
@@ -24,7 +24,7 @@ import {
   WhatsAppConfigSchema,
   type ChannelMessageActionName,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/whatsapp";
+} from "opencraft/plugin-sdk/whatsapp";
 import { isWhatsAppGroupJid, normalizeWhatsAppTarget } from "../../../src/whatsapp/normalize.js";
 // WhatsApp-specific imports from local extension code (moved from src/web/ and src/channels/plugins/)
 import {

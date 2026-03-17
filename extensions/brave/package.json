@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/brave-plugin",
+  "name": "@opencraft/brave-plugin",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Brave plugin",
+  "description": "OpenCraft Brave plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/firecrawl-plugin",
+  "name": "@opencraft/firecrawl-plugin",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Firecrawl plugin",
+  "description": "OpenCraft Firecrawl plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/qianfan-provider",
+  "name": "@opencraft/qianfan-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Qianfan provider plugin",
+  "description": "OpenCraft Qianfan provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

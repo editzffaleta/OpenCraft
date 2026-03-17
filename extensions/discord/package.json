@@ -1,9 +1,9 @@
 {
-  "name": "@openclaw/discord",
+  "name": "@opencraft/discord",
   "version": "2026.3.14",
-  "description": "OpenClaw Discord channel plugin",
+  "description": "OpenCraft Discord channel plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ],

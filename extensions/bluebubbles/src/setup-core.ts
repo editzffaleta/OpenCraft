@@ -5,14 +5,14 @@ import {
 } from "../../../src/channels/plugins/setup-helpers.js";
 import { setTopLevelChannelDmPolicyWithAllowFrom } from "../../../src/channels/plugins/setup-wizard-helpers.js";
 import type { ChannelSetupAdapter } from "../../../src/channels/plugins/types.adapters.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DmPolicy } from "../../../src/config/types.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../src/routing/session-key.js";
 import { applyBlueBubblesConnectionConfig } from "./config-apply.js";
 
 const channel = "bluebubbles" as const;
 
-export function setBlueBubblesDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy): OpenClawConfig {
+export function setBlueBubblesDmPolicy(cfg: OpenCraftConfig, dmPolicy: DmPolicy): OpenCraftConfig {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel,
@@ -21,10 +21,10 @@ export function setBlueBubblesDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy):
 }
 
 export function setBlueBubblesAllowFrom(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   accountId: string,
   allowFrom: string[],
-): OpenClawConfig {
+): OpenCraftConfig {
   return patchScopedAccountConfig({
     cfg,
     channelKey: channel,

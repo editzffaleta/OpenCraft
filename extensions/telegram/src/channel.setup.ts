@@ -1,16 +1,16 @@
-import { createScopedChannelConfigBase } from "openclaw/plugin-sdk/compat";
+import { createScopedChannelConfigBase } from "opencraft/plugin-sdk/compat";
 import {
   createScopedAccountConfigAccessors,
   formatAllowFromLowercase,
-} from "openclaw/plugin-sdk/compat";
-import type { ChannelPlugin } from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/compat";
+import type { ChannelPlugin } from "opencraft/plugin-sdk/core";
 import {
   buildChannelConfigSchema,
   getChatChannelMeta,
   normalizeAccountId,
   TelegramConfigSchema,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/telegram";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/telegram";
 import { inspectTelegramAccount } from "./account-inspect.js";
 import {
   listTelegramAccountIds,
@@ -23,7 +23,7 @@ import { telegramSetupAdapter } from "./setup-core.js";
 import { telegramSetupWizard } from "./setup-surface.js";
 
 function findTelegramTokenOwnerAccountId(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId: string;
 }): string | null {
   const normalizedAccountId = normalizeAccountId(params.accountId);

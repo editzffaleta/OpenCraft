@@ -16,7 +16,7 @@ import Testing
         gatewayPort: Int?,
         fingerprint: String?) -> GatewayDiscoveryModel.DiscoveredGateway
     {
-        let endpoint: NWEndpoint = .service(name: "Test", type: "_openclaw-gw._tcp", domain: "local.", interface: nil)
+        let endpoint: NWEndpoint = .service(name: "Test", type: "_opencraft-gw._tcp", domain: "local.", interface: nil)
         return GatewayDiscoveryModel.DiscoveredGateway(
             name: "Test",
             endpoint: endpoint,

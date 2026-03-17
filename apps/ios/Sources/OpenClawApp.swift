@@ -14,7 +14,7 @@ private struct PendingWatchPromptAction {
 }
 
 @MainActor
-final class OpenClawAppDelegate: NSObject, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
+final class OpenCraftAppDelegate: NSObject, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
     private let logger = Logger(subsystem: "ai.openclaw.ios", category: "Push")
     private let backgroundWakeLogger = Logger(subsystem: "ai.openclaw.ios", category: "BackgroundWake")
     private static let wakeRefreshTaskIdentifier = "ai.openclaw.ios.bgrefresh"
@@ -334,7 +334,7 @@ enum WatchPromptNotificationBridge {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = title.isEmpty ? "OpenClaw" : title
+        content.title = title.isEmpty ? "OpenCraft" : title
         content.body = body
         content.sound = .default
         content.userInfo = userInfo
@@ -497,10 +497,10 @@ extension NodeAppModel {
 }
 
 @main
-struct OpenClawApp: App {
+struct OpenCraftApp: App {
     @State private var appModel: NodeAppModel
     @State private var gatewayController: GatewayConnectionController
-    @UIApplicationDelegateAdaptor(OpenClawAppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(OpenCraftAppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -532,7 +532,7 @@ struct OpenClawApp: App {
     }
 }
 
-extension OpenClawApp {
+extension OpenCraftApp {
     private static func installUncaughtExceptionLogger() {
         NSLog("OpenClaw: installing uncaught exception handler")
         NSSetUncaughtExceptionHandler { exception in

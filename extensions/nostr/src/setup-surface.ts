@@ -8,7 +8,7 @@ import {
 import type { ChannelSetupDmPolicy } from "../../../src/channels/plugins/setup-wizard-types.js";
 import type { ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import type { ChannelSetupAdapter } from "../../../src/channels/plugins/types.adapters.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DmPolicy } from "../../../src/config/types.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../src/routing/session-key.js";
 import { formatDocsLink } from "../../../src/terminal/links.js";
@@ -37,11 +37,11 @@ const NOSTR_ALLOW_FROM_HELP_LINES = [
 ];
 
 function patchNostrConfig(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   patch: Record<string, unknown>;
   clearFields?: string[];
   enabled?: boolean;
-}): OpenClawConfig {
+}): OpenCraftConfig {
   const existing = (params.cfg.channels?.nostr ?? {}) as Record<string, unknown>;
   const nextNostr = { ...existing };
   for (const field of params.clearFields ?? []) {
@@ -60,7 +60,7 @@ function patchNostrConfig(params: {
   };
 }
 
-function setNostrDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy): OpenClawConfig {
+function setNostrDmPolicy(cfg: OpenCraftConfig, dmPolicy: DmPolicy): OpenCraftConfig {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel,
@@ -68,7 +68,7 @@ function setNostrDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy): OpenClawConf
   });
 }
 
-function setNostrAllowFrom(cfg: OpenClawConfig, allowFrom: string[]): OpenClawConfig {
+function setNostrAllowFrom(cfg: OpenCraftConfig, allowFrom: string[]): OpenCraftConfig {
   return setTopLevelChannelAllowFrom({
     cfg,
     channel,
@@ -105,9 +105,9 @@ function parseNostrAllowFrom(raw: string): { entries: string[]; error?: string }
 }
 
 async function promptNostrAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   const existing = params.cfg.channels?.nostr?.allowFrom ?? [];
   await params.prompter.note(NOSTR_ALLOW_FROM_HELP_LINES.join("\n"), "Nostr allowlist");
   const entry = await params.prompter.text({

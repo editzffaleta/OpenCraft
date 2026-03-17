@@ -1,7 +1,7 @@
 import Foundation
 import OpenClawProtocol
 
-enum OpenClawConfigFile {
+enum OpenCraftConfigFile {
     private static let logger = Logger(subsystem: "ai.openclaw", category: "config")
     private static let configAuditFileName = "config-audit.jsonl"
 

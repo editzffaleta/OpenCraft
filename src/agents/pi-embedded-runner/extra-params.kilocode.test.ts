@@ -2,7 +2,7 @@ import type { StreamFn } from "@mariozechner/pi-agent-core";
 import type { Context, Model } from "@mariozechner/pi-ai";
 import { createAssistantMessageEventStream } from "@mariozechner/pi-ai";
 import { afterEach, describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { captureEnv } from "../../test-utils/env.js";
 import { applyExtraParamsToAgent } from "./extra-params.js";
 
@@ -19,13 +19,13 @@ const TEST_CFG = {
       },
     },
   },
-} satisfies OpenClawConfig;
+} satisfies OpenCraftConfig;
 
 function applyAndCapture(params: {
   provider: string;
   modelId: string;
   callerHeaders?: Record<string, string>;
-  cfg?: OpenClawConfig;
+  cfg?: OpenCraftConfig;
 }): CapturedCall {
   const captured: CapturedCall = {};
 
@@ -67,7 +67,7 @@ describe("extra-params: Kilocode wrapper", () => {
       modelId: "anthropic/claude-sonnet-4",
     });
 
-    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("openclaw");
+    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("opencraft");
   });
 
   it("reads X-KILOCODE-FEATURE from KILOCODE_FEATURE env var", () => {
@@ -90,7 +90,7 @@ describe("extra-params: Kilocode wrapper", () => {
       callerHeaders: { "X-KILOCODE-FEATURE": "should-be-overwritten" },
     });
 
-    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("openclaw");
+    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("opencraft");
   });
 
   it("keeps Kilocode runtime wrapping under restrictive plugins.allow", () => {
@@ -106,7 +106,7 @@ describe("extra-params: Kilocode wrapper", () => {
       },
     });
 
-    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("openclaw");
+    expect(headers?.["X-KILOCODE-FEATURE"]).toBe("opencraft");
   });
 
   it("does not inject header for non-kilocode providers", () => {

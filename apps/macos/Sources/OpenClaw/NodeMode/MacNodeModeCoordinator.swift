@@ -49,7 +49,7 @@ final class MacNodeModeCoordinator {
                 await self.session.disconnect()
                 try? await Task.sleep(nanoseconds: 200_000_000)
             }
-            let browserControlEnabled = OpenClawConfigFile.browserControlEnabled()
+            let browserControlEnabled = OpenCraftConfigFile.browserControlEnabled()
             if lastBrowserControlEnabled == nil {
                 lastBrowserControlEnabled = browserControlEnabled
             } else if lastBrowserControlEnabled != browserControlEnabled {
@@ -118,7 +118,7 @@ final class MacNodeModeCoordinator {
 
     private func currentCaps() -> [String] {
         var caps: [String] = [OpenClawCapability.canvas.rawValue, OpenClawCapability.screen.rawValue]
-        if OpenClawConfigFile.browserControlEnabled() {
+        if OpenCraftConfigFile.browserControlEnabled() {
             caps.append(OpenClawCapability.browser.rawValue)
         }
         if UserDefaults.standard.object(forKey: cameraEnabledKey) as? Bool ?? false {

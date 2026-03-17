@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import {
   resolveGatewayCredentialsFromConfig,
   resolveGatewayCredentialsFromValues,
 } from "./credentials.js";
 
-function cfg(input: Partial<OpenClawConfig>): OpenClawConfig {
-  return input as OpenClawConfig;
+function cfg(input: Partial<OpenCraftConfig>): OpenCraftConfig {
+  return input as OpenCraftConfig;
 }
 
 type ResolveFromConfigInput = Parameters<typeof resolveGatewayCredentialsFromConfig>[0];
-type GatewayConfig = NonNullable<OpenClawConfig["gateway"]>;
+type GatewayConfig = NonNullable<OpenCraftConfig["gateway"]>;
 
 const DEFAULT_GATEWAY_AUTH = { token: "config-token", password: "config-password" }; // pragma: allowlist secret
 const DEFAULT_REMOTE_AUTH = { token: "remote-token", password: "remote-password" }; // pragma: allowlist secret
@@ -65,7 +65,7 @@ function resolveLocalModeWithUnresolvedPassword(mode: "none" | "trusted-proxy") 
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig,
+    } as unknown as OpenCraftConfig,
     env: {} as NodeJS.ProcessEnv,
     includeLegacyEnv: false,
   });
@@ -101,7 +101,7 @@ function expectUnresolvedLocalAuthSecretRefFailure(params: {
             default: { source: "env" },
           },
         },
-      } as unknown as OpenClawConfig,
+      } as unknown as OpenCraftConfig,
       env: {} as NodeJS.ProcessEnv,
       includeLegacyEnv: false,
     }),
@@ -168,7 +168,7 @@ describe("resolveGatewayCredentialsFromConfig", () => {
       env: {
         OPENCLAW_GATEWAY_TOKEN: "env-token",
         OPENCLAW_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
-        OPENCLAW_SERVICE_KIND: "gateway",
+        OPENCRAFT_SERVICE_KIND: "gateway",
       } as NodeJS.ProcessEnv,
     });
     expect(resolved).toEqual({
@@ -403,7 +403,7 @@ describe("resolveGatewayCredentialsFromConfig", () => {
               default: { source: "env" },
             },
           },
-        } as unknown as OpenClawConfig,
+        } as unknown as OpenCraftConfig,
         env: {} as NodeJS.ProcessEnv,
         includeLegacyEnv: false,
         remoteTokenFallback: "remote-only",
@@ -428,7 +428,7 @@ describe("resolveGatewayCredentialsFromConfig", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig;
+    } as unknown as OpenCraftConfig;
   }
 
   it("ignores unresolved local token ref in remote-only mode when local auth mode is token", () => {
@@ -474,7 +474,7 @@ describe("resolveGatewayCredentialsFromConfig", () => {
             default: { source: "env" },
           },
         },
-      } as unknown as OpenClawConfig,
+      } as unknown as OpenCraftConfig,
       env: {} as NodeJS.ProcessEnv,
       includeLegacyEnv: false,
     });
@@ -501,7 +501,7 @@ describe("resolveGatewayCredentialsFromConfig", () => {
               default: { source: "env" },
             },
           },
-        } as unknown as OpenClawConfig,
+        } as unknown as OpenCraftConfig,
         env: {} as NodeJS.ProcessEnv,
         includeLegacyEnv: false,
         remotePasswordFallback: "remote-only", // pragma: allowlist secret

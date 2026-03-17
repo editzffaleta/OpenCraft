@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { OpenClawPluginConfigSchema } from "openclaw/plugin-sdk/acpx";
+import type { OpenCraftPluginConfigSchema } from "opencraft/plugin-sdk/acpx";
 
 export const ACPX_PERMISSION_MODES = ["approve-all", "approve-reads", "deny-all"] as const;
 export type AcpxPermissionMode = (typeof ACPX_PERMISSION_MODES)[number];
@@ -18,7 +18,7 @@ export function resolveAcpxPluginRoot(moduleUrl: string = import.meta.url): stri
   for (let i = 0; i < 3; i += 1) {
     // Bundled entries live at the plugin root while source files still live under src/.
     if (
-      fs.existsSync(path.join(cursor, "openclaw.plugin.json")) &&
+      fs.existsSync(path.join(cursor, "opencraft.plugin.json")) &&
       fs.existsSync(path.join(cursor, "package.json"))
     ) {
       return cursor;
@@ -266,7 +266,7 @@ function resolveConfiguredCommand(params: { configured?: string; workspaceDir?: 
   return configured;
 }
 
-export function createAcpxPluginConfigSchema(): OpenClawPluginConfigSchema {
+export function createAcpxPluginConfigSchema(): OpenCraftPluginConfigSchema {
   return {
     safeParse(value: unknown):
       | { success: true; data?: unknown }

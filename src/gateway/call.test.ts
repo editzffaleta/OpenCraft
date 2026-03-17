@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { captureEnv } from "../test-utils/env.js";
 import {
   loadConfigMock as loadConfig,
@@ -111,8 +111,8 @@ function makeRemotePasswordGatewayConfig(remotePassword: string, localPassword =
 
 describe("callGateway url resolution", () => {
   const envSnapshot = captureEnv([
-    "OPENCLAW_ALLOW_INSECURE_PRIVATE_WS",
-    "OPENCLAW_GATEWAY_URL",
+    "OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS",
+    "OPENCRAFT_GATEWAY_URL",
     "OPENCLAW_GATEWAY_TOKEN",
     "CLAWDBOT_GATEWAY_TOKEN",
   ]);
@@ -222,13 +222,13 @@ describe("callGateway url resolution", () => {
     expect(lastClientOptions?.deviceIdentity).toBeDefined();
   });
 
-  it("uses OPENCLAW_GATEWAY_URL env override in remote mode when remote URL is missing", async () => {
+  it("uses OPENCRAFT_GATEWAY_URL env override in remote mode when remote URL is missing", async () => {
     loadConfig.mockReturnValue({
       gateway: { mode: "remote", bind: "loopback", remote: {} },
     });
     resolveGatewayPort.mockReturnValue(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
-    process.env.OPENCLAW_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
+    process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
     process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
@@ -254,10 +254,10 @@ describe("callGateway url resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
     resolveGatewayPort.mockReturnValue(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
-    process.env.OPENCLAW_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
+    process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
     process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
@@ -281,7 +281,7 @@ describe("callGateway url resolution", () => {
     });
     setGatewayNetworkDefaults(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
-    process.env.OPENCLAW_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
+    process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
     process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
@@ -429,24 +429,24 @@ describe("buildGatewayConnectionDetails", () => {
     expect(details.remoteFallbackNote).toBeUndefined();
   });
 
-  it("uses env OPENCLAW_GATEWAY_URL when set", () => {
+  it("uses env OPENCRAFT_GATEWAY_URL when set", () => {
     loadConfig.mockReturnValue({ gateway: { mode: "local", bind: "loopback" } });
     resolveGatewayPort.mockReturnValue(18800);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
-    const prevUrl = process.env.OPENCLAW_GATEWAY_URL;
+    const prevUrl = process.env.OPENCRAFT_GATEWAY_URL;
     try {
-      process.env.OPENCLAW_GATEWAY_URL = "wss://browser-gateway.local:9443/ws";
+      process.env.OPENCRAFT_GATEWAY_URL = "wss://browser-gateway.local:9443/ws";
 
       const details = buildGatewayConnectionDetails();
 
       expect(details.url).toBe("wss://browser-gateway.local:9443/ws");
-      expect(details.urlSource).toBe("env OPENCLAW_GATEWAY_URL");
+      expect(details.urlSource).toBe("env OPENCRAFT_GATEWAY_URL");
       expect(details.bindDetail).toBeUndefined();
     } finally {
       if (prevUrl === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_URL;
+        delete process.env.OPENCRAFT_GATEWAY_URL;
       } else {
-        process.env.OPENCLAW_GATEWAY_URL = prevUrl;
+        process.env.OPENCRAFT_GATEWAY_URL = prevUrl;
       }
     }
   });
@@ -473,11 +473,11 @@ describe("buildGatewayConnectionDetails", () => {
     expect((thrown as Error).message).toContain("plaintext ws://");
     expect((thrown as Error).message).toContain("wss://");
     expect((thrown as Error).message).toContain("Tailscale Serve/Funnel");
-    expect((thrown as Error).message).toContain("openclaw doctor --fix");
+    expect((thrown as Error).message).toContain("opencraft doctor --fix");
   });
 
-  it("allows ws:// private remote URLs only when OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1", () => {
-    process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS = "1";
+  it("allows ws:// private remote URLs only when OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1", () => {
+    process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS = "1";
     loadConfig.mockReturnValue({
       gateway: {
         mode: "remote",
@@ -493,20 +493,20 @@ describe("buildGatewayConnectionDetails", () => {
     expect(details.urlSource).toBe("config gateway.remote.url");
   });
 
-  it("allows ws:// hostname remote URLs when OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1", () => {
-    process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS = "1";
+  it("allows ws:// hostname remote URLs when OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1", () => {
+    process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS = "1";
     loadConfig.mockReturnValue({
       gateway: {
         mode: "remote",
         bind: "loopback",
-        remote: { url: "ws://openclaw-gateway.ai:18789" },
+        remote: { url: "ws://opencraft-gateway.ai:18789" },
       },
     });
     resolveGatewayPort.mockReturnValue(18789);
 
     const details = buildGatewayConnectionDetails();
 
-    expect(details.url).toBe("ws://openclaw-gateway.ai:18789");
+    expect(details.url).toBe("ws://opencraft-gateway.ai:18789");
     expect(details.urlSource).toBe("config gateway.remote.url");
   });
 
@@ -635,7 +635,7 @@ describe("callGateway url override auth requirements", () => {
     envSnapshot = captureEnv([
       "OPENCLAW_GATEWAY_TOKEN",
       "OPENCLAW_GATEWAY_PASSWORD",
-      "OPENCLAW_GATEWAY_URL",
+      "OPENCRAFT_GATEWAY_URL",
       "CLAWDBOT_GATEWAY_URL",
     ]);
     resetGatewayCallMocks();
@@ -662,7 +662,7 @@ describe("callGateway url override auth requirements", () => {
   });
 
   it("throws when env URL override is set without env credentials", async () => {
-    process.env.OPENCLAW_GATEWAY_URL = "wss://override.example/ws";
+    process.env.OPENCRAFT_GATEWAY_URL = "wss://override.example/ws";
     loadConfig.mockReturnValue({
       gateway: {
         mode: "local",
@@ -782,7 +782,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -805,7 +805,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -828,7 +828,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -851,7 +851,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -878,7 +878,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await expect(callGateway({ method: "health" })).rejects.toThrow("gateway.auth.token");
   });
@@ -900,7 +900,7 @@ describe("callGateway password resolution", () => {
             default: { source: "env" },
           },
         },
-      } as unknown as OpenClawConfig);
+      } as unknown as OpenCraftConfig);
 
       await callGateway({ method: "health" });
 
@@ -928,7 +928,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -952,7 +952,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -976,7 +976,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -1000,7 +1000,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -1026,7 +1026,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -1051,7 +1051,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -1076,7 +1076,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as OpenClawConfig);
+    } as unknown as OpenCraftConfig);
 
     await callGateway({ method: "health" });
 
@@ -1103,7 +1103,7 @@ describe("callGateway password resolution", () => {
             default: { source: "env" },
           },
         },
-      } as unknown as OpenClawConfig);
+      } as unknown as OpenCraftConfig);
 
       await callGateway({ method: "health" });
 

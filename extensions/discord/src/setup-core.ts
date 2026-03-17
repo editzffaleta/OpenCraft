@@ -11,7 +11,7 @@ import {
   patchChannelConfigForAccount,
   setLegacyChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
-  type OpenClawConfig,
+  type OpenCraftConfig,
 } from "../../../src/plugin-sdk-internal/setup.js";
 import {
   type ChannelSetupAdapter,
@@ -23,22 +23,25 @@ import { listDiscordAccountIds, resolveDiscordAccount } from "./accounts.js";
 
 const channel = "discord" as const;
 
-export const DISCORD_TOKEN_HELP_LINES = [
-  "1) Discord Developer Portal -> Applications -> New Application",
-  "2) Bot -> Add Bot -> Reset Token -> copy token",
-  "3) OAuth2 -> URL Generator -> scope 'bot' -> invite to your server",
-  "Tip: enable Message Content Intent if you need message text. (Bot -> Privileged Gateway Intents -> Message Content Intent)",
-  `Docs: ${formatDocsLink("/discord", "discord")}`,
-];
+// Lazy getter to avoid calling formatDocsLink at module load time during CJS circular-dep init.
+export function getDiscordTokenHelpLines(): string[] {
+  return [
+    "1) Discord Developer Portal -> Applications -> New Application",
+    "2) Bot -> Add Bot -> Reset Token -> copy token",
+    "3) OAuth2 -> URL Generator -> scope 'bot' -> invite to your server",
+    "Tip: enable Message Content Intent if you need message text. (Bot -> Privileged Gateway Intents -> Message Content Intent)",
+    `Docs: ${formatDocsLink("/discord", "discord")}`,
+  ];
+}
 
 export function setDiscordGuildChannelAllowlist(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   accountId: string,
   entries: Array<{
     guildKey: string;
     channelKey?: string;
   }>,
-): OpenClawConfig {
+): OpenCraftConfig {
   const baseGuilds =
     accountId === DEFAULT_ACCOUNT_ID
       ? (cfg.channels?.discord?.guilds ?? {})
@@ -146,9 +149,9 @@ export function createDiscordSetupWizardProxy(
     channel,
     policyKey: "channels.discord.dmPolicy",
     allowFromKey: "channels.discord.allowFrom",
-    getCurrent: (cfg: OpenClawConfig) =>
+    getCurrent: (cfg: OpenCraftConfig) =>
       cfg.channels?.discord?.dmPolicy ?? cfg.channels?.discord?.dm?.policy ?? "pairing",
-    setPolicy: (cfg: OpenClawConfig, policy) =>
+    setPolicy: (cfg: OpenCraftConfig, policy) =>
       setLegacyChannelDmPolicyWithAllowFrom({
         cfg,
         channel,
@@ -185,12 +188,14 @@ export function createDiscordSetupWizardProxy(
         credentialLabel: "Discord bot token",
         preferredEnvVar: "DISCORD_BOT_TOKEN",
         helpTitle: "Discord bot token",
-        helpLines: DISCORD_TOKEN_HELP_LINES,
+        get helpLines() {
+          return getDiscordTokenHelpLines();
+        },
         envPrompt: "DISCORD_BOT_TOKEN detected. Use env var?",
         keepPrompt: "Discord token already configured. Keep it?",
         inputPrompt: "Enter Discord bot token",
         allowEnv: ({ accountId }: { accountId: string }) => accountId === DEFAULT_ACCOUNT_ID,
-        inspect: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) => {
+        inspect: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) => {
           const account = inspectDiscordAccount({ cfg, accountId });
           return {
             accountConfigured: account.configured,
@@ -207,9 +212,9 @@ export function createDiscordSetupWizardProxy(
     groupAccess: {
       label: "Discord channels",
       placeholder: "My Server/#general, guildId/channelId, #support",
-      currentPolicy: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      currentPolicy: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         resolveDiscordAccount({ cfg, accountId }).config.groupPolicy ?? "allowlist",
-      currentEntries: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      currentEntries: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         Object.entries(resolveDiscordAccount({ cfg, accountId }).config.guilds ?? {}).flatMap(
           ([guildKey, value]) => {
             const channels = value?.channels ?? {};
@@ -221,14 +226,14 @@ export function createDiscordSetupWizardProxy(
             return channelKeys.map((channelKey) => `${guildKey}/${channelKey}`);
           },
         ),
-      updatePrompt: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      updatePrompt: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         Boolean(resolveDiscordAccount({ cfg, accountId }).config.guilds),
       setPolicy: ({
         cfg,
         accountId,
         policy,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         policy: "open" | "allowlist" | "disabled";
       }) =>
@@ -245,7 +250,7 @@ export function createDiscordSetupWizardProxy(
         entries,
         prompter,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         credentialValues: { token?: string };
         entries: string[];
@@ -283,7 +288,7 @@ export function createDiscordSetupWizardProxy(
         accountId,
         resolved,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         resolved: unknown;
       }) => setDiscordGuildChannelAllowlist(cfg, accountId, resolved as never),
@@ -311,7 +316,7 @@ export function createDiscordSetupWizardProxy(
         credentialValues,
         entries,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         credentialValues: { token?: string };
         entries: string[];
@@ -332,7 +337,7 @@ export function createDiscordSetupWizardProxy(
         accountId,
         allowFrom,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         allowFrom: string[];
       }) =>
@@ -344,6 +349,6 @@ export function createDiscordSetupWizardProxy(
         }),
     },
     dmPolicy: discordDmPolicy,
-    disable: (cfg: OpenClawConfig) => setSetupChannelEnabled(cfg, channel, false),
+    disable: (cfg: OpenCraftConfig) => setSetupChannelEnabled(cfg, channel, false),
   } satisfies ChannelSetupWizard;
 }

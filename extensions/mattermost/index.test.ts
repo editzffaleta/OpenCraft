@@ -1,18 +1,18 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk/mattermost";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/mattermost";
 import { describe, expect, it, vi } from "vitest";
 import { createTestPluginApi } from "../test-utils/plugin-api.js";
 import plugin from "./index.js";
 
 function createApi(
-  registrationMode: OpenClawPluginApi["registrationMode"],
+  registrationMode: OpenCraftPluginApi["registrationMode"],
   registerHttpRoute = vi.fn(),
-): OpenClawPluginApi {
+): OpenCraftPluginApi {
   return createTestPluginApi({
     id: "mattermost",
     name: "Mattermost",
     source: "test",
     config: {},
-    runtime: {} as OpenClawPluginApi["runtime"],
+    runtime: {} as OpenCraftPluginApi["runtime"],
     registrationMode,
     registerHttpRoute,
   });

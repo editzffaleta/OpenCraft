@@ -4,7 +4,7 @@ import {
   createScopedAccountConfigAccessors,
   createScopedChannelConfigBase,
   createScopedDmSecurityResolver,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildChannelConfigSchema,
   buildProbeChannelStatusSummary,
@@ -12,7 +12,7 @@ import {
   DEFAULT_ACCOUNT_ID,
   PAIRING_APPROVED_MESSAGE,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/matrix";
+} from "opencraft/plugin-sdk/matrix";
 import { buildTrafficStatusSummary } from "../../shared/channel-status-summary.js";
 import { matrixMessageActions } from "./actions.js";
 import { MatrixConfigSchema } from "./config-schema.js";

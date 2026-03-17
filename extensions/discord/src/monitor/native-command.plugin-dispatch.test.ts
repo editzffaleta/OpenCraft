@@ -2,7 +2,7 @@ import { ChannelType } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NativeCommandSpec } from "../../../../src/auto-reply/commands-registry.js";
 import * as dispatcherModule from "../../../../src/auto-reply/reply/provider-dispatcher.js";
-import type { OpenClawConfig } from "../../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../../src/config/config.js";
 import * as pluginCommandsModule from "../../../../src/plugins/commands.js";
 import { clearPluginCommands, registerPluginCommand } from "../../../../src/plugins/commands.js";
 import { createDiscordNativeCommand } from "./native-command.js";
@@ -53,17 +53,17 @@ function createInteraction(params?: {
   });
 }
 
-function createConfig(): OpenClawConfig {
+function createConfig(): OpenCraftConfig {
   return {
     channels: {
       discord: {
         dm: { enabled: true, policy: "open" },
       },
     },
-  } as OpenClawConfig;
+  } as OpenCraftConfig;
 }
 
-function createStatusCommand(cfg: OpenClawConfig) {
+function createStatusCommand(cfg: OpenCraftConfig) {
   const commandSpec: NativeCommandSpec = {
     name: "status",
     description: "Status",
@@ -133,7 +133,7 @@ function expectBoundSessionDispatch(
 }
 
 async function expectBoundStatusCommandDispatch(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   interaction: MockCommandInteraction;
   channelId: string;
   boundSessionKey: string;
@@ -234,7 +234,7 @@ describe("Discord native plugin command dispatch", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as OpenCraftConfig;
     const commandSpec: NativeCommandSpec = {
       name: "pair",
       description: "Pair",
@@ -354,7 +354,7 @@ describe("Discord native plugin command dispatch", () => {
           },
         },
       ],
-    } as OpenClawConfig;
+    } as OpenCraftConfig;
     const interaction = createInteraction({
       channelType: ChannelType.GuildText,
       channelId,
@@ -399,7 +399,7 @@ describe("Discord native plugin command dispatch", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as OpenCraftConfig;
     const command = createStatusCommand(cfg);
     const interaction = createInteraction({
       channelType: ChannelType.GuildText,
@@ -451,7 +451,7 @@ describe("Discord native plugin command dispatch", () => {
           dm: { enabled: true, policy: "open" },
         },
       },
-    } as OpenClawConfig;
+    } as OpenCraftConfig;
     const interaction = createInteraction({
       channelType: ChannelType.DM,
       channelId,

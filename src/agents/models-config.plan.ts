@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { isRecord } from "../utils.js";
 import {
   mergeProviders,
@@ -13,7 +13,7 @@ import {
   type ProviderConfig,
 } from "./models-config.providers.js";
 
-type ModelsConfig = NonNullable<OpenClawConfig["models"]>;
+type ModelsConfig = NonNullable<OpenCraftConfig["models"]>;
 
 export type ModelsJsonPlan =
   | {
@@ -28,7 +28,7 @@ export type ModelsJsonPlan =
     };
 
 async function resolveProvidersForModelsJson(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
 }): Promise<Record<string, ProviderConfig>> {
@@ -47,7 +47,7 @@ async function resolveProvidersForModelsJson(params: {
 }
 
 function resolveExplicitBaseUrlProviders(
-  providers: OpenClawConfig["models"] | undefined,
+  providers: OpenCraftConfig["models"] | undefined,
 ): ReadonlySet<string> {
   return new Set(
     Object.entries(providers?.providers ?? {})
@@ -86,9 +86,9 @@ async function resolveProvidersForMode(params: {
   });
 }
 
-export async function planOpenClawModelsJson(params: {
-  cfg: OpenClawConfig;
-  sourceConfigForSecrets?: OpenClawConfig;
+export async function planOpenCraftModelsJson(params: {
+  cfg: OpenCraftConfig;
+  sourceConfigForSecrets?: OpenCraftConfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
   existingRaw: string;

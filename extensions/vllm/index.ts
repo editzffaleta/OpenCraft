@@ -1,8 +1,8 @@
 import {
   emptyPluginConfigSchema,
-  type OpenClawPluginApi,
+  type OpenCraftPluginApi,
   type ProviderAuthMethodNonInteractiveContext,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import {
   VLLM_DEFAULT_API_KEY_ENV_VAR,
   VLLM_DEFAULT_BASE_URL,
@@ -13,7 +13,7 @@ import {
 const PROVIDER_ID = "vllm";
 
 async function loadProviderSetup() {
-  return await import("openclaw/plugin-sdk/self-hosted-provider-setup");
+  return await import("opencraft/plugin-sdk/self-hosted-provider-setup");
 }
 
 const vllmPlugin = {
@@ -21,7 +21,7 @@ const vllmPlugin = {
   name: "vLLM Provider",
   description: "Bundled vLLM provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "vLLM",

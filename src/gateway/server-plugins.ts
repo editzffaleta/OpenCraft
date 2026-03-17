@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { loadConfig } from "../config/config.js";
-import { loadOpenClawPlugins } from "../plugins/loader.js";
+import { loadOpenCraftPlugins } from "../plugins/loader.js";
 import { getPluginRuntimeGatewayRequestScope } from "../plugins/runtime/gateway-request-scope.js";
 import { setGatewaySubagentRuntime } from "../plugins/runtime/index.js";
 import type { PluginRuntime } from "../plugins/runtime/types.js";
@@ -21,7 +21,7 @@ import type {
 // dispatchGatewayMethod can use it as a fallback.
 
 const FALLBACK_GATEWAY_CONTEXT_STATE_KEY: unique symbol = Symbol.for(
-  "openclaw.fallbackGatewayContextState",
+  "opencraft.fallbackGatewayContextState",
 );
 
 type FallbackGatewayContextState = {
@@ -183,7 +183,7 @@ export function loadGatewayPlugins(params: {
   const gatewaySubagent = createGatewaySubagentRuntime();
   setGatewaySubagentRuntime(gatewaySubagent);
 
-  const pluginRegistry = loadOpenClawPlugins({
+  const pluginRegistry = loadOpenCraftPlugins({
     config: params.cfg,
     workspaceDir: params.workspaceDir,
     logger: {

@@ -1,6 +1,6 @@
 # Sincronizando com o Upstream OpenClaw
 
-O OpenCraft é um fork do [openclaw/openclaw](https://github.com/openclaw/openclaw) com:
+O OpenCraft é um fork do [editzffaleta/OpenCraft](https://github.com/editzffaleta/OpenCraft) com:
 
 - Toda a interface e documentação traduzida para **português do Brasil**
 - Branding renomeado de **OpenClaw → OpenCraft** em código, configs e docs
@@ -13,7 +13,7 @@ renomeações feitas na brasileirização. O processo correto é cherry-pick sel
 ## Fluxo de Sync
 
 ```
-upstream (openclaw/openclaw)
+upstream (editzffaleta/OpenCraft)
         │
         │  git cherry-pick <hash> --no-commit
         ▼
@@ -70,18 +70,18 @@ O script irá:
 
 ## Regras de renaming aplicadas automaticamente
 
-| Padrão alterado                       | Resultado                   |
-| ------------------------------------- | --------------------------- |
-| `"openclaw": { ... }` em package.json | `"opencraft": { ... }`      |
-| `openclaw.plugin.json`                | `opencraft.plugin.json`     |
-| `openclaw-bundled`                    | `opencraft-bundled`         |
-| `OPENCLAW_NODE_BOOKWORM_*`            | `OPENCRAFT_NODE_BOOKWORM_*` |
-| `OPENCLAW_TEST_FAST`                  | `OPENCRAFT_TEST_FAST`       |
-| `OPENCLAW_STATE_DIR`                  | `OPENCRAFT_STATE_DIR`       |
-| `OPENCLAW_BIN`                        | `OPENCRAFT_BIN`             |
-| `openclaw-pnpm-store`                 | `opencraft-pnpm-store`      |
-| `openclaw/openclaw` (URL)             | `editzffaleta/OpenCraft`    |
-| `"OpenClaw"` (string)                 | `"OpenCraft"`               |
+| Padrão alterado                        | Resultado                   |
+| -------------------------------------- | --------------------------- |
+| `"opencraft": { ... }` em package.json | `"opencraft": { ... }`      |
+| `opencraft.plugin.json`                | `opencraft.plugin.json`     |
+| `opencraft-bundled`                    | `opencraft-bundled`         |
+| `OPENCRAFT_NODE_BOOKWORM_*`            | `OPENCRAFT_NODE_BOOKWORM_*` |
+| `OPENCRAFT_TEST_FAST`                  | `OPENCRAFT_TEST_FAST`       |
+| `OPENCRAFT_STATE_DIR`                  | `OPENCRAFT_STATE_DIR`       |
+| `OPENCRAFT_BIN`                        | `OPENCRAFT_BIN`             |
+| `opencraft-pnpm-store`                 | `opencraft-pnpm-store`      |
+| `editzffaleta/OpenCraft` (URL)         | `editzffaleta/OpenCraft`    |
+| `"OpenCraft"` (string)                 | `"OpenCraft"`               |
 
 ### O que **NÃO** é renomeado (exceções permanentes)
 
@@ -137,7 +137,7 @@ git cherry-pick --abort
 
 Alguns commits do upstream podem ser intencionalmente ignorados neste fork:
 
-- Commits que reintroduzem o branding "OpenClaw" em lugares já traduzidos
+- Commits que reintroduzem o branding "OpenCraft" em lugares já traduzidos
 - Commits que alteram apenas arquivos Swift/Xcode (não presentes neste fork)
 - Commits de i18n para outros idiomas que não pt-BR
 

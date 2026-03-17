@@ -2,7 +2,7 @@ import {
   DEFAULT_ACCOUNT_ID,
   detectBinary,
   formatDocsLink,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   parseSetupEntriesAllowingWildcard,
   promptParsedAllowFromForScopedChannel,
   setChannelDmPolicyWithAllowFrom,
@@ -23,10 +23,10 @@ import { imessageSetupAdapter, parseIMessageAllowFromEntries } from "./setup-cor
 const channel = "imessage" as const;
 
 async function promptIMessageAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   return promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel,
@@ -124,7 +124,7 @@ export const imessageSetupWizard: ChannelSetupWizard = {
     title: "iMessage next steps",
     lines: [
       "This is still a work in progress.",
-      "Ensure OpenClaw has Full Disk Access to Messages DB.",
+      "Ensure OpenCraft has Full Disk Access to Messages DB.",
       "Grant Automation permission for Messages when prompted.",
       "List chats with: imsg chats --limit 20",
       `Docs: ${formatDocsLink("/imessage", "imessage")}`,

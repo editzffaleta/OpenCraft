@@ -3,9 +3,9 @@ export type {
   ChannelGatewayContext,
   ChannelMessageActionAdapter,
 } from "../channels/plugins/types.js";
-export type { OpenClawConfig } from "../config/config.js";
+export type { OpenCraftConfig } from "../config/config.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenClawPluginApi } from "../plugins/types.js";
+export type { OpenCraftPluginApi } from "../plugins/types.js";
 export type {
   TelegramAccountConfig,
   TelegramActionConfig,

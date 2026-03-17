@@ -172,19 +172,19 @@ struct GatewayNodeSessionTests {
     @Test
     func normalizeCanvasHostUrlPreservesExplicitSecureCanvasPort() {
         let normalized = canonicalizeCanvasHostUrl(
-            raw: "https://canvas.example.com:9443/__openclaw__/cap/token",
+            raw: "https://canvas.example.com:9443/__opencraft__/cap/token",
             activeURL: URL(string: "wss://gateway.example.com")!)
 
-        #expect(normalized == "https://canvas.example.com:9443/__openclaw__/cap/token")
+        #expect(normalized == "https://canvas.example.com:9443/__opencraft__/cap/token")
     }
 
     @Test
     func normalizeCanvasHostUrlBackfillsGatewayHostForLoopbackCanvas() {
         let normalized = canonicalizeCanvasHostUrl(
-            raw: "http://127.0.0.1:18789/__openclaw__/cap/token",
+            raw: "http://127.0.0.1:18789/__opencraft__/cap/token",
             activeURL: URL(string: "wss://gateway.example.com:7443")!)
 
-        #expect(normalized == "https://gateway.example.com:7443/__openclaw__/cap/token")
+        #expect(normalized == "https://gateway.example.com:7443/__opencraft__/cap/token")
     }
 
     @Test
@@ -247,7 +247,7 @@ struct GatewayNodeSessionTests {
             caps: [],
             commands: [],
             permissions: [:],
-            clientId: "openclaw-ios-test",
+            clientId: "opencraft-ios-test",
             clientMode: "ui",
             clientDisplayName: "iOS Test",
             includeDeviceIdentity: false)

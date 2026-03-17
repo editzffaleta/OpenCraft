@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/perplexity-plugin",
+  "name": "@opencraft/perplexity-plugin",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Perplexity plugin",
+  "description": "OpenCraft Perplexity plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

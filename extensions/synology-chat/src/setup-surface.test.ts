@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { WizardPrompter } from "../../../src/wizard/prompts.js";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
 import { synologyChatPlugin } from "./channel.js";
@@ -49,7 +49,7 @@ describe("synology-chat setup wizard", () => {
     });
 
     const result = await synologyChatConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime: createRuntimeEnv(),
       prompter,
       options: {},
@@ -86,7 +86,7 @@ describe("synology-chat setup wizard", () => {
     });
 
     const result = await synologyChatConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime: createRuntimeEnv(),
       prompter,
       options: {},

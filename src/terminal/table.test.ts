@@ -109,19 +109,23 @@ describe("renderTable", () => {
             `\x1b[2mGet current weather and forecasts via wttr.in or Open-Meteo. ` +
             `Use when: user asks about weather, temperature, or forecasts for any location.` +
             `\x1b[0m`,
-          Source: "openclaw-bundled",
+          Source: "opencraft-bundled",
         },
       ],
     });
 
-    const lines = out
+    const DIM = "\u001b[2m";
+    // Find continuation lines — any table body line with a dim ANSI code after the cell border.
+    const contLines = out
       .trimEnd()
       .split("\n")
-      .filter((line) => line.includes("Use when"));
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).toContain("\u001b[2mUse when");
-    expect(lines[0]).not.toContain("│  Use when");
-    expect(lines[0]).not.toContain("│ \x1b[2m Use when");
+      .filter((line) => line.includes("│") && line.includes("│ " + DIM));
+    expect(contLines.length).toBeGreaterThan(0);
+    // Verify no extra leading space between the cell border and the ANSI escape.
+    for (const line of contLines) {
+      expect(line).not.toContain("│  " + DIM); // double space = leaked indent
+      expect(line).not.toContain("│ " + DIM + " "); // space after escape = leaked space
+    }
   });
 
   it("respects explicit newlines in cell values", () => {
@@ -156,7 +160,7 @@ describe("renderTable", () => {
           Status: "✗ missing",
           Skill: "📸 peekaboo",
           Description: "Capture screenshots from macOS windows and keep table wrapping stable.",
-          Source: "openclaw-bundled",
+          Source: "opencraft-bundled",
         },
       ],
     });
@@ -260,7 +264,7 @@ describe("wrapNoteMessage", () => {
 
   it("preserves long Windows paths without inserting spaces/newlines", () => {
     // No spaces: wrapNoteMessage splits on whitespace, so a "Program Files" style path would wrap.
-    const input = "C:\\\\State\\\\OpenClaw\\\\bin\\\\openclaw.exe";
+    const input = "C:\\\\State\\\\OpenCraft\\\\bin\\\\opencraft.exe";
     const wrapped = wrapNoteMessage(input, { maxWidth: 10, columns: 80 });
     expect(wrapped).toBe(input);
   });

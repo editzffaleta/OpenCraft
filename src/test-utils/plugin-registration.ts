@@ -1,13 +1,13 @@
 import type {
   AnyAgentTool,
-  OpenClawPluginApi,
+  OpenCraftPluginApi,
   ProviderPlugin,
   SpeechProviderPlugin,
   WebSearchProviderPlugin,
 } from "../plugins/types.js";
 
 export type CapturedPluginRegistration = {
-  api: OpenClawPluginApi;
+  api: OpenCraftPluginApi;
   providers: ProviderPlugin[];
   speechProviders: SpeechProviderPlugin[];
   webSearchProviders: WebSearchProviderPlugin[];
@@ -38,12 +38,12 @@ export function createCapturedPluginRegistration(): CapturedPluginRegistration {
       registerTool(tool: AnyAgentTool) {
         tools.push(tool);
       },
-    } as OpenClawPluginApi,
+    } as OpenCraftPluginApi,
   };
 }
 
 export function registerSingleProviderPlugin(params: {
-  register(api: OpenClawPluginApi): void;
+  register(api: OpenCraftPluginApi): void;
 }): ProviderPlugin {
   const captured = createCapturedPluginRegistration();
   params.register(captured.api);

@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/types.js";
+import type { OpenCraftConfig } from "../../config/types.js";
 import { mapAllowFromEntries } from "../../plugin-sdk/channel-config-helpers.js";
 import { isWhatsAppGroupJid, normalizeWhatsAppTarget } from "../../whatsapp/normalize.js";
 import type { InspectedDiscordAccount } from "../read-only-account-inspect.discord.runtime.js";
@@ -11,7 +11,7 @@ import { getChannelPlugin } from "./registry.js";
 import type { ChannelDirectoryEntry } from "./types.js";
 
 export type DirectoryConfigParams = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;

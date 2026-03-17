@@ -1,9 +1,9 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import type { WebSearchProviderPlugin } from "../../plugins/types.js";
 import { createWebSearchTool as createLegacyWebSearchTool } from "./web-search-core.js";
 
 type ConfiguredWebSearchProvider = NonNullable<
-  NonNullable<NonNullable<OpenClawConfig["tools"]>["web"]>["search"]
+  NonNullable<NonNullable<OpenCraftConfig["tools"]>["web"]>["search"]
 >["provider"];
 
 function cloneWithDescriptors<T extends object>(value: T | undefined): T {
@@ -15,9 +15,9 @@ function cloneWithDescriptors<T extends object>(value: T | undefined): T {
 }
 
 function withForcedProvider(
-  config: OpenClawConfig | undefined,
+  config: OpenCraftConfig | undefined,
   provider: ConfiguredWebSearchProvider,
-): OpenClawConfig {
+): OpenCraftConfig {
   const next = cloneWithDescriptors(config ?? {});
   const tools = cloneWithDescriptors(next.tools ?? {});
   const web = cloneWithDescriptors(tools.web ?? {});

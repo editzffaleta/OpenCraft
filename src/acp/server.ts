@@ -21,7 +21,7 @@ export async function serveAcpGateway(opts: AcpServerOptions = {}): Promise<void
   const gatewayUrlOverrideSource =
     connection.urlSource === "cli --url"
       ? "cli"
-      : connection.urlSource === "env OPENCLAW_GATEWAY_URL"
+      : connection.urlSource === "env OPENCRAFT_GATEWAY_URL"
         ? "env"
         : undefined;
   const creds = await resolveGatewayConnectionAuth({
@@ -220,7 +220,7 @@ function parseArgs(args: string[]): AcpServerOptions {
 }
 
 function printHelp(): void {
-  console.log(`Usage: openclaw acp [options]
+  console.log(`Usage: opencraft acp [options]
 
 Gateway-backed ACP server for IDE integration.
 

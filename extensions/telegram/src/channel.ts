@@ -1,4 +1,4 @@
-import { createScopedChannelConfigBase } from "openclaw/plugin-sdk/compat";
+import { createScopedChannelConfigBase } from "opencraft/plugin-sdk/compat";
 import {
   buildAccountScopedAllowlistConfigEditor,
   collectAllowlistProviderGroupPolicyWarnings,
@@ -6,13 +6,13 @@ import {
   createScopedAccountConfigAccessors,
   createScopedDmSecurityResolver,
   formatAllowFromLowercase,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildAgentSessionKey,
   resolveThreadSessionKeys,
   type RoutePeer,
-} from "openclaw/plugin-sdk/core";
-import type { ChannelPlugin } from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
+import type { ChannelPlugin } from "opencraft/plugin-sdk/core";
 import {
   buildChannelConfigSchema,
   buildTokenChannelStatusSummary,
@@ -29,8 +29,8 @@ import {
   resolveTelegramGroupToolPolicy,
   TelegramConfigSchema,
   type ChannelMessageActionAdapter,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/telegram";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/telegram";
 import { parseTelegramTopicConversation } from "../../../src/acp/conversation-id.js";
 import { resolveExecApprovalCommandDisplay } from "../../../src/infra/exec-approval-command-display.js";
 import { buildExecApprovalPendingReplyPayload } from "../../../src/infra/exec-approval-reply.js";
@@ -72,7 +72,7 @@ type TelegramSendFn = ReturnType<
 const meta = getChatChannelMeta("telegram");
 
 function findTelegramTokenOwnerAccountId(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId: string;
 }): string | null {
   const normalizedAccountId = normalizeAccountId(params.accountId);
@@ -108,7 +108,7 @@ function formatDuplicateTelegramTokenReason(params: {
 type TelegramSendOptions = NonNullable<Parameters<TelegramSendFn>[2]>;
 
 function buildTelegramSendOptions(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   mediaUrl?: string | null;
   mediaLocalRoots?: readonly string[] | null;
   accountId?: string | null;
@@ -131,7 +131,7 @@ function buildTelegramSendOptions(params: {
 }
 
 async function sendTelegramOutbound(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   to: string;
   text: string;
   mediaUrl?: string | null;
@@ -237,7 +237,7 @@ function normalizeOutboundThreadId(value?: string | number | null): string | und
 }
 
 function buildTelegramBaseSessionKey(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   peer: RoutePeer;
@@ -253,7 +253,7 @@ function buildTelegramBaseSessionKey(params: {
 }
 
 function resolveTelegramOutboundSessionRoute(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   target: string;
@@ -303,7 +303,7 @@ function resolveTelegramOutboundSessionRoute(params: {
   };
 }
 
-function hasTelegramExecApprovalDmRoute(cfg: OpenClawConfig): boolean {
+function hasTelegramExecApprovalDmRoute(cfg: OpenCraftConfig): boolean {
   return listTelegramAccountIds(cfg).some((accountId) => {
     if (!isTelegramExecApprovalClientEnabled({ cfg, accountId })) {
       return false;
@@ -849,7 +849,7 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
     },
     logoutAccount: async ({ accountId, cfg }) => {
       const envToken = process.env.TELEGRAM_BOT_TOKEN?.trim() ?? "";
-      const nextCfg = { ...cfg } as OpenClawConfig;
+      const nextCfg = { ...cfg } as OpenCraftConfig;
       const nextTelegram = cfg.channels?.telegram ? { ...cfg.channels.telegram } : undefined;
       let cleared = false;
       let changed = false;

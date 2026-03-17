@@ -10,9 +10,9 @@ BUN_INSTALL_DIR="${BUN_INSTALL_DIR:-/opt/bun}"
 INSTALL_BREW="${INSTALL_BREW:-1}"
 BREW_INSTALL_DIR="${BREW_INSTALL_DIR:-/home/linuxbrew/.linuxbrew}"
 FINAL_USER="${FINAL_USER:-sandbox}"
-OPENCLAW_DOCKER_BUILD_USE_BUILDX="${OPENCLAW_DOCKER_BUILD_USE_BUILDX:-0}"
-OPENCLAW_DOCKER_BUILD_CACHE_FROM="${OPENCLAW_DOCKER_BUILD_CACHE_FROM:-}"
-OPENCLAW_DOCKER_BUILD_CACHE_TO="${OPENCLAW_DOCKER_BUILD_CACHE_TO:-}"
+OPENCRAFT_DOCKER_BUILD_USE_BUILDX="${OPENCRAFT_DOCKER_BUILD_USE_BUILDX:-0}"
+OPENCRAFT_DOCKER_BUILD_CACHE_FROM="${OPENCRAFT_DOCKER_BUILD_CACHE_FROM:-}"
+OPENCRAFT_DOCKER_BUILD_CACHE_TO="${OPENCRAFT_DOCKER_BUILD_CACHE_TO:-}"
 
 if ! docker image inspect "${BASE_IMAGE}" >/dev/null 2>&1; then
   echo "Base image missing: ${BASE_IMAGE}"
@@ -23,13 +23,13 @@ fi
 echo "Building ${TARGET_IMAGE} with: ${PACKAGES}"
 
 build_cmd=(docker build)
-if [ "${OPENCLAW_DOCKER_BUILD_USE_BUILDX}" = "1" ]; then
+if [ "${OPENCRAFT_DOCKER_BUILD_USE_BUILDX}" = "1" ]; then
   build_cmd=(docker buildx build --load)
-  if [ -n "${OPENCLAW_DOCKER_BUILD_CACHE_FROM}" ]; then
-    build_cmd+=(--cache-from "${OPENCLAW_DOCKER_BUILD_CACHE_FROM}")
+  if [ -n "${OPENCRAFT_DOCKER_BUILD_CACHE_FROM}" ]; then
+    build_cmd+=(--cache-from "${OPENCRAFT_DOCKER_BUILD_CACHE_FROM}")
   fi
-  if [ -n "${OPENCLAW_DOCKER_BUILD_CACHE_TO}" ]; then
-    build_cmd+=(--cache-to "${OPENCLAW_DOCKER_BUILD_CACHE_TO}")
+  if [ -n "${OPENCRAFT_DOCKER_BUILD_CACHE_TO}" ]; then
+    build_cmd+=(--cache-to "${OPENCRAFT_DOCKER_BUILD_CACHE_TO}")
   fi
 fi
 
@@ -50,5 +50,5 @@ cat <<NOTE
 Built ${TARGET_IMAGE}.
 To use it, set agents.defaults.sandbox.docker.image to "${TARGET_IMAGE}" and restart.
 If you want a clean re-create, remove old sandbox containers:
-  docker rm -f \$(docker ps -aq --filter label=openclaw.sandbox=1)
+  docker rm -f \$(docker ps -aq --filter label=opencraft.sandbox=1)
 NOTE

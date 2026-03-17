@@ -30,43 +30,43 @@ done
 SYSTEM_PROMPT='Você é um tradutor técnico especializado em documentação de software. Traduza o conteúdo Markdown fornecido para Português Brasileiro (pt-BR) seguindo EXATAMENTE estas regras:
 
 REGRAS DE SUBSTITUIÇÃO (aplicar a todo o conteúdo incluindo código e exemplos):
-- "OpenClaw" em prosa/UI → "OpenCraft"
-- ~/.openclaw/ → ~/.opencraft/
-- openclaw.json → opencraft.json
-- CLI `openclaw` → `opencraft`
-- openclaw@latest → opencraft@latest
-- ~/Projects/openclaw → ~/Projects/opencraft
-- ~/.openclaw-dev → ~/.opencraft-dev
-- ~/.openclaw-a → ~/.opencraft-a (e similares: ~/.openclaw-b etc)
-- OPENCLAW_CONFIG_PATH=~/.openclaw/ → OPENCLAW_CONFIG_PATH=~/.opencraft/
-- OPENCLAW_STATE_DIR=~/.openclaw → OPENCLAW_STATE_DIR=~/.opencraft (preservar sufixos como -a, -b, -dev)
-- friends-of-openclaw → friends-of-opencraft (slugs de exemplo)
-- groupChannels: ["openclaw-dm"] → ["opencraft-dm"]
-- mentionPatterns: ["@openclaw"] → ["@opencraft"]
-- browser.profiles.openclaw → browser.profiles.opencraft
-- ui.assistant.name: "OpenClaw" → "OpenCraft"
-- controlUi.basePath: "/openclaw" → "/opencraft"
-- cwd: "/workspace/openclaw" → "/workspace/opencraft"
-- "All your chats, one OpenClaw." → "All your chats, one OpenCraft."
-- slashCommand.name: "openclaw" → "opencraft"
+- "OpenCraft" em prosa/UI → "OpenCraft"
+- ~/.opencraft/ → ~/.opencraft/
+- opencraft.json → opencraft.json
+- CLI `opencraft` → `opencraft`
+- opencraft@latest → opencraft@latest
+- ~/Projects/opencraft → ~/Projects/opencraft
+- ~/.opencraft-dev → ~/.opencraft-dev
+- ~/.opencraft-a → ~/.opencraft-a (e similares: ~/.opencraft-b etc)
+- OPENCRAFT_CONFIG_PATH=~/.opencraft/ → OPENCRAFT_CONFIG_PATH=~/.opencraft/
+- OPENCRAFT_STATE_DIR=~/.opencraft → OPENCRAFT_STATE_DIR=~/.opencraft (preservar sufixos como -a, -b, -dev)
+- friends-of-opencraft → friends-of-opencraft (slugs de exemplo)
+- groupChannels: ["opencraft-dm"] → ["opencraft-dm"]
+- mentionPatterns: ["@opencraft"] → ["@opencraft"]
+- browser.profiles.opencraft → browser.profiles.opencraft
+- ui.assistant.name: "OpenCraft" → "OpenCraft"
+- controlUi.basePath: "/opencraft" → "/opencraft"
+- cwd: "/workspace/opencraft" → "/workspace/opencraft"
+- "All your chats, one OpenCraft." → "All your chats, one OpenCraft."
+- slashCommand.name: "opencraft" → "opencraft"
 
 MANTER SEM ALTERAÇÃO (não traduzir nem substituir):
-- Variáveis de ambiente OPENCLAW_* (ex: OPENCLAW_GATEWAY_TOKEN, OPENCLAW_CONFIG_PATH)
-- Nomes de plugins @openclaw/ (ex: @openclaw/mattermost)
+- Variáveis de ambiente OPENCLAW_* (ex: OPENCLAW_GATEWAY_TOKEN, OPENCRAFT_CONFIG_PATH)
+- Nomes de plugins @opencraft/ (ex: @opencraft/mattermost)
 - URLs externas do GitHub e outras URLs externas
-- Chaves de configuração JSON/JSON5 openclaw (ex: "openclaw" como valor de chave de config interna)
-- Header x-openclaw-token, x-openclaw-message-channel, x-openclaw-account-id
+- Chaves de configuração JSON/JSON5 opencraft (ex: "opencraft" como valor de chave de config interna)
+- Header x-opencraft-token, x-opencraft-message-channel, x-opencraft-account-id
 - Caminhos de código-fonte
 - Nomes de serviços Docker
-- E-mails de exemplo openclaw@gmail.com
-- Nomes de scripts (ex: openclaw-vault-resolver)
-- Caminhos /tmp/openclaw/
-- URLs /__openclaw__/
+- E-mails de exemplo opencraft@gmail.com
+- Nomes de scripts (ex: opencraft-vault-resolver)
+- Caminhos /tmp/opencraft/
+- URLs /__opencraft__/
 - Prefixo openclaw-sbx- (containers sandbox)
 - Rede openclaw-sandbox-browser
 - Perfil AppArmor openclaw-sandbox
 - Imagem openclaw-sandbox:bookworm-slim
-- Chave de grupo group:openclaw
+- Chave de grupo group:opencraft
 - Diretório zh-CN (não tocar em conteúdo zh-CN)
 
 REGRAS DE TRADUÇÃO:

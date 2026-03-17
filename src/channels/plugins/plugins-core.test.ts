@@ -9,7 +9,7 @@ import type { SignalProbe } from "../../../extensions/signal/src/probe.js";
 import type { SlackProbe } from "../../../extensions/slack/src/probe.js";
 import type { TelegramProbe } from "../../../extensions/telegram/src/probe.js";
 import type { TelegramTokenResolution } from "../../../extensions/telegram/src/token.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import type { LineProbeResult } from "../../line/types.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import {
@@ -112,7 +112,7 @@ describe("channel plugin registry", () => {
 describe("channel plugin catalog", () => {
   it("includes Microsoft Teams", () => {
     const entry = getChannelPluginCatalogEntry("msteams");
-    expect(entry?.install.npmSpec).toBe("@openclaw/msteams");
+    expect(entry?.install.npmSpec).toBe("@opencraft/msteams");
     expect(entry?.meta.aliases).toContain("teams");
   });
 
@@ -122,15 +122,15 @@ describe("channel plugin catalog", () => {
   });
 
   it("includes external catalog entries", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-catalog-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-catalog-"));
     const catalogPath = path.join(dir, "catalog.json");
     fs.writeFileSync(
       catalogPath,
       JSON.stringify({
         entries: [
           {
-            name: "@openclaw/demo-channel",
-            openclaw: {
+            name: "@opencraft/demo-channel",
+            opencraft: {
               channel: {
                 id: "demo-channel",
                 label: "Demo Channel",
@@ -140,7 +140,7 @@ describe("channel plugin catalog", () => {
                 order: 999,
               },
               install: {
-                npmSpec: "@openclaw/demo-channel",
+                npmSpec: "@opencraft/demo-channel",
               },
             },
           },
@@ -155,14 +155,14 @@ describe("channel plugin catalog", () => {
   });
 
   it("preserves plugin ids when they differ from channel ids", () => {
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-channel-catalog-state-"));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-channel-catalog-state-"));
     const pluginDir = path.join(stateDir, "extensions", "demo-channel-plugin");
     fs.mkdirSync(pluginDir, { recursive: true });
     fs.writeFileSync(
       path.join(pluginDir, "package.json"),
       JSON.stringify({
         name: "@vendor/demo-channel-plugin",
-        openclaw: {
+        opencraft: {
           extensions: ["./index.js"],
           channel: {
             id: "demo-channel",
@@ -178,7 +178,7 @@ describe("channel plugin catalog", () => {
       }),
     );
     fs.writeFileSync(
-      path.join(pluginDir, "openclaw.plugin.json"),
+      path.join(pluginDir, "opencraft.plugin.json"),
       JSON.stringify({
         id: "@vendor/demo-runtime",
         configSchema: {},
@@ -189,9 +189,9 @@ describe("channel plugin catalog", () => {
     const entry = listChannelPluginCatalogEntries({
       env: {
         ...process.env,
-        OPENCLAW_STATE_DIR: stateDir,
+        OPENCRAFT_STATE_DIR: stateDir,
         CLAWDBOT_STATE_DIR: undefined,
-        OPENCLAW_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
+        OPENCRAFT_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
       },
     }).find((item) => item.id === "demo-channel");
 
@@ -199,15 +199,15 @@ describe("channel plugin catalog", () => {
   });
 
   it("uses the provided env for external catalog path resolution", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-catalog-home-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-catalog-home-"));
     const catalogPath = path.join(home, "catalog.json");
     fs.writeFileSync(
       catalogPath,
       JSON.stringify({
         entries: [
           {
-            name: "@openclaw/env-demo-channel",
-            openclaw: {
+            name: "@opencraft/env-demo-channel",
+            opencraft: {
               channel: {
                 id: "env-demo-channel",
                 label: "Env Demo Channel",
@@ -217,7 +217,7 @@ describe("channel plugin catalog", () => {
                 order: 1000,
               },
               install: {
-                npmSpec: "@openclaw/env-demo-channel",
+                npmSpec: "@opencraft/env-demo-channel",
               },
             },
           },
@@ -228,7 +228,7 @@ describe("channel plugin catalog", () => {
     const ids = listChannelPluginCatalogEntries({
       env: {
         ...process.env,
-        OPENCLAW_PLUGIN_CATALOG_PATHS: "~/catalog.json",
+        OPENCRAFT_PLUGIN_CATALOG_PATHS: "~/catalog.json",
         HOME: home,
       },
     }).map((entry) => entry.id);
@@ -237,7 +237,7 @@ describe("channel plugin catalog", () => {
   });
 
   it("uses the provided env for default catalog paths", () => {
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-catalog-state-"));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-catalog-state-"));
     const catalogPath = path.join(stateDir, "plugins", "catalog.json");
     fs.mkdirSync(path.dirname(catalogPath), { recursive: true });
     fs.writeFileSync(
@@ -245,8 +245,8 @@ describe("channel plugin catalog", () => {
       JSON.stringify({
         entries: [
           {
-            name: "@openclaw/default-env-demo",
-            openclaw: {
+            name: "@opencraft/default-env-demo",
+            opencraft: {
               channel: {
                 id: "default-env-demo",
                 label: "Default Env Demo",
@@ -255,7 +255,7 @@ describe("channel plugin catalog", () => {
                 blurb: "Default env demo entry",
               },
               install: {
-                npmSpec: "@openclaw/default-env-demo",
+                npmSpec: "@opencraft/default-env-demo",
               },
             },
           },
@@ -266,7 +266,7 @@ describe("channel plugin catalog", () => {
     const ids = listChannelPluginCatalogEntries({
       env: {
         ...process.env,
-        OPENCLAW_STATE_DIR: stateDir,
+        OPENCRAFT_STATE_DIR: stateDir,
         CLAWDBOT_STATE_DIR: undefined,
       },
     }).map((entry) => entry.id);
@@ -331,13 +331,13 @@ function makeSlackConfigWritesCfg(accountIdKey: string) {
 }
 
 type DirectoryListFn = (params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;
 }) => Promise<ChannelDirectoryEntry[]>;
 
-async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: OpenClawConfig) {
+async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: OpenCraftConfig) {
   return await listFn({
     cfg,
     accountId: "default",
@@ -348,7 +348,7 @@ async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: Op
 
 async function expectDirectoryIds(
   listFn: DirectoryListFn,
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   expected: string[],
   options?: { sorted?: boolean },
 ) {

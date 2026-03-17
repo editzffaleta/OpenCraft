@@ -1,4 +1,4 @@
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import SwiftUI
 import Testing
 @testable import OpenClaw

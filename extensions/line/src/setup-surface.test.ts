@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "openclaw/plugin-sdk/line";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/line";
 import { describe, expect, it, vi } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import {
@@ -37,7 +37,7 @@ const lineConfigureAdapter = buildChannelSetupWizardAdapterFromSetupWizard({
     config: {
       listAccountIds: listLineAccountIds,
       defaultAccountId: resolveDefaultLineAccountId,
-      resolveAllowFrom: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId?: string | null }) =>
+      resolveAllowFrom: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId?: string | null }) =>
         resolveLineAccount({ cfg, accountId: accountId ?? undefined }).config.allowFrom,
     },
     setup: lineSetupAdapter,
@@ -60,7 +60,7 @@ describe("line setup wizard", () => {
     });
 
     const result = await lineConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime: createRuntimeEnv(),
       prompter,
       options: {},

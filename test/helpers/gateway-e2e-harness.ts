@@ -105,10 +105,10 @@ export async function spawnGatewayInstance(name: string): Promise<GatewayInstanc
   const port = await getFreePort();
   const hookToken = `token-${name}-${randomUUID()}`;
   const gatewayToken = `gateway-${name}-${randomUUID()}`;
-  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), `openclaw-e2e-${name}-`));
-  const configDir = path.join(homeDir, ".openclaw");
+  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), `opencraft-e2e-${name}-`));
+  const configDir = path.join(homeDir, ".opencraft");
   await fs.mkdir(configDir, { recursive: true });
-  const configPath = path.join(configDir, "openclaw.json");
+  const configPath = path.join(configDir, "opencraft.json");
   const stateDir = path.join(configDir, "state");
   const config = {
     gateway: {
@@ -141,17 +141,17 @@ export async function spawnGatewayInstance(name: string): Promise<GatewayInstanc
         env: {
           ...process.env,
           HOME: homeDir,
-          OPENCLAW_CONFIG_PATH: configPath,
-          OPENCLAW_STATE_DIR: stateDir,
+          OPENCRAFT_CONFIG_PATH: configPath,
+          OPENCRAFT_STATE_DIR: stateDir,
           OPENCLAW_GATEWAY_TOKEN: "",
           OPENCLAW_GATEWAY_PASSWORD: "",
-          OPENCLAW_SKIP_CHANNELS: "1",
-          OPENCLAW_SKIP_PROVIDERS: "1",
-          OPENCLAW_SKIP_GMAIL_WATCHER: "1",
-          OPENCLAW_SKIP_CRON: "1",
-          OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1",
-          OPENCLAW_SKIP_CANVAS_HOST: "1",
-          OPENCLAW_TEST_MINIMAL_GATEWAY: "1",
+          OPENCRAFT_SKIP_CHANNELS: "1",
+          OPENCRAFT_SKIP_PROVIDERS: "1",
+          OPENCRAFT_SKIP_GMAIL_WATCHER: "1",
+          OPENCRAFT_SKIP_CRON: "1",
+          OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER: "1",
+          OPENCRAFT_SKIP_CANVAS_HOST: "1",
+          OPENCRAFT_TEST_MINIMAL_GATEWAY: "1",
           VITEST: "1",
         },
         stdio: ["ignore", "pipe", "pipe"],

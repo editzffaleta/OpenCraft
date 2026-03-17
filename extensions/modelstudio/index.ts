@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import {
   applyModelStudioConfig,
   applyModelStudioConfigCn,
@@ -14,7 +14,7 @@ const modelStudioPlugin = {
   name: "Model Studio Provider",
   description: "Bundled Model Studio provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Model Studio",

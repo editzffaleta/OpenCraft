@@ -8,7 +8,7 @@ import {
   resolveCacheTtlMs,
   writeCache,
 } from "../../../src/agents/tools/web-shared.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import { wrapExternalContent, wrapWebContent } from "../../../src/security/external-content.js";
 import {
   resolveFirecrawlApiKey,
@@ -41,7 +41,7 @@ type FirecrawlSearchItem = {
 };
 
 export type FirecrawlSearchParams = {
-  cfg?: OpenClawConfig;
+  cfg?: OpenCraftConfig;
   query: string;
   count?: number;
   timeoutSeconds?: number;
@@ -51,7 +51,7 @@ export type FirecrawlSearchParams = {
 };
 
 export type FirecrawlScrapeParams = {
-  cfg?: OpenClawConfig;
+  cfg?: OpenCraftConfig;
   url: string;
   extractMode: "markdown" | "text";
   maxChars?: number;

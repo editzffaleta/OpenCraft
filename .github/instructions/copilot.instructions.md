@@ -1,4 +1,4 @@
-# OpenClaw Codebase Patterns
+# OpenCraft Codebase Patterns
 
 **Always reuse existing code - no redundancy!**
 
@@ -55,7 +55,7 @@
 ## Stack & Commands
 
 - **Package manager**: pnpm (`pnpm install`)
-- **Dev**: `pnpm openclaw ...` or `pnpm dev`
+- **Dev**: `pnpm opencraft ...` or `pnpm dev`
 - **Type-check**: `pnpm tsgo`
 - **Lint/format**: `pnpm check`
 - **Tests**: `pnpm test`

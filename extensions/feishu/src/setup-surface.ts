@@ -9,7 +9,7 @@ import {
 } from "../../../src/channels/plugins/setup-wizard-helpers.js";
 import type { ChannelSetupDmPolicy } from "../../../src/channels/plugins/setup-wizard-types.js";
 import type { ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DmPolicy } from "../../../src/config/types.js";
 import type { SecretInput } from "../../../src/config/types.secrets.js";
 import { hasConfiguredSecretInput } from "../../../src/config/types.secrets.js";
@@ -30,35 +30,35 @@ function normalizeString(value: unknown): string | undefined {
   return trimmed || undefined;
 }
 
-function setFeishuDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy): OpenClawConfig {
+function setFeishuDmPolicy(cfg: OpenCraftConfig, dmPolicy: DmPolicy): OpenCraftConfig {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel,
     dmPolicy,
-  }) as OpenClawConfig;
+  }) as OpenCraftConfig;
 }
 
-function setFeishuAllowFrom(cfg: OpenClawConfig, allowFrom: string[]): OpenClawConfig {
+function setFeishuAllowFrom(cfg: OpenCraftConfig, allowFrom: string[]): OpenCraftConfig {
   return setTopLevelChannelAllowFrom({
     cfg,
     channel,
     allowFrom,
-  }) as OpenClawConfig;
+  }) as OpenCraftConfig;
 }
 
 function setFeishuGroupPolicy(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   groupPolicy: "open" | "allowlist" | "disabled",
-): OpenClawConfig {
+): OpenCraftConfig {
   return setTopLevelChannelGroupPolicy({
     cfg,
     channel,
     groupPolicy,
     enabled: true,
-  }) as OpenClawConfig;
+  }) as OpenCraftConfig;
 }
 
-function setFeishuGroupAllowFrom(cfg: OpenClawConfig, groupAllowFrom: string[]): OpenClawConfig {
+function setFeishuGroupAllowFrom(cfg: OpenCraftConfig, groupAllowFrom: string[]): OpenCraftConfig {
   return {
     ...cfg,
     channels: {
@@ -71,7 +71,7 @@ function setFeishuGroupAllowFrom(cfg: OpenClawConfig, groupAllowFrom: string[]):
   };
 }
 
-function isFeishuConfigured(cfg: OpenClawConfig): boolean {
+function isFeishuConfigured(cfg: OpenCraftConfig): boolean {
   const feishuCfg = cfg.channels?.feishu as FeishuConfig | undefined;
 
   const isAppIdConfigured = (value: unknown): boolean => {
@@ -114,9 +114,9 @@ function isFeishuConfigured(cfg: OpenClawConfig): boolean {
 }
 
 async function promptFeishuAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: Parameters<NonNullable<ChannelSetupDmPolicy["promptAllowFrom"]>>[0]["prompter"];
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   const existing = params.cfg.channels?.feishu?.allowFrom ?? [];
   await params.prompter.note(
     [
@@ -183,7 +183,7 @@ const feishuDmPolicy: ChannelSetupDmPolicy = {
   policyKey: "channels.feishu.dmPolicy",
   allowFromKey: "channels.feishu.allowFrom",
   getCurrent: (cfg) => (cfg.channels?.feishu as FeishuConfig | undefined)?.dmPolicy ?? "pairing",
-  setPolicy: (cfg, policy) => setFeishuDmPolicy(cfg as OpenClawConfig, policy),
+  setPolicy: (cfg, policy) => setFeishuDmPolicy(cfg as OpenCraftConfig, policy),
   promptAllowFrom: promptFeishuAllowFrom,
 };
 

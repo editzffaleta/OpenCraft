@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/nvidia-provider",
+  "name": "@opencraft/nvidia-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw NVIDIA provider plugin",
+  "description": "OpenCraft NVIDIA provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

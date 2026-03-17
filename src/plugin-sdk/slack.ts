@@ -1,9 +1,9 @@
-export type { OpenClawConfig } from "../config/config.js";
+export type { OpenCraftConfig } from "../config/config.js";
 export type { SlackAccountConfig } from "../config/types.slack.js";
 export type {
   ChannelMessageActionContext,
   ChannelPlugin,
-  OpenClawPluginApi,
+  OpenCraftPluginApi,
   PluginRuntime,
 } from "./channel-plugin-common.js";
 export {

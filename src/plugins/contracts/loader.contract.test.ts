@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { providerContractRegistry, webSearchProviderContractRegistry } from "./registry.js";
 
-const loadOpenClawPluginsMock = vi.fn();
+const loadOpenCraftPluginsMock = vi.fn();
 
 vi.mock("../loader.js", () => ({
-  loadOpenClawPlugins: (...args: unknown[]) => loadOpenClawPluginsMock(...args),
+  loadOpenCraftPlugins: (...args: unknown[]) => loadOpenCraftPluginsMock(...args),
 }));
 
 const { resolvePluginProviders } = await import("../providers.js");
@@ -16,8 +16,8 @@ function uniqueSortedPluginIds(values: string[]) {
 
 describe("plugin loader contract", () => {
   beforeEach(() => {
-    loadOpenClawPluginsMock.mockReset();
-    loadOpenClawPluginsMock.mockReturnValue({
+    loadOpenCraftPluginsMock.mockReset();
+    loadOpenCraftPluginsMock.mockReturnValue({
       providers: [],
       webSearchProviders: [],
     });
@@ -37,7 +37,7 @@ describe("plugin loader contract", () => {
       },
     });
 
-    expect(loadOpenClawPluginsMock).toHaveBeenCalledWith(
+    expect(loadOpenCraftPluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         config: expect.objectContaining({
           plugins: expect.objectContaining({
@@ -58,7 +58,7 @@ describe("plugin loader contract", () => {
       env: { VITEST: "1" } as NodeJS.ProcessEnv,
     });
 
-    expect(loadOpenClawPluginsMock).toHaveBeenCalledWith(
+    expect(loadOpenCraftPluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         config: expect.objectContaining({
           plugins: expect.objectContaining({
@@ -80,7 +80,7 @@ describe("plugin loader contract", () => {
     expect(uniqueSortedPluginIds(providers.map((provider) => provider.pluginId))).toEqual(
       webSearchPluginIds,
     );
-    expect(loadOpenClawPluginsMock).not.toHaveBeenCalled();
+    expect(loadOpenCraftPluginsMock).not.toHaveBeenCalled();
   });
 
   it("keeps bundled web search allowlist compatibility wired to the web search registry", () => {
@@ -100,6 +100,6 @@ describe("plugin loader contract", () => {
     expect(uniqueSortedPluginIds(providers.map((provider) => provider.pluginId))).toEqual(
       webSearchPluginIds,
     );
-    expect(loadOpenClawPluginsMock).not.toHaveBeenCalled();
+    expect(loadOpenCraftPluginsMock).not.toHaveBeenCalled();
   });
 });

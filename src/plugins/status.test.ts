@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildPluginStatusReport } from "./status.js";
 
 const loadConfigMock = vi.fn();
-const loadOpenClawPluginsMock = vi.fn();
+const loadOpenCraftPluginsMock = vi.fn();
 
 vi.mock("../config/config.js", () => ({
   loadConfig: () => loadConfigMock(),
 }));
 
 vi.mock("./loader.js", () => ({
-  loadOpenClawPlugins: (...args: unknown[]) => loadOpenClawPluginsMock(...args),
+  loadOpenCraftPlugins: (...args: unknown[]) => loadOpenCraftPluginsMock(...args),
 }));
 
 vi.mock("../agents/agent-scope.js", () => ({
@@ -24,9 +24,9 @@ vi.mock("../agents/workspace.js", () => ({
 describe("buildPluginStatusReport", () => {
   beforeEach(() => {
     loadConfigMock.mockReset();
-    loadOpenClawPluginsMock.mockReset();
+    loadOpenCraftPluginsMock.mockReset();
     loadConfigMock.mockReturnValue({});
-    loadOpenClawPluginsMock.mockReturnValue({
+    loadOpenCraftPluginsMock.mockReturnValue({
       plugins: [],
       diagnostics: [],
       channels: [],
@@ -41,7 +41,7 @@ describe("buildPluginStatusReport", () => {
   });
 
   it("forwards an explicit env to plugin loading", () => {
-    const env = { HOME: "/tmp/openclaw-home" } as NodeJS.ProcessEnv;
+    const env = { HOME: "/tmp/opencraft-home" } as NodeJS.ProcessEnv;
 
     buildPluginStatusReport({
       config: {},
@@ -49,7 +49,7 @@ describe("buildPluginStatusReport", () => {
       env,
     });
 
-    expect(loadOpenClawPluginsMock).toHaveBeenCalledWith(
+    expect(loadOpenCraftPluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         config: {},
         workspaceDir: "/workspace",

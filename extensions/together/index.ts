@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import {
   applyTogetherConfig,
   TOGETHER_DEFAULT_MODEL_REF,
@@ -13,7 +13,7 @@ const togetherPlugin = {
   name: "Together Provider",
   description: "Bundled Together provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Together",

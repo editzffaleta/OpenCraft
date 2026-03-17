@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import {
   registerTelegramNativeCommands,
   type RegisterTelegramHandlerParams,
@@ -123,7 +123,7 @@ function createNativeCommandTestParams(
         },
         command: vi.fn(),
       } as unknown as RegisterTelegramNativeCommandsParams["bot"]),
-    cfg: params.cfg ?? ({} as OpenClawConfig),
+    cfg: params.cfg ?? ({} as OpenCraftConfig),
     runtime:
       params.runtime ?? ({ log } as unknown as RegisterTelegramNativeCommandsParams["runtime"]),
     accountId: params.accountId ?? "default",
@@ -174,7 +174,7 @@ function buildStatusTopicCommandContext() {
       chat: {
         id: -1001234567890,
         type: "supergroup" as const,
-        title: "OpenClaw",
+        title: "OpenCraft",
         is_forum: true,
       },
       message_thread_id: 42,
@@ -184,7 +184,7 @@ function buildStatusTopicCommandContext() {
 }
 
 function registerAndResolveStatusHandler(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
   telegramCfg?: RegisterTelegramNativeCommandsParams["telegramCfg"];
@@ -207,7 +207,7 @@ function registerAndResolveStatusHandler(params: {
 
 function registerAndResolveCommandHandlerBase(params: {
   commandName: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   allowFrom: string[];
   groupAllowFrom: string[];
   useAccessGroups: boolean;
@@ -255,7 +255,7 @@ function registerAndResolveCommandHandlerBase(params: {
 
 function registerAndResolveCommandHandler(params: {
   commandName: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
   useAccessGroups?: boolean;
@@ -332,7 +332,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       sessionKey: "agent:codex:acp:binding:telegram:default:seed",
     });
     sessionMocks.recordSessionMetaFromInbound.mockClear().mockResolvedValue(undefined);
-    sessionMocks.resolveStorePath.mockClear().mockReturnValue("/tmp/openclaw-sessions.json");
+    sessionMocks.resolveStorePath.mockClear().mockReturnValue("/tmp/opencraft-sessions.json");
     replyMocks.dispatchReplyWithBufferedBlockDispatcher
       .mockClear()
       .mockResolvedValue(dispatchReplyResult);
@@ -342,7 +342,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
   });
 
   it("calls recordSessionMetaFromInbound after a native slash command", async () => {
-    const cfg: OpenClawConfig = {};
+    const cfg: OpenCraftConfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     await handler(buildStatusCommandContext());
 
@@ -361,7 +361,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
     const deferred = createDeferred<void>();
     sessionMocks.recordSessionMetaFromInbound.mockReturnValue(deferred.promise);
 
-    const cfg: OpenClawConfig = {};
+    const cfg: OpenCraftConfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     const runPromise = handler(buildStatusCommandContext());
 

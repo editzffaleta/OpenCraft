@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { resolveDefaultChannelAccountContext } from "./channel-account-context.js";
 
 describe("resolveDefaultChannelAccountContext", () => {
@@ -14,7 +14,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig);
 
     expect(result.accountIds).toEqual(["acc-1"]);
     expect(result.defaultAccountId).toBe("acc-1");
@@ -39,7 +39,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig);
 
     expect(isEnabled).toHaveBeenCalledWith(account, {});
     expect(isConfigured).toHaveBeenCalledWith(account, {});
@@ -60,9 +60,9 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    await expect(resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig)).rejects.toThrow(
-      /missing secret/i,
-    );
+    await expect(
+      resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig),
+    ).rejects.toThrow(/missing secret/i);
   });
 
   it("degrades safely in read_only mode when resolveAccount throws", async () => {
@@ -76,7 +76,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig, {
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig, {
       mode: "read_only",
       commandName: "status",
     });
@@ -101,7 +101,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig, {
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig, {
       mode: "read_only",
     });
 

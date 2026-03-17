@@ -1,4 +1,4 @@
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import SwiftUI
 
 struct GatewayDiscoveryInlineList: View {

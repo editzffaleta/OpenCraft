@@ -5,7 +5,7 @@ import {
   hasConfiguredSecretInput,
   migrateBaseNameToDefaultAccount,
   normalizeAccountId,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   noteChannelLookupFailure,
   noteChannelLookupSummary,
   parseMentionOrPrefixedId,
@@ -29,7 +29,7 @@ import {
   SLACK_CHANNEL as channel,
 } from "./shared.js";
 
-function enableSlackAccount(cfg: OpenClawConfig, accountId: string): OpenClawConfig {
+function enableSlackAccount(cfg: OpenCraftConfig, accountId: string): OpenCraftConfig {
   return patchChannelConfigForAccount({
     cfg,
     channel,
@@ -118,9 +118,9 @@ export function createSlackSetupWizardProxy(
     channel,
     policyKey: "channels.slack.dmPolicy",
     allowFromKey: "channels.slack.allowFrom",
-    getCurrent: (cfg: OpenClawConfig) =>
+    getCurrent: (cfg: OpenCraftConfig) =>
       cfg.channels?.slack?.dmPolicy ?? cfg.channels?.slack?.dm?.policy ?? "pairing",
-    setPolicy: (cfg: OpenClawConfig, policy) =>
+    setPolicy: (cfg: OpenCraftConfig, policy) =>
       setLegacyChannelDmPolicyWithAllowFrom({
         cfg,
         channel,
@@ -176,7 +176,7 @@ export function createSlackSetupWizardProxy(
         keepPrompt: "Slack bot token already configured. Keep it?",
         inputPrompt: "Enter Slack bot token (xoxb-...)",
         allowEnv: ({ accountId }: { accountId: string }) => accountId === DEFAULT_ACCOUNT_ID,
-        inspect: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) => {
+        inspect: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) => {
           const resolved = resolveSlackAccount({ cfg, accountId });
           return {
             accountConfigured:
@@ -187,14 +187,14 @@ export function createSlackSetupWizardProxy(
               accountId === DEFAULT_ACCOUNT_ID ? process.env.SLACK_BOT_TOKEN?.trim() : undefined,
           };
         },
-        applyUseEnv: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+        applyUseEnv: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
           enableSlackAccount(cfg, accountId),
         applySet: ({
           cfg,
           accountId,
           value,
         }: {
-          cfg: OpenClawConfig;
+          cfg: OpenCraftConfig;
           accountId: string;
           value: unknown;
         }) =>
@@ -217,7 +217,7 @@ export function createSlackSetupWizardProxy(
         keepPrompt: "Slack app token already configured. Keep it?",
         inputPrompt: "Enter Slack app token (xapp-...)",
         allowEnv: ({ accountId }: { accountId: string }) => accountId === DEFAULT_ACCOUNT_ID,
-        inspect: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) => {
+        inspect: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) => {
           const resolved = resolveSlackAccount({ cfg, accountId });
           return {
             accountConfigured:
@@ -228,14 +228,14 @@ export function createSlackSetupWizardProxy(
               accountId === DEFAULT_ACCOUNT_ID ? process.env.SLACK_APP_TOKEN?.trim() : undefined,
           };
         },
-        applyUseEnv: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+        applyUseEnv: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
           enableSlackAccount(cfg, accountId),
         applySet: ({
           cfg,
           accountId,
           value,
         }: {
-          cfg: OpenClawConfig;
+          cfg: OpenCraftConfig;
           accountId: string;
           value: unknown;
         }) =>
@@ -279,7 +279,7 @@ export function createSlackSetupWizardProxy(
         credentialValues,
         entries,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         credentialValues: { botToken?: string };
         entries: string[];
@@ -300,7 +300,7 @@ export function createSlackSetupWizardProxy(
         accountId,
         allowFrom,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         allowFrom: string[];
       }) =>
@@ -314,20 +314,20 @@ export function createSlackSetupWizardProxy(
     groupAccess: {
       label: "Slack channels",
       placeholder: "#general, #private, C123",
-      currentPolicy: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      currentPolicy: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         resolveSlackAccount({ cfg, accountId }).config.groupPolicy ?? "allowlist",
-      currentEntries: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      currentEntries: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         Object.entries(resolveSlackAccount({ cfg, accountId }).config.channels ?? {})
           .filter(([, value]) => value?.allow !== false && value?.enabled !== false)
           .map(([key]) => key),
-      updatePrompt: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId: string }) =>
+      updatePrompt: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId: string }) =>
         Boolean(resolveSlackAccount({ cfg, accountId }).config.channels),
       setPolicy: ({
         cfg,
         accountId,
         policy,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         policy: "open" | "allowlist" | "disabled";
       }) =>
@@ -344,7 +344,7 @@ export function createSlackSetupWizardProxy(
         entries,
         prompter,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         credentialValues: { botToken?: string };
         entries: string[];
@@ -382,11 +382,11 @@ export function createSlackSetupWizardProxy(
         accountId,
         resolved,
       }: {
-        cfg: OpenClawConfig;
+        cfg: OpenCraftConfig;
         accountId: string;
         resolved: unknown;
       }) => setSlackChannelAllowlist(cfg, accountId, resolved as string[]),
     },
-    disable: (cfg: OpenClawConfig) => setSetupChannelEnabled(cfg, channel, false),
+    disable: (cfg: OpenCraftConfig) => setSetupChannelEnabled(cfg, channel, false),
   } satisfies ChannelSetupWizard;
 }

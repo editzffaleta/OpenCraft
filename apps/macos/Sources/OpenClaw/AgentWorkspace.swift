@@ -39,7 +39,7 @@ enum AgentWorkspace {
 
     static func resolveWorkspaceURL(from userInput: String?) -> URL {
         let trimmed = userInput?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        if trimmed.isEmpty { return OpenClawConfigFile.defaultWorkspaceURL() }
+        if trimmed.isEmpty { return OpenCraftConfigFile.defaultWorkspaceURL() }
         let expanded = (trimmed as NSString).expandingTildeInPath
         return URL(fileURLWithPath: expanded, isDirectory: true)
     }
@@ -268,7 +268,7 @@ enum AgentWorkspace {
         - Timezone (optional)
         - Notes
 
-        3) ~/.openclaw/openclaw.json
+        3) ~/.editzffaleta/OpenCraft.json
         Set identity.name, identity.theme, identity.emoji to match IDENTITY.md.
 
         ## Cleanup

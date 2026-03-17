@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenClawDiscovery
+@testable import OpenCraftDiscovery
 
 @MainActor
 struct GatewayDiscoveryModelTests {

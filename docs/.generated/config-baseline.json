@@ -1450,7 +1450,7 @@
         "advanced"
       ],
       "label": "Embedded Pi",
-      "help": "Embedded Pi runner hardening controls for how workspace-local Pi settings are trusted and applied in OpenClaw sessions.",
+      "help": "Embedded Pi runner hardening controls for how workspace-local Pi settings are trusted and applied in OpenCraft sessions.",
       "hasChildren": true
     },
     {
@@ -2567,7 +2567,7 @@
         "storage"
       ],
       "label": "Memory Search Index Path",
-      "help": "Sets where the SQLite memory index is stored on disk for each agent. Keep the default `~/.openclaw/memory/{agentId}.sqlite` unless you need custom storage placement or backup policy alignment.",
+      "help": "Sets where the SQLite memory index is stored on disk for each agent. Keep the default `~/.opencraft/memory/{agentId}.sqlite` unless you need custom storage placement or backup policy alignment.",
       "hasChildren": false
     },
     {
@@ -5185,7 +5185,7 @@
         "advanced"
       ],
       "label": "Agent Runtime",
-      "help": "Optional runtime descriptor for this agent. Use embedded for default OpenClaw execution or acp for external ACP harness defaults.",
+      "help": "Optional runtime descriptor for this agent. Use embedded for default OpenCraft execution or acp for external ACP harness defaults.",
       "hasChildren": true
     },
     {
@@ -5213,7 +5213,7 @@
         "advanced"
       ],
       "label": "Agent ACP Harness Agent",
-      "help": "Optional ACP harness agent id to use for this OpenClaw agent (for example codex, claude).",
+      "help": "Optional ACP harness agent id to use for this OpenCraft agent (for example codex, claude).",
       "hasChildren": false
     },
     {
@@ -5273,7 +5273,7 @@
         "advanced"
       ],
       "label": "Agent Runtime Type",
-      "help": "Runtime type for this agent: \"embedded\" (default OpenClaw runtime) or \"acp\" (ACP harness defaults).",
+      "help": "Runtime type for this agent: \"embedded\" (default OpenCraft runtime) or \"acp\" (ACP harness defaults).",
       "hasChildren": false
     },
     {
@@ -8035,7 +8035,7 @@
         "storage"
       ],
       "label": "Browser Profile Driver",
-      "help": "Per-profile browser driver mode. Use \"openclaw\" (or legacy \"clawd\") for CDP-based profiles, or use \"existing-session\" for host-local Chrome DevTools MCP attachment.",
+      "help": "Per-profile browser driver mode. Use \"opencraft\" (or legacy \"clawd\") for CDP-based profiles, or use \"existing-session\" for host-local Chrome DevTools MCP attachment.",
       "hasChildren": false
     },
     {
@@ -12853,7 +12853,7 @@
         "performance"
       ],
       "label": "Discord EventQueue Listener Timeout (ms)",
-      "help": "Canonical Discord listener timeout control in ms for gateway normalization/enqueue handlers. Default is 120000 in OpenClaw; set per account via channels.discord.accounts.<id>.eventQueue.listenerTimeout.",
+      "help": "Canonical Discord listener timeout control in ms for gateway normalization/enqueue handlers. Default is 120000 in OpenCraft; set per account via channels.discord.accounts.<id>.eventQueue.listenerTimeout.",
       "hasChildren": false
     },
     {
@@ -30436,7 +30436,7 @@
         "network"
       ],
       "label": "Synology Chat",
-      "help": "Connect your Synology NAS Chat to OpenClaw",
+      "help": "Connect your Synology NAS Chat to OpenCraft",
       "hasChildren": true
     },
     {
@@ -38588,7 +38588,7 @@
         "storage"
       ],
       "label": "Cache Trace File Path",
-      "help": "JSONL output path for cache trace logs (default: $OPENCLAW_STATE_DIR/logs/cache-trace.jsonl).",
+      "help": "JSONL output path for cache trace logs (default: $OPENCRAFT_STATE_DIR/logs/cache-trace.jsonl).",
       "hasChildren": false
     },
     {
@@ -38926,7 +38926,7 @@
         "network"
       ],
       "label": "Wide-area Discovery Domain",
-      "help": "Optional unicast DNS-SD domain for wide-area discovery, such as openclaw.internal. Use this when you intentionally publish gateway discovery beyond local mDNS scopes.",
+      "help": "Optional unicast DNS-SD domain for wide-area discovery, such as opencraft.internal. Use this when you intentionally publish gateway discovery beyond local mDNS scopes.",
       "hasChildren": false
     },
     {
@@ -39020,7 +39020,7 @@
         "advanced"
       ],
       "label": "Environment Variable Overrides",
-      "help": "Explicit key/value environment variable overrides merged into runtime process environment for OpenClaw. Use this for deterministic env configuration instead of relying only on shell profile side effects.",
+      "help": "Explicit key/value environment variable overrides merged into runtime process environment for OpenCraft. Use this for deterministic env configuration instead of relying only on shell profile side effects.",
       "hasChildren": true
     },
     {
@@ -39451,7 +39451,7 @@
         "storage"
       ],
       "label": "Control UI Base Path",
-      "help": "Optional URL prefix where the Control UI is served (e.g. /openclaw).",
+      "help": "Optional URL prefix where the Control UI is served (e.g. /opencraft).",
       "hasChildren": false
     },
     {
@@ -40098,7 +40098,7 @@
         "network"
       ],
       "label": "Gateway Node Allowlist (Extra Commands)",
-      "help": "Extra node.invoke commands to allow beyond the gateway defaults (array of command strings). Enabling dangerous commands here is a security-sensitive override and is flagged by `openclaw security audit`.",
+      "help": "Extra node.invoke commands to allow beyond the gateway defaults (array of command strings). Enabling dangerous commands here is a security-sensitive override and is flagged by `opencraft security audit`.",
       "hasChildren": true
     },
     {
@@ -40734,7 +40734,7 @@
         "advanced"
       ],
       "label": "Hooks",
-      "help": "Inbound webhook automation surface for mapping external events into wake or agent actions in OpenClaw. Keep this locked down with explicit token/session/agent controls before exposing it beyond trusted networks.",
+      "help": "Inbound webhook automation surface for mapping external events into wake or agent actions in OpenCraft. Keep this locked down with explicit token/session/agent controls before exposing it beyond trusted networks.",
       "hasChildren": true
     },
     {
@@ -42071,7 +42071,7 @@
         "storage"
       ],
       "label": "Memory Backend",
-      "help": "Selects the global memory engine: \"builtin\" uses OpenClaw memory internals, while \"qmd\" uses the QMD sidecar pipeline. Keep \"builtin\" unless you intentionally operate QMD.",
+      "help": "Selects the global memory engine: \"builtin\" uses OpenCraft memory internals, while \"qmd\" uses the QMD sidecar pipeline. Keep \"builtin\" unless you intentionally operate QMD.",
       "hasChildren": false
     },
     {
@@ -43827,7 +43827,7 @@
         "advanced"
       ],
       "label": "Metadata",
-      "help": "Metadata fields automatically maintained by OpenClaw to record write/version history for this config file. Keep these values system-managed and avoid manual edits unless debugging migration history.",
+      "help": "Metadata fields automatically maintained by OpenCraft to record write/version history for this config file. Keep these values system-managed and avoid manual edits unless debugging migration history.",
       "hasChildren": true
     },
     {
@@ -43855,7 +43855,7 @@
         "media"
       ],
       "label": "Config Last Touched Version",
-      "help": "Auto-set when OpenClaw writes the config.",
+      "help": "Auto-set when OpenCraft writes the config.",
       "hasChildren": false
     },
     {
@@ -44208,7 +44208,7 @@
         "models"
       ],
       "label": "Model Provider Inject num_ctx (OpenAI Compat)",
-      "help": "Controls whether OpenClaw injects `options.num_ctx` for Ollama providers configured with the OpenAI-compatible adapter (`openai-completions`). Default is true. Set false only if your proxy/upstream rejects unknown `options` payload fields.",
+      "help": "Controls whether OpenCraft injects `options.num_ctx` for Ollama providers configured with the OpenAI-compatible adapter (`openai-completions`). Default is true. Set false only if your proxy/upstream rejects unknown `options` payload fields.",
       "hasChildren": false
     },
     {
@@ -44961,7 +44961,7 @@
         "advanced"
       ],
       "label": "Queue Owner TTL Seconds",
-      "help": "Idle queue-owner TTL for acpx prompt turns. Keep this short in OpenClaw to avoid delayed completion after each turn.",
+      "help": "Idle queue-owner TTL for acpx prompt turns. Keep this short in OpenCraft to avoid delayed completion after each turn.",
       "hasChildren": false
     },
     {
@@ -45044,8 +45044,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/amazon-bedrock-provider",
-      "help": "OpenClaw Amazon Bedrock provider plugin (plugin: amazon-bedrock)",
+      "label": "@opencraft/amazon-bedrock-provider",
+      "help": "OpenCraft Amazon Bedrock provider plugin (plugin: amazon-bedrock)",
       "hasChildren": true
     },
     {
@@ -45058,7 +45058,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/amazon-bedrock-provider Config",
+      "label": "@opencraft/amazon-bedrock-provider Config",
       "help": "Plugin-defined config payload for amazon-bedrock.",
       "hasChildren": false
     },
@@ -45072,7 +45072,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/amazon-bedrock-provider",
+      "label": "Enable @opencraft/amazon-bedrock-provider",
       "hasChildren": false
     },
     {
@@ -45113,8 +45113,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/anthropic-provider",
-      "help": "OpenClaw Anthropic provider plugin (plugin: anthropic)",
+      "label": "@opencraft/anthropic-provider",
+      "help": "OpenCraft Anthropic provider plugin (plugin: anthropic)",
       "hasChildren": true
     },
     {
@@ -45127,7 +45127,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/anthropic-provider Config",
+      "label": "@opencraft/anthropic-provider Config",
       "help": "Plugin-defined config payload for anthropic.",
       "hasChildren": false
     },
@@ -45141,7 +45141,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/anthropic-provider",
+      "label": "Enable @opencraft/anthropic-provider",
       "hasChildren": false
     },
     {
@@ -45182,8 +45182,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/bluebubbles",
-      "help": "OpenClaw BlueBubbles channel plugin (plugin: bluebubbles)",
+      "label": "@opencraft/bluebubbles",
+      "help": "OpenCraft BlueBubbles channel plugin (plugin: bluebubbles)",
       "hasChildren": true
     },
     {
@@ -45196,7 +45196,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/bluebubbles Config",
+      "label": "@opencraft/bluebubbles Config",
       "help": "Plugin-defined config payload for bluebubbles.",
       "hasChildren": false
     },
@@ -45210,7 +45210,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/bluebubbles",
+      "label": "Enable @opencraft/bluebubbles",
       "hasChildren": false
     },
     {
@@ -45251,8 +45251,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/brave-plugin",
-      "help": "OpenClaw Brave plugin (plugin: brave)",
+      "label": "@opencraft/brave-plugin",
+      "help": "OpenCraft Brave plugin (plugin: brave)",
       "hasChildren": true
     },
     {
@@ -45265,7 +45265,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/brave-plugin Config",
+      "label": "@opencraft/brave-plugin Config",
       "help": "Plugin-defined config payload for brave.",
       "hasChildren": false
     },
@@ -45279,7 +45279,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/brave-plugin",
+      "label": "Enable @opencraft/brave-plugin",
       "hasChildren": false
     },
     {
@@ -45320,8 +45320,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/byteplus-provider",
-      "help": "OpenClaw BytePlus provider plugin (plugin: byteplus)",
+      "label": "@opencraft/byteplus-provider",
+      "help": "OpenCraft BytePlus provider plugin (plugin: byteplus)",
       "hasChildren": true
     },
     {
@@ -45334,7 +45334,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/byteplus-provider Config",
+      "label": "@opencraft/byteplus-provider Config",
       "help": "Plugin-defined config payload for byteplus.",
       "hasChildren": false
     },
@@ -45348,7 +45348,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/byteplus-provider",
+      "label": "Enable @opencraft/byteplus-provider",
       "hasChildren": false
     },
     {
@@ -45389,8 +45389,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/cloudflare-ai-gateway-provider",
-      "help": "OpenClaw Cloudflare AI Gateway provider plugin (plugin: cloudflare-ai-gateway)",
+      "label": "@opencraft/cloudflare-ai-gateway-provider",
+      "help": "OpenCraft Cloudflare AI Gateway provider plugin (plugin: cloudflare-ai-gateway)",
       "hasChildren": true
     },
     {
@@ -45403,7 +45403,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/cloudflare-ai-gateway-provider Config",
+      "label": "@opencraft/cloudflare-ai-gateway-provider Config",
       "help": "Plugin-defined config payload for cloudflare-ai-gateway.",
       "hasChildren": false
     },
@@ -45417,7 +45417,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/cloudflare-ai-gateway-provider",
+      "label": "Enable @opencraft/cloudflare-ai-gateway-provider",
       "hasChildren": false
     },
     {
@@ -45458,8 +45458,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/copilot-proxy",
-      "help": "OpenClaw Copilot Proxy provider plugin (plugin: copilot-proxy)",
+      "label": "@opencraft/copilot-proxy",
+      "help": "OpenCraft Copilot Proxy provider plugin (plugin: copilot-proxy)",
       "hasChildren": true
     },
     {
@@ -45472,7 +45472,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/copilot-proxy Config",
+      "label": "@opencraft/copilot-proxy Config",
       "help": "Plugin-defined config payload for copilot-proxy.",
       "hasChildren": false
     },
@@ -45486,7 +45486,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/copilot-proxy",
+      "label": "Enable @opencraft/copilot-proxy",
       "hasChildren": false
     },
     {
@@ -45610,8 +45610,8 @@
       "tags": [
         "observability"
       ],
-      "label": "@openclaw/diagnostics-otel",
-      "help": "OpenClaw diagnostics OpenTelemetry exporter (plugin: diagnostics-otel)",
+      "label": "@opencraft/diagnostics-otel",
+      "help": "OpenCraft diagnostics OpenTelemetry exporter (plugin: diagnostics-otel)",
       "hasChildren": true
     },
     {
@@ -45624,7 +45624,7 @@
       "tags": [
         "observability"
       ],
-      "label": "@openclaw/diagnostics-otel Config",
+      "label": "@opencraft/diagnostics-otel Config",
       "help": "Plugin-defined config payload for diagnostics-otel.",
       "hasChildren": false
     },
@@ -45638,7 +45638,7 @@
       "tags": [
         "observability"
       ],
-      "label": "Enable @openclaw/diagnostics-otel",
+      "label": "Enable @opencraft/diagnostics-otel",
       "hasChildren": false
     },
     {
@@ -46085,8 +46085,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/discord",
-      "help": "OpenClaw Discord channel plugin (plugin: discord)",
+      "label": "@opencraft/discord",
+      "help": "OpenCraft Discord channel plugin (plugin: discord)",
       "hasChildren": true
     },
     {
@@ -46099,7 +46099,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/discord Config",
+      "label": "@opencraft/discord Config",
       "help": "Plugin-defined config payload for discord.",
       "hasChildren": false
     },
@@ -46113,7 +46113,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/discord",
+      "label": "Enable @opencraft/discord",
       "hasChildren": false
     },
     {
@@ -46154,8 +46154,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/feishu",
-      "help": "OpenClaw Feishu/Lark channel plugin (community maintained by @m1heng) (plugin: feishu)",
+      "label": "@opencraft/feishu",
+      "help": "OpenCraft Feishu/Lark channel plugin (community maintained by @m1heng) (plugin: feishu)",
       "hasChildren": true
     },
     {
@@ -46168,7 +46168,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/feishu Config",
+      "label": "@opencraft/feishu Config",
       "help": "Plugin-defined config payload for feishu.",
       "hasChildren": false
     },
@@ -46182,7 +46182,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/feishu",
+      "label": "Enable @opencraft/feishu",
       "hasChildren": false
     },
     {
@@ -46223,8 +46223,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/firecrawl-plugin",
-      "help": "OpenClaw Firecrawl plugin (plugin: firecrawl)",
+      "label": "@opencraft/firecrawl-plugin",
+      "help": "OpenCraft Firecrawl plugin (plugin: firecrawl)",
       "hasChildren": true
     },
     {
@@ -46237,7 +46237,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/firecrawl-plugin Config",
+      "label": "@opencraft/firecrawl-plugin Config",
       "help": "Plugin-defined config payload for firecrawl.",
       "hasChildren": false
     },
@@ -46251,7 +46251,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/firecrawl-plugin",
+      "label": "Enable @opencraft/firecrawl-plugin",
       "hasChildren": false
     },
     {
@@ -46292,8 +46292,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/github-copilot-provider",
-      "help": "OpenClaw GitHub Copilot provider plugin (plugin: github-copilot)",
+      "label": "@opencraft/github-copilot-provider",
+      "help": "OpenCraft GitHub Copilot provider plugin (plugin: github-copilot)",
       "hasChildren": true
     },
     {
@@ -46306,7 +46306,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/github-copilot-provider Config",
+      "label": "@opencraft/github-copilot-provider Config",
       "help": "Plugin-defined config payload for github-copilot.",
       "hasChildren": false
     },
@@ -46320,7 +46320,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/github-copilot-provider",
+      "label": "Enable @opencraft/github-copilot-provider",
       "hasChildren": false
     },
     {
@@ -46361,8 +46361,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/google-plugin",
-      "help": "OpenClaw Google plugin (plugin: google)",
+      "label": "@opencraft/google-plugin",
+      "help": "OpenCraft Google plugin (plugin: google)",
       "hasChildren": true
     },
     {
@@ -46375,7 +46375,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/google-plugin Config",
+      "label": "@opencraft/google-plugin Config",
       "help": "Plugin-defined config payload for google.",
       "hasChildren": false
     },
@@ -46389,7 +46389,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/google-plugin",
+      "label": "Enable @opencraft/google-plugin",
       "hasChildren": false
     },
     {
@@ -46430,8 +46430,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/googlechat",
-      "help": "OpenClaw Google Chat channel plugin (plugin: googlechat)",
+      "label": "@opencraft/googlechat",
+      "help": "OpenCraft Google Chat channel plugin (plugin: googlechat)",
       "hasChildren": true
     },
     {
@@ -46444,7 +46444,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/googlechat Config",
+      "label": "@opencraft/googlechat Config",
       "help": "Plugin-defined config payload for googlechat.",
       "hasChildren": false
     },
@@ -46458,7 +46458,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/googlechat",
+      "label": "Enable @opencraft/googlechat",
       "hasChildren": false
     },
     {
@@ -46499,8 +46499,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/huggingface-provider",
-      "help": "OpenClaw Hugging Face provider plugin (plugin: huggingface)",
+      "label": "@opencraft/huggingface-provider",
+      "help": "OpenCraft Hugging Face provider plugin (plugin: huggingface)",
       "hasChildren": true
     },
     {
@@ -46513,7 +46513,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/huggingface-provider Config",
+      "label": "@opencraft/huggingface-provider Config",
       "help": "Plugin-defined config payload for huggingface.",
       "hasChildren": false
     },
@@ -46527,7 +46527,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/huggingface-provider",
+      "label": "Enable @opencraft/huggingface-provider",
       "hasChildren": false
     },
     {
@@ -46568,8 +46568,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/imessage",
-      "help": "OpenClaw iMessage channel plugin (plugin: imessage)",
+      "label": "@opencraft/imessage",
+      "help": "OpenCraft iMessage channel plugin (plugin: imessage)",
       "hasChildren": true
     },
     {
@@ -46582,7 +46582,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/imessage Config",
+      "label": "@opencraft/imessage Config",
       "help": "Plugin-defined config payload for imessage.",
       "hasChildren": false
     },
@@ -46596,7 +46596,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/imessage",
+      "label": "Enable @opencraft/imessage",
       "hasChildren": false
     },
     {
@@ -46637,8 +46637,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/irc",
-      "help": "OpenClaw IRC channel plugin (plugin: irc)",
+      "label": "@opencraft/irc",
+      "help": "OpenCraft IRC channel plugin (plugin: irc)",
       "hasChildren": true
     },
     {
@@ -46651,7 +46651,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/irc Config",
+      "label": "@opencraft/irc Config",
       "help": "Plugin-defined config payload for irc.",
       "hasChildren": false
     },
@@ -46665,7 +46665,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/irc",
+      "label": "Enable @opencraft/irc",
       "hasChildren": false
     },
     {
@@ -46706,8 +46706,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/kilocode-provider",
-      "help": "OpenClaw Kilo Gateway provider plugin (plugin: kilocode)",
+      "label": "@opencraft/kilocode-provider",
+      "help": "OpenCraft Kilo Gateway provider plugin (plugin: kilocode)",
       "hasChildren": true
     },
     {
@@ -46720,7 +46720,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/kilocode-provider Config",
+      "label": "@opencraft/kilocode-provider Config",
       "help": "Plugin-defined config payload for kilocode.",
       "hasChildren": false
     },
@@ -46734,7 +46734,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/kilocode-provider",
+      "label": "Enable @opencraft/kilocode-provider",
       "hasChildren": false
     },
     {
@@ -46775,8 +46775,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/kimi-coding-provider",
-      "help": "OpenClaw Kimi Coding provider plugin (plugin: kimi-coding)",
+      "label": "@opencraft/kimi-coding-provider",
+      "help": "OpenCraft Kimi Coding provider plugin (plugin: kimi-coding)",
       "hasChildren": true
     },
     {
@@ -46789,7 +46789,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/kimi-coding-provider Config",
+      "label": "@opencraft/kimi-coding-provider Config",
       "help": "Plugin-defined config payload for kimi-coding.",
       "hasChildren": false
     },
@@ -46803,7 +46803,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/kimi-coding-provider",
+      "label": "Enable @opencraft/kimi-coding-provider",
       "hasChildren": false
     },
     {
@@ -46844,8 +46844,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/line",
-      "help": "OpenClaw LINE channel plugin (plugin: line)",
+      "label": "@opencraft/line",
+      "help": "OpenCraft LINE channel plugin (plugin: line)",
       "hasChildren": true
     },
     {
@@ -46858,7 +46858,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/line Config",
+      "label": "@opencraft/line Config",
       "help": "Plugin-defined config payload for line.",
       "hasChildren": false
     },
@@ -46872,7 +46872,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/line",
+      "label": "Enable @opencraft/line",
       "hasChildren": false
     },
     {
@@ -47121,8 +47121,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/matrix",
-      "help": "OpenClaw Matrix channel plugin (plugin: matrix)",
+      "label": "@opencraft/matrix",
+      "help": "OpenCraft Matrix channel plugin (plugin: matrix)",
       "hasChildren": true
     },
     {
@@ -47135,7 +47135,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/matrix Config",
+      "label": "@opencraft/matrix Config",
       "help": "Plugin-defined config payload for matrix.",
       "hasChildren": false
     },
@@ -47149,7 +47149,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/matrix",
+      "label": "Enable @opencraft/matrix",
       "hasChildren": false
     },
     {
@@ -47190,8 +47190,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/mattermost",
-      "help": "OpenClaw Mattermost channel plugin (plugin: mattermost)",
+      "label": "@opencraft/mattermost",
+      "help": "OpenCraft Mattermost channel plugin (plugin: mattermost)",
       "hasChildren": true
     },
     {
@@ -47204,7 +47204,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/mattermost Config",
+      "label": "@opencraft/mattermost Config",
       "help": "Plugin-defined config payload for mattermost.",
       "hasChildren": false
     },
@@ -47218,7 +47218,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/mattermost",
+      "label": "Enable @opencraft/mattermost",
       "hasChildren": false
     },
     {
@@ -47259,8 +47259,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/memory-core",
-      "help": "OpenClaw core memory search plugin (plugin: memory-core)",
+      "label": "@opencraft/memory-core",
+      "help": "OpenCraft core memory search plugin (plugin: memory-core)",
       "hasChildren": true
     },
     {
@@ -47273,7 +47273,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/memory-core Config",
+      "label": "@opencraft/memory-core Config",
       "help": "Plugin-defined config payload for memory-core.",
       "hasChildren": false
     },
@@ -47287,7 +47287,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/memory-core",
+      "label": "Enable @opencraft/memory-core",
       "hasChildren": false
     },
     {
@@ -47328,8 +47328,8 @@
       "tags": [
         "storage"
       ],
-      "label": "@openclaw/memory-lancedb",
-      "help": "OpenClaw LanceDB-backed long-term memory plugin with auto-recall/capture (plugin: memory-lancedb)",
+      "label": "@opencraft/memory-lancedb",
+      "help": "OpenCraft LanceDB-backed long-term memory plugin with auto-recall/capture (plugin: memory-lancedb)",
       "hasChildren": true
     },
     {
@@ -47342,7 +47342,7 @@
       "tags": [
         "storage"
       ],
-      "label": "@openclaw/memory-lancedb Config",
+      "label": "@opencraft/memory-lancedb Config",
       "help": "Plugin-defined config payload for memory-lancedb.",
       "hasChildren": true
     },
@@ -47485,7 +47485,7 @@
       "tags": [
         "storage"
       ],
-      "label": "Enable @openclaw/memory-lancedb",
+      "label": "Enable @opencraft/memory-lancedb",
       "hasChildren": false
     },
     {
@@ -47526,8 +47526,8 @@
       "tags": [
         "performance"
       ],
-      "label": "@openclaw/minimax-provider",
-      "help": "OpenClaw MiniMax provider and OAuth plugin (plugin: minimax)",
+      "label": "@opencraft/minimax-provider",
+      "help": "OpenCraft MiniMax provider and OAuth plugin (plugin: minimax)",
       "hasChildren": true
     },
     {
@@ -47540,7 +47540,7 @@
       "tags": [
         "performance"
       ],
-      "label": "@openclaw/minimax-provider Config",
+      "label": "@opencraft/minimax-provider Config",
       "help": "Plugin-defined config payload for minimax.",
       "hasChildren": false
     },
@@ -47554,7 +47554,7 @@
       "tags": [
         "performance"
       ],
-      "label": "Enable @openclaw/minimax-provider",
+      "label": "Enable @opencraft/minimax-provider",
       "hasChildren": false
     },
     {
@@ -47595,8 +47595,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/mistral-provider",
-      "help": "OpenClaw Mistral provider plugin (plugin: mistral)",
+      "label": "@opencraft/mistral-provider",
+      "help": "OpenCraft Mistral provider plugin (plugin: mistral)",
       "hasChildren": true
     },
     {
@@ -47609,7 +47609,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/mistral-provider Config",
+      "label": "@opencraft/mistral-provider Config",
       "help": "Plugin-defined config payload for mistral.",
       "hasChildren": false
     },
@@ -47623,7 +47623,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/mistral-provider",
+      "label": "Enable @opencraft/mistral-provider",
       "hasChildren": false
     },
     {
@@ -47664,8 +47664,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/modelstudio-provider",
-      "help": "OpenClaw Model Studio provider plugin (plugin: modelstudio)",
+      "label": "@opencraft/modelstudio-provider",
+      "help": "OpenCraft Model Studio provider plugin (plugin: modelstudio)",
       "hasChildren": true
     },
     {
@@ -47678,7 +47678,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/modelstudio-provider Config",
+      "label": "@opencraft/modelstudio-provider Config",
       "help": "Plugin-defined config payload for modelstudio.",
       "hasChildren": false
     },
@@ -47692,7 +47692,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/modelstudio-provider",
+      "label": "Enable @opencraft/modelstudio-provider",
       "hasChildren": false
     },
     {
@@ -47733,8 +47733,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/moonshot-provider",
-      "help": "OpenClaw Moonshot provider plugin (plugin: moonshot)",
+      "label": "@opencraft/moonshot-provider",
+      "help": "OpenCraft Moonshot provider plugin (plugin: moonshot)",
       "hasChildren": true
     },
     {
@@ -47747,7 +47747,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/moonshot-provider Config",
+      "label": "@opencraft/moonshot-provider Config",
       "help": "Plugin-defined config payload for moonshot.",
       "hasChildren": false
     },
@@ -47761,7 +47761,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/moonshot-provider",
+      "label": "Enable @opencraft/moonshot-provider",
       "hasChildren": false
     },
     {
@@ -47802,8 +47802,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/msteams",
-      "help": "OpenClaw Microsoft Teams channel plugin (plugin: msteams)",
+      "label": "@opencraft/msteams",
+      "help": "OpenCraft Microsoft Teams channel plugin (plugin: msteams)",
       "hasChildren": true
     },
     {
@@ -47816,7 +47816,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/msteams Config",
+      "label": "@opencraft/msteams Config",
       "help": "Plugin-defined config payload for msteams.",
       "hasChildren": false
     },
@@ -47830,7 +47830,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/msteams",
+      "label": "Enable @opencraft/msteams",
       "hasChildren": false
     },
     {
@@ -47871,8 +47871,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nextcloud-talk",
-      "help": "OpenClaw Nextcloud Talk channel plugin (plugin: nextcloud-talk)",
+      "label": "@opencraft/nextcloud-talk",
+      "help": "OpenCraft Nextcloud Talk channel plugin (plugin: nextcloud-talk)",
       "hasChildren": true
     },
     {
@@ -47885,7 +47885,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nextcloud-talk Config",
+      "label": "@opencraft/nextcloud-talk Config",
       "help": "Plugin-defined config payload for nextcloud-talk.",
       "hasChildren": false
     },
@@ -47899,7 +47899,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/nextcloud-talk",
+      "label": "Enable @opencraft/nextcloud-talk",
       "hasChildren": false
     },
     {
@@ -47940,8 +47940,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nostr",
-      "help": "OpenClaw Nostr channel plugin for NIP-04 encrypted DMs (plugin: nostr)",
+      "label": "@opencraft/nostr",
+      "help": "OpenCraft Nostr channel plugin for NIP-04 encrypted DMs (plugin: nostr)",
       "hasChildren": true
     },
     {
@@ -47954,7 +47954,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nostr Config",
+      "label": "@opencraft/nostr Config",
       "help": "Plugin-defined config payload for nostr.",
       "hasChildren": false
     },
@@ -47968,7 +47968,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/nostr",
+      "label": "Enable @opencraft/nostr",
       "hasChildren": false
     },
     {
@@ -48009,8 +48009,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nvidia-provider",
-      "help": "OpenClaw NVIDIA provider plugin (plugin: nvidia)",
+      "label": "@opencraft/nvidia-provider",
+      "help": "OpenCraft NVIDIA provider plugin (plugin: nvidia)",
       "hasChildren": true
     },
     {
@@ -48023,7 +48023,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/nvidia-provider Config",
+      "label": "@opencraft/nvidia-provider Config",
       "help": "Plugin-defined config payload for nvidia.",
       "hasChildren": false
     },
@@ -48037,7 +48037,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/nvidia-provider",
+      "label": "Enable @opencraft/nvidia-provider",
       "hasChildren": false
     },
     {
@@ -48078,8 +48078,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/ollama-provider",
-      "help": "OpenClaw Ollama provider plugin (plugin: ollama)",
+      "label": "@opencraft/ollama-provider",
+      "help": "OpenCraft Ollama provider plugin (plugin: ollama)",
       "hasChildren": true
     },
     {
@@ -48092,7 +48092,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/ollama-provider Config",
+      "label": "@opencraft/ollama-provider Config",
       "help": "Plugin-defined config payload for ollama.",
       "hasChildren": false
     },
@@ -48106,7 +48106,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/ollama-provider",
+      "label": "Enable @opencraft/ollama-provider",
       "hasChildren": false
     },
     {
@@ -48216,8 +48216,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/openai-provider",
-      "help": "OpenClaw OpenAI provider plugins (plugin: openai)",
+      "label": "@opencraft/openai-provider",
+      "help": "OpenCraft OpenAI provider plugins (plugin: openai)",
       "hasChildren": true
     },
     {
@@ -48230,7 +48230,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/openai-provider Config",
+      "label": "@opencraft/openai-provider Config",
       "help": "Plugin-defined config payload for openai.",
       "hasChildren": false
     },
@@ -48244,7 +48244,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/openai-provider",
+      "label": "Enable @opencraft/openai-provider",
       "hasChildren": false
     },
     {
@@ -48285,8 +48285,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/opencode-provider",
-      "help": "OpenClaw OpenCode Zen provider plugin (plugin: opencode)",
+      "label": "@opencraft/opencode-provider",
+      "help": "OpenCraft OpenCode Zen provider plugin (plugin: opencode)",
       "hasChildren": true
     },
     {
@@ -48299,8 +48299,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/opencode-go-provider",
-      "help": "OpenClaw OpenCode Go provider plugin (plugin: opencode-go)",
+      "label": "@opencraft/opencode-go-provider",
+      "help": "OpenCraft OpenCode Go provider plugin (plugin: opencode-go)",
       "hasChildren": true
     },
     {
@@ -48313,7 +48313,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/opencode-go-provider Config",
+      "label": "@opencraft/opencode-go-provider Config",
       "help": "Plugin-defined config payload for opencode-go.",
       "hasChildren": false
     },
@@ -48327,7 +48327,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/opencode-go-provider",
+      "label": "Enable @opencraft/opencode-go-provider",
       "hasChildren": false
     },
     {
@@ -48368,7 +48368,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/opencode-provider Config",
+      "label": "@opencraft/opencode-provider Config",
       "help": "Plugin-defined config payload for opencode.",
       "hasChildren": false
     },
@@ -48382,7 +48382,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/opencode-provider",
+      "label": "Enable @opencraft/opencode-provider",
       "hasChildren": false
     },
     {
@@ -48423,8 +48423,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/openrouter-provider",
-      "help": "OpenClaw OpenRouter provider plugin (plugin: openrouter)",
+      "label": "@opencraft/openrouter-provider",
+      "help": "OpenCraft OpenRouter provider plugin (plugin: openrouter)",
       "hasChildren": true
     },
     {
@@ -48437,7 +48437,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/openrouter-provider Config",
+      "label": "@opencraft/openrouter-provider Config",
       "help": "Plugin-defined config payload for openrouter.",
       "hasChildren": false
     },
@@ -48451,7 +48451,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/openrouter-provider",
+      "label": "Enable @opencraft/openrouter-provider",
       "hasChildren": false
     },
     {
@@ -48549,7 +48549,7 @@
         "advanced"
       ],
       "label": "Sandbox Source",
-      "help": "OpenShell sandbox source for first-time create. Defaults to openclaw.",
+      "help": "OpenShell sandbox source for first-time create. Defaults to opencraft.",
       "hasChildren": false
     },
     {
@@ -48728,8 +48728,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/perplexity-plugin",
-      "help": "OpenClaw Perplexity plugin (plugin: perplexity)",
+      "label": "@opencraft/perplexity-plugin",
+      "help": "OpenCraft Perplexity plugin (plugin: perplexity)",
       "hasChildren": true
     },
     {
@@ -48742,7 +48742,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/perplexity-plugin Config",
+      "label": "@opencraft/perplexity-plugin Config",
       "help": "Plugin-defined config payload for perplexity.",
       "hasChildren": false
     },
@@ -48756,7 +48756,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/perplexity-plugin",
+      "label": "Enable @opencraft/perplexity-plugin",
       "hasChildren": false
     },
     {
@@ -48866,8 +48866,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/qianfan-provider",
-      "help": "OpenClaw Qianfan provider plugin (plugin: qianfan)",
+      "label": "@opencraft/qianfan-provider",
+      "help": "OpenCraft Qianfan provider plugin (plugin: qianfan)",
       "hasChildren": true
     },
     {
@@ -48880,7 +48880,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/qianfan-provider Config",
+      "label": "@opencraft/qianfan-provider Config",
       "help": "Plugin-defined config payload for qianfan.",
       "hasChildren": false
     },
@@ -48894,7 +48894,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/qianfan-provider",
+      "label": "Enable @opencraft/qianfan-provider",
       "hasChildren": false
     },
     {
@@ -49004,8 +49004,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/sglang-provider",
-      "help": "OpenClaw SGLang provider plugin (plugin: sglang)",
+      "label": "@opencraft/sglang-provider",
+      "help": "OpenCraft SGLang provider plugin (plugin: sglang)",
       "hasChildren": true
     },
     {
@@ -49018,7 +49018,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/sglang-provider Config",
+      "label": "@opencraft/sglang-provider Config",
       "help": "Plugin-defined config payload for sglang.",
       "hasChildren": false
     },
@@ -49032,7 +49032,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/sglang-provider",
+      "label": "Enable @opencraft/sglang-provider",
       "hasChildren": false
     },
     {
@@ -49073,8 +49073,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/signal",
-      "help": "OpenClaw Signal channel plugin (plugin: signal)",
+      "label": "@opencraft/signal",
+      "help": "OpenCraft Signal channel plugin (plugin: signal)",
       "hasChildren": true
     },
     {
@@ -49087,7 +49087,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/signal Config",
+      "label": "@opencraft/signal Config",
       "help": "Plugin-defined config payload for signal.",
       "hasChildren": false
     },
@@ -49101,7 +49101,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/signal",
+      "label": "Enable @opencraft/signal",
       "hasChildren": false
     },
     {
@@ -49142,8 +49142,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/slack",
-      "help": "OpenClaw Slack channel plugin (plugin: slack)",
+      "label": "@opencraft/slack",
+      "help": "OpenCraft Slack channel plugin (plugin: slack)",
       "hasChildren": true
     },
     {
@@ -49156,7 +49156,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/slack Config",
+      "label": "@opencraft/slack Config",
       "help": "Plugin-defined config payload for slack.",
       "hasChildren": false
     },
@@ -49170,7 +49170,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/slack",
+      "label": "Enable @opencraft/slack",
       "hasChildren": false
     },
     {
@@ -49211,8 +49211,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/synology-chat",
-      "help": "Synology Chat channel plugin for OpenClaw (plugin: synology-chat)",
+      "label": "@opencraft/synology-chat",
+      "help": "Synology Chat channel plugin for OpenCraft (plugin: synology-chat)",
       "hasChildren": true
     },
     {
@@ -49225,7 +49225,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/synology-chat Config",
+      "label": "@opencraft/synology-chat Config",
       "help": "Plugin-defined config payload for synology-chat.",
       "hasChildren": false
     },
@@ -49239,7 +49239,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/synology-chat",
+      "label": "Enable @opencraft/synology-chat",
       "hasChildren": false
     },
     {
@@ -49280,8 +49280,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/synthetic-provider",
-      "help": "OpenClaw Synthetic provider plugin (plugin: synthetic)",
+      "label": "@opencraft/synthetic-provider",
+      "help": "OpenCraft Synthetic provider plugin (plugin: synthetic)",
       "hasChildren": true
     },
     {
@@ -49294,7 +49294,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/synthetic-provider Config",
+      "label": "@opencraft/synthetic-provider Config",
       "help": "Plugin-defined config payload for synthetic.",
       "hasChildren": false
     },
@@ -49308,7 +49308,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/synthetic-provider",
+      "label": "Enable @opencraft/synthetic-provider",
       "hasChildren": false
     },
     {
@@ -49418,8 +49418,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/telegram",
-      "help": "OpenClaw Telegram channel plugin (plugin: telegram)",
+      "label": "@opencraft/telegram",
+      "help": "OpenCraft Telegram channel plugin (plugin: telegram)",
       "hasChildren": true
     },
     {
@@ -49432,7 +49432,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/telegram Config",
+      "label": "@opencraft/telegram Config",
       "help": "Plugin-defined config payload for telegram.",
       "hasChildren": false
     },
@@ -49446,7 +49446,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/telegram",
+      "label": "Enable @opencraft/telegram",
       "hasChildren": false
     },
     {
@@ -49594,8 +49594,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/tlon",
-      "help": "OpenClaw Tlon/Urbit channel plugin (plugin: tlon)",
+      "label": "@opencraft/tlon",
+      "help": "OpenCraft Tlon/Urbit channel plugin (plugin: tlon)",
       "hasChildren": true
     },
     {
@@ -49608,7 +49608,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/tlon Config",
+      "label": "@opencraft/tlon Config",
       "help": "Plugin-defined config payload for tlon.",
       "hasChildren": false
     },
@@ -49622,7 +49622,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/tlon",
+      "label": "Enable @opencraft/tlon",
       "hasChildren": false
     },
     {
@@ -49663,8 +49663,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/together-provider",
-      "help": "OpenClaw Together provider plugin (plugin: together)",
+      "label": "@opencraft/together-provider",
+      "help": "OpenCraft Together provider plugin (plugin: together)",
       "hasChildren": true
     },
     {
@@ -49677,7 +49677,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/together-provider Config",
+      "label": "@opencraft/together-provider Config",
       "help": "Plugin-defined config payload for together.",
       "hasChildren": false
     },
@@ -49691,7 +49691,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/together-provider",
+      "label": "Enable @opencraft/together-provider",
       "hasChildren": false
     },
     {
@@ -49732,8 +49732,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/twitch",
-      "help": "OpenClaw Twitch channel plugin (plugin: twitch)",
+      "label": "@opencraft/twitch",
+      "help": "OpenCraft Twitch channel plugin (plugin: twitch)",
       "hasChildren": true
     },
     {
@@ -49746,7 +49746,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/twitch Config",
+      "label": "@opencraft/twitch Config",
       "help": "Plugin-defined config payload for twitch.",
       "hasChildren": false
     },
@@ -49760,7 +49760,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/twitch",
+      "label": "Enable @opencraft/twitch",
       "hasChildren": false
     },
     {
@@ -49801,8 +49801,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/venice-provider",
-      "help": "OpenClaw Venice provider plugin (plugin: venice)",
+      "label": "@opencraft/venice-provider",
+      "help": "OpenCraft Venice provider plugin (plugin: venice)",
       "hasChildren": true
     },
     {
@@ -49815,7 +49815,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/venice-provider Config",
+      "label": "@opencraft/venice-provider Config",
       "help": "Plugin-defined config payload for venice.",
       "hasChildren": false
     },
@@ -49829,7 +49829,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/venice-provider",
+      "label": "Enable @opencraft/venice-provider",
       "hasChildren": false
     },
     {
@@ -49870,8 +49870,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/vercel-ai-gateway-provider",
-      "help": "OpenClaw Vercel AI Gateway provider plugin (plugin: vercel-ai-gateway)",
+      "label": "@opencraft/vercel-ai-gateway-provider",
+      "help": "OpenCraft Vercel AI Gateway provider plugin (plugin: vercel-ai-gateway)",
       "hasChildren": true
     },
     {
@@ -49884,7 +49884,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/vercel-ai-gateway-provider Config",
+      "label": "@opencraft/vercel-ai-gateway-provider Config",
       "help": "Plugin-defined config payload for vercel-ai-gateway.",
       "hasChildren": false
     },
@@ -49898,7 +49898,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/vercel-ai-gateway-provider",
+      "label": "Enable @opencraft/vercel-ai-gateway-provider",
       "hasChildren": false
     },
     {
@@ -49939,8 +49939,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/vllm-provider",
-      "help": "OpenClaw vLLM provider plugin (plugin: vllm)",
+      "label": "@opencraft/vllm-provider",
+      "help": "OpenCraft vLLM provider plugin (plugin: vllm)",
       "hasChildren": true
     },
     {
@@ -49953,7 +49953,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/vllm-provider Config",
+      "label": "@opencraft/vllm-provider Config",
       "help": "Plugin-defined config payload for vllm.",
       "hasChildren": false
     },
@@ -49967,7 +49967,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/vllm-provider",
+      "label": "Enable @opencraft/vllm-provider",
       "hasChildren": false
     },
     {
@@ -50008,8 +50008,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/voice-call",
-      "help": "OpenClaw voice-call plugin (plugin: voice-call)",
+      "label": "@opencraft/voice-call",
+      "help": "OpenCraft voice-call plugin (plugin: voice-call)",
       "hasChildren": true
     },
     {
@@ -50022,7 +50022,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/voice-call Config",
+      "label": "@opencraft/voice-call Config",
       "help": "Plugin-defined config payload for voice-call.",
       "hasChildren": true
     },
@@ -51397,7 +51397,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/voice-call",
+      "label": "Enable @opencraft/voice-call",
       "hasChildren": false
     },
     {
@@ -51438,8 +51438,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/volcengine-provider",
-      "help": "OpenClaw Volcengine provider plugin (plugin: volcengine)",
+      "label": "@opencraft/volcengine-provider",
+      "help": "OpenCraft Volcengine provider plugin (plugin: volcengine)",
       "hasChildren": true
     },
     {
@@ -51452,7 +51452,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/volcengine-provider Config",
+      "label": "@opencraft/volcengine-provider Config",
       "help": "Plugin-defined config payload for volcengine.",
       "hasChildren": false
     },
@@ -51466,7 +51466,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/volcengine-provider",
+      "label": "Enable @opencraft/volcengine-provider",
       "hasChildren": false
     },
     {
@@ -51507,8 +51507,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/whatsapp",
-      "help": "OpenClaw WhatsApp channel plugin (plugin: whatsapp)",
+      "label": "@opencraft/whatsapp",
+      "help": "OpenCraft WhatsApp channel plugin (plugin: whatsapp)",
       "hasChildren": true
     },
     {
@@ -51521,7 +51521,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/whatsapp Config",
+      "label": "@opencraft/whatsapp Config",
       "help": "Plugin-defined config payload for whatsapp.",
       "hasChildren": false
     },
@@ -51535,7 +51535,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/whatsapp",
+      "label": "Enable @opencraft/whatsapp",
       "hasChildren": false
     },
     {
@@ -51576,8 +51576,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/xai-plugin",
-      "help": "OpenClaw xAI plugin (plugin: xai)",
+      "label": "@opencraft/xai-plugin",
+      "help": "OpenCraft xAI plugin (plugin: xai)",
       "hasChildren": true
     },
     {
@@ -51590,7 +51590,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/xai-plugin Config",
+      "label": "@opencraft/xai-plugin Config",
       "help": "Plugin-defined config payload for xai.",
       "hasChildren": false
     },
@@ -51604,7 +51604,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/xai-plugin",
+      "label": "Enable @opencraft/xai-plugin",
       "hasChildren": false
     },
     {
@@ -51645,8 +51645,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/xiaomi-provider",
-      "help": "OpenClaw Xiaomi provider plugin (plugin: xiaomi)",
+      "label": "@opencraft/xiaomi-provider",
+      "help": "OpenCraft Xiaomi provider plugin (plugin: xiaomi)",
       "hasChildren": true
     },
     {
@@ -51659,7 +51659,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/xiaomi-provider Config",
+      "label": "@opencraft/xiaomi-provider Config",
       "help": "Plugin-defined config payload for xiaomi.",
       "hasChildren": false
     },
@@ -51673,7 +51673,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/xiaomi-provider",
+      "label": "Enable @opencraft/xiaomi-provider",
       "hasChildren": false
     },
     {
@@ -51714,8 +51714,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zai-provider",
-      "help": "OpenClaw Z.AI provider plugin (plugin: zai)",
+      "label": "@opencraft/zai-provider",
+      "help": "OpenCraft Z.AI provider plugin (plugin: zai)",
       "hasChildren": true
     },
     {
@@ -51728,7 +51728,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zai-provider Config",
+      "label": "@opencraft/zai-provider Config",
       "help": "Plugin-defined config payload for zai.",
       "hasChildren": false
     },
@@ -51742,7 +51742,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/zai-provider",
+      "label": "Enable @opencraft/zai-provider",
       "hasChildren": false
     },
     {
@@ -51783,8 +51783,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zalo",
-      "help": "OpenClaw Zalo channel plugin (plugin: zalo)",
+      "label": "@opencraft/zalo",
+      "help": "OpenCraft Zalo channel plugin (plugin: zalo)",
       "hasChildren": true
     },
     {
@@ -51797,7 +51797,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zalo Config",
+      "label": "@opencraft/zalo Config",
       "help": "Plugin-defined config payload for zalo.",
       "hasChildren": false
     },
@@ -51811,7 +51811,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/zalo",
+      "label": "Enable @opencraft/zalo",
       "hasChildren": false
     },
     {
@@ -51852,8 +51852,8 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zalouser",
-      "help": "OpenClaw Zalo Personal Account plugin via native zca-js integration (plugin: zalouser)",
+      "label": "@opencraft/zalouser",
+      "help": "OpenCraft Zalo Personal Account plugin via native zca-js integration (plugin: zalouser)",
       "hasChildren": true
     },
     {
@@ -51866,7 +51866,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "@openclaw/zalouser Config",
+      "label": "@opencraft/zalouser Config",
       "help": "Plugin-defined config payload for zalouser.",
       "hasChildren": false
     },
@@ -51880,7 +51880,7 @@
       "tags": [
         "advanced"
       ],
-      "label": "Enable @openclaw/zalouser",
+      "label": "Enable @opencraft/zalouser",
       "hasChildren": false
     },
     {
@@ -51922,7 +51922,7 @@
         "advanced"
       ],
       "label": "Plugin Install Records",
-      "help": "CLI-managed install metadata (used by `openclaw plugins update` to locate install sources).",
+      "help": "CLI-managed install metadata (used by `opencraft plugins update` to locate install sources).",
       "hasChildren": true
     },
     {
@@ -51960,7 +51960,7 @@
         "storage"
       ],
       "label": "Plugin Install Path",
-      "help": "Resolved install directory (usually ~/.openclaw/extensions/<id>).",
+      "help": "Resolved install directory (usually ~/.opencraft/extensions/<id>).",
       "hasChildren": false
     },
     {
@@ -52826,7 +52826,7 @@
         "storage"
       ],
       "label": "Session Parent Fork Max Tokens",
-      "help": "Maximum parent-session token count allowed for thread/session inheritance forking. If the parent exceeds this, OpenClaw starts a fresh thread session instead of forking; set 0 to disable this protection.",
+      "help": "Maximum parent-session token count allowed for thread/session inheritance forking. If the parent exceeds this, OpenCraft starts a fresh thread session instead of forking; set 0 to disable this protection.",
       "hasChildren": false
     },
     {
@@ -58722,7 +58722,7 @@
         "advanced"
       ],
       "label": "Updates",
-      "help": "Update-channel and startup-check behavior for keeping OpenClaw runtime versions current. Use conservative channels in production and more experimental channels only in controlled environments.",
+      "help": "Update-channel and startup-check behavior for keeping OpenCraft runtime versions current. Use conservative channels in production and more experimental channels only in controlled environments.",
       "hasChildren": true
     },
     {
@@ -59026,7 +59026,7 @@
         "advanced"
       ],
       "label": "Wizard Last Run Version",
-      "help": "OpenClaw version recorded at the time of the most recent wizard run on this config. Use this when diagnosing behavior differences across version-to-version setup changes.",
+      "help": "OpenCraft version recorded at the time of the most recent wizard run on this config. Use this when diagnosing behavior differences across version-to-version setup changes.",
       "hasChildren": false
     }
   ]

@@ -546,7 +546,7 @@ extension GatewayConnection {
 
     func healthOK(timeoutMs: Int = 8000) async throws -> Bool {
         let data = try await self.requestRaw(method: .health, timeoutMs: Double(timeoutMs))
-        return (try? self.decoder.decode(OpenClawGatewayHealthOK.self, from: data))?.ok ?? true
+        return (try? self.decoder.decode(OpenCraftGatewayHealthOK.self, from: data))?.ok ?? true
     }
 
     // MARK: - Skills

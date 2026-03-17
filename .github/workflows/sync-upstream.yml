@@ -15,7 +15,7 @@ jobs:
 
       - name: Adicionar upstream
         run: |
-          git remote add upstream https://github.com/openclaw/openclaw.git || true
+          git remote add upstream https://github.com/editzffaleta/OpenCraft.git || true
           git fetch upstream main
 
       - name: Verificar se há atualizações

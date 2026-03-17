@@ -1,4 +1,4 @@
-import type { OpenClawConfig, WizardPrompter } from "openclaw/plugin-sdk/googlechat";
+import type { OpenCraftConfig, WizardPrompter } from "opencraft/plugin-sdk/googlechat";
 import { describe, expect, it, vi } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
@@ -48,7 +48,7 @@ describe("googlechat setup wizard", () => {
     const runtime = createRuntimeEnv();
 
     const result = await googlechatConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime,
       prompter,
       options: {},

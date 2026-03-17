@@ -99,7 +99,7 @@ struct IOSGatewayChatTransport: OpenClawChatTransport, Sendable {
     func requestHealth(timeoutMs: Int) async throws -> Bool {
         let seconds = max(1, Int(ceil(Double(timeoutMs) / 1000.0)))
         let res = try await self.gateway.request(method: "health", paramsJSON: nil, timeoutSeconds: seconds)
-        return (try? JSONDecoder().decode(OpenClawGatewayHealthOK.self, from: res))?.ok ?? true
+        return (try? JSONDecoder().decode(OpenCraftGatewayHealthOK.self, from: res))?.ok ?? true
     }
 
     func events() -> AsyncStream<OpenClawChatTransportEvent> {
@@ -117,7 +117,7 @@ struct IOSGatewayChatTransport: OpenClawChatTransport, Sendable {
                         guard let payload = evt.payload else { break }
                         let ok = (try? GatewayPayloadDecoding.decode(
                             payload,
-                            as: OpenClawGatewayHealthOK.self))?.ok ?? true
+                            as: OpenCraftGatewayHealthOK.self))?.ok ?? true
                         continuation.yield(.health(ok: ok))
                     case "chat":
                         guard let payload = evt.payload else { break }
@@ -131,7 +131,7 @@ struct IOSGatewayChatTransport: OpenClawChatTransport, Sendable {
                         guard let payload = evt.payload else { break }
                         if let agentPayload = try? GatewayPayloadDecoding.decode(
                             payload,
-                            as: OpenClawAgentEventPayload.self)
+                            as: OpenCraftAgentEventPayload.self)
                         {
                             continuation.yield(.agent(agentPayload))
                         }

@@ -43,7 +43,7 @@ actor GatewayEndpointStore {
         static let live = Deps(
             mode: { await MainActor.run { AppStateStore.shared.connectionMode } },
             token: {
-                let root = OpenClawConfigFile.loadDict()
+                let root = OpenCraftConfigFile.loadDict()
                 let isRemote = ConnectionModeResolver.resolve(root: root).mode == .remote
                 return GatewayEndpointStore.resolveGatewayToken(
                     isRemote: isRemote,
@@ -52,7 +52,7 @@ actor GatewayEndpointStore {
                     launchdSnapshot: GatewayLaunchAgentManager.launchdConfigSnapshot())
             },
             password: {
-                let root = OpenClawConfigFile.loadDict()
+                let root = OpenCraftConfigFile.loadDict()
                 let isRemote = ConnectionModeResolver.resolve(root: root).mode == .remote
                 return GatewayEndpointStore.resolveGatewayPassword(
                     isRemote: isRemote,
@@ -62,7 +62,7 @@ actor GatewayEndpointStore {
             },
             localPort: { GatewayEnvironment.gatewayPort() },
             localHost: {
-                let root = OpenClawConfigFile.loadDict()
+                let root = OpenCraftConfigFile.loadDict()
                 let bind = GatewayEndpointStore.resolveGatewayBindMode(
                     root: root,
                     env: ProcessInfo.processInfo.environment)
@@ -243,11 +243,11 @@ actor GatewayEndpointStore {
 
         let port = deps.localPort()
         let bind = GatewayEndpointStore.resolveGatewayBindMode(
-            root: OpenClawConfigFile.loadDict(),
+            root: OpenCraftConfigFile.loadDict(),
             env: ProcessInfo.processInfo.environment)
-        let customBindHost = GatewayEndpointStore.resolveGatewayCustomBindHost(root: OpenClawConfigFile.loadDict())
+        let customBindHost = GatewayEndpointStore.resolveGatewayCustomBindHost(root: OpenCraftConfigFile.loadDict())
         let scheme = GatewayEndpointStore.resolveGatewayScheme(
-            root: OpenClawConfigFile.loadDict(),
+            root: OpenCraftConfigFile.loadDict(),
             env: ProcessInfo.processInfo.environment)
         let host = GatewayEndpointStore.resolveLocalGatewayHost(
             bindMode: bind,
@@ -297,7 +297,7 @@ actor GatewayEndpointStore {
             let port = self.deps.localPort()
             let host = await self.deps.localHost()
             let scheme = GatewayEndpointStore.resolveGatewayScheme(
-                root: OpenClawConfigFile.loadDict(),
+                root: OpenCraftConfigFile.loadDict(),
                 env: ProcessInfo.processInfo.environment)
             self.setState(.ready(
                 mode: .local,
@@ -305,7 +305,7 @@ actor GatewayEndpointStore {
                 token: token,
                 password: password))
         case .remote:
-            let root = OpenClawConfigFile.loadDict()
+            let root = OpenCraftConfigFile.loadDict()
             if GatewayRemoteConfig.resolveTransport(root: root) == .direct {
                 guard let url = GatewayRemoteConfig.resolveGatewayUrl(root: root) else {
                     self.cancelRemoteEnsure()
@@ -326,7 +326,7 @@ actor GatewayEndpointStore {
             }
             self.cancelRemoteEnsure()
             let scheme = GatewayEndpointStore.resolveGatewayScheme(
-                root: OpenClawConfigFile.loadDict(),
+                root: OpenCraftConfigFile.loadDict(),
                 env: ProcessInfo.processInfo.environment)
             self.setState(.ready(
                 mode: .remote,
@@ -438,7 +438,7 @@ actor GatewayEndpointStore {
             let token = self.deps.token()
             let password = self.deps.password()
             let scheme = GatewayEndpointStore.resolveGatewayScheme(
-                root: OpenClawConfigFile.loadDict(),
+                root: OpenCraftConfigFile.loadDict(),
                 env: ProcessInfo.processInfo.environment)
             let url = URL(string: "\(scheme)://127.0.0.1:\(Int(forwarded))")!
             self.setState(.ready(mode: .remote, url: url, token: token, password: password))
@@ -469,7 +469,7 @@ actor GatewayEndpointStore {
     }
 
     private func resolveDirectRemoteURL() throws -> URL? {
-        let root = OpenClawConfigFile.loadDict()
+        let root = OpenCraftConfigFile.loadDict()
         guard GatewayRemoteConfig.resolveTransport(root: root) == .direct else { return nil }
         guard let url = GatewayRemoteConfig.resolveGatewayUrl(root: root) else {
             throw NSError(
@@ -514,7 +514,7 @@ actor GatewayEndpointStore {
         let mode = await self.deps.mode()
         guard mode == .local else { return nil }
 
-        let root = OpenClawConfigFile.loadDict()
+        let root = OpenCraftConfigFile.loadDict()
         let bind = GatewayEndpointStore.resolveGatewayBindMode(
             root: root,
             env: ProcessInfo.processInfo.environment)
@@ -610,7 +610,7 @@ actor GatewayEndpointStore {
 extension GatewayEndpointStore {
     static func localConfig() -> GatewayConnection.Config {
         self.localConfig(
-            root: OpenClawConfigFile.loadDict(),
+            root: OpenCraftConfigFile.loadDict(),
             env: ProcessInfo.processInfo.environment,
             launchdSnapshot: GatewayLaunchAgentManager.launchdConfigSnapshot(),
             tailscaleIP: TailscaleService.fallbackTailnetIPv4())
@@ -655,7 +655,7 @@ extension GatewayEndpointStore {
     }
 
     private static func localControlUiBasePath() -> String {
-        let root = OpenClawConfigFile.loadDict()
+        let root = OpenCraftConfigFile.loadDict()
         guard let gateway = root["gateway"] as? [String: Any],
               let controlUi = gateway["controlUi"] as? [String: Any]
         else {

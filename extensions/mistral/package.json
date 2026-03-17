@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/mistral-provider",
+  "name": "@opencraft/mistral-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Mistral provider plugin",
+  "description": "OpenCraft Mistral provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

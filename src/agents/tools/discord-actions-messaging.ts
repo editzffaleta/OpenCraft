@@ -1,6 +1,6 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { DiscordActionConfig } from "../../config/config.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import {
   createThreadDiscord,
   deleteMessageDiscord,
@@ -68,7 +68,7 @@ export async function handleDiscordMessagingAction(
   options?: {
     mediaLocalRoots?: readonly string[];
   },
-  cfg?: OpenClawConfig,
+  cfg?: OpenCraftConfig,
 ): Promise<AgentToolResult<unknown>> {
   const resolveChannelId = () =>
     resolveDiscordChannelId(

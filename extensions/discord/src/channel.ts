@@ -1,5 +1,5 @@
 import { Separator, TextDisplay } from "@buape/carbon";
-import { createScopedChannelConfigBase } from "openclaw/plugin-sdk/compat";
+import { createScopedChannelConfigBase } from "opencraft/plugin-sdk/compat";
 import {
   buildAccountScopedAllowlistConfigEditor,
   buildAccountScopedDmSecurityPolicy,
@@ -7,12 +7,12 @@ import {
   collectOpenGroupPolicyConfiguredRouteWarnings,
   createScopedAccountConfigAccessors,
   formatAllowFromLowercase,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildAgentSessionKey,
   resolveThreadSessionKeys,
   type RoutePeer,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import {
   buildComputedAccountStatusSnapshot,
   buildChannelConfigSchema,
@@ -29,8 +29,8 @@ import {
   resolveDiscordGroupToolPolicy,
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/discord";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/discord";
 import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";
 import { normalizeMessageChannel } from "../../../src/utils/message-channel.js";
 import { inspectDiscordAccount } from "./account-inspect.js";
@@ -106,7 +106,7 @@ const discordMessageActions: ChannelMessageActionAdapter = {
 function buildDiscordCrossContextComponents(params: {
   originLabel: string;
   message: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }) {
   const trimmed = params.message.trim();
@@ -119,7 +119,7 @@ function buildDiscordCrossContextComponents(params: {
   return [new DiscordUiContainer({ cfg: params.cfg, accountId: params.accountId, components })];
 }
 
-function hasDiscordExecApprovalDmRoute(cfg: OpenClawConfig): boolean {
+function hasDiscordExecApprovalDmRoute(cfg: OpenCraftConfig): boolean {
   return listDiscordAccountIds(cfg).some((accountId) => {
     const execApprovals = resolveDiscordAccount({ cfg, accountId }).config.execApprovals;
     if (!execApprovals?.enabled || (execApprovals.approvers?.length ?? 0) === 0) {
@@ -223,7 +223,7 @@ function normalizeOutboundThreadId(value?: string | number | null): string | und
 }
 
 function buildDiscordBaseSessionKey(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   peer: RoutePeer;
@@ -261,7 +261,7 @@ function resolveDiscordOutboundTargetKindHint(params: {
 }
 
 function resolveDiscordOutboundSessionRoute(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   accountId?: string | null;
   target: string;
@@ -441,7 +441,7 @@ export const discordPlugin: ChannelPlugin<ResolvedDiscordAccount> = {
   agentPrompt: {
     messageToolHints: () => [
       "- Discord components: set `components` when sending messages to include buttons, selects, or v2 containers.",
-      "- Forms: add `components.modal` (title, fields). OpenClaw adds a trigger button and routes submissions as new messages.",
+      "- Forms: add `components.modal` (title, fields). OpenCraft adds a trigger button and routes submissions as new messages.",
     ],
   },
   messaging: {

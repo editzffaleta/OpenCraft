@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/opencode-provider",
+  "name": "@opencraft/opencode-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw OpenCode Zen provider plugin",
+  "description": "OpenCraft OpenCode Zen provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

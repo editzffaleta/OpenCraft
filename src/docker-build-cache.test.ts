@@ -37,7 +37,7 @@ describe("docker build cache layout", () => {
         dockerfile,
         `${path} should use a shared pnpm store cache under the active user's home`,
       ).toMatch(
-        /--mount=type=cache,id=openclaw-pnpm-store,target=\/(?:root|home\/appuser)\/\.local\/share\/pnpm\/store,sharing=locked/,
+        /--mount=type=cache,id=opencraft-pnpm-store,target=\/(?:root|home\/appuser)\/\.local\/share\/pnpm\/store,sharing=locked/,
       );
     }
   });

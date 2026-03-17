@@ -3,7 +3,7 @@ export type { SignalAccountConfig } from "../config/types.js";
 export type {
   ChannelMessageActionContext,
   ChannelPlugin,
-  OpenClawPluginApi,
+  OpenCraftPluginApi,
   PluginRuntime,
 } from "./channel-plugin-common.js";
 export {

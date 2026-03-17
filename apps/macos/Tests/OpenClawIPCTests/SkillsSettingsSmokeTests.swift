@@ -72,7 +72,7 @@ struct SkillsSettingsSmokeTests {
             makeSkillStatus(
                 name: "Ready Skill",
                 description: "All set",
-                source: "openclaw-bundled",
+                source: "opencraft-bundled",
                 filePath: "/tmp/skills/ready",
                 skillKey: "ready",
                 emoji: "✅",
@@ -109,7 +109,7 @@ struct SkillsSettingsSmokeTests {
             makeSkillStatus(
                 name: "Local Skill",
                 description: "Local ready",
-                source: "openclaw-workspace",
+                source: "opencraft-workspace",
                 filePath: "/tmp/skills/local",
                 skillKey: "local",
                 emoji: "🏠",

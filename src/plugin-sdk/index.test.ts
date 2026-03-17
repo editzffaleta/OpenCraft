@@ -117,7 +117,7 @@ describe("plugin-sdk exports", () => {
   });
 
   it("emits importable bundled subpath entries", { timeout: 240_000 }, async () => {
-    const fixtureDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-plugin-sdk-consumer-"));
+    const fixtureDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-plugin-sdk-consumer-"));
     const repoDistDir = path.join(process.cwd(), "dist");
 
     try {
@@ -130,7 +130,7 @@ describe("plugin-sdk exports", () => {
         expect(module).toBeTypeOf("object");
       }
 
-      const packageDir = path.join(fixtureDir, "openclaw");
+      const packageDir = path.join(fixtureDir, "opencraft");
       const consumerDir = path.join(fixtureDir, "consumer");
       const consumerEntry = path.join(consumerDir, "import-plugin-sdk.mjs");
 
@@ -141,7 +141,7 @@ describe("plugin-sdk exports", () => {
         JSON.stringify(
           {
             exports: buildPluginSdkPackageExports(),
-            name: "openclaw",
+            name: "opencraft",
             type: "module",
           },
           null,
@@ -150,7 +150,7 @@ describe("plugin-sdk exports", () => {
       );
 
       await fs.mkdir(path.join(consumerDir, "node_modules"), { recursive: true });
-      await fs.symlink(packageDir, path.join(consumerDir, "node_modules", "openclaw"), "dir");
+      await fs.symlink(packageDir, path.join(consumerDir, "node_modules", "opencraft"), "dir");
       await fs.writeFile(
         consumerEntry,
         [

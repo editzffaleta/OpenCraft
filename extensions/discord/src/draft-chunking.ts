@@ -1,5 +1,5 @@
 import { resolveTextChunkLimit } from "../../../src/auto-reply/chunk.js";
-import { type OpenClawConfig } from "../../../src/config/config.js";
+import { type OpenCraftConfig } from "../../../src/config/config.js";
 import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
 import { normalizeAccountId } from "../../../src/routing/session-key.js";
 import { DISCORD_TEXT_CHUNK_LIMIT } from "./outbound-adapter.js";
@@ -8,7 +8,7 @@ const DEFAULT_DISCORD_DRAFT_STREAM_MIN = 200;
 const DEFAULT_DISCORD_DRAFT_STREAM_MAX = 800;
 
 export function resolveDiscordDraftStreamingChunking(
-  cfg: OpenClawConfig | undefined,
+  cfg: OpenCraftConfig | undefined,
   accountId?: string | null,
 ): {
   minChars: number;

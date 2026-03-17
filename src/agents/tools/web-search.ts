@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { normalizeResolvedSecretInputString } from "../../config/types.secrets.js";
 import { logVerbose } from "../../globals.js";
 import { resolvePluginWebSearchProviders } from "../../plugins/web-search-providers.js";
@@ -8,13 +8,13 @@ import type { AnyAgentTool } from "./common.js";
 import { jsonResult } from "./common.js";
 import { __testing as coreTesting } from "./web-search-core.js";
 
-type WebSearchConfig = NonNullable<OpenClawConfig["tools"]>["web"] extends infer Web
+type WebSearchConfig = NonNullable<OpenCraftConfig["tools"]>["web"] extends infer Web
   ? Web extends { search?: infer Search }
     ? Search
     : undefined
   : undefined;
 
-function resolveSearchConfig(cfg?: OpenClawConfig): WebSearchConfig {
+function resolveSearchConfig(cfg?: OpenCraftConfig): WebSearchConfig {
   const search = cfg?.tools?.web?.search;
   if (!search || typeof search !== "object") {
     return undefined;
@@ -95,7 +95,7 @@ function resolveSearchProvider(search?: WebSearchConfig): string {
 }
 
 export function createWebSearchTool(options?: {
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   sandboxed?: boolean;
   runtimeWebSearch?: RuntimeWebSearchMetadata;
 }): AnyAgentTool | null {

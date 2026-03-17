@@ -1,17 +1,17 @@
 ---
-summary: "OpenClaw on Raspberry Pi (budget self-hosted setup)"
+summary: "OpenCraft on Raspberry Pi (budget self-hosted setup)"
 read_when:
-  - Setting up OpenClaw on a Raspberry Pi
-  - Running OpenClaw on ARM devices
+  - Setting up OpenCraft on a Raspberry Pi
+  - Running OpenCraft on ARM devices
   - Building a cheap always-on personal AI
 title: "Raspberry Pi"
 ---
 
-# OpenClaw on Raspberry Pi
+# OpenCraft on Raspberry Pi
 
 ## Goal
 
-Run a persistent, always-on OpenClaw Gateway on a Raspberry Pi for **~$35-80** one-time cost (no monthly fees).
+Run a persistent, always-on OpenCraft Gateway on a Raspberry Pi for **~$35-80** one-time cost (no monthly fees).
 
 Perfect for:
 
@@ -107,19 +107,19 @@ echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
-## 6) Install OpenClaw
+## 6) Install OpenCraft
 
 ### Option A: Standard Install (Recommended)
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://opencraft.ai/install.sh | bash
 ```
 
 ### Option B: Hackable Install (For tinkering)
 
 ```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
+git clone https://github.com/editzffaleta/OpenCraft.git
+cd opencraft
 npm install
 npm run build
 npm link
@@ -130,7 +130,7 @@ The hackable install gives you direct access to logs and code — useful for deb
 ## 7) Run Onboarding
 
 ```bash
-openclaw onboard --install-daemon
+opencraft onboard --install-daemon
 ```
 
 Follow the wizard:
@@ -144,23 +144,23 @@ Follow the wizard:
 
 ```bash
 # Check status
-openclaw status
+opencraft status
 
 # Check service
-sudo systemctl status openclaw
+sudo systemctl status opencraft
 
 # View logs
-journalctl -u openclaw -f
+journalctl -u opencraft -f
 ```
 
-## 9) Access the OpenClaw Dashboard
+## 9) Access the OpenCraft Dashboard
 
 Replace `user@gateway-host` with your Pi username and hostname or IP address.
 
 On your computer, ask the Pi to print a fresh dashboard URL:
 
 ```bash
-ssh user@gateway-host 'openclaw dashboard --no-open'
+ssh user@gateway-host 'opencraft dashboard --no-open'
 ```
 
 The command prints `Dashboard URL:`. Depending on how `gateway.auth.token`
@@ -200,10 +200,10 @@ See [Pi USB boot guide](https://www.raspberrypi.com/documentation/computers/rasp
 On lower-power Pi hosts, enable Node's module compile cache so repeated CLI runs are faster:
 
 ```bash
-grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF' # pragma: allowlist secret
-export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
-mkdir -p /var/tmp/openclaw-compile-cache
-export OPENCLAW_NO_RESPAWN=1
+grep -q 'NODE_COMPILE_CACHE=/var/tmp/opencraft-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF' # pragma: allowlist secret
+export NODE_COMPILE_CACHE=/var/tmp/opencraft-compile-cache
+mkdir -p /var/tmp/opencraft-compile-cache
+export OPENCRAFT_NO_RESPAWN=1
 EOF
 source ~/.bashrc
 ```
@@ -212,22 +212,22 @@ Notes:
 
 - `NODE_COMPILE_CACHE` speeds up subsequent runs (`status`, `health`, `--help`).
 - `/var/tmp` survives reboots better than `/tmp`.
-- `OPENCLAW_NO_RESPAWN=1` avoids extra startup cost from CLI self-respawn.
+- `OPENCRAFT_NO_RESPAWN=1` avoids extra startup cost from CLI self-respawn.
 - First run warms the cache; later runs benefit most.
 
 ### systemd startup tuning (optional)
 
-If this Pi is mostly running OpenClaw, add a service drop-in to reduce restart
+If this Pi is mostly running OpenCraft, add a service drop-in to reduce restart
 jitter and keep startup env stable:
 
 ```bash
-sudo systemctl edit openclaw
+sudo systemctl edit opencraft
 ```
 
 ```ini
 [Service]
-Environment=OPENCLAW_NO_RESPAWN=1
-Environment=NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+Environment=OPENCRAFT_NO_RESPAWN=1
+Environment=NODE_COMPILE_CACHE=/var/tmp/opencraft-compile-cache
 Restart=always
 RestartSec=2
 TimeoutStartSec=90
@@ -237,10 +237,10 @@ Then apply:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl restart openclaw
+sudo systemctl restart opencraft
 ```
 
-If possible, keep OpenClaw state/cache on SSD-backed storage to avoid SD-card
+If possible, keep OpenCraft state/cache on SSD-backed storage to avoid SD-card
 random-I/O bottlenecks during cold starts.
 
 How `Restart=` policies help automated recovery:
@@ -275,7 +275,7 @@ htop
 
 ### Binary Compatibility
 
-Most OpenClaw features work on ARM64, but some external binaries may need ARM builds:
+Most OpenCraft features work on ARM64, but some external binaries may need ARM builds:
 
 | Tool               | ARM64 Status | Notes                               |
 | ------------------ | ------------ | ----------------------------------- |
@@ -325,13 +325,13 @@ Onboarding sets this up, but to verify:
 
 ```bash
 # Check service is enabled
-sudo systemctl is-enabled openclaw
+sudo systemctl is-enabled opencraft
 
 # Enable if not
-sudo systemctl enable openclaw
+sudo systemctl enable opencraft
 
 # Start on boot
-sudo systemctl start openclaw
+sudo systemctl start opencraft
 ```
 
 ---
@@ -358,12 +358,12 @@ free -h
 
 ```bash
 # Check logs
-journalctl -u openclaw --no-pager -n 100
+journalctl -u opencraft --no-pager -n 100
 
 # Common fix: rebuild
-cd ~/openclaw  # if using hackable install
+cd ~/opencraft  # if using hackable install
 npm run build
-sudo systemctl restart openclaw
+sudo systemctl restart opencraft
 ```
 
 ### ARM Binary Issues

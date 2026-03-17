@@ -127,7 +127,7 @@ jobs:
           xcodegen generate
           xcodebuild build \
             -project OpenClaw.xcodeproj \
-            -scheme OpenClaw \
+            -scheme OpenCraft \
             -destination "generic/platform=iOS Simulator" \
             CODE_SIGNING_ALLOWED=NO
 

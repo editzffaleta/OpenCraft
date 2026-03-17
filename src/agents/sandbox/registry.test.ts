@@ -142,7 +142,7 @@ function browserEntry(
     sessionKey: "agent:main",
     createdAtMs: 1,
     lastUsedAtMs: 1,
-    image: "openclaw-browser:test",
+    image: "opencraft-browser:test",
     cdpPort: 9222,
     ...overrides,
   };

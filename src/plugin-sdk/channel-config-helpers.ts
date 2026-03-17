@@ -6,7 +6,7 @@ import { buildAccountScopedDmSecurityPolicy } from "../channels/plugins/helpers.
 import { normalizeWhatsAppAllowFromEntries } from "../channels/plugins/normalize/whatsapp.js";
 import { getChannelPlugin } from "../channels/plugins/registry.js";
 import type { ChannelConfigAdapter } from "../channels/plugins/types.adapters.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { normalizeAccountId } from "../routing/session-key.js";
 import { normalizeStringEntries } from "../shared/string-normalization.js";
 
@@ -35,7 +35,7 @@ export function resolveOptionalConfigString(
 
 /** Build the shared allowlist/default target adapter surface for account-scoped channel configs. */
 export function createScopedAccountConfigAccessors<ResolvedAccount>(params: {
-  resolveAccount: (params: { cfg: OpenClawConfig; accountId?: string | null }) => ResolvedAccount;
+  resolveAccount: (params: { cfg: OpenCraftConfig; accountId?: string | null }) => ResolvedAccount;
   resolveAllowFrom: (account: ResolvedAccount) => Array<string | number> | null | undefined;
   formatAllowFrom: (allowFrom: Array<string | number>) => string[];
   resolveDefaultTo?: (account: ResolvedAccount) => string | number | null | undefined;
@@ -44,7 +44,7 @@ export function createScopedAccountConfigAccessors<ResolvedAccount>(params: {
   "resolveAllowFrom" | "formatAllowFrom" | "resolveDefaultTo"
 > {
   const base = {
-    resolveAllowFrom: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId?: string | null }) =>
+    resolveAllowFrom: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId?: string | null }) =>
       mapAllowFromEntries(params.resolveAllowFrom(params.resolveAccount({ cfg, accountId }))),
     formatAllowFrom: ({ allowFrom }: { allowFrom: Array<string | number> }) =>
       params.formatAllowFrom(allowFrom),
@@ -66,7 +66,7 @@ export function createScopedAccountConfigAccessors<ResolvedAccount>(params: {
 /** Build the common CRUD/config helpers for channels that store multiple named accounts. */
 export function createScopedChannelConfigBase<
   ResolvedAccount,
-  Config extends OpenClawConfig = OpenClawConfig,
+  Config extends OpenCraftConfig = OpenCraftConfig,
 >(params: {
   sectionKey: string;
   listAccountIds: (cfg: Config) => string[];
@@ -129,7 +129,7 @@ export function createScopedDmSecurityResolver<
     accountId,
     account,
   }: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     account: ResolvedAccount;
   }) =>
@@ -151,7 +151,7 @@ export function createScopedDmSecurityResolver<
 
 /** Read the effective WhatsApp allowlist through the active plugin contract. */
 export function resolveWhatsAppConfigAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }): string[] {
   const account = getChannelPlugin("whatsapp")?.config.resolveAccount(params.cfg, params.accountId);
@@ -167,7 +167,7 @@ export function formatWhatsAppConfigAllowFromEntries(allowFrom: Array<string | n
 
 /** Resolve the effective WhatsApp default recipient after account and root config fallback. */
 export function resolveWhatsAppConfigDefaultTo(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }): string | undefined {
   const root = params.cfg.channels?.whatsapp;
@@ -178,7 +178,7 @@ export function resolveWhatsAppConfigDefaultTo(params: {
 
 /** Read iMessage allowlist entries from the active plugin's resolved account view. */
 export function resolveIMessageConfigAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }): string[] {
   const account = getChannelPlugin("imessage")?.config.resolveAccount(params.cfg, params.accountId);
@@ -190,7 +190,7 @@ export function resolveIMessageConfigAllowFrom(params: {
 
 /** Resolve the effective iMessage default recipient from the plugin-resolved account config. */
 export function resolveIMessageConfigDefaultTo(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
 }): string | undefined {
   const account = getChannelPlugin("imessage")?.config.resolveAccount(params.cfg, params.accountId);

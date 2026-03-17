@@ -14,7 +14,7 @@ import {
   resolveWhatsAppGroupToolPolicy,
   WhatsAppConfigSchema,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/whatsapp";
+} from "opencraft/plugin-sdk/whatsapp";
 import {
   listWhatsAppAccountIds,
   resolveDefaultWhatsAppAccountId,

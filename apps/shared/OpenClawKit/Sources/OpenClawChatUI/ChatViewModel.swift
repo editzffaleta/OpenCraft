@@ -10,33 +10,33 @@ import AppKit
 import UIKit
 #endif
 
-private let chatUILogger = Logger(subsystem: "ai.openclaw", category: "OpenClawChatUI")
+private let chatUILogger = Logger(subsystem: "ai.opencraft", category: "OpenCraftChatUI")
 
 @MainActor
 @Observable
-public final class OpenClawChatViewModel {
+public final class OpenCraftChatViewModel {
     public static let defaultModelSelectionID = "__default__"
 
-    public private(set) var messages: [OpenClawChatMessage] = []
+    public private(set) var messages: [OpenCraftChatMessage] = []
     public var input: String = ""
     public private(set) var thinkingLevel: String
     public private(set) var modelSelectionID: String = "__default__"
-    public private(set) var modelChoices: [OpenClawChatModelChoice] = []
+    public private(set) var modelChoices: [OpenCraftChatModelChoice] = []
     public private(set) var isLoading = false
     public private(set) var isSending = false
     public private(set) var isAborting = false
     public var errorText: String?
-    public var attachments: [OpenClawPendingAttachment] = []
+    public var attachments: [OpenCraftPendingAttachment] = []
     public private(set) var healthOK: Bool = false
     public private(set) var pendingRunCount: Int = 0
 
     public private(set) var sessionKey: String
     public private(set) var sessionId: String?
     public private(set) var streamingAssistantText: String?
-    public private(set) var pendingToolCalls: [OpenClawChatPendingToolCall] = []
-    public private(set) var sessions: [OpenClawChatSessionEntry] = []
-    private let transport: any OpenClawChatTransport
-    private var sessionDefaults: OpenClawChatSessionsDefaults?
+    public private(set) var pendingToolCalls: [OpenCraftChatPendingToolCall] = []
+    public private(set) var sessions: [OpenCraftChatSessionEntry] = []
+    private let transport: any OpenCraftChatTransport
+    private var sessionDefaults: OpenCraftChatSessionsDefaults?
     private let prefersExplicitThinkingLevel: Bool
     private let onThinkingLevelChanged: (@MainActor @Sendable (String) -> Void)?
 
@@ -61,7 +61,7 @@ public final class OpenClawChatViewModel {
     private var latestThinkingSelectionRequestIDsBySession: [String: UInt64] = [:]
     private var latestThinkingLevelsBySession: [String: String] = [:]
 
-    private var pendingToolCallsById: [String: OpenClawChatPendingToolCall] = [:] {
+    private var pendingToolCallsById: [String: OpenCraftChatPendingToolCall] = [:] {
         didSet {
             self.pendingToolCalls = self.pendingToolCallsById.values
                 .sorted { ($0.startedAt ?? 0) < ($1.startedAt ?? 0) }
@@ -72,7 +72,7 @@ public final class OpenClawChatViewModel {
 
     public init(
         sessionKey: String,
-        transport: any OpenClawChatTransport,
+        transport: any OpenCraftChatTransport,
         initialThinkingLevel: String? = nil,
         onThinkingLevelChanged: (@MainActor @Sendable (String) -> Void)? = nil)
     {
@@ -134,13 +134,13 @@ public final class OpenClawChatViewModel {
         Task { await self.performSelectModel(selectionID) }
     }
 
-    public var sessionChoices: [OpenClawChatSessionEntry] {
+    public var sessionChoices: [OpenCraftChatSessionEntry] {
         let now = Date().timeIntervalSince1970 * 1000
         let cutoff = now - (24 * 60 * 60 * 1000)
         let sorted = self.sessions.sorted { ($0.updatedAt ?? 0) > ($1.updatedAt ?? 0) }
         let mainSessionKey = self.resolvedMainSessionKey
 
-        var result: [OpenClawChatSessionEntry] = []
+        var result: [OpenCraftChatSessionEntry] = []
         var included = Set<String>()
 
         // Always show the resolved main session first, even if it hasn't been updated recently.
@@ -202,7 +202,7 @@ public final class OpenClawChatViewModel {
         Task { await self.addImageAttachment(url: nil, data: data, fileName: fileName, mimeType: mimeType) }
     }
 
-    public func removeAttachment(_ id: OpenClawPendingAttachment.ID) {
+    public func removeAttachment(_ id: OpenCraftPendingAttachment.ID) {
         self.attachments.removeAll { $0.id == id }
     }
 
@@ -249,23 +249,23 @@ public final class OpenClawChatViewModel {
         }
     }
 
-    private static func decodeMessages(_ raw: [AnyCodable]) -> [OpenClawChatMessage] {
+    private static func decodeMessages(_ raw: [AnyCodable]) -> [OpenCraftChatMessage] {
         let decoded = raw.compactMap { item in
-            (try? ChatPayloadDecoding.decode(item, as: OpenClawChatMessage.self))
+            (try? ChatPayloadDecoding.decode(item, as: OpenCraftChatMessage.self))
                 .map { Self.stripInboundMetadata(from: $0) }
         }
         return Self.dedupeMessages(decoded)
     }
 
-    private static func stripInboundMetadata(from message: OpenClawChatMessage) -> OpenClawChatMessage {
+    private static func stripInboundMetadata(from message: OpenCraftChatMessage) -> OpenCraftChatMessage {
         guard message.role.lowercased() == "user" else {
             return message
         }
 
-        let sanitizedContent = message.content.map { content -> OpenClawChatMessageContent in
+        let sanitizedContent = message.content.map { content -> OpenCraftChatMessageContent in
             guard let text = content.text else { return content }
             let cleaned = ChatMarkdownPreprocessor.preprocess(markdown: text).cleaned
-            return OpenClawChatMessageContent(
+            return OpenCraftChatMessageContent(
                 type: content.type,
                 text: cleaned,
                 thinking: content.thinking,
@@ -278,7 +278,7 @@ public final class OpenClawChatViewModel {
                 arguments: content.arguments)
         }
 
-        return OpenClawChatMessage(
+        return OpenCraftChatMessage(
             id: message.id,
             role: message.role,
             content: sanitizedContent,
@@ -289,7 +289,7 @@ public final class OpenClawChatViewModel {
             stopReason: message.stopReason)
     }
 
-    private static func messageIdentityKey(for message: OpenClawChatMessage) -> String? {
+    private static func messageIdentityKey(for message: OpenCraftChatMessage) -> String? {
         let role = message.role.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !role.isEmpty else { return nil }
 
@@ -316,8 +316,8 @@ public final class OpenClawChatViewModel {
     }
 
     private static func reconcileMessageIDs(
-        previous: [OpenClawChatMessage],
-        incoming: [OpenClawChatMessage]) -> [OpenClawChatMessage]
+        previous: [OpenCraftChatMessage],
+        incoming: [OpenCraftChatMessage]) -> [OpenCraftChatMessage]
     {
         guard !previous.isEmpty, !incoming.isEmpty else { return incoming }
 
@@ -341,7 +341,7 @@ public final class OpenClawChatViewModel {
                 idsByKey[key] = ids
             }
             guard reusedId != message.id else { return message }
-            return OpenClawChatMessage(
+            return OpenCraftChatMessage(
                 id: reusedId,
                 role: message.role,
                 content: message.content,
@@ -353,8 +353,8 @@ public final class OpenClawChatViewModel {
         }
     }
 
-    private static func dedupeMessages(_ messages: [OpenClawChatMessage]) -> [OpenClawChatMessage] {
-        var result: [OpenClawChatMessage] = []
+    private static func dedupeMessages(_ messages: [OpenCraftChatMessage]) -> [OpenCraftChatMessage] {
+        var result: [OpenCraftChatMessage] = []
         result.reserveCapacity(messages.count)
         var seen = Set<String>()
 
@@ -371,7 +371,7 @@ public final class OpenClawChatViewModel {
         return result
     }
 
-    private static func dedupeKey(for message: OpenClawChatMessage) -> String? {
+    private static func dedupeKey(for message: OpenCraftChatMessage) -> String? {
         guard let timestamp = message.timestamp else { return nil }
         let text = message.content.compactMap(\.text).joined(separator: "\n")
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -410,8 +410,8 @@ public final class OpenClawChatViewModel {
         self.streamingAssistantText = nil
 
         // Optimistically append user message to UI.
-        var userContent: [OpenClawChatMessageContent] = [
-            OpenClawChatMessageContent(
+        var userContent: [OpenCraftChatMessageContent] = [
+            OpenCraftChatMessageContent(
                 type: "text",
                 text: messageText,
                 thinking: nil,
@@ -423,8 +423,8 @@ public final class OpenClawChatViewModel {
                 name: nil,
                 arguments: nil),
         ]
-        let encodedAttachments = self.attachments.map { att -> OpenClawChatAttachmentPayload in
-            OpenClawChatAttachmentPayload(
+        let encodedAttachments = self.attachments.map { att -> OpenCraftChatAttachmentPayload in
+            OpenCraftChatAttachmentPayload(
                 type: att.type,
                 mimeType: att.mimeType,
                 fileName: att.fileName,
@@ -432,7 +432,7 @@ public final class OpenClawChatViewModel {
         }
         for att in encodedAttachments {
             userContent.append(
-                OpenClawChatMessageContent(
+                OpenCraftChatMessageContent(
                     type: att.type,
                     text: nil,
                     thinking: nil,
@@ -445,7 +445,7 @@ public final class OpenClawChatViewModel {
                     arguments: nil))
         }
         self.messages.append(
-            OpenClawChatMessage(
+            OpenCraftChatMessage(
                 id: UUID(),
                 role: "user",
                 content: userContent,
@@ -636,8 +636,8 @@ public final class OpenClawChatViewModel {
         }
     }
 
-    private func placeholderSession(key: String) -> OpenClawChatSessionEntry {
-        OpenClawChatSessionEntry(
+    private func placeholderSession(key: String) -> OpenCraftChatSessionEntry {
+        OpenCraftChatSessionEntry(
             key: key,
             kind: nil,
             displayName: nil,
@@ -758,7 +758,7 @@ public final class OpenClawChatViewModel {
     {
         if let index = self.sessions.firstIndex(where: { $0.key == sessionKey }) {
             let current = self.sessions[index]
-            self.sessions[index] = OpenClawChatSessionEntry(
+            self.sessions[index] = OpenCraftChatSessionEntry(
                 key: current.key,
                 kind: current.kind,
                 displayName: current.displayName,
@@ -781,7 +781,7 @@ public final class OpenClawChatViewModel {
         } else {
             let placeholder = self.placeholderSession(key: sessionKey)
             self.sessions.append(
-                OpenClawChatSessionEntry(
+                OpenCraftChatSessionEntry(
                     key: placeholder.key,
                     kind: placeholder.kind,
                     displayName: placeholder.displayName,
@@ -807,7 +807,7 @@ public final class OpenClawChatViewModel {
         }
     }
 
-    private func handleTransportEvent(_ evt: OpenClawChatTransportEvent) {
+    private func handleTransportEvent(_ evt: OpenCraftChatTransportEvent) {
         switch evt {
         case let .health(ok):
             self.healthOK = ok
@@ -827,7 +827,7 @@ public final class OpenClawChatViewModel {
         }
     }
 
-    private func handleChatEvent(_ chat: OpenClawChatEventPayload) {
+    private func handleChatEvent(_ chat: OpenCraftChatEventPayload) {
         let isOurRun = chat.runId.flatMap { self.pendingRuns.contains($0) } ?? false
 
         // Gateway may publish canonical session keys (for example "agent:main:main")
@@ -886,7 +886,7 @@ public final class OpenClawChatViewModel {
         return false
     }
 
-    private func handleAgentEvent(_ evt: OpenClawAgentEventPayload) {
+    private func handleAgentEvent(_ evt: OpenCraftAgentEventPayload) {
         if let sessionId, evt.runId != sessionId {
             return
         }
@@ -902,7 +902,7 @@ public final class OpenClawChatViewModel {
             guard let toolCallId = evt.data["toolCallId"]?.value as? String else { return }
             if phase == "start" {
                 let args = evt.data["args"]
-                self.pendingToolCallsById[toolCallId] = OpenClawChatPendingToolCall(
+                self.pendingToolCallsById[toolCallId] = OpenCraftChatPendingToolCall(
                     toolCallId: toolCallId,
                     name: name,
                     args: args,
@@ -1017,7 +1017,7 @@ public final class OpenClawChatViewModel {
 
         let preview = Self.previewImage(data: data)
         self.attachments.append(
-            OpenClawPendingAttachment(
+            OpenCraftPendingAttachment(
                 url: url,
                 data: data,
                 fileName: fileName,
@@ -1025,7 +1025,7 @@ public final class OpenClawChatViewModel {
                 preview: preview))
     }
 
-    private static func previewImage(data: Data) -> OpenClawPlatformImage? {
+    private static func previewImage(data: Data) -> OpenCraftPlatformImage? {
         #if canImport(AppKit)
         NSImage(data: data)
         #elseif canImport(UIKit)

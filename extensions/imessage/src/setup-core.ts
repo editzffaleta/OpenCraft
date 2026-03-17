@@ -8,7 +8,7 @@ import {
   promptParsedAllowFromForScopedChannel,
   setChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   type WizardPrompter,
 } from "../../../src/plugin-sdk-internal/setup.js";
 import type {
@@ -69,10 +69,10 @@ function buildIMessageSetupPatch(input: {
 }
 
 async function promptIMessageAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   return promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel,
@@ -163,8 +163,8 @@ export function createIMessageSetupWizardProxy(
     channel,
     policyKey: "channels.imessage.dmPolicy",
     allowFromKey: "channels.imessage.allowFrom",
-    getCurrent: (cfg: OpenClawConfig) => cfg.channels?.imessage?.dmPolicy ?? "pairing",
-    setPolicy: (cfg: OpenClawConfig, policy) =>
+    getCurrent: (cfg: OpenCraftConfig) => cfg.channels?.imessage?.dmPolicy ?? "pairing",
+    setPolicy: (cfg: OpenCraftConfig, policy) =>
       setChannelDmPolicyWithAllowFrom({
         cfg,
         channel,
@@ -225,13 +225,13 @@ export function createIMessageSetupWizardProxy(
       title: "iMessage next steps",
       lines: [
         "This is still a work in progress.",
-        "Ensure OpenClaw has Full Disk Access to Messages DB.",
+        "Ensure OpenCraft has Full Disk Access to Messages DB.",
         "Grant Automation permission for Messages when prompted.",
         "List chats with: imsg chats --limit 20",
         `Docs: ${formatDocsLink("/imessage", "imessage")}`,
       ],
     },
     dmPolicy: imessageDmPolicy,
-    disable: (cfg: OpenClawConfig) => setSetupChannelEnabled(cfg, channel, false),
+    disable: (cfg: OpenCraftConfig) => setSetupChannelEnabled(cfg, channel, false),
   } satisfies ChannelSetupWizard;
 }

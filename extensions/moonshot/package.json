@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/moonshot-provider",
+  "name": "@opencraft/moonshot-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Moonshot provider plugin",
+  "description": "OpenCraft Moonshot provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

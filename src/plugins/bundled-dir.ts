@@ -1,19 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveOpenClawPackageRootSync } from "../infra/openclaw-root.js";
+import { resolveOpenCraftPackageRootSync } from "../infra/opencraft-root.js";
 import { resolveUserPath } from "../utils.js";
 
 export function resolveBundledPluginsDir(env: NodeJS.ProcessEnv = process.env): string | undefined {
-  const override = env.OPENCLAW_BUNDLED_PLUGINS_DIR?.trim();
+  const override = env.OPENCRAFT_BUNDLED_PLUGINS_DIR?.trim();
   if (override) {
     return resolveUserPath(override, env);
   }
 
   try {
     const packageRoots = [
-      resolveOpenClawPackageRootSync({ cwd: process.cwd() }),
-      resolveOpenClawPackageRootSync({ moduleUrl: import.meta.url }),
+      resolveOpenCraftPackageRootSync({ cwd: process.cwd() }),
+      resolveOpenCraftPackageRootSync({ moduleUrl: import.meta.url }),
     ].filter(
       (entry, index, all): entry is string => Boolean(entry) && all.indexOf(entry) === index,
     );

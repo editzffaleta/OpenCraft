@@ -1,4 +1,4 @@
-import type { OpenClawConfig, RuntimeEnv, WizardPrompter } from "openclaw/plugin-sdk/zalo";
+import type { OpenCraftConfig, RuntimeEnv, WizardPrompter } from "opencraft/plugin-sdk/zalo";
 import { describe, expect, it, vi } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
@@ -43,7 +43,7 @@ describe("zalo setup wizard", () => {
     const runtime: RuntimeEnv = createRuntimeEnv();
 
     const result = await zaloConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime,
       prompter,
       options: { secretInputMode: "plaintext" },

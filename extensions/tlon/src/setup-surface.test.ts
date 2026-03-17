@@ -1,4 +1,4 @@
-import type { OpenClawConfig, RuntimeEnv, WizardPrompter } from "openclaw/plugin-sdk/tlon";
+import type { OpenCraftConfig, RuntimeEnv, WizardPrompter } from "opencraft/plugin-sdk/tlon";
 import { describe, expect, it, vi } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
@@ -69,7 +69,7 @@ describe("tlon setup wizard", () => {
     const runtime: RuntimeEnv = createRuntimeEnv();
 
     const result = await tlonConfigureAdapter.configure({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       runtime,
       prompter,
       options: {},

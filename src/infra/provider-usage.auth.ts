@@ -11,7 +11,7 @@ import {
 import { isNonSecretApiKeyMarker } from "../agents/model-auth-markers.js";
 import { resolveUsableCustomProviderApiKey } from "../agents/model-auth.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
-import { loadConfig, type OpenClawConfig } from "../config/config.js";
+import { loadConfig, type OpenCraftConfig } from "../config/config.js";
 import { resolveRequiredHomeDir } from "../infra/home-dir.js";
 import { resolveProviderUsageAuthWithPlugin } from "../plugins/provider-runtime.js";
 import { normalizeSecretInput } from "../utils/normalize-secret-input.js";
@@ -26,7 +26,7 @@ export type ProviderAuth = {
 type AuthStore = ReturnType<typeof ensureAuthProfileStore>;
 
 type UsageAuthState = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   store: AuthStore;
   env: NodeJS.ProcessEnv;
   agentDir?: string;

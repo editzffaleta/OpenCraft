@@ -151,7 +151,7 @@ let sessionStoreCaseSeq = 0;
 
 beforeAll(async () => {
   harness = await startGatewayServerHarness();
-  sharedSessionStoreDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-sessions-"));
+  sharedSessionStoreDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-sessions-"));
 });
 
 afterAll(async () => {
@@ -1382,7 +1382,7 @@ describe("gateway server sessions", () => {
   });
 
   test("control-ui client can delete sessions even in webchat mode", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-sessions-control-ui-delete-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-sessions-control-ui-delete-"));
     const storePath = path.join(dir, "sessions.json");
     testState.sessionStorePath = storePath;
 

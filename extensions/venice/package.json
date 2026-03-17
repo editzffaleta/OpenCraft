@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/venice-provider",
+  "name": "@opencraft/venice-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Venice provider plugin",
+  "description": "OpenCraft Venice provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

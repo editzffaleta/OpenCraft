@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-OPENCLAW_USER="${OPENCLAW_PODMAN_USER:-opencraft}"
+OPENCRAFT_USER="${OPENCRAFT_PODMAN_USER:-opencraft}"
 
 resolve_user_home() {
   local user="$1"
@@ -31,9 +31,9 @@ resolve_user_home() {
   printf '%s' "$home"
 }
 
-OPENCLAW_HOME="$(resolve_user_home "$OPENCLAW_USER")"
-OPENCLAW_UID="$(id -u "$OPENCLAW_USER" 2>/dev/null || true)"
-LAUNCH_SCRIPT="$OPENCLAW_HOME/run-opencraft-podman.sh"
+OPENCRAFT_HOME="$(resolve_user_home "$OPENCRAFT_USER")"
+OPENCRAFT_UID="$(id -u "$OPENCRAFT_USER" 2>/dev/null || true)"
+LAUNCH_SCRIPT="$OPENCRAFT_HOME/run-opencraft-podman.sh"
 
 # Legacy: setup-host → run setup-podman.sh
 if [[ "${1:-}" == "setup-host" ]]; then
@@ -50,9 +50,9 @@ fi
 # --- Step 2: launch (from repo: re-exec as opencraft in safe cwd; from opencraft home: run container) ---
 if [[ "${1:-}" == "launch" ]]; then
   shift
-  if [[ -n "${OPENCLAW_UID:-}" && "$(id -u)" -ne "$OPENCLAW_UID" ]]; then
+  if [[ -n "${OPENCRAFT_UID:-}" && "$(id -u)" -ne "$OPENCRAFT_UID" ]]; then
     # Exec as opencraft with cwd=/tmp so a nologin user never inherits an invalid cwd.
-    exec sudo -u "$OPENCLAW_USER" env HOME="$OPENCLAW_HOME" PATH="$PATH" TERM="${TERM:-}" \
+    exec sudo -u "$OPENCRAFT_USER" env HOME="$OPENCRAFT_HOME" PATH="$PATH" TERM="${TERM:-}" \
       bash -c 'cd /tmp && exec '"$LAUNCH_SCRIPT"' "$@"' _ "$@"
   fi
   # Already opencraft; fall through to container run (with remaining args, e.g. "setup")
@@ -60,21 +60,21 @@ fi
 
 # --- Container run (script in opencraft home, run as opencraft) ---
 EFFECTIVE_HOME="${HOME:-}"
-if [[ -n "${OPENCLAW_UID:-}" && "$(id -u)" -eq "$OPENCLAW_UID" ]]; then
-  EFFECTIVE_HOME="$OPENCLAW_HOME"
-  export HOME="$OPENCLAW_HOME"
+if [[ -n "${OPENCRAFT_UID:-}" && "$(id -u)" -eq "$OPENCRAFT_UID" ]]; then
+  EFFECTIVE_HOME="$OPENCRAFT_HOME"
+  export HOME="$OPENCRAFT_HOME"
 fi
 if [[ -z "${EFFECTIVE_HOME:-}" ]]; then
-  EFFECTIVE_HOME="${OPENCLAW_HOME:-/tmp}"
+  EFFECTIVE_HOME="${OPENCRAFT_HOME:-/tmp}"
 fi
-CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$EFFECTIVE_HOME/.opencraft}"
-ENV_FILE="${OPENCLAW_PODMAN_ENV:-$CONFIG_DIR/.env}"
-WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$CONFIG_DIR/workspace}"
-CONTAINER_NAME="${OPENCLAW_PODMAN_CONTAINER:-opencraft}"
-OPENCLAW_IMAGE="${OPENCLAW_PODMAN_IMAGE:-opencraft:local}"
-PODMAN_PULL="${OPENCLAW_PODMAN_PULL:-never}"
-HOST_GATEWAY_PORT="${OPENCLAW_PODMAN_GATEWAY_HOST_PORT:-${OPENCLAW_GATEWAY_PORT:-18789}}"
-HOST_BRIDGE_PORT="${OPENCLAW_PODMAN_BRIDGE_HOST_PORT:-${OPENCLAW_BRIDGE_PORT:-18790}}"
+CONFIG_DIR="${OPENCRAFT_CONFIG_DIR:-$EFFECTIVE_HOME/.opencraft}"
+ENV_FILE="${OPENCRAFT_PODMAN_ENV:-$CONFIG_DIR/.env}"
+WORKSPACE_DIR="${OPENCRAFT_WORKSPACE_DIR:-$CONFIG_DIR/workspace}"
+CONTAINER_NAME="${OPENCRAFT_PODMAN_CONTAINER:-opencraft}"
+OPENCRAFT_IMAGE="${OPENCRAFT_PODMAN_IMAGE:-opencraft:local}"
+PODMAN_PULL="${OPENCRAFT_PODMAN_PULL:-never}"
+HOST_GATEWAY_PORT="${OPENCRAFT_PODMAN_GATEWAY_HOST_PORT:-${OPENCRAFT_GATEWAY_PORT:-18789}}"
+HOST_BRIDGE_PORT="${OPENCRAFT_PODMAN_BRIDGE_HOST_PORT:-${OPENCRAFT_BRIDGE_PORT:-18790}}"
 
 # Safe cwd for podman (opencraft is nologin; avoid inherited cwd from sudo)
 cd "$EFFECTIVE_HOME" 2>/dev/null || cd /tmp 2>/dev/null || true
@@ -99,8 +99,8 @@ fi
 
 # Keep Podman default local-only unless explicitly overridden.
 # Non-loopback binds require gateway.controlUi.allowedOrigins (security hardening).
-# NOTE: must be evaluated after sourcing ENV_FILE so OPENCLAW_GATEWAY_BIND set in .env takes effect.
-GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-loopback}"
+# NOTE: must be evaluated after sourcing ENV_FILE so OPENCRAFT_GATEWAY_BIND set in .env takes effect.
+GATEWAY_BIND="${OPENCRAFT_GATEWAY_BIND:-loopback}"
 
 upsert_env_var() {
   local file="$1"
@@ -158,7 +158,7 @@ if [[ ! -f "$CONFIG_JSON" ]]; then
   echo "Created $CONFIG_JSON (minimal gateway.mode=local)." >&2
 fi
 
-PODMAN_USERNS="${OPENCLAW_PODMAN_USERNS:-keep-id}"
+PODMAN_USERNS="${OPENCRAFT_PODMAN_USERNS:-keep-id}"
 USERNS_ARGS=()
 RUN_USER_ARGS=()
 case "$PODMAN_USERNS" in
@@ -166,7 +166,7 @@ case "$PODMAN_USERNS" in
   keep-id) USERNS_ARGS=(--userns=keep-id) ;;
   host) USERNS_ARGS=(--userns=host) ;;
   *)
-    echo "Unsupported OPENCLAW_PODMAN_USERNS=$PODMAN_USERNS (expected: keep-id, auto, host)." >&2
+    echo "Unsupported OPENCRAFT_PODMAN_USERNS=$PODMAN_USERNS (expected: keep-id, auto, host)." >&2
     exit 2
     ;;
 esac
@@ -177,7 +177,7 @@ if [[ "$PODMAN_USERNS" == "keep-id" ]]; then
   RUN_USER_ARGS=(--user "${RUN_UID}:${RUN_GID}")
   echo "Starting container as uid=${RUN_UID} gid=${RUN_GID} (must match owner of $CONFIG_DIR)" >&2
 else
-  echo "Starting container without --user (OPENCLAW_PODMAN_USERNS=$PODMAN_USERNS), mounts may require ownership fixes." >&2
+  echo "Starting container without --user (OPENCRAFT_PODMAN_USERNS=$PODMAN_USERNS), mounts may require ownership fixes." >&2
 fi
 
 ENV_FILE_ARGS=()
@@ -186,7 +186,7 @@ ENV_FILE_ARGS=()
 # On Linux with SELinux enforcing/permissive, add ,Z so Podman relabels the
 # bind-mounted directories and the container can access them.
 SELINUX_MOUNT_OPTS=""
-if [[ -z "${OPENCLAW_BIND_MOUNT_OPTIONS:-}" ]]; then
+if [[ -z "${OPENCRAFT_BIND_MOUNT_OPTIONS:-}" ]]; then
   if [[ "$(uname -s 2>/dev/null)" == "Linux" ]] && command -v getenforce >/dev/null 2>&1; then
     _selinux_mode="$(getenforce 2>/dev/null || true)"
     if [[ "$_selinux_mode" == "Enforcing" || "$_selinux_mode" == "Permissive" ]]; then
@@ -194,8 +194,8 @@ if [[ -z "${OPENCLAW_BIND_MOUNT_OPTIONS:-}" ]]; then
     fi
   fi
 else
-  # Honour explicit override (e.g. OPENCLAW_BIND_MOUNT_OPTIONS=":Z" → strip leading colon for inline use).
-  SELINUX_MOUNT_OPTS="${OPENCLAW_BIND_MOUNT_OPTIONS#:}"
+  # Honour explicit override (e.g. OPENCRAFT_BIND_MOUNT_OPTIONS=":Z" → strip leading colon for inline use).
+  SELINUX_MOUNT_OPTS="${OPENCRAFT_BIND_MOUNT_OPTIONS#:}"
   [[ -n "$SELINUX_MOUNT_OPTS" ]] && SELINUX_MOUNT_OPTS=",$SELINUX_MOUNT_OPTS"
 fi
 
@@ -208,7 +208,7 @@ if [[ "$RUN_SETUP" == true ]]; then
     -v "$CONFIG_DIR:/home/node/.opencraft:rw${SELINUX_MOUNT_OPTS}" \
     -v "$WORKSPACE_DIR:/home/node/.opencraft/workspace:rw${SELINUX_MOUNT_OPTS}" \
     "${ENV_FILE_ARGS[@]}" \
-    "$OPENCLAW_IMAGE" \
+    "$OPENCRAFT_IMAGE" \
     node dist/index.js onboard "$@"
 fi
 
@@ -223,7 +223,7 @@ podman run --pull="$PODMAN_PULL" -d --replace \
   -v "$WORKSPACE_DIR:/home/node/.opencraft/workspace:rw${SELINUX_MOUNT_OPTS}" \
   -p "${HOST_GATEWAY_PORT}:18789" \
   -p "${HOST_BRIDGE_PORT}:18790" \
-  "$OPENCLAW_IMAGE" \
+  "$OPENCRAFT_IMAGE" \
   node dist/index.js gateway --bind "$GATEWAY_BIND" --port 18789
 
 echo "Container $CONTAINER_NAME started. Dashboard: http://127.0.0.1:${HOST_GATEWAY_PORT}/"

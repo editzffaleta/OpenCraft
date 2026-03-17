@@ -5,7 +5,7 @@
 import type { ChannelSetupDmPolicy } from "../../../src/channels/plugins/setup-wizard-types.js";
 import type { ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import type { ChannelSetupAdapter } from "../../../src/channels/plugins/types.adapters.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import { formatDocsLink } from "../../../src/terminal/links.js";
 import type { WizardPrompter } from "../../../src/wizard/prompts.js";
 import { DEFAULT_ACCOUNT_ID, getAccountConfig } from "./config.js";
@@ -15,9 +15,9 @@ import { isAccountConfigured } from "./utils/twitch.js";
 const channel = "twitch" as const;
 
 export function setTwitchAccount(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   account: Partial<TwitchAccountConfig>,
-): OpenClawConfig {
+): OpenCraftConfig {
   const existing = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   const merged: TwitchAccountConfig = {
     username: account.username ?? existing?.username ?? "",
@@ -62,7 +62,7 @@ async function noteTwitchSetupHelp(prompter: WizardPrompter): Promise<void> {
       "2. Generate a token with scopes: chat:read and chat:write",
       "   Use https://twitchtokengenerator.com/ or https://twitchapps.com/tmi/",
       "3. Copy the token (starts with 'oauth:') and Client ID",
-      "Env vars supported: OPENCLAW_TWITCH_ACCESS_TOKEN",
+      "Env vars supported: OPENCRAFT_TWITCH_ACCESS_TOKEN",
       `Docs: ${formatDocsLink("/channels/twitch", "channels/twitch")}`,
     ].join("\n"),
     "Twitch setup",
@@ -178,15 +178,15 @@ export async function promptRefreshTokenSetup(
 }
 
 export async function configureWithEnvToken(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   prompter: WizardPrompter,
   account: TwitchAccountConfig | null,
   envToken: string,
   forceAllowFrom: boolean,
   dmPolicy: ChannelSetupDmPolicy,
-): Promise<{ cfg: OpenClawConfig } | null> {
+): Promise<{ cfg: OpenCraftConfig } | null> {
   const useEnv = await prompter.confirm({
-    message: "Twitch env var OPENCLAW_TWITCH_ACCESS_TOKEN detected. Use env token?",
+    message: "Twitch env var OPENCRAFT_TWITCH_ACCESS_TOKEN detected. Use env token?",
     initialValue: true,
   });
   if (!useEnv) {
@@ -211,10 +211,10 @@ export async function configureWithEnvToken(
 }
 
 function setTwitchAccessControl(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   allowedRoles: TwitchRole[],
   requireMention: boolean,
-): OpenClawConfig {
+): OpenCraftConfig {
   const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   if (!account) {
     return cfg;
@@ -227,7 +227,7 @@ function setTwitchAccessControl(
   });
 }
 
-function resolveTwitchGroupPolicy(cfg: OpenClawConfig): "open" | "allowlist" | "disabled" {
+function resolveTwitchGroupPolicy(cfg: OpenCraftConfig): "open" | "allowlist" | "disabled" {
   const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   if (account?.allowedRoles?.includes("all")) {
     return "open";
@@ -239,9 +239,9 @@ function resolveTwitchGroupPolicy(cfg: OpenClawConfig): "open" | "allowlist" | "
 }
 
 function setTwitchGroupPolicy(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   policy: "open" | "allowlist" | "disabled",
-): OpenClawConfig {
+): OpenCraftConfig {
   const allowedRoles: TwitchRole[] =
     policy === "open" ? ["all"] : policy === "allowlist" ? ["moderator", "vip"] : [];
   return setTwitchAccessControl(cfg, allowedRoles, true);
@@ -253,7 +253,7 @@ const twitchDmPolicy: ChannelSetupDmPolicy = {
   policyKey: "channels.twitch.allowedRoles",
   allowFromKey: "channels.twitch.accounts.default.allowFrom",
   getCurrent: (cfg) => {
-    const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+    const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
     if (account?.allowedRoles?.includes("all")) {
       return "open";
     }
@@ -265,10 +265,10 @@ const twitchDmPolicy: ChannelSetupDmPolicy = {
   setPolicy: (cfg, policy) => {
     const allowedRoles: TwitchRole[] =
       policy === "open" ? ["all"] : policy === "allowlist" ? [] : ["moderator"];
-    return setTwitchAccessControl(cfg as OpenClawConfig, allowedRoles, true);
+    return setTwitchAccessControl(cfg as OpenCraftConfig, allowedRoles, true);
   },
   promptAllowFrom: async ({ cfg, prompter }) => {
-    const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+    const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
     const existingAllowFrom = account?.allowFrom ?? [];
 
     const entry = await prompter.text({
@@ -282,7 +282,7 @@ const twitchDmPolicy: ChannelSetupDmPolicy = {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    return setTwitchAccount(cfg as OpenClawConfig, {
+    return setTwitchAccount(cfg as OpenCraftConfig, {
       ...(account ?? undefined),
       allowFrom,
     });
@@ -293,18 +293,18 @@ const twitchGroupAccess: NonNullable<ChannelSetupWizard["groupAccess"]> = {
   label: "Twitch chat",
   placeholder: "",
   skipAllowlistEntries: true,
-  currentPolicy: ({ cfg }) => resolveTwitchGroupPolicy(cfg as OpenClawConfig),
+  currentPolicy: ({ cfg }) => resolveTwitchGroupPolicy(cfg as OpenCraftConfig),
   currentEntries: ({ cfg }) => {
-    const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+    const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
     return account?.allowFrom ?? [];
   },
   updatePrompt: ({ cfg }) => {
-    const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+    const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
     return Boolean(account?.allowedRoles?.length || account?.allowFrom?.length);
   },
-  setPolicy: ({ cfg, policy }) => setTwitchGroupPolicy(cfg as OpenClawConfig, policy),
+  setPolicy: ({ cfg, policy }) => setTwitchGroupPolicy(cfg as OpenCraftConfig, policy),
   resolveAllowlist: async () => [],
-  applyAllowlist: ({ cfg }) => cfg as OpenClawConfig,
+  applyAllowlist: ({ cfg }) => cfg as OpenCraftConfig,
 };
 
 export const twitchSetupAdapter: ChannelSetupAdapter = {
@@ -325,28 +325,28 @@ export const twitchSetupWizard: ChannelSetupWizard = {
     configuredHint: "configured",
     unconfiguredHint: "needs setup",
     resolveConfigured: ({ cfg }) => {
-      const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+      const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
       return account ? isAccountConfigured(account) : false;
     },
     resolveStatusLines: ({ cfg }) => {
-      const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+      const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
       const configured = account ? isAccountConfigured(account) : false;
       return [`Twitch: ${configured ? "configured" : "needs username, token, and clientId"}`];
     },
   },
   credentials: [],
   finalize: async ({ cfg, prompter, forceAllowFrom }) => {
-    const account = getAccountConfig(cfg as OpenClawConfig, DEFAULT_ACCOUNT_ID);
+    const account = getAccountConfig(cfg as OpenCraftConfig, DEFAULT_ACCOUNT_ID);
 
     if (!account || !isAccountConfigured(account)) {
       await noteTwitchSetupHelp(prompter);
     }
 
-    const envToken = process.env.OPENCLAW_TWITCH_ACCESS_TOKEN?.trim();
+    const envToken = process.env.OPENCRAFT_TWITCH_ACCESS_TOKEN?.trim();
 
     if (envToken && !account?.accessToken) {
       const envResult = await configureWithEnvToken(
-        cfg as OpenClawConfig,
+        cfg as OpenCraftConfig,
         prompter,
         account,
         envToken,
@@ -364,7 +364,7 @@ export const twitchSetupWizard: ChannelSetupWizard = {
     const channelName = await promptChannelName(prompter, account);
     const { clientSecret, refreshToken } = await promptRefreshTokenSetup(prompter, account);
 
-    const cfgWithAccount = setTwitchAccount(cfg as OpenClawConfig, {
+    const cfgWithAccount = setTwitchAccount(cfg as OpenCraftConfig, {
       username,
       accessToken: token,
       clientId,

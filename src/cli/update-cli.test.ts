@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig, ConfigFileSnapshot } from "../config/types.openclaw.js";
+import type { OpenCraftConfig, ConfigFileSnapshot } from "../config/types.opencraft.js";
 import type { UpdateRunResult } from "../infra/update-runner.js";
 import { withEnvAsync } from "../test-utils/env.js";
 
@@ -37,8 +37,8 @@ vi.mock("../infra/update-runner.js", () => ({
   runGatewayUpdate: vi.fn(),
 }));
 
-vi.mock("../infra/openclaw-root.js", () => ({
-  resolveOpenClawPackageRoot: vi.fn(),
+vi.mock("../infra/opencraft-root.js", () => ({
+  resolveOpenCraftPackageRoot: vi.fn(),
 }));
 
 vi.mock("../config/config.js", () => ({
@@ -137,7 +137,7 @@ vi.mock("../runtime.js", () => ({
 }));
 
 const { runGatewayUpdate } = await import("../infra/update-runner.js");
-const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
+const { resolveOpenCraftPackageRoot } = await import("../infra/opencraft-root.js");
 const { readConfigFileSnapshot, writeConfigFile } = await import("../config/config.js");
 const { checkUpdateStatus, fetchNpmTagVersion, resolveNpmChannelTag } =
   await import("../infra/update-check.js");
@@ -148,7 +148,7 @@ const { defaultRuntime } = await import("../runtime.js");
 const { updateCommand, updateStatusCommand, updateWizardCommand } = await import("./update-cli.js");
 
 describe("update-cli", () => {
-  const fixtureRoot = "/tmp/openclaw-update-tests";
+  const fixtureRoot = "/tmp/opencraft-update-tests";
   let fixtureCount = 0;
 
   const createCaseDir = (prefix: string) => {
@@ -157,9 +157,9 @@ describe("update-cli", () => {
     return dir;
   };
 
-  const baseConfig = {} as OpenClawConfig;
+  const baseConfig = {} as OpenCraftConfig;
   const baseSnapshot: ConfigFileSnapshot = {
-    path: "/tmp/openclaw-config.json",
+    path: "/tmp/opencraft-config.json",
     exists: true,
     raw: "{}",
     parsed: {},
@@ -186,7 +186,7 @@ describe("update-cli", () => {
   };
 
   const mockPackageInstallStatus = (root: string) => {
-    vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(root);
+    vi.mocked(resolveOpenCraftPackageRoot).mockResolvedValue(root);
     vi.mocked(checkUpdateStatus).mockResolvedValue({
       root,
       installKind: "package",
@@ -236,7 +236,7 @@ describe("update-cli", () => {
   };
 
   const setupNonInteractiveDowngrade = async () => {
-    const tempDir = createCaseDir("openclaw-update");
+    const tempDir = createCaseDir("opencraft-update");
     setTty(false);
     readPackageVersion.mockResolvedValue("2.0.0");
 
@@ -259,7 +259,7 @@ describe("update-cli", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(process.cwd());
+    vi.mocked(resolveOpenCraftPackageRoot).mockResolvedValue(process.cwd());
     vi.mocked(readConfigFileSnapshot).mockResolvedValue(baseSnapshot);
     vi.mocked(fetchNpmTagVersion).mockResolvedValue({
       tag: "latest",
@@ -302,7 +302,7 @@ describe("update-cli", () => {
       killed: false,
       termination: "exit",
     });
-    readPackageName.mockResolvedValue("openclaw");
+    readPackageName.mockResolvedValue("opencraft");
     readPackageVersion.mockResolvedValue("1.0.0");
     resolveGlobalManager.mockResolvedValue("npm");
     serviceLoaded.mockResolvedValue(false);
@@ -311,12 +311,12 @@ describe("update-cli", () => {
       pid: 4242,
       state: "running",
     });
-    prepareRestartScript.mockResolvedValue("/tmp/openclaw-restart-test.sh");
+    prepareRestartScript.mockResolvedValue("/tmp/opencraft-restart-test.sh");
     runRestartScript.mockResolvedValue(undefined);
     inspectPortUsage.mockResolvedValue({
       port: 18789,
       status: "busy",
-      listeners: [{ pid: 4242, command: "openclaw-gateway" }],
+      listeners: [{ pid: 4242, command: "opencraft-gateway" }],
       hints: [],
     });
     classifyPortListener.mockReturnValue("gateway");
@@ -368,7 +368,7 @@ describe("update-cli", () => {
     await updateStatusCommand({ json: false });
 
     const logs = vi.mocked(defaultRuntime.log).mock.calls.map((call) => call[0]);
-    expect(logs.join("\n")).toContain("OpenClaw update status");
+    expect(logs.join("\n")).toContain("OpenCraft update status");
   });
 
   it("updateStatusCommand emits JSON", async () => {
@@ -393,7 +393,7 @@ describe("update-cli", () => {
       name: "defaults to stable channel for package installs when unset",
       options: { yes: true },
       prepare: async () => {
-        const tempDir = createCaseDir("openclaw-update");
+        const tempDir = createCaseDir("opencraft-update");
         mockPackageInstallStatus(tempDir);
       },
       expectedChannel: undefined as "stable" | undefined,
@@ -406,7 +406,7 @@ describe("update-cli", () => {
       prepare: async () => {
         vi.mocked(readConfigFileSnapshot).mockResolvedValue({
           ...baseSnapshot,
-          config: { update: { channel: "beta" } } as OpenClawConfig,
+          config: { update: { channel: "beta" } } as OpenCraftConfig,
         });
       },
       expectedChannel: "beta" as const,
@@ -430,18 +430,18 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@latest", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@latest", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
 
   it("falls back to latest when beta tag is older than release", async () => {
-    const tempDir = createCaseDir("openclaw-update");
+    const tempDir = createCaseDir("opencraft-update");
 
     mockPackageInstallStatus(tempDir);
     vi.mocked(readConfigFileSnapshot).mockResolvedValue({
       ...baseSnapshot,
-      config: { update: { channel: "beta" } } as OpenClawConfig,
+      config: { update: { channel: "beta" } } as OpenCraftConfig,
     });
     vi.mocked(resolveNpmChannelTag).mockResolvedValue({
       tag: "latest",
@@ -451,13 +451,13 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@latest", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@latest", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
 
   it("honors --tag override", async () => {
-    const tempDir = createCaseDir("openclaw-update");
+    const tempDir = createCaseDir("opencraft-update");
 
     mockPackageInstallStatus(tempDir);
 
@@ -465,18 +465,18 @@ describe("update-cli", () => {
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
-      ["npm", "i", "-g", "openclaw@next", "--no-fund", "--no-audit", "--loglevel=error"],
+      ["npm", "i", "-g", "opencraft@next", "--no-fund", "--no-audit", "--loglevel=error"],
       expect.any(Object),
     );
   });
 
   it("prepends portable Git PATH for package updates on Windows", async () => {
     const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("win32");
-    const tempDir = createCaseDir("openclaw-update");
-    const localAppData = createCaseDir("openclaw-localappdata");
+    const tempDir = createCaseDir("opencraft-update");
+    const localAppData = createCaseDir("opencraft-localappdata");
     const portableGitMingw = path.join(
       localAppData,
-      "OpenClaw",
+      "OpenCraft",
       "deps",
       "portable-git",
       "mingw64",
@@ -484,7 +484,7 @@ describe("update-cli", () => {
     );
     const portableGitUsr = path.join(
       localAppData,
-      "OpenClaw",
+      "OpenCraft",
       "deps",
       "portable-git",
       "usr",
@@ -523,12 +523,12 @@ describe("update-cli", () => {
     expect(updateOptions?.env?.NODE_LLAMA_CPP_SKIP_DOWNLOAD).toBe("1");
   });
 
-  it("uses OPENCLAW_UPDATE_PACKAGE_SPEC for package updates", async () => {
-    const tempDir = createCaseDir("openclaw-update");
+  it("uses OPENCRAFT_UPDATE_PACKAGE_SPEC for package updates", async () => {
+    const tempDir = createCaseDir("opencraft-update");
     mockPackageInstallStatus(tempDir);
 
     await withEnvAsync(
-      { OPENCLAW_UPDATE_PACKAGE_SPEC: "http://10.211.55.2:8138/openclaw-next.tgz" },
+      { OPENCRAFT_UPDATE_PACKAGE_SPEC: "http://10.211.55.2:8138/opencraft-next.tgz" },
       async () => {
         await updateCommand({ yes: true, tag: "latest" });
       },
@@ -540,7 +540,7 @@ describe("update-cli", () => {
         "npm",
         "i",
         "-g",
-        "http://10.211.55.2:8138/openclaw-next.tgz",
+        "http://10.211.55.2:8138/opencraft-next.tgz",
         "--no-fund",
         "--no-audit",
         "--loglevel=error",
@@ -550,7 +550,7 @@ describe("update-cli", () => {
   });
 
   it("maps --tag main to the GitHub main package spec for package updates", async () => {
-    const tempDir = createCaseDir("openclaw-update");
+    const tempDir = createCaseDir("opencraft-update");
     mockPackageInstallStatus(tempDir);
 
     await updateCommand({ yes: true, tag: "main" });
@@ -561,7 +561,7 @@ describe("update-cli", () => {
         "npm",
         "i",
         "-g",
-        "github:openclaw/openclaw#main",
+        "github:editzffaleta/OpenCraft#main",
         "--no-fund",
         "--no-audit",
         "--loglevel=error",
@@ -571,10 +571,10 @@ describe("update-cli", () => {
   });
 
   it("passes explicit git package specs through for package updates", async () => {
-    const tempDir = createCaseDir("openclaw-update");
+    const tempDir = createCaseDir("opencraft-update");
     mockPackageInstallStatus(tempDir);
 
-    await updateCommand({ yes: true, tag: "github:openclaw/openclaw#main" });
+    await updateCommand({ yes: true, tag: "github:editzffaleta/OpenCraft#main" });
 
     expect(runGatewayUpdate).not.toHaveBeenCalled();
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
@@ -582,7 +582,7 @@ describe("update-cli", () => {
         "npm",
         "i",
         "-g",
-        "github:openclaw/openclaw#main",
+        "github:editzffaleta/OpenCraft#main",
         "--no-fund",
         "--no-audit",
         "--loglevel=error",
@@ -649,7 +649,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand refreshes service env from updated install root when available", async () => {
-    const root = createCaseDir("openclaw-updated-root");
+    const root = createCaseDir("opencraft-updated-root");
     const entryPath = path.join(root, "dist", "entry.js");
     pathExists.mockImplementation(async (candidate: string) => candidate === entryPath);
 
@@ -673,7 +673,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand preserves invocation-relative service env overrides during refresh", async () => {
-    const root = createCaseDir("openclaw-updated-root");
+    const root = createCaseDir("opencraft-updated-root");
     const entryPath = path.join(root, "dist", "entry.js");
     pathExists.mockImplementation(async (candidate: string) => candidate === entryPath);
 
@@ -688,8 +688,8 @@ describe("update-cli", () => {
 
     await withEnvAsync(
       {
-        OPENCLAW_STATE_DIR: "./state",
-        OPENCLAW_CONFIG_PATH: "./config/openclaw.json",
+        OPENCRAFT_STATE_DIR: "./state",
+        OPENCRAFT_CONFIG_PATH: "./config/opencraft.json",
       },
       async () => {
         await updateCommand({});
@@ -701,8 +701,8 @@ describe("update-cli", () => {
       expect.objectContaining({
         cwd: root,
         env: expect.objectContaining({
-          OPENCLAW_STATE_DIR: path.resolve("./state"),
-          OPENCLAW_CONFIG_PATH: path.resolve("./config/openclaw.json"),
+          OPENCRAFT_STATE_DIR: path.resolve("./state"),
+          OPENCRAFT_CONFIG_PATH: path.resolve("./config/opencraft.json"),
         }),
         timeoutMs: 60_000,
       }),
@@ -711,7 +711,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand reuses the captured invocation cwd when process.cwd later fails", async () => {
-    const root = createCaseDir("openclaw-updated-root");
+    const root = createCaseDir("opencraft-updated-root");
     const entryPath = path.join(root, "dist", "entry.js");
     pathExists.mockImplementation(async (candidate: string) => candidate === entryPath);
 
@@ -735,7 +735,7 @@ describe("update-cli", () => {
     try {
       await withEnvAsync(
         {
-          OPENCLAW_STATE_DIR: "./state",
+          OPENCRAFT_STATE_DIR: "./state",
         },
         async () => {
           await updateCommand({});
@@ -750,7 +750,7 @@ describe("update-cli", () => {
       expect.objectContaining({
         cwd: root,
         env: expect.objectContaining({
-          OPENCLAW_STATE_DIR: path.resolve(originalCwd, "./state"),
+          OPENCRAFT_STATE_DIR: path.resolve(originalCwd, "./state"),
         }),
         timeoutMs: 60_000,
       }),
@@ -780,7 +780,7 @@ describe("update-cli", () => {
   it("updateCommand continues after doctor sub-step and clears update flag", async () => {
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
     try {
-      await withEnvAsync({ OPENCLAW_UPDATE_IN_PROGRESS: undefined }, async () => {
+      await withEnvAsync({ OPENCRAFT_UPDATE_IN_PROGRESS: undefined }, async () => {
         vi.mocked(runGatewayUpdate).mockResolvedValue(makeOkUpdateResult());
         vi.mocked(runDaemonRestart).mockResolvedValue(true);
         vi.mocked(doctorCommand).mockResolvedValue(undefined);
@@ -792,7 +792,7 @@ describe("update-cli", () => {
           defaultRuntime,
           expect.objectContaining({ nonInteractive: true }),
         );
-        expect(process.env.OPENCLAW_UPDATE_IN_PROGRESS).toBeUndefined();
+        expect(process.env.OPENCRAFT_UPDATE_IN_PROGRESS).toBeUndefined();
 
         const logLines = vi.mocked(defaultRuntime.log).mock.calls.map((call) => String(call[0]));
         expect(
@@ -912,8 +912,8 @@ describe("update-cli", () => {
   });
 
   it("updateWizardCommand offers dev checkout and forwards selections", async () => {
-    const tempDir = createCaseDir("openclaw-update-wizard");
-    await withEnvAsync({ OPENCLAW_GIT_DIR: tempDir }, async () => {
+    const tempDir = createCaseDir("opencraft-update-wizard");
+    await withEnvAsync({ OPENCRAFT_GIT_DIR: tempDir }, async () => {
       setTty(true);
 
       vi.mocked(checkUpdateStatus).mockResolvedValue({

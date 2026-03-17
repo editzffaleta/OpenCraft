@@ -2,7 +2,7 @@ import type { MsgContext } from "../../auto-reply/templating.js";
 import type { ChatType } from "../../channels/chat-type.js";
 import { getChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelId } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { recordSessionMetaFromInbound, resolveStorePath } from "../../config/sessions.js";
 import { buildAgentSessionKey, type RoutePeer } from "../../routing/resolve-route.js";
 import { resolveThreadSessionKeys } from "../../routing/session-key.js";
@@ -20,7 +20,7 @@ export type OutboundSessionRoute = {
 };
 
 export type ResolveOutboundSessionRouteParams = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   channel: ChannelId;
   agentId: string;
   accountId?: string | null;
@@ -83,7 +83,7 @@ function inferPeerKind(params: {
 }
 
 function buildBaseSessionKey(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   channel: ChannelId;
   accountId?: string | null;
@@ -605,7 +605,7 @@ export async function resolveOutboundSessionRoute(
 }
 
 export async function ensureOutboundSessionEntry(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentId: string;
   channel: ChannelId;
   accountId?: string | null;

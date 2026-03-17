@@ -1,6 +1,6 @@
 import { Routes } from "discord-api-types/v10";
 import { resolveThreadBindingConversationIdFromBindingId } from "../../../../src/channels/thread-binding-id.js";
-import { getRuntimeConfigSnapshot, type OpenClawConfig } from "../../../../src/config/config.js";
+import { getRuntimeConfigSnapshot, type OpenCraftConfig } from "../../../../src/config/config.js";
 import { logVerbose } from "../../../../src/globals.js";
 import {
   registerSessionBindingAdapter,
@@ -172,7 +172,7 @@ export function createThreadBindingManager(
   params: {
     accountId?: string;
     token?: string;
-    cfg?: OpenClawConfig;
+    cfg?: OpenCraftConfig;
     persist?: boolean;
     enableSweeper?: boolean;
     idleTimeoutMs?: number;

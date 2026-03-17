@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { captureEnv } from "../test-utils/env.js";
 import { isRecord } from "../utils.js";
 import { loadEnabledBundleMcpConfig } from "./bundle-mcp.js";
@@ -29,16 +29,16 @@ afterEach(async () => {
 
 describe("loadEnabledBundleMcpConfig", () => {
   it("loads enabled Claude bundle MCP config and absolutizes relative args", async () => {
-    const env = captureEnv(["HOME", "USERPROFILE", "OPENCLAW_HOME", "OPENCLAW_STATE_DIR"]);
+    const env = captureEnv(["HOME", "USERPROFILE", "OPENCRAFT_HOME", "OPENCRAFT_STATE_DIR"]);
     try {
-      const homeDir = await createTempDir("openclaw-bundle-mcp-home-");
-      const workspaceDir = await createTempDir("openclaw-bundle-mcp-workspace-");
+      const homeDir = await createTempDir("opencraft-bundle-mcp-home-");
+      const workspaceDir = await createTempDir("opencraft-bundle-mcp-workspace-");
       process.env.HOME = homeDir;
       process.env.USERPROFILE = homeDir;
-      delete process.env.OPENCLAW_HOME;
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.OPENCRAFT_HOME;
+      delete process.env.OPENCRAFT_STATE_DIR;
 
-      const pluginRoot = path.join(homeDir, ".openclaw", "extensions", "bundle-probe");
+      const pluginRoot = path.join(homeDir, ".opencraft", "extensions", "bundle-probe");
       const serverPath = path.join(pluginRoot, "servers", "probe.mjs");
       await fs.mkdir(path.join(pluginRoot, ".claude-plugin"), { recursive: true });
       await fs.mkdir(path.dirname(serverPath), { recursive: true });
@@ -65,7 +65,7 @@ describe("loadEnabledBundleMcpConfig", () => {
         "utf-8",
       );
 
-      const config: OpenClawConfig = {
+      const config: OpenCraftConfig = {
         plugins: {
           entries: {
             "bundle-probe": { enabled: true },
@@ -96,17 +96,17 @@ describe("loadEnabledBundleMcpConfig", () => {
   });
 
   it("merges inline bundle MCP servers and skips disabled bundles", async () => {
-    const env = captureEnv(["HOME", "USERPROFILE", "OPENCLAW_HOME", "OPENCLAW_STATE_DIR"]);
+    const env = captureEnv(["HOME", "USERPROFILE", "OPENCRAFT_HOME", "OPENCRAFT_STATE_DIR"]);
     try {
-      const homeDir = await createTempDir("openclaw-bundle-inline-home-");
-      const workspaceDir = await createTempDir("openclaw-bundle-inline-workspace-");
+      const homeDir = await createTempDir("opencraft-bundle-inline-home-");
+      const workspaceDir = await createTempDir("opencraft-bundle-inline-workspace-");
       process.env.HOME = homeDir;
       process.env.USERPROFILE = homeDir;
-      delete process.env.OPENCLAW_HOME;
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.OPENCRAFT_HOME;
+      delete process.env.OPENCRAFT_STATE_DIR;
 
-      const enabledRoot = path.join(homeDir, ".openclaw", "extensions", "inline-enabled");
-      const disabledRoot = path.join(homeDir, ".openclaw", "extensions", "inline-disabled");
+      const enabledRoot = path.join(homeDir, ".opencraft", "extensions", "inline-enabled");
+      const disabledRoot = path.join(homeDir, ".opencraft", "extensions", "inline-disabled");
       await fs.mkdir(path.join(enabledRoot, ".claude-plugin"), { recursive: true });
       await fs.mkdir(path.join(disabledRoot, ".claude-plugin"), { recursive: true });
       await fs.writeFile(
@@ -144,7 +144,7 @@ describe("loadEnabledBundleMcpConfig", () => {
         "utf-8",
       );
 
-      const config: OpenClawConfig = {
+      const config: OpenCraftConfig = {
         plugins: {
           entries: {
             "inline-enabled": { enabled: true },

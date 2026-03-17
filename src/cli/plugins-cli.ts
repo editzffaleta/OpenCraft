@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Command } from "commander";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { loadConfig, writeConfigFile } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolveArchiveKind } from "../infra/archive.js";
@@ -106,7 +106,7 @@ function formatPluginLine(plugin: PluginRecord, verbose = false): string {
           : plugin.description,
       )
     : theme.muted("(no description)");
-  const format = plugin.format ?? "openclaw";
+  const format = plugin.format ?? "opencraft";
 
   if (!verbose) {
     return `${name}${idSuffix} ${status} ${theme.muted(`[${format}]`)} - ${desc}`;
@@ -134,9 +134,9 @@ function formatPluginLine(plugin: PluginRecord, verbose = false): string {
 }
 
 function applySlotSelectionForPlugin(
-  config: OpenClawConfig,
+  config: OpenCraftConfig,
   pluginId: string,
-): { config: OpenClawConfig; warnings: string[] } {
+): { config: OpenCraftConfig; warnings: string[] } {
   const report = buildPluginStatusReport({ config });
   const plugin = report.plugins.find((entry) => entry.id === pluginId);
   if (!plugin) {
@@ -168,14 +168,14 @@ function logSlotWarnings(warnings: string[]) {
 }
 
 async function installBundledPluginSource(params: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   rawSpec: string;
   bundledSource: BundledPluginSource;
   warning: string;
 }) {
   const existing = params.config.plugins?.load?.paths ?? [];
   const mergedPaths = Array.from(new Set([...existing, params.bundledSource.localPath]));
-  let next: OpenClawConfig = {
+  let next: OpenCraftConfig = {
     ...params.config,
     plugins: {
       ...params.config.plugins,
@@ -290,7 +290,7 @@ async function runPluginInstallCommand(params: {
         process.exit(1);
       }
 
-      let next: OpenClawConfig = enablePluginInConfig(
+      let next: OpenCraftConfig = enablePluginInConfig(
         {
           ...cfg,
           plugins: {
@@ -434,11 +434,11 @@ async function runPluginInstallCommand(params: {
 export function registerPluginsCli(program: Command) {
   const plugins = program
     .command("plugins")
-    .description("Manage OpenClaw plugins and extensions")
+    .description("Manage OpenCraft plugins and extensions")
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/plugins", "docs.openclaw.ai/cli/plugins")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/plugins", "docs.opencraft.ai/cli/plugins")}\n`,
     );
 
   plugins
@@ -489,7 +489,7 @@ export function registerPluginsCli(program: Command) {
           return {
             Name: plugin.name || plugin.id,
             ID: plugin.name && plugin.name !== plugin.id ? plugin.id : "",
-            Format: plugin.format ?? "openclaw",
+            Format: plugin.format ?? "opencraft",
             Status:
               plugin.status === "loaded"
                 ? theme.success("loaded")
@@ -571,7 +571,7 @@ export function registerPluginsCli(program: Command) {
       }
       lines.push("");
       lines.push(`${theme.muted("Status:")} ${plugin.status}`);
-      lines.push(`${theme.muted("Format:")} ${plugin.format ?? "openclaw"}`);
+      lines.push(`${theme.muted("Format:")} ${plugin.format ?? "opencraft"}`);
       if (plugin.bundleFormat) {
         lines.push(`${theme.muted("Bundle format:")} ${plugin.bundleFormat}`);
       }
@@ -635,7 +635,7 @@ export function registerPluginsCli(program: Command) {
     .action(async (id: string) => {
       const cfg = loadConfig();
       const enableResult = enablePluginInConfig(cfg, id);
-      let next: OpenClawConfig = enableResult.config;
+      let next: OpenCraftConfig = enableResult.config;
       const slotResult = applySlotSelectionForPlugin(next, id);
       next = slotResult.config;
       await writeConfigFile(next);
@@ -906,7 +906,7 @@ export function registerPluginsCli(program: Command) {
           lines.push(`- ${target}${diag.message}`);
         }
       }
-      const docs = formatDocsLink("/plugin", "docs.openclaw.ai/plugin");
+      const docs = formatDocsLink("/plugin", "docs.opencraft.ai/plugin");
       lines.push("");
       lines.push(`${theme.muted("Docs:")} ${docs}`);
       defaultRuntime.log(lines.join("\n"));

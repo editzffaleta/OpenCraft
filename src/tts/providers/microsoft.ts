@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
-import { resolvePreferredOpenClawTmpDir } from "../../infra/tmp-openclaw-dir.js";
+import { resolvePreferredOpenCraftTmpDir } from "../../infra/tmp-opencraft-dir.js";
 import { isVoiceCompatibleAudio } from "../../media/audio.js";
 import type { SpeechProviderPlugin } from "../../plugins/types.js";
 import { edgeTTS, inferEdgeExtension } from "../tts-core.js";
@@ -14,7 +14,7 @@ export function buildMicrosoftSpeechProvider(): SpeechProviderPlugin {
     aliases: ["edge"],
     isConfigured: ({ config }) => config.edge.enabled,
     synthesize: async (req) => {
-      const tempRoot = resolvePreferredOpenClawTmpDir();
+      const tempRoot = resolvePreferredOpenCraftTmpDir();
       mkdirSync(tempRoot, { recursive: true, mode: 0o700 });
       const tempDir = mkdtempSync(path.join(tempRoot, "tts-microsoft-"));
       let outputFormat = req.config.edge.outputFormat;

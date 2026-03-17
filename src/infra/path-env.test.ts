@@ -33,13 +33,13 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...wrapped, default: wrapped };
 });
 
-let ensureOpenClawCliOnPath: typeof import("./path-env.js").ensureOpenClawCliOnPath;
+let ensureOpenCraftCliOnPath: typeof import("./path-env.js").ensureOpenCraftCliOnPath;
 
-describe("ensureOpenClawCliOnPath", () => {
+describe("ensureOpenCraftCliOnPath", () => {
   const envKeys = [
     "PATH",
-    "OPENCLAW_PATH_BOOTSTRAPPED",
-    "OPENCLAW_ALLOW_PROJECT_LOCAL_BIN",
+    "OPENCRAFT_PATH_BOOTSTRAPPED",
+    "OPENCRAFT_ALLOW_PROJECT_LOCAL_BIN",
     "MISE_DATA_DIR",
     "HOMEBREW_PREFIX",
     "HOMEBREW_BREW_FILE",
@@ -48,7 +48,7 @@ describe("ensureOpenClawCliOnPath", () => {
   let envSnapshot: Record<(typeof envKeys)[number], string | undefined>;
 
   beforeAll(async () => {
-    ({ ensureOpenClawCliOnPath } = await import("./path-env.js"));
+    ({ ensureOpenCraftCliOnPath } = await import("./path-env.js"));
   });
 
   beforeEach(() => {
@@ -73,9 +73,9 @@ describe("ensureOpenClawCliOnPath", () => {
   });
 
   function setupAppCliRoot(name: string) {
-    const tmp = abs(`/tmp/openclaw-path/${name}`);
+    const tmp = abs(`/tmp/opencraft-path/${name}`);
     const appBinDir = path.join(tmp, "AppBin");
-    const appCli = path.join(appBinDir, "openclaw");
+    const appCli = path.join(appBinDir, "opencraft");
     setDir(tmp);
     setDir(appBinDir);
     setExe(appCli);
@@ -89,14 +89,14 @@ describe("ensureOpenClawCliOnPath", () => {
     platform: NodeJS.Platform;
     allowProjectLocalBin?: boolean;
   }) {
-    ensureOpenClawCliOnPath(params);
+    ensureOpenCraftCliOnPath(params);
     return (process.env.PATH ?? "").split(path.delimiter);
   }
 
-  it("prepends the bundled app bin dir when a sibling openclaw exists", () => {
+  it("prepends the bundled app bin dir when a sibling opencraft exists", () => {
     const { tmp, appBinDir, appCli } = setupAppCliRoot("case-bundled");
     process.env.PATH = "/usr/bin";
-    delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
+    delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
 
     const updated = bootstrapPath({
       execPath: appCli,
@@ -109,8 +109,8 @@ describe("ensureOpenClawCliOnPath", () => {
 
   it("is idempotent", () => {
     process.env.PATH = "/bin";
-    process.env.OPENCLAW_PATH_BOOTSTRAPPED = "1";
-    ensureOpenClawCliOnPath({
+    process.env.OPENCRAFT_PATH_BOOTSTRAPPED = "1";
+    ensureOpenCraftCliOnPath({
       execPath: "/tmp/does-not-matter",
       cwd: "/tmp",
       homeDir: "/tmp",
@@ -128,7 +128,7 @@ describe("ensureOpenClawCliOnPath", () => {
 
     process.env.MISE_DATA_DIR = miseDataDir;
     process.env.PATH = "/usr/bin";
-    delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
+    delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
 
     const updated = bootstrapPath({
       execPath: appCli,
@@ -158,14 +158,14 @@ describe("ensureOpenClawCliOnPath", () => {
     ({ envValue, allowProjectLocalBin }) => {
       const { tmp, appCli } = setupAppCliRoot("case-project-local");
       const localBinDir = path.join(tmp, "node_modules", ".bin");
-      const localCli = path.join(localBinDir, "openclaw");
+      const localCli = path.join(localBinDir, "opencraft");
       setDir(path.join(tmp, "node_modules"));
       setDir(localBinDir);
       setExe(localCli);
 
       process.env.PATH = "/usr/bin";
-      delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
-      delete process.env.OPENCLAW_ALLOW_PROJECT_LOCAL_BIN;
+      delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
+      delete process.env.OPENCRAFT_ALLOW_PROJECT_LOCAL_BIN;
 
       const withoutOptIn = bootstrapPath({
         execPath: appCli,
@@ -176,11 +176,11 @@ describe("ensureOpenClawCliOnPath", () => {
       expect(withoutOptIn.includes(localBinDir)).toBe(false);
 
       process.env.PATH = "/usr/bin";
-      delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
+      delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
       if (envValue === undefined) {
-        delete process.env.OPENCLAW_ALLOW_PROJECT_LOCAL_BIN;
+        delete process.env.OPENCRAFT_ALLOW_PROJECT_LOCAL_BIN;
       } else {
-        process.env.OPENCLAW_ALLOW_PROJECT_LOCAL_BIN = envValue;
+        process.env.OPENCRAFT_ALLOW_PROJECT_LOCAL_BIN = envValue;
       }
 
       const withOptIn = bootstrapPath({
@@ -207,7 +207,7 @@ describe("ensureOpenClawCliOnPath", () => {
 
     process.env.PATH = "/usr/bin";
     process.env.XDG_BIN_HOME = xdgBinHome;
-    delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
+    delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
 
     const updated = bootstrapPath({
       execPath: appCli,
@@ -219,7 +219,7 @@ describe("ensureOpenClawCliOnPath", () => {
   });
 
   it("prepends Linuxbrew dirs when present", () => {
-    const tmp = abs("/tmp/openclaw-path/case-linuxbrew");
+    const tmp = abs("/tmp/opencraft-path/case-linuxbrew");
     const execDir = path.join(tmp, "exec");
     setDir(tmp);
     setDir(execDir);
@@ -232,7 +232,7 @@ describe("ensureOpenClawCliOnPath", () => {
     setDir(linuxbrewSbin);
 
     process.env.PATH = "/usr/bin";
-    delete process.env.OPENCLAW_PATH_BOOTSTRAPPED;
+    delete process.env.OPENCRAFT_PATH_BOOTSTRAPPED;
     delete process.env.HOMEBREW_PREFIX;
     delete process.env.HOMEBREW_BREW_FILE;
     delete process.env.XDG_BIN_HOME;

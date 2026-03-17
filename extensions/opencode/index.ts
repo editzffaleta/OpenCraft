@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import { applyOpencodeZenConfig } from "../../src/commands/onboard-auth.config-opencode.js";
 import { OPENCODE_ZEN_DEFAULT_MODEL } from "../../src/commands/opencode-zen-model-default.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
@@ -19,7 +19,7 @@ const opencodePlugin = {
   name: "OpenCode Zen Provider",
   description: "Bundled OpenCode Zen provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "OpenCode Zen",

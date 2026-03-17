@@ -17,7 +17,7 @@ describe("acpx plugin config parsing", () => {
     try {
       fs.mkdirSync(path.join(pluginRoot, "src"), { recursive: true });
       fs.writeFileSync(path.join(pluginRoot, "package.json"), "{}\n", "utf8");
-      fs.writeFileSync(path.join(pluginRoot, "openclaw.plugin.json"), "{}\n", "utf8");
+      fs.writeFileSync(path.join(pluginRoot, "opencraft.plugin.json"), "{}\n", "utf8");
 
       const moduleUrl = pathToFileURL(path.join(pluginRoot, "src", "config.ts")).href;
       expect(resolveAcpxPluginRoot(moduleUrl)).toBe(pluginRoot);
@@ -30,7 +30,7 @@ describe("acpx plugin config parsing", () => {
     const pluginRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acpx-root-dist-"));
     try {
       fs.writeFileSync(path.join(pluginRoot, "package.json"), "{}\n", "utf8");
-      fs.writeFileSync(path.join(pluginRoot, "openclaw.plugin.json"), "{}\n", "utf8");
+      fs.writeFileSync(path.join(pluginRoot, "opencraft.plugin.json"), "{}\n", "utf8");
 
       const moduleUrl = pathToFileURL(path.join(pluginRoot, "index.js")).href;
       expect(resolveAcpxPluginRoot(moduleUrl)).toBe(pluginRoot);
@@ -75,10 +75,12 @@ describe("acpx plugin config parsing", () => {
       rawConfig: {
         command: "../acpx/dist/cli.js",
       },
-      workspaceDir: "/home/user/repos/openclaw",
+      workspaceDir: "/home/user/repos/opencraft",
     });
 
-    expect(resolved.command).toBe(path.resolve("/home/user/repos/openclaw", "../acpx/dist/cli.js"));
+    expect(resolved.command).toBe(
+      path.resolve("/home/user/repos/opencraft", "../acpx/dist/cli.js"),
+    );
     expect(resolved.expectedVersion).toBeUndefined();
     expect(resolved.allowPluginLocalInstall).toBe(false);
     expect(resolved.stripProviderAuthEnvVars).toBe(false);

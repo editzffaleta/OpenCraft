@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "openclaw/plugin-sdk/feishu";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/feishu";
 import { describe, expect, it } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { feishuPlugin } from "./channel.js";
@@ -22,7 +22,7 @@ describe("feishu setup wizard status", () => {
             },
           },
         },
-      } as OpenClawConfig,
+      } as OpenCraftConfig,
       accountOverrides: {},
     });
 

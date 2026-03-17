@@ -108,10 +108,10 @@ export { ACP_ERROR_CODES, AcpRuntimeError } from "../acp/runtime/errors.js";
 export type { AcpRuntimeErrorCode } from "../acp/runtime/errors.js";
 export type {
   AnyAgentTool,
-  OpenClawPluginConfigSchema,
-  OpenClawPluginApi,
-  OpenClawPluginService,
-  OpenClawPluginServiceContext,
+  OpenCraftPluginConfigSchema,
+  OpenCraftPluginApi,
+  OpenCraftPluginService,
+  OpenCraftPluginServiceContext,
   PluginHookInboundClaimContext,
   PluginHookInboundClaimEvent,
   PluginHookInboundClaimResult,
@@ -178,9 +178,9 @@ export type {
 export { normalizePluginHttpPath } from "../plugins/http-path.js";
 export { registerPluginHttpRoute } from "../plugins/http-registry.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
-export type { OpenClawConfig } from "../config/config.js";
-/** @deprecated Use OpenClawConfig instead */
-export type { OpenClawConfig as ClawdbotConfig } from "../config/config.js";
+export type { OpenCraftConfig } from "../config/config.js";
+/** @deprecated Use OpenCraftConfig instead */
+export type { OpenCraftConfig as ClawdbotConfig } from "../config/config.js";
 export { isDangerousNameMatchingEnabled } from "../config/dangerous-name-matching.js";
 
 export type { FileLockHandle, FileLockOptions } from "./file-lock.js";
@@ -427,7 +427,6 @@ export {
 export { detectBinary } from "../commands/onboard-helpers.js";
 export { installSignalCli } from "../commands/signal-install.js";
 export { chunkTextForOutbound } from "./text-chunking.js";
-export { resolveTextChunkLimit } from "../auto-reply/chunk.js";
 export { readBooleanParam } from "./boolean-param.js";
 export { readJsonFileWithFallback, writeJsonFileAtomically } from "./json-store.js";
 export { generatePkceVerifierChallenge, toFormUrlEncoded } from "./oauth-utils.js";
@@ -448,7 +447,7 @@ export type {
   WindowsSpawnProgram,
   WindowsSpawnResolution,
 } from "./windows-spawn.js";
-export { resolvePreferredOpenClawTmpDir } from "../infra/tmp-openclaw-dir.js";
+export { resolvePreferredOpenCraftTmpDir } from "../infra/tmp-opencraft-dir.js";
 export {
   runPluginCommandWithTimeout,
   type PluginCommandRunOptions,
@@ -717,8 +716,6 @@ export type {
   DiagnosticWebhookProcessedEvent,
   DiagnosticWebhookReceivedEvent,
 } from "../infra/diagnostic-events.js";
-export { loadConfig } from "../config/config.js";
-export { runCommandWithTimeout } from "../process/exec.js";
 export { detectMime, extensionForMime, getFileExtension } from "../media/mime.js";
 export { extractOriginalFilename } from "../media/store.js";
 export { listSkillCommandsForAgents } from "../auto-reply/skill-commands.js";

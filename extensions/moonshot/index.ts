@@ -14,7 +14,7 @@ import {
 import { MOONSHOT_DEFAULT_MODEL_REF } from "../../src/commands/onboard-auth.models.js";
 import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
 import { buildMoonshotProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "moonshot";
@@ -24,7 +24,7 @@ const moonshotPlugin = {
   name: "Moonshot Provider",
   description: "Bundled Moonshot provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Moonshot",
@@ -107,7 +107,7 @@ const moonshotPlugin = {
         envVars: ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
         placeholder: "sk-...",
         signupUrl: "https://platform.moonshot.cn/",
-        docsUrl: "https://docs.openclaw.ai/tools/web",
+        docsUrl: "https://docs.opencraft.ai/tools/web",
         autoDetectOrder: 40,
         getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "kimi"),
         setCredentialValue: (searchConfigTarget, value) =>

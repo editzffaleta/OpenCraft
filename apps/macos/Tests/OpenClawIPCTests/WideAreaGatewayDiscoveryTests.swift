@@ -1,6 +1,6 @@
 import Darwin
 import Testing
-@testable import OpenClawDiscovery
+@testable import OpenCraftDiscovery
 
 struct WideAreaGatewayDiscoveryTests {
     @Test func `discovers beacon from tailnet dns sd fallback`() {
@@ -21,7 +21,7 @@ struct WideAreaGatewayDiscoveryTests {
                 let nameserver = args.first(where: { $0.hasPrefix("@") }) ?? ""
                 if recordType == "PTR" {
                     if nameserver == "@100.123.224.76" {
-                        return "steipetacstudio-gateway._openclaw-gw._tcp.openclaw.internal.\n"
+                        return "steipetacstudio-gateway._opencraft-gw._tcp.openclaw.internal.\n"
                     }
                     return ""
                 }

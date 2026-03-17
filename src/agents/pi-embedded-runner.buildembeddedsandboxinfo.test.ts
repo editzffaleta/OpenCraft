@@ -8,7 +8,7 @@ function createSandboxContext(overrides?: Partial<SandboxContext>): SandboxConte
     backendId: "docker",
     sessionKey: "session:test",
     workspaceDir: "/tmp/openclaw-sandbox",
-    agentWorkspaceDir: "/tmp/openclaw-workspace",
+    agentWorkspaceDir: "/tmp/opencraft-workspace",
     workspaceAccess: "none",
     runtimeId: "openclaw-sbx-test",
     runtimeLabel: "openclaw-sbx-test",

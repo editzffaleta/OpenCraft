@@ -1,5 +1,5 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { getChannelPlugin, listChannelPlugins } from "./index.js";
 import type { ChannelMessageCapability } from "./message-capabilities.js";
 import type { ChannelMessageActionContext, ChannelMessageActionName } from "./types.js";
@@ -16,7 +16,7 @@ function requiresTrustedRequesterSender(ctx: ChannelMessageActionContext): boole
   );
 }
 
-export function listChannelMessageActions(cfg: OpenClawConfig): ChannelMessageActionName[] {
+export function listChannelMessageActions(cfg: OpenCraftConfig): ChannelMessageActionName[] {
   const actions = new Set<ChannelMessageActionName>(["send", "broadcast"]);
   for (const plugin of listChannelPlugins()) {
     const list = plugin.actions?.listActions?.({ cfg });
@@ -32,12 +32,12 @@ export function listChannelMessageActions(cfg: OpenClawConfig): ChannelMessageAc
 
 function listCapabilities(
   actions: ChannelActions,
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
 ): readonly ChannelMessageCapability[] {
   return actions.getCapabilities?.({ cfg }) ?? [];
 }
 
-export function listChannelMessageCapabilities(cfg: OpenClawConfig): ChannelMessageCapability[] {
+export function listChannelMessageCapabilities(cfg: OpenCraftConfig): ChannelMessageCapability[] {
   const capabilities = new Set<ChannelMessageCapability>();
   for (const plugin of listChannelPlugins()) {
     if (!plugin.actions) {
@@ -51,7 +51,7 @@ export function listChannelMessageCapabilities(cfg: OpenClawConfig): ChannelMess
 }
 
 export function listChannelMessageCapabilitiesForChannel(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   channel?: string;
 }): ChannelMessageCapability[] {
   if (!params.channel) {
@@ -62,7 +62,7 @@ export function listChannelMessageCapabilitiesForChannel(params: {
 }
 
 export function channelSupportsMessageCapability(
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   capability: ChannelMessageCapability,
 ): boolean {
   return listChannelMessageCapabilities(cfg).includes(capability);
@@ -70,7 +70,7 @@ export function channelSupportsMessageCapability(
 
 export function channelSupportsMessageCapabilityForChannel(
   params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     channel?: string;
   },
   capability: ChannelMessageCapability,

@@ -1,5 +1,5 @@
 import { expect, vi } from "vitest";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { OpenCraftConfig } from "../../../config/config.js";
 import {
   resolveDefaultLineAccountId,
   resolveLineAccount,
@@ -19,7 +19,7 @@ type ActionsContractEntry = {
   unsupportedAction?: string;
   cases: Array<{
     name: string;
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     expectedActions: string[];
     expectedCapabilities?: string[];
     beforeTest?: () => void;
@@ -31,14 +31,14 @@ type SetupContractEntry = {
   plugin: Pick<ChannelPlugin, "id" | "config" | "setup">;
   cases: Array<{
     name: string;
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string;
     input: Record<string, unknown>;
     expectedAccountId?: string;
     expectedValidation?: string | null;
     beforeTest?: () => void;
-    assertPatchedConfig?: (cfg: OpenClawConfig) => void;
-    assertResolvedAccount?: (account: unknown, cfg: OpenClawConfig) => void;
+    assertPatchedConfig?: (cfg: OpenCraftConfig) => void;
+    assertResolvedAccount?: (account: unknown, cfg: OpenCraftConfig) => void;
   }>;
 };
 
@@ -47,7 +47,7 @@ type StatusContractEntry = {
   plugin: Pick<ChannelPlugin, "id" | "config" | "status">;
   cases: Array<{
     name: string;
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string;
     runtime?: Record<string, unknown>;
     probe?: unknown;
@@ -127,7 +127,7 @@ bundledChannelRuntimeSetters.setLineRuntime({
     line: {
       listLineAccountIds,
       resolveDefaultLineAccountId,
-      resolveLineAccount: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId?: string }) =>
+      resolveLineAccount: ({ cfg, accountId }: { cfg: OpenCraftConfig; accountId?: string }) =>
         resolveLineAccount({ cfg, accountId }),
     },
   },
@@ -171,7 +171,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               appToken: "xapp-test",
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: [
           "send",
           "react",
@@ -200,7 +200,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               },
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: [
           "send",
           "react",
@@ -225,7 +225,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               enabled: true,
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: [],
         expectedCapabilities: [],
       },
@@ -246,7 +246,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               baseUrl: "https://chat.example.com",
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: ["send", "react"],
         expectedCapabilities: ["buttons"],
       },
@@ -261,7 +261,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               actions: { reactions: false },
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: ["send"],
         expectedCapabilities: ["buttons"],
       },
@@ -273,7 +273,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
               enabled: true,
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         expectedActions: [],
         expectedCapabilities: [],
       },
@@ -285,7 +285,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
     cases: [
       {
         name: "forwards runtime-backed Telegram actions and capabilities",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         expectedActions: ["send", "poll", "react"],
         expectedCapabilities: ["interactive", "buttons"],
         beforeTest: () => {
@@ -303,7 +303,7 @@ export const actionContractRegistry: ActionsContractEntry[] = [
     cases: [
       {
         name: "forwards runtime-backed Discord actions and capabilities",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         expectedActions: ["send", "react", "poll"],
         expectedCapabilities: ["interactive", "components"],
         beforeTest: () => {
@@ -324,7 +324,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
     cases: [
       {
         name: "default account stores tokens and enables the channel",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         input: {
           botToken: "xoxb-test",
           appToken: "xapp-test",
@@ -338,7 +338,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
       },
       {
         name: "non-default env setup is rejected",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         accountId: "ops",
         input: {
           useEnv: true,
@@ -354,7 +354,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
     cases: [
       {
         name: "default account stores token and normalized base URL",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         input: {
           botToken: "test-token",
           httpUrl: "https://chat.example.com/",
@@ -368,7 +368,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
       },
       {
         name: "missing credentials are rejected",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         input: {
           httpUrl: "",
         },
@@ -383,7 +383,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
     cases: [
       {
         name: "default account stores token and secret",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         input: {
           channelAccessToken: "line-token",
           channelSecret: "line-secret",
@@ -397,7 +397,7 @@ export const setupContractRegistry: SetupContractEntry[] = [
       },
       {
         name: "non-default env setup is rejected",
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         accountId: "ops",
         input: {
           useEnv: true,
@@ -423,7 +423,7 @@ export const statusContractRegistry: StatusContractEntry[] = [
               appToken: "xapp-test",
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         runtime: {
           accountId: "default",
           connected: true,
@@ -452,7 +452,7 @@ export const statusContractRegistry: StatusContractEntry[] = [
               baseUrl: "https://chat.example.com",
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         runtime: {
           accountId: "default",
           connected: true,
@@ -483,7 +483,7 @@ export const statusContractRegistry: StatusContractEntry[] = [
               channelSecret: "line-secret",
             },
           },
-        } as OpenClawConfig,
+        } as OpenCraftConfig,
         runtime: {
           accountId: "default",
           running: true,

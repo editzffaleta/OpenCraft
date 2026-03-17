@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/xiaomi-provider",
+  "name": "@opencraft/xiaomi-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Xiaomi provider plugin",
+  "description": "OpenCraft Xiaomi provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import {
   applyHuggingfaceConfig,
   HUGGINGFACE_DEFAULT_MODEL_REF,
@@ -13,7 +13,7 @@ const huggingfacePlugin = {
   name: "Hugging Face Provider",
   description: "Bundled Hugging Face provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Hugging Face",

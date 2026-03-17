@@ -229,7 +229,7 @@ private fun roleLabel(role: String): String {
   return when (role) {
     "user" -> "You"
     "system" -> "System"
-    else -> "OpenClaw"
+    else -> "OpenCraft"
   }
 }
 

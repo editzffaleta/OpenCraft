@@ -58,7 +58,7 @@ function createThreadBinding(
 }
 
 function createPreflightArgs(params: {
-  cfg: import("../../../../src/config/config.js").OpenClawConfig;
+  cfg: import("../../../../src/config/config.js").OpenCraftConfig;
   discordConfig: DiscordConfig;
   data: DiscordMessageEvent;
   client: DiscordClient;
@@ -150,7 +150,7 @@ async function runGuildPreflight(params: {
   guildId: string;
   message: import("@buape/carbon").Message;
   discordConfig: DiscordConfig;
-  cfg?: import("../../../../src/config/config.js").OpenClawConfig;
+  cfg?: import("../../../../src/config/config.js").OpenCraftConfig;
   guildEntries?: Parameters<typeof preflightDiscordMessage>[0]["guildEntries"];
   includeGuildObject?: boolean;
 }) {
@@ -274,7 +274,7 @@ describe("preflightDiscordMessage", () => {
       author: {
         id: "relay-bot-1",
         bot: true,
-        username: "OpenClaw",
+        username: "OpenCraft",
       },
     });
 
@@ -306,8 +306,8 @@ describe("preflightDiscordMessage", () => {
               },
               metadata: {
                 pluginBindingOwner: "plugin",
-                pluginId: "openclaw-codex-app-server",
-                pluginRoot: "/Users/huntharo/github/openclaw-app-server",
+                pluginId: "opencraft-codex-app-server",
+                pluginRoot: "/Users/huntharo/github/opencraft-app-server",
               },
             })
           : null,
@@ -340,7 +340,7 @@ describe("preflightDiscordMessage", () => {
       },
       metadata: {
         pluginBindingOwner: "plugin",
-        pluginId: "openclaw-codex-app-server",
+        pluginId: "opencraft-codex-app-server",
       },
     });
   });
@@ -405,7 +405,7 @@ describe("preflightDiscordMessage", () => {
       createPreflightArgs({
         cfg: {
           ...DEFAULT_PREFLIGHT_CFG,
-        } as import("../../../../src/config/config.js").OpenClawConfig,
+        } as import("../../../../src/config/config.js").OpenCraftConfig,
         discordConfig: {
           allowBots: true,
         } as DiscordConfig,
@@ -449,8 +449,8 @@ describe("preflightDiscordMessage", () => {
     const message = createDiscordMessage({
       id: "m-bot-mentions-on",
       channelId,
-      content: "hi <@openclaw-bot>",
-      mentionedUsers: [{ id: "openclaw-bot" }],
+      content: "hi <@opencraft-bot>",
+      mentionedUsers: [{ id: "opencraft-bot" }],
       author: {
         id: "relay-bot-1",
         bot: true,
@@ -631,7 +631,7 @@ describe("preflightDiscordMessage", () => {
   });
 
   it("uses attachment content_type for guild audio preflight mention detection", async () => {
-    transcribeFirstAudioMock.mockResolvedValue("hey openclaw");
+    transcribeFirstAudioMock.mockResolvedValue("hey opencraft");
 
     const channelId = "channel-audio-1";
     const client = createGuildTextClient(channelId);
@@ -661,10 +661,10 @@ describe("preflightDiscordMessage", () => {
           ...DEFAULT_PREFLIGHT_CFG,
           messages: {
             groupChat: {
-              mentionPatterns: ["openclaw"],
+              mentionPatterns: ["opencraft"],
             },
           },
-        } as import("../../../../src/config/config.js").OpenClawConfig,
+        } as import("../../../../src/config/config.js").OpenCraftConfig,
         discordConfig: {} as DiscordConfig,
         data: createGuildEvent({
           channelId,

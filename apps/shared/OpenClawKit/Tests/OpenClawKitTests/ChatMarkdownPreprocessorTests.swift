@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenClawChatUI
+@testable import OpenCraftChatUI
 
 @Suite("ChatMarkdownPreprocessor")
 struct ChatMarkdownPreprocessorTests {
@@ -57,7 +57,7 @@ struct ChatMarkdownPreprocessorTests {
         ```json
         {
           "message_id": "123",
-          "sender": "openclaw-ios"
+          "sender": "opencraft-ios"
         }
         ```
 

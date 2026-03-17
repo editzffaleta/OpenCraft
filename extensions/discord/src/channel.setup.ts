@@ -1,14 +1,14 @@
-import { createScopedChannelConfigBase } from "openclaw/plugin-sdk/compat";
+import { createScopedChannelConfigBase } from "opencraft/plugin-sdk/compat";
 import {
   createScopedAccountConfigAccessors,
   formatAllowFromLowercase,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildChannelConfigSchema,
   DiscordConfigSchema,
   getChatChannelMeta,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/discord";
+} from "opencraft/plugin-sdk/discord";
 import { inspectDiscordAccount } from "./account-inspect.js";
 import {
   listDiscordAccountIds,

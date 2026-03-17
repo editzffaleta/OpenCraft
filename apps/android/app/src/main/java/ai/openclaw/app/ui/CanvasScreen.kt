@@ -145,6 +145,6 @@ private class CanvasA2UIActionBridge(private val onMessage: (String) -> Unit) {
   }
 
   companion object {
-    const val interfaceName: String = "openclawCanvasA2UIAction"
+    const val interfaceName: String = "opencraftCanvasA2UIAction"
   }
 }

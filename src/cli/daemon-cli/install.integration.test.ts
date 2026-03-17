@@ -49,18 +49,18 @@ describe("runDaemonInstall integration", () => {
   beforeAll(async () => {
     envSnapshot = captureEnv([
       "HOME",
-      "OPENCLAW_STATE_DIR",
-      "OPENCLAW_CONFIG_PATH",
+      "OPENCRAFT_STATE_DIR",
+      "OPENCRAFT_CONFIG_PATH",
       "OPENCLAW_GATEWAY_TOKEN",
       "CLAWDBOT_GATEWAY_TOKEN",
       "OPENCLAW_GATEWAY_PASSWORD",
       "CLAWDBOT_GATEWAY_PASSWORD",
     ]);
-    tempHome = await makeTempWorkspace("openclaw-daemon-install-int-");
-    configPath = path.join(tempHome, "openclaw.json");
+    tempHome = await makeTempWorkspace("opencraft-daemon-install-int-");
+    configPath = path.join(tempHome, "opencraft.json");
     process.env.HOME = tempHome;
-    process.env.OPENCLAW_STATE_DIR = tempHome;
-    process.env.OPENCLAW_CONFIG_PATH = configPath;
+    process.env.OPENCRAFT_STATE_DIR = tempHome;
+    process.env.OPENCRAFT_CONFIG_PATH = configPath;
   });
 
   afterAll(async () => {

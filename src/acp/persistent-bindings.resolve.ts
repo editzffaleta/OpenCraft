@@ -1,6 +1,6 @@
 import { getChannelPlugin } from "../channels/plugins/index.js";
 import { listAcpBindings } from "../config/bindings.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import type { AgentAcpBinding } from "../config/types.js";
 import { pickFirstExistingAgentId } from "../routing/resolve-route.js";
 import {
@@ -66,7 +66,7 @@ function parseConfiguredBindingSessionKey(params: {
   };
 }
 
-function resolveAgentRuntimeAcpDefaults(params: { cfg: OpenClawConfig; ownerAgentId: string }): {
+function resolveAgentRuntimeAcpDefaults(params: { cfg: OpenCraftConfig; ownerAgentId: string }): {
   acpAgentId?: string;
   mode?: string;
   cwd?: string;
@@ -87,7 +87,7 @@ function resolveAgentRuntimeAcpDefaults(params: { cfg: OpenClawConfig; ownerAgen
 }
 
 function toConfiguredBindingSpec(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   channel: ConfiguredAcpBindingChannel;
   accountId: string;
   conversationId: string;
@@ -118,7 +118,7 @@ function toConfiguredBindingSpec(params: {
 }
 
 function resolveConfiguredBindingRecord(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   bindings: AgentAcpBinding[];
   channel: ConfiguredAcpBindingChannel;
   accountId: string;
@@ -208,7 +208,7 @@ function resolveConfiguredBindingRecord(params: {
 }
 
 export function resolveConfiguredAcpBindingSpecBySessionKey(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   sessionKey: string;
 }): ConfiguredAcpBindingSpec | null {
   const sessionKey = params.sessionKey.trim();
@@ -271,7 +271,7 @@ export function resolveConfiguredAcpBindingSpecBySessionKey(params: {
 }
 
 export function resolveConfiguredAcpBindingRecord(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   channel: string;
   accountId: string;
   conversationId: string;

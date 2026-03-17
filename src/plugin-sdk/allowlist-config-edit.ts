@@ -1,7 +1,7 @@
 import type { ConfigWriteTarget } from "../channels/plugins/config-writes.js";
 import type { ChannelAllowlistAdapter } from "../channels/plugins/types.adapters.js";
 import type { ChannelId } from "../channels/plugins/types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { isBlockedObjectKey } from "../infra/prototype-keys.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 
@@ -187,7 +187,7 @@ function applyAccountScopedAllowlistConfigEdit(params: {
 export function buildAccountScopedAllowlistConfigEditor(params: {
   channelId: ChannelId;
   normalize: (params: {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId?: string | null;
     values: Array<string | number>;
   }) => string[];

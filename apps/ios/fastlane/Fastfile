@@ -167,7 +167,7 @@ def build_beta_release(context)
 
   build_app(
     project: "OpenClaw.xcodeproj",
-    scheme: "OpenClaw",
+    scheme: "OpenCraft",
     configuration: "Release",
     export_method: "app-store",
     clean: true,

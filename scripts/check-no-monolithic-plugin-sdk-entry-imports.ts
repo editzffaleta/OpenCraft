@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { discoverOpenClawPlugins } from "../src/plugins/discovery.js";
+import { discoverOpenCraftPlugins } from "../src/plugins/discovery.js";
 
 // Match exact monolithic-root specifier in any code path:
 // imports/exports, require/dynamic import, and test mocks (vi.mock/jest.mock).
-const ROOT_IMPORT_PATTERN = /["']openclaw\/plugin-sdk["']/;
-const LEGACY_ROUTING_IMPORT_PATTERN = /["']openclaw\/plugin-sdk\/routing["']/;
+const ROOT_IMPORT_PATTERN = /["']opencraft\/plugin-sdk["']/;
+const LEGACY_ROUTING_IMPORT_PATTERN = /["']opencraft\/plugin-sdk\/routing["']/;
 
 function hasMonolithicRootImport(content: string): boolean {
   return ROOT_IMPORT_PATTERN.test(content);
@@ -69,7 +69,7 @@ function collectSharedExtensionSourceFiles(): string[] {
 }
 
 function main() {
-  const discovery = discoverOpenClawPlugins({});
+  const discovery = discoverOpenCraftPlugins({});
   const bundledCandidates = discovery.candidates.filter((c) => c.origin === "bundled");
   const filesToCheck = new Set<string>();
   for (const candidate of bundledCandidates) {
@@ -101,7 +101,7 @@ function main() {
 
   if (monolithicOffenders.length > 0 || legacyRoutingOffenders.length > 0) {
     if (monolithicOffenders.length > 0) {
-      console.error("Bundled plugin source files must not import monolithic openclaw/plugin-sdk.");
+      console.error("Bundled plugin source files must not import monolithic opencraft/plugin-sdk.");
       for (const file of monolithicOffenders.toSorted()) {
         const relative = path.relative(process.cwd(), file) || file;
         console.error(`- ${relative}`);
@@ -109,7 +109,7 @@ function main() {
     }
     if (legacyRoutingOffenders.length > 0) {
       console.error(
-        "Bundled plugin source files must not import legacy openclaw/plugin-sdk/routing.",
+        "Bundled plugin source files must not import legacy opencraft/plugin-sdk/routing.",
       );
       for (const file of legacyRoutingOffenders.toSorted()) {
         const relative = path.relative(process.cwd(), file) || file;
@@ -118,7 +118,7 @@ function main() {
     }
     if (monolithicOffenders.length > 0 || legacyRoutingOffenders.length > 0) {
       console.error(
-        "Use openclaw/plugin-sdk/<channel> for channel plugins, /core for shared routing and startup surfaces, or /compat for broader internals.",
+        "Use opencraft/plugin-sdk/<channel> for channel plugins, /core for shared routing and startup surfaces, or /compat for broader internals.",
       );
     }
     process.exit(1);

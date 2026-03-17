@@ -442,7 +442,7 @@ enum GatewayDiagnostics {
 
     private static var fileURL: URL? {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("openclaw-gateway.log")
+            .appendingPathComponent("opencraft-gateway.log")
     }
 
     private static func truncateLogIfNeeded(url: URL) {

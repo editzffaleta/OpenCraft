@@ -48,12 +48,12 @@ type PackageManifest = PluginPackageManifest & {
 };
 
 const MISSING_EXTENSIONS_ERROR =
-  'package.json missing openclaw.extensions; update the plugin package to include openclaw.extensions (for example ["./dist/index.js"]). See https://docs.openclaw.ai/help/troubleshooting#plugin-install-fails-with-missing-openclaw-extensions';
+  'package.json missing opencraft.extensions; update the plugin package to include opencraft.extensions (for example ["./dist/index.js"]). See https://docs.opencraft.ai/help/troubleshooting#plugin-install-fails-with-missing-opencraft-extensions';
 
 export const PLUGIN_INSTALL_ERROR_CODE = {
   INVALID_NPM_SPEC: "invalid_npm_spec",
-  MISSING_OPENCLAW_EXTENSIONS: "missing_openclaw_extensions",
-  EMPTY_OPENCLAW_EXTENSIONS: "empty_openclaw_extensions",
+  MISSING_OPENCRAFT_EXTENSIONS: "missing_opencraft_extensions",
+  EMPTY_OPENCRAFT_EXTENSIONS: "empty_opencraft_extensions",
   NPM_PACKAGE_NOT_FOUND: "npm_package_not_found",
   PLUGIN_ID_MISMATCH: "plugin_id_mismatch",
 } as const;
@@ -148,7 +148,7 @@ function matchesExpectedPluginId(params: {
   );
 }
 
-function ensureOpenClawExtensions(params: { manifest: PackageManifest }):
+function ensureOpenCraftExtensions(params: { manifest: PackageManifest }):
   | {
       ok: true;
       entries: string[];
@@ -163,14 +163,14 @@ function ensureOpenClawExtensions(params: { manifest: PackageManifest }):
     return {
       ok: false,
       error: MISSING_EXTENSIONS_ERROR,
-      code: PLUGIN_INSTALL_ERROR_CODE.MISSING_OPENCLAW_EXTENSIONS,
+      code: PLUGIN_INSTALL_ERROR_CODE.MISSING_OPENCRAFT_EXTENSIONS,
     };
   }
   if (resolved.status === "empty") {
     return {
       ok: false,
-      error: "package.json openclaw.extensions is empty",
-      code: PLUGIN_INSTALL_ERROR_CODE.EMPTY_OPENCLAW_EXTENSIONS,
+      error: "package.json opencraft.extensions is empty",
+      code: PLUGIN_INSTALL_ERROR_CODE.EMPTY_OPENCRAFT_EXTENSIONS,
     };
   }
   return {
@@ -299,12 +299,12 @@ async function installBundleFromSourceDir(
       );
     } else if (scanSummary.warn > 0) {
       logger.warn?.(
-        `Bundle "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "openclaw security audit --deep" for details.`,
+        `Bundle "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "opencraft security audit --deep" for details.`,
       );
     }
   } catch (err) {
     logger.warn?.(
-      `Bundle "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "openclaw security audit --deep" after install.`,
+      `Bundle "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "opencraft security audit --deep" after install.`,
     );
   }
 
@@ -398,7 +398,7 @@ async function detectNativePackageInstallSource(packageDir: string): Promise<boo
 
   try {
     const manifest = await readJsonFile<PackageManifest>(manifestPath);
-    return ensureOpenClawExtensions({ manifest }).ok;
+    return ensureOpenCraftExtensions({ manifest }).ok;
   } catch {
     return false;
   }
@@ -423,7 +423,7 @@ async function installPluginFromPackageDir(
     return { ok: false, error: `invalid package.json: ${String(err)}` };
   }
 
-  const extensionsResult = ensureOpenClawExtensions({
+  const extensionsResult = ensureOpenCraftExtensions({
     manifest,
   });
   if (!extensionsResult.ok) {
@@ -438,9 +438,9 @@ async function installPluginFromPackageDir(
   const pkgName = typeof manifest.name === "string" ? manifest.name.trim() : "";
   const npmPluginId = pkgName || "plugin";
 
-  // Prefer the canonical `id` from openclaw.plugin.json over the npm package name.
+  // Prefer the canonical `id` from opencraft.plugin.json over the npm package name.
   // This avoids a latent key-mismatch bug: if the manifest id (e.g. "memory-cognee")
-  // differs from the npm package name (e.g. "cognee-openclaw"), the plugin registry
+  // differs from the npm package name (e.g. "cognee-opencraft"), the plugin registry
   // uses the manifest id as the authoritative key, so the config entry must match it.
   const ocManifestResult = loadPluginManifest(params.packageDir);
   const manifestPluginId =
@@ -505,12 +505,12 @@ async function installPluginFromPackageDir(
       );
     } else if (scanSummary.warn > 0) {
       logger.warn?.(
-        `Plugin "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "openclaw security audit --deep" for details.`,
+        `Plugin "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "opencraft security audit --deep" for details.`,
       );
     }
   } catch (err) {
     logger.warn?.(
-      `Plugin "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "openclaw security audit --deep" after install.`,
+      `Plugin "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "opencraft security audit --deep" after install.`,
     );
   }
 
@@ -602,7 +602,7 @@ export async function installPluginFromArchive(
 
   return await withExtractedArchiveRoot({
     archivePath,
-    tempDirPrefix: "openclaw-plugin-",
+    tempDirPrefix: "opencraft-plugin-",
     timeoutMs,
     logger,
     onExtracted: async (sourceDir) =>
@@ -719,7 +719,7 @@ export async function installPluginFromNpmSpec(params: {
 
   logger.info?.(`Downloading ${spec}…`);
   const flowResult = await installFromNpmSpecArchiveWithInstaller({
-    tempDirPrefix: "openclaw-npm-pack-",
+    tempDirPrefix: "opencraft-npm-pack-",
     spec,
     timeoutMs,
     expectedIntegrity: params.expectedIntegrity,

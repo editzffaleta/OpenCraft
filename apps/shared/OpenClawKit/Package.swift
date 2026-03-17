@@ -11,7 +11,7 @@ let package = Package(
     products: [
         .library(name: "OpenClawProtocol", targets: ["OpenClawProtocol"]),
         .library(name: "OpenClawKit", targets: ["OpenClawKit"]),
-        .library(name: "OpenClawChatUI", targets: ["OpenClawChatUI"]),
+        .library(name: "OpenCraftChatUI", targets: ["OpenCraftChatUI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/steipete/ElevenLabsKit", exact: "0.1.0"),
@@ -38,7 +38,7 @@ let package = Package(
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .target(
-            name: "OpenClawChatUI",
+            name: "OpenCraftChatUI",
             dependencies: [
                 "OpenClawKit",
                 .product(
@@ -46,14 +46,14 @@ let package = Package(
                     package: "textual",
                     condition: .when(platforms: [.macOS, .iOS])),
             ],
-            path: "Sources/OpenClawChatUI",
+            path: "Sources/OpenCraftChatUI",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .testTarget(
-            name: "OpenClawKitTests",
-            dependencies: ["OpenClawKit", "OpenClawChatUI"],
-            path: "Tests/OpenClawKitTests",
+            name: "OpenCraftKitTests",
+            dependencies: ["OpenClawKit", "OpenCraftChatUI"],
+            path: "Tests/OpenCraftKitTests",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
                 .enableExperimentalFeature("SwiftTesting"),

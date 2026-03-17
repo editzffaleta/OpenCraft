@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/elevenlabs-speech",
+  "name": "@opencraft/elevenlabs-speech",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw ElevenLabs speech plugin",
+  "description": "OpenCraft ElevenLabs speech plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

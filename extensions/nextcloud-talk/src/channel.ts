@@ -5,7 +5,7 @@ import {
   createAccountStatusSink,
   formatAllowFromLowercase,
   mapAllowFromEntries,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import {
   buildBaseChannelStatusSummary,
   buildChannelConfigSchema,
@@ -15,8 +15,8 @@ import {
   deleteAccountFromConfigSection,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/nextcloud-talk";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/nextcloud-talk";
 import { runStoppablePassiveMonitor } from "../../shared/passive-monitor.js";
 import {
   listNextcloudTalkAccountIds,
@@ -274,7 +274,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
       });
     },
     logoutAccount: async ({ accountId, cfg }) => {
-      const nextCfg = { ...cfg } as OpenClawConfig;
+      const nextCfg = { ...cfg } as OpenCraftConfig;
       const nextSection = cfg.channels?.["nextcloud-talk"]
         ? { ...cfg.channels["nextcloud-talk"] }
         : undefined;
@@ -312,7 +312,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
           const nextChannels = { ...nextCfg.channels } as Record<string, unknown>;
           delete nextChannels["nextcloud-talk"];
           if (Object.keys(nextChannels).length > 0) {
-            nextCfg.channels = nextChannels as OpenClawConfig["channels"];
+            nextCfg.channels = nextChannels as OpenCraftConfig["channels"];
           } else {
             delete nextCfg.channels;
           }

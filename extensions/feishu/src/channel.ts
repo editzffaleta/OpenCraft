@@ -2,8 +2,8 @@ import {
   collectAllowlistProviderRestrictSendersWarnings,
   formatAllowFromLowercase,
   mapAllowFromEntries,
-} from "openclaw/plugin-sdk/compat";
-import type { ChannelMeta, ChannelPlugin, ClawdbotConfig } from "openclaw/plugin-sdk/feishu";
+} from "opencraft/plugin-sdk/compat";
+import type { ChannelMeta, ChannelPlugin, ClawdbotConfig } from "opencraft/plugin-sdk/feishu";
 import {
   buildChannelConfigSchema,
   buildProbeChannelStatusSummary,
@@ -12,8 +12,8 @@ import {
   createDefaultChannelRuntimeState,
   DEFAULT_ACCOUNT_ID,
   PAIRING_APPROVED_MESSAGE,
-} from "openclaw/plugin-sdk/feishu";
-import type { ChannelMessageActionName } from "openclaw/plugin-sdk/feishu";
+} from "opencraft/plugin-sdk/feishu";
+import type { ChannelMessageActionName } from "opencraft/plugin-sdk/feishu";
 import {
   resolveFeishuAccount,
   resolveFeishuCredentials,

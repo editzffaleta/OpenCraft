@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/zai-provider",
+  "name": "@opencraft/zai-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Z.AI provider plugin",
+  "description": "OpenCraft Z.AI provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

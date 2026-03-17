@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import {
   resolveGatewayConnectionAuth,
   resolveGatewayConnectionAuthFromConfig,
@@ -10,14 +10,14 @@ type ResolvedAuth = { token?: string; password?: string };
 
 type ConnectionAuthCase = {
   name: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   env: NodeJS.ProcessEnv;
   options?: Partial<Omit<GatewayConnectionAuthOptions, "config" | "env">>;
   expected: ResolvedAuth;
 };
 
-function cfg(input: Partial<OpenClawConfig>): OpenClawConfig {
-  return input as OpenClawConfig;
+function cfg(input: Partial<OpenCraftConfig>): OpenCraftConfig {
+  return input as OpenCraftConfig;
 }
 
 function createRemoteModeConfig() {
@@ -61,7 +61,7 @@ function createUnresolvedLocalAuthConfig(params: {
   });
 }
 
-async function expectFailClosedOnUnresolvedLocalAuth(config: OpenClawConfig, path: string) {
+async function expectFailClosedOnUnresolvedLocalAuth(config: OpenCraftConfig, path: string) {
   await expect(
     resolveGatewayConnectionAuth({
       config,
@@ -313,7 +313,7 @@ describe("resolveGatewayConnectionAuth", () => {
     });
   });
 
-  it("resolves config-first token SecretRef even when OPENCLAW env token exists", async () => {
+  it("resolves config-first token SecretRef even when OPENCRAFT env token exists", async () => {
     const config = cfg({
       gateway: {
         mode: "local",
@@ -344,7 +344,7 @@ describe("resolveGatewayConnectionAuth", () => {
     });
   });
 
-  it("resolves config-first password SecretRef even when OPENCLAW env password exists", async () => {
+  it("resolves config-first password SecretRef even when OPENCRAFT env password exists", async () => {
     const config = cfg({
       gateway: {
         mode: "local",

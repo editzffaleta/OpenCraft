@@ -8,7 +8,7 @@ import Security
 import SwiftUI
 
 @main
-struct OpenClawApp: App {
+struct OpenCraftApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var state: AppState
     private static let logger = Logger(subsystem: "ai.openclaw", category: "app")

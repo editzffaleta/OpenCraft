@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { resolveManifestProviderAuthChoice } from "../plugins/provider-auth-choices.js";
 import { normalizeLegacyOnboardAuthChoice } from "./auth-choice-legacy.js";
 import type { AuthChoice } from "./onboard-types.js";
@@ -11,7 +11,7 @@ const PREFERRED_PROVIDER_BY_AUTH_CHOICE: Partial<Record<AuthChoice, string>> = {
 
 export async function resolvePreferredProviderForAuthChoice(params: {
   choice: AuthChoice;
-  config?: OpenClawConfig;
+  config?: OpenCraftConfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): Promise<string | undefined> {

@@ -117,7 +117,7 @@ describe("resolveOpenCraftPackageRoot", () => {
     const project = fx("symlink-scenario");
     const bin = path.join(project, "bin", "opencraft");
     const realPkg = path.join(project, "real-pkg");
-    state.realpaths.set(abs(bin), abs(path.join(realPkg, "opencraft.mjs")));
+    state.realpaths.set(abs(bin), abs(path.join(realPkg, "openclaw.mjs")));
     setFile(path.join(realPkg, "package.json"), JSON.stringify({ name: "opencraft" }));
 
     expect(resolveOpenCraftPackageRootSync({ argv1: bin })).toBe(realPkg);
@@ -176,10 +176,7 @@ describe("resolveOpenCraftPackageRoot", () => {
   it("falls back from a symlinked argv1 to the node_modules package root", () => {
     const project = fx("symlink-node-modules-fallback");
     const argv1 = path.join(project, "node_modules", ".bin", "opencraft");
-    state.realpaths.set(
-      abs(argv1),
-      abs(path.join(project, "versions", "current", "opencraft.mjs")),
-    );
+    state.realpaths.set(abs(argv1), abs(path.join(project, "versions", "current", "openclaw.mjs")));
     const pkgRoot = path.join(project, "node_modules", "opencraft");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "opencraft" }));
 

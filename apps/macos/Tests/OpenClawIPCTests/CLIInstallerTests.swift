@@ -8,7 +8,7 @@ struct CLIInstallerTests {
     @Test func `installed location finds executable`() throws {
         let fm = FileManager()
         let root = fm.temporaryDirectory.appendingPathComponent(
-            "openclaw-cli-installer-\(UUID().uuidString)")
+            "opencraft-cli-installer-\(UUID().uuidString)")
         defer { try? fm.removeItem(at: root) }
 
         let binDir = root.appendingPathComponent("bin")

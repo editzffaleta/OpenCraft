@@ -9,7 +9,7 @@ import Testing
 struct CanvasWindowSmokeTests {
     @Test func `panel controller shows and hides`() async throws {
         let root = FileManager().temporaryDirectory
-            .appendingPathComponent("openclaw-canvas-test-\(UUID().uuidString)")
+            .appendingPathComponent("opencraft-canvas-test-\(UUID().uuidString)")
         try FileManager().createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager().removeItem(at: root) }
 
@@ -32,7 +32,7 @@ struct CanvasWindowSmokeTests {
 
     @Test func `window controller shows and closes`() throws {
         let root = FileManager().temporaryDirectory
-            .appendingPathComponent("openclaw-canvas-test-\(UUID().uuidString)")
+            .appendingPathComponent("opencraft-canvas-test-\(UUID().uuidString)")
         try FileManager().createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager().removeItem(at: root) }
 

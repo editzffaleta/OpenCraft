@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import { upsertAuthProfile } from "../../src/agents/auth-profiles.js";
 import { ensureAuthProfileStore, listProfilesForProvider } from "../../src/agents/auth-profiles.js";
 import {
@@ -111,7 +111,7 @@ const cloudflareAiGatewayPlugin = {
   name: "Cloudflare AI Gateway Provider",
   description: "Bundled Cloudflare AI Gateway provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Cloudflare AI Gateway",

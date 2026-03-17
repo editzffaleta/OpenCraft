@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AcpRuntimeError } from "../../../../src/acp/runtime/errors.js";
-import type { OpenClawConfig } from "../../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../../src/config/config.js";
 import type { RuntimeEnv } from "../../../../src/runtime.js";
 
 type NativeCommandSpecMock = {
@@ -91,7 +91,7 @@ const {
     })),
     createdBindingManagers,
     getAcpSessionStatusMock: vi.fn(
-      async (_params: { cfg: OpenClawConfig; sessionKey: string; signal?: AbortSignal }) => ({
+      async (_params: { cfg: OpenCraftConfig; sessionKey: string; signal?: AbortSignal }) => ({
         state: "idle",
       }),
     ),
@@ -346,7 +346,7 @@ vi.mock("./thread-bindings.js", () => ({
 
 describe("monitorDiscordProvider", () => {
   type ReconcileHealthProbeParams = {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     accountId: string;
     sessionKey: string;
     binding: unknown;
@@ -354,7 +354,7 @@ describe("monitorDiscordProvider", () => {
   };
 
   type ReconcileStartupParams = {
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     healthProbe?: (
       params: ReconcileHealthProbeParams,
     ) => Promise<{ status: string; reason?: string }>;
@@ -368,7 +368,7 @@ describe("monitorDiscordProvider", () => {
     };
   };
 
-  const baseConfig = (): OpenClawConfig =>
+  const baseConfig = (): OpenCraftConfig =>
     ({
       channels: {
         discord: {
@@ -377,7 +377,7 @@ describe("monitorDiscordProvider", () => {
           },
         },
       },
-    }) as OpenClawConfig;
+    }) as OpenCraftConfig;
 
   const getConstructedEventQueue = (): { listenerTimeout?: number } | undefined => {
     expect(clientConstructorOptionsMock).toHaveBeenCalledTimes(1);

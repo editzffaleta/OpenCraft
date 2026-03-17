@@ -3,8 +3,8 @@ import {
   buildAccountScopedDmSecurityPolicy,
   createScopedAccountConfigAccessors,
   collectAllowlistProviderRestrictSendersWarnings,
-} from "openclaw/plugin-sdk/compat";
-import { buildAgentSessionKey, type RoutePeer } from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/compat";
+import { buildAgentSessionKey, type RoutePeer } from "opencraft/plugin-sdk/core";
 import {
   buildBaseAccountStatusSnapshot,
   buildBaseChannelStatusSummary,
@@ -23,7 +23,7 @@ import {
   SignalConfigSchema,
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
-} from "openclaw/plugin-sdk/signal";
+} from "opencraft/plugin-sdk/signal";
 import { resolveTextChunkLimit } from "../../../src/auto-reply/chunk.js";
 import { resolveMarkdownTableMode } from "../../../src/config/markdown-tables.js";
 import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";

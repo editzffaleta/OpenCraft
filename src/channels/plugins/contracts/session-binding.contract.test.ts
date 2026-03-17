@@ -7,7 +7,7 @@ import {
   __testing as telegramThreadBindingTesting,
   createTelegramThreadBindingManager,
 } from "../../../../extensions/telegram/src/thread-bindings.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { OpenCraftConfig } from "../../../config/config.js";
 import {
   __testing as sessionBindingTesting,
   getSessionBindingService,
@@ -16,7 +16,7 @@ import { installSessionBindingContractSuite } from "./suites.js";
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
-} satisfies OpenClawConfig;
+} satisfies OpenCraftConfig;
 
 beforeEach(() => {
   sessionBindingTesting.resetSessionBindingAdaptersForTests();

@@ -10,7 +10,7 @@ import {
   promptParsedAllowFromForScopedChannel,
   setChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   type WizardPrompter,
 } from "../../../src/plugin-sdk-internal/setup.js";
 import type {
@@ -88,10 +88,10 @@ function buildSignalSetupPatch(input: {
 }
 
 async function promptSignalAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   return promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel,
@@ -192,8 +192,8 @@ export function createSignalSetupWizardProxy(
     channel,
     policyKey: "channels.signal.dmPolicy",
     allowFromKey: "channels.signal.allowFrom",
-    getCurrent: (cfg: OpenClawConfig) => cfg.channels?.signal?.dmPolicy ?? "pairing",
-    setPolicy: (cfg: OpenClawConfig, policy) =>
+    getCurrent: (cfg: OpenCraftConfig) => cfg.channels?.signal?.dmPolicy ?? "pairing",
+    setPolicy: (cfg: OpenCraftConfig, policy) =>
       setChannelDmPolicyWithAllowFrom({
         cfg,
         channel,
@@ -264,13 +264,13 @@ export function createSignalSetupWizardProxy(
     completionNote: {
       title: "Signal next steps",
       lines: [
-        'Link device with: signal-cli link -n "OpenClaw"',
+        'Link device with: signal-cli link -n "OpenCraft"',
         "Scan QR in Signal -> Linked Devices",
-        `Then run: ${formatCliCommand("openclaw gateway call channels.status --params '{\"probe\":true}'")}`,
+        `Then run: ${formatCliCommand("opencraft gateway call channels.status --params '{\"probe\":true}'")}`,
         `Docs: ${formatDocsLink("/signal", "signal")}`,
       ],
     },
     dmPolicy: signalDmPolicy,
-    disable: (cfg: OpenClawConfig) => setSetupChannelEnabled(cfg, channel, false),
+    disable: (cfg: OpenCraftConfig) => setSetupChannelEnabled(cfg, channel, false),
   } satisfies ChannelSetupWizard;
 }

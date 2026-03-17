@@ -9,7 +9,7 @@ import {
   modelSupportsVision,
 } from "../agents/model-catalog.js";
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -84,7 +84,7 @@ export function normalizeMediaAttachments(ctx: MsgContext): MediaAttachment[] {
 }
 
 export function resolveMediaAttachmentLocalRoots(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   ctx: MsgContext;
 }): readonly string[] {
   return mergeInboundPathRoots(
@@ -338,7 +338,7 @@ async function resolveGeminiCliEntry(
 }
 
 async function resolveKeyEntry(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -425,7 +425,7 @@ async function resolveKeyEntry(params: {
   return null;
 }
 
-function resolveImageModelFromAgentDefaults(cfg: OpenClawConfig): MediaUnderstandingModelConfig[] {
+function resolveImageModelFromAgentDefaults(cfg: OpenCraftConfig): MediaUnderstandingModelConfig[] {
   const refs: string[] = [];
   const primary = resolveAgentModelPrimaryValue(cfg.agents?.defaults?.imageModel);
   if (primary?.trim()) {
@@ -455,7 +455,7 @@ function resolveImageModelFromAgentDefaults(cfg: OpenClawConfig): MediaUnderstan
 }
 
 async function resolveAutoEntries(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -489,7 +489,7 @@ async function resolveAutoEntries(params: {
 }
 
 export async function resolveAutoImageModel(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentDir?: string;
   activeModel?: ActiveMediaModel;
 }): Promise<ActiveMediaModel | null> {
@@ -530,7 +530,7 @@ export async function resolveAutoImageModel(params: {
 }
 
 async function resolveActiveModelEntry(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -574,7 +574,7 @@ async function resolveActiveModelEntry(params: {
 
 async function runAttachmentEntries(params: {
   capability: MediaUnderstandingCapability;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   ctx: MsgContext;
   attachmentIndex: number;
   agentDir?: string;
@@ -661,7 +661,7 @@ async function runAttachmentEntries(params: {
 
 export async function runCapability(params: {
   capability: MediaUnderstandingCapability;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   ctx: MsgContext;
   attachments: MediaAttachmentCache;
   media: MediaAttachment[];

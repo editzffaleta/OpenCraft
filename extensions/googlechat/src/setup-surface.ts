@@ -10,7 +10,7 @@ import {
 } from "../../../src/channels/plugins/setup-wizard-helpers.js";
 import type { ChannelSetupDmPolicy } from "../../../src/channels/plugins/setup-wizard-types.js";
 import type { ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DmPolicy } from "../../../src/config/types.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../src/routing/session-key.js";
 import { formatDocsLink } from "../../../src/terminal/links.js";
@@ -27,7 +27,7 @@ const ENV_SERVICE_ACCOUNT_FILE = "GOOGLE_CHAT_SERVICE_ACCOUNT_FILE";
 const USE_ENV_FLAG = "__googlechatUseEnv";
 const AUTH_METHOD_FLAG = "__googlechatAuthMethod";
 
-function setGoogleChatDmPolicy(cfg: OpenClawConfig, policy: DmPolicy) {
+function setGoogleChatDmPolicy(cfg: OpenCraftConfig, policy: DmPolicy) {
   const allowFrom =
     policy === "open" ? addWildcardAllowFrom(cfg.channels?.googlechat?.dm?.allowFrom) : undefined;
   return {
@@ -47,9 +47,9 @@ function setGoogleChatDmPolicy(cfg: OpenClawConfig, policy: DmPolicy) {
 }
 
 async function promptAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: Parameters<NonNullable<ChannelSetupDmPolicy["promptAllowFrom"]>>[0]["prompter"];
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   const current = params.cfg.channels?.googlechat?.dm?.allowFrom ?? [];
   const entry = await params.prompter.text({
     message: "Google Chat allowFrom (users/<id> or raw email; avoid users/<email>)",

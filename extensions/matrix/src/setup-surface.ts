@@ -7,7 +7,7 @@ import {
 } from "../../../src/channels/plugins/setup-wizard-helpers.js";
 import type { ChannelSetupDmPolicy } from "../../../src/channels/plugins/setup-wizard-types.js";
 import type { ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { DmPolicy } from "../../../src/config/types.js";
 import type { SecretInput } from "../../../src/config/types.secrets.js";
 import { hasConfiguredSecretInput } from "../../../src/config/types.secrets.js";
@@ -427,7 +427,7 @@ export const matrixSetupWizard: ChannelSetupWizard = {
     const deviceName = String(
       await prompter.text({
         message: "Matrix device name (optional)",
-        initialValue: existing.deviceName ?? "OpenClaw Gateway",
+        initialValue: existing.deviceName ?? "OpenCraft Gateway",
       }),
     ).trim();
 

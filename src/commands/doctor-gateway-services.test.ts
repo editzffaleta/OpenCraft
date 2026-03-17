@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 
 const fsMocks = vi.hoisted(() => ({
@@ -113,13 +113,13 @@ function makeDoctorPrompts() {
   };
 }
 
-async function runRepair(cfg: OpenClawConfig) {
+async function runRepair(cfg: OpenCraftConfig) {
   await maybeRepairGatewayServiceConfig(cfg, "local", makeDoctorIo(), makeDoctorPrompts());
 }
 
 const gatewayProgramArguments = [
   "/usr/bin/node",
-  "/usr/local/bin/openclaw",
+  "/usr/local/bin/opencraft",
   "gateway",
   "--port",
   "18789",
@@ -154,18 +154,20 @@ describe("maybeRepairGatewayServiceConfig", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fsMocks.realpath.mockImplementation(async (value: string) => value);
-    mocks.resolveGatewayAuthTokenForService.mockImplementation(async (cfg: OpenClawConfig, env) => {
-      const configToken =
-        typeof cfg.gateway?.auth?.token === "string" ? cfg.gateway.auth.token.trim() : undefined;
-      const envToken = env.OPENCLAW_GATEWAY_TOKEN?.trim() || undefined;
-      return { token: configToken || envToken };
-    });
+    mocks.resolveGatewayAuthTokenForService.mockImplementation(
+      async (cfg: OpenCraftConfig, env) => {
+        const configToken =
+          typeof cfg.gateway?.auth?.token === "string" ? cfg.gateway.auth.token.trim() : undefined;
+        const envToken = env.OPENCLAW_GATEWAY_TOKEN?.trim() || undefined;
+        return { token: configToken || envToken };
+      },
+    );
   });
 
   it("treats gateway.auth.token as source of truth for service token repairs", async () => {
     setupGatewayTokenRepairScenario();
 
-    const cfg: OpenClawConfig = {
+    const cfg: OpenCraftConfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -200,7 +202,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     await withEnvAsync({ OPENCLAW_GATEWAY_TOKEN: "env-token" }, async () => {
       setupGatewayTokenRepairScenario();
 
-      const cfg: OpenClawConfig = {
+      const cfg: OpenCraftConfig = {
         gateway: {},
       };
 
@@ -239,7 +241,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.readCommand.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/Users/test/Library/pnpm/global/5/node_modules/openclaw/dist/index.js",
+        "/Users/test/Library/pnpm/global/5/node_modules/opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -253,7 +255,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.buildGatewayInstallPlan.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/Users/test/Library/pnpm/global/5/node_modules/.pnpm/openclaw@2026.3.12/node_modules/openclaw/dist/index.js",
+        "/Users/test/Library/pnpm/global/5/node_modules/.pnpm/opencraft@2026.3.12/node_modules/opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -261,10 +263,10 @@ describe("maybeRepairGatewayServiceConfig", () => {
       environment: {},
     });
     fsMocks.realpath.mockImplementation(async (value: string) => {
-      if (value.includes("/global/5/node_modules/openclaw/")) {
+      if (value.includes("/global/5/node_modules/opencraft/")) {
         return value.replace(
-          "/global/5/node_modules/openclaw/",
-          "/global/5/node_modules/.pnpm/openclaw@2026.3.12/node_modules/openclaw/",
+          "/global/5/node_modules/opencraft/",
+          "/global/5/node_modules/.pnpm/opencraft@2026.3.12/node_modules/opencraft/",
         );
       }
       return value;
@@ -283,7 +285,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.readCommand.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/opt/openclaw/../openclaw/dist/index.js",
+        "/opt/opencraft/../opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -297,7 +299,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.buildGatewayInstallPlan.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/opt/openclaw/dist/index.js",
+        "/opt/opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -319,7 +321,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.readCommand.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/Users/test/.nvm/versions/node/v22.0.0/lib/node_modules/openclaw/dist/index.js",
+        "/Users/test/.nvm/versions/node/v22.0.0/lib/node_modules/opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -333,7 +335,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     mocks.buildGatewayInstallPlan.mockResolvedValue({
       programArguments: [
         "/usr/bin/node",
-        "/Users/test/Library/pnpm/global/5/node_modules/openclaw/dist/index.js",
+        "/Users/test/Library/pnpm/global/5/node_modules/opencraft/dist/index.js",
         "gateway",
         "--port",
         "18789",
@@ -368,7 +370,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     });
     mocks.install.mockResolvedValue(undefined);
 
-    const cfg: OpenClawConfig = {
+    const cfg: OpenCraftConfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -405,7 +407,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
       async () => {
         setupGatewayTokenRepairScenario();
 
-        const cfg: OpenClawConfig = {
+        const cfg: OpenCraftConfig = {
           gateway: {},
         };
 
@@ -468,7 +470,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
         });
         mocks.install.mockResolvedValue(undefined);
 
-        const cfg: OpenClawConfig = {
+        const cfg: OpenCraftConfig = {
           gateway: {},
         };
 
@@ -535,7 +537,7 @@ describe("maybeScanExtraGatewayServices", () => {
       "Legacy gateway removed",
     );
     expect(runtime.log).toHaveBeenCalledWith(
-      "Legacy gateway services removed. Installing OpenClaw gateway next.",
+      "Legacy gateway services removed. Installing OpenCraft gateway next.",
     );
   });
 });

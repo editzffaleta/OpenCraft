@@ -299,5 +299,5 @@ function buildSshSandboxRuntimeId(scopeKey: string): string {
     (acc, char) => ((acc * 33) ^ char.charCodeAt(0)) >>> 0,
     5381,
   );
-  return `openclaw-ssh-${safe || "session"}-${hash.toString(16).slice(0, 8)}`;
+  return `opencraft-ssh-${safe || "session"}-${hash.toString(16).slice(0, 8)}`;
 }

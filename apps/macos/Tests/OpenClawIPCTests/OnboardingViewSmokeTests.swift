@@ -1,5 +1,5 @@
 import Foundation
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import SwiftUI
 import Testing
 @testable import OpenClaw
@@ -30,10 +30,10 @@ struct OnboardingViewSmokeTests {
     @Test func `select remote gateway clears stale ssh target when endpoint unresolved`() async {
         let override = FileManager().temporaryDirectory
             .appendingPathComponent("openclaw-config-\(UUID().uuidString)")
-            .appendingPathComponent("openclaw.json")
+            .appendingPathComponent("opencraft.json")
             .path
 
-        await TestIsolation.withEnvValues(["OPENCLAW_CONFIG_PATH": override]) {
+        await TestIsolation.withEnvValues(["OPENCRAFT_CONFIG_PATH": override]) {
             let state = AppState(preview: true)
             state.remoteTransport = .ssh
             state.remoteTarget = "user@old-host:2222"

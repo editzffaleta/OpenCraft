@@ -8,7 +8,7 @@ import {
   patchChannelConfigForAccount,
   promptResolvedAllowFrom,
   splitSetupEntries,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   type WizardPrompter,
 } from "../../../src/plugin-sdk-internal/setup.js";
 import type {
@@ -20,22 +20,29 @@ import { fetchTelegramChatId } from "./api-fetch.js";
 
 const channel = "telegram" as const;
 
-export const TELEGRAM_TOKEN_HELP_LINES = [
-  "1) Open Telegram and chat with @BotFather",
-  "2) Run /newbot (or /mybots)",
-  "3) Copy the token (looks like 123456:ABC...)",
-  "Tip: you can also set TELEGRAM_BOT_TOKEN in your env.",
-  `Docs: ${formatDocsLink("/telegram")}`,
-  "Website: https://openclaw.ai",
-];
+// Lazy getter functions avoid calling formatDocsLink/formatCliCommand at module
+// load time, which fails when setup.ts is partially initialized during CJS
+// circular-dependency resolution (e.g. in vitest's transform layer).
+export function getTelegramTokenHelpLines(): string[] {
+  return [
+    "1) Open Telegram and chat with @BotFather",
+    "2) Run /newbot (or /mybots)",
+    "3) Copy the token (looks like 123456:ABC...)",
+    "Tip: you can also set TELEGRAM_BOT_TOKEN in your env.",
+    `Docs: ${formatDocsLink("/telegram")}`,
+    "Website: https://opencraft.ai",
+  ];
+}
 
-export const TELEGRAM_USER_ID_HELP_LINES = [
-  `1) DM your bot, then read from.id in \`${formatCliCommand("openclaw logs --follow")}\` (safest)`,
-  "2) Or call https://api.telegram.org/bot<bot_token>/getUpdates and read message.from.id",
-  "3) Third-party: DM @userinfobot or @getidsbot",
-  `Docs: ${formatDocsLink("/telegram")}`,
-  "Website: https://openclaw.ai",
-];
+export function getTelegramUserIdHelpLines(): string[] {
+  return [
+    `1) DM your bot, then read from.id in \`${formatCliCommand("opencraft logs --follow")}\` (safest)`,
+    "2) Or call https://api.telegram.org/bot<bot_token>/getUpdates and read message.from.id",
+    "3) Third-party: DM @userinfobot or @getidsbot",
+    `Docs: ${formatDocsLink("/telegram")}`,
+    "Website: https://opencraft.ai",
+  ];
+}
 
 export function normalizeTelegramAllowFromInput(raw: string): string {
   return raw
@@ -74,13 +81,13 @@ export async function resolveTelegramAllowFromEntries(params: {
 }
 
 export async function promptTelegramAllowFromForAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
 }) {
   const accountId = params.accountId ?? resolveDefaultTelegramAccountId(params.cfg);
   const resolved = resolveTelegramAccount({ cfg: params.cfg, accountId });
-  await params.prompter.note(TELEGRAM_USER_ID_HELP_LINES.join("\n"), "Telegram user id");
+  await params.prompter.note(getTelegramUserIdHelpLines().join("\n"), "Telegram user id");
   if (!resolved.token?.trim()) {
     await params.prompter.note(
       "Telegram token missing; username lookup is unavailable.",

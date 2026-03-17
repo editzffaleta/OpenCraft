@@ -192,7 +192,7 @@ final class OnboardingWizardModel {
     }
 
     private func shouldSkipWizard() -> Bool {
-        let root = OpenClawConfigFile.loadDict()
+        let root = OpenCraftConfigFile.loadDict()
         if let wizard = root["wizard"] as? [String: Any], !wizard.isEmpty {
             return true
         }

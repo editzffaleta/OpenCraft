@@ -4,14 +4,14 @@ import {
   setScopedCredentialValue,
 } from "../../src/agents/tools/web-search-plugin-factory.js";
 import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
 
 const perplexityPlugin = {
   id: "perplexity",
   name: "Perplexity Plugin",
   description: "Bundled Perplexity plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerWebSearchProvider(
       createPluginBackedWebSearchProvider({
         id: "perplexity",
@@ -20,7 +20,7 @@ const perplexityPlugin = {
         envVars: ["PERPLEXITY_API_KEY", "OPENROUTER_API_KEY"],
         placeholder: "pplx-...",
         signupUrl: "https://www.perplexity.ai/settings/api",
-        docsUrl: "https://docs.openclaw.ai/perplexity",
+        docsUrl: "https://docs.opencraft.ai/perplexity",
         autoDetectOrder: 50,
         getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "perplexity"),
         setCredentialValue: (searchConfigTarget, value) =>

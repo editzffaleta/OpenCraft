@@ -4,7 +4,7 @@ import {
   formatCliCommand,
   formatDocsLink,
   installSignalCli,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   parseSetupEntriesAllowingWildcard,
   promptParsedAllowFromForScopedChannel,
   setChannelDmPolicyWithAllowFrom,
@@ -31,10 +31,10 @@ const INVALID_SIGNAL_ACCOUNT_ERROR =
   "Invalid E.164 phone number (must start with + and country code, e.g. +15555550123)";
 
 async function promptSignalAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   return promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel,
@@ -173,12 +173,16 @@ export const signalSetupWizard: ChannelSetupWizard = {
   ],
   completionNote: {
     title: "Signal next steps",
-    lines: [
-      'Link device with: signal-cli link -n "OpenClaw"',
-      "Scan QR in Signal -> Linked Devices",
-      `Then run: ${formatCliCommand("openclaw gateway call channels.status --params '{\"probe\":true}'")}`,
-      `Docs: ${formatDocsLink("/signal", "signal")}`,
-    ],
+    // Lazy getter avoids calling formatCliCommand at module load time, which
+    // would fail during circular-dependency initialization in vitest CJS mode.
+    get lines() {
+      return [
+        'Link device with: signal-cli link -n "OpenCraft"',
+        "Scan QR in Signal -> Linked Devices",
+        `Then run: ${formatCliCommand("opencraft gateway call channels.status --params '{\"probe\":true}'")}`,
+        `Docs: ${formatDocsLink("/signal", "signal")}`,
+      ];
+    },
   },
   dmPolicy: signalDmPolicy,
   disable: (cfg) => setSetupChannelEnabled(cfg, channel, false),

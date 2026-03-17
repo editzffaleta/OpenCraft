@@ -7,7 +7,7 @@ import {
 import { applyXaiConfig, XAI_DEFAULT_MODEL_REF } from "../../src/commands/onboard-auth.js";
 import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
 
 const PROVIDER_ID = "xai";
 const XAI_MODERN_MODEL_PREFIXES = ["grok-4"] as const;
@@ -22,7 +22,7 @@ const xaiPlugin = {
   name: "xAI Plugin",
   description: "Bundled xAI plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "xAI",
@@ -61,7 +61,7 @@ const xaiPlugin = {
         envVars: ["XAI_API_KEY"],
         placeholder: "xai-...",
         signupUrl: "https://console.x.ai/",
-        docsUrl: "https://docs.openclaw.ai/tools/web",
+        docsUrl: "https://docs.opencraft.ai/tools/web",
         autoDetectOrder: 30,
         getCredentialValue: (searchConfig) => getScopedCredentialValue(searchConfig, "grok"),
         setCredentialValue: (searchConfigTarget, value) =>

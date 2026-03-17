@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { hasPotentialConfiguredChannels } from "../channels/config-presence.js";
 import { resolveConfigPath, resolveGatewayPort, resolveStateDir } from "../config/paths.js";
-import type { OpenClawConfig } from "../config/types.js";
+import type { OpenCraftConfig } from "../config/types.js";
 import { isSecureWebSocketUrl } from "../gateway/net.js";
 import { probeGateway } from "../gateway/probe.js";
 import { resolveOsSummary } from "../infra/os-summary.js";
@@ -100,7 +100,7 @@ function shouldSkipMissingConfigFastPath(): boolean {
   );
 }
 
-function hasExplicitMemorySearchConfig(cfg: OpenClawConfig, agentId: string): boolean {
+function hasExplicitMemorySearchConfig(cfg: OpenCraftConfig, agentId: string): boolean {
   if (
     cfg.agents?.defaults &&
     Object.prototype.hasOwnProperty.call(cfg.agents.defaults, "memorySearch")
@@ -139,7 +139,7 @@ function trimToUndefined(value: string | undefined): string | undefined {
 }
 
 function buildGatewayConnectionDetails(options: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   url?: string;
   configPath?: string;
   urlSource?: "cli" | "env";
@@ -160,7 +160,7 @@ function buildGatewayConnectionDetails(options: {
       : undefined;
   const envUrlOverride = cliUrlOverride
     ? undefined
-    : (trimToUndefined(process.env.OPENCLAW_GATEWAY_URL) ??
+    : (trimToUndefined(process.env.OPENCRAFT_GATEWAY_URL) ??
       trimToUndefined(process.env.CLAWDBOT_GATEWAY_URL));
   const urlOverride = cliUrlOverride ?? envUrlOverride;
   const remoteUrl =
@@ -171,7 +171,7 @@ function buildGatewayConnectionDetails(options: {
   const url = urlOverride || remoteUrl || localUrl;
   const urlSource = urlOverride
     ? urlSourceHint === "env"
-      ? "env OPENCLAW_GATEWAY_URL"
+      ? "env OPENCRAFT_GATEWAY_URL"
       : "cli --url"
     : remoteUrl
       ? "config gateway.remote.url"
@@ -182,7 +182,7 @@ function buildGatewayConnectionDetails(options: {
   const remoteFallbackNote = remoteMisconfigured
     ? "Warn: gateway.mode=remote but gateway.remote.url is missing; set gateway.remote.url or switch gateway.mode=local."
     : undefined;
-  const allowPrivateWs = process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS === "1";
+  const allowPrivateWs = process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS === "1";
   if (!isSecureWebSocketUrl(url, { allowPrivateWs })) {
     throw new Error(
       [
@@ -214,7 +214,7 @@ function resolveDefaultMemoryStorePath(agentId: string): string {
   return path.join(resolveStateDir(process.env, os.homedir), "memory", `${agentId}.sqlite`);
 }
 
-function resolveMemoryPluginStatus(cfg: OpenClawConfig): MemoryPluginStatus {
+function resolveMemoryPluginStatus(cfg: OpenCraftConfig): MemoryPluginStatus {
   const pluginsEnabled = cfg.plugins?.enabled !== false;
   if (!pluginsEnabled) {
     return { enabled: false, slot: null, reason: "plugins disabled" };
@@ -227,7 +227,7 @@ function resolveMemoryPluginStatus(cfg: OpenClawConfig): MemoryPluginStatus {
 }
 
 async function resolveGatewayProbeSnapshot(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   opts: { timeoutMs?: number; all?: boolean };
 }): Promise<GatewayProbeSnapshot> {
   const gatewayConnection = buildGatewayConnectionDetails({ config: params.cfg });
@@ -263,7 +263,7 @@ async function resolveGatewayProbeSnapshot(params: {
 }
 
 async function resolveMemoryStatusSnapshot(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   agentStatus: Awaited<ReturnType<typeof getAgentLocalStatuses>>;
   memoryPlugin: MemoryPluginStatus;
 }): Promise<MemoryStatusSnapshot | null> {
@@ -300,7 +300,7 @@ async function resolveMemoryStatusSnapshot(params: {
   return { agentId, ...status };
 }
 
-async function readStatusSourceConfig(): Promise<OpenClawConfig> {
+async function readStatusSourceConfig(): Promise<OpenCraftConfig> {
   if (!shouldSkipMissingConfigFastPath() && !existsSync(resolveConfigPath(process.env))) {
     return {};
   }
@@ -309,9 +309,9 @@ async function readStatusSourceConfig(): Promise<OpenClawConfig> {
 }
 
 async function resolveStatusConfig(params: {
-  sourceConfig: OpenClawConfig;
+  sourceConfig: OpenCraftConfig;
   commandName: "status --json";
-}): Promise<{ resolvedConfig: OpenClawConfig; diagnostics: string[] }> {
+}): Promise<{ resolvedConfig: OpenCraftConfig; diagnostics: string[] }> {
   if (!shouldSkipMissingConfigFastPath() && !existsSync(resolveConfigPath(process.env))) {
     return { resolvedConfig: params.sourceConfig, diagnostics: [] };
   }

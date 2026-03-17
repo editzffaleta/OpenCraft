@@ -6,10 +6,10 @@ import {
   formatThinkingLevels,
   formatXHighModelHint,
   normalizeThinkLevel,
-  resolvePreferredOpenClawTmpDir,
+  resolvePreferredOpenCraftTmpDir,
   supportsXHighThinking,
-} from "openclaw/plugin-sdk/llm-task";
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk/llm-task";
+} from "opencraft/plugin-sdk/llm-task";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/llm-task";
 
 function stripCodeFences(s: string): string {
   const trimmed = s.trim();
@@ -45,12 +45,12 @@ type PluginCfg = {
   timeoutMs?: number;
 };
 
-export function createLlmTaskTool(api: OpenClawPluginApi) {
+export function createLlmTaskTool(api: OpenCraftPluginApi) {
   return {
     name: "llm-task",
     label: "LLM Task",
     description:
-      "Run a generic JSON-only LLM task and return schema-validated JSON. Designed for orchestration from Lobster workflows via openclaw.invoke.",
+      "Run a generic JSON-only LLM task and return schema-validated JSON. Designed for orchestration from Lobster workflows via opencraft.invoke.",
     parameters: Type.Object({
       prompt: Type.String({ description: "Task instruction for the LLM." }),
       input: Type.Optional(Type.Unknown({ description: "Optional input payload for the task." })),
@@ -173,7 +173,7 @@ export function createLlmTaskTool(api: OpenClawPluginApi) {
       let tmpDir: string | null = null;
       try {
         tmpDir = await fs.mkdtemp(
-          path.join(resolvePreferredOpenClawTmpDir(), "openclaw-llm-task-"),
+          path.join(resolvePreferredOpenCraftTmpDir(), "opencraft-llm-task-"),
         );
         const sessionId = `llm-task-${Date.now()}`;
         const sessionFile = path.join(tmpDir, "session.json");

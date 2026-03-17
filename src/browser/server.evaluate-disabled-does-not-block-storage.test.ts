@@ -43,9 +43,9 @@ vi.mock("../config/config.js", async (importOriginal) => {
       browser: {
         enabled: true,
         evaluateEnabled: false,
-        defaultProfile: "openclaw",
+        defaultProfile: "opencraft",
         profiles: {
-          openclaw: { cdpPort: testPort + 1, color: "#FF4500" },
+          opencraft: { cdpPort: testPort + 1, color: "#FF4500" },
         },
       },
     }),
@@ -71,8 +71,8 @@ const { startBrowserControlServerFromConfig, stopBrowserControlServer } =
 describe("browser control evaluate gating", () => {
   beforeEach(async () => {
     testPort = await getFreePort();
-    prevGatewayPort = process.env.OPENCLAW_GATEWAY_PORT;
-    process.env.OPENCLAW_GATEWAY_PORT = String(testPort - 2);
+    prevGatewayPort = process.env.OPENCRAFT_GATEWAY_PORT;
+    process.env.OPENCRAFT_GATEWAY_PORT = String(testPort - 2);
     prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
     prevGatewayPassword = process.env.OPENCLAW_GATEWAY_PASSWORD;
     delete process.env.OPENCLAW_GATEWAY_TOKEN;
@@ -88,9 +88,9 @@ describe("browser control evaluate gating", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
     if (prevGatewayPort === undefined) {
-      delete process.env.OPENCLAW_GATEWAY_PORT;
+      delete process.env.OPENCRAFT_GATEWAY_PORT;
     } else {
-      process.env.OPENCLAW_GATEWAY_PORT = prevGatewayPort;
+      process.env.OPENCRAFT_GATEWAY_PORT = prevGatewayPort;
     }
     if (prevGatewayToken === undefined) {
       delete process.env.OPENCLAW_GATEWAY_TOKEN;

@@ -37,7 +37,7 @@ async function writePluginFixture(params: {
     manifest.channels = params.channels;
   }
   await fs.writeFile(
-    path.join(params.dir, "openclaw.plugin.json"),
+    path.join(params.dir, "opencraft.plugin.json"),
     JSON.stringify(manifest, null, 2),
     "utf-8",
   );
@@ -85,17 +85,17 @@ describe("config plugin validation", () => {
     ({
       ...process.env,
       HOME: suiteHome,
-      OPENCLAW_HOME: undefined,
-      OPENCLAW_STATE_DIR: path.join(suiteHome, ".openclaw"),
+      OPENCRAFT_HOME: undefined,
+      OPENCRAFT_STATE_DIR: path.join(suiteHome, ".opencraft"),
       CLAWDBOT_STATE_DIR: undefined,
-      OPENCLAW_PLUGIN_MANIFEST_CACHE_MS: "10000",
+      OPENCRAFT_PLUGIN_MANIFEST_CACHE_MS: "10000",
     }) satisfies NodeJS.ProcessEnv;
 
   const validateInSuite = (raw: unknown) =>
     validateConfigObjectWithPlugins(raw, { env: suiteEnv() });
 
   beforeAll(async () => {
-    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-config-plugin-validation-"));
+    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-config-plugin-validation-"));
     await chmodSafeDir(fixtureRoot);
     suiteHome = path.join(fixtureRoot, "home");
     await mkdirSafe(suiteHome);
@@ -149,7 +149,7 @@ describe("config plugin validation", () => {
       process.cwd(),
       "extensions",
       "voice-call",
-      "openclaw.plugin.json",
+      "opencraft.plugin.json",
     );
     const voiceCallManifest = JSON.parse(await fs.readFile(voiceCallManifestPath, "utf-8")) as {
       configSchema?: Record<string, unknown>;
@@ -233,7 +233,7 @@ describe("config plugin validation", () => {
       {
         env: {
           ...suiteEnv(),
-          OPENCLAW_BUNDLED_PLUGINS_DIR: path.join(suiteHome, "missing-bundled-plugins"),
+          OPENCRAFT_BUNDLED_PLUGINS_DIR: path.join(suiteHome, "missing-bundled-plugins"),
         },
       },
     );
@@ -281,44 +281,23 @@ describe("config plugin validation", () => {
     }
   });
 
-  it("warns for removed google gemini auth plugin ids instead of failing validation", async () => {
-    const removedId = "google-gemini-cli-auth";
+  it("treats google-gemini-cli-auth as a known plugin (still active in this fork)", async () => {
+    // google-gemini-cli-auth is still an active extension in the OpenCraft fork,
+    // so it registers as a known plugin id and produces no stale-entry warnings.
+    const pluginId = "google-gemini-cli-auth";
     const res = validateInSuite({
       agents: { list: [{ id: "pi" }] },
       plugins: {
         enabled: false,
-        entries: { [removedId]: { enabled: true } },
-        allow: [removedId],
-        deny: [removedId],
-        slots: { memory: removedId },
+        entries: { [pluginId]: { enabled: true } },
+        allow: [pluginId],
+        deny: [pluginId],
+        slots: { memory: pluginId },
       },
     });
     expect(res.ok).toBe(true);
     if (res.ok) {
-      expect(res.warnings).toEqual(
-        expect.arrayContaining([
-          {
-            path: `plugins.entries.${removedId}`,
-            message:
-              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
-          },
-          {
-            path: "plugins.allow",
-            message:
-              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
-          },
-          {
-            path: "plugins.deny",
-            message:
-              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
-          },
-          {
-            path: "plugins.slots.memory",
-            message:
-              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
-          },
-        ]),
-      );
+      expect(res.warnings.some((w) => w.message.includes("google-gemini-cli-auth"))).toBe(false);
     }
   });
 

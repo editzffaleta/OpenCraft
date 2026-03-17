@@ -2,7 +2,7 @@ import Foundation
 
 enum GatewayLaunchAgentManager {
     private static let logger = Logger(subsystem: "ai.openclaw", category: "gateway.launchd")
-    private static let disableLaunchAgentMarker = ".openclaw/disable-launchagent"
+    private static let disableLaunchAgentMarker = ".opencraft/disable-launchagent"
 
     private static var disableLaunchAgentMarkerURL: URL {
         FileManager().homeDirectoryForCurrentUser

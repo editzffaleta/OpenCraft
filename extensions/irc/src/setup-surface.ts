@@ -317,7 +317,7 @@ export const ircSetupWizard: ChannelSetupWizard = {
       initialValue: ({ cfg, accountId, credentialValues }) =>
         resolveIrcAccount({ cfg: cfg as CoreConfig, accountId }).config.username ||
         credentialValues.token ||
-        "openclaw",
+        "opencraft",
       validate: ({ value }) => (String(value ?? "").trim() ? undefined : "Required"),
       normalizeValue: ({ value }) => String(value).trim(),
       applySet: async ({ cfg, accountId, value }) =>
@@ -333,7 +333,7 @@ export const ircSetupWizard: ChannelSetupWizard = {
         resolveIrcAccount({ cfg: cfg as CoreConfig, accountId }).config.realname || undefined,
       shouldPrompt: ({ credentialValues }) => credentialValues[USE_ENV_FLAG] !== "1",
       initialValue: ({ cfg, accountId }) =>
-        resolveIrcAccount({ cfg: cfg as CoreConfig, accountId }).config.realname || "OpenClaw",
+        resolveIrcAccount({ cfg: cfg as CoreConfig, accountId }).config.realname || "OpenCraft",
       validate: ({ value }) => (String(value ?? "").trim() ? undefined : "Required"),
       normalizeValue: ({ value }) => String(value).trim(),
       applySet: async ({ cfg, accountId, value }) =>
@@ -345,7 +345,7 @@ export const ircSetupWizard: ChannelSetupWizard = {
     {
       inputKey: "groupChannels",
       message: "Auto-join IRC channels (optional, comma-separated)",
-      placeholder: "#openclaw, #ops",
+      placeholder: "#opencraft, #ops",
       required: false,
       applyEmptyValue: true,
       currentValue: ({ cfg, accountId }) =>
@@ -371,7 +371,7 @@ export const ircSetupWizard: ChannelSetupWizard = {
   ],
   groupAccess: {
     label: "IRC channels",
-    placeholder: "#openclaw, #ops, *",
+    placeholder: "#opencraft, #ops, *",
     currentPolicy: ({ cfg, accountId }) =>
       resolveIrcAccount({ cfg: cfg as CoreConfig, accountId }).config.groupPolicy ?? "allowlist",
     currentEntries: ({ cfg, accountId }) =>
@@ -453,7 +453,7 @@ export const ircSetupWizard: ChannelSetupWizard = {
     title: "IRC next steps",
     lines: [
       "Next: restart gateway and verify status.",
-      "Command: openclaw channels status --probe",
+      "Command: opencraft channels status --probe",
       `Docs: ${formatDocsLink("/channels/irc", "channels/irc")}`,
     ],
   },

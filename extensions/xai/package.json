@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/xai-plugin",
+  "name": "@opencraft/xai-plugin",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw xAI plugin",
+  "description": "OpenCraft xAI plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

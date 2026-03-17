@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenClawChatUI
+@testable import OpenCraftChatUI
 
 @Suite("ToolResultTextFormatter")
 struct ToolResultTextFormatterTests {

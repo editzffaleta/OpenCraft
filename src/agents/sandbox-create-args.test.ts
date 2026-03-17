@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { OPENCLAW_CLI_ENV_VALUE } from "../infra/openclaw-exec-env.js";
+import { OPENCRAFT_CLI_ENV_VALUE } from "../infra/opencraft-exec-env.js";
 import { buildSandboxCreateArgs } from "./sandbox/docker.js";
 import type { SandboxDockerConfig } from "./sandbox/types.js";
 
@@ -69,7 +69,7 @@ describe("buildSandboxCreateArgs", () => {
       cfg,
       scopeKey: "main",
       createdAtMs: 1700000000000,
-      labels: { "openclaw.sandboxBrowser": "1" },
+      labels: { "opencraft.sandboxBrowser": "1" },
     });
 
     expect(args).toEqual(
@@ -78,13 +78,13 @@ describe("buildSandboxCreateArgs", () => {
         "--name",
         "openclaw-sbx-test",
         "--label",
-        "openclaw.sandbox=1",
+        "opencraft.sandbox=1",
         "--label",
-        "openclaw.sessionKey=main",
+        "opencraft.sessionKey=main",
         "--label",
-        "openclaw.createdAtMs=1700000000000",
+        "opencraft.createdAtMs=1700000000000",
         "--label",
-        "openclaw.sandboxBrowser=1",
+        "opencraft.sandboxBrowser=1",
         "--read-only",
         "--tmpfs",
         "/tmp",
@@ -119,7 +119,7 @@ describe("buildSandboxCreateArgs", () => {
         "--env",
         "LANG=C.UTF-8",
         "--env",
-        `OPENCLAW_CLI=${OPENCLAW_CLI_ENV_VALUE}`,
+        `OPENCRAFT_CLI=${OPENCRAFT_CLI_ENV_VALUE}`,
       ]),
     );
 
@@ -137,7 +137,7 @@ describe("buildSandboxCreateArgs", () => {
     );
   });
 
-  it("preserves the OpenClaw exec marker when strict env sanitization is enabled", () => {
+  it("preserves the OpenCraft exec marker when strict env sanitization is enabled", () => {
     const cfg = createSandboxConfig({
       env: {
         NODE_ENV: "test",
@@ -159,7 +159,7 @@ describe("buildSandboxCreateArgs", () => {
         "--env",
         "NODE_ENV=test",
         "--env",
-        `OPENCLAW_CLI=${OPENCLAW_CLI_ENV_VALUE}`,
+        `OPENCRAFT_CLI=${OPENCRAFT_CLI_ENV_VALUE}`,
       ]),
     );
   });

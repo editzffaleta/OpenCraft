@@ -1,6 +1,6 @@
 import { expect, it, type Mock } from "vitest";
 import type { MsgContext } from "../../../auto-reply/templating.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { OpenCraftConfig } from "../../../config/config.js";
 import type {
   ResolveProviderRuntimeGroupPolicyParams,
   RuntimeGroupPolicyResolution,
@@ -119,7 +119,7 @@ export function installChannelPluginContractSuite(params: {
 
 type ChannelActionsContractCase = {
   name: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   expectedActions: readonly ChannelMessageActionName[];
   expectedCapabilities?: readonly ChannelMessageCapability[];
   beforeTest?: () => void;
@@ -315,7 +315,7 @@ export function installChannelThreadingContractSuite(params: {
       expect(
         ["off", "first", "all"].includes(
           threading.resolveReplyToMode({
-            cfg: {} as OpenClawConfig,
+            cfg: {} as OpenCraftConfig,
             accountId: "default",
             chatType: "group",
           }),
@@ -325,7 +325,7 @@ export function installChannelThreadingContractSuite(params: {
 
     const repliedRef = { value: false };
     const toolContext = threading?.buildToolContext?.({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       accountId: "default",
       context: {
         Channel: "group:test",
@@ -349,7 +349,7 @@ export function installChannelThreadingContractSuite(params: {
     }
 
     const autoThreadId = threading?.resolveAutoThreadId?.({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       accountId: "default",
       to: "group:test",
       toolContext,
@@ -361,7 +361,7 @@ export function installChannelThreadingContractSuite(params: {
     }
 
     const replyTransport = threading?.resolveReplyTransport?.({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       accountId: "default",
       threadId: "thread-0",
       replyToId: "msg-0",
@@ -371,7 +371,7 @@ export function installChannelThreadingContractSuite(params: {
     }
 
     const focusedBinding = threading?.resolveFocusedBinding?.({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       accountId: "default",
       context: {
         Channel: "group:test",
@@ -404,7 +404,7 @@ export function installChannelDirectoryContractSuite(params: {
     }
 
     const self = await directory?.self?.({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as OpenCraftConfig,
       accountId: "default",
       runtime: contractRuntime,
     });
@@ -414,7 +414,7 @@ export function installChannelDirectoryContractSuite(params: {
 
     const peers =
       (await directory?.listPeers?.({
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         accountId: "default",
         query: "",
         limit: 5,
@@ -427,7 +427,7 @@ export function installChannelDirectoryContractSuite(params: {
 
     const groups =
       (await directory?.listGroups?.({
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         accountId: "default",
         query: "",
         limit: 5,
@@ -440,7 +440,7 @@ export function installChannelDirectoryContractSuite(params: {
 
     if (directory?.listGroupMembers && groups[0]?.id) {
       const members = await directory.listGroupMembers({
-        cfg: {} as OpenClawConfig,
+        cfg: {} as OpenCraftConfig,
         accountId: "default",
         groupId: groups[0].id,
         limit: 5,
@@ -485,14 +485,14 @@ export function installSessionBindingContractSuite(params: {
 
 type ChannelSetupContractCase<ResolvedAccount> = {
   name: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string;
   input: ChannelSetupInput;
   expectedAccountId?: string;
   expectedValidation?: string | null;
   beforeTest?: () => void;
-  assertPatchedConfig?: (cfg: OpenClawConfig) => void;
-  assertResolvedAccount?: (account: ResolvedAccount, cfg: OpenClawConfig) => void;
+  assertPatchedConfig?: (cfg: OpenCraftConfig) => void;
+  assertResolvedAccount?: (account: ResolvedAccount, cfg: OpenCraftConfig) => void;
 };
 
 export function installChannelSetupContractSuite<ResolvedAccount>(params: {
@@ -543,7 +543,7 @@ export function installChannelSetupContractSuite<ResolvedAccount>(params: {
 
 type ChannelStatusContractCase<Probe> = {
   name: string;
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string;
   runtime?: ChannelAccountSnapshot;
   probe?: Probe;

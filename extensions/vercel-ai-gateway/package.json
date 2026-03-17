@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/vercel-ai-gateway-provider",
+  "name": "@opencraft/vercel-ai-gateway-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Vercel AI Gateway provider plugin",
+  "description": "OpenCraft Vercel AI Gateway provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

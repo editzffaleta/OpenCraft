@@ -7,7 +7,7 @@ VM_NAME="macOS Tahoe"
 SNAPSHOT_HINT="macOS 26.3.1 fresh"
 MODE="both"
 OPENAI_API_KEY_ENV="OPENAI_API_KEY"
-INSTALL_URL="https://openclaw.ai/install.sh"
+INSTALL_URL="https://opencraft.ai/install.sh"
 HOST_PORT="18425"
 HOST_PORT_EXPLICIT=0
 HOST_IP=""
@@ -21,16 +21,16 @@ DISCORD_TOKEN_ENV=""
 DISCORD_TOKEN_VALUE=""
 DISCORD_GUILD_ID=""
 DISCORD_CHANNEL_ID=""
-GUEST_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"
-GUEST_OPENCLAW_ENTRY="/opt/homebrew/lib/node_modules/openclaw/openclaw.mjs"
+GUEST_OPENCRAFT_BIN="/opt/homebrew/bin/opencraft"
+GUEST_OPENCRAFT_ENTRY="/opt/homebrew/lib/node_modules/editzffaleta/OpenCraft.mjs"
 GUEST_NODE_BIN="/opt/homebrew/bin/node"
 GUEST_NPM_BIN="/opt/homebrew/bin/npm"
 
 MAIN_TGZ_DIR="$(mktemp -d)"
 MAIN_TGZ_PATH=""
 SERVER_PID=""
-RUN_DIR="$(mktemp -d /tmp/openclaw-parallels-smoke.XXXXXX)"
-BUILD_LOCK_DIR="${TMPDIR:-/tmp}/openclaw-parallels-build.lock"
+RUN_DIR="$(mktemp -d /tmp/opencraft-parallels-smoke.XXXXXX)"
+BUILD_LOCK_DIR="${TMPDIR:-/tmp}/opencraft-parallels-build.lock"
 
 TIMEOUT_INSTALL_S=900
 TIMEOUT_VERIFY_S=60
@@ -106,14 +106,14 @@ Options:
                              both    = run both lanes
   --openai-api-key-env <var> Host env var name for OpenAI API key.
                              Default: OPENAI_API_KEY
-  --install-url <url>        Installer URL for latest release. Default: https://openclaw.ai/install.sh
+  --install-url <url>        Installer URL for latest release. Default: https://opencraft.ai/install.sh
   --host-port <port>         Host HTTP port for current-main tgz. Default: 18425
   --host-ip <ip>             Override Parallels host IP.
   --latest-version <ver>     Override npm latest version lookup.
   --install-version <ver>    Pin site-installer version/dist-tag for the baseline lane.
   --target-package-spec <npm-spec>
                              Install this npm package tarball instead of packing current main.
-                             Example: openclaw@2026.3.13-beta.1
+                             Example: opencraft@2026.3.13-beta.1
   --skip-latest-ref-check    Skip the known latest-release ref-mode precheck in upgrade lane.
   --keep-server              Leave temp host HTTP server running.
   --discord-token-env <var>  Host env var name for Discord bot token.
@@ -413,24 +413,24 @@ if {$mode eq "current-user"} {
 }
 
 spawn {*}$cmd
-send -- "printf '__OPENCLAW_READY__\\n'\r"
-expect "__OPENCLAW_READY__"
+send -- "printf '__OPENCRAFT_READY__\\n'\r"
+expect "__OPENCRAFT_READY__"
 log_user 0
 send -- "export PS1='' PROMPT='' PROMPT2='' RPROMPT=''\r"
 send -- "stty -echo\r"
 
-send -- "cat >/tmp/openclaw-prl.sh <<'__OPENCLAW_SCRIPT__'\r"
+send -- "cat >/tmp/opencraft-prl.sh <<'__OPENCRAFT_SCRIPT__'\r"
 send -- $script
 if {![string match "*\n" $script]} {
   send -- "\r"
 }
-send -- "__OPENCLAW_SCRIPT__\r"
-send -- "/bin/bash /tmp/openclaw-prl.sh; rc=\$?; rm -f /tmp/openclaw-prl.sh; printf '__OPENCLAW_RC__:%s\\n' \"\$rc\"; exit \"\$rc\"\r"
+send -- "__OPENCRAFT_SCRIPT__\r"
+send -- "/bin/bash /tmp/opencraft-prl.sh; rc=\$?; rm -f /tmp/opencraft-prl.sh; printf '__OPENCRAFT_RC__:%s\\n' \"\$rc\"; exit \"\$rc\"\r"
 log_user 1
 
 set rc 1
 expect {
-  -re {__OPENCLAW_RC__:(-?[0-9]+)} {
+  -re {__OPENCRAFT_RC__:(-?[0-9]+)} {
     set rc $expect_out(1,string)
     exp_continue
   }
@@ -466,7 +466,7 @@ resolve_latest_version() {
     printf '%s\n' "$LATEST_VERSION"
     return
   fi
-  npm view openclaw version --userconfig "$(mktemp)"
+  npm view opencraft version --userconfig "$(mktemp)"
 }
 
 install_latest_release() {
@@ -477,10 +477,10 @@ install_latest_release() {
     version_arg_q=" --version $(shell_quote "$INSTALL_VERSION")"
   fi
   guest_current_user_sh "$(cat <<EOF
-export OPENCLAW_NO_ONBOARD=1
-curl -fsSL $install_url_q -o /tmp/openclaw-install.sh
-bash /tmp/openclaw-install.sh${version_arg_q}
-$GUEST_OPENCLAW_BIN --version
+export OPENCRAFT_NO_ONBOARD=1
+curl -fsSL $install_url_q -o /tmp/opencraft-install.sh
+bash /tmp/opencraft-install.sh${version_arg_q}
+$GUEST_OPENCRAFT_BIN --version
 EOF
 )"
 }
@@ -489,7 +489,7 @@ verify_version_contains() {
   local needle="$1"
   local version
   version="$(
-    guest_current_user_exec "$GUEST_OPENCLAW_BIN" --version
+    guest_current_user_exec "$GUEST_OPENCRAFT_BIN" --version
   )"
   printf '%s\n' "$version"
   case "$version" in
@@ -526,7 +526,7 @@ pack_main_tgz() {
     npm pack --ignore-scripts --json --pack-destination "$MAIN_TGZ_DIR" \
       | python3 -c 'import json, sys; data = json.load(sys.stdin); print(data[-1]["filename"])'
   )"
-  MAIN_TGZ_PATH="$MAIN_TGZ_DIR/openclaw-main-$short_head.tgz"
+  MAIN_TGZ_PATH="$MAIN_TGZ_DIR/opencraft-main-$short_head.tgz"
   cp "$MAIN_TGZ_DIR/$pkg" "$MAIN_TGZ_PATH"
   say "Packed $MAIN_TGZ_PATH"
   tar -xOf "$MAIN_TGZ_PATH" package/dist/build-info.json
@@ -597,7 +597,7 @@ start_server() {
   (
     cd "$MAIN_TGZ_DIR"
     exec python3 -m http.server "$HOST_PORT" --bind 0.0.0.0
-  ) >/tmp/openclaw-parallels-http.log 2>&1 &
+  ) >/tmp/opencraft-parallels-http.log 2>&1 &
   SERVER_PID=$!
   sleep 1
   kill -0 "$SERVER_PID" >/dev/null 2>&1 || die "failed to start host HTTP server"
@@ -611,7 +611,7 @@ install_main_tgz() {
   guest_current_user_sh "$(cat <<EOF
 curl -fsSL $tgz_url_q -o /tmp/$temp_name
 $GUEST_NPM_BIN install -g /tmp/$temp_name
-$GUEST_OPENCLAW_BIN --version
+$GUEST_OPENCRAFT_BIN --version
 EOF
 )"
 }
@@ -620,7 +620,7 @@ verify_bundle_permissions() {
   local npm_q cmd
   npm_q="$(shell_quote "$GUEST_NPM_BIN")"
   cmd="$(cat <<EOF
-root=\$($npm_q root -g); check_path() { local path="\$1"; [ -e "\$path" ] || return 0; local perm perm_oct; perm=\$(/usr/bin/stat -f '%OLp' "\$path"); perm_oct=\$((8#\$perm)); if (( perm_oct & 0002 )); then echo "world-writable install artifact: \$path (\$perm)" >&2; exit 1; fi; }; check_path "\$root/openclaw"; check_path "\$root/openclaw/extensions"; if [ -d "\$root/openclaw/extensions" ]; then while IFS= read -r -d '' extension_dir; do check_path "\$extension_dir"; done < <(/usr/bin/find "\$root/openclaw/extensions" -mindepth 1 -maxdepth 1 -type d -print0); fi
+root=\$($npm_q root -g); check_path() { local path="\$1"; [ -e "\$path" ] || return 0; local perm perm_oct; perm=\$(/usr/bin/stat -f '%OLp' "\$path"); perm_oct=\$((8#\$perm)); if (( perm_oct & 0002 )); then echo "world-writable install artifact: \$path (\$perm)" >&2; exit 1; fi; }; check_path "\$root/opencraft"; check_path "\$root/opencraft/extensions"; if [ -d "\$root/opencraft/extensions" ]; then while IFS= read -r -d '' extension_dir; do check_path "\$extension_dir"; done < <(/usr/bin/find "\$root/opencraft/extensions" -mindepth 1 -maxdepth 1 -type d -print0); fi
 EOF
 )"
   guest_current_user_exec /bin/bash -lc "$cmd"
@@ -629,7 +629,7 @@ EOF
 run_ref_onboard() {
   guest_current_user_exec \
     /usr/bin/env "OPENAI_API_KEY=$OPENAI_API_KEY_VALUE" \
-    "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" onboard \
+    "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" onboard \
     --non-interactive \
     --mode local \
     --auth-choice openai-api-key \
@@ -643,19 +643,19 @@ run_ref_onboard() {
 }
 
 verify_gateway() {
-  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" gateway status --deep --require-rpc
+  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" gateway status --deep --require-rpc
 }
 
 show_gateway_status_compat() {
-  if guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" gateway status --help | grep -Fq -- "--require-rpc"; then
-    guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" gateway status --deep --require-rpc
+  if guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" gateway status --help | grep -Fq -- "--require-rpc"; then
+    guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" gateway status --deep --require-rpc
     return
   fi
-  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" gateway status --deep
+  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" gateway status --deep
 }
 
 verify_turn() {
-  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCLAW_ENTRY" agent --agent main --message ping --json
+  guest_current_user_exec "$GUEST_NODE_BIN" "$GUEST_OPENCRAFT_ENTRY" agent --agent main --message ping --json
 }
 
 configure_discord_smoke() {
@@ -682,27 +682,27 @@ print(
 PY
   )"
   script="$(cat <<EOF
-cat >/tmp/openclaw-discord-token <<'__OPENCLAW_TOKEN__'
+cat >/tmp/opencraft-discord-token <<'__OPENCRAFT_TOKEN__'
 $DISCORD_TOKEN_VALUE
-__OPENCLAW_TOKEN__
-cat >/tmp/openclaw-discord-guilds.json <<'__OPENCLAW_GUILDS__'
+__OPENCRAFT_TOKEN__
+cat >/tmp/opencraft-discord-guilds.json <<'__OPENCRAFT_GUILDS__'
 $guilds_json
-__OPENCLAW_GUILDS__
-token="\$(tr -d '\n' </tmp/openclaw-discord-token)"
-guilds_json="\$(cat /tmp/openclaw-discord-guilds.json)"
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY config set channels.discord.token "\$token"
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY config set channels.discord.enabled true
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY config set channels.discord.groupPolicy allowlist
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY config set channels.discord.guilds "\$guilds_json" --strict-json
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY gateway restart
+__OPENCRAFT_GUILDS__
+token="\$(tr -d '\n' </tmp/opencraft-discord-token)"
+guilds_json="\$(cat /tmp/opencraft-discord-guilds.json)"
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY config set channels.discord.token "\$token"
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY config set channels.discord.enabled true
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY config set channels.discord.groupPolicy allowlist
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY config set channels.discord.guilds "\$guilds_json" --strict-json
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY gateway restart
 for _ in 1 2 3 4 5 6 7 8; do
-  if $GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY gateway status --deep --require-rpc >/dev/null 2>&1; then
+  if $GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY gateway status --deep --require-rpc >/dev/null 2>&1; then
     break
   fi
   sleep 2
 done
-$GUEST_NODE_BIN $GUEST_OPENCLAW_ENTRY channels status --probe --json
-rm -f /tmp/openclaw-discord-token /tmp/openclaw-discord-guilds.json
+$GUEST_NODE_BIN $GUEST_OPENCRAFT_ENTRY channels status --probe --json
+rm -f /tmp/opencraft-discord-token /tmp/opencraft-discord-guilds.json
 EOF
 )"
   prlctl exec "$VM_NAME" --current-user /usr/bin/env \
@@ -786,7 +786,7 @@ wait_for_guest_discord_readback() {
     set +e
     response="$(
       guest_current_user_exec \
-      "$GUEST_OPENCLAW_BIN" \
+      "$GUEST_OPENCRAFT_BIN" \
       message read \
       --channel discord \
       --target "channel:$DISCORD_CHANNEL_ID" \
@@ -818,7 +818,7 @@ run_discord_roundtrip_smoke() {
   host_id_file="$RUN_DIR/$phase.discord-host-message-id"
 
   guest_current_user_exec \
-    "$GUEST_OPENCLAW_BIN" \
+    "$GUEST_OPENCRAFT_BIN" \
     message send \
     --channel discord \
     --target "channel:$DISCORD_CHANNEL_ID" \
@@ -844,7 +844,7 @@ import re
 import sys
 
 text = pathlib.Path(sys.argv[1]).read_text(errors="replace")
-matches = re.findall(r"OpenClaw [^\r\n]+ \([0-9a-f]{7,}\)", text)
+matches = re.findall(r"OpenCraft [^\r\n]+ \([0-9a-f]{7,}\)", text)
 print(matches[-1] if matches else "")
 PY
 }
@@ -963,7 +963,7 @@ run_fresh_main_lane() {
   local snapshot_id="$1"
   local host_ip="$2"
   phase_run "fresh.restore-snapshot" "$TIMEOUT_SNAPSHOT_S" restore_snapshot "$snapshot_id"
-  phase_run "fresh.install-main" "$TIMEOUT_INSTALL_S" install_main_tgz "$host_ip" "openclaw-main-fresh.tgz"
+  phase_run "fresh.install-main" "$TIMEOUT_INSTALL_S" install_main_tgz "$host_ip" "opencraft-main-fresh.tgz"
   FRESH_MAIN_VERSION="$(extract_last_version "$(phase_log_path fresh.install-main)")"
   phase_run "fresh.verify-main-version" "$TIMEOUT_VERIFY_S" verify_target_version
   phase_run "fresh.verify-bundle-permissions" "$TIMEOUT_PERMISSION_S" verify_bundle_permissions
@@ -996,7 +996,7 @@ run_upgrade_lane() {
   else
     UPGRADE_PRECHECK_STATUS="skipped"
   fi
-  phase_run "upgrade.install-main" "$TIMEOUT_INSTALL_S" install_main_tgz "$host_ip" "openclaw-main-upgrade.tgz"
+  phase_run "upgrade.install-main" "$TIMEOUT_INSTALL_S" install_main_tgz "$host_ip" "opencraft-main-upgrade.tgz"
   UPGRADE_MAIN_VERSION="$(extract_last_version "$(phase_log_path upgrade.install-main)")"
   phase_run "upgrade.verify-main-version" "$TIMEOUT_VERIFY_S" verify_target_version
   phase_run "upgrade.verify-bundle-permissions" "$TIMEOUT_PERMISSION_S" verify_bundle_permissions

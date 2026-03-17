@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createConfigIO } from "./io.js";
-import type { OpenClawConfig } from "./types.js";
+import type { OpenCraftConfig } from "./types.js";
 
 describe("config io write", () => {
   let fixtureRoot = "";
@@ -20,7 +20,7 @@ describe("config io write", () => {
   }
 
   beforeAll(async () => {
-    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-config-io-"));
+    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-config-io-"));
   });
 
   afterAll(async () => {
@@ -33,7 +33,7 @@ describe("config io write", () => {
     env?: NodeJS.ProcessEnv;
     logger?: { warn: (msg: string) => void; error: (msg: string) => void };
   }) {
-    const configPath = path.join(params.home, ".openclaw", "openclaw.json");
+    const configPath = path.join(params.home, ".opencraft", "opencraft.json");
     await fs.mkdir(path.dirname(configPath), { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(params.initialConfig, null, 2), "utf-8");
 
@@ -80,7 +80,7 @@ describe("config io write", () => {
         error: vi.fn(),
       },
     });
-    const auditPath = path.join(params.home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(params.home, ".opencraft", "logs", "config-audit.jsonl");
     const next = structuredClone(snapshot.config);
     const gateway =
       next.gateway && typeof next.gateway === "object"
@@ -146,7 +146,7 @@ describe("config io write", () => {
     "tightens world-writable state dir when writing the default config",
     async () => {
       await withSuiteHome(async (home) => {
-        const stateDir = path.join(home, ".openclaw");
+        const stateDir = path.join(home, ".opencraft");
         await fs.mkdir(stateDir, { recursive: true, mode: 0o777 });
         await fs.chmod(stateDir, 0o777);
 
@@ -172,20 +172,20 @@ describe("config io write", () => {
         logger: silentLogger,
       });
 
-      const invalidConfig: OpenClawConfig = {
+      const invalidConfig: OpenCraftConfig = {
         channels: {
           telegram: {
             dmPolicy: "open",
             allowFrom: [],
           },
         },
-      } satisfies OpenClawConfig;
+      } satisfies OpenCraftConfig;
 
       await expect(io.writeConfigFile(invalidConfig)).rejects.toThrow(
-        "openclaw config set channels.telegram.allowFrom '[\"*\"]'",
+        "opencraft config set channels.telegram.allowFrom '[\"*\"]'",
       );
       await expect(io.writeConfigFile(invalidConfig)).rejects.toThrow(
-        'openclaw config set channels.telegram.dmPolicy "pairing"',
+        'opencraft config set channels.telegram.dmPolicy "pairing"',
       );
     });
   });
@@ -220,7 +220,7 @@ describe("config io write", () => {
 
   it("does not mutate caller config when unsetPaths is applied on first write", async () => {
     await withSuiteHome(async (home) => {
-      const configPath = path.join(home, ".openclaw", "openclaw.json");
+      const configPath = path.join(home, ".opencraft", "opencraft.json");
       const io = createConfigIO({
         env: {} as NodeJS.ProcessEnv,
         homedir: () => home,
@@ -387,7 +387,7 @@ describe("config io write", () => {
 
   it("keeps env refs in arrays when appending entries", async () => {
     await withSuiteHome(async (home) => {
-      const configPath = path.join(home, ".openclaw", "openclaw.json");
+      const configPath = path.join(home, ".opencraft", "opencraft.json");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await fs.writeFile(
         configPath,
@@ -538,9 +538,9 @@ describe("config io write", () => {
         initialConfig: { gateway: { mode: "local" } },
         gatewayPatch: { bind: "loopback" },
         env: {
-          OPENCLAW_WATCH_MODE: "1",
-          OPENCLAW_WATCH_SESSION: "watch-session-1",
-          OPENCLAW_WATCH_COMMAND: "gateway --force",
+          OPENCRAFT_WATCH_MODE: "1",
+          OPENCRAFT_WATCH_SESSION: "watch-session-1",
+          OPENCRAFT_WATCH_COMMAND: "gateway --force",
         } as NodeJS.ProcessEnv,
       });
       expect(last.watchMode).toBe(true);

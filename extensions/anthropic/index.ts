@@ -1,10 +1,10 @@
 import {
   emptyPluginConfigSchema,
-  type OpenClawPluginApi,
+  type OpenCraftPluginApi,
   type ProviderAuthContext,
   type ProviderResolveDynamicModelContext,
   type ProviderRuntimeModel,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import {
   CLAUDE_CLI_PROFILE_ID,
   listProfilesForProvider,
@@ -167,7 +167,7 @@ function buildAnthropicAuthDoctorHint(params: {
     }`,
     `- auth store oauth profiles: ${storeOauthProfiles || "(none)"}`,
     `- suggested profile: ${suggested}`,
-    `Fix: run "${formatCliCommand("openclaw doctor --yes")}"`,
+    `Fix: run "${formatCliCommand("opencraft doctor --yes")}"`,
   ].join("\n");
 }
 
@@ -314,7 +314,7 @@ const anthropicPlugin = {
   name: "Anthropic Provider",
   description: "Bundled Anthropic provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Anthropic",

@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/anthropic-provider",
+  "name": "@opencraft/anthropic-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Anthropic provider plugin",
+  "description": "OpenCraft Anthropic provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

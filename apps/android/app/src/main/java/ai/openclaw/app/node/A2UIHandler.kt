@@ -19,7 +19,7 @@ class A2UIHandler(
     val raw = if (nodeRaw.isNotBlank()) nodeRaw else operatorRaw
     if (raw.isBlank()) return null
     val base = raw.trimEnd('/')
-    return "${base}/__openclaw__/a2ui/?platform=android"
+    return "${base}/__opencraft__/a2ui/?platform=android"
   }
 
   suspend fun ensureA2uiReady(a2uiUrl: String): Boolean {

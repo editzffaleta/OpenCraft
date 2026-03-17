@@ -2,7 +2,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { ProxyAgent } from "undici";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const TEST_GAXIOS_CONSTRUCTOR_OVERRIDE = "__OPENCLAW_TEST_GAXIOS_CONSTRUCTOR__";
+const TEST_GAXIOS_CONSTRUCTOR_OVERRIDE = "__OPENCRAFT_TEST_GAXIOS_CONSTRUCTOR__";
 
 describe("gaxios fetch compat", () => {
   afterEach(() => {

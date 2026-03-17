@@ -1,5 +1,5 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import {
   createTelegramActionGate,
   resolveTelegramPollActionGateState,
@@ -98,7 +98,7 @@ export function readTelegramButtons(
 
 export async function handleTelegramAction(
   params: Record<string, unknown>,
-  cfg: OpenClawConfig,
+  cfg: OpenCraftConfig,
   options?: {
     mediaLocalRoots?: readonly string[];
   },

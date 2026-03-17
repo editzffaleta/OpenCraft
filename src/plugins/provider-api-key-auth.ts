@@ -1,5 +1,5 @@
 import { upsertAuthProfile } from "../agents/auth-profiles/profiles.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import { normalizeOptionalSecretInput } from "../utils/normalize-secret-input.js";
 import type {
@@ -26,7 +26,7 @@ type ProviderApiKeyAuthMethodOptions = {
   metadata?: Record<string, string>;
   noteMessage?: string;
   noteTitle?: string;
-  applyConfig?: (cfg: OpenClawConfig) => OpenClawConfig;
+  applyConfig?: (cfg: OpenCraftConfig) => OpenCraftConfig;
 };
 
 let providerApiKeyAuthRuntimePromise:
@@ -65,7 +65,7 @@ async function applyApiKeyConfig(params: {
   providerId: string;
   profileIds: string[];
   defaultModel?: string;
-  applyConfig?: (cfg: OpenClawConfig) => OpenClawConfig;
+  applyConfig?: (cfg: OpenCraftConfig) => OpenCraftConfig;
 }) {
   const { applyAuthProfileConfig, applyPrimaryModel } = await loadProviderApiKeyAuthRuntime();
   let next = params.ctx.config;

@@ -152,7 +152,7 @@ describe("validateBindMounts", () => {
     mkdirSync(workspace, { recursive: true });
     const link = join(workspace, "run-link");
     symlinkSync("/var/run", link);
-    const missingLeaf = join(link, "openclaw-not-created");
+    const missingLeaf = join(link, "opencraft-not-created");
     expect(() =>
       validateBindMounts([`${missingLeaf}:/mnt/run:ro`], {
         allowedSourceRoots: [workspace],

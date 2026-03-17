@@ -387,7 +387,7 @@ struct SettingsTab: View {
                             .truncationMode(.middle)
                         LabeledContent("Device", value: DeviceInfoHelper.deviceFamily())
                         LabeledContent("Platform", value: DeviceInfoHelper.platformStringForDisplay())
-                        LabeledContent("OpenClaw", value: DeviceInfoHelper.openClawVersionString())
+                        LabeledContent("OpenCraft", value: DeviceInfoHelper.openClawVersionString())
                     }
                 }
             }

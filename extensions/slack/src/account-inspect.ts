@@ -1,9 +1,9 @@
 import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   type SlackAccountConfig,
-} from "openclaw/plugin-sdk/slack";
+} from "opencraft/plugin-sdk/slack";
 import {
   hasConfiguredSecretInput,
   normalizeSecretInputString,
@@ -64,7 +64,7 @@ function inspectSlackToken(value: unknown): {
 }
 
 export function inspectSlackAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   accountId?: string | null;
   envBotToken?: string | null;
   envAppToken?: string | null;

@@ -136,7 +136,7 @@ final class RemotePortTunnel {
     }
 
     private static func resolveRemotePortOverride(for sshHost: String) -> Int? {
-        let root = OpenClawConfigFile.loadDict()
+        let root = OpenCraftConfigFile.loadDict()
         guard let gateway = root["gateway"] as? [String: Any],
               let remote = gateway["remote"] as? [String: Any],
               let urlRaw = remote["url"] as? String
@@ -152,8 +152,8 @@ final class RemotePortTunnel {
         else {
             return nil
         }
-        let sshKey = OpenClawConfigFile.hostKey(sshHost)
-        let urlKey = OpenClawConfigFile.hostKey(host)
+        let sshKey = OpenCraftConfigFile.hostKey(sshHost)
+        let urlKey = OpenCraftConfigFile.hostKey(host)
         guard !sshKey.isEmpty, !urlKey.isEmpty else { return nil }
         guard sshKey == urlKey else {
             Self.logger.debug(

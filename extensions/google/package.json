@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/google-plugin",
+  "name": "@opencraft/google-plugin",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Google plugin",
+  "description": "OpenCraft Google plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

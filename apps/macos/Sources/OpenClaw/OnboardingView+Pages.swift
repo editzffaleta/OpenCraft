@@ -1,6 +1,6 @@
 import AppKit
 import OpenClawChatUI
-import OpenClawDiscovery
+import OpenCraftDiscovery
 import OpenClawIPC
 import OpenClawKit
 import SwiftUI
@@ -720,7 +720,7 @@ extension OnboardingView {
                         Text("Workspace folder")
                             .font(.headline)
                         TextField(
-                            AgentWorkspace.displayPath(for: OpenClawConfigFile.defaultWorkspaceURL()),
+                            AgentWorkspace.displayPath(for: OpenCraftConfigFile.defaultWorkspaceURL()),
                             text: self.$workspacePath)
                             .textFieldStyle(.roundedBorder)
 
@@ -750,7 +750,7 @@ extension OnboardingView {
                                     let saved = await self.saveAgentWorkspace(AgentWorkspace.displayPath(for: url))
                                     if saved {
                                         self.workspaceStatus =
-                                            "Saved to ~/.openclaw/openclaw.json (agents.defaults.workspace)"
+                                            "Saved to ~/.editzffaleta/OpenCraft.json (agents.defaults.workspace)"
                                     }
                                 }
                             }
@@ -819,7 +819,7 @@ extension OnboardingView {
                         title: "Remote gateway checklist",
                         subtitle: """
                         On your gateway host: install/update the `openclaw` package and make sure credentials exist
-                        (typically `~/.openclaw/credentials/oauth.json`). Then connect again if needed.
+                        (typically `~/.opencraft/credentials/oauth.json`). Then connect again if needed.
                         """,
                         systemImage: "network")
                     Divider()

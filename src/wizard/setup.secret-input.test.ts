@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { resolveSetupSecretInputString } from "./setup.secret-input.js";
 
-function makeConfig(): OpenClawConfig {
+function makeConfig(): OpenCraftConfig {
   return {
     secrets: {
       providers: {
         default: { source: "env" },
       },
     },
-  } as OpenClawConfig;
+  } as OpenCraftConfig;
 }
 
 describe("resolveSetupSecretInputString", () => {

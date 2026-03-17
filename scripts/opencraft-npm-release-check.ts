@@ -189,9 +189,9 @@ export function collectReleasePackageMetadataErrors(pkg: PackageJson): string[] 
       }.`,
     );
   }
-  if (pkg.bin?.opencraft !== "opencraft.mjs") {
+  if (pkg.bin?.opencraft !== "openclaw.mjs") {
     errors.push(
-      `package.json bin.opencraft must be "opencraft.mjs"; found "${pkg.bin?.opencraft ?? ""}".`,
+      `package.json bin.opencraft must be "openclaw.mjs"; found "${pkg.bin?.opencraft ?? ""}".`,
     );
   }
   if (pkg.peerDependencies?.["node-llama-cpp"] !== "3.16.2") {

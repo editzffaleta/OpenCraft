@@ -5,7 +5,7 @@ import {
   SELF_HOSTED_DEFAULT_COST,
   SELF_HOSTED_DEFAULT_MAX_TOKENS,
 } from "../agents/self-hosted-provider-defaults.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import type {
   ProviderDiscoveryContext,
   ProviderAuthResult,
@@ -21,7 +21,7 @@ export {
   SELF_HOSTED_DEFAULT_MAX_TOKENS,
 } from "../agents/self-hosted-provider-defaults.js";
 
-export function applyProviderDefaultModel(cfg: OpenClawConfig, modelRef: string): OpenClawConfig {
+export function applyProviderDefaultModel(cfg: OpenCraftConfig, modelRef: string): OpenCraftConfig {
   const existingModel = cfg.agents?.defaults?.model;
   const fallbacks =
     existingModel && typeof existingModel === "object" && "fallbacks" in existingModel
@@ -44,7 +44,7 @@ export function applyProviderDefaultModel(cfg: OpenClawConfig, modelRef: string)
 }
 
 function buildOpenAICompatibleSelfHostedProviderConfig(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   providerId: string;
   baseUrl: string;
   providerApiKey: string;
@@ -53,7 +53,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): { config: OpenClawConfig; modelId: string; modelRef: string; profileId: string } {
+}): { config: OpenCraftConfig; modelId: string; modelRef: string; profileId: string } {
   const modelRef = `${params.providerId}/${params.modelId}`;
   const profileId = `${params.providerId}:default`;
   return {
@@ -90,7 +90,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
 }
 
 type OpenAICompatibleSelfHostedProviderSetupParams = {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   providerId: string;
   providerLabel: string;
@@ -104,7 +104,7 @@ type OpenAICompatibleSelfHostedProviderSetupParams = {
 };
 
 type OpenAICompatibleSelfHostedProviderPromptResult = {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   credential: AuthProfileCredential;
   modelId: string;
   modelRef: string;
@@ -239,7 +239,7 @@ export async function configureOpenAICompatibleSelfHostedProviderNonInteractive(
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): Promise<OpenClawConfig | null> {
+}): Promise<OpenCraftConfig | null> {
   const baseUrl = (params.ctx.opts.customBaseUrl?.trim() || params.defaultBaseUrl).replace(
     /\/+$/,
     "",

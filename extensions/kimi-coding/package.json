@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/kimi-coding-provider",
+  "name": "@opencraft/kimi-coding-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw Kimi Coding provider plugin",
+  "description": "OpenCraft Kimi Coding provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

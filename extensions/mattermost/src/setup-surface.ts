@@ -2,8 +2,8 @@ import {
   applySetupAccountConfigPatch,
   DEFAULT_ACCOUNT_ID,
   hasConfiguredSecretInput,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk/mattermost";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/mattermost";
 import { type ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { formatDocsLink } from "../../../src/terminal/links.js";
 import { listMattermostAccountIds } from "./mattermost/accounts.js";
@@ -111,7 +111,7 @@ export const mattermostSetupWizard: ChannelSetupWizard = {
       normalizeValue: ({ value }) => normalizeMattermostBaseUrl(value) ?? value.trim(),
     },
   ],
-  disable: (cfg: OpenClawConfig) => ({
+  disable: (cfg: OpenCraftConfig) => ({
     ...cfg,
     channels: {
       ...cfg.channels,

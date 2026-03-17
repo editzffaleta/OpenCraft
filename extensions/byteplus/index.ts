@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import { ensureModelAllowlistEntry } from "../../src/commands/model-allowlist.js";
 import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
 import { buildBytePlusCodingProvider, buildBytePlusProvider } from "./provider-catalog.js";
@@ -11,7 +11,7 @@ const byteplusPlugin = {
   name: "BytePlus Provider",
   description: "Bundled BytePlus provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "BytePlus",

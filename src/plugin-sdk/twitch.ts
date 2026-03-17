@@ -23,13 +23,13 @@ export type {
 } from "../channels/plugins/types.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
-export type { OpenClawConfig } from "../config/config.js";
+export type { OpenCraftConfig } from "../config/config.js";
 export { MarkdownConfigSchema } from "../config/zod-schema.core.js";
 export type { OutboundDeliveryResult } from "../infra/outbound/deliver.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "./account-id.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenClawPluginApi } from "../plugins/types.js";
+export type { OpenCraftPluginApi } from "../plugins/types.js";
 export type { RuntimeEnv } from "../runtime.js";
 export { formatDocsLink } from "../terminal/links.js";
 export type { WizardPrompter } from "../wizard/prompts.js";

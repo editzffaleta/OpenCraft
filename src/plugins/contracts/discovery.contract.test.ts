@@ -7,7 +7,7 @@ import { QWEN_OAUTH_MARKER } from "../../agents/model-auth-markers.js";
 import type { ModelDefinitionConfig } from "../../config/types.models.js";
 import { createCapturedPluginRegistration } from "../../test-utils/plugin-registration.js";
 import { runProviderCatalog } from "../provider-discovery.js";
-import type { OpenClawPluginApi, ProviderPlugin } from "../types.js";
+import type { OpenCraftPluginApi, ProviderPlugin } from "../types.js";
 
 const resolveCopilotApiTokenMock = vi.hoisted(() => vi.fn());
 const buildOllamaProviderMock = vi.hoisted(() => vi.fn());
@@ -22,8 +22,8 @@ vi.mock("../../../extensions/github-copilot/token.js", async () => {
   };
 });
 
-vi.mock("openclaw/plugin-sdk/provider-setup", async () => {
-  const actual = await vi.importActual<object>("openclaw/plugin-sdk/provider-setup");
+vi.mock("opencraft/plugin-sdk/provider-setup", async () => {
+  const actual = await vi.importActual<object>("opencraft/plugin-sdk/provider-setup");
   return {
     ...actual,
     buildOllamaProvider: (...args: unknown[]) => buildOllamaProviderMock(...args),
@@ -32,8 +32,8 @@ vi.mock("openclaw/plugin-sdk/provider-setup", async () => {
   };
 });
 
-vi.mock("openclaw/plugin-sdk/self-hosted-provider-setup", async () => {
-  const actual = await vi.importActual<object>("openclaw/plugin-sdk/self-hosted-provider-setup");
+vi.mock("opencraft/plugin-sdk/self-hosted-provider-setup", async () => {
+  const actual = await vi.importActual<object>("opencraft/plugin-sdk/self-hosted-provider-setup");
   return {
     ...actual,
     buildVllmProvider: (...args: unknown[]) => buildVllmProviderMock(...args),
@@ -41,8 +41,8 @@ vi.mock("openclaw/plugin-sdk/self-hosted-provider-setup", async () => {
   };
 });
 
-vi.mock("openclaw/plugin-sdk/ollama-setup", async () => {
-  const actual = await vi.importActual<object>("openclaw/plugin-sdk/ollama-setup");
+vi.mock("opencraft/plugin-sdk/ollama-setup", async () => {
+  const actual = await vi.importActual<object>("opencraft/plugin-sdk/ollama-setup");
   return {
     ...actual,
     buildOllamaProvider: (...args: unknown[]) => buildOllamaProviderMock(...args),
@@ -60,7 +60,7 @@ const cloudflareAiGatewayPlugin = (
   await import("../../../extensions/cloudflare-ai-gateway/index.js")
 ).default;
 
-function registerProviders(...plugins: Array<{ register(api: OpenClawPluginApi): void }>) {
+function registerProviders(...plugins: Array<{ register(api: OpenCraftPluginApi): void }>) {
   const captured = createCapturedPluginRegistration();
   for (const plugin of plugins) {
     plugin.register(captured.api);

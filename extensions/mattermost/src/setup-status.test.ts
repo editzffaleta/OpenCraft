@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "openclaw/plugin-sdk/mattermost";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
 import { describe, expect, it } from "vitest";
 import { mattermostSetupWizard } from "./setup-surface.js";
 
@@ -16,7 +16,7 @@ describe("mattermost setup status", () => {
             },
           },
         },
-      } as OpenClawConfig,
+      } as OpenCraftConfig,
     });
 
     expect(configured).toBe(true);

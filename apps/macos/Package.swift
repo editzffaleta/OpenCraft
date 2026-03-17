@@ -4,15 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "OpenClaw",
+    name: "OpenCraft",
     platforms: [
         .macOS(.v15),
     ],
     products: [
         .library(name: "OpenClawIPC", targets: ["OpenClawIPC"]),
-        .library(name: "OpenClawDiscovery", targets: ["OpenClawDiscovery"]),
-        .executable(name: "OpenClaw", targets: ["OpenClaw"]),
-        .executable(name: "openclaw-mac", targets: ["OpenClawMacCLI"]),
+        .library(name: "OpenCraftDiscovery", targets: ["OpenCraftDiscovery"]),
+        .executable(name: "OpenCraft", targets: ["OpenCraft"]),
+        .executable(name: "openclaw-mac", targets: ["OpenCraftMacCLI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/orchetect/MenuBarExtraAccess", exact: "1.2.2"),
@@ -31,19 +31,19 @@ let package = Package(
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .target(
-            name: "OpenClawDiscovery",
+            name: "OpenCraftDiscovery",
             dependencies: [
                 .product(name: "OpenClawKit", package: "OpenClawKit"),
             ],
-            path: "Sources/OpenClawDiscovery",
+            path: "Sources/OpenCraftDiscovery",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .executableTarget(
-            name: "OpenClaw",
+            name: "OpenCraft",
             dependencies: [
                 "OpenClawIPC",
-                "OpenClawDiscovery",
+                "OpenCraftDiscovery",
                 .product(name: "OpenClawKit", package: "OpenClawKit"),
                 .product(name: "OpenClawChatUI", package: "OpenClawKit"),
                 .product(name: "OpenClawProtocol", package: "OpenClawKit"),
@@ -66,13 +66,13 @@ let package = Package(
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .executableTarget(
-            name: "OpenClawMacCLI",
+            name: "OpenCraftMacCLI",
             dependencies: [
-                "OpenClawDiscovery",
+                "OpenCraftDiscovery",
                 .product(name: "OpenClawKit", package: "OpenClawKit"),
                 .product(name: "OpenClawProtocol", package: "OpenClawKit"),
             ],
-            path: "Sources/OpenClawMacCLI",
+            path: "Sources/OpenCraftMacCLI",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
@@ -80,8 +80,8 @@ let package = Package(
             name: "OpenClawIPCTests",
             dependencies: [
                 "OpenClawIPC",
-                "OpenClaw",
-                "OpenClawDiscovery",
+                "OpenCraft",
+                "OpenCraftDiscovery",
                 .product(name: "OpenClawProtocol", package: "OpenClawKit"),
                 .product(name: "SwabbleKit", package: "swabble"),
             ],

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../../src/config/config.js";
 import { clearPluginCommands, registerPluginCommand } from "../../../../src/plugins/commands.js";
 import type { RuntimeEnv } from "../../../../src/runtime.js";
 
@@ -61,7 +61,7 @@ const {
   createNoopThreadBindingManagerMock: vi.fn(() => ({ stop: vi.fn() })),
   createThreadBindingManagerMock: vi.fn(() => ({ stop: vi.fn() })),
   getAcpSessionStatusMock: vi.fn(
-    async (_params: { cfg: OpenClawConfig; sessionKey: string; signal?: AbortSignal }) => ({
+    async (_params: { cfg: OpenCraftConfig; sessionKey: string; signal?: AbortSignal }) => ({
       state: "idle",
     }),
   ),
@@ -289,7 +289,7 @@ describe("monitorDiscordProvider real plugin registry", () => {
     exit: vi.fn(),
   });
 
-  const baseConfig = (): OpenClawConfig =>
+  const baseConfig = (): OpenCraftConfig =>
     ({
       channels: {
         discord: {
@@ -298,7 +298,7 @@ describe("monitorDiscordProvider real plugin registry", () => {
           },
         },
       },
-    }) as OpenClawConfig;
+    }) as OpenCraftConfig;
 
   beforeEach(() => {
     clearPluginCommands();

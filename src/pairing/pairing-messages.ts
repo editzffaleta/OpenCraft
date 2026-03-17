@@ -8,13 +8,13 @@ export function buildPairingReply(params: {
 }): string {
   const { channel, idLine, code } = params;
   return [
-    "OpenClaw: access not configured.",
+    "OpenCraft: access not configured.",
     "",
     idLine,
     "",
     `Pairing code: ${code}`,
     "",
     "Ask the bot owner to approve with:",
-    formatCliCommand(`openclaw pairing approve ${channel} ${code}`),
+    formatCliCommand(`opencraft pairing approve ${channel} ${code}`),
   ].join("\n");
 }

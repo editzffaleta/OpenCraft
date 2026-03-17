@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "../../../src/config/config.js";
 import type { TelegramAccountConfig } from "../../../src/config/types.js";
 import { clearPluginCommands, registerPluginCommand } from "../../../src/plugins/commands.js";
 import type { RuntimeEnv } from "../../../src/runtime.js";
@@ -55,7 +55,7 @@ describe("registerTelegramNativeCommands real plugin registry", () => {
     return setMyCommands.mock.calls[0]?.[0] as RegisteredCommand[];
   }
 
-  const buildParams = (cfg: OpenClawConfig, accountId = "default") =>
+  const buildParams = (cfg: OpenCraftConfig, accountId = "default") =>
     ({
       bot: {
         api: {
@@ -185,7 +185,7 @@ describe("registerTelegramNativeCommands real plugin registry", () => {
 
     registerTelegramNativeCommands({
       ...buildParams({
-        commands: { allowFrom: { telegram: ["999"] } } as OpenClawConfig["commands"],
+        commands: { allowFrom: { telegram: ["999"] } } as OpenCraftConfig["commands"],
       }),
       bot,
       allowFrom: ["999"],

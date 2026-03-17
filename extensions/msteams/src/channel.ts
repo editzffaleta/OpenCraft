@@ -1,12 +1,12 @@
 import {
   collectAllowlistProviderRestrictSendersWarnings,
   formatAllowFromLowercase,
-} from "openclaw/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/compat";
 import type {
   ChannelMessageActionName,
   ChannelPlugin,
-  OpenClawConfig,
-} from "openclaw/plugin-sdk/msteams";
+  OpenCraftConfig,
+} from "opencraft/plugin-sdk/msteams";
 import {
   buildProbeChannelStatusSummary,
   buildRuntimeAccountStatusSnapshot,
@@ -15,7 +15,7 @@ import {
   DEFAULT_ACCOUNT_ID,
   MSTeamsConfigSchema,
   PAIRING_APPROVED_MESSAGE,
-} from "openclaw/plugin-sdk/msteams";
+} from "opencraft/plugin-sdk/msteams";
 import { resolveMSTeamsGroupToolPolicy } from "./policy.js";
 import type { ProbeMSTeamsResult } from "./probe.js";
 import {
@@ -124,7 +124,7 @@ export const msteamsPlugin: ChannelPlugin<ResolvedMSTeamsAccount> = {
       },
     }),
     deleteAccount: ({ cfg }) => {
-      const next = { ...cfg } as OpenClawConfig;
+      const next = { ...cfg } as OpenCraftConfig;
       const nextChannels = { ...cfg.channels };
       delete nextChannels.msteams;
       if (Object.keys(nextChannels).length > 0) {

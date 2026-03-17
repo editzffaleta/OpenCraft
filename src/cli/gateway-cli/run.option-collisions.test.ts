@@ -26,7 +26,7 @@ const configState = vi.hoisted(() => ({
 const { runtimeErrors, defaultRuntime, resetRuntimeCapture } = createCliRuntimeCapture();
 
 vi.mock("../../config/config.js", () => ({
-  getConfigPath: () => "/tmp/openclaw-test-missing-config.json",
+  getConfigPath: () => "/tmp/opencraft-test-missing-config.json",
   loadConfig: () => configState.cfg,
   readConfigFileSnapshot: async () => configState.snapshot,
   resolveStateDir: () => "/tmp",
@@ -237,7 +237,7 @@ describe("gateway run option collisions", () => {
 
   it("reads gateway password from --password-file", async () => {
     await withTempSecretFiles(
-      "openclaw-gateway-run-",
+      "opencraft-gateway-run-",
       { password: "pw_from_file\n" },
       async ({ passwordFile }) => {
         await runGatewayCli([
@@ -284,7 +284,7 @@ describe("gateway run option collisions", () => {
 
   it("rejects using both --password and --password-file", async () => {
     await withTempSecretFiles(
-      "openclaw-gateway-run-",
+      "opencraft-gateway-run-",
       { password: "pw_from_file\n" },
       async ({ passwordFile }) => {
         await expect(

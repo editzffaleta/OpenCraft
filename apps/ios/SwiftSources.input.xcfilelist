@@ -9,7 +9,7 @@ Sources/Device/DeviceStatusService.swift
 Sources/Device/NetworkStatusService.swift
 Sources/Chat/ChatSheet.swift
 Sources/Chat/IOSGatewayChatTransport.swift
-Sources/OpenClawApp.swift
+Sources/OpenCraftApp.swift
 Sources/Location/LocationService.swift
 Sources/Model/NodeAppModel.swift
 Sources/Model/NodeAppModel+Canvas.swift

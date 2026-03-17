@@ -406,8 +406,8 @@ export async function runOnboardingWizard(
 
   const workspaceDir = resolveUserPath(workspaceInput.trim() || onboardHelpers.DEFAULT_WORKSPACE);
 
-  const { applyOnboardingLocalWorkspaceConfig } = await import("../commands/onboard-config.js");
-  let nextConfig: OpenCraftConfig = applyOnboardingLocalWorkspaceConfig(baseConfig, workspaceDir);
+  const { applyLocalSetupWorkspaceConfig } = await import("../commands/onboard-config.js");
+  let nextConfig: OpenCraftConfig = applyLocalSetupWorkspaceConfig(baseConfig, workspaceDir);
 
   const { ensureAuthProfileStore } = await import("../agents/auth-profiles.runtime.js");
   const { promptAuthChoiceGrouped } = await import("../commands/auth-choice-prompt.js");

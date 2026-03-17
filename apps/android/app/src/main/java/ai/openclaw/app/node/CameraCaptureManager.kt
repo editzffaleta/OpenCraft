@@ -208,7 +208,7 @@ class CameraCaptureManager(private val context: Context) {
       android.util.Log.w("CameraCaptureManager", "clip: warming up camera 1.5s...")
       kotlinx.coroutines.delay(1_500)
 
-      val file = File.createTempFile("openclaw-clip-", ".mp4")
+      val file = File.createTempFile("opencraft-clip-", ".mp4")
       val outputOptions = FileOutputOptions.Builder(file).build()
 
       val finalized = kotlinx.coroutines.CompletableDeferred<VideoRecordEvent.Finalize>()

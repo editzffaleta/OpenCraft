@@ -1,6 +1,6 @@
 export type {
   AnyAgentTool,
-  OpenClawPluginConfigSchema,
+  OpenCraftPluginConfigSchema,
   ProviderDiscoveryContext,
   ProviderCatalogContext,
   ProviderCatalogResult,
@@ -24,14 +24,14 @@ export type {
   SpeechProviderPlugin,
   ProviderThinkingPolicyContext,
   ProviderWrapStreamFnContext,
-  OpenClawPluginService,
+  OpenCraftPluginService,
   ProviderAuthContext,
   ProviderAuthDoctorHintContext,
   ProviderAuthMethodNonInteractiveContext,
   ProviderAuthMethod,
   ProviderAuthResult,
 } from "../plugins/types.js";
-export type { OpenClawConfig } from "../config/config.js";
+export type { OpenCraftConfig } from "../config/config.js";
 export type { GatewayRequestHandlerOptions } from "../gateway/server-methods/types.js";
 export type {
   ProviderUsageSnapshot,
@@ -41,7 +41,7 @@ export type {
 export type {
   ChannelMessageActionContext,
   ChannelPlugin,
-  OpenClawPluginApi,
+  OpenCraftPluginApi,
   PluginRuntime,
 } from "./channel-plugin-common.js";
 

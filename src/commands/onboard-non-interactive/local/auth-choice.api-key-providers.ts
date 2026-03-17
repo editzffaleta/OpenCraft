@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { OpenCraftConfig } from "../../../config/config.js";
 import type { SecretInput } from "../../../config/types.secrets.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import {
@@ -19,14 +19,14 @@ type ResolvedNonInteractiveApiKey = {
 
 export async function applySimpleNonInteractiveApiKeyChoice(params: {
   authChoice: AuthChoice;
-  nextConfig: OpenClawConfig;
-  baseConfig: OpenClawConfig;
+  nextConfig: OpenCraftConfig;
+  baseConfig: OpenCraftConfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
   apiKeyStorageOptions?: ApiKeyStorageOptions;
   resolveApiKey: (input: {
     provider: string;
-    cfg: OpenClawConfig;
+    cfg: OpenCraftConfig;
     flagValue?: string;
     flagName: `--${string}`;
     envVar: string;
@@ -36,7 +36,7 @@ export async function applySimpleNonInteractiveApiKeyChoice(params: {
     resolved: ResolvedNonInteractiveApiKey,
     setter: (value: SecretInput) => Promise<void> | void,
   ) => Promise<boolean>;
-}): Promise<OpenClawConfig | null | undefined> {
+}): Promise<OpenCraftConfig | null | undefined> {
   if (params.authChoice !== "litellm-api-key") {
     return undefined;
   }

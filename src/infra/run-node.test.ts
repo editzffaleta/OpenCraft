@@ -5,7 +5,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 async function withTempDir<T>(run: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-run-node-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-run-node-"));
   try {
     return await run(dir);
   } finally {
@@ -76,8 +76,8 @@ describe("run-node script", () => {
           args: ["--version"],
           env: {
             ...process.env,
-            OPENCLAW_FORCE_BUILD: "1",
-            OPENCLAW_RUNNER_LOG: "0",
+            OPENCRAFT_FORCE_BUILD: "1",
+            OPENCRAFT_RUNNER_LOG: "0",
           },
           spawn,
           execPath: process.execPath,
@@ -99,7 +99,7 @@ describe("run-node script", () => {
 
   it("copies bundled plugin metadata after rebuilding from a clean dist", async () => {
     await withTempDir(async (tmp) => {
-      const extensionManifestPath = path.join(tmp, "extensions", "demo", "openclaw.plugin.json");
+      const extensionManifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
       const extensionPackagePath = path.join(tmp, "extensions", "demo", "package.json");
 
       await writeRuntimePostBuildScaffold(tmp);
@@ -114,7 +114,7 @@ describe("run-node script", () => {
         JSON.stringify(
           {
             name: "demo",
-            openclaw: {
+            opencraft: {
               extensions: ["./src/index.ts", "./nested/entry.mts"],
             },
           },
@@ -136,8 +136,8 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_FORCE_BUILD: "1",
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_FORCE_BUILD: "1",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         execPath: process.execPath,
@@ -155,7 +155,7 @@ describe("run-node script", () => {
       ).resolves.toContain("module.exports = {};");
       await expect(
         fs
-          .readFile(path.join(tmp, "dist", "extensions", "demo", "openclaw.plugin.json"), "utf-8")
+          .readFile(path.join(tmp, "dist", "extensions", "demo", "opencraft.plugin.json"), "utf-8")
           .then((raw) => JSON.parse(raw)),
       ).resolves.toMatchObject({ id: "demo" });
       await expect(
@@ -178,7 +178,7 @@ describe("run-node script", () => {
       await fs.mkdir(path.dirname(distEntryPath), { recursive: true });
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
 
@@ -211,7 +211,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -239,8 +239,8 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_FORCE_BUILD: "1",
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_FORCE_BUILD: "1",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         execPath: process.execPath,
@@ -263,7 +263,7 @@ describe("run-node script", () => {
       await fs.mkdir(path.dirname(distEntryPath), { recursive: true });
       await fs.writeFile(extensionPath, "export const extensionValue = 1;\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
 
@@ -288,7 +288,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -306,7 +306,7 @@ describe("run-node script", () => {
 
   it("skips rebuilding when extension package metadata is newer than the build stamp", async () => {
     await withTempDir(async (tmp) => {
-      const manifestPath = path.join(tmp, "extensions", "demo", "openclaw.plugin.json");
+      const manifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
       const packagePath = path.join(tmp, "extensions", "demo", "package.json");
       const distPackagePath = path.join(tmp, "dist", "extensions", "demo", "package.json");
       const distEntryPath = path.join(tmp, "dist", "entry.js");
@@ -322,16 +322,16 @@ describe("run-node script", () => {
       await fs.writeFile(manifestPath, '{"id":"demo","configSchema":{"type":"object"}}\n', "utf-8");
       await fs.writeFile(
         packagePath,
-        '{"name":"demo","openclaw":{"extensions":["./index.ts"]}}\n',
+        '{"name":"demo","opencraft":{"extensions":["./index.ts"]}}\n',
         "utf-8",
       );
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(
         distPackagePath,
-        '{"name":"demo","openclaw":{"extensions":["./stale.js"]}}\n',
+        '{"name":"demo","opencraft":{"extensions":["./stale.js"]}}\n',
         "utf-8",
       );
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -360,7 +360,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -390,7 +390,7 @@ describe("run-node script", () => {
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(readmePath, "# demo\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -425,7 +425,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -441,8 +441,14 @@ describe("run-node script", () => {
   it("skips rebuilding for dirty extension manifests that only affect runtime reload", async () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
-      const manifestPath = path.join(tmp, "extensions", "demo", "openclaw.plugin.json");
-      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "openclaw.plugin.json");
+      const manifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
+      const distManifestPath = path.join(
+        tmp,
+        "dist",
+        "extensions",
+        "demo",
+        "opencraft.plugin.json",
+      );
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
       const tsconfigPath = path.join(tmp, "tsconfig.json");
@@ -456,7 +462,7 @@ describe("run-node script", () => {
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(manifestPath, '{"id":"demo","configSchema":{"type":"object"}}\n', "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(
@@ -485,7 +491,7 @@ describe("run-node script", () => {
           return { status: 0, stdout: "abc123\n" };
         }
         if (cmd === "git" && args[0] === "status") {
-          return { status: 0, stdout: " M extensions/demo/openclaw.plugin.json\n" };
+          return { status: 0, stdout: " M extensions/demo/opencraft.plugin.json\n" };
         }
         return { status: 1, stdout: "" };
       };
@@ -496,7 +502,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -517,8 +523,14 @@ describe("run-node script", () => {
   it("repairs missing bundled plugin metadata without rerunning tsdown", async () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
-      const manifestPath = path.join(tmp, "extensions", "demo", "openclaw.plugin.json");
-      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "openclaw.plugin.json");
+      const manifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
+      const distManifestPath = path.join(
+        tmp,
+        "dist",
+        "extensions",
+        "demo",
+        "opencraft.plugin.json",
+      );
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
       const tsconfigPath = path.join(tmp, "tsconfig.json");
@@ -531,7 +543,7 @@ describe("run-node script", () => {
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(manifestPath, '{"id":"demo","configSchema":{"type":"object"}}\n', "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -566,7 +578,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -588,7 +600,13 @@ describe("run-node script", () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
       const extensionDir = path.join(tmp, "extensions", "demo");
-      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "openclaw.plugin.json");
+      const distManifestPath = path.join(
+        tmp,
+        "dist",
+        "extensions",
+        "demo",
+        "opencraft.plugin.json",
+      );
       const distPackagePath = path.join(tmp, "dist", "extensions", "demo", "package.json");
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
@@ -602,7 +620,7 @@ describe("run-node script", () => {
       await fs.mkdir(path.dirname(distEntryPath), { recursive: true });
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -642,7 +660,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -673,7 +691,7 @@ describe("run-node script", () => {
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(readmePath, "# demo\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -702,7 +720,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,
@@ -728,7 +746,7 @@ describe("run-node script", () => {
       await fs.mkdir(path.dirname(distEntryPath), { recursive: true });
       await fs.writeFile(srcPath, "export const value = 1;\n", "utf-8");
       await fs.writeFile(tsconfigPath, "{}\n", "utf-8");
-      await fs.writeFile(packageJsonPath, '{"name":"openclaw-test"}\n', "utf-8");
+      await fs.writeFile(packageJsonPath, '{"name":"opencraft-test"}\n', "utf-8");
       await fs.writeFile(tsdownConfigPath, "export default {};\n", "utf-8");
       await fs.writeFile(distEntryPath, "console.log('built');\n", "utf-8");
       await fs.writeFile(buildStampPath, '{"head":"abc123"}\n', "utf-8");
@@ -764,7 +782,7 @@ describe("run-node script", () => {
         args: ["status"],
         env: {
           ...process.env,
-          OPENCLAW_RUNNER_LOG: "0",
+          OPENCRAFT_RUNNER_LOG: "0",
         },
         spawn,
         spawnSync,

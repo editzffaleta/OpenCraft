@@ -3,7 +3,7 @@ import type {
   ProviderAuthContext,
   ProviderResolveDynamicModelContext,
   ProviderRuntimeModel,
-} from "openclaw/plugin-sdk/core";
+} from "opencraft/plugin-sdk/core";
 import { CODEX_CLI_PROFILE_ID } from "../../src/agents/auth-profiles.js";
 import { listProfilesForProvider } from "../../src/agents/auth-profiles/profiles.js";
 import { ensureAuthProfileStore } from "../../src/agents/auth-profiles/store.js";

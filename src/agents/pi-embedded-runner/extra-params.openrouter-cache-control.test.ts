@@ -2,7 +2,7 @@ import type { StreamFn } from "@mariozechner/pi-agent-core";
 import type { Context, Model } from "@mariozechner/pi-ai";
 import { createAssistantMessageEventStream } from "@mariozechner/pi-ai";
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { applyExtraParamsToAgent } from "./extra-params.js";
 
 type StreamPayload = {
@@ -26,7 +26,7 @@ function runOpenRouterPayload(payload: StreamPayload, modelId: string) {
         },
       },
     },
-  } satisfies OpenClawConfig;
+  } satisfies OpenCraftConfig;
 
   applyExtraParamsToAgent(agent, cfg, "openrouter", modelId);
 

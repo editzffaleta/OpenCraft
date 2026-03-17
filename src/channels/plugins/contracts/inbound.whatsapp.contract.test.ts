@@ -100,7 +100,7 @@ describe("whatsapp inbound contract", () => {
   });
 
   it("keeps inbound context finalized", async () => {
-    sessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-whatsapp-contract-"));
+    sessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-whatsapp-contract-"));
     const sessionStorePath = path.join(sessionDir, "sessions.json");
 
     await processMessage(makeProcessArgs(sessionStorePath));

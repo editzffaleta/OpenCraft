@@ -1,10 +1,10 @@
 {
-  "name": "@openclaw/vllm-provider",
+  "name": "@opencraft/vllm-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenClaw vLLM provider plugin",
+  "description": "OpenCraft vLLM provider plugin",
   "type": "module",
-  "openclaw": {
+  "opencraft": {
     "extensions": [
       "./index.ts"
     ]

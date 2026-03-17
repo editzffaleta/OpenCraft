@@ -173,7 +173,7 @@ actor MacNodeRuntime {
     }
 
     private func handleBrowserProxyInvoke(_ req: BridgeInvokeRequest) async throws -> BridgeInvokeResponse {
-        guard OpenClawConfigFile.browserControlEnabled() else {
+        guard OpenCraftConfigFile.browserControlEnabled() else {
             return BridgeInvokeResponse(
                 id: req.id,
                 ok: false,
@@ -430,7 +430,7 @@ actor MacNodeRuntime {
         guard let raw = await GatewayConnection.shared.canvasHostUrl() else { return nil }
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, let baseUrl = URL(string: trimmed) else { return nil }
-        return baseUrl.appendingPathComponent("__openclaw__/a2ui/").absoluteString + "?platform=macos"
+        return baseUrl.appendingPathComponent("__opencraft__/a2ui/").absoluteString + "?platform=macos"
     }
 
     private func isA2UIReady(poll: Bool = false) async -> Bool {

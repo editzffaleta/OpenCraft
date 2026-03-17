@@ -5,7 +5,7 @@ import OpenClawKit
 import WebKit
 
 final class CanvasA2UIActionMessageHandler: NSObject, WKScriptMessageHandler {
-    static let messageName = "openclawCanvasA2UIAction"
+    static let messageName = "opencraftCanvasA2UIAction"
     static let allMessageNames = [messageName]
 
     // Compatibility helper for debug/test shims. Runtime dispatch remains

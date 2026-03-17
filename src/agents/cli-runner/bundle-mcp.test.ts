@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { OpenCraftConfig } from "../../config/config.js";
 import { clearPluginManifestRegistryCache } from "../../plugins/manifest-registry.js";
 import { captureEnv } from "../../test-utils/env.js";
 import { prepareCliBundleMcpConfig } from "./bundle-mcp.js";
@@ -26,11 +26,11 @@ describe("prepareCliBundleMcpConfig", () => {
   it("injects a merged --mcp-config overlay for claude-cli", async () => {
     const env = captureEnv(["HOME"]);
     try {
-      const homeDir = await createTempDir("openclaw-cli-bundle-mcp-home-");
-      const workspaceDir = await createTempDir("openclaw-cli-bundle-mcp-workspace-");
+      const homeDir = await createTempDir("opencraft-cli-bundle-mcp-home-");
+      const workspaceDir = await createTempDir("opencraft-cli-bundle-mcp-workspace-");
       process.env.HOME = homeDir;
 
-      const pluginRoot = path.join(homeDir, ".openclaw", "extensions", "bundle-probe");
+      const pluginRoot = path.join(homeDir, ".opencraft", "extensions", "bundle-probe");
       const serverPath = path.join(pluginRoot, "servers", "probe.mjs");
       await fs.mkdir(path.join(pluginRoot, ".claude-plugin"), { recursive: true });
       await fs.mkdir(path.dirname(serverPath), { recursive: true });
@@ -57,7 +57,7 @@ describe("prepareCliBundleMcpConfig", () => {
         "utf-8",
       );
 
-      const config: OpenClawConfig = {
+      const config: OpenCraftConfig = {
         plugins: {
           entries: {
             "bundle-probe": { enabled: true },

@@ -92,7 +92,7 @@ final class CanvasWindowController: NSWindowController, WKNavigationDelegate, NS
                   ...(context.length ? { context } : {}),
                 };
 
-                const handler = globalThis.webkit?.messageHandlers?.openclawCanvasA2UIAction;
+                const handler = globalThis.webkit?.messageHandlers?.opencraftCanvasA2UIAction;
 
                 // If the bundled A2UI shell is present, let it forward actions so we keep its richer
                 // context resolution (data model path lookups, surface detection, etc.).
@@ -309,7 +309,7 @@ final class CanvasWindowController: NSWindowController, WKNavigationDelegate, NS
             path = outPath
         } else {
             let ts = Int(Date().timeIntervalSince1970)
-            path = "/tmp/openclaw-canvas-\(CanvasWindowController.sanitizeSessionKey(self.sessionKey))-\(ts).png"
+            path = "/tmp/opencraft-canvas-\(CanvasWindowController.sanitizeSessionKey(self.sessionKey))-\(ts).png"
         }
 
         try png.write(to: URL(fileURLWithPath: path), options: [.atomic])

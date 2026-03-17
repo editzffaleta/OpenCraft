@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "openclaw/plugin-sdk/zalo";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/zalo";
 import { describe, expect, it } from "vitest";
 import { buildChannelSetupWizardAdapterFromSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
 import { zaloPlugin } from "./channel.js";
@@ -21,7 +21,7 @@ describe("zalo setup wizard status", () => {
             },
           },
         },
-      } as OpenClawConfig,
+      } as OpenCraftConfig,
       accountOverrides: {},
     });
 

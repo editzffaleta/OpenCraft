@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
 import { buildMicrosoftSpeechProvider } from "../../src/tts/providers/microsoft.js";
 
 const microsoftPlugin = {
@@ -6,7 +6,7 @@ const microsoftPlugin = {
   name: "Microsoft Speech",
   description: "Bundled Microsoft speech provider",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: OpenCraftPluginApi) {
     api.registerSpeechProvider(buildMicrosoftSpeechProvider());
   },
 };

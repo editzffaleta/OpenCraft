@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { OpenCraftConfig } from "../config/config.js";
 import { resolveSecretInputRef } from "../config/types.secrets.js";
 import { callGateway } from "../gateway/call.js";
 import { validateSecretsResolveResult } from "../gateway/protocol/index.js";
@@ -20,7 +20,7 @@ import {
 import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
 
 type ResolveCommandSecretsResult = {
-  resolvedConfig: OpenClawConfig;
+  resolvedConfig: OpenCraftConfig;
   diagnostics: string[];
   targetStatesByPath: Record<string, CommandSecretTargetState>;
   hadUnresolvedTargets: boolean;
@@ -118,7 +118,7 @@ function targetsRuntimeWebResolution(params: {
 }
 
 function collectConfiguredTargetRefPaths(params: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   targetIds: Set<string>;
 }): Set<string> {
   const defaults = params.config.secrets?.defaults;
@@ -137,7 +137,7 @@ function collectConfiguredTargetRefPaths(params: {
 }
 
 function classifyConfiguredTargetRefs(params: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   configuredTargetRefPaths: Set<string>;
 }): {
   hasActiveConfiguredRef: boolean;
@@ -239,7 +239,7 @@ function isUnsupportedSecretsResolveError(err: unknown): boolean {
 }
 
 async function resolveCommandSecretRefsLocally(params: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   commandName: string;
   targetIds: Set<string>;
   preflightDiagnostics: string[];
@@ -371,7 +371,7 @@ function buildUnresolvedDiagnostics(
 }
 
 function scrubUnresolvedAssignments(
-  config: OpenClawConfig,
+  config: OpenCraftConfig,
   unresolved: UnresolvedCommandSecretAssignment[],
 ): void {
   for (const entry of unresolved) {
@@ -396,8 +396,8 @@ function filterInactiveSurfaceDiagnostics(params: {
 
 async function resolveTargetSecretLocally(params: {
   target: DiscoveredConfigSecretTarget;
-  sourceConfig: OpenClawConfig;
-  resolvedConfig: OpenClawConfig;
+  sourceConfig: OpenCraftConfig;
+  resolvedConfig: OpenCraftConfig;
   env: NodeJS.ProcessEnv;
   cache: ReturnType<typeof createResolverContext>["cache"];
   activePaths: ReadonlySet<string>;
@@ -445,7 +445,7 @@ async function resolveTargetSecretLocally(params: {
 }
 
 export async function resolveCommandSecretRefsViaGateway(params: {
-  config: OpenClawConfig;
+  config: OpenCraftConfig;
   commandName: string;
   targetIds: Set<string>;
   mode?: CommandSecretResolutionModeInput;

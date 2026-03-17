@@ -60,7 +60,7 @@ struct MacNodeRuntimeTests {
                 outPath: String?) async throws -> (path: String, hasAudio: Bool)
             {
                 let url = FileManager().temporaryDirectory
-                    .appendingPathComponent("openclaw-test-screen-record-\(UUID().uuidString).mp4")
+                    .appendingPathComponent("opencraft-test-screen-record-\(UUID().uuidString).mp4")
                 try Data("ok".utf8).write(to: url)
                 return (path: url.path, hasAudio: false)
             }
@@ -119,7 +119,7 @@ struct MacNodeRuntimeTests {
 
     @Test func `handle invoke browser proxy rejects disabled browser control`() async throws {
         let override = TestIsolation.tempConfigPath()
-        try await TestIsolation.withEnvValues(["OPENCLAW_CONFIG_PATH": override]) {
+        try await TestIsolation.withEnvValues(["OPENCRAFT_CONFIG_PATH": override]) {
             try JSONSerialization.data(withJSONObject: ["browser": ["enabled": false]])
                 .write(to: URL(fileURLWithPath: override))
 

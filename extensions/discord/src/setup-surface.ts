@@ -3,7 +3,7 @@ import {
   formatDocsLink,
   noteChannelLookupFailure,
   noteChannelLookupSummary,
-  type OpenClawConfig,
+  type OpenCraftConfig,
   parseMentionOrPrefixedId,
   patchChannelConfigForAccount,
   promptLegacyChannelAllowFrom,
@@ -30,7 +30,7 @@ import {
 import { resolveDiscordUserAllowlist } from "./resolve-users.js";
 import {
   discordSetupAdapter,
-  DISCORD_TOKEN_HELP_LINES,
+  getDiscordTokenHelpLines,
   parseDiscordAllowFromId,
   setDiscordGuildChannelAllowlist,
 } from "./setup-core.js";
@@ -57,10 +57,10 @@ async function resolveDiscordAllowFromEntries(params: { token?: string; entries:
 }
 
 async function promptDiscordAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: OpenCraftConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<OpenCraftConfig> {
   const accountId = resolveSetupAccountId({
     accountId: params.accountId,
     defaultAccountId: resolveDefaultDiscordAccountId(params.cfg),
@@ -131,7 +131,9 @@ export const discordSetupWizard: ChannelSetupWizard = {
       credentialLabel: "Discord bot token",
       preferredEnvVar: "DISCORD_BOT_TOKEN",
       helpTitle: "Discord bot token",
-      helpLines: DISCORD_TOKEN_HELP_LINES,
+      get helpLines() {
+        return getDiscordTokenHelpLines();
+      },
       envPrompt: "DISCORD_BOT_TOKEN detected. Use env var?",
       keepPrompt: "Discord token already configured. Keep it?",
       inputPrompt: "Enter Discord bot token",
@@ -246,15 +248,17 @@ export const discordSetupWizard: ChannelSetupWizard = {
   allowFrom: {
     credentialInputKey: "token",
     helpTitle: "Discord allowlist",
-    helpLines: [
-      "Allowlist Discord DMs by username (we resolve to user ids).",
-      "Examples:",
-      "- 123456789012345678",
-      "- @alice",
-      "- alice#1234",
-      "Multiple entries: comma-separated.",
-      `Docs: ${formatDocsLink("/discord", "discord")}`,
-    ],
+    get helpLines() {
+      return [
+        "Allowlist Discord DMs by username (we resolve to user ids).",
+        "Examples:",
+        "- 123456789012345678",
+        "- @alice",
+        "- alice#1234",
+        "Multiple entries: comma-separated.",
+        `Docs: ${formatDocsLink("/discord", "discord")}`,
+      ];
+    },
     message: "Discord allowFrom (usernames or ids)",
     placeholder: "@alice, 123456789012345678",
     invalidWithoutCredentialNote: "Bot token missing; use numeric user ids (or mention form) only.",
