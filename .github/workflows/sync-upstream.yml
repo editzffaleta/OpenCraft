@@ -1,0 +1,59 @@
+name: 🔄 Verificar Atualizações do Upstream
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Roda todo dia às 8h UTC (5h de Brasília)
+  workflow_dispatch:  # Permite rodar manualmente
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Adicionar upstream
+        run: |
+          git remote add upstream https://github.com/openclaw/openclaw.git || true
+          git fetch upstream main
+
+      - name: Verificar se há atualizações
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/main)
+          echo "commits_behind=$BEHIND" >> $GITHUB_OUTPUT
+          echo "📊 OpenCraft está $BEHIND commits atrás do OpenClaw"
+
+      - name: Criar Issue se houver atualizações
+        if: steps.check.outputs.commits_behind > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const behind = '${{ steps.check.outputs.commits_behind }}';
+            const title = `🔄 ${behind} atualizações disponíveis do OpenClaw`;
+
+            // Verifica se já existe uma issue aberta
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'sync-upstream'
+            });
+
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## Atualizações Disponíveis\n\nO OpenClaw upstream tem **${behind}** commits novos.\n\n### Como atualizar:\n1. Abra o Claude Code na pasta do OpenCraft\n2. Cole o **Prompt de Sync** do arquivo SYNC.md\n3. Depois cole o **Prompt de Tradução**\n4. Feche esta issue quando terminar\n\n_Gerado automaticamente_`,
+                labels: ['sync-upstream']
+              });
+            } else {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                title: title
+              });
+            }
