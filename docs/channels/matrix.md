@@ -1,51 +1,51 @@
 ---
-summary: "Matrix support status, capabilities, and configuration"
+summary: "Status de suporte, capacidades e configuração do Matrix"
 read_when:
-  - Working on Matrix channel features
+  - Trabalhando em funcionalidades do canal Matrix
 title: "Matrix"
 ---
 
 # Matrix (plugin)
 
-Matrix is an open, decentralized messaging protocol. OpenCraft connects as a Matrix **user**
-on any homeserver, so you need a Matrix account for the bot. Once it is logged in, you can DM
-the bot directly or invite it to rooms (Matrix "groups"). Beeper is a valid client option too,
-but it requires E2EE to be enabled.
+Matrix é um protocolo de mensagens aberto e descentralizado. O OpenCraft se conecta como um **usuário** Matrix
+em qualquer homeserver, então você precisa de uma conta Matrix para o Bot. Uma vez logado, você pode enviar DM
+diretamente para o Bot ou convidá-lo para salas (os "grupos" do Matrix). O Beeper também é uma opção válida de cliente,
+mas requer que o E2EE esteja habilitado.
 
-Status: supported via plugin (@vector-im/matrix-bot-sdk). Direct messages, rooms, threads, media, reactions,
-polls (send + poll-start as text), location, and E2EE (with crypto support).
+Status: suportado via Plugin (@vector-im/matrix-bot-sdk). Mensagens diretas, salas, threads, mídia, reações,
+enquetes (envio + poll-start como texto), localização e E2EE (com suporte a criptografia).
 
-## Plugin required
+## Plugin necessário
 
-Matrix ships as a plugin and is not bundled with the core install.
+O Matrix é distribuído como Plugin e não está incluído na instalação principal.
 
-Install via CLI (npm registry):
+Instalar via CLI (registro npm):
 
 ```bash
 opencraft plugins install @opencraft/matrix
 ```
 
-Local checkout (when running from a git repo):
+Checkout local (ao executar a partir de um repositório git):
 
 ```bash
 opencraft plugins install ./extensions/matrix
 ```
 
-If you choose Matrix during setup and a git checkout is detected,
-OpenCraft will offer the local install path automatically.
+Se você escolher Matrix durante a configuração e um checkout git for detectado,
+o OpenCraft oferecerá o caminho de instalação local automaticamente.
 
-Details: [Plugins](/tools/plugin)
+Detalhes: [Plugins](/tools/plugin)
 
-## Setup
+## Configuração
 
-1. Install the Matrix plugin:
-   - From npm: `opencraft plugins install @opencraft/matrix`
-   - From a local checkout: `opencraft plugins install ./extensions/matrix`
-2. Create a Matrix account on a homeserver:
-   - Browse hosting options at [https://matrix.org/ecosystem/hosting/](https://matrix.org/ecosystem/hosting/)
-   - Or host it yourself.
-3. Get an access token for the bot account:
-   - Use the Matrix login API with `curl` at your home server:
+1. Instale o Plugin Matrix:
+   - Do npm: `opencraft plugins install @opencraft/matrix`
+   - De um checkout local: `opencraft plugins install ./extensions/matrix`
+2. Crie uma conta Matrix em um homeserver:
+   - Veja opções de hospedagem em [https://matrix.org/ecosystem/hosting/](https://matrix.org/ecosystem/hosting/)
+   - Ou hospede você mesmo.
+3. Obtenha um Token de acesso para a conta do Bot:
+   - Use a API de login do Matrix com `curl` no seu homeserver:
 
    ```bash
    curl --request POST \
@@ -61,23 +61,23 @@ Details: [Plugins](/tools/plugin)
    }'
    ```
 
-   - Replace `matrix.example.org` with your homeserver URL.
-   - Or set `channels.matrix.userId` + `channels.matrix.password`: OpenCraft calls the same
-     login endpoint, stores the access token in `~/.opencraft/credentials/matrix/credentials.json`,
-     and reuses it on next start.
+   - Substitua `matrix.example.org` pela URL do seu homeserver.
+   - Ou defina `channels.matrix.userId` + `channels.matrix.password`: o OpenCraft chama o mesmo
+     endpoint de login, armazena o Token de acesso em `~/.opencraft/credentials/matrix/credentials.json`
+     e o reutiliza na próxima inicialização.
 
-4. Configure credentials:
-   - Env: `MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN` (or `MATRIX_USER_ID` + `MATRIX_PASSWORD`)
-   - Or config: `channels.matrix.*`
-   - If both are set, config takes precedence.
-   - With access token: user ID is fetched automatically via `/whoami`.
-   - When set, `channels.matrix.userId` should be the full Matrix ID (example: `@bot:example.org`).
-5. Restart the gateway (or finish setup).
-6. Start a DM with the bot or invite it to a room from any Matrix client
-   (Element, Beeper, etc.; see [https://matrix.org/ecosystem/clients/](https://matrix.org/ecosystem/clients/)). Beeper requires E2EE,
-   so set `channels.matrix.encryption: true` and verify the device.
+4. Configure as credenciais:
+   - Env: `MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN` (ou `MATRIX_USER_ID` + `MATRIX_PASSWORD`)
+   - Ou config: `channels.matrix.*`
+   - Se ambos estiverem definidos, a configuração tem precedência.
+   - Com Token de acesso: o ID do usuário é obtido automaticamente via `/whoami`.
+   - Quando definido, `channels.matrix.userId` deve ser o ID completo do Matrix (exemplo: `@bot:example.org`).
+5. Reinicie o Gateway (ou finalize a configuração).
+6. Inicie uma DM com o Bot ou convide-o para uma sala a partir de qualquer cliente Matrix
+   (Element, Beeper, etc.; veja [https://matrix.org/ecosystem/clients/](https://matrix.org/ecosystem/clients/)). O Beeper requer E2EE,
+   então defina `channels.matrix.encryption: true` e verifique o dispositivo.
 
-Minimal config (access token, user ID auto-fetched):
+Configuração mínima (Token de acesso, ID do usuário obtido automaticamente):
 
 ```json5
 {
@@ -92,7 +92,7 @@ Minimal config (access token, user ID auto-fetched):
 }
 ```
 
-E2EE config (end to end encryption enabled):
+Configuração E2EE (criptografia ponta a ponta habilitada):
 
 ```json5
 {
@@ -108,41 +108,41 @@ E2EE config (end to end encryption enabled):
 }
 ```
 
-## Encryption (E2EE)
+## Criptografia (E2EE)
 
-End-to-end encryption is **supported** via the Rust crypto SDK.
+A criptografia ponta a ponta é **suportada** via Rust crypto SDK.
 
-Enable with `channels.matrix.encryption: true`:
+Habilite com `channels.matrix.encryption: true`:
 
-- If the crypto module loads, encrypted rooms are decrypted automatically.
-- Outbound media is encrypted when sending to encrypted rooms.
-- On first connection, OpenCraft requests device verification from your other sessions.
-- Verify the device in another Matrix client (Element, etc.) to enable key sharing.
-- If the crypto module cannot be loaded, E2EE is disabled and encrypted rooms will not decrypt;
-  OpenCraft logs a warning.
-- If you see missing crypto module errors (for example, `@matrix-org/matrix-sdk-crypto-nodejs-*`),
-  allow build scripts for `@matrix-org/matrix-sdk-crypto-nodejs` and run
-  `pnpm rebuild @matrix-org/matrix-sdk-crypto-nodejs` or fetch the binary with
+- Se o módulo de criptografia carregar, salas criptografadas são descriptografadas automaticamente.
+- Mídia de saída é criptografada ao enviar para salas criptografadas.
+- Na primeira conexão, o OpenCraft solicita verificação do dispositivo das suas outras sessões.
+- Verifique o dispositivo em outro cliente Matrix (Element, etc.) para habilitar o compartilhamento de chaves.
+- Se o módulo de criptografia não puder ser carregado, o E2EE é desabilitado e salas criptografadas não serão descriptografadas;
+  o OpenCraft registra um aviso.
+- Se você vir erros de módulo de criptografia ausente (por exemplo, `@matrix-org/matrix-sdk-crypto-nodejs-*`),
+  permita scripts de build para `@matrix-org/matrix-sdk-crypto-nodejs` e execute
+  `pnpm rebuild @matrix-org/matrix-sdk-crypto-nodejs` ou obtenha o binário com
   `node node_modules/@matrix-org/matrix-sdk-crypto-nodejs/download-lib.js`.
 
-Crypto state is stored per account + access token in
+O estado de criptografia é armazenado por conta + Token de acesso em
 `~/.opencraft/matrix/accounts/<account>/<homeserver>__<user>/<token-hash>/crypto/`
-(SQLite database). Sync state lives alongside it in `bot-storage.json`.
-If the access token (device) changes, a new store is created and the bot must be
-re-verified for encrypted rooms.
+(banco de dados SQLite). O estado de sincronização fica ao lado em `bot-storage.json`.
+Se o Token de acesso (dispositivo) mudar, um novo armazenamento é criado e o Bot deve ser
+reverificado para salas criptografadas.
 
-**Device verification:**
-When E2EE is enabled, the bot will request verification from your other sessions on startup.
-Open Element (or another client) and approve the verification request to establish trust.
-Once verified, the bot can decrypt messages in encrypted rooms.
+**Verificação de dispositivo:**
+Quando o E2EE está habilitado, o Bot solicitará verificação das suas outras sessões na inicialização.
+Abra o Element (ou outro cliente) e aprove a solicitação de verificação para estabelecer confiança.
+Uma vez verificado, o Bot pode descriptografar mensagens em salas criptografadas.
 
-## Multi-account
+## Múltiplas contas
 
-Multi-account support: use `channels.matrix.accounts` with per-account credentials and optional `name`. See [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) for the shared pattern.
+Suporte a múltiplas contas: use `channels.matrix.accounts` com credenciais por conta e `name` opcional. Veja [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) para o padrão compartilhado.
 
-Each account runs as a separate Matrix user on any homeserver. Per-account config
-inherits from the top-level `channels.matrix` settings and can override any option
-(DM policy, groups, encryption, etc.).
+Cada conta funciona como um usuário Matrix separado em qualquer homeserver. A configuração por conta
+herda das configurações de nível superior `channels.matrix` e pode sobrescrever qualquer opção
+(política de DM, grupos, criptografia, etc.).
 
 ```json5
 {
@@ -169,34 +169,34 @@ inherits from the top-level `channels.matrix` settings and can override any opti
 }
 ```
 
-Notes:
+Notas:
 
-- Account startup is serialized to avoid race conditions with concurrent module imports.
-- Env variables (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN`, etc.) only apply to the **default** account.
-- Base channel settings (DM policy, group policy, mention gating, etc.) apply to all accounts unless overridden per account.
-- Use `bindings[].match.accountId` to route each account to a different agent.
-- Crypto state is stored per account + access token (separate key stores per account).
+- A inicialização de contas é serializada para evitar condições de corrida com importações de módulos concorrentes.
+- Variáveis de ambiente (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN`, etc.) aplicam-se apenas à conta **padrão**.
+- Configurações base do canal (política de DM, política de grupo, exigência de menção, etc.) aplicam-se a todas as contas, a menos que sejam sobrescritas por conta.
+- Use `bindings[].match.accountId` para rotear cada conta para um agente diferente.
+- O estado de criptografia é armazenado por conta + Token de acesso (armazenamentos de chaves separados por conta).
 
-## Routing model
+## Modelo de roteamento
 
-- Replies always go back to Matrix.
-- DMs share the agent's main session; rooms map to group sessions.
+- Respostas sempre voltam para o Matrix.
+- DMs compartilham a sessão principal do agente; salas mapeiam para sessões de grupo.
 
-## Access control (DMs)
+## Controle de acesso (DMs)
 
-- Default: `channels.matrix.dm.policy = "pairing"`. Unknown senders get a pairing code.
-- Approve via:
+- Padrão: `channels.matrix.dm.policy = "pairing"`. Remetentes desconhecidos recebem um código de pareamento.
+- Aprovar via:
   - `opencraft pairing list matrix`
   - `opencraft pairing approve matrix <CODE>`
-- Public DMs: `channels.matrix.dm.policy="open"` plus `channels.matrix.dm.allowFrom=["*"]`.
-- `channels.matrix.dm.allowFrom` accepts full Matrix user IDs (example: `@user:server`). The wizard resolves display names to user IDs when directory search finds a single exact match.
-- Do not use display names or bare localparts (example: `"Alice"` or `"alice"`). They are ambiguous and are ignored for allowlist matching. Use full `@user:server` IDs.
+- DMs públicas: `channels.matrix.dm.policy="open"` mais `channels.matrix.dm.allowFrom=["*"]`.
+- `channels.matrix.dm.allowFrom` aceita IDs completos de usuários Matrix (exemplo: `@user:server`). O assistente de configuração resolve nomes de exibição para IDs de usuário quando a busca no diretório encontra uma correspondência exata única.
+- Não use nomes de exibição ou localparts simples (exemplo: `"Alice"` ou `"alice"`). Eles são ambíguos e são ignorados para correspondência de allowlist. Use IDs completos `@user:server`.
 
-## Rooms (groups)
+## Salas (grupos)
 
-- Default: `channels.matrix.groupPolicy = "allowlist"` (mention-gated). Use `channels.defaults.groupPolicy` to override the default when unset.
-- Runtime note: if `channels.matrix` is completely missing, runtime falls back to `groupPolicy="allowlist"` for room checks (even if `channels.defaults.groupPolicy` is set).
-- Allowlist rooms with `channels.matrix.groups` (room IDs or aliases; names are resolved to IDs when directory search finds a single exact match):
+- Padrão: `channels.matrix.groupPolicy = "allowlist"` (com exigência de menção). Use `channels.defaults.groupPolicy` para sobrescrever o padrão quando não definido.
+- Nota de tempo de execução: se `channels.matrix` estiver completamente ausente, o tempo de execução retorna para `groupPolicy="allowlist"` para verificações de sala (mesmo que `channels.defaults.groupPolicy` esteja definido).
+- Adicione salas à allowlist com `channels.matrix.groups` (IDs de sala ou aliases; nomes são resolvidos para IDs quando a busca no diretório encontra uma correspondência exata única):
 
 ```json5
 {
@@ -213,41 +213,41 @@ Notes:
 }
 ```
 
-- `requireMention: false` enables auto-reply in that room.
-- `groups."*"` can set defaults for mention gating across rooms.
-- `groupAllowFrom` restricts which senders can trigger the bot in rooms (full Matrix user IDs).
-- Per-room `users` allowlists can further restrict senders inside a specific room (use full Matrix user IDs).
-- The configure wizard prompts for room allowlists (room IDs, aliases, or names) and resolves names only on an exact, unique match.
-- On startup, OpenCraft resolves room/user names in allowlists to IDs and logs the mapping; unresolved entries are ignored for allowlist matching.
-- Invites are auto-joined by default; control with `channels.matrix.autoJoin` and `channels.matrix.autoJoinAllowlist`.
-- To allow **no rooms**, set `channels.matrix.groupPolicy: "disabled"` (or keep an empty allowlist).
-- Legacy key: `channels.matrix.rooms` (same shape as `groups`).
+- `requireMention: false` habilita resposta automática naquela sala.
+- `groups."*"` pode definir padrões para exigência de menção em todas as salas.
+- `groupAllowFrom` restringe quais remetentes podem acionar o Bot em salas (IDs completos de usuários Matrix).
+- Allowlists `users` por sala podem restringir ainda mais os remetentes dentro de uma sala específica (use IDs completos de usuários Matrix).
+- O assistente de configuração solicita allowlists de salas (IDs de sala, aliases ou nomes) e resolve nomes apenas em uma correspondência exata e única.
+- Na inicialização, o OpenCraft resolve nomes de sala/usuário em allowlists para IDs e registra o mapeamento; entradas não resolvidas são ignoradas para correspondência de allowlist.
+- Convites são aceitos automaticamente por padrão; controle com `channels.matrix.autoJoin` e `channels.matrix.autoJoinAllowlist`.
+- Para não permitir **nenhuma sala**, defina `channels.matrix.groupPolicy: "disabled"` (ou mantenha uma allowlist vazia).
+- Chave legada: `channels.matrix.rooms` (mesma estrutura que `groups`).
 
 ## Threads
 
-- Reply threading is supported.
-- `channels.matrix.threadReplies` controls whether replies stay in threads:
-  - `off`, `inbound` (default), `always`
-- `channels.matrix.replyToMode` controls reply-to metadata when not replying in a thread:
-  - `off` (default), `first`, `all`
+- Threads de resposta são suportadas.
+- `channels.matrix.threadReplies` controla se as respostas ficam em threads:
+  - `off`, `inbound` (padrão), `always`
+- `channels.matrix.replyToMode` controla metadados de resposta quando não está respondendo em um thread:
+  - `off` (padrão), `first`, `all`
 
-## Capabilities
+## Capacidades
 
-| Feature         | Status                                                                                |
-| --------------- | ------------------------------------------------------------------------------------- |
-| Direct messages | ✅ Supported                                                                          |
-| Rooms           | ✅ Supported                                                                          |
-| Threads         | ✅ Supported                                                                          |
-| Media           | ✅ Supported                                                                          |
-| E2EE            | ✅ Supported (crypto module required)                                                 |
-| Reactions       | ✅ Supported (send/read via tools)                                                    |
-| Polls           | ✅ Send supported; inbound poll starts are converted to text (responses/ends ignored) |
-| Location        | ✅ Supported (geo URI; altitude ignored)                                              |
-| Native commands | ✅ Supported                                                                          |
+| Funcionalidade    | Status                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| Mensagens diretas | ✅ Suportado                                                                                            |
+| Salas             | ✅ Suportado                                                                                            |
+| Threads           | ✅ Suportado                                                                                            |
+| Mídia             | ✅ Suportado                                                                                            |
+| E2EE              | ✅ Suportado (módulo de criptografia necessário)                                                        |
+| Reações           | ✅ Suportado (enviar/ler via ferramentas)                                                               |
+| Enquetes          | ✅ Envio suportado; poll starts de entrada são convertidos em texto (respostas/encerramentos ignorados) |
+| Localização       | ✅ Suportado (geo URI; altitude ignorada)                                                               |
+| Comandos nativos  | ✅ Suportado                                                                                            |
 
-## Troubleshooting
+## Solução de problemas
 
-Run this ladder first:
+Execute esta sequência primeiro:
 
 ```bash
 opencraft status
@@ -257,47 +257,47 @@ opencraft doctor
 opencraft channels status --probe
 ```
 
-Then confirm DM pairing state if needed:
+Em seguida, confirme o estado de pareamento de DM se necessário:
 
 ```bash
 opencraft pairing list matrix
 ```
 
-Common failures:
+Falhas comuns:
 
-- Logged in but room messages ignored: room blocked by `groupPolicy` or room allowlist.
-- DMs ignored: sender pending approval when `channels.matrix.dm.policy="pairing"`.
-- Encrypted rooms fail: crypto support or encryption settings mismatch.
+- Logado mas mensagens de sala ignoradas: sala bloqueada por `groupPolicy` ou allowlist de sala.
+- DMs ignoradas: remetente pendente de aprovação quando `channels.matrix.dm.policy="pairing"`.
+- Salas criptografadas falham: suporte a criptografia ou incompatibilidade de configurações de criptografia.
 
-For triage flow: [/channels/troubleshooting](/channels/troubleshooting).
+Para fluxo de triagem: [/channels/troubleshooting](/channels/troubleshooting).
 
-## Configuration reference (Matrix)
+## Referência de configuração (Matrix)
 
-Full configuration: [Configuration](/gateway/configuration)
+Configuração completa: [Configuration](/gateway/configuration)
 
-Provider options:
+Opções do provedor:
 
-- `channels.matrix.enabled`: enable/disable channel startup.
-- `channels.matrix.homeserver`: homeserver URL.
-- `channels.matrix.userId`: Matrix user ID (optional with access token).
-- `channels.matrix.accessToken`: access token.
-- `channels.matrix.password`: password for login (token stored).
-- `channels.matrix.deviceName`: device display name.
-- `channels.matrix.encryption`: enable E2EE (default: false).
-- `channels.matrix.initialSyncLimit`: initial sync limit.
-- `channels.matrix.threadReplies`: `off | inbound | always` (default: inbound).
-- `channels.matrix.textChunkLimit`: outbound text chunk size (chars).
-- `channels.matrix.chunkMode`: `length` (default) or `newline` to split on blank lines (paragraph boundaries) before length chunking.
-- `channels.matrix.dm.policy`: `pairing | allowlist | open | disabled` (default: pairing).
-- `channels.matrix.dm.allowFrom`: DM allowlist (full Matrix user IDs). `open` requires `"*"`. The wizard resolves names to IDs when possible.
-- `channels.matrix.groupPolicy`: `allowlist | open | disabled` (default: allowlist).
-- `channels.matrix.groupAllowFrom`: allowlisted senders for group messages (full Matrix user IDs).
-- `channels.matrix.allowlistOnly`: force allowlist rules for DMs + rooms.
-- `channels.matrix.groups`: group allowlist + per-room settings map.
-- `channels.matrix.rooms`: legacy group allowlist/config.
-- `channels.matrix.replyToMode`: reply-to mode for threads/tags.
-- `channels.matrix.mediaMaxMb`: inbound/outbound media cap (MB).
-- `channels.matrix.autoJoin`: invite handling (`always | allowlist | off`, default: always).
-- `channels.matrix.autoJoinAllowlist`: allowed room IDs/aliases for auto-join.
-- `channels.matrix.accounts`: multi-account configuration keyed by account ID (each account inherits top-level settings).
-- `channels.matrix.actions`: per-action tool gating (reactions/messages/pins/memberInfo/channelInfo).
+- `channels.matrix.enabled`: habilitar/desabilitar inicialização do canal.
+- `channels.matrix.homeserver`: URL do homeserver.
+- `channels.matrix.userId`: ID de usuário Matrix (opcional com Token de acesso).
+- `channels.matrix.accessToken`: Token de acesso.
+- `channels.matrix.password`: senha para login (Token armazenado).
+- `channels.matrix.deviceName`: nome de exibição do dispositivo.
+- `channels.matrix.encryption`: habilitar E2EE (padrão: false).
+- `channels.matrix.initialSyncLimit`: limite de sincronização inicial.
+- `channels.matrix.threadReplies`: `off | inbound | always` (padrão: inbound).
+- `channels.matrix.textChunkLimit`: tamanho do bloco de texto de saída (caracteres).
+- `channels.matrix.chunkMode`: `length` (padrão) ou `newline` para dividir em linhas em branco (limites de parágrafo) antes da divisão por tamanho.
+- `channels.matrix.dm.policy`: `pairing | allowlist | open | disabled` (padrão: pairing).
+- `channels.matrix.dm.allowFrom`: allowlist de DM (IDs completos de usuários Matrix). `open` requer `"*"`. O assistente resolve nomes para IDs quando possível.
+- `channels.matrix.groupPolicy`: `allowlist | open | disabled` (padrão: allowlist).
+- `channels.matrix.groupAllowFrom`: remetentes na allowlist para mensagens de grupo (IDs completos de usuários Matrix).
+- `channels.matrix.allowlistOnly`: forçar regras de allowlist para DMs + salas.
+- `channels.matrix.groups`: allowlist de grupo + mapa de configurações por sala.
+- `channels.matrix.rooms`: allowlist/configuração de grupo legada.
+- `channels.matrix.replyToMode`: modo de resposta para threads/tags.
+- `channels.matrix.mediaMaxMb`: limite de mídia de entrada/saída (MB).
+- `channels.matrix.autoJoin`: tratamento de convites (`always | allowlist | off`, padrão: always).
+- `channels.matrix.autoJoinAllowlist`: IDs/aliases de sala permitidos para auto-join.
+- `channels.matrix.accounts`: configuração de múltiplas contas indexada por ID de conta (cada conta herda configurações de nível superior).
+- `channels.matrix.actions`: controle de ferramentas por ação (reactions/messages/pins/memberInfo/channelInfo).

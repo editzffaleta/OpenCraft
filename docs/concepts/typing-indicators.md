@@ -1,41 +1,41 @@
 ---
-summary: "When OpenCraft shows typing indicators and how to tune them"
+summary: "Quando o OpenCraft mostra indicadores de digitação e como ajustá-los"
 read_when:
-  - Changing typing indicator behavior or defaults
+  - Alterando comportamento ou padrões de indicadores de digitação
 title: "Typing Indicators"
 ---
 
-# Typing indicators
+# Indicadores de digitação
 
-Typing indicators are sent to the chat channel while a run is active. Use
-`agents.defaults.typingMode` to control **when** typing starts and `typingIntervalSeconds`
-to control **how often** it refreshes.
+Indicadores de digitação são enviados para o canal de chat enquanto uma execução está ativa. Use
+`agents.defaults.typingMode` para controlar **quando** a digitação começa e `typingIntervalSeconds`
+para controlar **com que frequência** ela é atualizada.
 
-## Defaults
+## Padrões
 
-When `agents.defaults.typingMode` is **unset**, OpenCraft keeps the legacy behavior:
+Quando `agents.defaults.typingMode` **não está definido**, o OpenCraft mantém o comportamento legado:
 
-- **Direct chats**: typing starts immediately once the model loop begins.
-- **Group chats with a mention**: typing starts immediately.
-- **Group chats without a mention**: typing starts only when message text begins streaming.
-- **Heartbeat runs**: typing is disabled.
+- **Chats diretos**: digitação começa imediatamente quando o loop do modelo inicia.
+- **Chats em grupo com menção**: digitação começa imediatamente.
+- **Chats em grupo sem menção**: digitação começa apenas quando o texto da mensagem começa a ser transmitido.
+- **Execuções de heartbeat**: digitação está desabilitada.
 
-## Modes
+## Modos
 
-Set `agents.defaults.typingMode` to one of:
+Defina `agents.defaults.typingMode` para um dos seguintes:
 
-- `never` — no typing indicator, ever.
-- `instant` — start typing **as soon as the model loop begins**, even if the run
-  later returns only the silent reply token.
-- `thinking` — start typing on the **first reasoning delta** (requires
-  `reasoningLevel: "stream"` for the run).
-- `message` — start typing on the **first non-silent text delta** (ignores
-  the `NO_REPLY` silent token).
+- `never` — nenhum indicador de digitação, nunca.
+- `instant` — começa a digitar **assim que o loop do modelo inicia**, mesmo se a execução
+  depois retornar apenas o Token de resposta silenciosa.
+- `thinking` — começa a digitar no **primeiro delta de raciocínio** (requer
+  `reasoningLevel: "stream"` para a execução).
+- `message` — começa a digitar no **primeiro delta de texto não-silencioso** (ignora
+  o Token silencioso `NO_REPLY`).
 
-Order of “how early it fires”:
+Ordem de "quão cedo dispara":
 `never` → `message` → `thinking` → `instant`
 
-## Configuration
+## Configuração
 
 ```json5
 {
@@ -46,7 +46,7 @@ Order of “how early it fires”:
 }
 ```
 
-You can override mode or cadence per session:
+Você pode sobrescrever o modo ou cadência por sessão:
 
 ```json5
 {
@@ -57,12 +57,12 @@ You can override mode or cadence per session:
 }
 ```
 
-## Notes
+## Notas
 
-- `message` mode won’t show typing for silent-only replies (e.g. the `NO_REPLY`
-  token used to suppress output).
-- `thinking` only fires if the run streams reasoning (`reasoningLevel: "stream"`).
-  If the model doesn’t emit reasoning deltas, typing won’t start.
-- Heartbeats never show typing, regardless of mode.
-- `typingIntervalSeconds` controls the **refresh cadence**, not the start time.
-  The default is 6 seconds.
+- O modo `message` não mostrará digitação para respostas apenas silenciosas (ex. o Token
+  `NO_REPLY` usado para suprimir saída).
+- `thinking` só dispara se a execução transmitir raciocínio (`reasoningLevel: "stream"`).
+  Se o modelo não emitir deltas de raciocínio, a digitação não começará.
+- Heartbeats nunca mostram digitação, independentemente do modo.
+- `typingIntervalSeconds` controla a **cadência de atualização**, não o tempo de início.
+  O padrão é 6 segundos.

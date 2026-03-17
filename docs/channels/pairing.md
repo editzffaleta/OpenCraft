@@ -1,82 +1,82 @@
 ---
-summary: "Pairing overview: approve who can DM you + which nodes can join"
+summary: "Visão geral do pareamento: aprovar quem pode enviar DM para você + quais nós podem se juntar"
 read_when:
-  - Setting up DM access control
-  - Pairing a new iOS/Android node
-  - Reviewing OpenCraft security posture
+  - Configurando controle de acesso a DMs
+  - Pareando um novo nó iOS/Android
+  - Revisando postura de segurança do OpenCraft
 title: "Pairing"
 ---
 
-# Pairing
+# Pareamento
 
-“Pairing” is OpenCraft’s explicit **owner approval** step.
-It is used in two places:
+"Pareamento" é o passo de **aprovação explícita do proprietário** do OpenCraft.
+Ele é usado em dois lugares:
 
-1. **DM pairing** (who is allowed to talk to the bot)
-2. **Node pairing** (which devices/nodes are allowed to join the gateway network)
+1. **Pareamento de DM** (quem tem permissão para conversar com o Bot)
+2. **Pareamento de nó** (quais dispositivos/nós podem se juntar à rede do Gateway)
 
-Security context: [Security](/gateway/security)
+Contexto de segurança: [Security](/gateway/security)
 
-## 1) DM pairing (inbound chat access)
+## 1) Pareamento de DM (acesso de chat de entrada)
 
-When a channel is configured with DM policy `pairing`, unknown senders get a short code and their message is **not processed** until you approve.
+Quando um canal é configurado com política de DM `pairing`, remetentes desconhecidos recebem um código curto e sua mensagem **não é processada** até que você aprove.
 
-Default DM policies are documented in: [Security](/gateway/security)
+Políticas padrão de DM são documentadas em: [Security](/gateway/security)
 
-Pairing codes:
+Códigos de pareamento:
 
-- 8 characters, uppercase, no ambiguous chars (`0O1I`).
-- **Expire after 1 hour**. The bot only sends the pairing message when a new request is created (roughly once per hour per sender).
-- Pending DM pairing requests are capped at **3 per channel** by default; additional requests are ignored until one expires or is approved.
+- 8 caracteres, maiúsculos, sem caracteres ambíguos (`0O1I`).
+- **Expiram após 1 hora**. O Bot só envia a mensagem de pareamento quando uma nova solicitação é criada (aproximadamente uma vez por hora por remetente).
+- Solicitações de pareamento de DM pendentes são limitadas a **3 por canal** por padrão; solicitações adicionais são ignoradas até que uma expire ou seja aprovada.
 
-### Approve a sender
+### Aprovar um remetente
 
 ```bash
 opencraft pairing list telegram
 opencraft pairing approve telegram <CODE>
 ```
 
-Supported channels: `telegram`, `whatsapp`, `signal`, `imessage`, `discord`, `slack`, `feishu`.
+Canais suportados: `telegram`, `whatsapp`, `signal`, `imessage`, `discord`, `slack`, `feishu`.
 
-### Where the state lives
+### Onde o estado é armazenado
 
-Stored under `~/.opencraft/credentials/`:
+Armazenado em `~/.opencraft/credentials/`:
 
-- Pending requests: `<channel>-pairing.json`
-- Approved allowlist store:
-  - Default account: `<channel>-allowFrom.json`
-  - Non-default account: `<channel>-<accountId>-allowFrom.json`
+- Solicitações pendentes: `<channel>-pairing.json`
+- Armazenamento de allowlist aprovada:
+  - Conta padrão: `<channel>-allowFrom.json`
+  - Conta não padrão: `<channel>-<accountId>-allowFrom.json`
 
-Account scoping behavior:
+Comportamento de escopo de conta:
 
-- Non-default accounts read/write only their scoped allowlist file.
-- Default account uses the channel-scoped unscoped allowlist file.
+- Contas não padrão leem/escrevem apenas seu arquivo de allowlist com escopo.
+- A conta padrão usa o arquivo de allowlist sem escopo do canal.
 
-Treat these as sensitive (they gate access to your assistant).
+Trate estes como sensíveis (eles controlam o acesso ao seu assistente).
 
-## 2) Node device pairing (iOS/Android/macOS/headless nodes)
+## 2) Pareamento de dispositivo de nó (nós iOS/Android/macOS/headless)
 
-Nodes connect to the Gateway as **devices** with `role: node`. The Gateway
-creates a device pairing request that must be approved.
+Nós se conectam ao Gateway como **dispositivos** com `role: node`. O Gateway
+cria uma solicitação de pareamento de dispositivo que deve ser aprovada.
 
-### Pair via Telegram (recommended for iOS)
+### Parear via Telegram (recomendado para iOS)
 
-If you use the `device-pair` plugin, you can do first-time device pairing entirely from Telegram:
+Se você usa o Plugin `device-pair`, pode fazer o pareamento inicial do dispositivo inteiramente pelo Telegram:
 
-1. In Telegram, message your bot: `/pair`
-2. The bot replies with two messages: an instruction message and a separate **setup code** message (easy to copy/paste in Telegram).
-3. On your phone, open the OpenCraft iOS app → Settings → Gateway.
-4. Paste the setup code and connect.
-5. Back in Telegram: `/pair approve`
+1. No Telegram, envie mensagem para o seu Bot: `/pair`
+2. O Bot responde com duas mensagens: uma mensagem de instrução e uma mensagem separada com o **código de configuração** (fácil de copiar/colar no Telegram).
+3. No seu telefone, abra o app OpenCraft iOS e depois Configurações e depois Gateway.
+4. Cole o código de configuração e conecte.
+5. De volta no Telegram: `/pair approve`
 
-The setup code is a base64-encoded JSON payload that contains:
+O código de configuração é um payload JSON codificado em base64 que contém:
 
-- `url`: the Gateway WebSocket URL (`ws://...` or `wss://...`)
-- `bootstrapToken`: a short-lived single-device bootstrap token used for the initial pairing handshake
+- `url`: a URL WebSocket do Gateway (`ws://...` ou `wss://...`)
+- `bootstrapToken`: um Token de bootstrap de curta duração para um único dispositivo, usado para o handshake inicial de pareamento
 
-Treat the setup code like a password while it is valid.
+Trate o código de configuração como uma senha enquanto ele for válido.
 
-### Approve a node device
+### Aprovar um dispositivo de nó
 
 ```bash
 opencraft devices list
@@ -84,27 +84,27 @@ opencraft devices approve <requestId>
 opencraft devices reject <requestId>
 ```
 
-### Node pairing state storage
+### Armazenamento de estado de pareamento de nó
 
-Stored under `~/.opencraft/devices/`:
+Armazenado em `~/.opencraft/devices/`:
 
-- `pending.json` (short-lived; pending requests expire)
-- `paired.json` (paired devices + tokens)
+- `pending.json` (curta duração; solicitações pendentes expiram)
+- `paired.json` (dispositivos pareados + Tokens)
 
-### Notes
+### Notas
 
-- The legacy `node.pair.*` API (CLI: `opencraft nodes pending/approve`) is a
-  separate gateway-owned pairing store. WS nodes still require device pairing.
+- A API legada `node.pair.*` (CLI: `opencraft nodes pending/approve`) é um
+  armazenamento de pareamento separado pertencente ao Gateway. Nós WS ainda requerem pareamento de dispositivo.
 
-## Related docs
+## Documentação relacionada
 
-- Security model + prompt injection: [Security](/gateway/security)
-- Updating safely (run doctor): [Updating](/install/updating)
-- Channel configs:
+- Modelo de segurança + injeção de prompt: [Security](/gateway/security)
+- Atualizando com segurança (executar doctor): [Updating](/install/updating)
+- Configurações de canal:
   - Telegram: [Telegram](/channels/telegram)
   - WhatsApp: [WhatsApp](/channels/whatsapp)
   - Signal: [Signal](/channels/signal)
   - BlueBubbles (iMessage): [BlueBubbles](/channels/bluebubbles)
-  - iMessage (legacy): [iMessage](/channels/imessage)
+  - iMessage (legado): [iMessage](/channels/imessage)
   - Discord: [Discord](/channels/discord)
   - Slack: [Slack](/channels/slack)

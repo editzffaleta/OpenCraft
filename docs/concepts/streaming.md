@@ -1,155 +1,155 @@
 ---
-summary: "Streaming + chunking behavior (block replies, channel preview streaming, mode mapping)"
+summary: "Comportamento de streaming + chunking (respostas em bloco, preview streaming em canais, mapeamento de modos)"
 read_when:
-  - Explaining how streaming or chunking works on channels
-  - Changing block streaming or channel chunking behavior
-  - Debugging duplicate/early block replies or channel preview streaming
+  - Explicando como streaming ou chunking funciona nos canais
+  - Alterando comportamento de block streaming ou chunking de canal
+  - Depurando respostas em bloco duplicadas/antecipadas ou preview streaming de canal
 title: "Streaming and Chunking"
 ---
 
 # Streaming + chunking
 
-OpenCraft has two separate streaming layers:
+O OpenCraft possui duas camadas de streaming separadas:
 
-- **Block streaming (channels):** emit completed **blocks** as the assistant writes. These are normal channel messages (not token deltas).
-- **Preview streaming (Telegram/Discord/Slack):** update a temporary **preview message** while generating.
+- **Block streaming (canais):** emite **blocos** completos conforme o assistente escreve. Estas são mensagens normais do canal (não deltas de Token).
+- **Preview streaming (Telegram/Discord/Slack):** atualiza uma **mensagem de preview** temporária durante a geração.
 
-There is **no true token-delta streaming** to channel messages today. Preview streaming is message-based (send + edits/appends).
+**Não há streaming verdadeiro de delta de Token** para mensagens de canal hoje. Preview streaming é baseado em mensagens (enviar + edições/adições).
 
-## Block streaming (channel messages)
+## Block streaming (mensagens de canal)
 
-Block streaming sends assistant output in coarse chunks as it becomes available.
+Block streaming envia a saída do assistente em pedaços grosseiros conforme ficam disponíveis.
 
 ```
-Model output
+Saída do modelo
   └─ text_delta/events
        ├─ (blockStreamingBreak=text_end)
-       │    └─ chunker emits blocks as buffer grows
+       │    └─ chunker emite blocos conforme o buffer cresce
        └─ (blockStreamingBreak=message_end)
-            └─ chunker flushes at message_end
-                   └─ channel send (block replies)
+            └─ chunker faz flush no message_end
+                   └─ envio para o canal (respostas em bloco)
 ```
 
-Legend:
+Legenda:
 
-- `text_delta/events`: model stream events (may be sparse for non-streaming models).
-- `chunker`: `EmbeddedBlockChunker` applying min/max bounds + break preference.
-- `channel send`: actual outbound messages (block replies).
+- `text_delta/events`: eventos de stream do modelo (podem ser esparsos para modelos sem streaming).
+- `chunker`: `EmbeddedBlockChunker` aplicando limites mínimo/máximo + preferência de quebra.
+- `envio para o canal`: mensagens de saída reais (respostas em bloco).
 
-**Controls:**
+**Controles:**
 
-- `agents.defaults.blockStreamingDefault`: `"on"`/`"off"` (default off).
-- Channel overrides: `*.blockStreaming` (and per-account variants) to force `"on"`/`"off"` per channel.
-- `agents.defaults.blockStreamingBreak`: `"text_end"` or `"message_end"`.
+- `agents.defaults.blockStreamingDefault`: `"on"`/`"off"` (padrão off).
+- Overrides de canal: `*.blockStreaming` (e variantes por conta) para forçar `"on"`/`"off"` por canal.
+- `agents.defaults.blockStreamingBreak`: `"text_end"` ou `"message_end"`.
 - `agents.defaults.blockStreamingChunk`: `{ minChars, maxChars, breakPreference? }`.
-- `agents.defaults.blockStreamingCoalesce`: `{ minChars?, maxChars?, idleMs? }` (merge streamed blocks before send).
-- Channel hard cap: `*.textChunkLimit` (e.g., `channels.whatsapp.textChunkLimit`).
-- Channel chunk mode: `*.chunkMode` (`length` default, `newline` splits on blank lines (paragraph boundaries) before length chunking).
-- Discord soft cap: `channels.discord.maxLinesPerMessage` (default 17) splits tall replies to avoid UI clipping.
+- `agents.defaults.blockStreamingCoalesce`: `{ minChars?, maxChars?, idleMs? }` (mesclar blocos de stream antes do envio).
+- Limite rígido do canal: `*.textChunkLimit` (ex., `channels.whatsapp.textChunkLimit`).
+- Modo de chunk do canal: `*.chunkMode` (`length` padrão, `newline` divide em linhas em branco (limites de parágrafo) antes do chunking por tamanho).
+- Limite suave do Discord: `channels.discord.maxLinesPerMessage` (padrão 17) divide respostas altas para evitar corte na UI.
 
-**Boundary semantics:**
+**Semântica de limite:**
 
-- `text_end`: stream blocks as soon as chunker emits; flush on each `text_end`.
-- `message_end`: wait until assistant message finishes, then flush buffered output.
+- `text_end`: transmite blocos assim que o chunker emite; faz flush em cada `text_end`.
+- `message_end`: aguarda até a mensagem do assistente terminar, depois faz flush do conteúdo bufferizado.
 
-`message_end` still uses the chunker if the buffered text exceeds `maxChars`, so it can emit multiple chunks at the end.
+`message_end` ainda usa o chunker se o texto bufferizado exceder `maxChars`, então pode emitir múltiplos chunks no final.
 
-## Chunking algorithm (low/high bounds)
+## Algoritmo de chunking (limites baixo/alto)
 
-Block chunking is implemented by `EmbeddedBlockChunker`:
+Block chunking é implementado por `EmbeddedBlockChunker`:
 
-- **Low bound:** don’t emit until buffer >= `minChars` (unless forced).
-- **High bound:** prefer splits before `maxChars`; if forced, split at `maxChars`.
-- **Break preference:** `paragraph` → `newline` → `sentence` → `whitespace` → hard break.
-- **Code fences:** never split inside fences; when forced at `maxChars`, close + reopen the fence to keep Markdown valid.
+- **Limite baixo:** não emite até o buffer >= `minChars` (a menos que forçado).
+- **Limite alto:** prefere divisões antes de `maxChars`; se forçado, divide em `maxChars`.
+- **Preferência de quebra:** `paragraph` → `newline` → `sentence` → `whitespace` → quebra forçada.
+- **Blocos de código:** nunca divide dentro de fences; quando forçado em `maxChars`, fecha + reabre o fence para manter o Markdown válido.
 
-`maxChars` is clamped to the channel `textChunkLimit`, so you can’t exceed per-channel caps.
+`maxChars` é limitado ao `textChunkLimit` do canal, então você não pode exceder os limites por canal.
 
-## Coalescing (merge streamed blocks)
+## Coalescência (mesclar blocos de stream)
 
-When block streaming is enabled, OpenCraft can **merge consecutive block chunks**
-before sending them out. This reduces “single-line spam” while still providing
-progressive output.
+Quando block streaming está habilitado, o OpenCraft pode **mesclar chunks de bloco consecutivos**
+antes de enviá-los. Isso reduz "spam de linha única" enquanto ainda fornece
+saída progressiva.
 
-- Coalescing waits for **idle gaps** (`idleMs`) before flushing.
-- Buffers are capped by `maxChars` and will flush if they exceed it.
-- `minChars` prevents tiny fragments from sending until enough text accumulates
-  (final flush always sends remaining text).
-- Joiner is derived from `blockStreamingChunk.breakPreference`
-  (`paragraph` → `\n\n`, `newline` → `\n`, `sentence` → space).
-- Channel overrides are available via `*.blockStreamingCoalesce` (including per-account configs).
-- Default coalesce `minChars` is bumped to 1500 for Signal/Slack/Discord unless overridden.
+- A coalescência aguarda por **intervalos ociosos** (`idleMs`) antes de fazer flush.
+- Buffers são limitados por `maxChars` e farão flush se excederem.
+- `minChars` evita que fragmentos pequenos sejam enviados até que texto suficiente se acumule
+  (o flush final sempre envia o texto restante).
+- O separador é derivado de `blockStreamingChunk.breakPreference`
+  (`paragraph` → `\n\n`, `newline` → `\n`, `sentence` → espaço).
+- Overrides de canal estão disponíveis via `*.blockStreamingCoalesce` (incluindo configurações por conta).
+- O `minChars` padrão de coalescência é aumentado para 1500 para Signal/Slack/Discord, a menos que sobrescrito.
 
-## Human-like pacing between blocks
+## Ritmo semelhante ao humano entre blocos
 
-When block streaming is enabled, you can add a **randomized pause** between
-block replies (after the first block). This makes multi-bubble responses feel
-more natural.
+Quando block streaming está habilitado, você pode adicionar uma **pausa aleatória** entre
+respostas em bloco (após o primeiro bloco). Isso faz com que respostas com múltiplas bolhas pareçam
+mais naturais.
 
-- Config: `agents.defaults.humanDelay` (override per agent via `agents.list[].humanDelay`).
-- Modes: `off` (default), `natural` (800–2500ms), `custom` (`minMs`/`maxMs`).
-- Applies only to **block replies**, not final replies or tool summaries.
+- Configuração: `agents.defaults.humanDelay` (override por agente via `agents.list[].humanDelay`).
+- Modos: `off` (padrão), `natural` (800–2500ms), `custom` (`minMs`/`maxMs`).
+- Aplica-se apenas a **respostas em bloco**, não a respostas finais ou resumos de ferramentas.
 
-## “Stream chunks or everything”
+## "Transmitir chunks ou tudo"
 
-This maps to:
+Isso se mapeia para:
 
-- **Stream chunks:** `blockStreamingDefault: "on"` + `blockStreamingBreak: "text_end"` (emit as you go). Non-Telegram channels also need `*.blockStreaming: true`.
-- **Stream everything at end:** `blockStreamingBreak: "message_end"` (flush once, possibly multiple chunks if very long).
-- **No block streaming:** `blockStreamingDefault: "off"` (only final reply).
+- **Transmitir chunks:** `blockStreamingDefault: "on"` + `blockStreamingBreak: "text_end"` (emitir conforme avança). Canais não-Telegram também precisam de `*.blockStreaming: true`.
+- **Transmitir tudo no final:** `blockStreamingBreak: "message_end"` (flush único, possivelmente múltiplos chunks se muito longo).
+- **Sem block streaming:** `blockStreamingDefault: "off"` (apenas resposta final).
 
-**Channel note:** Block streaming is **off unless**
-`*.blockStreaming` is explicitly set to `true`. Channels can stream a live preview
-(`channels.<channel>.streaming`) without block replies.
+**Nota sobre canais:** Block streaming está **desligado a menos que**
+`*.blockStreaming` esteja explicitamente definido como `true`. Canais podem transmitir um preview ao vivo
+(`channels.<channel>.streaming`) sem respostas em bloco.
 
-Config location reminder: the `blockStreaming*` defaults live under
-`agents.defaults`, not the root config.
+Lembrete de localização da configuração: os padrões `blockStreaming*` ficam em
+`agents.defaults`, não na raiz da configuração.
 
-## Preview streaming modes
+## Modos de preview streaming
 
-Canonical key: `channels.<channel>.streaming`
+Chave canônica: `channels.<channel>.streaming`
 
-Modes:
+Modos:
 
-- `off`: disable preview streaming.
-- `partial`: single preview that is replaced with latest text.
-- `block`: preview updates in chunked/appended steps.
-- `progress`: progress/status preview during generation, final answer at completion.
+- `off`: desabilita preview streaming.
+- `partial`: preview único que é substituído pelo texto mais recente.
+- `block`: atualizações de preview em etapas chunked/adicionadas.
+- `progress`: preview de progresso/status durante a geração, resposta final na conclusão.
 
-### Channel mapping
+### Mapeamento de canais
 
-| Channel  | `off` | `partial` | `block` | `progress`        |
-| -------- | ----- | --------- | ------- | ----------------- |
-| Telegram | ✅    | ✅        | ✅      | maps to `partial` |
-| Discord  | ✅    | ✅        | ✅      | maps to `partial` |
-| Slack    | ✅    | ✅        | ✅      | ✅                |
+| Canal    | `off` | `partial` | `block` | `progress`            |
+| -------- | ----- | --------- | ------- | --------------------- |
+| Telegram | ✅    | ✅        | ✅      | mapeia para `partial` |
+| Discord  | ✅    | ✅        | ✅      | mapeia para `partial` |
+| Slack    | ✅    | ✅        | ✅      | ✅                    |
 
-Slack-only:
+Apenas Slack:
 
-- `channels.slack.nativeStreaming` toggles Slack native streaming API calls when `streaming=partial` (default: `true`).
+- `channels.slack.nativeStreaming` alterna chamadas à API de streaming nativo do Slack quando `streaming=partial` (padrão: `true`).
 
-Legacy key migration:
+Migração de chave legada:
 
-- Telegram: `streamMode` + boolean `streaming` auto-migrate to `streaming` enum.
-- Discord: `streamMode` + boolean `streaming` auto-migrate to `streaming` enum.
-- Slack: `streamMode` auto-migrates to `streaming` enum; boolean `streaming` auto-migrates to `nativeStreaming`.
+- Telegram: `streamMode` + booleano `streaming` migram automaticamente para o enum `streaming`.
+- Discord: `streamMode` + booleano `streaming` migram automaticamente para o enum `streaming`.
+- Slack: `streamMode` migra automaticamente para o enum `streaming`; booleano `streaming` migra automaticamente para `nativeStreaming`.
 
-### Runtime behavior
+### Comportamento em tempo de execução
 
 Telegram:
 
-- Uses `sendMessage` + `editMessageText` preview updates across DMs and group/topics.
-- Preview streaming is skipped when Telegram block streaming is explicitly enabled (to avoid double-streaming).
-- `/reasoning stream` can write reasoning to preview.
+- Usa `sendMessage` + `editMessageText` para atualizações de preview em DMs e grupos/tópicos.
+- Preview streaming é ignorado quando block streaming do Telegram está explicitamente habilitado (para evitar streaming duplo).
+- `/reasoning stream` pode escrever raciocínio no preview.
 
 Discord:
 
-- Uses send + edit preview messages.
-- `block` mode uses draft chunking (`draftChunk`).
-- Preview streaming is skipped when Discord block streaming is explicitly enabled.
+- Usa envio + edição de mensagens de preview.
+- Modo `block` usa chunking de rascunho (`draftChunk`).
+- Preview streaming é ignorado quando block streaming do Discord está explicitamente habilitado.
 
 Slack:
 
-- `partial` can use Slack native streaming (`chat.startStream`/`append`/`stop`) when available.
-- `block` uses append-style draft previews.
-- `progress` uses status preview text, then final answer.
+- `partial` pode usar streaming nativo do Slack (`chat.startStream`/`append`/`stop`) quando disponível.
+- `block` usa previews de rascunho no estilo append.
+- `progress` usa texto de preview de status, depois a resposta final.

@@ -1,5 +1,5 @@
 ---
-summary: "iMessage via BlueBubbles macOS server (REST send/receive, typing, reactions, pairing, advanced actions)."
+summary: "iMessage via servidor BlueBubbles no macOS (envio/recebimento REST, digitacao, reacoes, pareamento, acoes avancadas)."
 read_when:
   - Setting up BlueBubbles channel
   - Troubleshooting webhook pairing
@@ -9,24 +9,24 @@ title: "BlueBubbles"
 
 # BlueBubbles (macOS REST)
 
-Status: bundled plugin that talks to the BlueBubbles macOS server over HTTP. **Recommended for iMessage integration** due to its richer API and easier setup compared to the legacy imsg channel.
+Status: Plugin integrado que se comunica com o servidor BlueBubbles no macOS via HTTP. **Recomendado para integracao com iMessage** devido a sua API mais rica e configuracao mais facil em comparacao com o canal legado imsg.
 
-## Overview
+## Visao geral
 
-- Runs on macOS via the BlueBubbles helper app ([bluebubbles.app](https://bluebubbles.app)).
-- Recommended/tested: macOS Sequoia (15). macOS Tahoe (26) works; edit is currently broken on Tahoe, and group icon updates may report success but not sync.
-- OpenCraft talks to it through its REST API (`GET /api/v1/ping`, `POST /message/text`, `POST /chat/:id/*`).
-- Incoming messages arrive via webhooks; outgoing replies, typing indicators, read receipts, and tapbacks are REST calls.
-- Attachments and stickers are ingested as inbound media (and surfaced to the agent when possible).
-- Pairing/allowlist works the same way as other channels (`/channels/pairing` etc) with `channels.bluebubbles.allowFrom` + pairing codes.
-- Reactions are surfaced as system events just like Slack/Telegram so agents can "mention" them before replying.
-- Advanced features: edit, unsend, reply threading, message effects, group management.
+- Roda no macOS via o app auxiliar BlueBubbles ([bluebubbles.app](https://bluebubbles.app)).
+- Recomendado/testado: macOS Sequoia (15). macOS Tahoe (26) funciona; a edicao esta atualmente quebrada no Tahoe, e atualizacoes de icone de grupo podem reportar sucesso mas nao sincronizar.
+- O OpenCraft se comunica com ele atraves da API REST (`GET /api/v1/ping`, `POST /message/text`, `POST /chat/:id/*`).
+- Mensagens recebidas chegam via Webhooks; respostas enviadas, indicadores de digitacao, confirmacoes de leitura e tapbacks sao chamadas REST.
+- Anexos e stickers sao ingeridos como midia de entrada (e exibidos ao agente quando possivel).
+- Pareamento/lista de permitidos funciona da mesma forma que outros canais (`/channels/pairing` etc) com `channels.bluebubbles.allowFrom` + codigos de pareamento.
+- Reacoes sao exibidas como eventos de sistema, assim como no Slack/Telegram, para que os agentes possam "menciona-las" antes de responder.
+- Recursos avancados: edicao, cancelar envio, threading de respostas, efeitos de mensagem, gerenciamento de grupos.
 
-## Quick start
+## Inicio rapido
 
-1. Install the BlueBubbles server on your Mac (follow the instructions at [bluebubbles.app/install](https://bluebubbles.app/install)).
-2. In the BlueBubbles config, enable the web API and set a password.
-3. Run `opencraft onboard` and select BlueBubbles, or configure manually:
+1. Instale o servidor BlueBubbles no seu Mac (siga as instrucoes em [bluebubbles.app/install](https://bluebubbles.app/install)).
+2. Na configuracao do BlueBubbles, habilite a API web e defina uma senha.
+3. Execute `opencraft onboard` e selecione BlueBubbles, ou configure manualmente:
 
    ```json5
    {
@@ -41,26 +41,26 @@ Status: bundled plugin that talks to the BlueBubbles macOS server over HTTP. **R
    }
    ```
 
-4. Point BlueBubbles webhooks to your gateway (example: `https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`).
-5. Start the gateway; it will register the webhook handler and start pairing.
+4. Aponte os Webhooks do BlueBubbles para o seu Gateway (exemplo: `https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`).
+5. Inicie o Gateway; ele registrara o handler do Webhook e iniciara o pareamento.
 
-Security note:
+Nota de seguranca:
 
-- Always set a webhook password.
-- Webhook authentication is always required. OpenCraft rejects BlueBubbles webhook requests unless they include a password/guid that matches `channels.bluebubbles.password` (for example `?password=<password>` or `x-password`), regardless of loopback/proxy topology.
-- Password authentication is checked before reading/parsing full webhook bodies.
+- Sempre defina uma senha para o Webhook.
+- A autenticacao do Webhook e sempre obrigatoria. O OpenCraft rejeita requisicoes de Webhook do BlueBubbles a menos que incluam uma senha/guid que corresponda a `channels.bluebubbles.password` (por exemplo `?password=<password>` ou `x-password`), independentemente da topologia de loopback/proxy.
+- A autenticacao por senha e verificada antes de ler/analisar o corpo completo do Webhook.
 
-## Keeping Messages.app alive (VM / headless setups)
+## Mantendo o Messages.app ativo (configuracoes VM / headless)
 
-Some macOS VM / always-on setups can end up with Messages.app going “idle” (incoming events stop until the app is opened/foregrounded). A simple workaround is to **poke Messages every 5 minutes** using an AppleScript + LaunchAgent.
+Algumas configuracoes de VM macOS / sempre ligadas podem fazer com que o Messages.app fique "ocioso" (eventos recebidos param ate que o app seja aberto/colocado em primeiro plano). Uma solucao simples e **estimular o Messages a cada 5 minutos** usando um AppleScript + LaunchAgent.
 
-### 1) Save the AppleScript
+### 1) Salve o AppleScript
 
-Save this as:
+Salve como:
 
 - `~/Scripts/poke-messages.scpt`
 
-Example script (non-interactive; does not steal focus):
+Exemplo de script (nao interativo; nao rouba o foco):
 
 ```applescript
 try
@@ -77,9 +77,9 @@ on error
 end try
 ```
 
-### 2) Install a LaunchAgent
+### 2) Instale um LaunchAgent
 
-Save this as:
+Salve como:
 
 - `~/Library/LaunchAgents/com.user.poke-messages.plist`
 
@@ -112,12 +112,12 @@ Save this as:
 </plist>
 ```
 
-Notes:
+Notas:
 
-- This runs **every 300 seconds** and **on login**.
-- The first run may trigger macOS **Automation** prompts (`osascript` → Messages). Approve them in the same user session that runs the LaunchAgent.
+- Isso executa **a cada 300 segundos** e **no login**.
+- A primeira execucao pode acionar prompts de **Automacao** do macOS (`osascript` -> Messages). Aprove-os na mesma sessao de usuario que executa o LaunchAgent.
 
-Load it:
+Carregue-o:
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.user.poke-messages.plist 2>/dev/null || true
@@ -126,51 +126,51 @@ launchctl load ~/Library/LaunchAgents/com.user.poke-messages.plist
 
 ## Onboarding
 
-BlueBubbles is available in interactive onboarding:
+BlueBubbles esta disponivel no onboarding interativo:
 
 ```
 opencraft onboard
 ```
 
-The wizard prompts for:
+O assistente solicita:
 
-- **Server URL** (required): BlueBubbles server address (e.g., `http://192.168.1.100:1234`)
-- **Password** (required): API password from BlueBubbles Server settings
-- **Webhook path** (optional): Defaults to `/bluebubbles-webhook`
-- **DM policy**: pairing, allowlist, open, or disabled
-- **Allow list**: Phone numbers, emails, or chat targets
+- **URL do servidor** (obrigatorio): Endereco do servidor BlueBubbles (ex.: `http://192.168.1.100:1234`)
+- **Senha** (obrigatoria): Senha da API nas configuracoes do Servidor BlueBubbles
+- **Caminho do Webhook** (opcional): Padrao `/bluebubbles-webhook`
+- **Politica de DM**: pareamento, lista de permitidos, aberto ou desabilitado
+- **Lista de permitidos**: Numeros de telefone, emails ou alvos de chat
 
-You can also add BlueBubbles via CLI:
+Voce tambem pode adicionar BlueBubbles via CLI:
 
 ```
 opencraft channels add bluebubbles --http-url http://192.168.1.100:1234 --password <password>
 ```
 
-## Access control (DMs + groups)
+## Controle de acesso (DMs + grupos)
 
 DMs:
 
-- Default: `channels.bluebubbles.dmPolicy = "pairing"`.
-- Unknown senders receive a pairing code; messages are ignored until approved (codes expire after 1 hour).
-- Approve via:
+- Padrao: `channels.bluebubbles.dmPolicy = "pairing"`.
+- Remetentes desconhecidos recebem um codigo de pareamento; mensagens sao ignoradas ate serem aprovadas (codigos expiram apos 1 hora).
+- Aprove via:
   - `opencraft pairing list bluebubbles`
   - `opencraft pairing approve bluebubbles <CODE>`
-- Pairing is the default token exchange. Details: [Pairing](/channels/pairing)
+- O pareamento e a troca padrao de Token. Detalhes: [Pareamento](/channels/pairing)
 
-Groups:
+Grupos:
 
-- `channels.bluebubbles.groupPolicy = open | allowlist | disabled` (default: `allowlist`).
-- `channels.bluebubbles.groupAllowFrom` controls who can trigger in groups when `allowlist` is set.
+- `channels.bluebubbles.groupPolicy = open | allowlist | disabled` (padrao: `allowlist`).
+- `channels.bluebubbles.groupAllowFrom` controla quem pode acionar em grupos quando `allowlist` esta definido.
 
-### Mention gating (groups)
+### Controle por mencao (grupos)
 
-BlueBubbles supports mention gating for group chats, matching iMessage/WhatsApp behavior:
+BlueBubbles suporta controle por mencao para chats em grupo, correspondendo ao comportamento do iMessage/WhatsApp:
 
-- Uses `agents.list[].groupChat.mentionPatterns` (or `messages.groupChat.mentionPatterns`) to detect mentions.
-- When `requireMention` is enabled for a group, the agent only responds when mentioned.
-- Control commands from authorized senders bypass mention gating.
+- Usa `agents.list[].groupChat.mentionPatterns` (ou `messages.groupChat.mentionPatterns`) para detectar mencoes.
+- Quando `requireMention` esta habilitado para um grupo, o agente so responde quando mencionado.
+- Comandos de controle de remetentes autorizados ignoram o controle por mencao.
 
-Per-group configuration:
+Configuracao por grupo:
 
 ```json5
 {
@@ -179,169 +179,169 @@ Per-group configuration:
       groupPolicy: "allowlist",
       groupAllowFrom: ["+15555550123"],
       groups: {
-        "*": { requireMention: true }, // default for all groups
-        "iMessage;-;chat123": { requireMention: false }, // override for specific group
+        "*": { requireMention: true }, // padrao para todos os grupos
+        "iMessage;-;chat123": { requireMention: false }, // substituicao para grupo especifico
       },
     },
   },
 }
 ```
 
-### Command gating
+### Controle de comandos
 
-- Control commands (e.g., `/config`, `/model`) require authorization.
-- Uses `allowFrom` and `groupAllowFrom` to determine command authorization.
-- Authorized senders can run control commands even without mentioning in groups.
+- Comandos de controle (ex.: `/config`, `/model`) requerem autorizacao.
+- Usa `allowFrom` e `groupAllowFrom` para determinar a autorizacao de comandos.
+- Remetentes autorizados podem executar comandos de controle mesmo sem mencionar em grupos.
 
-## Typing + read receipts
+## Digitacao + confirmacoes de leitura
 
-- **Typing indicators**: Sent automatically before and during response generation.
-- **Read receipts**: Controlled by `channels.bluebubbles.sendReadReceipts` (default: `true`).
-- **Typing indicators**: OpenCraft sends typing start events; BlueBubbles clears typing automatically on send or timeout (manual stop via DELETE is unreliable).
+- **Indicadores de digitacao**: Enviados automaticamente antes e durante a geracao de resposta.
+- **Confirmacoes de leitura**: Controladas por `channels.bluebubbles.sendReadReceipts` (padrao: `true`).
+- **Indicadores de digitacao**: O OpenCraft envia eventos de inicio de digitacao; o BlueBubbles limpa a digitacao automaticamente ao enviar ou por timeout (parada manual via DELETE nao e confiavel).
 
 ```json5
 {
   channels: {
     bluebubbles: {
-      sendReadReceipts: false, // disable read receipts
+      sendReadReceipts: false, // desabilitar confirmacoes de leitura
     },
   },
 }
 ```
 
-## Advanced actions
+## Acoes avancadas
 
-BlueBubbles supports advanced message actions when enabled in config:
+BlueBubbles suporta acoes avancadas de mensagem quando habilitadas na configuracao:
 
 ```json5
 {
   channels: {
     bluebubbles: {
       actions: {
-        reactions: true, // tapbacks (default: true)
-        edit: true, // edit sent messages (macOS 13+, broken on macOS 26 Tahoe)
-        unsend: true, // unsend messages (macOS 13+)
-        reply: true, // reply threading by message GUID
-        sendWithEffect: true, // message effects (slam, loud, etc.)
-        renameGroup: true, // rename group chats
-        setGroupIcon: true, // set group chat icon/photo (flaky on macOS 26 Tahoe)
-        addParticipant: true, // add participants to groups
-        removeParticipant: true, // remove participants from groups
-        leaveGroup: true, // leave group chats
-        sendAttachment: true, // send attachments/media
+        reactions: true, // tapbacks (padrao: true)
+        edit: true, // editar mensagens enviadas (macOS 13+, quebrado no macOS 26 Tahoe)
+        unsend: true, // cancelar envio de mensagens (macOS 13+)
+        reply: true, // threading de respostas por GUID da mensagem
+        sendWithEffect: true, // efeitos de mensagem (slam, loud, etc.)
+        renameGroup: true, // renomear chats em grupo
+        setGroupIcon: true, // definir icone/foto do chat em grupo (instavel no macOS 26 Tahoe)
+        addParticipant: true, // adicionar participantes a grupos
+        removeParticipant: true, // remover participantes de grupos
+        leaveGroup: true, // sair de chats em grupo
+        sendAttachment: true, // enviar anexos/midia
       },
     },
   },
 }
 ```
 
-Available actions:
+Acoes disponiveis:
 
-- **react**: Add/remove tapback reactions (`messageId`, `emoji`, `remove`)
-- **edit**: Edit a sent message (`messageId`, `text`)
-- **unsend**: Unsend a message (`messageId`)
-- **reply**: Reply to a specific message (`messageId`, `text`, `to`)
-- **sendWithEffect**: Send with iMessage effect (`text`, `to`, `effectId`)
-- **renameGroup**: Rename a group chat (`chatGuid`, `displayName`)
-- **setGroupIcon**: Set a group chat's icon/photo (`chatGuid`, `media`) — flaky on macOS 26 Tahoe (API may return success but the icon does not sync).
-- **addParticipant**: Add someone to a group (`chatGuid`, `address`)
-- **removeParticipant**: Remove someone from a group (`chatGuid`, `address`)
-- **leaveGroup**: Leave a group chat (`chatGuid`)
-- **sendAttachment**: Send media/files (`to`, `buffer`, `filename`, `asVoice`)
-  - Voice memos: set `asVoice: true` with **MP3** or **CAF** audio to send as an iMessage voice message. BlueBubbles converts MP3 → CAF when sending voice memos.
+- **react**: Adicionar/remover reacoes tapback (`messageId`, `emoji`, `remove`)
+- **edit**: Editar uma mensagem enviada (`messageId`, `text`)
+- **unsend**: Cancelar envio de uma mensagem (`messageId`)
+- **reply**: Responder a uma mensagem especifica (`messageId`, `text`, `to`)
+- **sendWithEffect**: Enviar com efeito do iMessage (`text`, `to`, `effectId`)
+- **renameGroup**: Renomear um chat em grupo (`chatGuid`, `displayName`)
+- **setGroupIcon**: Definir o icone/foto de um chat em grupo (`chatGuid`, `media`) -- instavel no macOS 26 Tahoe (a API pode retornar sucesso mas o icone nao sincroniza).
+- **addParticipant**: Adicionar alguem a um grupo (`chatGuid`, `address`)
+- **removeParticipant**: Remover alguem de um grupo (`chatGuid`, `address`)
+- **leaveGroup**: Sair de um chat em grupo (`chatGuid`)
+- **sendAttachment**: Enviar midia/arquivos (`to`, `buffer`, `filename`, `asVoice`)
+  - Mensagens de voz: defina `asVoice: true` com audio **MP3** ou **CAF** para enviar como mensagem de voz do iMessage. O BlueBubbles converte MP3 -> CAF ao enviar mensagens de voz.
 
-### Message IDs (short vs full)
+### IDs de mensagem (curto vs completo)
 
-OpenCraft may surface _short_ message IDs (e.g., `1`, `2`) to save tokens.
+O OpenCraft pode exibir IDs de mensagem _curtos_ (ex.: `1`, `2`) para economizar Tokens.
 
-- `MessageSid` / `ReplyToId` can be short IDs.
-- `MessageSidFull` / `ReplyToIdFull` contain the provider full IDs.
-- Short IDs are in-memory; they can expire on restart or cache eviction.
-- Actions accept short or full `messageId`, but short IDs will error if no longer available.
+- `MessageSid` / `ReplyToId` podem ser IDs curtos.
+- `MessageSidFull` / `ReplyToIdFull` contem os IDs completos do provedor.
+- IDs curtos ficam em memoria; podem expirar ao reiniciar ou por evicao de cache.
+- Acoes aceitam `messageId` curto ou completo, mas IDs curtos resultarao em erro se nao estiverem mais disponiveis.
 
-Use full IDs for durable automations and storage:
+Use IDs completos para automacoes duraveis e armazenamento:
 
 - Templates: `{{MessageSidFull}}`, `{{ReplyToIdFull}}`
-- Context: `MessageSidFull` / `ReplyToIdFull` in inbound payloads
+- Contexto: `MessageSidFull` / `ReplyToIdFull` nos payloads de entrada
 
-See [Configuration](/gateway/configuration) for template variables.
+Veja [Configuracao](/gateway/configuration) para variaveis de template.
 
-## Block streaming
+## Streaming em blocos
 
-Control whether responses are sent as a single message or streamed in blocks:
+Controle se as respostas sao enviadas como uma unica mensagem ou transmitidas em blocos:
 
 ```json5
 {
   channels: {
     bluebubbles: {
-      blockStreaming: true, // enable block streaming (off by default)
+      blockStreaming: true, // habilitar streaming em blocos (desabilitado por padrao)
     },
   },
 }
 ```
 
-## Media + limits
+## Midia + limites
 
-- Inbound attachments are downloaded and stored in the media cache.
-- Media cap via `channels.bluebubbles.mediaMaxMb` for inbound and outbound media (default: 8 MB).
-- Outbound text is chunked to `channels.bluebubbles.textChunkLimit` (default: 4000 chars).
+- Anexos de entrada sao baixados e armazenados no cache de midia.
+- Limite de midia via `channels.bluebubbles.mediaMaxMb` para midia de entrada e saida (padrao: 8 MB).
+- Texto de saida e dividido em `channels.bluebubbles.textChunkLimit` (padrao: 4000 caracteres).
 
-## Configuration reference
+## Referencia de configuracao
 
-Full configuration: [Configuration](/gateway/configuration)
+Configuracao completa: [Configuracao](/gateway/configuration)
 
-Provider options:
+Opcoes do provedor:
 
-- `channels.bluebubbles.enabled`: Enable/disable the channel.
-- `channels.bluebubbles.serverUrl`: BlueBubbles REST API base URL.
-- `channels.bluebubbles.password`: API password.
-- `channels.bluebubbles.webhookPath`: Webhook endpoint path (default: `/bluebubbles-webhook`).
-- `channels.bluebubbles.dmPolicy`: `pairing | allowlist | open | disabled` (default: `pairing`).
-- `channels.bluebubbles.allowFrom`: DM allowlist (handles, emails, E.164 numbers, `chat_id:*`, `chat_guid:*`).
-- `channels.bluebubbles.groupPolicy`: `open | allowlist | disabled` (default: `allowlist`).
-- `channels.bluebubbles.groupAllowFrom`: Group sender allowlist.
-- `channels.bluebubbles.groups`: Per-group config (`requireMention`, etc.).
-- `channels.bluebubbles.sendReadReceipts`: Send read receipts (default: `true`).
-- `channels.bluebubbles.blockStreaming`: Enable block streaming (default: `false`; required for streaming replies).
-- `channels.bluebubbles.textChunkLimit`: Outbound chunk size in chars (default: 4000).
-- `channels.bluebubbles.chunkMode`: `length` (default) splits only when exceeding `textChunkLimit`; `newline` splits on blank lines (paragraph boundaries) before length chunking.
-- `channels.bluebubbles.mediaMaxMb`: Inbound/outbound media cap in MB (default: 8).
-- `channels.bluebubbles.mediaLocalRoots`: Explicit allowlist of absolute local directories permitted for outbound local media paths. Local path sends are denied by default unless this is configured. Per-account override: `channels.bluebubbles.accounts.<accountId>.mediaLocalRoots`.
-- `channels.bluebubbles.historyLimit`: Max group messages for context (0 disables).
-- `channels.bluebubbles.dmHistoryLimit`: DM history limit.
-- `channels.bluebubbles.actions`: Enable/disable specific actions.
-- `channels.bluebubbles.accounts`: Multi-account configuration.
+- `channels.bluebubbles.enabled`: Habilitar/desabilitar o canal.
+- `channels.bluebubbles.serverUrl`: URL base da API REST do BlueBubbles.
+- `channels.bluebubbles.password`: Senha da API.
+- `channels.bluebubbles.webhookPath`: Caminho do endpoint do Webhook (padrao: `/bluebubbles-webhook`).
+- `channels.bluebubbles.dmPolicy`: `pairing | allowlist | open | disabled` (padrao: `pairing`).
+- `channels.bluebubbles.allowFrom`: Lista de permitidos para DM (handles, emails, numeros E.164, `chat_id:*`, `chat_guid:*`).
+- `channels.bluebubbles.groupPolicy`: `open | allowlist | disabled` (padrao: `allowlist`).
+- `channels.bluebubbles.groupAllowFrom`: Lista de permitidos para remetentes em grupo.
+- `channels.bluebubbles.groups`: Configuracao por grupo (`requireMention`, etc.).
+- `channels.bluebubbles.sendReadReceipts`: Enviar confirmacoes de leitura (padrao: `true`).
+- `channels.bluebubbles.blockStreaming`: Habilitar streaming em blocos (padrao: `false`; necessario para respostas em streaming).
+- `channels.bluebubbles.textChunkLimit`: Tamanho do bloco de saida em caracteres (padrao: 4000).
+- `channels.bluebubbles.chunkMode`: `length` (padrao) divide somente ao exceder `textChunkLimit`; `newline` divide em linhas em branco (limites de paragrafo) antes da divisao por tamanho.
+- `channels.bluebubbles.mediaMaxMb`: Limite de midia de entrada/saida em MB (padrao: 8).
+- `channels.bluebubbles.mediaLocalRoots`: Lista explicita de diretorios locais absolutos permitidos para caminhos de midia local de saida. Envios por caminho local sao negados por padrao a menos que isso esteja configurado. Substituicao por conta: `channels.bluebubbles.accounts.<accountId>.mediaLocalRoots`.
+- `channels.bluebubbles.historyLimit`: Maximo de mensagens de grupo para contexto (0 desabilita).
+- `channels.bluebubbles.dmHistoryLimit`: Limite de historico de DM.
+- `channels.bluebubbles.actions`: Habilitar/desabilitar acoes especificas.
+- `channels.bluebubbles.accounts`: Configuracao de multiplas contas.
 
-Related global options:
+Opcoes globais relacionadas:
 
-- `agents.list[].groupChat.mentionPatterns` (or `messages.groupChat.mentionPatterns`).
+- `agents.list[].groupChat.mentionPatterns` (ou `messages.groupChat.mentionPatterns`).
 - `messages.responsePrefix`.
 
-## Addressing / delivery targets
+## Enderecamento / alvos de entrega
 
-Prefer `chat_guid` for stable routing:
+Prefira `chat_guid` para roteamento estavel:
 
-- `chat_guid:iMessage;-;+15555550123` (preferred for groups)
+- `chat_guid:iMessage;-;+15555550123` (preferido para grupos)
 - `chat_id:123`
 - `chat_identifier:...`
-- Direct handles: `+15555550123`, `user@example.com`
-  - If a direct handle does not have an existing DM chat, OpenCraft will create one via `POST /api/v1/chat/new`. This requires the BlueBubbles Private API to be enabled.
+- Handles diretos: `+15555550123`, `user@example.com`
+  - Se um handle direto nao tiver um chat de DM existente, o OpenCraft criara um via `POST /api/v1/chat/new`. Isso requer que a API Privada do BlueBubbles esteja habilitada.
 
-## Security
+## Seguranca
 
-- Webhook requests are authenticated by comparing `guid`/`password` query params or headers against `channels.bluebubbles.password`. Requests from `localhost` are also accepted.
-- Keep the API password and webhook endpoint secret (treat them like credentials).
-- Localhost trust means a same-host reverse proxy can unintentionally bypass the password. If you proxy the gateway, require auth at the proxy and configure `gateway.trustedProxies`. See [Gateway security](/gateway/security#reverse-proxy-configuration).
-- Enable HTTPS + firewall rules on the BlueBubbles server if exposing it outside your LAN.
+- Requisicoes de Webhook sao autenticadas comparando os parametros de consulta `guid`/`password` ou headers com `channels.bluebubbles.password`. Requisicoes de `localhost` tambem sao aceitas.
+- Mantenha a senha da API e o endpoint do Webhook em segredo (trate-os como credenciais).
+- A confianca em localhost significa que um proxy reverso no mesmo host pode inadvertidamente ignorar a senha. Se voce usar proxy no Gateway, exija autenticacao no proxy e configure `gateway.trustedProxies`. Veja [Seguranca do Gateway](/gateway/security#reverse-proxy-configuration).
+- Habilite HTTPS + regras de firewall no servidor BlueBubbles se expor fora da sua LAN.
 
-## Troubleshooting
+## Solucao de problemas
 
-- If typing/read events stop working, check the BlueBubbles webhook logs and verify the gateway path matches `channels.bluebubbles.webhookPath`.
-- Pairing codes expire after one hour; use `opencraft pairing list bluebubbles` and `opencraft pairing approve bluebubbles <code>`.
-- Reactions require the BlueBubbles private API (`POST /api/v1/message/react`); ensure the server version exposes it.
-- Edit/unsend require macOS 13+ and a compatible BlueBubbles server version. On macOS 26 (Tahoe), edit is currently broken due to private API changes.
-- Group icon updates can be flaky on macOS 26 (Tahoe): the API may return success but the new icon does not sync.
-- OpenCraft auto-hides known-broken actions based on the BlueBubbles server's macOS version. If edit still appears on macOS 26 (Tahoe), disable it manually with `channels.bluebubbles.actions.edit=false`.
-- For status/health info: `opencraft status --all` or `opencraft status --deep`.
+- Se os eventos de digitacao/leitura pararem de funcionar, verifique os logs do Webhook do BlueBubbles e confirme que o caminho do Gateway corresponde a `channels.bluebubbles.webhookPath`.
+- Codigos de pareamento expiram apos uma hora; use `opencraft pairing list bluebubbles` e `opencraft pairing approve bluebubbles <code>`.
+- Reacoes requerem a API privada do BlueBubbles (`POST /api/v1/message/react`); certifique-se de que a versao do servidor a expoe.
+- Edicao/cancelar envio requerem macOS 13+ e uma versao compativel do servidor BlueBubbles. No macOS 26 (Tahoe), a edicao esta atualmente quebrada devido a mudancas na API privada.
+- Atualizacoes de icone de grupo podem ser instaveis no macOS 26 (Tahoe): a API pode retornar sucesso mas o novo icone nao sincroniza.
+- O OpenCraft oculta automaticamente acoes reconhecidamente quebradas com base na versao do macOS do servidor BlueBubbles. Se a edicao ainda aparecer no macOS 26 (Tahoe), desabilite-a manualmente com `channels.bluebubbles.actions.edit=false`.
+- Para informacoes de status/saude: `opencraft status --all` ou `opencraft status --deep`.
 
-For general channel workflow reference, see [Channels](/channels) and the [Plugins](/tools/plugin) guide.
+Para referencia geral de fluxo de trabalho de canais, veja [Canais](/channels) e o guia de [Plugins](/tools/plugin).

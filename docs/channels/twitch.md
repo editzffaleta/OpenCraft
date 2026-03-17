@@ -1,5 +1,5 @@
 ---
-summary: "Twitch chat bot configuration and setup"
+summary: "Configuração e setup de Bot de chat da Twitch"
 read_when:
   - Setting up Twitch chat integration for OpenCraft
 title: "Twitch"
@@ -7,87 +7,87 @@ title: "Twitch"
 
 # Twitch (plugin)
 
-Twitch chat support via IRC connection. OpenCraft connects as a Twitch user (bot account) to receive and send messages in channels.
+Suporte a chat da Twitch via conexão IRC. O OpenCraft se conecta como um usuário Twitch (conta de Bot) para receber e enviar mensagens em canais.
 
-## Plugin required
+## Plugin necessário
 
-Twitch ships as a plugin and is not bundled with the core install.
+Twitch é distribuído como um plugin e não está incluso na instalação principal.
 
-Install via CLI (npm registry):
+Instalar via CLI (registro npm):
 
 ```bash
 opencraft plugins install @opencraft/twitch
 ```
 
-Local checkout (when running from a git repo):
+Checkout local (ao executar a partir de um repositório git):
 
 ```bash
 opencraft plugins install ./extensions/twitch
 ```
 
-Details: [Plugins](/tools/plugin)
+Detalhes: [Plugins](/tools/plugin)
 
-## Quick setup (beginner)
+## Configuração rápida (iniciante)
 
-1. Create a dedicated Twitch account for the bot (or use an existing account).
-2. Generate credentials: [Twitch Token Generator](https://twitchtokengenerator.com/)
-   - Select **Bot Token**
-   - Verify scopes `chat:read` and `chat:write` are selected
-   - Copy the **Client ID** and **Access Token**
-3. Find your Twitch user ID: [https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
-4. Configure the token:
-   - Env: `OPENCRAFT_TWITCH_ACCESS_TOKEN=...` (default account only)
-   - Or config: `channels.twitch.accessToken`
-   - If both are set, config takes precedence (env fallback is default-account only).
-5. Start the gateway.
+1. Crie uma conta Twitch dedicada para o Bot (ou use uma conta existente).
+2. Gere as credenciais: [Twitch Token Generator](https://twitchtokengenerator.com/)
+   - Selecione **Bot Token**
+   - Verifique se os escopos `chat:read` e `chat:write` estão selecionados
+   - Copie o **Client ID** e o **Access Token**
+3. Encontre seu ID de usuário Twitch: [https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
+4. Configure o Token:
+   - Env: `OPENCRAFT_TWITCH_ACCESS_TOKEN=...` (apenas conta padrão)
+   - Ou config: `channels.twitch.accessToken`
+   - Se ambos estiverem definidos, a config tem precedência (env é fallback apenas para conta padrão).
+5. Inicie o Gateway.
 
-**⚠️ Important:** Add access control (`allowFrom` or `allowedRoles`) to prevent unauthorized users from triggering the bot. `requireMention` defaults to `true`.
+**⚠️ Importante:** Adicione controle de acesso (`allowFrom` ou `allowedRoles`) para impedir que usuários não autorizados acionem o Bot. `requireMention` tem valor padrão `true`.
 
-Minimal config:
+Configuração mínima:
 
 ```json5
 {
   channels: {
     twitch: {
       enabled: true,
-      username: "opencraft", // Bot's Twitch account
-      accessToken: "oauth:abc123...", // OAuth Access Token (or use OPENCRAFT_TWITCH_ACCESS_TOKEN env var)
-      clientId: "xyz789...", // Client ID from Token Generator
-      channel: "vevisk", // Which Twitch channel's chat to join (required)
-      allowFrom: ["123456789"], // (recommended) Your Twitch user ID only - get it from https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/
+      username: "opencraft", // Conta Twitch do Bot
+      accessToken: "oauth:abc123...", // OAuth Access Token (ou use a variável de ambiente OPENCRAFT_TWITCH_ACCESS_TOKEN)
+      clientId: "xyz789...", // Client ID do Token Generator
+      channel: "vevisk", // Qual chat do canal Twitch entrar (obrigatório)
+      allowFrom: ["123456789"], // (recomendado) Apenas seu ID de usuário Twitch - obtenha em https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/
     },
   },
 }
 ```
 
-## What it is
+## O que é
 
-- A Twitch channel owned by the Gateway.
-- Deterministic routing: replies always go back to Twitch.
-- Each account maps to an isolated session key `agent:<agentId>:twitch:<accountName>`.
-- `username` is the bot's account (who authenticates), `channel` is which chat room to join.
+- Um canal Twitch gerenciado pelo Gateway.
+- Roteamento determinístico: respostas sempre retornam para a Twitch.
+- Cada conta mapeia para uma chave de sessão isolada `agent:<agentId>:twitch:<accountName>`.
+- `username` é a conta do Bot (quem autentica), `channel` é qual sala de chat entrar.
 
-## Setup (detailed)
+## Configuração (detalhada)
 
-### Generate credentials
+### Gerar credenciais
 
-Use [Twitch Token Generator](https://twitchtokengenerator.com/):
+Use o [Twitch Token Generator](https://twitchtokengenerator.com/):
 
-- Select **Bot Token**
-- Verify scopes `chat:read` and `chat:write` are selected
-- Copy the **Client ID** and **Access Token**
+- Selecione **Bot Token**
+- Verifique se os escopos `chat:read` e `chat:write` estão selecionados
+- Copie o **Client ID** e o **Access Token**
 
-No manual app registration needed. Tokens expire after several hours.
+Não é necessário registro manual de aplicativo. Tokens expiram após várias horas.
 
-### Configure the bot
+### Configurar o Bot
 
-**Env var (default account only):**
+**Variável de ambiente (apenas conta padrão):**
 
 ```bash
 OPENCRAFT_TWITCH_ACCESS_TOKEN=oauth:abc123...
 ```
 
-**Or config:**
+**Ou config:**
 
 ```json5
 {
@@ -103,33 +103,33 @@ OPENCRAFT_TWITCH_ACCESS_TOKEN=oauth:abc123...
 }
 ```
 
-If both env and config are set, config takes precedence.
+Se ambos env e config estiverem definidos, a config tem precedência.
 
-### Access control (recommended)
+### Controle de acesso (recomendado)
 
 ```json5
 {
   channels: {
     twitch: {
-      allowFrom: ["123456789"], // (recommended) Your Twitch user ID only
+      allowFrom: ["123456789"], // (recomendado) Apenas seu ID de usuário Twitch
     },
   },
 }
 ```
 
-Prefer `allowFrom` for a hard allowlist. Use `allowedRoles` instead if you want role-based access.
+Prefira `allowFrom` para uma allowlist rígida. Use `allowedRoles` em vez disso se você quiser acesso baseado em papéis.
 
-**Available roles:** `"moderator"`, `"owner"`, `"vip"`, `"subscriber"`, `"all"`.
+**Papéis disponíveis:** `"moderator"`, `"owner"`, `"vip"`, `"subscriber"`, `"all"`.
 
-**Why user IDs?** Usernames can change, allowing impersonation. User IDs are permanent.
+**Por que IDs de usuário?** Nomes de usuário podem mudar, permitindo personificação. IDs de usuário são permanentes.
 
-Find your Twitch user ID: [https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/) (Convert your Twitch username to ID)
+Encontre seu ID de usuário Twitch: [https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/) (Converta seu nome de usuário Twitch para ID)
 
-## Token refresh (optional)
+## Renovação de Token (opcional)
 
-Tokens from [Twitch Token Generator](https://twitchtokengenerator.com/) cannot be automatically refreshed - regenerate when expired.
+Tokens do [Twitch Token Generator](https://twitchtokengenerator.com/) não podem ser renovados automaticamente - regenere quando expirar.
 
-For automatic token refresh, create your own Twitch application at [Twitch Developer Console](https://dev.twitch.tv/console) and add to config:
+Para renovação automática de Token, crie seu próprio aplicativo Twitch no [Twitch Developer Console](https://dev.twitch.tv/console) e adicione à config:
 
 ```json5
 {
@@ -142,13 +142,13 @@ For automatic token refresh, create your own Twitch application at [Twitch Devel
 }
 ```
 
-The bot automatically refreshes tokens before expiration and logs refresh events.
+O Bot renova tokens automaticamente antes da expiração e registra os eventos de renovação.
 
-## Multi-account support
+## Suporte a múltiplas contas
 
-Use `channels.twitch.accounts` with per-account tokens. See [`gateway/configuration`](/gateway/configuration) for the shared pattern.
+Use `channels.twitch.accounts` com tokens por conta. Veja [`gateway/configuration`](/gateway/configuration) para o padrão compartilhado.
 
-Example (one bot account in two channels):
+Exemplo (uma conta de Bot em dois canais):
 
 ```json5
 {
@@ -173,11 +173,11 @@ Example (one bot account in two channels):
 }
 ```
 
-**Note:** Each account needs its own token (one token per channel).
+**Nota:** Cada conta precisa do seu próprio Token (um Token por canal).
 
-## Access control
+## Controle de acesso
 
-### Role-based restrictions
+### Restrições baseadas em papéis
 
 ```json5
 {
@@ -193,7 +193,7 @@ Example (one bot account in two channels):
 }
 ```
 
-### Allowlist by User ID (most secure)
+### Allowlist por ID de usuário (mais seguro)
 
 ```json5
 {
@@ -209,10 +209,10 @@ Example (one bot account in two channels):
 }
 ```
 
-### Role-based access (alternative)
+### Acesso baseado em papéis (alternativa)
 
-`allowFrom` is a hard allowlist. When set, only those user IDs are allowed.
-If you want role-based access, leave `allowFrom` unset and configure `allowedRoles` instead:
+`allowFrom` é uma allowlist rígida. Quando definida, apenas esses IDs de usuário são permitidos.
+Se você quiser acesso baseado em papéis, deixe `allowFrom` indefinido e configure `allowedRoles` em vez disso:
 
 ```json5
 {
@@ -228,9 +228,9 @@ If you want role-based access, leave `allowFrom` unset and configure `allowedRol
 }
 ```
 
-### Disable @mention requirement
+### Desabilitar requisito de @menção
 
-By default, `requireMention` is `true`. To disable and respond to all messages:
+Por padrão, `requireMention` é `true`. Para desabilitar e responder a todas as mensagens:
 
 ```json5
 {
@@ -246,71 +246,71 @@ By default, `requireMention` is `true`. To disable and respond to all messages:
 }
 ```
 
-## Troubleshooting
+## Solução de problemas
 
-First, run diagnostic commands:
+Primeiro, execute os comandos de diagnóstico:
 
 ```bash
 opencraft doctor
 opencraft channels status --probe
 ```
 
-### Bot doesn't respond to messages
+### Bot não responde a mensagens
 
-**Check access control:** Ensure your user ID is in `allowFrom`, or temporarily remove
-`allowFrom` and set `allowedRoles: ["all"]` to test.
+**Verifique o controle de acesso:** Certifique-se de que seu ID de usuário está em `allowFrom`, ou temporariamente remova
+`allowFrom` e defina `allowedRoles: ["all"]` para testar.
 
-**Check the bot is in the channel:** The bot must join the channel specified in `channel`.
+**Verifique se o Bot está no canal:** O Bot deve entrar no canal especificado em `channel`.
 
-### Token issues
+### Problemas com Token
 
-**"Failed to connect" or authentication errors:**
+**"Failed to connect" ou erros de autenticação:**
 
-- Verify `accessToken` is the OAuth access token value (typically starts with `oauth:` prefix)
-- Check token has `chat:read` and `chat:write` scopes
-- If using token refresh, verify `clientSecret` and `refreshToken` are set
+- Verifique se `accessToken` é o valor do OAuth access token (tipicamente começa com o prefixo `oauth:`)
+- Verifique se o Token tem os escopos `chat:read` e `chat:write`
+- Se estiver usando renovação de Token, verifique se `clientSecret` e `refreshToken` estão definidos
 
-### Token refresh not working
+### Renovação de Token não funciona
 
-**Check logs for refresh events:**
+**Verifique os logs para eventos de renovação:**
 
 ```
 Using env token source for mybot
 Access token refreshed for user 123456 (expires in 14400s)
 ```
 
-If you see "token refresh disabled (no refresh token)":
+Se você vir "token refresh disabled (no refresh token)":
 
-- Ensure `clientSecret` is provided
-- Ensure `refreshToken` is provided
+- Certifique-se de que `clientSecret` foi fornecido
+- Certifique-se de que `refreshToken` foi fornecido
 
-## Config
+## Configuração
 
-**Account config:**
+**Configuração da conta:**
 
-- `username` - Bot username
-- `accessToken` - OAuth access token with `chat:read` and `chat:write`
-- `clientId` - Twitch Client ID (from Token Generator or your app)
-- `channel` - Channel to join (required)
-- `enabled` - Enable this account (default: `true`)
-- `clientSecret` - Optional: For automatic token refresh
-- `refreshToken` - Optional: For automatic token refresh
-- `expiresIn` - Token expiry in seconds
-- `obtainmentTimestamp` - Token obtained timestamp
-- `allowFrom` - User ID allowlist
-- `allowedRoles` - Role-based access control (`"moderator" | "owner" | "vip" | "subscriber" | "all"`)
-- `requireMention` - Require @mention (default: `true`)
+- `username` - Nome de usuário do Bot
+- `accessToken` - OAuth access token com `chat:read` e `chat:write`
+- `clientId` - Client ID da Twitch (do Token Generator ou seu aplicativo)
+- `channel` - Canal para entrar (obrigatório)
+- `enabled` - Habilitar esta conta (padrão: `true`)
+- `clientSecret` - Opcional: para renovação automática de Token
+- `refreshToken` - Opcional: para renovação automática de Token
+- `expiresIn` - Expiração do Token em segundos
+- `obtainmentTimestamp` - Timestamp de obtenção do Token
+- `allowFrom` - Allowlist de IDs de usuário
+- `allowedRoles` - Controle de acesso baseado em papéis (`"moderator" | "owner" | "vip" | "subscriber" | "all"`)
+- `requireMention` - Exigir @menção (padrão: `true`)
 
-**Provider options:**
+**Opções do provedor:**
 
-- `channels.twitch.enabled` - Enable/disable channel startup
-- `channels.twitch.username` - Bot username (simplified single-account config)
-- `channels.twitch.accessToken` - OAuth access token (simplified single-account config)
-- `channels.twitch.clientId` - Twitch Client ID (simplified single-account config)
-- `channels.twitch.channel` - Channel to join (simplified single-account config)
-- `channels.twitch.accounts.<accountName>` - Multi-account config (all account fields above)
+- `channels.twitch.enabled` - Habilitar/desabilitar inicialização do canal
+- `channels.twitch.username` - Nome de usuário do Bot (configuração simplificada de conta única)
+- `channels.twitch.accessToken` - OAuth access token (configuração simplificada de conta única)
+- `channels.twitch.clientId` - Client ID da Twitch (configuração simplificada de conta única)
+- `channels.twitch.channel` - Canal para entrar (configuração simplificada de conta única)
+- `channels.twitch.accounts.<accountName>` - Configuração multi-conta (todos os campos de conta acima)
 
-Full example:
+Exemplo completo:
 
 ```json5
 {
@@ -345,13 +345,13 @@ Full example:
 }
 ```
 
-## Tool actions
+## Ações de ferramentas
 
-The agent can call `twitch` with action:
+O agente pode chamar `twitch` com ação:
 
-- `send` - Send a message to a channel
+- `send` - Enviar uma mensagem para um canal
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -363,17 +363,17 @@ Example:
 }
 ```
 
-## Safety & ops
+## Segurança e operações
 
-- **Treat tokens like passwords** - Never commit tokens to git
-- **Use automatic token refresh** for long-running bots
-- **Use user ID allowlists** instead of usernames for access control
-- **Monitor logs** for token refresh events and connection status
-- **Scope tokens minimally** - Only request `chat:read` and `chat:write`
-- **If stuck**: Restart the gateway after confirming no other process owns the session
+- **Trate tokens como senhas** - Nunca faça commit de tokens no git
+- **Use renovação automática de Token** para Bots de longa duração
+- **Use allowlists de ID de usuário** em vez de nomes de usuário para controle de acesso
+- **Monitore os logs** para eventos de renovação de Token e status da conexão
+- **Defina escopos mínimos para tokens** - Solicite apenas `chat:read` e `chat:write`
+- **Se ficar travado**: Reinicie o Gateway após confirmar que nenhum outro processo é dono da sessão
 
-## Limits
+## Limites
 
-- **500 characters** per message (auto-chunked at word boundaries)
-- Markdown is stripped before chunking
-- No rate limiting (uses Twitch's built-in rate limits)
+- **500 caracteres** por mensagem (dividido automaticamente em limites de palavras)
+- Markdown é removido antes da divisão
+- Sem limitação de taxa (usa os limites de taxa integrados da Twitch)

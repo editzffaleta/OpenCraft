@@ -1,148 +1,148 @@
 ---
-summary: "Agent loop lifecycle, streams, and wait semantics"
+summary: "Ciclo de vida do loop do agente, streams e semântica de espera"
 read_when:
-  - You need an exact walkthrough of the agent loop or lifecycle events
+  - Você precisa de um passo a passo exato do loop do agente ou eventos de ciclo de vida
 title: "Agent Loop"
 ---
 
 # Agent Loop (OpenCraft)
 
-An agentic loop is the full “real” run of an agent: intake → context assembly → model inference →
-tool execution → streaming replies → persistence. It’s the authoritative path that turns a message
-into actions and a final reply, while keeping session state consistent.
+Um loop agentic é a execução completa "real" de um agente: entrada → montagem de contexto → inferência do modelo →
+execução de ferramentas → respostas em streaming → persistência. É o caminho autoritativo que transforma uma mensagem
+em ações e uma resposta final, mantendo o estado da sessão consistente.
 
-In OpenCraft, a loop is a single, serialized run per session that emits lifecycle and stream events
-as the model thinks, calls tools, and streams output. This doc explains how that authentic loop is
-wired end-to-end.
+No OpenCraft, um loop é uma execução única e serializada por sessão que emite eventos de ciclo de vida e stream
+enquanto o modelo pensa, chama ferramentas e transmite a saída. Este documento explica como esse loop autêntico é
+conectado de ponta a ponta.
 
-## Entry points
+## Pontos de entrada
 
-- Gateway RPC: `agent` and `agent.wait`.
-- CLI: `agent` command.
+- Gateway RPC: `agent` e `agent.wait`.
+- CLI: comando `agent`.
 
-## How it works (high-level)
+## Como funciona (visão geral)
 
-1. `agent` RPC validates params, resolves session (sessionKey/sessionId), persists session metadata, returns `{ runId, acceptedAt }` immediately.
-2. `agentCommand` runs the agent:
-   - resolves model + thinking/verbose defaults
-   - loads skills snapshot
-   - calls `runEmbeddedPiAgent` (pi-agent-core runtime)
-   - emits **lifecycle end/error** if the embedded loop does not emit one
+1. O RPC `agent` valida os parâmetros, resolve a sessão (sessionKey/sessionId), persiste os metadados da sessão e retorna `{ runId, acceptedAt }` imediatamente.
+2. `agentCommand` executa o agente:
+   - resolve modelo + padrões de thinking/verbose
+   - carrega snapshot de Skills
+   - chama `runEmbeddedPiAgent` (runtime pi-agent-core)
+   - emite **lifecycle end/error** se o loop embutido não emitir um
 3. `runEmbeddedPiAgent`:
-   - serializes runs via per-session + global queues
-   - resolves model + auth profile and builds the pi session
-   - subscribes to pi events and streams assistant/tool deltas
-   - enforces timeout -> aborts run if exceeded
-   - returns payloads + usage metadata
-4. `subscribeEmbeddedPiSession` bridges pi-agent-core events to OpenCraft `agent` stream:
-   - tool events => `stream: "tool"`
-   - assistant deltas => `stream: "assistant"`
-   - lifecycle events => `stream: "lifecycle"` (`phase: "start" | "end" | "error"`)
-5. `agent.wait` uses `waitForAgentJob`:
-   - waits for **lifecycle end/error** for `runId`
-   - returns `{ status: ok|error|timeout, startedAt, endedAt, error? }`
+   - serializa execuções via filas por sessão + globais
+   - resolve modelo + perfil de autenticação e constrói a sessão pi
+   - se inscreve nos eventos pi e transmite deltas de assistente/ferramenta
+   - aplica timeout -> aborta a execução se excedido
+   - retorna payloads + metadados de uso
+4. `subscribeEmbeddedPiSession` conecta eventos do pi-agent-core ao stream `agent` do OpenCraft:
+   - eventos de ferramenta => `stream: "tool"`
+   - deltas do assistente => `stream: "assistant"`
+   - eventos de ciclo de vida => `stream: "lifecycle"` (`phase: "start" | "end" | "error"`)
+5. `agent.wait` usa `waitForAgentJob`:
+   - aguarda **lifecycle end/error** para o `runId`
+   - retorna `{ status: ok|error|timeout, startedAt, endedAt, error? }`
 
-## Queueing + concurrency
+## Enfileiramento + concorrência
 
-- Runs are serialized per session key (session lane) and optionally through a global lane.
-- This prevents tool/session races and keeps session history consistent.
-- Messaging channels can choose queue modes (collect/steer/followup) that feed this lane system.
-  See [Command Queue](/concepts/queue).
+- As execuções são serializadas por chave de sessão (faixa de sessão) e opcionalmente por uma faixa global.
+- Isso evita condições de corrida de ferramentas/sessão e mantém o histórico da sessão consistente.
+- Os canais de mensagens podem escolher modos de fila (collect/steer/followup) que alimentam esse sistema de faixas.
+  Veja [Fila de Comandos](/concepts/queue).
 
-## Session + workspace preparation
+## Preparação de sessão + workspace
 
-- Workspace is resolved and created; sandboxed runs may redirect to a sandbox workspace root.
-- Skills are loaded (or reused from a snapshot) and injected into env and prompt.
-- Bootstrap/context files are resolved and injected into the system prompt report.
-- A session write lock is acquired; `SessionManager` is opened and prepared before streaming.
+- O workspace é resolvido e criado; execuções em sandbox podem redirecionar para um workspace root em sandbox.
+- Skills são carregadas (ou reutilizadas de um snapshot) e injetadas no ambiente e no prompt.
+- Arquivos de bootstrap/contexto são resolvidos e injetados no relatório do prompt do sistema.
+- Um lock de escrita de sessão é adquirido; o `SessionManager` é aberto e preparado antes do streaming.
 
-## Prompt assembly + system prompt
+## Montagem do prompt + prompt do sistema
 
-- System prompt is built from OpenCraft’s base prompt, skills prompt, bootstrap context, and per-run overrides.
-- Model-specific limits and compaction reserve tokens are enforced.
-- See [System prompt](/concepts/system-prompt) for what the model sees.
+- O prompt do sistema é construído a partir do prompt base do OpenCraft, prompt de Skills, contexto de bootstrap e sobrescritas por execução.
+- Limites específicos do modelo e tokens reservados para compactação são aplicados.
+- Veja [Prompt do sistema](/concepts/system-prompt) para o que o modelo vê.
 
-## Hook points (where you can intercept)
+## Pontos de hook (onde você pode interceptar)
 
-OpenCraft has two hook systems:
+O OpenCraft possui dois sistemas de hook:
 
-- **Internal hooks** (Gateway hooks): event-driven scripts for commands and lifecycle events.
-- **Plugin hooks**: extension points inside the agent/tool lifecycle and gateway pipeline.
+- **Hooks internos** (hooks do Gateway): scripts orientados a eventos para comandos e eventos de ciclo de vida.
+- **Hooks de Plugin**: pontos de extensão dentro do ciclo de vida do agente/ferramenta e do pipeline do Gateway.
 
-### Internal hooks (Gateway hooks)
+### Hooks internos (hooks do Gateway)
 
-- **`agent:bootstrap`**: runs while building bootstrap files before the system prompt is finalized.
-  Use this to add/remove bootstrap context files.
-- **Command hooks**: `/new`, `/reset`, `/stop`, and other command events (see Hooks doc).
+- **`agent:bootstrap`**: executa enquanto constrói arquivos de bootstrap antes do prompt do sistema ser finalizado.
+  Use isto para adicionar/remover arquivos de contexto de bootstrap.
+- **Hooks de comando**: `/new`, `/reset`, `/stop` e outros eventos de comando (veja a documentação de Hooks).
 
-See [Hooks](/automation/hooks) for setup and examples.
+Veja [Hooks](/automation/hooks) para configuração e exemplos.
 
-### Plugin hooks (agent + gateway lifecycle)
+### Hooks de Plugin (ciclo de vida do agente + Gateway)
 
-These run inside the agent loop or gateway pipeline:
+Estes são executados dentro do loop do agente ou pipeline do Gateway:
 
-- **`before_model_resolve`**: runs pre-session (no `messages`) to deterministically override provider/model before model resolution.
-- **`before_prompt_build`**: runs after session load (with `messages`) to inject `prependContext`, `systemPrompt`, `prependSystemContext`, or `appendSystemContext` before prompt submission. Use `prependContext` for per-turn dynamic text and system-context fields for stable guidance that should sit in system prompt space.
-- **`before_agent_start`**: legacy compatibility hook that may run in either phase; prefer the explicit hooks above.
-- **`agent_end`**: inspect the final message list and run metadata after completion.
-- **`before_compaction` / `after_compaction`**: observe or annotate compaction cycles.
-- **`before_tool_call` / `after_tool_call`**: intercept tool params/results.
-- **`tool_result_persist`**: synchronously transform tool results before they are written to the session transcript.
-- **`message_received` / `message_sending` / `message_sent`**: inbound + outbound message hooks.
-- **`session_start` / `session_end`**: session lifecycle boundaries.
-- **`gateway_start` / `gateway_stop`**: gateway lifecycle events.
+- **`before_model_resolve`**: executa pré-sessão (sem `messages`) para sobrescrever deterministicamente provedor/modelo antes da resolução do modelo.
+- **`before_prompt_build`**: executa após o carregamento da sessão (com `messages`) para injetar `prependContext`, `systemPrompt`, `prependSystemContext` ou `appendSystemContext` antes do envio do prompt. Use `prependContext` para texto dinâmico por turno e campos de contexto do sistema para orientações estáveis que devem ficar no espaço do prompt do sistema.
+- **`before_agent_start`**: hook de compatibilidade legado que pode executar em qualquer fase; prefira os hooks explícitos acima.
+- **`agent_end`**: inspeciona a lista final de mensagens e metadados de execução após a conclusão.
+- **`before_compaction` / `after_compaction`**: observa ou anota ciclos de compactação.
+- **`before_tool_call` / `after_tool_call`**: intercepta parâmetros/resultados de ferramentas.
+- **`tool_result_persist`**: transforma sincronamente resultados de ferramentas antes de serem escritos na transcrição da sessão.
+- **`message_received` / `message_sending` / `message_sent`**: hooks de mensagem de entrada + saída.
+- **`session_start` / `session_end`**: limites do ciclo de vida da sessão.
+- **`gateway_start` / `gateway_stop`**: eventos de ciclo de vida do Gateway.
 
-See [Plugins](/tools/plugin#plugin-hooks) for the hook API and registration details.
+Veja [Plugins](/tools/plugin#plugin-hooks) para a API de hooks e detalhes de registro.
 
-## Streaming + partial replies
+## Streaming + respostas parciais
 
-- Assistant deltas are streamed from pi-agent-core and emitted as `assistant` events.
-- Block streaming can emit partial replies either on `text_end` or `message_end`.
-- Reasoning streaming can be emitted as a separate stream or as block replies.
-- See [Streaming](/concepts/streaming) for chunking and block reply behavior.
+- Deltas do assistente são transmitidos do pi-agent-core e emitidos como eventos `assistant`.
+- O streaming de blocos pode emitir respostas parciais em `text_end` ou `message_end`.
+- O streaming de raciocínio pode ser emitido como um stream separado ou como respostas em bloco.
+- Veja [Streaming](/concepts/streaming) para comportamento de chunking e resposta em bloco.
 
-## Tool execution + messaging tools
+## Execução de ferramentas + ferramentas de mensagem
 
-- Tool start/update/end events are emitted on the `tool` stream.
-- Tool results are sanitized for size and image payloads before logging/emitting.
-- Messaging tool sends are tracked to suppress duplicate assistant confirmations.
+- Eventos de início/atualização/fim de ferramenta são emitidos no stream `tool`.
+- Resultados de ferramentas são sanitizados por tamanho e payloads de imagem antes de registrar/emitir.
+- Envios de ferramentas de mensagem são rastreados para suprimir confirmações duplicadas do assistente.
 
-## Reply shaping + suppression
+## Formatação de resposta + supressão
 
-- Final payloads are assembled from:
-  - assistant text (and optional reasoning)
-  - inline tool summaries (when verbose + allowed)
-  - assistant error text when the model errors
-- `NO_REPLY` is treated as a silent token and filtered from outgoing payloads.
-- Messaging tool duplicates are removed from the final payload list.
-- If no renderable payloads remain and a tool errored, a fallback tool error reply is emitted
-  (unless a messaging tool already sent a user-visible reply).
+- Payloads finais são montados a partir de:
+  - texto do assistente (e raciocínio opcional)
+  - resumos inline de ferramentas (quando verbose + permitido)
+  - texto de erro do assistente quando o modelo apresenta erro
+- `NO_REPLY` é tratado como um token silencioso e filtrado dos payloads de saída.
+- Duplicatas de ferramentas de mensagem são removidas da lista final de payloads.
+- Se nenhum payload renderizável permanecer e uma ferramenta apresentou erro, uma resposta de fallback de erro de ferramenta é emitida
+  (a menos que uma ferramenta de mensagem já tenha enviado uma resposta visível ao usuário).
 
-## Compaction + retries
+## Compactação + retentativas
 
-- Auto-compaction emits `compaction` stream events and can trigger a retry.
-- On retry, in-memory buffers and tool summaries are reset to avoid duplicate output.
-- See [Compaction](/concepts/compaction) for the compaction pipeline.
+- A auto-compactação emite eventos de stream `compaction` e pode acionar uma retentativa.
+- Na retentativa, buffers em memória e resumos de ferramentas são resetados para evitar saída duplicada.
+- Veja [Compactação](/concepts/compaction) para o pipeline de compactação.
 
-## Event streams (today)
+## Streams de eventos (atual)
 
-- `lifecycle`: emitted by `subscribeEmbeddedPiSession` (and as a fallback by `agentCommand`)
-- `assistant`: streamed deltas from pi-agent-core
-- `tool`: streamed tool events from pi-agent-core
+- `lifecycle`: emitido por `subscribeEmbeddedPiSession` (e como fallback por `agentCommand`)
+- `assistant`: deltas transmitidos do pi-agent-core
+- `tool`: eventos de ferramentas transmitidos do pi-agent-core
 
-## Chat channel handling
+## Tratamento do canal de chat
 
-- Assistant deltas are buffered into chat `delta` messages.
-- A chat `final` is emitted on **lifecycle end/error**.
+- Deltas do assistente são acumulados em mensagens `delta` de chat.
+- Um `final` de chat é emitido no **lifecycle end/error**.
 
 ## Timeouts
 
-- `agent.wait` default: 30s (just the wait). `timeoutMs` param overrides.
-- Agent runtime: `agents.defaults.timeoutSeconds` default 600s; enforced in `runEmbeddedPiAgent` abort timer.
+- `agent.wait` padrão: 30s (apenas a espera). O parâmetro `timeoutMs` sobrescreve.
+- Runtime do agente: `agents.defaults.timeoutSeconds` padrão 600s; aplicado no timer de abort em `runEmbeddedPiAgent`.
 
-## Where things can end early
+## Onde as coisas podem terminar prematuramente
 
-- Agent timeout (abort)
-- AbortSignal (cancel)
-- Gateway disconnect or RPC timeout
-- `agent.wait` timeout (wait-only, does not stop agent)
+- Timeout do agente (abort)
+- AbortSignal (cancelamento)
+- Desconexão do Gateway ou timeout do RPC
+- Timeout do `agent.wait` (apenas espera, não para o agente)

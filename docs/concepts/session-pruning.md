@@ -1,81 +1,81 @@
 ---
 title: "Session Pruning"
-summary: "Session pruning: tool-result trimming to reduce context bloat"
+summary: "Session pruning: recorte de resultados de ferramentas para reduzir o inchaço de contexto"
 read_when:
-  - You want to reduce LLM context growth from tool outputs
-  - You are tuning agents.defaults.contextPruning
+  - Você quer reduzir o crescimento de contexto do LLM a partir de saídas de ferramentas
+  - Você está ajustando agents.defaults.contextPruning
 ---
 
 # Session Pruning
 
-Session pruning trims **old tool results** from the in-memory context right before each LLM call. It does **not** rewrite the on-disk session history (`*.jsonl`).
+Session pruning recorta **resultados antigos de ferramentas** do contexto em memória logo antes de cada chamada ao LLM. Ele **não** reescreve o histórico de sessão em disco (`*.jsonl`).
 
-## When it runs
+## Quando é executado
 
-- When `mode: "cache-ttl"` is enabled and the last Anthropic call for the session is older than `ttl`.
-- Only affects the messages sent to the model for that request.
-- Only active for Anthropic API calls (and OpenRouter Anthropic models).
-- For best results, match `ttl` to your model `cacheRetention` policy (`short` = 5m, `long` = 1h).
-- After a prune, the TTL window resets so subsequent requests keep cache until `ttl` expires again.
+- Quando `mode: "cache-ttl"` está habilitado e a última chamada Anthropic para a sessão é mais antiga que o `ttl`.
+- Afeta apenas as mensagens enviadas ao modelo para aquela requisição.
+- Ativo apenas para chamadas à API da Anthropic (e modelos Anthropic via OpenRouter).
+- Para melhores resultados, combine o `ttl` com a política de `cacheRetention` do seu modelo (`short` = 5m, `long` = 1h).
+- Após um pruning, a janela de TTL é reiniciada, então as requisições subsequentes mantêm o cache até o `ttl` expirar novamente.
 
-## Smart defaults (Anthropic)
+## Padrões inteligentes (Anthropic)
 
-- **OAuth or setup-token** profiles: enable `cache-ttl` pruning and set heartbeat to `1h`.
-- **API key** profiles: enable `cache-ttl` pruning, set heartbeat to `30m`, and default `cacheRetention: "short"` on Anthropic models.
-- If you set any of these values explicitly, OpenCraft does **not** override them.
+- Perfis **OAuth ou setup-token**: habilitam pruning `cache-ttl` e definem heartbeat para `1h`.
+- Perfis **API key**: habilitam pruning `cache-ttl`, definem heartbeat para `30m` e usam `cacheRetention: "short"` como padrão em modelos Anthropic.
+- Se você definir qualquer um desses valores explicitamente, o OpenCraft **não** os sobrescreve.
 
-## What this improves (cost + cache behavior)
+## O que isso melhora (custo + comportamento de cache)
 
-- **Why prune:** Anthropic prompt caching only applies within the TTL. If a session goes idle past the TTL, the next request re-caches the full prompt unless you trim it first.
-- **What gets cheaper:** pruning reduces the **cacheWrite** size for that first request after the TTL expires.
-- **Why the TTL reset matters:** once pruning runs, the cache window resets, so follow‑up requests can reuse the freshly cached prompt instead of re-caching the full history again.
-- **What it does not do:** pruning doesn’t add tokens or “double” costs; it only changes what gets cached on that first post‑TTL request.
+- **Por que fazer pruning:** O cache de prompt da Anthropic só se aplica dentro do TTL. Se uma sessão ficar ociosa além do TTL, a próxima requisição recacheia o prompt completo, a menos que você o recorte primeiro.
+- **O que fica mais barato:** o pruning reduz o tamanho do **cacheWrite** para aquela primeira requisição após o TTL expirar.
+- **Por que o reset do TTL importa:** uma vez que o pruning é executado, a janela de cache é reiniciada, então as requisições seguintes podem reutilizar o prompt recém-cacheado em vez de recachear o histórico completo novamente.
+- **O que ele não faz:** o pruning não adiciona Token ou "dobra" custos; ele apenas muda o que é cacheado naquela primeira requisição pós-TTL.
 
-## What can be pruned
+## O que pode ser podado
 
-- Only `toolResult` messages.
-- User + assistant messages are **never** modified.
-- The last `keepLastAssistants` assistant messages are protected; tool results after that cutoff are not pruned.
-- If there aren’t enough assistant messages to establish the cutoff, pruning is skipped.
-- Tool results containing **image blocks** are skipped (never trimmed/cleared).
+- Apenas mensagens `toolResult`.
+- Mensagens de usuário e assistente **nunca** são modificadas.
+- As últimas `keepLastAssistants` mensagens do assistente são protegidas; resultados de ferramentas após esse ponto de corte não são podados.
+- Se não houver mensagens de assistente suficientes para estabelecer o ponto de corte, o pruning é ignorado.
+- Resultados de ferramentas contendo **blocos de imagem** são ignorados (nunca recortados/limpos).
 
-## Context window estimation
+## Estimativa da janela de contexto
 
-Pruning uses an estimated context window (chars ≈ tokens × 4). The base window is resolved in this order:
+O pruning usa uma janela de contexto estimada (caracteres ≈ tokens × 4). A janela base é resolvida nesta ordem:
 
-1. `models.providers.*.models[].contextWindow` override.
-2. Model definition `contextWindow` (from the model registry).
-3. Default `200000` tokens.
+1. Override em `models.providers.*.models[].contextWindow`.
+2. `contextWindow` da definição do modelo (do registro de modelos).
+3. Padrão de `200000` Token.
 
-If `agents.defaults.contextTokens` is set, it is treated as a cap (min) on the resolved window.
+Se `agents.defaults.contextTokens` estiver definido, ele é tratado como um limite (mínimo) na janela resolvida.
 
-## Mode
+## Modo
 
 ### cache-ttl
 
-- Pruning only runs if the last Anthropic call is older than `ttl` (default `5m`).
-- When it runs: same soft-trim + hard-clear behavior as before.
+- O pruning só é executado se a última chamada Anthropic for mais antiga que o `ttl` (padrão `5m`).
+- Quando é executado: mesmo comportamento de soft-trim + hard-clear de antes.
 
-## Soft vs hard pruning
+## Pruning suave vs rígido
 
-- **Soft-trim**: only for oversized tool results.
-  - Keeps head + tail, inserts `...`, and appends a note with the original size.
-  - Skips results with image blocks.
-- **Hard-clear**: replaces the entire tool result with `hardClear.placeholder`.
+- **Soft-trim**: apenas para resultados de ferramentas grandes demais.
+  - Mantém o início + final, insere `...` e adiciona uma nota com o tamanho original.
+  - Ignora resultados com blocos de imagem.
+- **Hard-clear**: substitui o resultado inteiro da ferramenta por `hardClear.placeholder`.
 
-## Tool selection
+## Seleção de ferramentas
 
-- `tools.allow` / `tools.deny` support `*` wildcards.
-- Deny wins.
-- Matching is case-insensitive.
-- Empty allow list => all tools allowed.
+- `tools.allow` / `tools.deny` suportam curingas `*`.
+- Deny vence.
+- A correspondência é case-insensitive.
+- Lista de allow vazia => todas as ferramentas são permitidas.
 
-## Interaction with other limits
+## Interação com outros limites
 
-- Built-in tools already truncate their own output; session pruning is an extra layer that prevents long-running chats from accumulating too much tool output in the model context.
-- Compaction is separate: compaction summarizes and persists, pruning is transient per request. See [/concepts/compaction](/concepts/compaction).
+- Ferramentas integradas já truncam sua própria saída; session pruning é uma camada extra que evita que conversas longas acumulem muita saída de ferramentas no contexto do modelo.
+- Compactação é separada: compactação resume e persiste, pruning é transitório por requisição. Veja [/concepts/compaction](/concepts/compaction).
 
-## Defaults (when enabled)
+## Padrões (quando habilitado)
 
 - `ttl`: `"5m"`
 - `keepLastAssistants`: `3`
@@ -85,9 +85,9 @@ If `agents.defaults.contextTokens` is set, it is treated as a cap (min) on the r
 - `softTrim`: `{ maxChars: 4000, headChars: 1500, tailChars: 1500 }`
 - `hardClear`: `{ enabled: true, placeholder: "[Old tool result content cleared]" }`
 
-## Examples
+## Exemplos
 
-Default (off):
+Padrão (desligado):
 
 ```json5
 {
@@ -95,7 +95,7 @@ Default (off):
 }
 ```
 
-Enable TTL-aware pruning:
+Habilitar pruning com reconhecimento de TTL:
 
 ```json5
 {
@@ -103,7 +103,7 @@ Enable TTL-aware pruning:
 }
 ```
 
-Restrict pruning to specific tools:
+Restringir pruning a ferramentas específicas:
 
 ```json5
 {
@@ -118,4 +118,4 @@ Restrict pruning to specific tools:
 }
 ```
 
-See config reference: [Gateway Configuration](/gateway/configuration)
+Veja a referência de configuração: [Gateway Configuration](/gateway/configuration)

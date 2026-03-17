@@ -1,51 +1,51 @@
 ---
-summary: "Nextcloud Talk support status, capabilities, and configuration"
+summary: "Status de suporte, capacidades e configuração do Nextcloud Talk"
 read_when:
-  - Working on Nextcloud Talk channel features
+  - Trabalhando em funcionalidades do canal Nextcloud Talk
 title: "Nextcloud Talk"
 ---
 
 # Nextcloud Talk (plugin)
 
-Status: supported via plugin (webhook bot). Direct messages, rooms, reactions, and markdown messages are supported.
+Status: suportado via Plugin (Webhook Bot). Mensagens diretas, salas, reações e mensagens markdown são suportadas.
 
-## Plugin required
+## Plugin necessário
 
-Nextcloud Talk ships as a plugin and is not bundled with the core install.
+O Nextcloud Talk é distribuído como Plugin e não está incluído na instalação principal.
 
-Install via CLI (npm registry):
+Instalar via CLI (registro npm):
 
 ```bash
 opencraft plugins install @opencraft/nextcloud-talk
 ```
 
-Local checkout (when running from a git repo):
+Checkout local (ao executar a partir de um repositório git):
 
 ```bash
 opencraft plugins install ./extensions/nextcloud-talk
 ```
 
-If you choose Nextcloud Talk during setup and a git checkout is detected,
-OpenCraft will offer the local install path automatically.
+Se você escolher Nextcloud Talk durante a configuração e um checkout git for detectado,
+o OpenCraft oferecerá o caminho de instalação local automaticamente.
 
-Details: [Plugins](/tools/plugin)
+Detalhes: [Plugins](/tools/plugin)
 
-## Quick setup (beginner)
+## Configuração rápida (iniciante)
 
-1. Install the Nextcloud Talk plugin.
-2. On your Nextcloud server, create a bot:
+1. Instale o Plugin Nextcloud Talk.
+2. No seu servidor Nextcloud, crie um Bot:
 
    ```bash
    ./occ talk:bot:install "OpenCraft" "<shared-secret>" "<webhook-url>" --feature reaction
    ```
 
-3. Enable the bot in the target room settings.
-4. Configure OpenCraft:
+3. Habilite o Bot nas configurações da sala alvo.
+4. Configure o OpenCraft:
    - Config: `channels.nextcloud-talk.baseUrl` + `channels.nextcloud-talk.botSecret`
-   - Or env: `NEXTCLOUD_TALK_BOT_SECRET` (default account only)
-5. Restart the gateway (or finish setup).
+   - Ou env: `NEXTCLOUD_TALK_BOT_SECRET` (apenas conta padrão)
+5. Reinicie o Gateway (ou finalize a configuração).
 
-Minimal config:
+Configuração mínima:
 
 ```json5
 {
@@ -60,26 +60,26 @@ Minimal config:
 }
 ```
 
-## Notes
+## Notas
 
-- Bots cannot initiate DMs. The user must message the bot first.
-- Webhook URL must be reachable by the Gateway; set `webhookPublicUrl` if behind a proxy.
-- Media uploads are not supported by the bot API; media is sent as URLs.
-- The webhook payload does not distinguish DMs vs rooms; set `apiUser` + `apiPassword` to enable room-type lookups (otherwise DMs are treated as rooms).
+- Bots não podem iniciar DMs. O usuário deve enviar mensagem para o Bot primeiro.
+- A URL do Webhook deve ser acessível pelo Gateway; defina `webhookPublicUrl` se estiver atrás de um proxy.
+- Uploads de mídia não são suportados pela API do Bot; mídia é enviada como URLs.
+- O payload do Webhook não distingue DMs de salas; defina `apiUser` + `apiPassword` para habilitar buscas de tipo de sala (caso contrário, DMs são tratadas como salas).
 
-## Access control (DMs)
+## Controle de acesso (DMs)
 
-- Default: `channels.nextcloud-talk.dmPolicy = "pairing"`. Unknown senders get a pairing code.
-- Approve via:
+- Padrão: `channels.nextcloud-talk.dmPolicy = "pairing"`. Remetentes desconhecidos recebem um código de pareamento.
+- Aprovar via:
   - `opencraft pairing list nextcloud-talk`
   - `opencraft pairing approve nextcloud-talk <CODE>`
-- Public DMs: `channels.nextcloud-talk.dmPolicy="open"` plus `channels.nextcloud-talk.allowFrom=["*"]`.
-- `allowFrom` matches Nextcloud user IDs only; display names are ignored.
+- DMs públicas: `channels.nextcloud-talk.dmPolicy="open"` mais `channels.nextcloud-talk.allowFrom=["*"]`.
+- `allowFrom` corresponde apenas a IDs de usuário do Nextcloud; nomes de exibição são ignorados.
 
-## Rooms (groups)
+## Salas (grupos)
 
-- Default: `channels.nextcloud-talk.groupPolicy = "allowlist"` (mention-gated).
-- Allowlist rooms with `channels.nextcloud-talk.rooms`:
+- Padrão: `channels.nextcloud-talk.groupPolicy = "allowlist"` (com exigência de menção).
+- Adicione salas à allowlist com `channels.nextcloud-talk.rooms`:
 
 ```json5
 {
@@ -93,46 +93,46 @@ Minimal config:
 }
 ```
 
-- To allow no rooms, keep the allowlist empty or set `channels.nextcloud-talk.groupPolicy="disabled"`.
+- Para não permitir nenhuma sala, mantenha a allowlist vazia ou defina `channels.nextcloud-talk.groupPolicy="disabled"`.
 
-## Capabilities
+## Capacidades
 
-| Feature         | Status        |
-| --------------- | ------------- |
-| Direct messages | Supported     |
-| Rooms           | Supported     |
-| Threads         | Not supported |
-| Media           | URL-only      |
-| Reactions       | Supported     |
-| Native commands | Not supported |
+| Funcionalidade    | Status        |
+| ----------------- | ------------- |
+| Mensagens diretas | Suportado     |
+| Salas             | Suportado     |
+| Threads           | Não suportado |
+| Mídia             | Apenas URL    |
+| Reações           | Suportado     |
+| Comandos nativos  | Não suportado |
 
-## Configuration reference (Nextcloud Talk)
+## Referência de configuração (Nextcloud Talk)
 
-Full configuration: [Configuration](/gateway/configuration)
+Configuração completa: [Configuration](/gateway/configuration)
 
-Provider options:
+Opções do provedor:
 
-- `channels.nextcloud-talk.enabled`: enable/disable channel startup.
-- `channels.nextcloud-talk.baseUrl`: Nextcloud instance URL.
-- `channels.nextcloud-talk.botSecret`: bot shared secret.
-- `channels.nextcloud-talk.botSecretFile`: regular-file secret path. Symlinks are rejected.
-- `channels.nextcloud-talk.apiUser`: API user for room lookups (DM detection).
-- `channels.nextcloud-talk.apiPassword`: API/app password for room lookups.
-- `channels.nextcloud-talk.apiPasswordFile`: API password file path.
-- `channels.nextcloud-talk.webhookPort`: webhook listener port (default: 8788).
-- `channels.nextcloud-talk.webhookHost`: webhook host (default: 0.0.0.0).
-- `channels.nextcloud-talk.webhookPath`: webhook path (default: /nextcloud-talk-webhook).
-- `channels.nextcloud-talk.webhookPublicUrl`: externally reachable webhook URL.
+- `channels.nextcloud-talk.enabled`: habilitar/desabilitar inicialização do canal.
+- `channels.nextcloud-talk.baseUrl`: URL da instância Nextcloud.
+- `channels.nextcloud-talk.botSecret`: segredo compartilhado do Bot.
+- `channels.nextcloud-talk.botSecretFile`: caminho do arquivo de segredo. Symlinks são rejeitados.
+- `channels.nextcloud-talk.apiUser`: usuário API para buscas de sala (detecção de DM).
+- `channels.nextcloud-talk.apiPassword`: senha API/app para buscas de sala.
+- `channels.nextcloud-talk.apiPasswordFile`: caminho do arquivo de senha API.
+- `channels.nextcloud-talk.webhookPort`: porta do listener de Webhook (padrão: 8788).
+- `channels.nextcloud-talk.webhookHost`: host do Webhook (padrão: 0.0.0.0).
+- `channels.nextcloud-talk.webhookPath`: caminho do Webhook (padrão: /nextcloud-talk-webhook).
+- `channels.nextcloud-talk.webhookPublicUrl`: URL do Webhook acessível externamente.
 - `channels.nextcloud-talk.dmPolicy`: `pairing | allowlist | open | disabled`.
-- `channels.nextcloud-talk.allowFrom`: DM allowlist (user IDs). `open` requires `"*"`.
+- `channels.nextcloud-talk.allowFrom`: allowlist de DM (IDs de usuário). `open` requer `"*"`.
 - `channels.nextcloud-talk.groupPolicy`: `allowlist | open | disabled`.
-- `channels.nextcloud-talk.groupAllowFrom`: group allowlist (user IDs).
-- `channels.nextcloud-talk.rooms`: per-room settings and allowlist.
-- `channels.nextcloud-talk.historyLimit`: group history limit (0 disables).
-- `channels.nextcloud-talk.dmHistoryLimit`: DM history limit (0 disables).
-- `channels.nextcloud-talk.dms`: per-DM overrides (historyLimit).
-- `channels.nextcloud-talk.textChunkLimit`: outbound text chunk size (chars).
-- `channels.nextcloud-talk.chunkMode`: `length` (default) or `newline` to split on blank lines (paragraph boundaries) before length chunking.
-- `channels.nextcloud-talk.blockStreaming`: disable block streaming for this channel.
-- `channels.nextcloud-talk.blockStreamingCoalesce`: block streaming coalesce tuning.
-- `channels.nextcloud-talk.mediaMaxMb`: inbound media cap (MB).
+- `channels.nextcloud-talk.groupAllowFrom`: allowlist de grupo (IDs de usuário).
+- `channels.nextcloud-talk.rooms`: configurações por sala e allowlist.
+- `channels.nextcloud-talk.historyLimit`: limite de histórico de grupo (0 desabilita).
+- `channels.nextcloud-talk.dmHistoryLimit`: limite de histórico de DM (0 desabilita).
+- `channels.nextcloud-talk.dms`: sobrescritas por DM (historyLimit).
+- `channels.nextcloud-talk.textChunkLimit`: tamanho do bloco de texto de saída (caracteres).
+- `channels.nextcloud-talk.chunkMode`: `length` (padrão) ou `newline` para dividir em linhas em branco (limites de parágrafo) antes da divisão por tamanho.
+- `channels.nextcloud-talk.blockStreaming`: desabilitar streaming de blocos para este canal.
+- `channels.nextcloud-talk.blockStreamingCoalesce`: ajuste de coalescência de streaming de blocos.
+- `channels.nextcloud-talk.mediaMaxMb`: limite de mídia de entrada (MB).

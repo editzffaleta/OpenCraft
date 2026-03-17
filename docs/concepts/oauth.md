@@ -1,158 +1,158 @@
 ---
-summary: "OAuth in OpenCraft: token exchange, storage, and multi-account patterns"
+summary: "OAuth no OpenCraft: troca de Token, armazenamento e padroes multi-conta"
 read_when:
-  - You want to understand OpenCraft OAuth end-to-end
-  - You hit token invalidation / logout issues
-  - You want setup-token or OAuth auth flows
-  - You want multiple accounts or profile routing
+  - Voce quer entender o OAuth do OpenCraft de ponta a ponta
+  - Voce encontrou problemas de invalidacao de Token / logout
+  - Voce quer fluxos de autenticacao setup-token ou OAuth
+  - Voce quer multiplas contas ou roteamento de perfis
 title: "OAuth"
 ---
 
 # OAuth
 
-OpenCraft supports “subscription auth” via OAuth for providers that offer it (notably **OpenAI Codex (ChatGPT OAuth)**). For Anthropic subscriptions, use the **setup-token** flow. Anthropic subscription use outside Claude Code has been restricted for some users in the past, so treat it as a user-choice risk and verify current Anthropic policy yourself. OpenAI Codex OAuth is explicitly supported for use in external tools like OpenCraft. This page explains:
+O OpenCraft suporta "autenticacao por assinatura" via OAuth para provedores que oferecem isso (notavelmente **OpenAI Codex (ChatGPT OAuth)**). Para assinaturas Anthropic, use o fluxo de **setup-token**. O uso de assinatura Anthropic fora do Claude Code foi restrito para alguns usuarios no passado, entao trate como um risco por escolha do usuario e verifique a politica atual da Anthropic voce mesmo. O OAuth do OpenAI Codex e explicitamente suportado para uso em ferramentas externas como o OpenCraft. Esta pagina explica:
 
-For Anthropic in production, API key auth is the safer recommended path over subscription setup-token auth.
+Para Anthropic em producao, a autenticacao por chave de API e o caminho mais seguro e recomendado em relacao a autenticacao por setup-token de assinatura.
 
-- how the OAuth **token exchange** works (PKCE)
-- where tokens are **stored** (and why)
-- how to handle **multiple accounts** (profiles + per-session overrides)
+- como a **troca de Token** OAuth funciona (PKCE)
+- onde os Token sao **armazenados** (e por que)
+- como lidar com **multiplas contas** (perfis + substituicoes por sessao)
 
-OpenCraft also supports **provider plugins** that ship their own OAuth or API‑key
-flows. Run them via:
+O OpenCraft tambem suporta **Plugin de provedor** que incluem seus proprios fluxos de
+OAuth ou chave de API. Execute-os via:
 
 ```bash
 opencraft models auth login --provider <id>
 ```
 
-## The token sink (why it exists)
+## O receptaculo de Token (por que ele existe)
 
-OAuth providers commonly mint a **new refresh token** during login/refresh flows. Some providers (or OAuth clients) can invalidate older refresh tokens when a new one is issued for the same user/app.
+Provedores OAuth comumente geram um **novo refresh Token** durante fluxos de login/renovacao. Alguns provedores (ou clientes OAuth) podem invalidar refresh Token mais antigos quando um novo e emitido para o mesmo usuario/aplicativo.
 
-Practical symptom:
+Sintoma pratico:
 
-- you log in via OpenCraft _and_ via Claude Code / Codex CLI → one of them randomly gets “logged out” later
+- voce faz login via OpenCraft _e_ via Claude Code / Codex CLI → um deles aleatoriamente e "deslogado" depois
 
-To reduce that, OpenCraft treats `auth-profiles.json` as a **token sink**:
+Para reduzir isso, o OpenCraft trata `auth-profiles.json` como um **receptaculo de Token**:
 
-- the runtime reads credentials from **one place**
-- we can keep multiple profiles and route them deterministically
+- o runtime le credenciais de **um unico lugar**
+- podemos manter multiplos perfis e rotea-los deterministicamente
 
-## Storage (where tokens live)
+## Armazenamento (onde os Token ficam)
 
-Secrets are stored **per-agent**:
+Os segredos sao armazenados **por agente**:
 
-- Auth profiles (OAuth + API keys + optional value-level refs): `~/.opencraft/agents/<agentId>/agent/auth-profiles.json`
-- Legacy compatibility file: `~/.opencraft/agents/<agentId>/agent/auth.json`
-  (static `api_key` entries are scrubbed when discovered)
+- Perfis de autenticacao (OAuth + chaves de API + refs opcionais em nivel de valor): `~/.opencraft/agents/<agentId>/agent/auth-profiles.json`
+- Arquivo de compatibilidade legado: `~/.opencraft/agents/<agentId>/agent/auth.json`
+  (entradas estaticas `api_key` sao removidas quando descobertas)
 
-Legacy import-only file (still supported, but not the main store):
+Arquivo legado somente para importacao (ainda suportado, mas nao e o armazenamento principal):
 
-- `~/.opencraft/credentials/oauth.json` (imported into `auth-profiles.json` on first use)
+- `~/.opencraft/credentials/oauth.json` (importado para `auth-profiles.json` no primeiro uso)
 
-All of the above also respect `$OPENCRAFT_STATE_DIR` (state dir override). Full reference: [/gateway/configuration](/gateway/configuration#auth-storage-oauth--api-keys)
+Todos os acima tambem respeitam `$OPENCRAFT_STATE_DIR` (substituicao do diretorio de estado). Referencia completa: [/gateway/configuration](/gateway/configuration#auth-storage-oauth--api-keys)
 
-For static secret refs and runtime snapshot activation behavior, see [Secrets Management](/gateway/secrets).
+Para refs de segredos estaticos e comportamento de ativacao de snapshot de runtime, veja [Gerenciamento de Segredos](/gateway/secrets).
 
-## Anthropic setup-token (subscription auth)
+## Setup-token Anthropic (autenticacao por assinatura)
 
 <Warning>
-Anthropic setup-token support is technical compatibility, not a policy guarantee.
-Anthropic has blocked some subscription usage outside Claude Code in the past.
-Decide for yourself whether to use subscription auth, and verify Anthropic's current terms.
+O suporte a setup-token Anthropic e compatibilidade tecnica, nao uma garantia de politica.
+A Anthropic bloqueou alguns usos de assinatura fora do Claude Code no passado.
+Decida voce mesmo se quer usar autenticacao por assinatura e verifique os termos atuais da Anthropic.
 </Warning>
 
-Run `claude setup-token` on any machine, then paste it into OpenCraft:
+Execute `claude setup-token` em qualquer maquina, depois cole no OpenCraft:
 
 ```bash
 opencraft models auth setup-token --provider anthropic
 ```
 
-If you generated the token elsewhere, paste it manually:
+Se voce gerou o Token em outro lugar, cole-o manualmente:
 
 ```bash
 opencraft models auth paste-token --provider anthropic
 ```
 
-Verify:
+Verifique:
 
 ```bash
 opencraft models status
 ```
 
-## OAuth exchange (how login works)
+## Troca OAuth (como o login funciona)
 
-OpenCraft’s interactive login flows are implemented in `@mariozechner/pi-ai` and wired into the wizards/commands.
+Os fluxos de login interativo do OpenCraft sao implementados em `@mariozechner/pi-ai` e conectados aos assistentes/comandos.
 
-### Anthropic setup-token
+### Setup-token Anthropic
 
-Flow shape:
+Formato do fluxo:
 
-1. run `claude setup-token`
-2. paste the token into OpenCraft
-3. store as a token auth profile (no refresh)
+1. execute `claude setup-token`
+2. cole o Token no OpenCraft
+3. armazene como um perfil de autenticacao por Token (sem renovacao)
 
-The wizard path is `opencraft onboard` → auth choice `setup-token` (Anthropic).
+O caminho pelo assistente e `opencraft onboard` → escolha de autenticacao `setup-token` (Anthropic).
 
 ### OpenAI Codex (ChatGPT OAuth)
 
-OpenAI Codex OAuth is explicitly supported for use outside the Codex CLI, including OpenCraft workflows.
+O OAuth do OpenAI Codex e explicitamente suportado para uso fora do Codex CLI, incluindo fluxos de trabalho do OpenCraft.
 
-Flow shape (PKCE):
+Formato do fluxo (PKCE):
 
-1. generate PKCE verifier/challenge + random `state`
-2. open `https://auth.openai.com/oauth/authorize?...`
-3. try to capture callback on `http://127.0.0.1:1455/auth/callback`
-4. if callback can’t bind (or you’re remote/headless), paste the redirect URL/code
-5. exchange at `https://auth.openai.com/oauth/token`
-6. extract `accountId` from the access token and store `{ access, refresh, expires, accountId }`
+1. gere verificador/desafio PKCE + `state` aleatorio
+2. abra `https://auth.openai.com/oauth/authorize?...`
+3. tente capturar o callback em `http://127.0.0.1:1455/auth/callback`
+4. se o callback nao conseguir vincular (ou voce estiver remoto/headless), cole a URL/codigo de redirecionamento
+5. troque em `https://auth.openai.com/oauth/token`
+6. extraia `accountId` do Token de acesso e armazene `{ access, refresh, expires, accountId }`
 
-Wizard path is `opencraft onboard` → auth choice `openai-codex`.
+O caminho pelo assistente e `opencraft onboard` → escolha de autenticacao `openai-codex`.
 
-## Refresh + expiry
+## Renovacao + expiracao
 
-Profiles store an `expires` timestamp.
+Os perfis armazenam um timestamp `expires`.
 
-At runtime:
+Em tempo de execucao:
 
-- if `expires` is in the future → use the stored access token
-- if expired → refresh (under a file lock) and overwrite the stored credentials
+- se `expires` esta no futuro → use o Token de acesso armazenado
+- se expirado → renove (sob um bloqueio de arquivo) e substitua as credenciais armazenadas
 
-The refresh flow is automatic; you generally don't need to manage tokens manually.
+O fluxo de renovacao e automatico; voce geralmente nao precisa gerenciar Token manualmente.
 
-## Multiple accounts (profiles) + routing
+## Multiplas contas (perfis) + roteamento
 
-Two patterns:
+Dois padroes:
 
-### 1) Preferred: separate agents
+### 1) Preferido: agentes separados
 
-If you want “personal” and “work” to never interact, use isolated agents (separate sessions + credentials + workspace):
+Se voce quer que "pessoal" e "trabalho" nunca interajam, use agentes isolados (sessoes + credenciais + workspace separados):
 
 ```bash
 opencraft agents add work
 opencraft agents add personal
 ```
 
-Then configure auth per-agent (wizard) and route chats to the right agent.
+Depois configure a autenticacao por agente (assistente) e roteie os chats para o agente correto.
 
-### 2) Advanced: multiple profiles in one agent
+### 2) Avancado: multiplos perfis em um agente
 
-`auth-profiles.json` supports multiple profile IDs for the same provider.
+`auth-profiles.json` suporta multiplos IDs de perfil para o mesmo provedor.
 
-Pick which profile is used:
+Escolha qual perfil e usado:
 
-- globally via config ordering (`auth.order`)
-- per-session via `/model ...@<profileId>`
+- globalmente via ordenacao de configuracao (`auth.order`)
+- por sessao via `/model ...@<profileId>`
 
-Example (session override):
+Exemplo (substituicao por sessao):
 
 - `/model Opus@anthropic:work`
 
-How to see what profile IDs exist:
+Como ver quais IDs de perfil existem:
 
-- `opencraft channels list --json` (shows `auth[]`)
+- `opencraft channels list --json` (mostra `auth[]`)
 
-Related docs:
+Documentacao relacionada:
 
-- [/concepts/model-failover](/concepts/model-failover) (rotation + cooldown rules)
-- [/tools/slash-commands](/tools/slash-commands) (command surface)
+- [/concepts/model-failover](/concepts/model-failover) (regras de rotacao + cooldown)
+- [/tools/slash-commands](/tools/slash-commands) (superficie de comandos)

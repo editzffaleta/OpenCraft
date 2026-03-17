@@ -1,34 +1,34 @@
 ---
-summary: "Zalo personal account support via native zca-js (QR login), capabilities, and configuration"
+summary: "Suporte a conta pessoal Zalo via zca-js nativo (login por QR), capacidades e configuração"
 read_when:
   - Setting up Zalo Personal for OpenCraft
   - Debugging Zalo Personal login or message flow
 title: "Zalo Personal"
 ---
 
-# Zalo Personal (unofficial)
+# Zalo Personal (não oficial)
 
-Status: experimental. This integration automates a **personal Zalo account** via native `zca-js` inside OpenCraft.
+Status: experimental. Esta integração automatiza uma **conta pessoal Zalo** via `zca-js` nativo dentro do OpenCraft.
 
-> **Warning:** This is an unofficial integration and may result in account suspension/ban. Use at your own risk.
+> **Aviso:** Esta é uma integração não oficial e pode resultar em suspensão/banimento de conta. Use por sua conta e risco.
 
-## Plugin required
+## Plugin necessário
 
-Zalo Personal ships as a plugin and is not bundled with the core install.
+Zalo Personal é distribuído como um plugin e não está incluso na instalação principal.
 
-- Install via CLI: `opencraft plugins install @opencraft/zalouser`
-- Or from a source checkout: `opencraft plugins install ./extensions/zalouser`
-- Details: [Plugins](/tools/plugin)
+- Instalar via CLI: `opencraft plugins install @opencraft/zalouser`
+- Ou a partir de um checkout do código-fonte: `opencraft plugins install ./extensions/zalouser`
+- Detalhes: [Plugins](/tools/plugin)
 
-No external `zca`/`openzca` CLI binary is required.
+Nenhum binário externo `zca`/`openzca` CLI é necessário.
 
-## Quick setup (beginner)
+## Configuração rápida (iniciante)
 
-1. Install the plugin (see above).
-2. Login (QR, on the Gateway machine):
+1. Instale o plugin (veja acima).
+2. Login (QR, na máquina do Gateway):
    - `opencraft channels login --channel zalouser`
-   - Scan the QR code with the Zalo mobile app.
-3. Enable the channel:
+   - Escaneie o código QR com o aplicativo móvel Zalo.
+3. Habilite o canal:
 
 ```json5
 {
@@ -41,23 +41,23 @@ No external `zca`/`openzca` CLI binary is required.
 }
 ```
 
-4. Restart the Gateway (or finish setup).
-5. DM access defaults to pairing; approve the pairing code on first contact.
+4. Reinicie o Gateway (ou finalize a configuração).
+5. O acesso de DM é por pareamento por padrão; aprove o código de pareamento no primeiro contato.
 
-## What it is
+## O que é
 
-- Runs entirely in-process via `zca-js`.
-- Uses native event listeners to receive inbound messages.
-- Sends replies directly through the JS API (text/media/link).
-- Designed for “personal account” use cases where Zalo Bot API is not available.
+- Roda inteiramente em processo via `zca-js`.
+- Usa listeners de evento nativos para receber mensagens de entrada.
+- Envia respostas diretamente pela API JS (texto/mídia/link).
+- Projetado para casos de uso de "conta pessoal" onde a Zalo Bot API não está disponível.
 
-## Naming
+## Nomenclatura
 
-Channel id is `zalouser` to make it explicit this automates a **personal Zalo user account** (unofficial). We keep `zalo` reserved for a potential future official Zalo API integration.
+O ID do canal é `zalouser` para deixar explícito que isso automatiza uma **conta de usuário pessoal Zalo** (não oficial). Mantemos `zalo` reservado para uma potencial futura integração oficial com a API Zalo.
 
-## Finding IDs (directory)
+## Encontrando IDs (diretório)
 
-Use the directory CLI to discover peers/groups and their IDs:
+Use o CLI de diretório para descobrir contatos/grupos e seus IDs:
 
 ```bash
 opencraft directory self --channel zalouser
@@ -65,38 +65,38 @@ opencraft directory peers list --channel zalouser --query "name"
 opencraft directory groups list --channel zalouser --query "work"
 ```
 
-## Limits
+## Limites
 
-- Outbound text is chunked to ~2000 characters (Zalo client limits).
-- Streaming is blocked by default.
+- Texto de saída é dividido em blocos de ~2000 caracteres (limites do cliente Zalo).
+- Streaming é bloqueado por padrão.
 
-## Access control (DMs)
+## Controle de acesso (DMs)
 
-`channels.zalouser.dmPolicy` supports: `pairing | allowlist | open | disabled` (default: `pairing`).
+`channels.zalouser.dmPolicy` suporta: `pairing | allowlist | open | disabled` (padrão: `pairing`).
 
-`channels.zalouser.allowFrom` accepts user IDs or names. During setup, names are resolved to IDs using the plugin's in-process contact lookup.
+`channels.zalouser.allowFrom` aceita IDs de usuário ou nomes. Durante a configuração, nomes são resolvidos para IDs usando a busca de contatos em processo do plugin.
 
-Approve via:
+Aprove via:
 
 - `opencraft pairing list zalouser`
 - `opencraft pairing approve zalouser <code>`
 
-## Group access (optional)
+## Acesso a grupos (opcional)
 
-- Default: `channels.zalouser.groupPolicy = "open"` (groups allowed). Use `channels.defaults.groupPolicy` to override the default when unset.
-- Restrict to an allowlist with:
+- Padrão: `channels.zalouser.groupPolicy = "open"` (grupos permitidos). Use `channels.defaults.groupPolicy` para sobrescrever o padrão quando não definido.
+- Restrinja a uma allowlist com:
   - `channels.zalouser.groupPolicy = "allowlist"`
-  - `channels.zalouser.groups` (keys should be stable group IDs; names are resolved to IDs on startup when possible)
-  - `channels.zalouser.groupAllowFrom` (controls which senders in allowed groups can trigger the bot)
-- Block all groups: `channels.zalouser.groupPolicy = "disabled"`.
-- The configure wizard can prompt for group allowlists.
-- On startup, OpenCraft resolves group/user names in allowlists to IDs and logs the mapping.
-- Group allowlist matching is ID-only by default. Unresolved names are ignored for auth unless `channels.zalouser.dangerouslyAllowNameMatching: true` is enabled.
-- `channels.zalouser.dangerouslyAllowNameMatching: true` is a break-glass compatibility mode that re-enables mutable group-name matching.
-- If `groupAllowFrom` is unset, runtime falls back to `allowFrom` for group sender checks.
-- Sender checks apply to both normal group messages and control commands (for example `/new`, `/reset`).
+  - `channels.zalouser.groups` (as chaves devem ser IDs de grupo estáveis; nomes são resolvidos para IDs na inicialização quando possível)
+  - `channels.zalouser.groupAllowFrom` (controla quais remetentes em grupos permitidos podem acionar o Bot)
+- Bloquear todos os grupos: `channels.zalouser.groupPolicy = "disabled"`.
+- O assistente de configuração pode solicitar allowlists de grupo.
+- Na inicialização, o OpenCraft resolve nomes de grupo/usuário nas allowlists para IDs e registra o mapeamento em log.
+- A correspondência de allowlist de grupo é apenas por ID por padrão. Nomes não resolvidos são ignorados para autenticação, a menos que `channels.zalouser.dangerouslyAllowNameMatching: true` esteja habilitado.
+- `channels.zalouser.dangerouslyAllowNameMatching: true` é um modo de compatibilidade de emergência que reabilita a correspondência mutável por nome de grupo.
+- Se `groupAllowFrom` não estiver definido, o runtime usa `allowFrom` como fallback para verificações de remetente de grupo.
+- Verificações de remetente se aplicam tanto a mensagens normais de grupo quanto a comandos de controle (por exemplo `/new`, `/reset`).
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -113,16 +113,16 @@ Example:
 }
 ```
 
-### Group mention gating
+### Bloqueio por menção em grupos
 
-- `channels.zalouser.groups.<group>.requireMention` controls whether group replies require a mention.
-- Resolution order: exact group id/name -> normalized group slug -> `*` -> default (`true`).
-- This applies both to allowlisted groups and open group mode.
-- Authorized control commands (for example `/new`) can bypass mention gating.
-- When a group message is skipped because mention is required, OpenCraft stores it as pending group history and includes it on the next processed group message.
-- Group history limit defaults to `messages.groupChat.historyLimit` (fallback `50`). You can override per account with `channels.zalouser.historyLimit`.
+- `channels.zalouser.groups.<group>.requireMention` controla se respostas em grupo exigem uma menção.
+- Ordem de resolução: ID/nome exato do grupo -> slug normalizado do grupo -> `*` -> padrão (`true`).
+- Isso se aplica tanto a grupos na allowlist quanto ao modo de grupo aberto.
+- Comandos de controle autorizados (por exemplo `/new`) podem ignorar o bloqueio por menção.
+- Quando uma mensagem de grupo é ignorada porque menção é necessária, o OpenCraft a armazena como histórico de grupo pendente e a inclui na próxima mensagem de grupo processada.
+- O limite de histórico de grupo tem como padrão `messages.groupChat.historyLimit` (fallback `50`). Você pode sobrescrever por conta com `channels.zalouser.historyLimit`.
 
-Example:
+Exemplo:
 
 ```json5
 {
@@ -138,9 +138,9 @@ Example:
 }
 ```
 
-## Multi-account
+## Múltiplas contas
 
-Accounts map to `zalouser` profiles in OpenCraft state. Example:
+Contas mapeiam para perfis `zalouser` no estado do OpenCraft. Exemplo:
 
 ```json5
 {
@@ -156,26 +156,26 @@ Accounts map to `zalouser` profiles in OpenCraft state. Example:
 }
 ```
 
-## Typing, reactions, and delivery acknowledgements
+## Digitação, reações e confirmações de entrega
 
-- OpenCraft sends a typing event before dispatching a reply (best-effort).
-- Message reaction action `react` is supported for `zalouser` in channel actions.
-  - Use `remove: true` to remove a specific reaction emoji from a message.
-  - Reaction semantics: [Reactions](/tools/reactions)
-- For inbound messages that include event metadata, OpenCraft sends delivered + seen acknowledgements (best-effort).
+- O OpenCraft envia um evento de digitação antes de despachar uma resposta (melhor esforço).
+- A ação de reação a mensagens `react` é suportada para `zalouser` em ações de canal.
+  - Use `remove: true` para remover um emoji de reação específico de uma mensagem.
+  - Semântica de reações: [Reações](/tools/reactions)
+- Para mensagens de entrada que incluem metadados de evento, o OpenCraft envia confirmações de entrega + visualização (melhor esforço).
 
-## Troubleshooting
+## Solução de problemas
 
-**Login doesn't stick:**
+**Login não persiste:**
 
 - `opencraft channels status --probe`
-- Re-login: `opencraft channels logout --channel zalouser && opencraft channels login --channel zalouser`
+- Refaça o login: `opencraft channels logout --channel zalouser && opencraft channels login --channel zalouser`
 
-**Allowlist/group name didn't resolve:**
+**Allowlist/nome de grupo não resolveu:**
 
-- Use numeric IDs in `allowFrom`/`groupAllowFrom`/`groups`, or exact friend/group names.
+- Use IDs numéricos em `allowFrom`/`groupAllowFrom`/`groups`, ou nomes exatos de amigos/grupos.
 
-**Upgraded from old CLI-based setup:**
+**Atualizou de uma configuração antiga baseada em CLI:**
 
-- Remove any old external `zca` process assumptions.
-- The channel now runs fully in OpenCraft without external CLI binaries.
+- Remova quaisquer suposições de processo externo `zca` antigo.
+- O canal agora roda completamente dentro do OpenCraft sem binários CLI externos.
