@@ -960,7 +960,7 @@ map_legacy_env "OPENCLAW_GIT_UPDATE" "CLAWDBOT_GIT_UPDATE"
 map_legacy_env "OPENCLAW_NPM_LOGLEVEL" "CLAWDBOT_NPM_LOGLEVEL"
 map_legacy_env "OPENCLAW_VERBOSE" "CLAWDBOT_VERBOSE"
 map_legacy_env "OPENCLAW_PROFILE" "CLAWDBOT_PROFILE"
-map_legacy_env "OPENCLAW_INSTALL_SH_NO_RUN" "CLAWDBOT_INSTALL_SH_NO_RUN"
+map_legacy_env "OPENCRAFT_INSTALL_SH_NO_RUN" "CLAWDBOT_INSTALL_SH_NO_RUN"
 
 pick_tagline() {
     append_holiday_taglines
@@ -996,7 +996,7 @@ NPM_LOGLEVEL="${OPENCLAW_NPM_LOGLEVEL:-error}"
 NPM_SILENT_FLAG="--silent"
 VERBOSE="${OPENCLAW_VERBOSE:-0}"
 VERIFY_INSTALL="${OPENCLAW_VERIFY_INSTALL:-0}"
-OPENCLAW_BIN=""
+OPENCRAFT_BIN=""
 PNPM_CMD=()
 HELP=0
 
@@ -2018,7 +2018,7 @@ install_opencraft() {
 # Run doctor for migrations (safe, non-interactive)
 run_doctor() {
     ui_info "Running doctor to migrate settings"
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_opencraft_bin || true)"
     fi
@@ -2032,7 +2032,7 @@ run_doctor() {
 }
 
 maybe_open_dashboard() {
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_opencraft_bin || true)"
     fi
@@ -2078,7 +2078,7 @@ run_bootstrap_onboarding_if_needed() {
     fi
 
     ui_info "BOOTSTRAP.md found; starting onboarding"
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_opencraft_bin || true)"
     fi
@@ -2130,7 +2130,7 @@ fi
 resolve_opencraft_version() {
     local version=""
     local raw_version_output=""
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]] && command -v opencraft &> /dev/null; then
         claw="$(command -v opencraft)"
     fi
@@ -2177,7 +2177,7 @@ try {
 }
 
 refresh_gateway_service_if_loaded() {
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_opencraft_bin || true)"
     fi
@@ -2213,7 +2213,7 @@ verify_installation() {
     fi
 
     ui_stage "Verifying installation"
-    local claw="${OPENCLAW_BIN:-}"
+    local claw="${OPENCRAFT_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_opencraft_bin || true)"
     fi
@@ -2350,7 +2350,7 @@ main() {
 
     ui_stage "Finalizing setup"
 
-    OPENCLAW_BIN="$(resolve_opencraft_bin || true)"
+    OPENCRAFT_BIN="$(resolve_opencraft_bin || true)"
 
     # PATH warning: installs can succeed while the user's login shell still lacks npm's global bin dir.
     local npm_bin=""
@@ -2442,7 +2442,7 @@ main() {
     elif [[ "$is_upgrade" == "true" ]]; then
         ui_info "Upgrade complete"
         if [[ -r /dev/tty && -w /dev/tty ]]; then
-            local claw="${OPENCLAW_BIN:-}"
+            local claw="${OPENCRAFT_BIN:-}"
             if [[ -z "$claw" ]]; then
                 claw="$(resolve_opencraft_bin || true)"
             fi
@@ -2488,7 +2488,7 @@ main() {
             ui_info "Starting setup"
             echo ""
             if [[ -r /dev/tty && -w /dev/tty ]]; then
-                local claw="${OPENCLAW_BIN:-}"
+                local claw="${OPENCRAFT_BIN:-}"
                 if [[ -z "$claw" ]]; then
                     claw="$(resolve_opencraft_bin || true)"
                 fi
@@ -2506,7 +2506,7 @@ main() {
     fi
 
     if command -v opencraft &> /dev/null; then
-        local claw="${OPENCLAW_BIN:-}"
+        local claw="${OPENCRAFT_BIN:-}"
         if [[ -z "$claw" ]]; then
             claw="$(resolve_opencraft_bin || true)"
         fi
@@ -2535,7 +2535,7 @@ main() {
     show_footer_links
 }
 
-if [[ "${OPENCLAW_INSTALL_SH_NO_RUN:-0}" != "1" ]]; then
+if [[ "${OPENCRAFT_INSTALL_SH_NO_RUN:-0}" != "1" ]]; then
     parse_args "$@"
     configure_verbose
     main

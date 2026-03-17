@@ -176,7 +176,10 @@ describe("resolveOpenCraftPackageRoot", () => {
   it("falls back from a symlinked argv1 to the node_modules package root", () => {
     const project = fx("symlink-node-modules-fallback");
     const argv1 = path.join(project, "node_modules", ".bin", "opencraft");
-    state.realpaths.set(abs(argv1), abs(path.join(project, "versions", "current", "opencraft.mjs")));
+    state.realpaths.set(
+      abs(argv1),
+      abs(path.join(project, "versions", "current", "opencraft.mjs")),
+    );
     const pkgRoot = path.join(project, "node_modules", "opencraft");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "opencraft" }));
 

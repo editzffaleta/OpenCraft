@@ -14,8 +14,8 @@
     "url": "git+https://github.com/editzffaleta/OpenCraft.git"
   },
   "bin": {
-    "opencraft": "opencraft.mjs",
-    "openclaw": "openclaw.mjs"
+    "openclaw": "openclaw.mjs",
+    "opencraft": "opencraft.mjs"
   },
   "directories": {
     "doc": "docs",
@@ -441,6 +441,7 @@
   "pnpm": {
     "minimumReleaseAge": 2880,
     "overrides": {
+      "opencraft": "workspace:*",
       "hono": "4.12.7",
       "@hono/node-server": "1.19.10",
       "fast-xml-parser": "5.3.8",

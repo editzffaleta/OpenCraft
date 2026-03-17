@@ -23,18 +23,18 @@ Cada canal inicia automaticamente quando sua seção de configuração existe (e
 
 Todos os canais suportam políticas de DM e de grupo:
 
-| Política de DM      | Comportamento                                                             |
-| ------------------- | ------------------------------------------------------------------------- |
-| `pairing` (padrão)  | Remetentes desconhecidos recebem um código de pareamento único; o dono deve aprovar |
-| `allowlist`         | Apenas remetentes em `allowFrom` (ou na lista de pareamento aprovados)    |
-| `open`              | Permite todos os DMs de entrada (requer `allowFrom: ["*"]`)               |
-| `disabled`          | Ignora todos os DMs de entrada                                            |
+| Política de DM     | Comportamento                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `pairing` (padrão) | Remetentes desconhecidos recebem um código de pareamento único; o dono deve aprovar |
+| `allowlist`        | Apenas remetentes em `allowFrom` (ou na lista de pareamento aprovados)              |
+| `open`             | Permite todos os DMs de entrada (requer `allowFrom: ["*"]`)                         |
+| `disabled`         | Ignora todos os DMs de entrada                                                      |
 
-| Política de grupo      | Comportamento                                                    |
-| ---------------------- | ---------------------------------------------------------------- |
-| `allowlist` (padrão)   | Apenas grupos que correspondem à lista de permissões configurada |
-| `open`                 | Ignora listas de permissão de grupo (filtragem por menção ainda se aplica) |
-| `disabled`             | Bloqueia todas as mensagens de grupo/sala                        |
+| Política de grupo    | Comportamento                                                              |
+| -------------------- | -------------------------------------------------------------------------- |
+| `allowlist` (padrão) | Apenas grupos que correspondem à lista de permissões configurada           |
+| `open`               | Ignora listas de permissão de grupo (filtragem por menção ainda se aplica) |
+| `disabled`           | Bloqueia todas as mensagens de grupo/sala                                  |
 
 <Note>
 `channels.defaults.groupPolicy` define o padrão quando o `groupPolicy` de um provedor não está configurado.
@@ -431,13 +431,13 @@ O WhatsApp funciona pelo canal web do gateway (Baileys Web). Inicia automaticame
 
 - `typingReaction` adiciona uma reação temporária à mensagem Slack de entrada enquanto uma resposta está sendo processada, depois a remove ao concluir. Use um shortcode de emoji do Slack como `"hourglass_flowing_sand"`.
 
-| Grupo de ação | Padrão   | Notas                          |
-| ------------- | -------- | ------------------------------ |
-| reactions     | ativado  | Reagir + listar reações        |
-| messages      | ativado  | Ler/enviar/editar/deletar      |
-| pins          | ativado  | Fixar/desafixar/listar         |
-| memberInfo    | ativado  | Informações de membro          |
-| emojiList     | ativado  | Lista de emoji personalizado   |
+| Grupo de ação | Padrão  | Notas                        |
+| ------------- | ------- | ---------------------------- |
+| reactions     | ativado | Reagir + listar reações      |
+| messages      | ativado | Ler/enviar/editar/deletar    |
+| pins          | ativado | Fixar/desafixar/listar       |
+| memberInfo    | ativado | Informações de membro        |
+| emojiList     | ativado | Lista de emoji personalizado |
 
 ### Mattermost
 
@@ -1578,13 +1578,13 @@ Resolução (mais específico prevalece): conta → canal → global. `""` desab
 
 **Variáveis de template:**
 
-| Variável          | Descrição                  | Exemplo                     |
-| ----------------- | -------------------------- | --------------------------- |
-| `{model}`         | Nome curto do modelo       | `claude-opus-4-6`           |
-| `{modelFull}`     | Identificador completo     | `anthropic/claude-opus-4-6` |
-| `{provider}`      | Nome do provedor           | `anthropic`                 |
-| `{thinkingLevel}` | Nível de thinking atual    | `high`, `low`, `off`        |
-| `{identity.name}` | Nome da identidade do agente | (igual a `"auto"`)        |
+| Variável          | Descrição                    | Exemplo                     |
+| ----------------- | ---------------------------- | --------------------------- |
+| `{model}`         | Nome curto do modelo         | `claude-opus-4-6`           |
+| `{modelFull}`     | Identificador completo       | `anthropic/claude-opus-4-6` |
+| `{provider}`      | Nome do provedor             | `anthropic`                 |
+| `{thinkingLevel}` | Nível de thinking atual      | `high`, `low`, `off`        |
+| `{identity.name}` | Nome da identidade do agente | (igual a `"auto"`)          |
 
 Variáveis são insensíveis a maiúsculas. `{think}` é um alias para `{thinkingLevel}`.
 
@@ -1675,7 +1675,7 @@ Padrões para o modo Talk (macOS/iOS/Android).
 - `apiKey` e `providers.*.apiKey` aceitam strings em texto simples ou objetos SecretRef.
 - O fallback `ELEVENLABS_API_KEY` se aplica apenas quando nenhuma chave de API do Talk está configurada.
 - `voiceAliases` permite que diretivas Talk usem nomes amigáveis.
-- `silenceTimeoutMs` controla quanto tempo o modo Talk espera após o silêncio do usuário antes de enviar o transcript. Não definido mantém a janela de pausa padrão da plataforma (`700 ms no macOS e Android, 900 ms no iOS`).
+- `silenceTimeoutMs` controla quanto tempo o modo Talk espera após o silêncio do usuário antes de enviar o transcript. Não definido mantém a janela de pausa padrão da plataforma (`700 ms on macOS and Android, 900 ms on iOS`).
 
 ---
 
