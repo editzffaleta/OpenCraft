@@ -1,5 +1,5 @@
 import type { AgentMessage } from "@mariozechner/pi-agent-core";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 
 const THREAD_SUFFIX_REGEX = /^(.*)(?::(?:thread|topic):\d+)$/i;
 
@@ -42,7 +42,7 @@ export function limitHistoryTurns(
  */
 export function getHistoryLimitFromSessionKey(
   sessionKey: string | undefined,
-  config: OpenCraftConfig | undefined,
+  config: OpenClawConfig | undefined,
 ): number | undefined {
   if (!sessionKey || !config) {
     return undefined;
@@ -61,7 +61,7 @@ export function getHistoryLimitFromSessionKey(
   const userId = stripThreadSuffix(userIdRaw);
 
   const resolveProviderConfig = (
-    cfg: OpenCraftConfig | undefined,
+    cfg: OpenClawConfig | undefined,
     providerId: string,
   ):
     | {

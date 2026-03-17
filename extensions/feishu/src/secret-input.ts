@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/feishu";
+} from "openclaw/plugin-sdk/feishu";
 
 export {
   buildSecretInputSchema,

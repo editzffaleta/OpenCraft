@@ -5,7 +5,7 @@ const { TEST_STATE_DIR, SANDBOX_REGISTRY_PATH, SANDBOX_BROWSER_REGISTRY_PATH } =
   const path = require("node:path");
   const { mkdtempSync } = require("node:fs");
   const { tmpdir } = require("node:os");
-  const baseDir = mkdtempSync(path.join(tmpdir(), "opencraft-sandbox-registry-"));
+  const baseDir = mkdtempSync(path.join(tmpdir(), "openclaw-sandbox-registry-"));
 
   return {
     TEST_STATE_DIR: baseDir,
@@ -142,7 +142,7 @@ function browserEntry(
     sessionKey: "agent:main",
     createdAtMs: 1,
     lastUsedAtMs: 1,
-    image: "opencraft-browser:test",
+    image: "openclaw-browser:test",
     cdpPort: 9222,
     ...overrides,
   };
@@ -154,7 +154,7 @@ function containerEntry(overrides: Partial<SandboxRegistryEntry> = {}): SandboxR
     sessionKey: "agent:main",
     createdAtMs: 1,
     lastUsedAtMs: 1,
-    image: "opencraft-sandbox:test",
+    image: "openclaw-sandbox:test",
     ...overrides,
   };
 }
@@ -172,6 +172,28 @@ async function seedBrowserRegistry(entries: SandboxBrowserRegistryEntry[]) {
 }
 
 describe("registry race safety", () => {
+  it("normalizes legacy registry entries on read", async () => {
+    await seedContainerRegistry([
+      {
+        containerName: "legacy-container",
+        sessionKey: "agent:main",
+        createdAtMs: 1,
+        lastUsedAtMs: 1,
+        image: "openclaw-sandbox:test",
+      },
+    ]);
+
+    const registry = await readRegistry();
+    expect(registry.entries).toEqual([
+      expect.objectContaining({
+        containerName: "legacy-container",
+        backendId: "docker",
+        runtimeLabel: "legacy-container",
+        configLabelKind: "Image",
+      }),
+    ]);
+  });
+
   it("keeps both container updates under concurrent writes", async () => {
     await Promise.all([
       updateRegistry(containerEntry({ containerName: "container-a" })),

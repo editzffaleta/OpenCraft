@@ -26,18 +26,18 @@ describe("shared/entry-status", () => {
       always: false,
       metadata: {
         emoji: "🦀",
-        homepage: "https://opencraft.ai",
+        homepage: "https://openclaw.ai",
         requires: {
           bins: ["bun"],
           anyBins: ["ffmpeg", "sox"],
-          env: ["OPENCRAFT_TOKEN"],
+          env: ["OPENCLAW_TOKEN"],
           config: ["gateway.bind"],
         },
         os: ["darwin"],
       },
       frontmatter: {
         emoji: "🙂",
-        homepage: "https://docs.opencraft.ai",
+        homepage: "https://docs.openclaw.ai",
       },
       hasLocalBin: (bin) => bin === "bun",
       localPlatform: "linux",
@@ -50,18 +50,18 @@ describe("shared/entry-status", () => {
 
     expect(result).toEqual({
       emoji: "🦀",
-      homepage: "https://opencraft.ai",
+      homepage: "https://openclaw.ai",
       required: {
         bins: ["bun"],
         anyBins: ["ffmpeg", "sox"],
-        env: ["OPENCRAFT_TOKEN"],
+        env: ["OPENCLAW_TOKEN"],
         config: ["gateway.bind"],
         os: ["darwin"],
       },
       missing: {
         bins: [],
         anyBins: [],
-        env: ["OPENCRAFT_TOKEN"],
+        env: ["OPENCLAW_TOKEN"],
         config: [],
         os: ["darwin"],
       },
@@ -99,7 +99,7 @@ describe("shared/entry-status", () => {
           },
         },
         frontmatter: {
-          website: " https://docs.opencraft.ai ",
+          website: " https://docs.openclaw.ai ",
           emoji: "🙂",
         },
       },
@@ -110,7 +110,7 @@ describe("shared/entry-status", () => {
 
     expect(result).toEqual({
       emoji: "🙂",
-      homepage: "https://docs.opencraft.ai",
+      homepage: "https://docs.openclaw.ai",
       required: {
         bins: ["missing-bin"],
         anyBins: [],

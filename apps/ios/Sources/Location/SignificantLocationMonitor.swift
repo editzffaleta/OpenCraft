@@ -1,6 +1,6 @@
 import CoreLocation
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 
 /// Monitors significant location changes and pushes `location.update`
 /// events to the gateway so the severance hook can determine whether
@@ -9,7 +9,7 @@ import OpenCraftKit
 enum SignificantLocationMonitor {
     static func startIfNeeded(
         locationService: any LocationServicing,
-        locationMode: OpenCraftLocationMode,
+        locationMode: OpenClawLocationMode,
         gateway: GatewayNodeSession,
         beforeSend: (@MainActor @Sendable () async -> Void)? = nil
     ) {

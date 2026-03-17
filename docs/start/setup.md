@@ -1,165 +1,166 @@
 ---
-summary: "Configuração avançada e fluxos de desenvolvimento para o OpenCraft"
+summary: "Advanced setup and development workflows for OpenClaw"
 read_when:
-  - Configurando uma nova máquina
-  - Você quer o "mais recente e melhor" sem quebrar sua configuração pessoal
-title: "Configuração"
+  - Setting up a new machine
+  - You want “latest + greatest” without breaking your personal setup
+title: "Setup"
 ---
 
-# Configuração
+# Setup
 
 <Note>
-Se você está configurando pela primeira vez, comece em [Primeiros Passos](/start/getting-started).
-Para detalhes do assistente, veja [Assistente de Onboarding](/start/wizard).
+If you are setting up for the first time, start with [Getting Started](/start/getting-started).
+For onboarding details, see [Onboarding (CLI)](/start/wizard).
 </Note>
 
-Última atualização: 2026-01-01
+Last updated: 2026-01-01
 
 ## TL;DR
 
-- **Personalização fica fora do repositório:** `~/.opencraft/workspace` (workspace) + `~/.opencraft/opencraft.json` (config).
-- **Fluxo estável:** instale o app macOS; deixe-o executar o Gateway embutido.
-- **Fluxo bleeding edge:** execute o Gateway você mesmo via `pnpm gateway:watch`, depois deixe o app macOS se conectar no modo Local.
+- **Tailoring lives outside the repo:** `~/.openclaw/workspace` (workspace) + `~/.openclaw/openclaw.json` (config).
+- **Stable workflow:** install the macOS app; let it run the bundled Gateway.
+- **Bleeding edge workflow:** run the Gateway yourself via `pnpm gateway:watch`, then let the macOS app attach in Local mode.
 
-## Pré-requisitos (a partir do código-fonte)
+## Prereqs (from source)
 
 - Node `>=22`
 - `pnpm`
-- Docker (opcional; apenas para configuração em container/e2e — veja [Docker](/install/docker))
+- Docker (optional; only for containerized setup/e2e — see [Docker](/install/docker))
 
-## Estratégia de personalização (para que atualizações não causem problemas)
+## Tailoring strategy (so updates don’t hurt)
 
-Se você quer "100% personalizado para mim" _e_ atualizações fáceis, mantenha sua customização em:
+If you want “100% tailored to me” _and_ easy updates, keep your customization in:
 
-- **Config:** `~/.opencraft/opencraft.json` (JSON/JSON5)
-- **Workspace:** `~/.opencraft/workspace` (skills, prompts, memórias; transforme em um repositório git privado)
+- **Config:** `~/.openclaw/openclaw.json` (JSON/JSON5-ish)
+- **Workspace:** `~/.openclaw/workspace` (skills, prompts, memories; make it a private git repo)
 
-Bootstrap uma vez:
-
-```bash
-opencraft setup
-```
-
-De dentro deste repositório, use a entrada CLI local:
+Bootstrap once:
 
 ```bash
-opencraft setup
+openclaw setup
 ```
 
-Se você ainda não tem uma instalação global, execute via `pnpm opencraft setup`.
-
-## Executar o Gateway a partir deste repositório
-
-Após `pnpm build`, você pode executar o CLI empacotado diretamente:
+From inside this repo, use the local CLI entry:
 
 ```bash
-node opencraft.mjs gateway --port 18789 --verbose
+openclaw setup
 ```
 
-## Fluxo estável (app macOS primeiro)
+If you don’t have a global install yet, run it via `pnpm openclaw setup`.
 
-1. Instale e abra o **OpenCraft.app** (barra de menu).
-2. Complete o checklist de onboarding/permissões (prompts TCC).
-3. Certifique-se de que o Gateway está em modo **Local** e em execução (o app gerencia isso).
-4. Vincule canais (exemplo: WhatsApp):
+## Run the Gateway from this repo
+
+After `pnpm build`, you can run the packaged CLI directly:
 
 ```bash
-opencraft channels login
+node openclaw.mjs gateway --port 18789 --verbose
 ```
 
-5. Verificação de sanidade:
+## Stable workflow (macOS app first)
+
+1. Install + launch **OpenClaw.app** (menu bar).
+2. Complete the onboarding/permissions checklist (TCC prompts).
+3. Ensure Gateway is **Local** and running (the app manages it).
+4. Link surfaces (example: WhatsApp):
 
 ```bash
-opencraft health
+openclaw channels login
 ```
 
-Se o onboarding não estiver disponível na sua build:
+5. Sanity check:
 
-- Execute `opencraft setup`, depois `opencraft channels login`, depois inicie o Gateway manualmente (`opencraft gateway`).
+```bash
+openclaw health
+```
 
-## Fluxo bleeding edge (Gateway em terminal)
+If onboarding is not available in your build:
 
-Objetivo: trabalhar no Gateway TypeScript, ter hot reload, manter a UI do app macOS conectada.
+- Run `openclaw setup`, then `openclaw channels login`, then start the Gateway manually (`openclaw gateway`).
 
-### 0) (Opcional) Execute o app macOS a partir do código-fonte também
+## Bleeding edge workflow (Gateway in a terminal)
 
-Se você também quer o app macOS no bleeding edge:
+Goal: work on the TypeScript Gateway, get hot reload, keep the macOS app UI attached.
+
+### 0) (Optional) Run the macOS app from source too
+
+If you also want the macOS app on the bleeding edge:
 
 ```bash
 ./scripts/restart-mac.sh
 ```
 
-### 1) Iniciar o Gateway de desenvolvimento
+### 1) Start the dev Gateway
 
 ```bash
 pnpm install
 pnpm gateway:watch
 ```
 
-`gateway:watch` executa o gateway em modo watch e recarrega nas mudanças de TypeScript.
+`gateway:watch` runs the gateway in watch mode and reloads on relevant source,
+config, and bundled-plugin metadata changes.
 
-### 2) Apontar o app macOS para o Gateway em execução
+### 2) Point the macOS app at your running Gateway
 
-No **OpenCraft.app**:
+In **OpenClaw.app**:
 
-- Modo de Conexão: **Local**
-  O app se conectará ao gateway em execução na porta configurada.
+- Connection Mode: **Local**
+  The app will attach to the running gateway on the configured port.
 
-### 3) Verificar
+### 3) Verify
 
-- O status do Gateway no app deve exibir **"Using existing gateway …"**
-- Ou via CLI:
+- In-app Gateway status should read **“Using existing gateway …”**
+- Or via CLI:
 
 ```bash
-opencraft health
+openclaw health
 ```
 
-### Armadilhas comuns
+### Common footguns
 
-- **Porta errada:** o WS do Gateway padrão é `ws://127.0.0.1:18789`; mantenha app + CLI na mesma porta.
-- **Onde o estado fica:**
-  - Credenciais: `~/.opencraft/credentials/`
-  - Sessões: `~/.opencraft/agents/<agentId>/sessions/`
+- **Wrong port:** Gateway WS defaults to `ws://127.0.0.1:18789`; keep app + CLI on the same port.
+- **Where state lives:**
+  - Credentials: `~/.openclaw/credentials/`
+  - Sessions: `~/.openclaw/agents/<agentId>/sessions/`
   - Logs: `/tmp/openclaw/`
 
-## Mapa de armazenamento de credenciais
+## Credential storage map
 
-Use isto ao depurar auth ou decidir o que fazer backup:
+Use this when debugging auth or deciding what to back up:
 
-- **WhatsApp**: `~/.opencraft/credentials/whatsapp/<accountId>/creds.json`
-- **Token do bot Telegram**: config/env ou `channels.telegram.tokenFile` (apenas arquivo regular; symlinks rejeitados)
-- **Token do bot Discord**: config/env ou SecretRef (provedores env/file/exec)
-- **Tokens Slack**: config/env (`channels.slack.*`)
-- **Listas de permissão de pareamento**:
-  - `~/.opencraft/credentials/<channel>-allowFrom.json` (conta padrão)
-  - `~/.opencraft/credentials/<channel>-<accountId>-allowFrom.json` (contas não padrão)
-- **Perfis de auth do modelo**: `~/.opencraft/agents/<agentId>/agent/auth-profiles.json`
-- **Payload de segredos em arquivo (opcional)**: `~/.opencraft/secrets.json`
-- **Importação OAuth legada**: `~/.opencraft/credentials/oauth.json`
-  Mais detalhes: [Segurança](/gateway/security#credential-storage-map).
+- **WhatsApp**: `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
+- **Telegram bot token**: config/env or `channels.telegram.tokenFile` (regular file only; symlinks rejected)
+- **Discord bot token**: config/env or SecretRef (env/file/exec providers)
+- **Slack tokens**: config/env (`channels.slack.*`)
+- **Pairing allowlists**:
+  - `~/.openclaw/credentials/<channel>-allowFrom.json` (default account)
+  - `~/.openclaw/credentials/<channel>-<accountId>-allowFrom.json` (non-default accounts)
+- **Model auth profiles**: `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
+- **File-backed secrets payload (optional)**: `~/.openclaw/secrets.json`
+- **Legacy OAuth import**: `~/.openclaw/credentials/oauth.json`
+  More detail: [Security](/gateway/security#credential-storage-map).
 
-## Atualização (sem quebrar sua configuração)
+## Updating (without wrecking your setup)
 
-- Mantenha `~/.opencraft/workspace` e `~/.opencraft/` como "seu conteúdo"; não coloque prompts/configurações pessoais no repositório `opencraft`.
-- Atualizar o código-fonte: `git pull` + `pnpm install` (quando o lockfile mudar) + continue usando `pnpm gateway:watch`.
+- Keep `~/.openclaw/workspace` and `~/.openclaw/` as “your stuff”; don’t put personal prompts/config into the `openclaw` repo.
+- Updating source: `git pull` + `pnpm install` (when lockfile changed) + keep using `pnpm gateway:watch`.
 
-## Linux (serviço systemd de usuário)
+## Linux (systemd user service)
 
-Instalações Linux usam um serviço systemd de **usuário**. Por padrão, o systemd para
-serviços de usuário no logout/idle, o que mata o Gateway. O onboarding tenta habilitar
-lingering para você (pode pedir sudo). Se ainda estiver desativado, execute:
+Linux installs use a systemd **user** service. By default, systemd stops user
+services on logout/idle, which kills the Gateway. Onboarding attempts to enable
+lingering for you (may prompt for sudo). If it’s still off, run:
 
 ```bash
 sudo loginctl enable-linger $USER
 ```
 
-Para servidores sempre ativos ou multiusuário, considere um serviço do **sistema** em vez de
-um serviço de usuário (sem necessidade de lingering). Veja o [Runbook do Gateway](/gateway) para as notas do systemd.
+For always-on or multi-user servers, consider a **system** service instead of a
+user service (no lingering needed). See [Gateway runbook](/gateway) for the systemd notes.
 
-## Documentação relacionada
+## Related docs
 
-- [Runbook do Gateway](/gateway) (flags, supervisão, portas)
-- [Configuração do gateway](/gateway/configuration) (schema de config + exemplos)
-- [Discord](/channels/discord) e [Telegram](/channels/telegram) (tags de resposta + configurações replyToMode)
-- [Configuração do assistente OpenCraft](/start/openclaw)
-- [App macOS](/platforms/macos) (ciclo de vida do gateway)
+- [Gateway runbook](/gateway) (flags, supervision, ports)
+- [Gateway configuration](/gateway/configuration) (config schema + examples)
+- [Discord](/channels/discord) and [Telegram](/channels/telegram) (reply tags + replyToMode settings)
+- [OpenClaw assistant setup](/start/openclaw)
+- [macOS app](/platforms/macos) (gateway lifecycle)

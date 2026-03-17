@@ -1,81 +1,81 @@
 ---
-title: "Poda de Sessão"
-summary: "Poda de sessão: aparagem de resultados de ferramentas para reduzir inchaço de contexto"
+title: "Session Pruning"
+summary: "Session pruning: tool-result trimming to reduce context bloat"
 read_when:
-  - Você quer reduzir o crescimento de contexto do LLM a partir de saídas de ferramentas
-  - Você está ajustando agents.defaults.contextPruning
+  - You want to reduce LLM context growth from tool outputs
+  - You are tuning agents.defaults.contextPruning
 ---
 
-# Poda de Sessão
+# Session Pruning
 
-A poda de sessão apara **resultados de ferramentas antigos** do contexto em memória logo antes de cada chamada ao LLM. Ela **não** reescreve o histórico de sessão em disco (`*.jsonl`).
+Session pruning trims **old tool results** from the in-memory context right before each LLM call. It does **not** rewrite the on-disk session history (`*.jsonl`).
 
-## Quando roda
+## When it runs
 
-- Quando `mode: "cache-ttl"` está habilitado e a última chamada Anthropic para a sessão é mais antiga que `ttl`.
-- Afeta apenas as mensagens enviadas ao modelo para aquela requisição.
-- Ativo apenas para chamadas à API Anthropic (e modelos Anthropic no OpenRouter).
-- Para melhores resultados, combine `ttl` com sua política de `cacheRetention` do modelo (`short` = 5m, `long` = 1h).
-- Após uma poda, a janela de TTL é resetada para que requisições subsequentes mantenham cache até que `ttl` expire novamente.
+- When `mode: "cache-ttl"` is enabled and the last Anthropic call for the session is older than `ttl`.
+- Only affects the messages sent to the model for that request.
+- Only active for Anthropic API calls (and OpenRouter Anthropic models).
+- For best results, match `ttl` to your model `cacheRetention` policy (`short` = 5m, `long` = 1h).
+- After a prune, the TTL window resets so subsequent requests keep cache until `ttl` expires again.
 
-## Padrões inteligentes (Anthropic)
+## Smart defaults (Anthropic)
 
-- Perfis **OAuth ou setup-token**: habilitar poda `cache-ttl` e definir heartbeat para `1h`.
-- Perfis **de chave de API**: habilitar poda `cache-ttl`, definir heartbeat para `30m` e padrão `cacheRetention: "short"` em modelos Anthropic.
-- Se você definir qualquer um desses valores explicitamente, o OpenCraft **não** os sobrescreve.
+- **OAuth or setup-token** profiles: enable `cache-ttl` pruning and set heartbeat to `1h`.
+- **API key** profiles: enable `cache-ttl` pruning, set heartbeat to `30m`, and default `cacheRetention: "short"` on Anthropic models.
+- If you set any of these values explicitly, OpenClaw does **not** override them.
 
-## O que isso melhora (custo + comportamento de cache)
+## What this improves (cost + cache behavior)
 
-- **Por que podar:** O cache de prompt Anthropic só se aplica dentro do TTL. Se uma sessão ficar ociosa além do TTL, a próxima requisição re-armazena todo o prompt em cache a não ser que você o apare primeiro.
-- **O que fica mais barato:** a poda reduz o tamanho de `cacheWrite` para aquela primeira requisição após o TTL expirar.
-- **Por que o reset de TTL importa:** uma vez que a poda roda, a janela de cache é resetada, então requisições de acompanhamento podem reutilizar o prompt recém-armazenado em cache em vez de re-armazenar todo o histórico novamente.
-- **O que ela não faz:** a poda não adiciona tokens ou "dobra" custos; ela apenas muda o que é armazenado em cache naquela primeira requisição pós-TTL.
+- **Why prune:** Anthropic prompt caching only applies within the TTL. If a session goes idle past the TTL, the next request re-caches the full prompt unless you trim it first.
+- **What gets cheaper:** pruning reduces the **cacheWrite** size for that first request after the TTL expires.
+- **Why the TTL reset matters:** once pruning runs, the cache window resets, so follow‑up requests can reuse the freshly cached prompt instead of re-caching the full history again.
+- **What it does not do:** pruning doesn’t add tokens or “double” costs; it only changes what gets cached on that first post‑TTL request.
 
-## O que pode ser podado
+## What can be pruned
 
-- Apenas mensagens `toolResult`.
-- Mensagens de usuário + assistente são **nunca** modificadas.
-- As últimas `keepLastAssistants` mensagens de assistente são protegidas; resultados de ferramentas após esse corte não são podados.
-- Se não houver mensagens de assistente suficientes para estabelecer o corte, a poda é ignorada.
-- Resultados de ferramentas contendo **blocos de imagem** são pulados (nunca aparados/limpos).
+- Only `toolResult` messages.
+- User + assistant messages are **never** modified.
+- The last `keepLastAssistants` assistant messages are protected; tool results after that cutoff are not pruned.
+- If there aren’t enough assistant messages to establish the cutoff, pruning is skipped.
+- Tool results containing **image blocks** are skipped (never trimmed/cleared).
 
-## Estimativa da janela de contexto
+## Context window estimation
 
-A poda usa uma janela de contexto estimada (chars ≈ tokens × 4). A janela base é resolvida nesta ordem:
+Pruning uses an estimated context window (chars ≈ tokens × 4). The base window is resolved in this order:
 
-1. Override `models.providers.*.models[].contextWindow`.
-2. `contextWindow` da definição do modelo (do registro de modelos).
-3. Padrão de `200000` tokens.
+1. `models.providers.*.models[].contextWindow` override.
+2. Model definition `contextWindow` (from the model registry).
+3. Default `200000` tokens.
 
-Se `agents.defaults.contextTokens` estiver definido, é tratado como um limite (mínimo) na janela resolvida.
+If `agents.defaults.contextTokens` is set, it is treated as a cap (min) on the resolved window.
 
-## Modo
+## Mode
 
 ### cache-ttl
 
-- A poda só roda se a última chamada Anthropic for mais antiga que `ttl` (padrão `5m`).
-- Quando roda: mesmo comportamento de soft-trim + hard-clear de antes.
+- Pruning only runs if the last Anthropic call is older than `ttl` (default `5m`).
+- When it runs: same soft-trim + hard-clear behavior as before.
 
-## Poda suave vs rígida
+## Soft vs hard pruning
 
-- **Soft-trim**: apenas para resultados de ferramentas superdimensionados.
-  - Mantém cabeça + cauda, insere `...` e anexa uma nota com o tamanho original.
-  - Pula resultados com blocos de imagem.
-- **Hard-clear**: substitui todo o resultado da ferramenta por `hardClear.placeholder`.
+- **Soft-trim**: only for oversized tool results.
+  - Keeps head + tail, inserts `...`, and appends a note with the original size.
+  - Skips results with image blocks.
+- **Hard-clear**: replaces the entire tool result with `hardClear.placeholder`.
 
-## Seleção de ferramentas
+## Tool selection
 
-- `tools.allow` / `tools.deny` suportam wildcards `*`.
-- Deny vence.
-- O matching é insensível a maiúsculas/minúsculas.
-- Lista de allow vazia => todas as ferramentas permitidas.
+- `tools.allow` / `tools.deny` support `*` wildcards.
+- Deny wins.
+- Matching is case-insensitive.
+- Empty allow list => all tools allowed.
 
-## Interação com outros limites
+## Interaction with other limits
 
-- Ferramentas embutidas já truncam sua própria saída; a poda de sessão é uma camada extra que impede que chats de longa duração acumulem saída excessiva de ferramentas no contexto do modelo.
-- A compactação é separada: a compactação resume e persiste, a poda é transiente por requisição. Veja [/concepts/compaction](/concepts/compaction).
+- Built-in tools already truncate their own output; session pruning is an extra layer that prevents long-running chats from accumulating too much tool output in the model context.
+- Compaction is separate: compaction summarizes and persists, pruning is transient per request. See [/concepts/compaction](/concepts/compaction).
 
-## Padrões (quando habilitada)
+## Defaults (when enabled)
 
 - `ttl`: `"5m"`
 - `keepLastAssistants`: `3`
@@ -85,9 +85,9 @@ Se `agents.defaults.contextTokens` estiver definido, é tratado como um limite (
 - `softTrim`: `{ maxChars: 4000, headChars: 1500, tailChars: 1500 }`
 - `hardClear`: `{ enabled: true, placeholder: "[Old tool result content cleared]" }`
 
-## Exemplos
+## Examples
 
-Padrão (desligado):
+Default (off):
 
 ```json5
 {
@@ -95,7 +95,7 @@ Padrão (desligado):
 }
 ```
 
-Habilitar poda com consciência de TTL:
+Enable TTL-aware pruning:
 
 ```json5
 {
@@ -103,7 +103,7 @@ Habilitar poda com consciência de TTL:
 }
 ```
 
-Restringir poda a ferramentas específicas:
+Restrict pruning to specific tools:
 
 ```json5
 {
@@ -118,4 +118,4 @@ Restringir poda a ferramentas específicas:
 }
 ```
 
-Veja a referência de config: [Configuração do Gateway](/gateway/configuration)
+See config reference: [Gateway Configuration](/gateway/configuration)

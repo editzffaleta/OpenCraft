@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
 describe("telegram custom commands schema", () => {
   it("normalizes custom commands", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "/Backup", description: "  Git backup  " }],
@@ -22,7 +22,7 @@ describe("telegram custom commands schema", () => {
   });
 
   it("normalizes hyphens in custom command names", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "Bad-Name", description: "Override status" }],

@@ -1,13 +1,12 @@
-import { getChannelDock } from "../channels/dock.js";
+import { getChannelPlugin } from "../channels/plugins/index.js";
 import { DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH } from "../config/agent-limits.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveChannelGroupToolsPolicy } from "../config/group-policy.js";
 import type { AgentToolsConfig } from "../config/types.tools.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { resolveThreadParentSessionKey } from "../sessions/session-key-utils.js";
 import { normalizeMessageChannel } from "../utils/message-channel.js";
 import { resolveAgentConfig, resolveAgentIdFromSessionKey } from "./agent-scope.js";
-import { compileGlobPatterns, matchesAnyGlobPattern } from "./glob-pattern.js";
 import type { AnyAgentTool } from "./pi-tools.types.js";
 import { pickSandboxToolPolicy } from "./sandbox-tool-policy.js";
 import type { SandboxToolPolicy } from "./sandbox.js";
@@ -15,34 +14,8 @@ import {
   resolveStoredSubagentCapabilities,
   type SubagentSessionRole,
 } from "./subagent-capabilities.js";
-import { expandToolGroups, normalizeToolName } from "./tool-policy.js";
-
-function makeToolPolicyMatcher(policy: SandboxToolPolicy) {
-  const deny = compileGlobPatterns({
-    raw: expandToolGroups(policy.deny ?? []),
-    normalize: normalizeToolName,
-  });
-  const allow = compileGlobPatterns({
-    raw: expandToolGroups(policy.allow ?? []),
-    normalize: normalizeToolName,
-  });
-  return (name: string) => {
-    const normalized = normalizeToolName(name);
-    if (matchesAnyGlobPattern(normalized, deny)) {
-      return false;
-    }
-    if (allow.length === 0) {
-      return true;
-    }
-    if (matchesAnyGlobPattern(normalized, allow)) {
-      return true;
-    }
-    if (normalized === "apply_patch" && matchesAnyGlobPattern("exec", allow)) {
-      return true;
-    }
-    return false;
-  };
-}
+import { isToolAllowedByPolicies, isToolAllowedByPolicyName } from "./tool-policy-match.js";
+import { normalizeToolName } from "./tool-policy.js";
 
 /**
  * Tools always denied for sub-agents regardless of depth.
@@ -100,7 +73,7 @@ function resolveSubagentDenyListForRole(role: SubagentSessionRole): string[] {
   return [...SUBAGENT_TOOL_DENY_ALWAYS];
 }
 
-export function resolveSubagentToolPolicy(cfg?: OpenCraftConfig, depth?: number): SandboxToolPolicy {
+export function resolveSubagentToolPolicy(cfg?: OpenClawConfig, depth?: number): SandboxToolPolicy {
   const configured = cfg?.tools?.subagents?.tools;
   const maxSpawnDepth =
     cfg?.agents?.defaults?.subagents?.maxSpawnDepth ?? DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH;
@@ -120,7 +93,7 @@ export function resolveSubagentToolPolicy(cfg?: OpenCraftConfig, depth?: number)
 }
 
 export function resolveSubagentToolPolicyForSession(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   sessionKey: string,
 ): SandboxToolPolicy {
   const configured = cfg?.tools?.subagents?.tools;
@@ -140,19 +113,11 @@ export function resolveSubagentToolPolicyForSession(
   return { allow: mergedAllow, deny };
 }
 
-export function isToolAllowedByPolicyName(name: string, policy?: SandboxToolPolicy): boolean {
-  if (!policy) {
-    return true;
-  }
-  return makeToolPolicyMatcher(policy)(name);
-}
-
 export function filterToolsByPolicy(tools: AnyAgentTool[], policy?: SandboxToolPolicy) {
   if (!policy) {
     return tools;
   }
-  const matcher = makeToolPolicyMatcher(policy);
-  return tools.filter((tool) => matcher(tool.name));
+  return tools.filter((tool) => isToolAllowedByPolicyName(tool.name, policy));
 }
 
 type ToolPolicyConfig = {
@@ -234,7 +199,7 @@ function resolveProviderToolPolicy(params: {
   return undefined;
 }
 
-function resolveExplicitProfileAlsoAllow(tools?: OpenCraftConfig["tools"]): string[] | undefined {
+function resolveExplicitProfileAlsoAllow(tools?: OpenClawConfig["tools"]): string[] | undefined {
   return Array.isArray(tools?.alsoAllow) ? tools.alsoAllow : undefined;
 }
 
@@ -243,7 +208,7 @@ function hasExplicitToolSection(section: unknown): boolean {
 }
 
 function resolveImplicitProfileAlsoAllow(params: {
-  globalTools?: OpenCraftConfig["tools"];
+  globalTools?: OpenClawConfig["tools"];
   agentTools?: AgentToolsConfig;
 }): string[] | undefined {
   const implicit = new Set<string>();
@@ -266,7 +231,7 @@ function resolveImplicitProfileAlsoAllow(params: {
 }
 
 export function resolveEffectiveToolPolicy(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   sessionKey?: string;
   agentId?: string;
   modelProvider?: string;
@@ -323,7 +288,7 @@ export function resolveEffectiveToolPolicy(params: {
 }
 
 export function resolveGroupToolPolicy(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   sessionKey?: string;
   spawnedBy?: string | null;
   messageProvider?: string;
@@ -350,14 +315,14 @@ export function resolveGroupToolPolicy(params: {
   if (!channel) {
     return undefined;
   }
-  let dock;
+  let plugin;
   try {
-    dock = getChannelDock(channel);
+    plugin = getChannelPlugin(channel);
   } catch {
-    dock = undefined;
+    plugin = undefined;
   }
   const toolsConfig =
-    dock?.groups?.resolveToolPolicy?.({
+    plugin?.groups?.resolveToolPolicy?.({
       cfg: params.config,
       groupId,
       groupChannel: params.groupChannel,
@@ -381,9 +346,4 @@ export function resolveGroupToolPolicy(params: {
   return pickSandboxToolPolicy(toolsConfig);
 }
 
-export function isToolAllowedByPolicies(
-  name: string,
-  policies: Array<SandboxToolPolicy | undefined>,
-) {
-  return policies.every((policy) => isToolAllowedByPolicyName(name, policy));
-}
+export { isToolAllowedByPolicies, isToolAllowedByPolicyName } from "./tool-policy-match.js";

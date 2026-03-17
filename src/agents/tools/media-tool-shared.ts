@@ -1,6 +1,6 @@
 import { type Api, type Model } from "@mariozechner/pi-ai";
-import { getDefaultLocalRoots } from "../../../extensions/whatsapp/src/media.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
+import { getDefaultLocalRoots } from "../../plugin-sdk/web-media.js";
 import type { ImageModelConfig } from "./image-tool.helpers.js";
 import { getApiKeyForModel, normalizeWorkspaceDir, requireApiKey } from "./tool-runtime.helpers.js";
 
@@ -18,9 +18,9 @@ type TextToolResult = {
 };
 
 export function applyImageModelConfigDefaults(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   imageModelConfig: ImageModelConfig,
-): OpenCraftConfig | undefined {
+): OpenClawConfig | undefined {
   if (!cfg) {
     return undefined;
   }
@@ -96,7 +96,7 @@ export function resolveModelFromRegistry(params: {
 
 export async function resolveModelRuntimeApiKey(params: {
   model: Model<Api>;
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   agentDir: string;
   authStorage: {
     setRuntimeApiKey: (provider: string, apiKey: string) => void;

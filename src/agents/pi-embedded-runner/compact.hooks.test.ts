@@ -15,6 +15,7 @@ const {
   resolveSessionAgentIdMock,
   estimateTokensMock,
   sessionAbortCompactionMock,
+  createOpenClawCodingToolsMock,
 } = vi.hoisted(() => {
   const contextEngineCompactMock = vi.fn(async () => ({
     ok: true as boolean,
@@ -36,12 +37,14 @@ const {
       info: { ownsCompaction: true },
       compact: contextEngineCompactMock,
     })),
-    resolveModelMock: vi.fn(() => ({
-      model: { provider: "openai", api: "responses", id: "fake", input: [] },
-      error: null,
-      authStorage: { setRuntimeApiKey: vi.fn() },
-      modelRegistry: {},
-    })),
+    resolveModelMock: vi.fn(
+      (_provider?: string, _modelId?: string, _agentDir?: string, _cfg?: unknown) => ({
+        model: { provider: "openai", api: "responses", id: "fake", input: [] },
+        error: null,
+        authStorage: { setRuntimeApiKey: vi.fn() },
+        modelRegistry: {},
+      }),
+    ),
     sessionCompactImpl: vi.fn(async () => ({
       summary: "summary",
       firstKeptEntryId: "entry-1",
@@ -67,6 +70,7 @@ const {
     resolveSessionAgentIdMock: vi.fn(() => "main"),
     estimateTokensMock: vi.fn((_message?: unknown) => 10),
     sessionAbortCompactionMock: vi.fn(),
+    createOpenClawCodingToolsMock: vi.fn(() => []),
   };
 });
 
@@ -150,7 +154,7 @@ vi.mock("../pi-settings.js", () => ({
 }));
 
 vi.mock("../models-config.js", () => ({
-  ensureOpenCraftModelsJson: vi.fn(async () => {}),
+  ensureOpenClawModelsJson: vi.fn(async () => {}),
 }));
 
 vi.mock("../model-auth.js", () => ({
@@ -196,7 +200,7 @@ vi.mock("../bootstrap-files.js", () => ({
 }));
 
 vi.mock("../docs-path.js", () => ({
-  resolveOpenCraftDocsPath: vi.fn(async () => undefined),
+  resolveOpenClawDocsPath: vi.fn(async () => undefined),
 }));
 
 vi.mock("../channel-tools.js", () => ({
@@ -205,7 +209,7 @@ vi.mock("../channel-tools.js", () => ({
 }));
 
 vi.mock("../pi-tools.js", () => ({
-  createOpenCraftCodingTools: vi.fn(() => []),
+  createOpenClawCodingTools: createOpenClawCodingToolsMock,
 }));
 
 vi.mock("./google.js", () => ({
@@ -243,7 +247,7 @@ vi.mock("../skills.js", () => ({
 }));
 
 vi.mock("../agent-paths.js", () => ({
-  resolveOpenCraftAgentDir: vi.fn(() => "/tmp"),
+  resolveOpenClawAgentDir: vi.fn(() => "/tmp"),
 }));
 
 vi.mock("../agent-scope.js", () => ({
@@ -307,6 +311,10 @@ vi.mock("./sandbox-info.js", () => ({
 vi.mock("./model.js", () => ({
   buildModelAliasLines: vi.fn(() => []),
   resolveModel: resolveModelMock,
+  resolveModelAsync: vi.fn(
+    async (provider: string, modelId: string, agentDir?: string, cfg?: unknown) =>
+      resolveModelMock(provider, modelId, agentDir, cfg),
+  ),
 }));
 
 vi.mock("./session-manager-cache.js", () => ({
@@ -447,6 +455,26 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
       config: undefined,
       workspaceDir: "/tmp/workspace",
     });
+  });
+
+  it("forwards gateway subagent binding opt-in during compaction bootstrap", async () => {
+    await compactEmbeddedPiSessionDirect({
+      sessionId: "session-1",
+      sessionFile: "/tmp/session.jsonl",
+      workspaceDir: "/tmp/workspace",
+      allowGatewaySubagentBinding: true,
+    });
+
+    expect(ensureRuntimePluginsLoaded).toHaveBeenCalledWith({
+      config: undefined,
+      workspaceDir: "/tmp/workspace",
+      allowGatewaySubagentBinding: true,
+    });
+    expect(createOpenClawCodingToolsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowGatewaySubagentBinding: true,
+      }),
+    );
   });
 
   it("emits internal + plugin compaction hooks with counts", async () => {

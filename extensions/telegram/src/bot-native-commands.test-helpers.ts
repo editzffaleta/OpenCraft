@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { ChannelGroupPolicy } from "../../../src/config/group-policy.js";
 import type { TelegramAccountConfig } from "../../../src/config/types.js";
 import type { RuntimeEnv } from "../../../src/runtime.js";
@@ -12,6 +12,13 @@ type GetPluginCommandSpecsFn =
 type MatchPluginCommandFn = typeof import("../../../src/plugins/commands.js").matchPluginCommand;
 type ExecutePluginCommandFn =
   typeof import("../../../src/plugins/commands.js").executePluginCommand;
+type DispatchReplyWithBufferedBlockDispatcherFn =
+  typeof import("../../../src/auto-reply/reply/provider-dispatcher.js").dispatchReplyWithBufferedBlockDispatcher;
+type DispatchReplyWithBufferedBlockDispatcherResult = Awaited<
+  ReturnType<DispatchReplyWithBufferedBlockDispatcherFn>
+>;
+type RecordInboundSessionMetaSafeFn =
+  typeof import("../../../src/channels/session-meta.js").recordInboundSessionMetaSafe;
 type AnyMock = MockFn<(...args: unknown[]) => unknown>;
 type AnyAsyncMock = MockFn<(...args: unknown[]) => Promise<unknown>>;
 type NativeCommandHarness = {
@@ -43,6 +50,37 @@ vi.mock("../../../src/plugins/commands.js", () => ({
   executePluginCommand: pluginCommandMocks.executePluginCommand,
 }));
 
+const replyPipelineMocks = vi.hoisted(() => {
+  const dispatchReplyResult: DispatchReplyWithBufferedBlockDispatcherResult = {
+    queuedFinal: false,
+    counts: {} as DispatchReplyWithBufferedBlockDispatcherResult["counts"],
+  };
+  return {
+    finalizeInboundContext: vi.fn((ctx: unknown) => ctx),
+    dispatchReplyWithBufferedBlockDispatcher: vi.fn<DispatchReplyWithBufferedBlockDispatcherFn>(
+      async () => dispatchReplyResult,
+    ),
+    createReplyPrefixOptions: vi.fn(() => ({ onModelSelected: () => {} })),
+    recordInboundSessionMetaSafe: vi.fn<RecordInboundSessionMetaSafeFn>(async () => undefined),
+  };
+});
+export const dispatchReplyWithBufferedBlockDispatcher =
+  replyPipelineMocks.dispatchReplyWithBufferedBlockDispatcher;
+
+vi.mock("../../../src/auto-reply/reply/inbound-context.js", () => ({
+  finalizeInboundContext: replyPipelineMocks.finalizeInboundContext,
+}));
+vi.mock("../../../src/auto-reply/reply/provider-dispatcher.js", () => ({
+  dispatchReplyWithBufferedBlockDispatcher:
+    replyPipelineMocks.dispatchReplyWithBufferedBlockDispatcher,
+}));
+vi.mock("../../../src/channels/reply-prefix.js", () => ({
+  createReplyPrefixOptions: replyPipelineMocks.createReplyPrefixOptions,
+}));
+vi.mock("../../../src/channels/session-meta.js", () => ({
+  recordInboundSessionMetaSafe: replyPipelineMocks.recordInboundSessionMetaSafe,
+}));
+
 const deliveryMocks = vi.hoisted(() => ({
   deliverReplies: vi.fn(async () => {}),
 }));
@@ -66,7 +104,7 @@ export function createNativeCommandTestParams(
         },
         command: vi.fn(),
       } as unknown as RegisterTelegramNativeCommandsParams["bot"]),
-    cfg: params.cfg ?? ({} as OpenCraftConfig),
+    cfg: params.cfg ?? ({} as OpenClawConfig),
     runtime:
       params.runtime ?? ({ log } as unknown as RegisterTelegramNativeCommandsParams["runtime"]),
     accountId: params.accountId ?? "default",
@@ -95,7 +133,7 @@ export function createNativeCommandTestParams(
 }
 
 export function createNativeCommandsHarness(params?: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   runtime?: RuntimeEnv;
   telegramCfg?: TelegramAccountConfig;
   allowFrom?: string[];
@@ -121,7 +159,7 @@ export function createNativeCommandsHarness(params?: {
 
   registerTelegramNativeCommands({
     bot: bot as unknown as Parameters<typeof registerTelegramNativeCommands>[0]["bot"],
-    cfg: params?.cfg ?? ({} as OpenCraftConfig),
+    cfg: params?.cfg ?? ({} as OpenClawConfig),
     runtime: params?.runtime ?? ({ log } as unknown as RuntimeEnv),
     accountId: "default",
     telegramCfg: params?.telegramCfg ?? ({} as TelegramAccountConfig),

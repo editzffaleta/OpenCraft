@@ -1,17 +1,17 @@
 import { parseFrontmatterBlock } from "../markdown/frontmatter.js";
 import {
-  applyOpenCraftManifestInstallCommonFields,
+  applyOpenClawManifestInstallCommonFields,
   getFrontmatterString,
   normalizeStringList,
-  parseOpenCraftManifestInstallBase,
+  parseOpenClawManifestInstallBase,
   parseFrontmatterBool,
-  resolveOpenCraftManifestBlock,
-  resolveOpenCraftManifestInstall,
-  resolveOpenCraftManifestOs,
-  resolveOpenCraftManifestRequires,
+  resolveOpenClawManifestBlock,
+  resolveOpenClawManifestInstall,
+  resolveOpenClawManifestOs,
+  resolveOpenClawManifestRequires,
 } from "../shared/frontmatter.js";
 import type {
-  OpenCraftHookMetadata,
+  OpenClawHookMetadata,
   HookEntry,
   HookInstallSpec,
   HookInvocationPolicy,
@@ -23,12 +23,12 @@ export function parseFrontmatter(content: string): ParsedHookFrontmatter {
 }
 
 function parseInstallSpec(input: unknown): HookInstallSpec | undefined {
-  const parsed = parseOpenCraftManifestInstallBase(input, ["bundled", "npm", "git"]);
+  const parsed = parseOpenClawManifestInstallBase(input, ["bundled", "npm", "git"]);
   if (!parsed) {
     return undefined;
   }
   const { raw } = parsed;
-  const spec = applyOpenCraftManifestInstallCommonFields<HookInstallSpec>(
+  const spec = applyOpenClawManifestInstallCommonFields<HookInstallSpec>(
     {
       kind: parsed.kind as HookInstallSpec["kind"],
     },
@@ -44,16 +44,16 @@ function parseInstallSpec(input: unknown): HookInstallSpec | undefined {
   return spec;
 }
 
-export function resolveOpenCraftMetadata(
+export function resolveOpenClawMetadata(
   frontmatter: ParsedHookFrontmatter,
-): OpenCraftHookMetadata | undefined {
-  const metadataObj = resolveOpenCraftManifestBlock({ frontmatter });
+): OpenClawHookMetadata | undefined {
+  const metadataObj = resolveOpenClawManifestBlock({ frontmatter });
   if (!metadataObj) {
     return undefined;
   }
-  const requires = resolveOpenCraftManifestRequires(metadataObj);
-  const install = resolveOpenCraftManifestInstall(metadataObj, parseInstallSpec);
-  const osRaw = resolveOpenCraftManifestOs(metadataObj);
+  const requires = resolveOpenClawManifestRequires(metadataObj);
+  const install = resolveOpenClawManifestInstall(metadataObj, parseInstallSpec);
+  const osRaw = resolveOpenClawManifestOs(metadataObj);
   const eventsRaw = normalizeStringList(metadataObj.events);
   return {
     always: typeof metadataObj.always === "boolean" ? metadataObj.always : undefined,

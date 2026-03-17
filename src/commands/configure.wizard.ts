@@ -1,7 +1,7 @@
 import fsPromises from "node:fs/promises";
 import nodePath from "node:path";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { readConfigFileSnapshot, resolveGatewayPort, writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
 import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
@@ -10,8 +10,8 @@ import { defaultRuntime } from "../runtime.js";
 import { note } from "../terminal/note.js";
 import { resolveUserPath } from "../utils.js";
 import { createClackPrompter } from "../wizard/clack-prompter.js";
-import { resolveOnboardingSecretInputString } from "../wizard/onboarding.secret-input.js";
 import { WizardCancelledError } from "../wizard/prompts.js";
+import { resolveSetupSecretInputString } from "../wizard/setup.secret-input.js";
 import { removeChannelConfigWizard } from "./configure.channels.js";
 import { maybeInstallDaemon } from "./configure.daemon.js";
 import { promptAuthConfig } from "./configure.gateway-auth.js";
@@ -49,12 +49,12 @@ import { setupSkills } from "./onboard-skills.js";
 type ConfigureSectionChoice = WizardSection | "__continue";
 
 async function resolveGatewaySecretInputForWizard(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   value: unknown;
   path: string;
 }): Promise<string | undefined> {
   try {
-    return await resolveOnboardingSecretInputString({
+    return await resolveSetupSecretInputString({
       config: params.cfg,
       value: params.value,
       path: params.path,
@@ -66,7 +66,7 @@ async function resolveGatewaySecretInputForWizard(params: {
 }
 
 async function runGatewayHealthCheck(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runtime: RuntimeEnv;
   port: number;
 }): Promise<void> {
@@ -89,9 +89,9 @@ async function runGatewayHealthCheck(params: {
     path: "gateway.auth.password",
   });
   const token =
-    process.env.OPENCRAFT_GATEWAY_TOKEN ?? process.env.CLAWDBOT_GATEWAY_TOKEN ?? configuredToken;
+    process.env.OPENCLAW_GATEWAY_TOKEN ?? process.env.CLAWDBOT_GATEWAY_TOKEN ?? configuredToken;
   const password =
-    process.env.OPENCRAFT_GATEWAY_PASSWORD ??
+    process.env.OPENCLAW_GATEWAY_PASSWORD ??
     process.env.CLAWDBOT_GATEWAY_PASSWORD ??
     configuredPassword;
 
@@ -109,8 +109,8 @@ async function runGatewayHealthCheck(params: {
     note(
       [
         "Docs:",
-        "https://docs.opencraft.ai/gateway/health",
-        "https://docs.opencraft.ai/gateway/troubleshooting",
+        "https://docs.openclaw.ai/gateway/health",
+        "https://docs.openclaw.ai/gateway/troubleshooting",
       ].join("\n"),
       "Health check help",
     );
@@ -151,7 +151,7 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
         {
           value: "remove",
           label: "Remove channel config",
-          hint: "Delete channel tokens/settings from opencraft.json",
+          hint: "Delete channel tokens/settings from openclaw.json",
         },
       ],
       initialValue: "configure",
@@ -161,9 +161,9 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
 }
 
 async function promptWebToolsConfig(
-  nextConfig: OpenCraftConfig,
+  nextConfig: OpenClawConfig,
   runtime: RuntimeEnv,
-): Promise<OpenCraftConfig> {
+): Promise<OpenClawConfig> {
   const existingSearch = nextConfig.tools?.web?.search;
   const existingFetch = nextConfig.tools?.web?.fetch;
   const {
@@ -174,6 +174,10 @@ async function promptWebToolsConfig(
     hasKeyInEnv,
   } = await import("./onboard-search.js");
   type SP = (typeof SEARCH_PROVIDER_OPTIONS)[number]["value"];
+  const defaultProvider = SEARCH_PROVIDER_OPTIONS[0]?.value;
+  if (!defaultProvider) {
+    throw new Error("No web search providers are registered.");
+  }
 
   const hasKeyForProvider = (provider: string): boolean => {
     const entry = SEARCH_PROVIDER_OPTIONS.find((e) => e.value === provider);
@@ -183,14 +187,13 @@ async function promptWebToolsConfig(
     return hasExistingKey(nextConfig, provider as SP) || hasKeyInEnv(entry);
   };
 
-  const existingProvider: string = (() => {
+  const existingProvider: SP = (() => {
     const stored = existingSearch?.provider;
     if (stored && SEARCH_PROVIDER_OPTIONS.some((e) => e.value === stored)) {
-      return stored;
+      return stored as SP;
     }
     return (
-      SEARCH_PROVIDER_OPTIONS.find((e) => hasKeyForProvider(e.value))?.value ??
-      SEARCH_PROVIDER_OPTIONS[0].value
+      SEARCH_PROVIDER_OPTIONS.find((e) => hasKeyForProvider(e.value))?.value ?? defaultProvider
     );
   })();
 
@@ -198,7 +201,7 @@ async function promptWebToolsConfig(
     [
       "Web search lets your agent look things up online using the `web_search` tool.",
       "Choose a provider and paste your API key.",
-      "Docs: https://docs.opencraft.ai/tools/web",
+      "Docs: https://docs.openclaw.ai/tools/web",
     ].join("\n"),
     "Web search",
   );
@@ -270,7 +273,7 @@ async function promptWebToolsConfig(
           "No key stored yet — web_search won't work until a key is available.",
           `Store a key here or set ${envVarNames} in the Gateway environment.`,
           `Get your API key at: ${entry.signupUrl}`,
-          "Docs: https://docs.opencraft.ai/tools/web",
+          "Docs: https://docs.openclaw.ai/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -309,11 +312,11 @@ export async function runConfigureWizard(
 ) {
   try {
     printWizardHeader(runtime);
-    intro(opts.command === "update" ? "OpenCraft update wizard" : "OpenCraft configure");
+    intro(opts.command === "update" ? "OpenClaw update wizard" : "OpenClaw configure");
     const prompter = createClackPrompter();
 
     const snapshot = await readConfigFileSnapshot();
-    const baseConfig: OpenCraftConfig = snapshot.valid ? snapshot.config : {};
+    const baseConfig: OpenClawConfig = snapshot.valid ? snapshot.config : {};
 
     if (snapshot.exists) {
       const title = snapshot.valid ? "Existing config detected" : "Invalid config";
@@ -323,14 +326,14 @@ export async function runConfigureWizard(
           [
             ...snapshot.issues.map((iss) => `- ${iss.path}: ${iss.message}`),
             "",
-            "Docs: https://docs.opencraft.ai/gateway/configuration",
+            "Docs: https://docs.openclaw.ai/gateway/configuration",
           ].join("\n"),
           "Config issues",
         );
       }
       if (!snapshot.valid) {
         outro(
-          `Config invalid. Run \`${formatCliCommand("opencraft doctor")}\` to repair it, then re-run configure.`,
+          `Config invalid. Run \`${formatCliCommand("openclaw doctor")}\` to repair it, then re-run configure.`,
         );
         runtime.exit(1);
         return;
@@ -351,11 +354,11 @@ export async function runConfigureWizard(
     const localProbe = await probeGatewayReachable({
       url: localUrl,
       token:
-        process.env.OPENCRAFT_GATEWAY_TOKEN ??
+        process.env.OPENCLAW_GATEWAY_TOKEN ??
         process.env.CLAWDBOT_GATEWAY_TOKEN ??
         baseLocalProbeToken,
       password:
-        process.env.OPENCRAFT_GATEWAY_PASSWORD ??
+        process.env.OPENCLAW_GATEWAY_PASSWORD ??
         process.env.CLAWDBOT_GATEWAY_PASSWORD ??
         baseLocalProbePassword,
     });
@@ -643,7 +646,7 @@ export async function runConfigureWizard(
     });
     // Try both new and old passwords since gateway may still have old config.
     const newPassword =
-      process.env.OPENCRAFT_GATEWAY_PASSWORD ??
+      process.env.OPENCLAW_GATEWAY_PASSWORD ??
       process.env.CLAWDBOT_GATEWAY_PASSWORD ??
       (await resolveGatewaySecretInputForWizard({
         cfg: nextConfig,
@@ -651,7 +654,7 @@ export async function runConfigureWizard(
         path: "gateway.auth.password",
       }));
     const oldPassword =
-      process.env.OPENCRAFT_GATEWAY_PASSWORD ??
+      process.env.OPENCLAW_GATEWAY_PASSWORD ??
       process.env.CLAWDBOT_GATEWAY_PASSWORD ??
       (await resolveGatewaySecretInputForWizard({
         cfg: baseConfig,
@@ -659,7 +662,7 @@ export async function runConfigureWizard(
         path: "gateway.auth.password",
       }));
     const token =
-      process.env.OPENCRAFT_GATEWAY_TOKEN ??
+      process.env.OPENCLAW_GATEWAY_TOKEN ??
       process.env.CLAWDBOT_GATEWAY_TOKEN ??
       (await resolveGatewaySecretInputForWizard({
         cfg: nextConfig,
@@ -689,7 +692,7 @@ export async function runConfigureWizard(
         `Web UI: ${links.httpUrl}`,
         `Gateway WS: ${links.wsUrl}`,
         gatewayStatusLine,
-        "Docs: https://docs.opencraft.ai/web/control-ui",
+        "Docs: https://docs.openclaw.ai/web/control-ui",
       ].join("\n"),
       "Control UI",
     );

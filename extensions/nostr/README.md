@@ -1,10 +1,10 @@
-# @opencraft/nostr
+# @openclaw/nostr
 
-Nostr DM channel plugin for OpenCraft using NIP-04 encrypted direct messages.
+Nostr DM channel plugin for OpenClaw using NIP-04 encrypted direct messages.
 
 ## Overview
 
-This extension adds Nostr as a messaging channel to OpenCraft. It enables your bot to:
+This extension adds Nostr as a messaging channel to OpenClaw. It enables your bot to:
 
 - Receive encrypted DMs from Nostr users
 - Send encrypted responses back
@@ -13,7 +13,7 @@ This extension adds Nostr as a messaging channel to OpenCraft. It enables your b
 ## Installation
 
 ```bash
-opencraft plugins install @opencraft/nostr
+openclaw plugins install @openclaw/nostr
 ```
 
 ## Quick Setup
@@ -90,7 +90,7 @@ opencraft plugins install @opencraft/nostr
 # Using strfry
 docker run -p 7777:7777 ghcr.io/hoytech/strfry
 
-# Configure opencraft to use local relay
+# Configure openclaw to use local relay
 "relays": ["ws://localhost:7777"]
 ```
 

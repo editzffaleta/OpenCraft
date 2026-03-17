@@ -1,8 +1,8 @@
 import {
   resolveChannelMediaMaxBytes,
-  type OpenCraftConfig,
+  type OpenClawConfig,
   type PluginRuntime,
-} from "opencraft/plugin-sdk/msteams";
+} from "openclaw/plugin-sdk/msteams";
 import type { MSTeamsAccessTokenProvider } from "./attachments/types.js";
 import { createMSTeamsConversationStoreFs } from "./conversation-store-fs.js";
 import type {
@@ -92,7 +92,7 @@ async function findConversationReference(recipient: {
 }
 
 export async function resolveMSTeamsSendContext(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   to: string;
 }): Promise<MSTeamsProactiveContext> {
   const msteamsCfg = params.cfg.channels?.msteams;

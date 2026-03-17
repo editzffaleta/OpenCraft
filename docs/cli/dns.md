@@ -1,23 +1,23 @@
 ---
-summary: "Referência do CLI para `opencraft dns` (helpers de descoberta wide-area)"
+summary: "CLI reference for `openclaw dns` (wide-area discovery helpers)"
 read_when:
-  - Você quer descoberta wide-area (DNS-SD) via Tailscale + CoreDNS
-  - Você está configurando split DNS para um domínio de descoberta personalizado (exemplo: openclaw.internal)
+  - You want wide-area discovery (DNS-SD) via Tailscale + CoreDNS
+  - You’re setting up split DNS for a custom discovery domain (example: openclaw.internal)
 title: "dns"
 ---
 
-# `opencraft dns`
+# `openclaw dns`
 
-Helpers de DNS para descoberta wide-area (Tailscale + CoreDNS). Atualmente focado em macOS + Homebrew CoreDNS.
+DNS helpers for wide-area discovery (Tailscale + CoreDNS). Currently focused on macOS + Homebrew CoreDNS.
 
-Relacionado:
+Related:
 
-- Descoberta do Gateway: [Discovery](/gateway/discovery)
-- Config de descoberta wide-area: [Configuration](/gateway/configuration)
+- Gateway discovery: [Discovery](/gateway/discovery)
+- Wide-area discovery config: [Configuration](/gateway/configuration)
 
 ## Setup
 
 ```bash
-opencraft dns setup
-opencraft dns setup --apply
+openclaw dns setup
+openclaw dns setup --apply
 ```

@@ -1,32 +1,32 @@
 ---
-summary: "Usar o catálogo OpenCode Go com a configuração compartilhada do OpenCode"
+summary: "Use the OpenCode Go catalog with the shared OpenCode setup"
 read_when:
-  - Você quer o catálogo OpenCode Go
-  - Você precisa das refs de modelo em runtime para modelos hospedados pelo Go
+  - You want the OpenCode Go catalog
+  - You need the runtime model refs for Go-hosted models
 title: "OpenCode Go"
 ---
 
 # OpenCode Go
 
-O OpenCode Go é o catálogo Go dentro do [OpenCode](/providers/opencode).
-Usa a mesma `OPENCODE_API_KEY` que o catálogo Zen, mas mantém o ID de provedor
-em runtime `opencode-go` para que o roteamento upstream por modelo permaneça correto.
+OpenCode Go is the Go catalog within [OpenCode](/providers/opencode).
+It uses the same `OPENCODE_API_KEY` as the Zen catalog, but keeps the runtime
+provider id `opencode-go` so upstream per-model routing stays correct.
 
-## Modelos suportados
+## Supported models
 
 - `opencode-go/kimi-k2.5`
 - `opencode-go/glm-5`
 - `opencode-go/minimax-m2.5`
 
-## Configuração CLI
+## CLI setup
 
 ```bash
-opencraft onboard --auth-choice opencode-go
-# ou não-interativo
-opencraft onboard --opencode-go-api-key "$OPENCODE_API_KEY"
+openclaw onboard --auth-choice opencode-go
+# or non-interactive
+openclaw onboard --opencode-go-api-key "$OPENCODE_API_KEY"
 ```
 
-## Trecho de config
+## Config snippet
 
 ```json5
 {
@@ -35,11 +35,11 @@ opencraft onboard --opencode-go-api-key "$OPENCODE_API_KEY"
 }
 ```
 
-## Comportamento de roteamento
+## Routing behavior
 
-O OpenCraft cuida do roteamento por modelo automaticamente quando a ref de modelo usa `opencode-go/...`.
+OpenClaw handles per-model routing automatically when the model ref uses `opencode-go/...`.
 
-## Notas
+## Notes
 
-- Use [OpenCode](/providers/opencode) para o onboarding compartilhado e visão geral do catálogo.
-- Refs em runtime permanecem explícitas: `opencode/...` para Zen, `opencode-go/...` para Go.
+- Use [OpenCode](/providers/opencode) for the shared onboarding and catalog overview.
+- Runtime refs stay explicit: `opencode/...` for Zen, `opencode-go/...` for Go.

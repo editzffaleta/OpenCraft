@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { compileConfigRegex } from "../security/config-regex.js";
 import { resolveNodeRequireFromMeta } from "./node-require.js";
 import { replacePatternBounded } from "./redact-bounded.js";
@@ -106,11 +106,11 @@ function redactText(text: string, patterns: RegExp[]): string {
 }
 
 function resolveConfigRedaction(): RedactOptions {
-  let cfg: OpenCraftConfig["logging"] | undefined;
+  let cfg: OpenClawConfig["logging"] | undefined;
   try {
     const loaded = requireConfig?.("../config/config.js") as
       | {
-          loadConfig?: () => OpenCraftConfig;
+          loadConfig?: () => OpenClawConfig;
         }
       | undefined;
     cfg = loaded?.loadConfig?.().logging;

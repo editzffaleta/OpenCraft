@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   applyModelAllowlist,
   applyModelFallbacksFromSelection,
   promptDefaultModel,
   promptModelAllowlist,
 } from "./model-picker.js";
-import { makePrompter } from "./onboarding/__tests__/test-utils.js";
+import { makePrompter } from "./setup/__tests__/test-utils.js";
 
 const loadModelCatalog = vi.hoisted(() => vi.fn());
 vi.mock("../agents/model-catalog.js", () => ({
@@ -37,19 +37,13 @@ vi.mock("../agents/model-auth.js", () => ({
 const resolveProviderModelPickerEntries = vi.hoisted(() => vi.fn(() => []));
 const resolveProviderPluginChoice = vi.hoisted(() => vi.fn());
 const runProviderModelSelectedHook = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("../plugins/provider-wizard.js", () => ({
+const resolvePluginProviders = vi.hoisted(() => vi.fn(() => []));
+const runProviderPluginAuthMethod = vi.hoisted(() => vi.fn());
+vi.mock("./model-picker.runtime.js", () => ({
   resolveProviderModelPickerEntries,
   resolveProviderPluginChoice,
   runProviderModelSelectedHook,
-}));
-
-const resolvePluginProviders = vi.hoisted(() => vi.fn(() => []));
-vi.mock("../plugins/providers.js", () => ({
   resolvePluginProviders,
-}));
-
-const runProviderPluginAuthMethod = vi.hoisted(() => vi.fn());
-vi.mock("./auth-choice.apply.plugin-provider.js", () => ({
   runProviderPluginAuthMethod,
 }));
 
@@ -77,8 +71,12 @@ function createSelectAllMultiselect() {
   return vi.fn(async (params) => params.options.map((option: { value: string }) => option.value));
 }
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("promptDefaultModel", () => {
-  it("supports configuring vLLM during onboarding", async () => {
+  it("supports configuring vLLM during setup", async () => {
     loadModelCatalog.mockResolvedValue([
       {
         provider: "anthropic",
@@ -120,7 +118,7 @@ describe("promptDefaultModel", () => {
       return (vllm?.value ?? "") as never;
     });
     const prompter = makePrompter({ select });
-    const config = { agents: { defaults: {} } } as OpenCraftConfig;
+    const config = { agents: { defaults: {} } } as OpenClawConfig;
 
     const result = await promptDefaultModel({
       config,
@@ -129,7 +127,7 @@ describe("promptDefaultModel", () => {
       includeManual: false,
       includeProviderPluginSetups: true,
       ignoreAllowlist: true,
-      agentDir: "/tmp/opencraft-agent",
+      agentDir: "/tmp/openclaw-agent",
       runtime: {} as never,
     });
 
@@ -168,7 +166,7 @@ describe("promptModelAllowlist", () => {
 
     const multiselect = createSelectAllMultiselect();
     const prompter = makePrompter({ multiselect });
-    const config = { agents: { defaults: {} } } as OpenCraftConfig;
+    const config = { agents: { defaults: {} } } as OpenClawConfig;
 
     await promptModelAllowlist({
       config,
@@ -194,7 +192,7 @@ describe("router model filtering", () => {
     const multiselect = createSelectAllMultiselect();
     const defaultPrompter = makePrompter({ select });
     const allowlistPrompter = makePrompter({ multiselect });
-    const config = { agents: { defaults: {} } } as OpenCraftConfig;
+    const config = { agents: { defaults: {} } } as OpenClawConfig;
 
     await promptDefaultModel({
       config,
@@ -211,6 +209,7 @@ describe("router model filtering", () => {
     const allowlistCall = multiselect.mock.calls[0]?.[0];
     expectRouterModelFiltering(allowlistCall?.options as Array<{ value: string }>);
     expect(allowlistCall?.searchable).toBe(true);
+    expect(runProviderPluginAuthMethod).not.toHaveBeenCalled();
   });
 });
 
@@ -225,7 +224,7 @@ describe("applyModelAllowlist", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const next = applyModelAllowlist(config, ["openai/gpt-5.2"]);
     expect(next.agents?.defaults?.models).toEqual({
@@ -242,7 +241,7 @@ describe("applyModelAllowlist", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const next = applyModelAllowlist(config, []);
     expect(next.agents?.defaults?.models).toBeUndefined();
@@ -257,7 +256,7 @@ describe("applyModelFallbacksFromSelection", () => {
           model: { primary: "anthropic/claude-opus-4-5" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const next = applyModelFallbacksFromSelection(config, [
       "anthropic/claude-opus-4-5",
@@ -276,7 +275,7 @@ describe("applyModelFallbacksFromSelection", () => {
           model: { primary: "anthropic/claude-opus-4-5", fallbacks: ["openai/gpt-5.2"] },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const next = applyModelFallbacksFromSelection(config, ["openai/gpt-5.2"]);
     expect(next.agents?.defaults?.model).toEqual({

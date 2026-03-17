@@ -1,245 +1,245 @@
 ---
 name: healthcheck
-description: Hardening de segurança do host e configuração de tolerância a risco para deployments do OpenCraft. Use quando o usuário pedir auditorias de segurança, hardening de firewall/SSH/atualizações, postura de risco, revisão de exposição, agendamento de verificações periódicas via cron do OpenCraft, ou verificações de status de versão numa máquina rodando o OpenCraft (laptop, workstation, Pi, VPS).
+description: Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).
 ---
 
-# Hardening do Host OpenCraft
+# OpenClaw Host Hardening
 
-## Visão Geral
+## Overview
 
-Avalie e fortaleça o host que executa o OpenCraft, depois alinhe-o à tolerância de risco definida pelo usuário sem quebrar o acesso. Use as ferramentas de segurança do OpenCraft como sinal de primeira classe, mas trate o hardening de SO como um conjunto separado e explícito de etapas.
+Assess and harden the host running OpenClaw, then align it to a user-defined risk tolerance without breaking access. Use OpenClaw security tooling as a first-class signal, but treat OS hardening as a separate, explicit set of steps.
 
-## Regras principais
+## Core rules
 
-- Recomende executar esta habilidade com um modelo de ponta (ex: Opus 4.5, GPT 5.2+). O agente deve verificar o modelo atual e sugerir trocar se estiver abaixo desse nível; não bloqueie a execução.
-- Exija aprovação explícita antes de qualquer ação que altere estado.
-- Não modifique configurações de acesso remoto sem confirmar como o usuário se conecta.
-- Prefira mudanças reversíveis e graduais com um plano de rollback.
-- Nunca afirme que o OpenCraft muda o firewall do host, SSH ou atualizações de SO; ele não faz isso.
-- Se a função/identidade for desconhecida, forneça apenas recomendações.
-- Formatação: cada conjunto de escolhas do usuário deve ser numerado para que o usuário possa responder com um único dígito.
-- Backups em nível de sistema são recomendados; tente verificar o status.
+- Recommend running this skill with a state-of-the-art model (e.g., Opus 4.5, GPT 5.2+). The agent should self-check the current model and suggest switching if below that level; do not block execution.
+- Require explicit approval before any state-changing action.
+- Do not modify remote access settings without confirming how the user connects.
+- Prefer reversible, staged changes with a rollback plan.
+- Never claim OpenClaw changes the host firewall, SSH, or OS updates; it does not.
+- If role/identity is unknown, provide recommendations only.
+- Formatting: every set of user choices must be numbered so the user can reply with a single digit.
+- System-level backups are recommended; try to verify status.
 
-## Fluxo de trabalho (siga em ordem)
+## Workflow (follow in order)
 
-### 0) Verificação automática de modelo (não bloqueante)
+### 0) Model self-check (non-blocking)
 
-Antes de começar, verifique o modelo atual. Se estiver abaixo do estado da arte (ex: Opus 4.5, GPT 5.2+), recomende trocar. Não bloqueie a execução.
+Before starting, check the current model. If it is below state-of-the-art (e.g., Opus 4.5, GPT 5.2+), recommend switching. Do not block execution.
 
-### 1) Estabelecer contexto (somente leitura)
+### 1) Establish context (read-only)
 
-Tente inferir 1–5 do ambiente antes de perguntar. Prefira perguntas simples e não técnicas se precisar de confirmação.
+Try to infer 1–5 from the environment before asking. Prefer simple, non-technical questions if you need confirmation.
 
-Determine (em ordem):
+Determine (in order):
 
-1. SO e versão (Linux/macOS/Windows), container vs host.
-2. Nível de privilégio (root/admin vs usuário).
-3. Caminho de acesso (console local, SSH, RDP, tailnet).
-4. Exposição de rede (IP público, proxy reverso, túnel).
-5. Status do gateway OpenCraft e endereço de bind.
-6. Sistema de backup e status (ex: Time Machine, imagens de sistema, snapshots).
-7. Contexto de deployment (app macOS local, host de gateway sem cabeça, gateway remoto, container/CI).
-8. Status de criptografia de disco (FileVault/LUKS/BitLocker).
-9. Status de atualizações automáticas de segurança do SO.
-   Nota: esses não são itens bloqueantes, mas são altamente recomendados, especialmente se o OpenCraft pode acessar dados sensíveis.
-10. Modo de uso de um assistente pessoal com acesso total (workstation local vs sem cabeça/remoto vs outro).
+1. OS and version (Linux/macOS/Windows), container vs host.
+2. Privilege level (root/admin vs user).
+3. Access path (local console, SSH, RDP, tailnet).
+4. Network exposure (public IP, reverse proxy, tunnel).
+5. OpenClaw gateway status and bind address.
+6. Backup system and status (e.g., Time Machine, system images, snapshots).
+7. Deployment context (local mac app, headless gateway host, remote gateway, container/CI).
+8. Disk encryption status (FileVault/LUKS/BitLocker).
+9. OS automatic security updates status.
+   Note: these are not blocking items, but are highly recommended, especially if OpenClaw can access sensitive data.
+10. Usage mode for a personal assistant with full access (local workstation vs headless/remote vs other).
 
-Peça uma vez permissão para executar verificações somente leitura. Se concedido, execute-as por padrão e faça perguntas apenas para itens que não consegue inferir ou verificar. Não pergunte por informações já visíveis no runtime ou saída de comandos.
+First ask once for permission to run read-only checks. If granted, run them by default and only ask questions for items you cannot infer or verify. Do not ask for information already visible in runtime or command output. Keep the permission ask as a single sentence, and list follow-up info needed as an unordered list (not numbered) unless you are presenting selectable choices.
 
-Se precisar perguntar, use prompts não técnicos:
+If you must ask, use non-technical prompts:
 
-- "Você usa Mac, PC Windows ou Linux?"
-- "Você está conectado diretamente na máquina, ou se conectando de outro computador?"
-- "Essa máquina é acessível pela internet pública, ou apenas na sua rede doméstica/corporativa?"
-- "Você tem backups habilitados (ex: Time Machine), e estão atualizados?"
-- "A criptografia de disco está ativada (FileVault/BitLocker/LUKS)?"
-- "As atualizações automáticas de segurança estão habilitadas?"
-- "Como você usa essa máquina?"
-  Exemplos:
-  - Máquina pessoal compartilhada com o assistente
-  - Máquina local dedicada ao assistente
-  - Máquina/servidor remoto dedicado acessado remotamente (sempre ligado)
-  - Outro?
+- “Are you using a Mac, Windows PC, or Linux?”
+- “Are you logged in directly on the machine, or connecting from another computer?”
+- “Is this machine reachable from the public internet, or only on your home/network?”
+- “Do you have backups enabled (e.g., Time Machine), and are they current?”
+- “Is disk encryption turned on (FileVault/BitLocker/LUKS)?”
+- “Are automatic security updates enabled?”
+- “How do you use this machine?”
+  Examples:
+  - Personal machine shared with the assistant
+  - Dedicated local machine for the assistant
+  - Dedicated remote machine/server accessed remotely (always on)
+  - Something else?
 
-Pergunte pelo perfil de risco somente após conhecer o contexto do sistema.
+Only ask for the risk profile after system context is known.
 
-Se o usuário conceder permissão somente leitura, execute as verificações apropriadas para o SO por padrão. Se não, ofereça-as (numeradas). Exemplos:
+If the user grants read-only permission, run the OS-appropriate checks by default. If not, offer them (numbered). Examples:
 
-1. SO: `uname -a`, `sw_vers`, `cat /etc/os-release`.
-2. Portas em escuta:
-   - Linux: `ss -ltnup` (ou `ss -ltnp` se `-u` não suportado).
+1. OS: `uname -a`, `sw_vers`, `cat /etc/os-release`.
+2. Listening ports:
+   - Linux: `ss -ltnup` (or `ss -ltnp` if `-u` unsupported).
    - macOS: `lsof -nP -iTCP -sTCP:LISTEN`.
-3. Status do firewall:
-   - Linux: `ufw status`, `firewall-cmd --state`, `nft list ruleset` (escolha o que estiver instalado).
-   - macOS: `/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate` e `pfctl -s info`.
-4. Backups (macOS): `tmutil status` (se Time Machine for usado).
+3. Firewall status:
+   - Linux: `ufw status`, `firewall-cmd --state`, `nft list ruleset` (pick what is installed).
+   - macOS: `/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate` and `pfctl -s info`.
+4. Backups (macOS): `tmutil status` (if Time Machine is used).
 
-### 2) Executar auditorias de segurança do OpenCraft (somente leitura)
+### 2) Run OpenClaw security audits (read-only)
 
-Como parte das verificações padrão somente leitura, execute `opencraft security audit --deep`. Ofereça alternativas somente se o usuário solicitar:
+As part of the default read-only checks, run `openclaw security audit --deep`. Only offer alternatives if the user requests them:
 
-1. `opencraft security audit` (mais rápido, sem probing)
-2. `opencraft security audit --json` (saída estruturada)
+1. `openclaw security audit` (faster, non-probing)
+2. `openclaw security audit --json` (structured output)
 
-Ofereça aplicar os padrões seguros do OpenCraft (numerado):
+Offer to apply OpenClaw safe defaults (numbered):
 
-1. `opencraft security audit --fix`
+1. `openclaw security audit --fix`
 
-Seja explícito que `--fix` apenas fortalece os padrões do OpenCraft e permissões de arquivos. Não altera firewall do host, SSH ou políticas de atualização de SO.
+Be explicit that `--fix` only tightens OpenClaw defaults and file permissions. It does not change host firewall, SSH, or OS update policies.
 
-Se o controle de browser estiver habilitado, recomende que 2FA seja ativado em todas as contas importantes, com chaves de hardware como preferência e SMS insuficiente.
+If browser control is enabled, recommend that 2FA be enabled on all important accounts, with hardware keys preferred and SMS not sufficient.
 
-### 3) Verificar status de versão/atualização do OpenCraft (somente leitura)
+### 3) Check OpenClaw version/update status (read-only)
 
-Como parte das verificações padrão somente leitura, execute `opencraft update status`.
+As part of the default read-only checks, run `openclaw update status`.
 
-Informe o canal atual e se uma atualização está disponível.
+Report the current channel and whether an update is available.
 
-### 4) Determinar tolerância de risco (após contexto do sistema)
+### 4) Determine risk tolerance (after system context)
 
-Peça ao usuário para escolher ou confirmar uma postura de risco e quaisquer serviços/portas que precisam ficar abertos (opções numeradas abaixo).
-Não force em perfis fixos; se o usuário preferir, capture os requisitos em vez de escolher um perfil.
-Ofereça perfis sugeridos como padrões opcionais (numerados). Note que a maioria dos usuários escolhe Casa/Workstation Equilibrado:
+Ask the user to pick or confirm a risk posture and any required open services/ports (numbered choices below).
+Do not pigeonhole into fixed profiles; if the user prefers, capture requirements instead of choosing a profile.
+Offer suggested profiles as optional defaults (numbered). Note that most users pick Home/Workstation Balanced:
 
-1. Casa/Workstation Equilibrado (mais comum): firewall ativado com padrões razoáveis, acesso remoto restrito à LAN ou tailnet.
-2. VPS Reforçado: firewall de entrada com deny-by-default, portas mínimas abertas, SSH apenas com chave, sem login root, atualizações automáticas de segurança.
-3. Conveniência para Desenvolvedor: mais serviços locais permitidos, avisos explícitos de exposição, ainda auditado.
-4. Personalizado: restrições definidas pelo usuário (serviços, exposição, cadência de atualização, métodos de acesso).
+1. Home/Workstation Balanced (most common): firewall on with reasonable defaults, remote access restricted to LAN or tailnet.
+2. VPS Hardened: deny-by-default inbound firewall, minimal open ports, key-only SSH, no root login, automatic security updates.
+3. Developer Convenience: more local services allowed, explicit exposure warnings, still audited.
+4. Custom: user-defined constraints (services, exposure, update cadence, access methods).
 
-### 5) Produzir um plano de remediação
+### 5) Produce a remediation plan
 
-Forneça um plano que inclua:
+Provide a plan that includes:
 
-- Perfil alvo
-- Resumo da postura atual
-- Lacunas vs alvo
-- Remediação passo a passo com comandos exatos
-- Estratégia de preservação de acesso e rollback
-- Riscos e possíveis cenários de bloqueio
-- Notas de menor privilégio (ex: evitar uso admin, restringir ownership/permissões onde seguro)
-- Notas de higiene de credenciais (localização dos creds do OpenCraft, prefira criptografia de disco)
+- Target profile
+- Current posture summary
+- Gaps vs target
+- Step-by-step remediation with exact commands
+- Access-preservation strategy and rollback
+- Risks and potential lockout scenarios
+- Least-privilege notes (e.g., avoid admin usage, tighten ownership/permissions where safe)
+- Credential hygiene notes (location of OpenClaw creds, prefer disk encryption)
 
-Sempre mostre o plano antes de qualquer mudança.
+Always show the plan before any changes.
 
-### 6) Oferecer opções de execução
+### 6) Offer execution options
 
-Ofereça uma dessas escolhas (numeradas para o usuário responder com um único dígito):
+Offer one of these choices (numbered so users can reply with a single digit):
 
-1. Faça por mim (guiado, aprovações passo a passo)
-2. Mostrar apenas o plano
-3. Corrigir apenas problemas críticos
-4. Exportar comandos para depois
+1. Do it for me (guided, step-by-step approvals)
+2. Show plan only
+3. Fix only critical issues
+4. Export commands for later
 
-### 7) Executar com confirmações
+### 7) Execute with confirmations
 
-Para cada etapa:
+For each step:
 
-- Mostre o comando exato
-- Explique o impacto e rollback
-- Confirme que o acesso permanecerá disponível
-- Pare em saída inesperada e peça orientação
+- Show the exact command
+- Explain impact and rollback
+- Confirm access will remain available
+- Stop on unexpected output and ask for guidance
 
-### 8) Verificar e reportar
+### 8) Verify and report
 
-Verifique novamente:
+Re-check:
 
-- Status do firewall
-- Portas em escuta
-- Acesso remoto ainda funciona
-- Auditoria de segurança do OpenCraft (re-executar)
+- Firewall status
+- Listening ports
+- Remote access still works
+- OpenClaw security audit (re-run)
 
-Entregue um relatório de postura final e note itens adiados.
+Deliver a final posture report and note any deferred items.
 
-## Confirmações obrigatórias (sempre)
+## Required confirmations (always)
 
-Exija aprovação explícita para:
+Require explicit approval for:
 
-- Mudanças em regras de firewall
-- Abertura/fechamento de portas
-- Mudanças de configuração SSH/RDP
-- Instalação/remoção de pacotes
-- Habilitação/desabilitação de serviços
-- Modificações de usuário/grupo
-- Agendamento de tarefas ou persistência na inicialização
-- Mudanças de política de atualização
-- Acesso a arquivos sensíveis ou credenciais
+- Firewall rule changes
+- Opening/closing ports
+- SSH/RDP configuration changes
+- Installing/removing packages
+- Enabling/disabling services
+- User/group modifications
+- Scheduling tasks or startup persistence
+- Update policy changes
+- Access to sensitive files or credentials
 
-Se não tiver certeza, pergunte.
+If unsure, ask.
 
-## Verificações periódicas
+## Periodic checks
 
-Após a instalação do OpenCraft ou primeira passagem de hardening, execute pelo menos uma auditoria de baseline e verificação de versão:
+After OpenClaw install or first hardening pass, run at least one baseline audit and version check:
 
-- `opencraft security audit`
-- `opencraft security audit --deep`
-- `opencraft update status`
+- `openclaw security audit`
+- `openclaw security audit --deep`
+- `openclaw update status`
 
-Monitoramento contínuo é recomendado. Use a ferramenta/CLI de cron do OpenCraft para agendar auditorias periódicas (agendador do Gateway). Não crie tarefas agendadas sem aprovação explícita. Armazene saídas em um local aprovado pelo usuário e evite secrets em logs.
+Ongoing monitoring is recommended. Use the OpenClaw cron tool/CLI to schedule periodic audits (Gateway scheduler). Do not create scheduled tasks without explicit approval. Store outputs in a user-approved location and avoid secrets in logs.
+When scheduling headless cron runs, include a note in the output that instructs the user to call `healthcheck` so issues can be fixed.
 
-Ao agendar execuções cron sem cabeça, inclua uma nota na saída instruindo o usuário a chamar `healthcheck` para que os problemas possam ser corrigidos.
+### Required prompt to schedule (always)
 
-### Prompt obrigatório para agendar (sempre)
+After any audit or hardening pass, explicitly offer scheduling and require a direct response. Use a short prompt like (numbered):
 
-Após qualquer auditoria ou passagem de hardening, ofereça explicitamente o agendamento e exija uma resposta direta. Use um prompt curto como (numerado):
+1. “Do you want me to schedule periodic audits (e.g., daily/weekly) via `openclaw cron add`?”
 
-1. "Quer que eu agende auditorias periódicas (ex: diárias/semanais) via `opencraft cron add`?"
+If the user says yes, ask for:
 
-Se o usuário disser sim, pergunte por:
+- cadence (daily/weekly), preferred time window, and output location
+- whether to also schedule `openclaw update status`
 
-- Cadência (diária/semanal), janela de horário preferida, e localização da saída
-- Se também agendar `opencraft update status`
-
-Use um nome de cron job estável para que as atualizações sejam determinísticas. Prefira nomes exatos:
+Use a stable cron job name so updates are deterministic. Prefer exact names:
 
 - `healthcheck:security-audit`
 - `healthcheck:update-status`
 
-Antes de criar, `opencraft cron list` e combine pelo `name` exato. Se encontrado, `opencraft cron edit <id> ...`.
-Se não encontrado, `opencraft cron add --name <name> ...`.
+Before creating, `openclaw cron list` and match on exact `name`. If found, `openclaw cron edit <id> ...`.
+If not found, `openclaw cron add --name <name> ...`.
 
-Ofereça também uma verificação periódica de versão para que o usuário possa decidir quando atualizar (numerado):
+Also offer a periodic version check so the user can decide when to update (numbered):
 
-1. `opencraft update status` (preferido para checkouts de código-fonte e canais)
-2. `npm view opencraft version` (versão publicada no npm)
+1. `openclaw update status` (preferred for source checkouts and channels)
+2. `npm view openclaw version` (published npm version)
 
-## Precisão dos comandos do OpenCraft
+## OpenClaw command accuracy
 
-Use apenas comandos e flags suportados:
+Use only supported commands and flags:
 
-- `opencraft security audit [--deep] [--fix] [--json]`
-- `opencraft status` / `opencraft status --deep`
-- `opencraft health --json`
-- `opencraft update status`
-- `opencraft cron add|list|runs|run`
+- `openclaw security audit [--deep] [--fix] [--json]`
+- `openclaw status` / `openclaw status --deep`
+- `openclaw health --json`
+- `openclaw update status`
+- `openclaw cron add|list|runs|run`
 
-Não invente flags CLI nem implique que o OpenCraft aplica políticas de firewall/SSH do host.
+Do not invent CLI flags or imply OpenClaw enforces host firewall/SSH policies.
 
-## Log e trilha de auditoria
+## Logging and audit trail
 
-Registre:
+Record:
 
-- Identidade e papel do Gateway
-- ID do plano e timestamp
-- Etapas aprovadas e comandos exatos
-- Códigos de saída e arquivos modificados (melhor esforço)
+- Gateway identity and role
+- Plan ID and timestamp
+- Approved steps and exact commands
+- Exit codes and files modified (best effort)
 
-Oculte secrets. Nunca registre tokens ou conteúdo completo de credenciais.
+Redact secrets. Never log tokens or full credential contents.
 
-## Escritas em memória (condicional)
+## Memory writes (conditional)
 
-Escreva em arquivos de memória somente quando o usuário optar explicitamente e a sessão for um workspace privado/local
-(conforme `docs/reference/templates/AGENTS.md`). Caso contrário, forneça um resumo redigido e pronto para colar que o usuário pode decidir salvar em outro lugar.
+Only write to memory files when the user explicitly opts in and the session is a private/local workspace
+(per `docs/reference/templates/AGENTS.md`). Otherwise provide a redacted, paste-ready summary the user can
+decide to save elsewhere.
 
-Siga o formato de prompt de memória durável usado pela compactação do OpenCraft:
+Follow the durable-memory prompt format used by OpenClaw compaction:
 
-- Escreva notas duradouras em `memory/YYYY-MM-DD.md`.
+- Write lasting notes to `memory/YYYY-MM-DD.md`.
 
-Após cada execução de auditoria/hardening, se o usuário tiver optado, acrescente um breve resumo datado em `memory/YYYY-MM-DD.md`
-(o que foi verificado, principais descobertas, ações tomadas, cron jobs agendados, decisões chave,
-e todos os comandos executados). Somente adição: nunca sobrescreva entradas existentes.
-Oculte detalhes sensíveis do host (nomes de usuário, hostnames, IPs, seriais, nomes de serviço, tokens).
-Se houver preferências ou decisões duradouras (postura de risco, portas permitidas, política de atualização),
-também atualize `MEMORY.md` (memória de longo prazo é opcional e usada apenas em sessões privadas).
+After each audit/hardening run, if opted-in, append a short, dated summary to `memory/YYYY-MM-DD.md`
+(what was checked, key findings, actions taken, any scheduled cron jobs, key decisions,
+and all commands executed). Append-only: never overwrite existing entries.
+Redact sensitive host details (usernames, hostnames, IPs, serials, service names, tokens).
+If there are durable preferences or decisions (risk posture, allowed ports, update policy),
+also update `MEMORY.md` (long-term memory is optional and only used in private sessions).
 
-Se a sessão não puder escrever no workspace, peça permissão ou forneça entradas exatas
-que o usuário pode colar nos arquivos de memória.
+If the session cannot write to the workspace, ask for permission or provide exact entries
+the user can paste into the memory files.

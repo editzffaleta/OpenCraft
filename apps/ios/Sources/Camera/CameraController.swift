@@ -1,5 +1,5 @@
 import AVFoundation
-import OpenCraftKit
+import OpenClawKit
 import Foundation
 import os
 
@@ -37,7 +37,7 @@ actor CameraController {
         }
     }
 
-    func snap(params: OpenCraftCameraSnapParams) async throws -> (
+    func snap(params: OpenClawCameraSnapParams) async throws -> (
         format: String,
         base64: String,
         width: Int,
@@ -87,7 +87,7 @@ actor CameraController {
             height: res.heightPx)
     }
 
-    func clip(params: OpenCraftCameraClipParams) async throws -> (
+    func clip(params: OpenClawCameraClipParams) async throws -> (
         format: String,
         base64: String,
         durationMs: Int,
@@ -104,9 +104,9 @@ actor CameraController {
         }
 
         let movURL = FileManager().temporaryDirectory
-            .appendingPathComponent("opencraft-camera-\(UUID().uuidString).mov")
+            .appendingPathComponent("openclaw-camera-\(UUID().uuidString).mov")
         let mp4URL = FileManager().temporaryDirectory
-            .appendingPathComponent("opencraft-camera-\(UUID().uuidString).mp4")
+            .appendingPathComponent("openclaw-camera-\(UUID().uuidString).mp4")
         defer {
             try? FileManager().removeItem(at: movURL)
             try? FileManager().removeItem(at: mp4URL)
@@ -158,7 +158,7 @@ actor CameraController {
     }
 
     private nonisolated static func pickCamera(
-        facing: OpenCraftCameraFacing,
+        facing: OpenClawCameraFacing,
         deviceId: String?) -> AVCaptureDevice?
     {
         if let deviceId, !deviceId.isEmpty {

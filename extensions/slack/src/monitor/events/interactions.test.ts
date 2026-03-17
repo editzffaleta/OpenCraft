@@ -1,11 +1,39 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { registerSlackInteractionEvents } from "./interactions.js";
 
 const enqueueSystemEventMock = vi.fn();
+const dispatchPluginInteractiveHandlerMock = vi.fn(async () => ({
+  matched: false,
+  handled: false,
+  duplicate: false,
+}));
+const resolvePluginConversationBindingApprovalMock = vi.fn();
+const buildPluginBindingResolvedTextMock = vi.fn(() => "Binding updated.");
 
 vi.mock("../../../../../src/infra/system-events.js", () => ({
-  enqueueSystemEvent: (...args: unknown[]) => enqueueSystemEventMock(...args),
+  enqueueSystemEvent: (...args: unknown[]) =>
+    (enqueueSystemEventMock as (...innerArgs: unknown[]) => unknown)(...args),
 }));
+
+vi.mock("../../../../../src/plugins/interactive.js", () => ({
+  dispatchPluginInteractiveHandler: (...args: unknown[]) =>
+    (dispatchPluginInteractiveHandlerMock as (...innerArgs: unknown[]) => unknown)(...args),
+}));
+
+vi.mock("../../../../../src/plugins/conversation-binding.js", async () => {
+  const actual = await vi.importActual<
+    typeof import("../../../../../src/plugins/conversation-binding.js")
+  >("../../../../../src/plugins/conversation-binding.js");
+  return {
+    ...actual,
+    resolvePluginConversationBindingApproval: (...args: unknown[]) =>
+      (resolvePluginConversationBindingApprovalMock as (...innerArgs: unknown[]) => unknown)(
+        ...args,
+      ),
+    buildPluginBindingResolvedText: (...args: unknown[]) =>
+      (buildPluginBindingResolvedTextMock as (...innerArgs: unknown[]) => unknown)(...args),
+  };
+});
 
 type RegisteredHandler = (args: {
   ack: () => Promise<void>;
@@ -78,10 +106,12 @@ function createContext(overrides?: {
   }>;
 }) {
   let handler: RegisteredHandler | null = null;
+  let actionMatcher: RegExp | null = null;
   let viewHandler: RegisteredViewHandler | null = null;
   let viewClosedHandler: RegisteredViewClosedHandler | null = null;
   const app = {
-    action: vi.fn((_matcher: RegExp, next: RegisteredHandler) => {
+    action: vi.fn((matcher: RegExp, next: RegisteredHandler) => {
+      actionMatcher = matcher;
       handler = next;
     }),
     view: vi.fn((_matcher: RegExp, next: RegisteredViewHandler) => {
@@ -122,6 +152,7 @@ function createContext(overrides?: {
     );
   const ctx = {
     app,
+    accountId: "default",
     runtime: { log: runtimeLog },
     dmEnabled: overrides?.dmEnabled ?? true,
     dmPolicy: overrides?.dmPolicy ?? ("open" as const),
@@ -144,6 +175,7 @@ function createContext(overrides?: {
     isChannelAllowed,
     resolveUserName,
     resolveChannelName,
+    getActionMatcher: () => actionMatcher,
     getHandler: () => handler,
     getViewHandler: () => viewHandler,
     getViewClosedHandler: () => viewClosedHandler,
@@ -151,8 +183,21 @@ function createContext(overrides?: {
 }
 
 describe("registerSlackInteractionEvents", () => {
-  it("enqueues structured events and updates button rows", async () => {
+  beforeEach(() => {
     enqueueSystemEventMock.mockClear();
+    dispatchPluginInteractiveHandlerMock.mockClear();
+    resolvePluginConversationBindingApprovalMock.mockClear();
+    resolvePluginConversationBindingApprovalMock.mockResolvedValue({ status: "expired" });
+    buildPluginBindingResolvedTextMock.mockClear();
+    buildPluginBindingResolvedTextMock.mockReturnValue("Binding updated.");
+    dispatchPluginInteractiveHandlerMock.mockResolvedValue({
+      matched: false,
+      handled: false,
+      duplicate: false,
+    });
+  });
+
+  it("enqueues structured events and updates button rows", async () => {
     const { ctx, app, getHandler, resolveSessionKey } = createContext();
     registerSlackInteractionEvents({ ctx: ctx as never });
 
@@ -178,14 +223,14 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "verify_block",
-              elements: [{ type: "button", action_id: "opencraft:verify" }],
+              elements: [{ type: "button", action_id: "openclaw:verify" }],
             },
           ],
         },
       },
       action: {
         type: "button",
-        action_id: "opencraft:verify",
+        action_id: "openclaw:verify",
         block_id: "verify_block",
         value: "approved",
         text: { type: "plain_text", text: "Approve" },
@@ -209,7 +254,7 @@ describe("registerSlackInteractionEvents", () => {
       threadTs?: string;
     };
     expect(payload).toMatchObject({
-      actionId: "opencraft:verify",
+      actionId: "openclaw:verify",
       actionType: "button",
       value: "approved",
       userId: "U123",
@@ -226,6 +271,236 @@ describe("registerSlackInteractionEvents", () => {
       senderId: "U123",
     });
     expect(app.client.chat.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("registers a matcher that accepts plugin action ids beyond the OpenClaw prefix", () => {
+    const { ctx, getActionMatcher } = createContext();
+    registerSlackInteractionEvents({ ctx: ctx as never });
+
+    const matcher = getActionMatcher();
+    expect(matcher).toBeTruthy();
+    expect(matcher?.test("openclaw:verify")).toBe(true);
+    expect(matcher?.test("codex")).toBe(true);
+  });
+
+  it("routes matching Slack actions through the shared plugin interactive dispatcher", async () => {
+    dispatchPluginInteractiveHandlerMock.mockResolvedValueOnce({
+      matched: true,
+      handled: true,
+      duplicate: false,
+    });
+    const { ctx, app, getHandler } = createContext();
+    registerSlackInteractionEvents({ ctx: ctx as never });
+
+    const handler = getHandler();
+    expect(handler).toBeTruthy();
+
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const respond = vi.fn().mockResolvedValue(undefined);
+    await handler!({
+      ack,
+      respond,
+      body: {
+        user: { id: "U123" },
+        team: { id: "T9" },
+        trigger_id: "123.trigger",
+        response_url: "https://hooks.slack.test/response",
+        channel: { id: "C1" },
+        container: { channel_id: "C1", message_ts: "100.200", thread_ts: "100.100" },
+        message: {
+          ts: "100.200",
+          text: "fallback",
+          blocks: [
+            {
+              type: "actions",
+              block_id: "codex_actions",
+              elements: [{ type: "button", action_id: "codex" }],
+            },
+          ],
+        },
+      },
+      action: {
+        type: "button",
+        action_id: "codex",
+        block_id: "codex_actions",
+        value: "approve:thread-1",
+        text: { type: "plain_text", text: "Approve" },
+      },
+    });
+
+    expect(ack).toHaveBeenCalled();
+    expect(dispatchPluginInteractiveHandlerMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel: "slack",
+        data: "codex:approve:thread-1",
+        interactionId: "U123:C1:100.200:123.trigger:codex:approve:thread-1",
+        ctx: expect.objectContaining({
+          accountId: ctx.accountId,
+          conversationId: "C1",
+          interactionId: "U123:C1:100.200:123.trigger:codex:approve:thread-1",
+          threadId: "100.100",
+          interaction: expect.objectContaining({
+            actionId: "codex",
+            value: "approve:thread-1",
+          }),
+        }),
+      }),
+    );
+    expect(enqueueSystemEventMock).not.toHaveBeenCalled();
+    expect(app.client.chat.update).not.toHaveBeenCalled();
+  });
+
+  it("uses unique interaction ids for repeated Slack actions on the same message", async () => {
+    dispatchPluginInteractiveHandlerMock.mockResolvedValue({
+      matched: true,
+      handled: false,
+      duplicate: false,
+    });
+    const { ctx, getHandler } = createContext();
+    registerSlackInteractionEvents({ ctx: ctx as never });
+
+    const handler = getHandler();
+    expect(handler).toBeTruthy();
+
+    const ack = vi.fn().mockResolvedValue(undefined);
+    await handler!({
+      ack,
+      body: {
+        user: { id: "U123" },
+        channel: { id: "C1" },
+        container: { channel_id: "C1", message_ts: "100.200", thread_ts: "100.100" },
+        trigger_id: "trigger-1",
+        message: {
+          ts: "100.200",
+          text: "fallback",
+          blocks: [
+            {
+              type: "actions",
+              block_id: "codex_actions",
+              elements: [{ type: "button", action_id: "codex" }],
+            },
+          ],
+        },
+      },
+      action: {
+        type: "button",
+        action_id: "codex",
+        block_id: "codex_actions",
+        value: "approve:thread-1",
+        text: { type: "plain_text", text: "Approve" },
+      },
+    });
+    await handler!({
+      ack,
+      body: {
+        user: { id: "U123" },
+        channel: { id: "C1" },
+        container: { channel_id: "C1", message_ts: "100.200", thread_ts: "100.100" },
+        trigger_id: "trigger-2",
+        message: {
+          ts: "100.200",
+          text: "fallback",
+          blocks: [
+            {
+              type: "actions",
+              block_id: "codex_actions",
+              elements: [{ type: "button", action_id: "codex" }],
+            },
+          ],
+        },
+      },
+      action: {
+        type: "button",
+        action_id: "codex",
+        block_id: "codex_actions",
+        value: "approve:thread-1",
+        text: { type: "plain_text", text: "Approve" },
+      },
+    });
+
+    expect(dispatchPluginInteractiveHandlerMock).toHaveBeenCalledTimes(2);
+    const calls = dispatchPluginInteractiveHandlerMock.mock.calls as unknown[][];
+    const firstCall = calls[0]?.[0] as
+      | {
+          interactionId?: string;
+        }
+      | undefined;
+    const secondCall = calls[1]?.[0] as
+      | {
+          interactionId?: string;
+        }
+      | undefined;
+    expect(firstCall?.interactionId).toContain(":trigger-1:");
+    expect(secondCall?.interactionId).toContain(":trigger-2:");
+    expect(firstCall?.interactionId).not.toBe(secondCall?.interactionId);
+  });
+
+  it("resolves plugin binding approvals from shared interactive Slack actions", async () => {
+    resolvePluginConversationBindingApprovalMock.mockResolvedValueOnce({
+      status: "approved",
+      decision: "allow-once",
+      request: {
+        pluginId: "codex",
+        pluginName: "Codex",
+        summary: "for this thread",
+      },
+    });
+    const { ctx, app, getHandler } = createContext();
+    registerSlackInteractionEvents({ ctx: ctx as never });
+
+    const handler = getHandler();
+    expect(handler).toBeTruthy();
+
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const respond = vi.fn().mockResolvedValue(undefined);
+    await handler!({
+      ack,
+      respond,
+      body: {
+        user: { id: "U123" },
+        channel: { id: "C1" },
+        container: { channel_id: "C1", message_ts: "100.200", thread_ts: "100.100" },
+        message: {
+          ts: "100.200",
+          text: "Approve this bind?",
+          blocks: [
+            {
+              type: "actions",
+              block_id: "bind_actions",
+              elements: [{ type: "button", action_id: "openclaw:reply_button" }],
+            },
+          ],
+        },
+      },
+      action: {
+        type: "button",
+        action_id: "openclaw:reply_button",
+        block_id: "bind_actions",
+        value: "pluginbind:approval-123:o",
+        text: { type: "plain_text", text: "Allow once" },
+      },
+    });
+
+    expect(ack).toHaveBeenCalled();
+    expect(resolvePluginConversationBindingApprovalMock).toHaveBeenCalledWith({
+      approvalId: "approval-123",
+      decision: "allow-once",
+      senderId: "U123",
+    });
+    expect(dispatchPluginInteractiveHandlerMock).not.toHaveBeenCalled();
+    expect(app.client.chat.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel: "C1",
+        ts: "100.200",
+        text: "Approve this bind?",
+        blocks: [],
+      }),
+    );
+    expect(respond).toHaveBeenCalledWith({
+      text: "Binding updated.",
+      response_type: "ephemeral",
+    });
+    expect(enqueueSystemEventMock).not.toHaveBeenCalled();
   });
 
   it("drops block actions when mismatch guard triggers", async () => {
@@ -256,7 +531,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "button",
-        action_id: "opencraft:verify",
+        action_id: "openclaw:verify",
       },
     });
 
@@ -286,7 +561,7 @@ describe("registerSlackInteractionEvents", () => {
         team: { id: "T9" },
         view: {
           id: "V123",
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           private_metadata: JSON.stringify({ userId: "U123" }),
         },
       },
@@ -301,7 +576,7 @@ describe("registerSlackInteractionEvents", () => {
         team: { id: "T9" },
         view: {
           id: "V123",
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           private_metadata: JSON.stringify({ userId: "U123" }),
         },
       },
@@ -330,7 +605,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "static_select",
-        action_id: "opencraft:pick",
+        action_id: "openclaw:pick",
         block_id: "select_block",
         selected_option: {
           text: { type: "plain_text", text: "Canary" },
@@ -391,7 +666,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "button",
-        action_id: "opencraft:verify",
+        action_id: "openclaw:verify",
         block_id: "verify_block",
       },
     });
@@ -430,7 +705,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "button",
-        action_id: "opencraft:verify",
+        action_id: "openclaw:verify",
         block_id: "verify_block",
       },
     });
@@ -464,7 +739,7 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "verify_block",
-              elements: [{ type: "button", action_id: "opencraft:verify" }],
+              elements: [{ type: "button", action_id: "openclaw:verify" }],
             },
           ],
         },
@@ -498,7 +773,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "static_select",
-        action_id: "opencraft:pick",
+        action_id: "openclaw:pick",
         block_id: "select_block",
         selected_option: {
           text: { type: "plain_text", text: "Canary_*`~<&>" },
@@ -544,7 +819,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "button",
-        action_id: "opencraft:container",
+        action_id: "openclaw:container",
         block_id: "container_block",
         value: "ok",
         text: { type: "plain_text", text: "Container" },
@@ -594,14 +869,14 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "multi_block",
-              elements: [{ type: "multi_static_select", action_id: "opencraft:multi" }],
+              elements: [{ type: "multi_static_select", action_id: "openclaw:multi" }],
             },
           ],
         },
       },
       action: {
         type: "multi_static_select",
-        action_id: "opencraft:multi",
+        action_id: "openclaw:multi",
         block_id: "multi_block",
         selected_options: [
           { text: { type: "plain_text", text: "Alpha" }, value: "alpha" },
@@ -653,24 +928,24 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "date_block",
-              elements: [{ type: "datepicker", action_id: "opencraft:date" }],
+              elements: [{ type: "datepicker", action_id: "openclaw:date" }],
             },
             {
               type: "actions",
               block_id: "time_block",
-              elements: [{ type: "timepicker", action_id: "opencraft:time" }],
+              elements: [{ type: "timepicker", action_id: "openclaw:time" }],
             },
             {
               type: "actions",
               block_id: "datetime_block",
-              elements: [{ type: "datetimepicker", action_id: "opencraft:datetime" }],
+              elements: [{ type: "datetimepicker", action_id: "openclaw:datetime" }],
             },
           ],
         },
       },
       action: {
         type: "datepicker",
-        action_id: "opencraft:date",
+        action_id: "openclaw:date",
         block_id: "date_block",
         selected_date: "2026-02-16",
       },
@@ -688,14 +963,14 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "time_block",
-              elements: [{ type: "timepicker", action_id: "opencraft:time" }],
+              elements: [{ type: "timepicker", action_id: "openclaw:time" }],
             },
           ],
         },
       },
       action: {
         type: "timepicker",
-        action_id: "opencraft:time",
+        action_id: "openclaw:time",
         block_id: "time_block",
         selected_time: "14:30",
       },
@@ -713,14 +988,14 @@ describe("registerSlackInteractionEvents", () => {
             {
               type: "actions",
               block_id: "datetime_block",
-              elements: [{ type: "datetimepicker", action_id: "opencraft:datetime" }],
+              elements: [{ type: "datetimepicker", action_id: "openclaw:datetime" }],
             },
           ],
         },
       },
       action: {
         type: "datetimepicker",
-        action_id: "opencraft:datetime",
+        action_id: "openclaw:datetime",
         block_id: "datetime_block",
         selected_date_time: selectedDateTimeEpoch,
       },
@@ -795,7 +1070,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "multi_conversations_select",
-        action_id: "opencraft:route",
+        action_id: "openclaw:route",
         selected_user: "U777",
         selected_users: ["U777", "U888"],
         selected_channel: "C777",
@@ -865,7 +1140,7 @@ describe("registerSlackInteractionEvents", () => {
       },
       action: {
         type: "workflow_button",
-        action_id: "opencraft:workflow",
+        action_id: "openclaw:workflow",
         block_id: "workflow_block",
         text: { type: "plain_text", text: "Launch workflow" },
         workflow: {
@@ -909,7 +1184,7 @@ describe("registerSlackInteractionEvents", () => {
         team: { id: "T1" },
         view: {
           id: "V123",
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           root_view_id: "VROOT",
           previous_view_id: "VPREV",
           external_id: "deploy-ext-1",
@@ -974,8 +1249,8 @@ describe("registerSlackInteractionEvents", () => {
     };
     expect(payload).toMatchObject({
       interactionType: "view_submission",
-      actionId: "view:opencraft:deploy_form",
-      callbackId: "opencraft:deploy_form",
+      actionId: "view:openclaw:deploy_form",
+      callbackId: "openclaw:deploy_form",
       viewId: "V123",
       userId: "U777",
       routedChannelId: "D123",
@@ -1006,7 +1281,7 @@ describe("registerSlackInteractionEvents", () => {
       body: {
         user: { id: "U222" },
         view: {
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           private_metadata: JSON.stringify({
             channelId: "D123",
             channelType: "im",
@@ -1033,7 +1308,7 @@ describe("registerSlackInteractionEvents", () => {
       body: {
         user: { id: "U222" },
         view: {
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           private_metadata: JSON.stringify({
             channelId: "D123",
             channelType: "im",
@@ -1060,7 +1335,7 @@ describe("registerSlackInteractionEvents", () => {
         user: { id: "U444" },
         view: {
           id: "V400",
-          callback_id: "opencraft:routing_form",
+          callback_id: "openclaw:routing_form",
           private_metadata: JSON.stringify({ userId: "U444" }),
           state: {
             values: {
@@ -1136,13 +1411,13 @@ describe("registerSlackInteractionEvents", () => {
               email_block: {
                 email_input: {
                   type: "email_text_input",
-                  value: "team@opencraft.ai",
+                  value: "team@openclaw.ai",
                 },
               },
               url_block: {
                 url_input: {
                   type: "url_text_input",
-                  value: "https://docs.opencraft.ai",
+                  value: "https://docs.openclaw.ai",
                 },
               },
               richtext_block: {
@@ -1233,12 +1508,12 @@ describe("registerSlackInteractionEvents", () => {
         expect.objectContaining({
           actionId: "email_input",
           inputKind: "email",
-          inputEmail: "team@opencraft.ai",
+          inputEmail: "team@openclaw.ai",
         }),
         expect.objectContaining({
           actionId: "url_input",
           inputKind: "url",
-          inputUrl: "https://docs.opencraft.ai/",
+          inputUrl: "https://docs.openclaw.ai/",
         }),
         expect.objectContaining({
           actionId: "richtext_input",
@@ -1276,7 +1551,7 @@ describe("registerSlackInteractionEvents", () => {
         user: { id: "U555" },
         view: {
           id: "V555",
-          callback_id: "opencraft:long_richtext",
+          callback_id: "openclaw:long_richtext",
           private_metadata: JSON.stringify({ userId: "U555" }),
           state: {
             values: {
@@ -1326,7 +1601,7 @@ describe("registerSlackInteractionEvents", () => {
         is_cleared: true,
         view: {
           id: "V900",
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           root_view_id: "VROOT900",
           previous_view_id: "VPREV900",
           external_id: "deploy-ext-900",
@@ -1376,8 +1651,8 @@ describe("registerSlackInteractionEvents", () => {
     };
     expect(payload).toMatchObject({
       interactionType: "view_closed",
-      actionId: "view:opencraft:deploy_form",
-      callbackId: "opencraft:deploy_form",
+      actionId: "view:openclaw:deploy_form",
+      callbackId: "openclaw:deploy_form",
       viewId: "V900",
       userId: "U900",
       isCleared: true,
@@ -1410,7 +1685,7 @@ describe("registerSlackInteractionEvents", () => {
         user: { id: "U901" },
         view: {
           id: "V901",
-          callback_id: "opencraft:deploy_form",
+          callback_id: "openclaw:deploy_form",
           private_metadata: JSON.stringify({ userId: "U901" }),
         },
       },
@@ -1459,7 +1734,7 @@ describe("registerSlackInteractionEvents", () => {
         team: { id: "T1" },
         view: {
           id: "V915",
-          callback_id: "opencraft:oversize",
+          callback_id: "openclaw:oversize",
           private_metadata: JSON.stringify({
             channelId: "D915",
             channelType: "im",

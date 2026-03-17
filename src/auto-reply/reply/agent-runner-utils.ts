@@ -1,9 +1,9 @@
 import { resolveRunModelFallbacksOverride } from "../../agents/agent-scope.js";
 import type { NormalizedUsage } from "../../agents/usage.js";
-import { getChannelDock } from "../../channels/dock.js";
+import { getChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelId, ChannelThreadingToolContext } from "../../channels/plugins/types.js";
 import { normalizeAnyChannelId, normalizeChannelId } from "../../channels/registry.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { isReasoningTagProvider } from "../../utils/provider-utils.js";
 import { estimateUsageCost, formatTokenCount, formatUsd } from "../../utils/usage-format.js";
 import type { TemplateContext } from "../templating.js";
@@ -18,7 +18,7 @@ const BUN_FETCH_SOCKET_ERROR_RE = /socket connection was closed unexpectedly/i;
  */
 export function buildThreadingToolContext(params: {
   sessionCtx: TemplateContext;
-  config: OpenCraftConfig | undefined;
+  config: OpenClawConfig | undefined;
   hasRepliedRef: { value: boolean } | undefined;
 }): ChannelThreadingToolContext {
   const { sessionCtx, config, hasRepliedRef } = params;
@@ -44,8 +44,8 @@ export function buildThreadingToolContext(params: {
   }
   const provider = normalizeChannelId(rawProvider) ?? normalizeAnyChannelId(rawProvider);
   // Fallback for unrecognized/plugin channels (e.g., BlueBubbles before plugin registry init)
-  const dock = provider ? getChannelDock(provider) : undefined;
-  if (!dock?.threading?.buildToolContext) {
+  const threading = provider ? getChannelPlugin(provider)?.threading : undefined;
+  if (!threading?.buildToolContext) {
     return {
       currentChannelId: originTo?.trim() || undefined,
       currentChannelProvider: provider ?? (rawProvider as ChannelId),
@@ -54,7 +54,7 @@ export function buildThreadingToolContext(params: {
     };
   }
   const context =
-    dock.threading.buildToolContext({
+    threading.buildToolContext({
       cfg: config,
       accountId: sessionCtx.AccountId,
       context: {
@@ -72,7 +72,7 @@ export function buildThreadingToolContext(params: {
     }) ?? {};
   return {
     ...context,
-    currentChannelProvider: provider!, // guaranteed non-null since dock exists
+    currentChannelProvider: provider!, // guaranteed non-null since threading exists
     currentMessageId: context.currentMessageId ?? currentMessageId,
   };
 }

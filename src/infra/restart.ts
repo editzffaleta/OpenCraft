@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
+import { loadConfig } from "../config/config.js";
 import {
   resolveGatewayLaunchAgentLabel,
   resolveGatewaySystemdServiceName,
@@ -19,8 +20,9 @@ export type RestartAttempt = {
 const SPAWN_TIMEOUT_MS = 2000;
 const SIGUSR1_AUTH_GRACE_MS = 5000;
 const DEFAULT_DEFERRAL_POLL_MS = 500;
-// Cover slow in-flight embedded compaction work before forcing restart.
-const DEFAULT_DEFERRAL_MAX_WAIT_MS = 90_000;
+// Default to 5 minutes to avoid aborting in-flight subagent LLM calls.
+// Configurable via gateway.reload.deferralTimeoutMs.
+const DEFAULT_DEFERRAL_MAX_WAIT_MS = 300_000;
 const RESTART_COOLDOWN_MS = 30_000;
 
 const restartLog = createSubsystemLogger("restart");
@@ -290,7 +292,7 @@ function normalizeSystemdUnit(raw?: string, profile?: string): string {
   return unit.endsWith(".service") ? unit : `${unit}.service`;
 }
 
-export function triggerOpenCraftRestart(): RestartAttempt {
+export function triggerOpenClawRestart(): RestartAttempt {
   if (process.env.VITEST || process.env.NODE_ENV === "test") {
     return { ok: true, method: "supervisor", detail: "test mode" };
   }
@@ -300,8 +302,8 @@ export function triggerOpenCraftRestart(): RestartAttempt {
   const tried: string[] = [];
   if (process.platform === "linux") {
     const unit = normalizeSystemdUnit(
-      process.env.OPENCRAFT_SYSTEMD_UNIT,
-      process.env.OPENCRAFT_PROFILE,
+      process.env.OPENCLAW_SYSTEMD_UNIT,
+      process.env.OPENCLAW_PROFILE,
     );
     const userArgs = ["--user", "restart", unit];
     tried.push(`systemctl ${userArgs.join(" ")}`);
@@ -341,8 +343,8 @@ export function triggerOpenCraftRestart(): RestartAttempt {
   }
 
   const label =
-    process.env.OPENCRAFT_LAUNCHD_LABEL ||
-    resolveGatewayLaunchAgentLabel(process.env.OPENCRAFT_PROFILE);
+    process.env.OPENCLAW_LAUNCHD_LABEL ||
+    resolveGatewayLaunchAgentLabel(process.env.OPENCLAW_PROFILE);
   const uid = typeof process.getuid === "function" ? process.getuid() : undefined;
   const domain = uid !== undefined ? `gui/${uid}` : "gui/501";
   const target = `${domain}/${label}`;
@@ -475,7 +477,11 @@ export function scheduleGatewaySigusr1Restart(opts?: {
         emitGatewayRestart();
         return;
       }
-      deferGatewayRestartUntilIdle({ getPendingCount: pendingCheck });
+      const cfg = loadConfig();
+      deferGatewayRestartUntilIdle({
+        getPendingCount: pendingCheck,
+        maxWaitMs: cfg.gateway?.reload?.deferralTimeoutMs,
+      });
     },
     Math.max(0, requestedDueAt - nowMs),
   );

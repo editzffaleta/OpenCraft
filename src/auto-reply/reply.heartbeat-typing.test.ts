@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { runEmbeddedPiAgentMock } from "./reply.directive.directive-behavior.e2e-mocks.js";
 import { createTempHomeHarness, makeReplyConfig } from "./reply.test-harness.js";
 
@@ -19,7 +19,7 @@ vi.mock("../../extensions/whatsapp/src/session.js", () => webMocks);
 import { getReplyFromConfig } from "./reply.js";
 
 const { withTempHome } = createTempHomeHarness({
-  prefix: "opencraft-typing-",
+  prefix: "openclaw-typing-",
   beforeEachCase: () => runEmbeddedPiAgentMock.mockClear(),
 });
 
@@ -39,14 +39,14 @@ describe("getReplyFromConfig typing (heartbeat)", () => {
       await getReplyFromConfig(
         { Body: "hi", From: "+1000", To: "+2000", Provider: "whatsapp" },
         { onReplyStart, isHeartbeat },
-        makeReplyConfig(home) as unknown as OpenCraftConfig,
+        makeReplyConfig(home) as unknown as OpenClawConfig,
       );
     });
     return onReplyStart;
   }
 
   beforeEach(() => {
-    vi.stubEnv("OPENCRAFT_TEST_FAST", "1");
+    vi.stubEnv("OPENCLAW_TEST_FAST", "1");
   });
 
   it("starts typing for normal runs", async () => {

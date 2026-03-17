@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { MANIFEST_KEY } from "../../compat/legacy-names.js";
-import { discoverOpenCraftPlugins } from "../../plugins/discovery.js";
-import type { OpenCraftPackageManifest } from "../../plugins/manifest.js";
+import { discoverOpenClawPlugins } from "../../plugins/discovery.js";
+import { loadPluginManifest } from "../../plugins/manifest.js";
+import type { OpenClawPackageManifest } from "../../plugins/manifest.js";
 import type { PluginOrigin } from "../../plugins/types.js";
 import { isRecord, resolveConfigDir, resolveUserPath } from "../../utils.js";
 import type { ChannelMeta } from "./types.js";
@@ -25,6 +26,7 @@ export type ChannelUiCatalog = {
 
 export type ChannelPluginCatalogEntry = {
   id: string;
+  pluginId?: string;
   meta: ChannelMeta;
   install: {
     npmSpec: string;
@@ -50,9 +52,9 @@ type ExternalCatalogEntry = {
   name?: string;
   version?: string;
   description?: string;
-} & Partial<Record<ManifestKey, OpenCraftPackageManifest>>;
+} & Partial<Record<ManifestKey, OpenClawPackageManifest>>;
 
-const ENV_CATALOG_PATHS = ["OPENCRAFT_PLUGIN_CATALOG_PATHS", "OPENCRAFT_MPM_CATALOG_PATHS"];
+const ENV_CATALOG_PATHS = ["OPENCLAW_PLUGIN_CATALOG_PATHS", "OPENCLAW_MPM_CATALOG_PATHS"];
 
 type ManifestKey = typeof MANIFEST_KEY;
 
@@ -125,7 +127,7 @@ function loadExternalCatalogEntries(options: CatalogOptions): ExternalCatalogEnt
 }
 
 function toChannelMeta(params: {
-  channel: NonNullable<OpenCraftPackageManifest["channel"]>;
+  channel: NonNullable<OpenClawPackageManifest["channel"]>;
   id: string;
 }): ChannelMeta | null {
   const label = params.channel.label?.trim();
@@ -175,7 +177,7 @@ function toChannelMeta(params: {
 }
 
 function resolveInstallInfo(params: {
-  manifest: OpenCraftPackageManifest;
+  manifest: OpenClawPackageManifest;
   packageName?: string;
   packageDir?: string;
   workspaceDir?: string;
@@ -196,11 +198,28 @@ function resolveInstallInfo(params: {
   };
 }
 
+function resolveCatalogPluginId(params: {
+  packageDir?: string;
+  rootDir?: string;
+  origin?: PluginOrigin;
+}): string | undefined {
+  const manifestDir = params.packageDir ?? params.rootDir;
+  if (manifestDir) {
+    const manifest = loadPluginManifest(manifestDir, params.origin !== "bundled");
+    if (manifest.ok) {
+      return manifest.manifest.id;
+    }
+  }
+  return undefined;
+}
+
 function buildCatalogEntry(candidate: {
   packageName?: string;
   packageDir?: string;
+  rootDir?: string;
+  origin?: PluginOrigin;
   workspaceDir?: string;
-  packageManifest?: OpenCraftPackageManifest;
+  packageManifest?: OpenClawPackageManifest;
 }): ChannelPluginCatalogEntry | null {
   const manifest = candidate.packageManifest;
   if (!manifest?.channel) {
@@ -223,7 +242,17 @@ function buildCatalogEntry(candidate: {
   if (!install) {
     return null;
   }
-  return { id, meta, install };
+  const pluginId = resolveCatalogPluginId({
+    packageDir: candidate.packageDir,
+    rootDir: candidate.rootDir,
+    origin: candidate.origin,
+  });
+  return {
+    id,
+    ...(pluginId ? { pluginId } : {}),
+    meta,
+    install,
+  };
 }
 
 function buildExternalCatalogEntry(entry: ExternalCatalogEntry): ChannelPluginCatalogEntry | null {
@@ -265,7 +294,7 @@ export function buildChannelUiCatalog(
 export function listChannelPluginCatalogEntries(
   options: CatalogOptions = {},
 ): ChannelPluginCatalogEntry[] {
-  const discovery = discoverOpenCraftPlugins({
+  const discovery = discoverOpenClawPlugins({
     workspaceDir: options.workspaceDir,
     env: options.env,
   });

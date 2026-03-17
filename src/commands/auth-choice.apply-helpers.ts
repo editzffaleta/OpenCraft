@@ -1,5 +1,5 @@
 import { resolveEnvApiKey } from "../agents/model-auth.js";
-import type { OpenCraftConfig } from "../config/types.js";
+import type { OpenClawConfig } from "../config/types.js";
 import {
   isValidEnvSecretRefId,
   type SecretInput,
@@ -32,7 +32,7 @@ export type SecretInputModePromptCopy = {
   refHint?: string;
 };
 
-export type SecretRefOnboardingPromptCopy = {
+export type SecretRefSetupPromptCopy = {
   sourceMessage?: string;
   envVarMessage?: string;
   envVarPlaceholder?: string;
@@ -65,20 +65,20 @@ function resolveDefaultFilePointerId(provider: string): string {
 }
 
 function resolveRefFallbackInput(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   provider: string;
   preferredEnvVar?: string;
 }): { ref: SecretRef; resolvedValue: string } {
   const fallbackEnvVar = params.preferredEnvVar ?? resolveDefaultProviderEnvVar(params.provider);
   if (!fallbackEnvVar) {
     throw new Error(
-      `No default environment variable mapping found for provider "${params.provider}". Set a provider-specific env var, or re-run onboarding in an interactive terminal to configure a ref.`,
+      `No default environment variable mapping found for provider "${params.provider}". Set a provider-specific env var, or re-run setup in an interactive terminal to configure a ref.`,
     );
   }
   const value = process.env[fallbackEnvVar]?.trim();
   if (!value) {
     throw new Error(
-      `Environment variable "${fallbackEnvVar}" is required for --secret-input-mode ref in non-interactive onboarding.`,
+      `Environment variable "${fallbackEnvVar}" is required for --secret-input-mode ref in non-interactive setup.`,
     );
   }
   return {
@@ -93,12 +93,12 @@ function resolveRefFallbackInput(params: {
   };
 }
 
-export async function promptSecretRefForOnboarding(params: {
+export async function promptSecretRefForSetup(params: {
   provider: string;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   prompter: WizardPrompter;
   preferredEnvVar?: string;
-  copy?: SecretRefOnboardingPromptCopy;
+  copy?: SecretRefSetupPromptCopy;
 }): Promise<{ ref: SecretRef; resolvedValue: string }> {
   const defaultEnvVar =
     params.preferredEnvVar ?? resolveDefaultProviderEnvVar(params.provider) ?? "";
@@ -168,7 +168,7 @@ export async function promptSecretRefForOnboarding(params: {
       });
       await params.prompter.note(
         params.copy?.envValidatedMessage?.(envVar) ??
-          `Validated environment variable ${envVar}. OpenCraft will store a reference, not the key value.`,
+          `Validated environment variable ${envVar}. OpenClaw will store a reference, not the key value.`,
         "Reference validated",
       );
       return { ref, resolvedValue };
@@ -259,7 +259,7 @@ export async function promptSecretRefForOnboarding(params: {
       });
       await params.prompter.note(
         params.copy?.providerValidatedMessage?.(selectedProvider, id, providerEntry.source) ??
-          `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. OpenCraft will store a reference, not the key value.`,
+          `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. OpenClaw will store a reference, not the key value.`,
         "Reference validated",
       );
       return { ref, resolvedValue };
@@ -400,7 +400,7 @@ export async function resolveSecretInputModeForEnvSelection(params: {
       {
         value: "plaintext",
         label: params.copy?.plaintextLabel ?? "Paste API key now",
-        hint: params.copy?.plaintextHint ?? "Stores the key directly in OpenCraft config",
+        hint: params.copy?.plaintextHint ?? "Stores the key directly in OpenClaw config",
       },
       {
         value: "ref",
@@ -438,7 +438,7 @@ export async function ensureApiKeyFromOptionEnvOrPrompt(params: {
   token: string | undefined;
   tokenProvider: string | undefined;
   secretInputMode?: SecretInputMode;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   expectedProviders: string[];
   provider: string;
   envLabel: string;
@@ -480,7 +480,7 @@ export async function ensureApiKeyFromOptionEnvOrPrompt(params: {
 }
 
 export async function ensureApiKeyFromEnvOrPrompt(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   provider: string;
   envLabel: string;
   promptMessage: string;
@@ -506,7 +506,7 @@ export async function ensureApiKeyFromEnvOrPrompt(params: {
       await params.setCredential(fallback.ref, selectedMode);
       return fallback.resolvedValue;
     }
-    const resolved = await promptSecretRefForOnboarding({
+    const resolved = await promptSecretRefForSetup({
       provider: params.provider,
       config: params.config,
       prompter: params.prompter,

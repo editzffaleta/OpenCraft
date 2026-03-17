@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   findNormalizedProviderValue,
   normalizeProviderId,
@@ -28,7 +28,7 @@ export type AuthProfileEligibility = {
 };
 
 export function resolveAuthProfileEligibility(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   store: AuthProfileStore;
   provider: string;
   profileId: string;
@@ -65,7 +65,7 @@ export function resolveAuthProfileEligibility(params: {
 }
 
 export function resolveAuthProfileOrder(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   store: AuthProfileStore;
   provider: string;
   preferredProfile?: string;
@@ -104,7 +104,7 @@ export function resolveAuthProfileOrder(params: {
     }).eligible;
   let filtered = baseOrder.filter(isValidProfile);
 
-  // Repair config/store profile-id drift from older onboarding flows:
+  // Repair config/store profile-id drift from older setup flows:
   // if configured profile ids no longer exist in auth-profiles.json, scan the
   // provider's stored credentials and use any valid entries.
   const allBaseProfilesMissing = baseOrder.every((profileId) => !store.profiles[profileId]);

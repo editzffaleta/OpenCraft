@@ -1,1 +1,1 @@
-console.warn("clawdbot renamed -> opencraft");
+console.warn("clawdbot renamed -> openclaw");

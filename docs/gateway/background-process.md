@@ -1,80 +1,80 @@
 ---
-summary: "Execução exec em background e gerenciamento de processos"
+summary: "Background exec execution and process management"
 read_when:
-  - Adicionando ou modificando comportamento de exec em background
-  - Depurando tarefas exec de longa duração
+  - Adding or modifying background exec behavior
+  - Debugging long-running exec tasks
 title: "Background Exec and Process Tool"
 ---
 
 # Background Exec + Process Tool
 
-OpenCraft roda comandos shell pela tool `exec` e mantém tarefas de longa duração em memória. A tool `process` gerencia essas sessões em background.
+OpenClaw runs shell commands through the `exec` tool and keeps long‑running tasks in memory. The `process` tool manages those background sessions.
 
-## Tool exec
+## exec tool
 
-Parâmetros principais:
+Key parameters:
 
-- `command` (obrigatório)
-- `yieldMs` (padrão 10000): auto-background após este atraso
-- `background` (bool): background imediatamente
-- `timeout` (segundos, padrão 1800): matar o processo após este timeout
-- `elevated` (bool): rodar no host se o modo elevated estiver habilitado/permitido
-- Precisa de um TTY real? Defina `pty: true`.
+- `command` (required)
+- `yieldMs` (default 10000): auto‑background after this delay
+- `background` (bool): background immediately
+- `timeout` (seconds, default 1800): kill the process after this timeout
+- `elevated` (bool): run on host if elevated mode is enabled/allowed
+- Need a real TTY? Set `pty: true`.
 - `workdir`, `env`
 
-Comportamento:
+Behavior:
 
-- Execuções em foreground retornam output diretamente.
-- Quando em background (explícito ou timeout), a tool retorna `status: "running"` + `sessionId` e um tail curto.
-- Output é mantido em memória até que a sessão seja consultada ou limpa.
-- Se a tool `process` for desabilitada, `exec` roda de forma síncrona e ignora `yieldMs`/`background`.
-- Comandos exec gerados recebem `OPENCLAW_SHELL=exec` para regras de shell/perfil contextuais.
+- Foreground runs return output directly.
+- When backgrounded (explicit or timeout), the tool returns `status: "running"` + `sessionId` and a short tail.
+- Output is kept in memory until the session is polled or cleared.
+- If the `process` tool is disallowed, `exec` runs synchronously and ignores `yieldMs`/`background`.
+- Spawned exec commands receive `OPENCLAW_SHELL=exec` for context-aware shell/profile rules.
 
-## Bridging de processo filho
+## Child process bridging
 
-Ao gerar processos filhos de longa duração fora das tools exec/process (por exemplo, respawns de CLI ou helpers do gateway), anexe o helper de bridge de processo filho para que sinais de terminação sejam encaminhados e listeners sejam desanexados na saída/erro. Isso evita processos órfãos no systemd e mantém o comportamento de shutdown consistente entre plataformas.
+When spawning long-running child processes outside the exec/process tools (for example, CLI respawns or gateway helpers), attach the child-process bridge helper so termination signals are forwarded and listeners are detached on exit/error. This avoids orphaned processes on systemd and keeps shutdown behavior consistent across platforms.
 
-Overrides de ambiente:
+Environment overrides:
 
-- `PI_BASH_YIELD_MS`: yield padrão (ms)
-- `PI_BASH_MAX_OUTPUT_CHARS`: cap de output em memória (chars)
-- `OPENCLAW_BASH_PENDING_MAX_OUTPUT_CHARS`: cap de stdout/stderr pendente por stream (chars)
-- `PI_BASH_JOB_TTL_MS`: TTL para sessões finalizadas (ms, limitado a 1m–3h)
+- `PI_BASH_YIELD_MS`: default yield (ms)
+- `PI_BASH_MAX_OUTPUT_CHARS`: in‑memory output cap (chars)
+- `OPENCLAW_BASH_PENDING_MAX_OUTPUT_CHARS`: pending stdout/stderr cap per stream (chars)
+- `PI_BASH_JOB_TTL_MS`: TTL for finished sessions (ms, bounded to 1m–3h)
 
-Config (preferido):
+Config (preferred):
 
-- `tools.exec.backgroundMs` (padrão 10000)
-- `tools.exec.timeoutSec` (padrão 1800)
-- `tools.exec.cleanupMs` (padrão 1800000)
-- `tools.exec.notifyOnExit` (padrão true): enfileirar um evento de sistema + solicitar heartbeat quando um exec em background sair.
-- `tools.exec.notifyOnExitEmptySuccess` (padrão false): quando true, também enfileirar eventos de conclusão para execuções em background bem-sucedidas que não produziram output.
+- `tools.exec.backgroundMs` (default 10000)
+- `tools.exec.timeoutSec` (default 1800)
+- `tools.exec.cleanupMs` (default 1800000)
+- `tools.exec.notifyOnExit` (default true): enqueue a system event + request heartbeat when a backgrounded exec exits.
+- `tools.exec.notifyOnExitEmptySuccess` (default false): when true, also enqueue completion events for successful backgrounded runs that produced no output.
 
-## Tool process
+## process tool
 
-Ações:
+Actions:
 
-- `list`: sessões em execução + finalizadas
-- `poll`: drenar novo output de uma sessão (também reporta status de saída)
-- `log`: ler o output agregado (suporta `offset` + `limit`)
-- `write`: enviar stdin (`data`, `eof` opcional)
-- `kill`: terminar uma sessão em background
-- `clear`: remover uma sessão finalizada da memória
-- `remove`: matar se em execução, caso contrário limpar se finalizada
+- `list`: running + finished sessions
+- `poll`: drain new output for a session (also reports exit status)
+- `log`: read the aggregated output (supports `offset` + `limit`)
+- `write`: send stdin (`data`, optional `eof`)
+- `kill`: terminate a background session
+- `clear`: remove a finished session from memory
+- `remove`: kill if running, otherwise clear if finished
 
-Notas:
+Notes:
 
-- Apenas sessões em background são listadas/persistidas em memória.
-- Sessões são perdidas na reinicialização do processo (sem persistência em disco).
-- Logs de sessão só são salvos no histórico de chat se você rodar `process poll/log` e o resultado da tool for registrado.
-- `process` tem escopo por agente; só vê sessões iniciadas por aquele agente.
-- `process list` inclui um `name` derivado (verbo do comando + alvo) para varreduras rápidas.
-- `process log` usa `offset`/`limit` baseado em linha.
-- Quando tanto `offset` quanto `limit` são omitidos, retorna as últimas 200 linhas e inclui um hint de paginação.
-- Quando `offset` é fornecido e `limit` é omitido, retorna de `offset` até o fim (sem limite de 200).
+- Only backgrounded sessions are listed/persisted in memory.
+- Sessions are lost on process restart (no disk persistence).
+- Session logs are only saved to chat history if you run `process poll/log` and the tool result is recorded.
+- `process` is scoped per agent; it only sees sessions started by that agent.
+- `process list` includes a derived `name` (command verb + target) for quick scans.
+- `process log` uses line-based `offset`/`limit`.
+- When both `offset` and `limit` are omitted, it returns the last 200 lines and includes a paging hint.
+- When `offset` is provided and `limit` is omitted, it returns from `offset` to the end (not capped to 200).
 
-## Exemplos
+## Examples
 
-Rodar uma tarefa longa e consultar depois:
+Run a long task and poll later:
 
 ```json
 { "tool": "exec", "command": "sleep 5 && echo done", "yieldMs": 1000 }
@@ -84,13 +84,13 @@ Rodar uma tarefa longa e consultar depois:
 { "tool": "process", "action": "poll", "sessionId": "<id>" }
 ```
 
-Iniciar imediatamente em background:
+Start immediately in background:
 
 ```json
 { "tool": "exec", "command": "npm run build", "background": true }
 ```
 
-Enviar stdin:
+Send stdin:
 
 ```json
 { "tool": "process", "action": "write", "sessionId": "<id>", "data": "y\n" }

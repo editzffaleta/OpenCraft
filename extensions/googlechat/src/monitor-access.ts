@@ -10,8 +10,8 @@ import {
   resolveMentionGatingWithBypass,
   resolveSenderScopedGroupPolicy,
   warnMissingProviderGroupPolicyFallbackOnce,
-} from "opencraft/plugin-sdk/googlechat";
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/googlechat";
+} from "openclaw/plugin-sdk/googlechat";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/googlechat";
 import type { ResolvedGoogleChatAccount } from "./accounts.js";
 import { sendGoogleChatMessage } from "./api.js";
 import type { GoogleChatCoreRuntime } from "./monitor-types.js";
@@ -130,7 +130,7 @@ function warnDeprecatedUsersEmailEntries(logVerbose: (message: string) => void, 
 
 export async function applyGoogleChatInboundAccessPolicy(params: {
   account: ResolvedGoogleChatAccount;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   core: GoogleChatCoreRuntime;
   space: GoogleChatSpace;
   message: GoogleChatMessage;

@@ -1,7 +1,6 @@
 import { resolveAgentConfig } from "../../agents/agent-scope.js";
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
-import type { AgentElevatedAllowFromConfig, OpenCraftConfig } from "../../config/config.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import type { AgentElevatedAllowFromConfig, OpenClawConfig } from "../../config/config.js";
 import { normalizeStringEntries } from "../../shared/string-normalization.js";
 import type { MsgContext } from "../templating.js";
 import {
@@ -29,13 +28,14 @@ function resolveElevatedAllowList(
 }
 
 function resolveAllowFromFormatter(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   provider: string;
   accountId?: string;
 }): AllowFromFormatter {
   const normalizedProvider = normalizeChannelId(params.provider);
-  const dock = normalizedProvider ? getChannelDock(normalizedProvider) : undefined;
-  const formatAllowFrom = dock?.config?.formatAllowFrom;
+  const formatAllowFrom = normalizedProvider
+    ? getChannelPlugin(normalizedProvider)?.config?.formatAllowFrom
+    : undefined;
   if (!formatAllowFrom) {
     return (values) => normalizeStringEntries(values);
   }
@@ -159,7 +159,7 @@ function isApprovedElevatedSender(params: {
 }
 
 export function resolveElevatedPermissions(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   ctx: MsgContext;
   provider: string;
@@ -192,11 +192,12 @@ export function resolveElevatedPermissions(params: {
   }
 
   const normalizedProvider = normalizeChannelId(params.provider);
-  const dock = normalizedProvider ? getChannelDock(normalizedProvider) : undefined;
-  const fallbackAllowFrom = dock?.elevated?.allowFromFallback?.({
-    cfg: params.cfg,
-    accountId: params.ctx.AccountId,
-  });
+  const fallbackAllowFrom = normalizedProvider
+    ? getChannelPlugin(normalizedProvider)?.elevated?.allowFromFallback?.({
+        cfg: params.cfg,
+        accountId: params.ctx.AccountId,
+      })
+    : undefined;
   const formatAllowFrom = resolveAllowFromFormatter({
     cfg: params.cfg,
     provider: params.provider,

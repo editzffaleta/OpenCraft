@@ -25,7 +25,7 @@ vi.mock("../banner.js", () => ({
 }));
 
 vi.mock("../cli-name.js", () => ({
-  resolveCliName: () => "opencraft",
+  resolveCliName: () => "openclaw",
 }));
 
 vi.mock("./config-guard.js", () => ({
@@ -51,9 +51,9 @@ beforeEach(() => {
   originalProcessArgv = [...process.argv];
   originalProcessTitle = process.title;
   originalNodeNoWarnings = process.env.NODE_NO_WARNINGS;
-  originalHideBanner = process.env.OPENCRAFT_HIDE_BANNER;
+  originalHideBanner = process.env.OPENCLAW_HIDE_BANNER;
   delete process.env.NODE_NO_WARNINGS;
-  delete process.env.OPENCRAFT_HIDE_BANNER;
+  delete process.env.OPENCLAW_HIDE_BANNER;
 });
 
 afterEach(() => {
@@ -65,9 +65,9 @@ afterEach(() => {
     process.env.NODE_NO_WARNINGS = originalNodeNoWarnings;
   }
   if (originalHideBanner === undefined) {
-    delete process.env.OPENCRAFT_HIDE_BANNER;
+    delete process.env.OPENCLAW_HIDE_BANNER;
   } else {
-    process.env.OPENCRAFT_HIDE_BANNER = originalHideBanner;
+    process.env.OPENCLAW_HIDE_BANNER = originalHideBanner;
   }
 });
 
@@ -78,7 +78,7 @@ describe("registerPreActionHooks", () => {
     | null = null;
 
   function buildProgram() {
-    const program = new Command().name("opencraft");
+    const program = new Command().name("openclaw");
     program.command("status").action(() => {});
     program
       .command("backup")
@@ -91,6 +91,8 @@ describe("registerPreActionHooks", () => {
     program.command("agents").action(() => {});
     program.command("configure").action(() => {});
     program.command("onboard").action(() => {});
+    const channels = program.command("channels");
+    channels.command("add").action(() => {});
     program
       .command("update")
       .command("status")
@@ -140,7 +142,7 @@ describe("registerPreActionHooks", () => {
   it("handles debug mode and plugin-required command preaction", async () => {
     await runPreAction({
       parseArgv: ["status"],
-      processArgv: ["node", "opencraft", "status", "--debug"],
+      processArgv: ["node", "openclaw", "status", "--debug"],
     });
 
     expect(emitCliBannerMock).toHaveBeenCalledWith("9.9.9-test");
@@ -149,13 +151,13 @@ describe("registerPreActionHooks", () => {
       runtime: runtimeMock,
       commandPath: ["status"],
     });
-    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledTimes(1);
-    expect(process.title).toBe("opencraft-status");
+    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledWith({ scope: "channels" });
+    expect(process.title).toBe("openclaw-status");
 
     vi.clearAllMocks();
     await runPreAction({
       parseArgv: ["message", "send"],
-      processArgv: ["node", "opencraft", "message", "send"],
+      processArgv: ["node", "openclaw", "message", "send"],
     });
 
     expect(setVerboseMock).toHaveBeenCalledWith(false);
@@ -164,13 +166,38 @@ describe("registerPreActionHooks", () => {
       runtime: runtimeMock,
       commandPath: ["message", "send"],
     });
-    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledTimes(1);
+    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledWith({ scope: "all" });
+  });
+
+  it("keeps setup alias and channels add manifest-first", async () => {
+    await runPreAction({
+      parseArgv: ["onboard"],
+      processArgv: ["node", "openclaw", "onboard"],
+    });
+
+    expect(ensureConfigReadyMock).toHaveBeenCalledWith({
+      runtime: runtimeMock,
+      commandPath: ["onboard"],
+    });
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
+
+    vi.clearAllMocks();
+    await runPreAction({
+      parseArgv: ["channels", "add"],
+      processArgv: ["node", "openclaw", "channels", "add"],
+    });
+
+    expect(ensureConfigReadyMock).toHaveBeenCalledWith({
+      runtime: runtimeMock,
+      commandPath: ["channels", "add"],
+    });
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
   });
 
   it("skips help/version preaction and respects banner opt-out", async () => {
     await runPreAction({
       parseArgv: ["status"],
-      processArgv: ["node", "opencraft", "--version"],
+      processArgv: ["node", "openclaw", "--version"],
     });
 
     expect(emitCliBannerMock).not.toHaveBeenCalled();
@@ -178,11 +205,11 @@ describe("registerPreActionHooks", () => {
     expect(ensureConfigReadyMock).not.toHaveBeenCalled();
 
     vi.clearAllMocks();
-    process.env.OPENCRAFT_HIDE_BANNER = "1";
+    process.env.OPENCLAW_HIDE_BANNER = "1";
 
     await runPreAction({
       parseArgv: ["status"],
-      processArgv: ["node", "opencraft", "status"],
+      processArgv: ["node", "openclaw", "status"],
     });
 
     expect(emitCliBannerMock).not.toHaveBeenCalled();
@@ -191,8 +218,21 @@ describe("registerPreActionHooks", () => {
 
   it("applies --json stdout suppression only for explicit JSON output commands", async () => {
     await runPreAction({
+      parseArgv: ["status"],
+      processArgv: ["node", "openclaw", "status", "--json"],
+    });
+
+    expect(ensureConfigReadyMock).toHaveBeenCalledWith({
+      runtime: runtimeMock,
+      commandPath: ["status"],
+      suppressDoctorStdout: true,
+    });
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
+
+    vi.clearAllMocks();
+    await runPreAction({
       parseArgv: ["update", "status", "--json"],
-      processArgv: ["node", "opencraft", "update", "status", "--json"],
+      processArgv: ["node", "openclaw", "update", "status", "--json"],
     });
 
     expect(ensureConfigReadyMock).toHaveBeenCalledWith({
@@ -200,11 +240,12 @@ describe("registerPreActionHooks", () => {
       commandPath: ["update", "status"],
       suppressDoctorStdout: true,
     });
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
 
     vi.clearAllMocks();
     await runPreAction({
       parseArgv: ["config", "set", "gateway.auth.mode", "{bad", "--json"],
-      processArgv: ["node", "opencraft", "config", "set", "gateway.auth.mode", "{bad", "--json"],
+      processArgv: ["node", "openclaw", "config", "set", "gateway.auth.mode", "{bad", "--json"],
     });
 
     expect(ensureConfigReadyMock).toHaveBeenCalledWith({
@@ -216,7 +257,7 @@ describe("registerPreActionHooks", () => {
   it("bypasses config guard for config validate", async () => {
     await runPreAction({
       parseArgv: ["config", "validate"],
-      processArgv: ["node", "opencraft", "config", "validate"],
+      processArgv: ["node", "openclaw", "config", "validate"],
     });
 
     expect(ensureConfigReadyMock).not.toHaveBeenCalled();
@@ -225,7 +266,7 @@ describe("registerPreActionHooks", () => {
   it("bypasses config guard for config validate when root option values are present", async () => {
     await runPreAction({
       parseArgv: ["config", "validate"],
-      processArgv: ["node", "opencraft", "--profile", "work", "config", "validate"],
+      processArgv: ["node", "openclaw", "--profile", "work", "config", "validate"],
     });
 
     expect(ensureConfigReadyMock).not.toHaveBeenCalled();
@@ -234,7 +275,7 @@ describe("registerPreActionHooks", () => {
   it("bypasses config guard for backup create", async () => {
     await runPreAction({
       parseArgv: ["backup", "create"],
-      processArgv: ["node", "opencraft", "backup", "create", "--json"],
+      processArgv: ["node", "openclaw", "backup", "create", "--json"],
     });
 
     expect(ensureConfigReadyMock).not.toHaveBeenCalled();

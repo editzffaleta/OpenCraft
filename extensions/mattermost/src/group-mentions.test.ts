@@ -1,10 +1,10 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/mattermost";
 import { describe, expect, it } from "vitest";
 import { resolveMattermostGroupRequireMention } from "./group-mentions.js";
 
 describe("resolveMattermostGroupRequireMention", () => {
   it("defaults to requiring mention when no override is configured", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         mattermost: {},
       },
@@ -15,7 +15,7 @@ describe("resolveMattermostGroupRequireMention", () => {
   });
 
   it("respects chatmode-derived account override", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         mattermost: {
           chatmode: "onmessage",
@@ -28,7 +28,7 @@ describe("resolveMattermostGroupRequireMention", () => {
   });
 
   it("prefers an explicit runtime override when provided", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         mattermost: {
           chatmode: "oncall",

@@ -1,11 +1,11 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/mattermost";
 import {
   evaluateSenderGroupAccessForPolicy,
   isDangerousNameMatchingEnabled,
   resolveAllowlistMatchSimple,
   resolveControlCommandGate,
   resolveEffectiveAllowFromLists,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import type { ResolvedMattermostAccount } from "./accounts.js";
 import type { MattermostChannel } from "./client.js";
 
@@ -108,7 +108,7 @@ export type MattermostCommandAuthDecision =
 
 export function authorizeMattermostCommandInvocation(params: {
   account: ResolvedMattermostAccount;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   senderId: string;
   senderName: string;
   channelId: string;

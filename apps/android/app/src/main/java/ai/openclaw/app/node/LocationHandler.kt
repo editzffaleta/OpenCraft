@@ -1,11 +1,11 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -36,7 +36,7 @@ class LocationHandler(
     if (!isForeground()) {
       return GatewaySession.InvokeResult.error(
         code = "LOCATION_BACKGROUND_UNAVAILABLE",
-        message = "LOCATION_BACKGROUND_UNAVAILABLE: location requires OpenCraft to stay open",
+        message = "LOCATION_BACKGROUND_UNAVAILABLE: location requires OpenClaw to stay open",
       )
     }
     if (!hasFineLocationPermission() && !hasCoarseLocationPermission()) {

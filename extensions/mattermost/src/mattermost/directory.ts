@@ -1,8 +1,8 @@
 import type {
   ChannelDirectoryEntry,
-  OpenCraftConfig,
+  OpenClawConfig,
   RuntimeEnv,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import { listMattermostAccountIds, resolveMattermostAccount } from "./accounts.js";
 import {
   createMattermostClient,
@@ -13,7 +13,7 @@ import {
 } from "./client.js";
 
 export type MattermostDirectoryParams = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;
@@ -21,7 +21,7 @@ export type MattermostDirectoryParams = {
 };
 
 function buildClient(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): MattermostClient | null {
   const account = resolveMattermostAccount({ cfg: params.cfg, accountId: params.accountId });

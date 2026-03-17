@@ -35,11 +35,10 @@ describe("i18n", () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.stubGlobal("localStorage", createStorageMock());
-    // Use pt-BR so the module initializes without triggering a lazy load.
-    vi.stubGlobal("navigator", { language: "pt-BR" } as Navigator);
+    vi.stubGlobal("navigator", { language: "en-US" } as Navigator);
     translate = await import("../lib/translate.ts");
     localStorage.clear();
-    // Reset to English for the English-specific assertions below.
+    // Reset to English
     await translate.i18n.setLocale("en");
   });
 
@@ -83,14 +82,30 @@ describe("i18n", () => {
   it("loads saved non-English locale on startup", async () => {
     vi.resetModules();
     vi.stubGlobal("localStorage", createStorageMock());
-    vi.stubGlobal("navigator", { language: "pt-BR" } as Navigator);
-    localStorage.setItem("opencraft.i18n.locale", "zh-CN");
+    vi.stubGlobal("navigator", { language: "en-US" } as Navigator);
+    localStorage.setItem("openclaw.i18n.locale", "zh-CN");
     const fresh = await import("../lib/translate.ts");
     await vi.waitFor(() => {
       expect(fresh.i18n.getLocale()).toBe("zh-CN");
     });
     expect(fresh.i18n.getLocale()).toBe("zh-CN");
     expect(fresh.t("common.health")).toBe("健康状况");
+  });
+
+  it("skips node localStorage accessors that warn without a storage file", async () => {
+    vi.resetModules();
+    vi.unstubAllGlobals();
+    vi.stubGlobal("navigator", { language: "en-US" } as Navigator);
+    const warningSpy = vi.spyOn(process, "emitWarning");
+
+    const fresh = await import("../lib/translate.ts");
+
+    expect(fresh.i18n.getLocale()).toBe("en");
+    expect(warningSpy).not.toHaveBeenCalledWith(
+      "`--localstorage-file` was provided without a valid path",
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it("keeps the version label available in shipped locales", () => {

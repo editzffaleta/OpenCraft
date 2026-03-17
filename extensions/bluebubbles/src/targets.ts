@@ -5,7 +5,7 @@ import {
   type ParsedChatTarget,
   resolveServicePrefixedAllowTarget,
   resolveServicePrefixedTarget,
-} from "opencraft/plugin-sdk/bluebubbles";
+} from "openclaw/plugin-sdk/bluebubbles";
 
 export type BlueBubblesService = "imessage" | "sms" | "auto";
 

@@ -1,18 +1,18 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
-import ai.opencraft.app.gateway.GatewaySession
-import ai.opencraft.app.protocol.OpenCraftCalendarCommand
-import ai.opencraft.app.protocol.OpenCraftCanvasA2UICommand
-import ai.opencraft.app.protocol.OpenCraftCanvasCommand
-import ai.opencraft.app.protocol.OpenCraftCameraCommand
-import ai.opencraft.app.protocol.OpenCraftCallLogCommand
-import ai.opencraft.app.protocol.OpenCraftContactsCommand
-import ai.opencraft.app.protocol.OpenCraftDeviceCommand
-import ai.opencraft.app.protocol.OpenCraftLocationCommand
-import ai.opencraft.app.protocol.OpenCraftMotionCommand
-import ai.opencraft.app.protocol.OpenCraftNotificationsCommand
-import ai.opencraft.app.protocol.OpenCraftSmsCommand
-import ai.opencraft.app.protocol.OpenCraftSystemCommand
+import ai.openclaw.app.gateway.GatewaySession
+import ai.openclaw.app.protocol.OpenClawCalendarCommand
+import ai.openclaw.app.protocol.OpenClawCanvasA2UICommand
+import ai.openclaw.app.protocol.OpenClawCanvasCommand
+import ai.openclaw.app.protocol.OpenClawCameraCommand
+import ai.openclaw.app.protocol.OpenClawCallLogCommand
+import ai.openclaw.app.protocol.OpenClawContactsCommand
+import ai.openclaw.app.protocol.OpenClawDeviceCommand
+import ai.openclaw.app.protocol.OpenClawLocationCommand
+import ai.openclaw.app.protocol.OpenClawMotionCommand
+import ai.openclaw.app.protocol.OpenClawNotificationsCommand
+import ai.openclaw.app.protocol.OpenClawSmsCommand
+import ai.openclaw.app.protocol.OpenClawSystemCommand
 
 class InvokeDispatcher(
   private val canvas: CanvasController,
@@ -57,18 +57,18 @@ class InvokeDispatcher(
 
     return when (command) {
       // Canvas commands
-      OpenCraftCanvasCommand.Present.rawValue -> {
+      OpenClawCanvasCommand.Present.rawValue -> {
         val url = CanvasController.parseNavigateUrl(paramsJson)
         canvas.navigate(url)
         GatewaySession.InvokeResult.ok(null)
       }
-      OpenCraftCanvasCommand.Hide.rawValue -> GatewaySession.InvokeResult.ok(null)
-      OpenCraftCanvasCommand.Navigate.rawValue -> {
+      OpenClawCanvasCommand.Hide.rawValue -> GatewaySession.InvokeResult.ok(null)
+      OpenClawCanvasCommand.Navigate.rawValue -> {
         val url = CanvasController.parseNavigateUrl(paramsJson)
         canvas.navigate(url)
         GatewaySession.InvokeResult.ok(null)
       }
-      OpenCraftCanvasCommand.Eval.rawValue -> {
+      OpenClawCanvasCommand.Eval.rawValue -> {
         val js =
           CanvasController.parseEvalJs(paramsJson)
             ?: return GatewaySession.InvokeResult.error(
@@ -80,7 +80,7 @@ class InvokeDispatcher(
           GatewaySession.InvokeResult.ok("""{"result":${result.toJsonString()}}""")
         }
       }
-      OpenCraftCanvasCommand.Snapshot.rawValue -> {
+      OpenClawCanvasCommand.Snapshot.rawValue -> {
         val snapshotParams = CanvasController.parseSnapshotParams(paramsJson)
         withCanvasAvailable {
           val base64 =
@@ -94,7 +94,7 @@ class InvokeDispatcher(
       }
 
       // A2UI commands
-      OpenCraftCanvasA2UICommand.Reset.rawValue ->
+      OpenClawCanvasA2UICommand.Reset.rawValue ->
         withReadyA2ui {
           withCanvasAvailable {
             val res = canvas.eval(A2UIHandler.a2uiResetJS)
@@ -102,7 +102,7 @@ class InvokeDispatcher(
             GatewaySession.InvokeResult.ok(res)
           }
         }
-      OpenCraftCanvasA2UICommand.Push.rawValue, OpenCraftCanvasA2UICommand.PushJSONL.rawValue -> {
+      OpenClawCanvasA2UICommand.Push.rawValue, OpenClawCanvasA2UICommand.PushJSONL.rawValue -> {
         val messages =
           try {
             a2uiHandler.decodeA2uiMessages(command, paramsJson)
@@ -123,48 +123,48 @@ class InvokeDispatcher(
       }
 
       // Camera commands
-      OpenCraftCameraCommand.List.rawValue -> cameraHandler.handleList(paramsJson)
-      OpenCraftCameraCommand.Snap.rawValue -> cameraHandler.handleSnap(paramsJson)
-      OpenCraftCameraCommand.Clip.rawValue -> cameraHandler.handleClip(paramsJson)
+      OpenClawCameraCommand.List.rawValue -> cameraHandler.handleList(paramsJson)
+      OpenClawCameraCommand.Snap.rawValue -> cameraHandler.handleSnap(paramsJson)
+      OpenClawCameraCommand.Clip.rawValue -> cameraHandler.handleClip(paramsJson)
 
       // Location command
-      OpenCraftLocationCommand.Get.rawValue -> locationHandler.handleLocationGet(paramsJson)
+      OpenClawLocationCommand.Get.rawValue -> locationHandler.handleLocationGet(paramsJson)
 
       // Device commands
-      OpenCraftDeviceCommand.Status.rawValue -> deviceHandler.handleDeviceStatus(paramsJson)
-      OpenCraftDeviceCommand.Info.rawValue -> deviceHandler.handleDeviceInfo(paramsJson)
-      OpenCraftDeviceCommand.Permissions.rawValue -> deviceHandler.handleDevicePermissions(paramsJson)
-      OpenCraftDeviceCommand.Health.rawValue -> deviceHandler.handleDeviceHealth(paramsJson)
+      OpenClawDeviceCommand.Status.rawValue -> deviceHandler.handleDeviceStatus(paramsJson)
+      OpenClawDeviceCommand.Info.rawValue -> deviceHandler.handleDeviceInfo(paramsJson)
+      OpenClawDeviceCommand.Permissions.rawValue -> deviceHandler.handleDevicePermissions(paramsJson)
+      OpenClawDeviceCommand.Health.rawValue -> deviceHandler.handleDeviceHealth(paramsJson)
 
       // Notifications command
-      OpenCraftNotificationsCommand.List.rawValue -> notificationsHandler.handleNotificationsList(paramsJson)
-      OpenCraftNotificationsCommand.Actions.rawValue -> notificationsHandler.handleNotificationsActions(paramsJson)
+      OpenClawNotificationsCommand.List.rawValue -> notificationsHandler.handleNotificationsList(paramsJson)
+      OpenClawNotificationsCommand.Actions.rawValue -> notificationsHandler.handleNotificationsActions(paramsJson)
 
       // System command
-      OpenCraftSystemCommand.Notify.rawValue -> systemHandler.handleSystemNotify(paramsJson)
+      OpenClawSystemCommand.Notify.rawValue -> systemHandler.handleSystemNotify(paramsJson)
 
       // Photos command
-      ai.opencraft.app.protocol.OpenCraftPhotosCommand.Latest.rawValue -> photosHandler.handlePhotosLatest(
+      ai.openclaw.app.protocol.OpenClawPhotosCommand.Latest.rawValue -> photosHandler.handlePhotosLatest(
         paramsJson,
       )
 
       // Contacts command
-      OpenCraftContactsCommand.Search.rawValue -> contactsHandler.handleContactsSearch(paramsJson)
-      OpenCraftContactsCommand.Add.rawValue -> contactsHandler.handleContactsAdd(paramsJson)
+      OpenClawContactsCommand.Search.rawValue -> contactsHandler.handleContactsSearch(paramsJson)
+      OpenClawContactsCommand.Add.rawValue -> contactsHandler.handleContactsAdd(paramsJson)
 
       // Calendar command
-      OpenCraftCalendarCommand.Events.rawValue -> calendarHandler.handleCalendarEvents(paramsJson)
-      OpenCraftCalendarCommand.Add.rawValue -> calendarHandler.handleCalendarAdd(paramsJson)
+      OpenClawCalendarCommand.Events.rawValue -> calendarHandler.handleCalendarEvents(paramsJson)
+      OpenClawCalendarCommand.Add.rawValue -> calendarHandler.handleCalendarAdd(paramsJson)
 
       // Motion command
-      OpenCraftMotionCommand.Activity.rawValue -> motionHandler.handleMotionActivity(paramsJson)
-      OpenCraftMotionCommand.Pedometer.rawValue -> motionHandler.handleMotionPedometer(paramsJson)
+      OpenClawMotionCommand.Activity.rawValue -> motionHandler.handleMotionActivity(paramsJson)
+      OpenClawMotionCommand.Pedometer.rawValue -> motionHandler.handleMotionPedometer(paramsJson)
 
       // SMS command
-      OpenCraftSmsCommand.Send.rawValue -> smsHandler.handleSmsSend(paramsJson)
+      OpenClawSmsCommand.Send.rawValue -> smsHandler.handleSmsSend(paramsJson)
 
       // CallLog command
-      OpenCraftCallLogCommand.Search.rawValue -> callLogHandler.handleCallLogSearch(paramsJson)
+      OpenClawCallLogCommand.Search.rawValue -> callLogHandler.handleCallLogSearch(paramsJson)
 
       // Debug commands
       "debug.ed25519" -> debugHandler.handleEd25519()

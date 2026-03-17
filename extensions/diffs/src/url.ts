@@ -1,9 +1,9 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/diffs";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/diffs";
 
 const DEFAULT_GATEWAY_PORT = 18789;
 
 export function buildViewerUrl(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   viewerPath: string;
   baseUrl?: string;
 }): string {
@@ -40,7 +40,7 @@ export function normalizeViewerBaseUrl(raw: string): string {
   return withoutTrailingSlash;
 }
 
-function resolveGatewayBaseUrl(config: OpenCraftConfig): string {
+function resolveGatewayBaseUrl(config: OpenClawConfig): string {
   const scheme = config.gateway?.tls?.enabled ? "https" : "http";
   const port =
     typeof config.gateway?.port === "number" ? config.gateway.port : DEFAULT_GATEWAY_PORT;

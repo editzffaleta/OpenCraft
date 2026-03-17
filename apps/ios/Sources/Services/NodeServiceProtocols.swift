@@ -1,15 +1,15 @@
 import CoreLocation
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 import UIKit
 
-typealias OpenCraftCameraSnapResult = (format: String, base64: String, width: Int, height: Int)
-typealias OpenCraftCameraClipResult = (format: String, base64: String, durationMs: Int, hasAudio: Bool)
+typealias OpenClawCameraSnapResult = (format: String, base64: String, width: Int, height: Int)
+typealias OpenClawCameraClipResult = (format: String, base64: String, durationMs: Int, hasAudio: Bool)
 
 protocol CameraServicing: Sendable {
     func listDevices() async -> [CameraController.CameraDeviceInfo]
-    func snap(params: OpenCraftCameraSnapParams) async throws -> OpenCraftCameraSnapResult
-    func clip(params: OpenCraftCameraClipParams) async throws -> OpenCraftCameraClipResult
+    func snap(params: OpenClawCameraSnapParams) async throws -> OpenClawCameraSnapResult
+    func clip(params: OpenClawCameraClipParams) async throws -> OpenClawCameraClipResult
 }
 
 protocol ScreenRecordingServicing: Sendable {
@@ -25,14 +25,14 @@ protocol ScreenRecordingServicing: Sendable {
 protocol LocationServicing: Sendable {
     func authorizationStatus() -> CLAuthorizationStatus
     func accuracyAuthorization() -> CLAccuracyAuthorization
-    func ensureAuthorization(mode: OpenCraftLocationMode) async -> CLAuthorizationStatus
+    func ensureAuthorization(mode: OpenClawLocationMode) async -> CLAuthorizationStatus
     func currentLocation(
-        params: OpenCraftLocationGetParams,
-        desiredAccuracy: OpenCraftLocationAccuracy,
+        params: OpenClawLocationGetParams,
+        desiredAccuracy: OpenClawLocationAccuracy,
         maxAgeMs: Int?,
         timeoutMs: Int?) async throws -> CLLocation
     func startLocationUpdates(
-        desiredAccuracy: OpenCraftLocationAccuracy,
+        desiredAccuracy: OpenClawLocationAccuracy,
         significantChangesOnly: Bool) -> AsyncStream<CLLocation>
     func stopLocationUpdates()
     func startMonitoringSignificantLocationChanges(onUpdate: @escaping @Sendable (CLLocation) -> Void)
@@ -41,32 +41,32 @@ protocol LocationServicing: Sendable {
 
 @MainActor
 protocol DeviceStatusServicing: Sendable {
-    func status() async throws -> OpenCraftDeviceStatusPayload
-    func info() -> OpenCraftDeviceInfoPayload
+    func status() async throws -> OpenClawDeviceStatusPayload
+    func info() -> OpenClawDeviceInfoPayload
 }
 
 protocol PhotosServicing: Sendable {
-    func latest(params: OpenCraftPhotosLatestParams) async throws -> OpenCraftPhotosLatestPayload
+    func latest(params: OpenClawPhotosLatestParams) async throws -> OpenClawPhotosLatestPayload
 }
 
 protocol ContactsServicing: Sendable {
-    func search(params: OpenCraftContactsSearchParams) async throws -> OpenCraftContactsSearchPayload
-    func add(params: OpenCraftContactsAddParams) async throws -> OpenCraftContactsAddPayload
+    func search(params: OpenClawContactsSearchParams) async throws -> OpenClawContactsSearchPayload
+    func add(params: OpenClawContactsAddParams) async throws -> OpenClawContactsAddPayload
 }
 
 protocol CalendarServicing: Sendable {
-    func events(params: OpenCraftCalendarEventsParams) async throws -> OpenCraftCalendarEventsPayload
-    func add(params: OpenCraftCalendarAddParams) async throws -> OpenCraftCalendarAddPayload
+    func events(params: OpenClawCalendarEventsParams) async throws -> OpenClawCalendarEventsPayload
+    func add(params: OpenClawCalendarAddParams) async throws -> OpenClawCalendarAddPayload
 }
 
 protocol RemindersServicing: Sendable {
-    func list(params: OpenCraftRemindersListParams) async throws -> OpenCraftRemindersListPayload
-    func add(params: OpenCraftRemindersAddParams) async throws -> OpenCraftRemindersAddPayload
+    func list(params: OpenClawRemindersListParams) async throws -> OpenClawRemindersListPayload
+    func add(params: OpenClawRemindersAddParams) async throws -> OpenClawRemindersAddPayload
 }
 
 protocol MotionServicing: Sendable {
-    func activities(params: OpenCraftMotionActivityParams) async throws -> OpenCraftMotionActivityPayload
-    func pedometer(params: OpenCraftPedometerParams) async throws -> OpenCraftPedometerPayload
+    func activities(params: OpenClawMotionActivityParams) async throws -> OpenClawMotionActivityPayload
+    func pedometer(params: OpenClawPedometerParams) async throws -> OpenClawPedometerPayload
 }
 
 struct WatchMessagingStatus: Sendable, Equatable {
@@ -99,7 +99,7 @@ protocol WatchMessagingServicing: AnyObject, Sendable {
     func setReplyHandler(_ handler: (@Sendable (WatchQuickReplyEvent) -> Void)?)
     func sendNotification(
         id: String,
-        params: OpenCraftWatchNotifyParams) async throws -> WatchNotificationSendResult
+        params: OpenClawWatchNotifyParams) async throws -> WatchNotificationSendResult
 }
 
 extension CameraController: CameraServicing {}

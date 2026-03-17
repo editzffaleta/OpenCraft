@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveAgentModelFallbackValues } from "../config/model-input.js";
 import { resolveStateDir } from "../config/paths.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -23,7 +23,7 @@ function stripNullBytes(s: string): string {
 
 export { resolveAgentIdFromSessionKey };
 
-type AgentEntry = NonNullable<NonNullable<OpenCraftConfig["agents"]>["list"]>[number];
+type AgentEntry = NonNullable<NonNullable<OpenClawConfig["agents"]>["list"]>[number];
 
 type ResolvedAgentConfig = {
   name?: string;
@@ -43,7 +43,7 @@ type ResolvedAgentConfig = {
 
 let defaultAgentWarned = false;
 
-export function listAgentEntries(cfg: OpenCraftConfig): AgentEntry[] {
+export function listAgentEntries(cfg: OpenClawConfig): AgentEntry[] {
   const list = cfg.agents?.list;
   if (!Array.isArray(list)) {
     return [];
@@ -51,7 +51,7 @@ export function listAgentEntries(cfg: OpenCraftConfig): AgentEntry[] {
   return list.filter((entry): entry is AgentEntry => Boolean(entry && typeof entry === "object"));
 }
 
-export function listAgentIds(cfg: OpenCraftConfig): string[] {
+export function listAgentIds(cfg: OpenClawConfig): string[] {
   const agents = listAgentEntries(cfg);
   if (agents.length === 0) {
     return [DEFAULT_AGENT_ID];
@@ -69,7 +69,7 @@ export function listAgentIds(cfg: OpenCraftConfig): string[] {
   return ids.length > 0 ? ids : [DEFAULT_AGENT_ID];
 }
 
-export function resolveDefaultAgentId(cfg: OpenCraftConfig): string {
+export function resolveDefaultAgentId(cfg: OpenClawConfig): string {
   const agents = listAgentEntries(cfg);
   if (agents.length === 0) {
     return DEFAULT_AGENT_ID;
@@ -85,7 +85,7 @@ export function resolveDefaultAgentId(cfg: OpenCraftConfig): string {
 
 export function resolveSessionAgentIds(params: {
   sessionKey?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   agentId?: string;
 }): {
   defaultAgentId: string;
@@ -105,18 +105,18 @@ export function resolveSessionAgentIds(params: {
 
 export function resolveSessionAgentId(params: {
   sessionKey?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
 }): string {
   return resolveSessionAgentIds(params).sessionAgentId;
 }
 
-function resolveAgentEntry(cfg: OpenCraftConfig, agentId: string): AgentEntry | undefined {
+function resolveAgentEntry(cfg: OpenClawConfig, agentId: string): AgentEntry | undefined {
   const id = normalizeAgentId(agentId);
   return listAgentEntries(cfg).find((entry) => normalizeAgentId(entry.id) === id);
 }
 
 export function resolveAgentConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
 ): ResolvedAgentConfig | undefined {
   const id = normalizeAgentId(agentId);
@@ -145,7 +145,7 @@ export function resolveAgentConfig(
 }
 
 export function resolveAgentSkillsFilter(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
 ): string[] | undefined {
   return normalizeSkillFilter(resolveAgentConfig(cfg, agentId)?.skills);
@@ -168,7 +168,7 @@ function resolveModelPrimary(raw: unknown): string | undefined {
 }
 
 export function resolveAgentExplicitModelPrimary(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
 ): string | undefined {
   const raw = resolveAgentConfig(cfg, agentId)?.model;
@@ -176,7 +176,7 @@ export function resolveAgentExplicitModelPrimary(
 }
 
 export function resolveAgentEffectiveModelPrimary(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
 ): string | undefined {
   return (
@@ -186,12 +186,12 @@ export function resolveAgentEffectiveModelPrimary(
 }
 
 // Backward-compatible alias. Prefer explicit/effective helpers at new call sites.
-export function resolveAgentModelPrimary(cfg: OpenCraftConfig, agentId: string): string | undefined {
+export function resolveAgentModelPrimary(cfg: OpenClawConfig, agentId: string): string | undefined {
   return resolveAgentExplicitModelPrimary(cfg, agentId);
 }
 
 export function resolveAgentModelFallbacksOverride(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
 ): string[] | undefined {
   const raw = resolveAgentConfig(cfg, agentId)?.model;
@@ -217,7 +217,7 @@ export function resolveFallbackAgentId(params: {
 }
 
 export function resolveRunModelFallbacksOverride(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   agentId?: string | null;
   sessionKey?: string | null;
 }): string[] | undefined {
@@ -231,7 +231,7 @@ export function resolveRunModelFallbacksOverride(params: {
 }
 
 export function hasConfiguredModelFallbacks(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   agentId?: string | null;
   sessionKey?: string | null;
 }): boolean {
@@ -241,7 +241,7 @@ export function hasConfiguredModelFallbacks(params: {
 }
 
 export function resolveEffectiveModelFallbacks(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   hasSessionModelOverride: boolean;
 }): string[] | undefined {
@@ -253,7 +253,7 @@ export function resolveEffectiveModelFallbacks(params: {
   return agentFallbacksOverride ?? defaultFallbacks;
 }
 
-export function resolveAgentWorkspaceDir(cfg: OpenCraftConfig, agentId: string) {
+export function resolveAgentWorkspaceDir(cfg: OpenClawConfig, agentId: string) {
   const id = normalizeAgentId(agentId);
   const configured = resolveAgentConfig(cfg, id)?.workspace?.trim();
   if (configured) {
@@ -293,7 +293,7 @@ function isPathWithinRoot(candidatePath: string, rootPath: string): boolean {
 }
 
 export function resolveAgentIdsByWorkspacePath(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   workspacePath: string,
 ): string[] {
   const normalizedWorkspacePath = normalizePathForComparison(workspacePath);
@@ -321,18 +321,22 @@ export function resolveAgentIdsByWorkspacePath(
 }
 
 export function resolveAgentIdByWorkspacePath(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   workspacePath: string,
 ): string | undefined {
   return resolveAgentIdsByWorkspacePath(cfg, workspacePath)[0];
 }
 
-export function resolveAgentDir(cfg: OpenCraftConfig, agentId: string) {
+export function resolveAgentDir(
+  cfg: OpenClawConfig,
+  agentId: string,
+  env: NodeJS.ProcessEnv = process.env,
+) {
   const id = normalizeAgentId(agentId);
   const configured = resolveAgentConfig(cfg, id)?.agentDir?.trim();
   if (configured) {
-    return resolveUserPath(configured);
+    return resolveUserPath(configured, env);
   }
-  const root = resolveStateDir(process.env);
+  const root = resolveStateDir(env);
   return path.join(root, "agents", id, "agent");
 }

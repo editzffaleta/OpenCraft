@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { captureEnv } from "../../test-utils/env.js";
 import { handleTelegramAction, readTelegramButtons } from "./telegram-actions.js";
 
@@ -23,6 +23,12 @@ const editMessageTelegram = vi.fn(async () => ({
   messageId: "456",
   chatId: "123",
 }));
+const editForumTopicTelegram = vi.fn(async () => ({
+  ok: true,
+  chatId: "123",
+  messageThreadId: 42,
+  name: "Renamed",
+}));
 const createForumTopicTelegram = vi.fn(async () => ({
   topicId: 99,
   name: "Topic",
@@ -42,6 +48,8 @@ vi.mock("../../../extensions/telegram/src/send.js", () => ({
     deleteMessageTelegram(...args),
   editMessageTelegram: (...args: Parameters<typeof editMessageTelegram>) =>
     editMessageTelegram(...args),
+  editForumTopicTelegram: (...args: Parameters<typeof editForumTopicTelegram>) =>
+    editForumTopicTelegram(...args),
   createForumTopicTelegram: (...args: Parameters<typeof createForumTopicTelegram>) =>
     createForumTopicTelegram(...args),
 }));
@@ -54,13 +62,13 @@ describe("handleTelegramAction", () => {
     emoji: "✅",
   } as const;
 
-  function reactionConfig(reactionLevel: "minimal" | "extensive" | "off" | "ack"): OpenCraftConfig {
+  function reactionConfig(reactionLevel: "minimal" | "extensive" | "off" | "ack"): OpenClawConfig {
     return {
       channels: { telegram: { botToken: "tok", reactionLevel } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
-  function telegramConfig(overrides?: Record<string, unknown>): OpenCraftConfig {
+  function telegramConfig(overrides?: Record<string, unknown>): OpenClawConfig {
     return {
       channels: {
         telegram: {
@@ -68,7 +76,7 @@ describe("handleTelegramAction", () => {
           ...overrides,
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
   async function sendInlineButtonsMessage(params: {
@@ -105,6 +113,7 @@ describe("handleTelegramAction", () => {
     sendStickerTelegram.mockClear();
     deleteMessageTelegram.mockClear();
     editMessageTelegram.mockClear();
+    editForumTopicTelegram.mockClear();
     createForumTopicTelegram.mockClear();
     process.env.TELEGRAM_BOT_TOKEN = "tok";
   });
@@ -162,7 +171,7 @@ describe("handleTelegramAction", () => {
   it("soft-fails when messageId is missing", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok", reactionLevel: "minimal" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const result = await handleTelegramAction(
       {
         action: "react",
@@ -197,7 +206,7 @@ describe("handleTelegramAction", () => {
   });
 
   it("rejects sticker actions when disabled by default", async () => {
-    const cfg = { channels: { telegram: { botToken: "tok" } } } as OpenCraftConfig;
+    const cfg = { channels: { telegram: { botToken: "tok" } } } as OpenClawConfig;
     await expect(
       handleTelegramAction(
         {
@@ -214,7 +223,7 @@ describe("handleTelegramAction", () => {
   it("sends stickers when enabled", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok", actions: { sticker: true } } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await handleTelegramAction(
       {
         action: "sendSticker",
@@ -278,7 +287,7 @@ describe("handleTelegramAction", () => {
           actions: { reactions: false },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const result = await handleTelegramAction(
       {
         action: "react",
@@ -457,6 +466,14 @@ describe("handleTelegramAction", () => {
         readCallOpts: (calls: unknown[][], argIndex: number) => Record<string, unknown>,
       ) => readCallOpts(createForumTopicTelegram.mock.calls as unknown[][], 2),
     },
+    {
+      name: "editForumTopic",
+      params: { action: "editForumTopic", chatId: "123", messageThreadId: 42, name: "New" },
+      cfg: telegramConfig({ actions: { editForumTopic: true } }),
+      assertCall: (
+        readCallOpts: (calls: unknown[][], argIndex: number) => Record<string, unknown>,
+      ) => readCallOpts(editForumTopicTelegram.mock.calls as unknown[][], 2),
+    },
   ])("forwards resolved cfg for $name action", async ({ params, cfg, assertCall }) => {
     const readCallOpts = (calls: unknown[][], argIndex: number): Record<string, unknown> => {
       const args = calls[0];
@@ -543,7 +560,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { sendMessage: false } },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expect(
       handleTelegramAction(
         {
@@ -561,7 +578,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { poll: false } },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expect(
       handleTelegramAction(
         {
@@ -578,7 +595,7 @@ describe("handleTelegramAction", () => {
   it("deletes a message", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await handleTelegramAction(
       {
         action: "deleteMessage",
@@ -599,7 +616,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { deleteMessage: false } },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expect(
       handleTelegramAction(
         {
@@ -614,7 +631,7 @@ describe("handleTelegramAction", () => {
 
   it("throws on missing bot token for sendMessage", async () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
-    const cfg = {} as OpenCraftConfig;
+    const cfg = {} as OpenClawConfig;
     await expect(
       handleTelegramAction(
         {
@@ -630,7 +647,7 @@ describe("handleTelegramAction", () => {
   it("allows inline buttons by default (allowlist)", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await handleTelegramAction(
       {
         action: "sendMessage",
@@ -783,7 +800,7 @@ describe("handleTelegramAction per-account gating", () => {
     >;
     topLevelBotToken?: string;
     topLevelActions?: { reactions?: boolean };
-  }): OpenCraftConfig {
+  }): OpenClawConfig {
     return {
       channels: {
         telegram: {
@@ -792,10 +809,10 @@ describe("handleTelegramAction per-account gating", () => {
           accounts: params.accounts,
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
-  async function expectAccountStickerSend(cfg: OpenCraftConfig, accountId = "media") {
+  async function expectAccountStickerSend(cfg: OpenClawConfig, accountId = "media") {
     await handleTelegramAction(
       { action: "sendSticker", to: "123", fileId: "sticker-id", accountId },
       cfg,
@@ -825,7 +842,7 @@ describe("handleTelegramAction per-account gating", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     await expect(
       handleTelegramAction(

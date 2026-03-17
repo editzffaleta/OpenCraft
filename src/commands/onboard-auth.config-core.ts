@@ -10,7 +10,7 @@ import {
   buildXiaomiProvider,
   QIANFAN_DEFAULT_MODEL_ID,
   XIAOMI_DEFAULT_MODEL_ID,
-} from "../agents/models-config.providers.js";
+} from "../agents/models-config.providers.static.js";
 import {
   buildSyntheticModelDefinition,
   SYNTHETIC_BASE_URL,
@@ -28,7 +28,7 @@ import {
   VENICE_DEFAULT_MODEL_REF,
   VENICE_MODEL_CATALOG,
 } from "../agents/venice-models.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ModelApi } from "../config/types.models.js";
 import { KILOCODE_BASE_URL } from "../providers/kilocode-shared.js";
 import {
@@ -84,6 +84,7 @@ import {
   MODELSTUDIO_GLOBAL_BASE_URL,
   MODELSTUDIO_DEFAULT_MODEL_REF,
 } from "./onboard-auth.models.js";
+export { applyAuthProfileConfig } from "./auth-profile-config.js";
 
 function mergeProviderModels<T extends { id: string }>(
   existingProvider: Record<string, unknown> | undefined,
@@ -109,9 +110,9 @@ function getNormalizedProviderApiKey(existingProvider: Record<string, unknown> |
 }
 
 export function applyZaiProviderConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   params?: { endpoint?: string; modelId?: string },
-): OpenCraftConfig {
+): OpenClawConfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = `zai/${modelId}`;
 
@@ -157,16 +158,16 @@ export function applyZaiProviderConfig(
 }
 
 export function applyZaiConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   params?: { endpoint?: string; modelId?: string },
-): OpenCraftConfig {
+): OpenClawConfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = modelId === ZAI_DEFAULT_MODEL_ID ? ZAI_DEFAULT_MODEL_REF : `zai/${modelId}`;
   const next = applyZaiProviderConfig(cfg, params);
   return applyAgentDefaultModelPrimary(next, modelRef);
 }
 
-export function applyOpenrouterProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyOpenrouterProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[OPENROUTER_DEFAULT_MODEL_REF] = {
     ...models[OPENROUTER_DEFAULT_MODEL_REF],
@@ -185,23 +186,23 @@ export function applyOpenrouterProviderConfig(cfg: OpenCraftConfig): OpenCraftCo
   };
 }
 
-export function applyOpenrouterConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyOpenrouterConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyOpenrouterProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, OPENROUTER_DEFAULT_MODEL_REF);
 }
 
-export function applyMoonshotProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMoonshotProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_BASE_URL);
 }
 
-export function applyMoonshotProviderConfigCn(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMoonshotProviderConfigCn(cfg: OpenClawConfig): OpenClawConfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_CN_BASE_URL);
 }
 
 function applyMoonshotProviderConfigWithBaseUrl(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   baseUrl: string,
-): OpenCraftConfig {
+): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MOONSHOT_DEFAULT_MODEL_REF] = {
     ...models[MOONSHOT_DEFAULT_MODEL_REF],
@@ -220,17 +221,17 @@ function applyMoonshotProviderConfigWithBaseUrl(
   });
 }
 
-export function applyMoonshotConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMoonshotConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyMoonshotProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MOONSHOT_DEFAULT_MODEL_REF);
 }
 
-export function applyMoonshotConfigCn(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMoonshotConfigCn(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyMoonshotProviderConfigCn(cfg);
   return applyAgentDefaultModelPrimary(next, MOONSHOT_DEFAULT_MODEL_REF);
 }
 
-export function applyKimiCodeProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyKimiCodeProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[KIMI_CODING_MODEL_REF] = {
     ...models[KIMI_CODING_MODEL_REF],
@@ -249,12 +250,12 @@ export function applyKimiCodeProviderConfig(cfg: OpenCraftConfig): OpenCraftConf
   });
 }
 
-export function applyKimiCodeConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyKimiCodeConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyKimiCodeProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, KIMI_CODING_MODEL_REF);
 }
 
-export function applySyntheticProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applySyntheticProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[SYNTHETIC_DEFAULT_MODEL_REF] = {
     ...models[SYNTHETIC_DEFAULT_MODEL_REF],
@@ -287,12 +288,12 @@ export function applySyntheticProviderConfig(cfg: OpenCraftConfig): OpenCraftCon
   return applyOnboardAuthAgentModelsAndProviders(cfg, { agentModels: models, providers });
 }
 
-export function applySyntheticConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applySyntheticConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applySyntheticProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, SYNTHETIC_DEFAULT_MODEL_REF);
 }
 
-export function applyXiaomiProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyXiaomiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XIAOMI_DEFAULT_MODEL_REF] = {
     ...models[XIAOMI_DEFAULT_MODEL_REF],
@@ -310,7 +311,7 @@ export function applyXiaomiProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig
   });
 }
 
-export function applyXiaomiConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyXiaomiConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyXiaomiProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, XIAOMI_DEFAULT_MODEL_REF);
 }
@@ -319,7 +320,7 @@ export function applyXiaomiConfig(cfg: OpenCraftConfig): OpenCraftConfig {
  * Apply Venice provider configuration without changing the default model.
  * Registers Venice models and sets up the provider, but preserves existing model selection.
  */
-export function applyVeniceProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyVeniceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[VENICE_DEFAULT_MODEL_REF] = {
     ...models[VENICE_DEFAULT_MODEL_REF],
@@ -338,9 +339,9 @@ export function applyVeniceProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig
 
 /**
  * Apply Venice provider configuration AND set Venice as the default model.
- * Use this when Venice is the primary provider choice during onboarding.
+ * Use this when Venice is the primary provider choice during setup.
  */
-export function applyVeniceConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyVeniceConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyVeniceProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, VENICE_DEFAULT_MODEL_REF);
 }
@@ -349,7 +350,7 @@ export function applyVeniceConfig(cfg: OpenCraftConfig): OpenCraftConfig {
  * Apply Together provider configuration without changing the default model.
  * Registers Together models and sets up the provider, but preserves existing model selection.
  */
-export function applyTogetherProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyTogetherProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[TOGETHER_DEFAULT_MODEL_REF] = {
     ...models[TOGETHER_DEFAULT_MODEL_REF],
@@ -368,9 +369,9 @@ export function applyTogetherProviderConfig(cfg: OpenCraftConfig): OpenCraftConf
 
 /**
  * Apply Together provider configuration AND set Together as the default model.
- * Use this when Together is the primary provider choice during onboarding.
+ * Use this when Together is the primary provider choice during setup.
  */
-export function applyTogetherConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyTogetherConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyTogetherProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, TOGETHER_DEFAULT_MODEL_REF);
 }
@@ -378,7 +379,7 @@ export function applyTogetherConfig(cfg: OpenCraftConfig): OpenCraftConfig {
 /**
  * Apply Hugging Face (Inference Providers) provider configuration without changing the default model.
  */
-export function applyHuggingfaceProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyHuggingfaceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[HUGGINGFACE_DEFAULT_MODEL_REF] = {
     ...models[HUGGINGFACE_DEFAULT_MODEL_REF],
@@ -398,12 +399,12 @@ export function applyHuggingfaceProviderConfig(cfg: OpenCraftConfig): OpenCraftC
 /**
  * Apply Hugging Face provider configuration AND set Hugging Face as the default model.
  */
-export function applyHuggingfaceConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyHuggingfaceConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyHuggingfaceProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, HUGGINGFACE_DEFAULT_MODEL_REF);
 }
 
-export function applyXaiProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyXaiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XAI_DEFAULT_MODEL_REF] = {
     ...models[XAI_DEFAULT_MODEL_REF],
@@ -422,12 +423,12 @@ export function applyXaiProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
   });
 }
 
-export function applyXaiConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyXaiConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyXaiProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, XAI_DEFAULT_MODEL_REF);
 }
 
-export function applyMistralProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMistralProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MISTRAL_DEFAULT_MODEL_REF] = {
     ...models[MISTRAL_DEFAULT_MODEL_REF],
@@ -446,7 +447,7 @@ export function applyMistralProviderConfig(cfg: OpenCraftConfig): OpenCraftConfi
   });
 }
 
-export function applyMistralConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMistralConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyMistralProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MISTRAL_DEFAULT_MODEL_REF);
 }
@@ -457,7 +458,7 @@ export { KILOCODE_BASE_URL };
  * Apply Kilo Gateway provider configuration without changing the default model.
  * Registers Kilo Gateway and sets up the provider, but preserves existing model selection.
  */
-export function applyKilocodeProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyKilocodeProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[KILOCODE_DEFAULT_MODEL_REF] = {
     ...models[KILOCODE_DEFAULT_MODEL_REF],
@@ -477,86 +478,14 @@ export function applyKilocodeProviderConfig(cfg: OpenCraftConfig): OpenCraftConf
 
 /**
  * Apply Kilo Gateway provider configuration AND set Kilo Gateway as the default model.
- * Use this when Kilo Gateway is the primary provider choice during onboarding.
+ * Use this when Kilo Gateway is the primary provider choice during setup.
  */
-export function applyKilocodeConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyKilocodeConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyKilocodeProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, KILOCODE_DEFAULT_MODEL_REF);
 }
 
-export function applyAuthProfileConfig(
-  cfg: OpenCraftConfig,
-  params: {
-    profileId: string;
-    provider: string;
-    mode: "api_key" | "oauth" | "token";
-    email?: string;
-    preferProfileFirst?: boolean;
-  },
-): OpenCraftConfig {
-  const normalizedProvider = params.provider.toLowerCase();
-  const profiles = {
-    ...cfg.auth?.profiles,
-    [params.profileId]: {
-      provider: params.provider,
-      mode: params.mode,
-      ...(params.email ? { email: params.email } : {}),
-    },
-  };
-
-  const configuredProviderProfiles = Object.entries(cfg.auth?.profiles ?? {})
-    .filter(([, profile]) => profile.provider.toLowerCase() === normalizedProvider)
-    .map(([profileId, profile]) => ({ profileId, mode: profile.mode }));
-
-  // Maintain `auth.order` when it already exists. Additionally, if we detect
-  // mixed auth modes for the same provider (e.g. legacy oauth + newly selected
-  // api_key), create an explicit order to keep the newly selected profile first.
-  const existingProviderOrder = cfg.auth?.order?.[params.provider];
-  const preferProfileFirst = params.preferProfileFirst ?? true;
-  const reorderedProviderOrder =
-    existingProviderOrder && preferProfileFirst
-      ? [
-          params.profileId,
-          ...existingProviderOrder.filter((profileId) => profileId !== params.profileId),
-        ]
-      : existingProviderOrder;
-  const hasMixedConfiguredModes = configuredProviderProfiles.some(
-    ({ profileId, mode }) => profileId !== params.profileId && mode !== params.mode,
-  );
-  const derivedProviderOrder =
-    existingProviderOrder === undefined && preferProfileFirst && hasMixedConfiguredModes
-      ? [
-          params.profileId,
-          ...configuredProviderProfiles
-            .map(({ profileId }) => profileId)
-            .filter((profileId) => profileId !== params.profileId),
-        ]
-      : undefined;
-  const order =
-    existingProviderOrder !== undefined
-      ? {
-          ...cfg.auth?.order,
-          [params.provider]: reorderedProviderOrder?.includes(params.profileId)
-            ? reorderedProviderOrder
-            : [...(reorderedProviderOrder ?? []), params.profileId],
-        }
-      : derivedProviderOrder
-        ? {
-            ...cfg.auth?.order,
-            [params.provider]: derivedProviderOrder,
-          }
-        : cfg.auth?.order;
-  return {
-    ...cfg,
-    auth: {
-      ...cfg.auth,
-      profiles,
-      ...(order ? { order } : {}),
-    },
-  };
-}
-
-export function applyQianfanProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyQianfanProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[QIANFAN_DEFAULT_MODEL_REF] = {
     ...models[QIANFAN_DEFAULT_MODEL_REF],
@@ -587,7 +516,7 @@ export function applyQianfanProviderConfig(cfg: OpenCraftConfig): OpenCraftConfi
   });
 }
 
-export function applyQianfanConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyQianfanConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyQianfanProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, QIANFAN_DEFAULT_MODEL_REF);
 }
@@ -595,9 +524,9 @@ export function applyQianfanConfig(cfg: OpenCraftConfig): OpenCraftConfig {
 // Alibaba Cloud Model Studio Coding Plan
 
 function applyModelStudioProviderConfigWithBaseUrl(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   baseUrl: string,
-): OpenCraftConfig {
+): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
 
   const modelStudioModelIds = [
@@ -654,20 +583,20 @@ function applyModelStudioProviderConfigWithBaseUrl(
   return applyOnboardAuthAgentModelsAndProviders(cfg, { agentModels: models, providers });
 }
 
-export function applyModelStudioProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyModelStudioProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   return applyModelStudioProviderConfigWithBaseUrl(cfg, MODELSTUDIO_GLOBAL_BASE_URL);
 }
 
-export function applyModelStudioProviderConfigCn(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyModelStudioProviderConfigCn(cfg: OpenClawConfig): OpenClawConfig {
   return applyModelStudioProviderConfigWithBaseUrl(cfg, MODELSTUDIO_CN_BASE_URL);
 }
 
-export function applyModelStudioConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyModelStudioConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyModelStudioProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MODELSTUDIO_DEFAULT_MODEL_REF);
 }
 
-export function applyModelStudioConfigCn(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyModelStudioConfigCn(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyModelStudioProviderConfigCn(cfg);
   return applyAgentDefaultModelPrimary(next, MODELSTUDIO_DEFAULT_MODEL_REF);
 }

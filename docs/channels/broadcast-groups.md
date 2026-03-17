@@ -1,79 +1,79 @@
 ---
-summary: "Transmitir uma mensagem do WhatsApp para múltiplos agentes"
+summary: "Broadcast a WhatsApp message to multiple agents"
 read_when:
-  - Configurando grupos de transmissão
-  - Depurando respostas de múltiplos agentes no WhatsApp
+  - Configuring broadcast groups
+  - Debugging multi-agent replies in WhatsApp
 status: experimental
-title: "Grupos de Transmissão"
+title: "Broadcast Groups"
 ---
 
-# Grupos de Transmissão
+# Broadcast Groups
 
-**Status:** Experimental
-**Versão:** Adicionado em 2026.1.9
+**Status:** Experimental  
+**Version:** Added in 2026.1.9
 
-## Visão geral
+## Overview
 
-Grupos de Transmissão permitem que múltiplos agentes processem e respondam à mesma mensagem simultaneamente. Isso permite criar equipes de agentes especializados que trabalham juntos em um único grupo ou DM do WhatsApp — tudo usando um número de telefone.
+Broadcast Groups enable multiple agents to process and respond to the same message simultaneously. This allows you to create specialized agent teams that work together in a single WhatsApp group or DM — all using one phone number.
 
-Escopo atual: **apenas WhatsApp** (canal web).
+Current scope: **WhatsApp only** (web channel).
 
-Grupos de transmissão são avaliados após as listas de permissão do canal e as regras de ativação de grupo. Em grupos do WhatsApp, isso significa que as transmissões acontecem quando o OpenCraft normalmente responderia (por exemplo: na menção, dependendo das configurações do grupo).
+Broadcast groups are evaluated after channel allowlists and group activation rules. In WhatsApp groups, this means broadcasts happen when OpenClaw would normally reply (for example: on mention, depending on your group settings).
 
-## Casos de Uso
+## Use Cases
 
-### 1. Equipes de Agentes Especializados
+### 1. Specialized Agent Teams
 
-Implante múltiplos agentes com responsabilidades atômicas e focadas:
-
-```
-Grupo: "Equipe de Desenvolvimento"
-Agentes:
-  - CodeReviewer (revisa trechos de código)
-  - DocumentationBot (gera docs)
-  - SecurityAuditor (verifica vulnerabilidades)
-  - TestGenerator (sugere casos de teste)
-```
-
-Cada agente processa a mesma mensagem e fornece sua perspectiva especializada.
-
-### 2. Suporte Multilíngue
+Deploy multiple agents with atomic, focused responsibilities:
 
 ```
-Grupo: "Suporte Internacional"
-Agentes:
-  - Agent_EN (responde em inglês)
-  - Agent_DE (responde em alemão)
-  - Agent_ES (responde em espanhol)
+Group: "Development Team"
+Agents:
+  - CodeReviewer (reviews code snippets)
+  - DocumentationBot (generates docs)
+  - SecurityAuditor (checks for vulnerabilities)
+  - TestGenerator (suggests test cases)
 ```
 
-### 3. Fluxos de Controle de Qualidade
+Each agent processes the same message and provides its specialized perspective.
+
+### 2. Multi-Language Support
 
 ```
-Grupo: "Suporte ao Cliente"
-Agentes:
-  - SupportAgent (fornece resposta)
-  - QAAgent (revisa qualidade, só responde se encontrar problemas)
+Group: "International Support"
+Agents:
+  - Agent_EN (responds in English)
+  - Agent_DE (responds in German)
+  - Agent_ES (responds in Spanish)
 ```
 
-### 4. Automação de Tarefas
+### 3. Quality Assurance Workflows
 
 ```
-Grupo: "Gerenciamento de Projetos"
-Agentes:
-  - TaskTracker (atualiza banco de dados de tarefas)
-  - TimeLogger (registra tempo gasto)
-  - ReportGenerator (cria resumos)
+Group: "Customer Support"
+Agents:
+  - SupportAgent (provides answer)
+  - QAAgent (reviews quality, only responds if issues found)
 ```
 
-## Configuração
+### 4. Task Automation
 
-### Configuração Básica
+```
+Group: "Project Management"
+Agents:
+  - TaskTracker (updates task database)
+  - TimeLogger (logs time spent)
+  - ReportGenerator (creates summaries)
+```
 
-Adicione uma seção `broadcast` no nível superior (ao lado de `bindings`). As chaves são IDs de peer do WhatsApp:
+## Configuration
 
-- chats em grupo: JID do grupo (ex.: `120363403215116621@g.us`)
-- DMs: número de telefone E.164 (ex.: `+5511999999999`)
+### Basic Setup
+
+Add a top-level `broadcast` section (next to `bindings`). Keys are WhatsApp peer ids:
+
+- group chats: group JID (e.g. `120363403215116621@g.us`)
+- DMs: E.164 phone number (e.g. `+15551234567`)
 
 ```json
 {
@@ -83,15 +83,15 @@ Adicione uma seção `broadcast` no nível superior (ao lado de `bindings`). As 
 }
 ```
 
-**Resultado:** Quando o OpenCraft responderia neste chat, ele executará todos os três agentes.
+**Result:** When OpenClaw would reply in this chat, it will run all three agents.
 
-### Estratégia de Processamento
+### Processing Strategy
 
-Controle como os agentes processam as mensagens:
+Control how agents process messages:
 
-#### Paralelo (Padrão)
+#### Parallel (Default)
 
-Todos os agentes processam simultaneamente:
+All agents process simultaneously:
 
 ```json
 {
@@ -102,9 +102,9 @@ Todos os agentes processam simultaneamente:
 }
 ```
 
-#### Sequencial
+#### Sequential
 
-Os agentes processam em ordem (um espera o anterior terminar):
+Agents process in order (one waits for previous to finish):
 
 ```json
 {
@@ -115,7 +115,7 @@ Os agentes processam em ordem (um espera o anterior terminar):
 }
 ```
 
-### Exemplo Completo
+### Complete Example
 
 ```json
 {
@@ -124,19 +124,19 @@ Os agentes processam em ordem (um espera o anterior terminar):
       {
         "id": "code-reviewer",
         "name": "Code Reviewer",
-        "workspace": "/caminho/para/code-reviewer",
+        "workspace": "/path/to/code-reviewer",
         "sandbox": { "mode": "all" }
       },
       {
         "id": "security-auditor",
         "name": "Security Auditor",
-        "workspace": "/caminho/para/security-auditor",
+        "workspace": "/path/to/security-auditor",
         "sandbox": { "mode": "all" }
       },
       {
         "id": "docs-generator",
         "name": "Documentation Generator",
-        "workspace": "/caminho/para/docs-generator",
+        "workspace": "/path/to/docs-generator",
         "sandbox": { "mode": "all" }
       }
     ]
@@ -145,71 +145,71 @@ Os agentes processam em ordem (um espera o anterior terminar):
     "strategy": "parallel",
     "120363403215116621@g.us": ["code-reviewer", "security-auditor", "docs-generator"],
     "120363424282127706@g.us": ["support-en", "support-de"],
-    "+5511999999999": ["assistant", "logger"]
+    "+15555550123": ["assistant", "logger"]
   }
 }
 ```
 
-## Como Funciona
+## How It Works
 
-### Fluxo de Mensagens
+### Message Flow
 
-1. **Mensagem de entrada** chega em um grupo do WhatsApp
-2. **Verificação de transmissão**: o sistema verifica se o ID do peer está em `broadcast`
-3. **Se estiver na lista de transmissão**:
-   - Todos os agentes listados processam a mensagem
-   - Cada agente tem sua própria chave de sessão e contexto isolado
-   - Os agentes processam em paralelo (padrão) ou sequencialmente
-4. **Se não estiver na lista de transmissão**:
-   - O roteamento normal é aplicado (primeiro binding correspondente)
+1. **Incoming message** arrives in a WhatsApp group
+2. **Broadcast check**: System checks if peer ID is in `broadcast`
+3. **If in broadcast list**:
+   - All listed agents process the message
+   - Each agent has its own session key and isolated context
+   - Agents process in parallel (default) or sequentially
+4. **If not in broadcast list**:
+   - Normal routing applies (first matching binding)
 
-Nota: grupos de transmissão não ignoram listas de permissão do canal ou regras de ativação de grupo (menções/comandos/etc). Eles apenas mudam _quais agentes executam_ quando uma mensagem é elegível para processamento.
+Note: broadcast groups do not bypass channel allowlists or group activation rules (mentions/commands/etc). They only change _which agents run_ when a message is eligible for processing.
 
-### Isolamento de Sessão
+### Session Isolation
 
-Cada agente em um grupo de transmissão mantém separados completamente:
+Each agent in a broadcast group maintains completely separate:
 
-- **Chaves de sessão** (`agent:alfred:whatsapp:group:120363...` vs `agent:baerbel:whatsapp:group:120363...`)
-- **Histórico de conversa** (o agente não vê as mensagens dos outros agentes)
-- **Workspace** (sandboxes separados se configurados)
-- **Acesso a ferramentas** (listas de permissão/negação diferentes)
-- **Memória/contexto** (IDENTITY.md, SOUL.md, etc. separados)
-- **Buffer de contexto de grupo** (mensagens recentes do grupo usadas como contexto) é compartilhado por peer, então todos os agentes de transmissão veem o mesmo contexto quando acionados
+- **Session keys** (`agent:alfred:whatsapp:group:120363...` vs `agent:baerbel:whatsapp:group:120363...`)
+- **Conversation history** (agent doesn't see other agents' messages)
+- **Workspace** (separate sandboxes if configured)
+- **Tool access** (different allow/deny lists)
+- **Memory/context** (separate IDENTITY.md, SOUL.md, etc.)
+- **Group context buffer** (recent group messages used for context) is shared per peer, so all broadcast agents see the same context when triggered
 
-Isso permite que cada agente tenha:
+This allows each agent to have:
 
-- Personalidades diferentes
-- Acesso a ferramentas diferente (ex.: somente leitura vs leitura-escrita)
-- Modelos diferentes (ex.: opus vs sonnet)
-- Skills diferentes instaladas
+- Different personalities
+- Different tool access (e.g., read-only vs. read-write)
+- Different models (e.g., opus vs. sonnet)
+- Different skills installed
 
-### Exemplo: Sessões Isoladas
+### Example: Isolated Sessions
 
-No grupo `120363403215116621@g.us` com agentes `["alfred", "baerbel"]`:
+In group `120363403215116621@g.us` with agents `["alfred", "baerbel"]`:
 
-**Contexto do Alfred:**
+**Alfred's context:**
 
 ```
 Session: agent:alfred:whatsapp:group:120363403215116621@g.us
 History: [user message, alfred's previous responses]
-Workspace: /Users/pascal/opencraft-alfred/
+Workspace: /Users/pascal/openclaw-alfred/
 Tools: read, write, exec
 ```
 
-**Contexto do Bärbel:**
+**Bärbel's context:**
 
 ```
 Session: agent:baerbel:whatsapp:group:120363403215116621@g.us
 History: [user message, baerbel's previous responses]
-Workspace: /Users/pascal/opencraft-baerbel/
+Workspace: /Users/pascal/openclaw-baerbel/
 Tools: read only
 ```
 
-## Boas Práticas
+## Best Practices
 
-### 1. Mantenha os Agentes Focados
+### 1. Keep Agents Focused
 
-Projete cada agente com uma responsabilidade única e clara:
+Design each agent with a single, clear responsibility:
 
 ```json
 {
@@ -219,12 +219,12 @@ Projete cada agente com uma responsabilidade única e clara:
 }
 ```
 
-✅ **Bom:** Cada agente tem uma tarefa
-❌ **Ruim:** Um agente genérico "dev-helper"
+✅ **Good:** Each agent has one job  
+❌ **Bad:** One generic "dev-helper" agent
 
-### 2. Use Nomes Descritivos
+### 2. Use Descriptive Names
 
-Deixe claro o que cada agente faz:
+Make it clear what each agent does:
 
 ```json
 {
@@ -236,107 +236,107 @@ Deixe claro o que cada agente faz:
 }
 ```
 
-### 3. Configure Acesso Diferente a Ferramentas
+### 3. Configure Different Tool Access
 
-Dê aos agentes apenas as ferramentas de que precisam:
+Give agents only the tools they need:
 
 ```json
 {
   "agents": {
     "reviewer": {
-      "tools": { "allow": ["read", "exec"] } // Somente leitura
+      "tools": { "allow": ["read", "exec"] } // Read-only
     },
     "fixer": {
-      "tools": { "allow": ["read", "write", "edit", "exec"] } // Leitura-escrita
+      "tools": { "allow": ["read", "write", "edit", "exec"] } // Read-write
     }
   }
 }
 ```
 
-### 4. Monitore o Desempenho
+### 4. Monitor Performance
 
-Com muitos agentes, considere:
+With many agents, consider:
 
-- Usar `"strategy": "parallel"` (padrão) para velocidade
-- Limitar grupos de transmissão a 5-10 agentes
-- Usar modelos mais rápidos para agentes mais simples
+- Using `"strategy": "parallel"` (default) for speed
+- Limiting broadcast groups to 5-10 agents
+- Using faster models for simpler agents
 
-### 5. Trate Falhas Graciosamente
+### 5. Handle Failures Gracefully
 
-Os agentes falham de forma independente. O erro de um agente não bloqueia os outros:
+Agents fail independently. One agent's error doesn't block others:
 
 ```
-Mensagem → [Agente A ✓, Agente B ✗ erro, Agente C ✓]
-Resultado: Agente A e C respondem, Agente B registra erro
+Message → [Agent A ✓, Agent B ✗ error, Agent C ✓]
+Result: Agent A and C respond, Agent B logs error
 ```
 
-## Compatibilidade
+## Compatibility
 
-### Provedores
+### Providers
 
-Grupos de transmissão funcionam atualmente com:
+Broadcast groups currently work with:
 
-- ✅ WhatsApp (implementado)
-- 🚧 Telegram (planejado)
-- 🚧 Discord (planejado)
-- 🚧 Slack (planejado)
+- ✅ WhatsApp (implemented)
+- 🚧 Telegram (planned)
+- 🚧 Discord (planned)
+- 🚧 Slack (planned)
 
-### Roteamento
+### Routing
 
-Grupos de transmissão funcionam junto com o roteamento existente:
+Broadcast groups work alongside existing routing:
 
 ```json
 {
   "bindings": [
     {
-      "match": { "channel": "whatsapp", "peer": { "kind": "group", "id": "GRUPO_A" } },
+      "match": { "channel": "whatsapp", "peer": { "kind": "group", "id": "GROUP_A" } },
       "agentId": "alfred"
     }
   ],
   "broadcast": {
-    "GRUPO_B": ["agent1", "agent2"]
+    "GROUP_B": ["agent1", "agent2"]
   }
 }
 ```
 
-- `GRUPO_A`: Apenas alfred responde (roteamento normal)
-- `GRUPO_B`: agent1 E agent2 respondem (transmissão)
+- `GROUP_A`: Only alfred responds (normal routing)
+- `GROUP_B`: agent1 AND agent2 respond (broadcast)
 
-**Precedência:** `broadcast` tem prioridade sobre `bindings`.
+**Precedence:** `broadcast` takes priority over `bindings`.
 
-## Solução de Problemas
+## Troubleshooting
 
-### Agentes Não Respondem
+### Agents Not Responding
 
-**Verifique:**
+**Check:**
 
-1. IDs de agente existem em `agents.list`
-2. Formato do ID do peer está correto (ex.: `120363403215116621@g.us`)
-3. Agentes não estão em listas de negação
+1. Agent IDs exist in `agents.list`
+2. Peer ID format is correct (e.g., `120363403215116621@g.us`)
+3. Agents are not in deny lists
 
 **Debug:**
 
 ```bash
-tail -f ~/.opencraft/logs/gateway.log | grep broadcast
+tail -f ~/.openclaw/logs/gateway.log | grep broadcast
 ```
 
-### Apenas Um Agente Respondendo
+### Only One Agent Responding
 
-**Causa:** O ID do peer pode estar em `bindings` mas não em `broadcast`.
+**Cause:** Peer ID might be in `bindings` but not `broadcast`.
 
-**Solução:** Adicione à config de broadcast ou remova dos bindings.
+**Fix:** Add to broadcast config or remove from bindings.
 
-### Problemas de Desempenho
+### Performance Issues
 
-**Se lento com muitos agentes:**
+**If slow with many agents:**
 
-- Reduza o número de agentes por grupo
-- Use modelos mais leves (sonnet em vez de opus)
-- Verifique o tempo de inicialização do sandbox
+- Reduce number of agents per group
+- Use lighter models (sonnet instead of opus)
+- Check sandbox startup time
 
-## Exemplos
+## Examples
 
-### Exemplo 1: Equipe de Revisão de Código
+### Example 1: Code Review Team
 
 ```json
 {
@@ -372,21 +372,21 @@ tail -f ~/.opencraft/logs/gateway.log | grep broadcast
 }
 ```
 
-**Usuário envia:** Trecho de código
-**Respostas:**
+**User sends:** Code snippet  
+**Responses:**
 
-- code-formatter: "Indentação corrigida e type hints adicionados"
-- security-scanner: "⚠️ Vulnerabilidade de injeção SQL na linha 12"
-- test-coverage: "Cobertura é 45%, testes ausentes para casos de erro"
-- docs-checker: "Docstring ausente para a função `process_data`"
+- code-formatter: "Fixed indentation and added type hints"
+- security-scanner: "⚠️ SQL injection vulnerability in line 12"
+- test-coverage: "Coverage is 45%, missing tests for error cases"
+- docs-checker: "Missing docstring for function `process_data`"
 
-### Exemplo 2: Suporte Multilíngue
+### Example 2: Multi-Language Support
 
 ```json
 {
   "broadcast": {
     "strategy": "sequential",
-    "+5511999999999": ["detect-language", "translator-en", "translator-de"]
+    "+15555550123": ["detect-language", "translator-en", "translator-de"]
   },
   "agents": {
     "list": [
@@ -398,9 +398,9 @@ tail -f ~/.opencraft/logs/gateway.log | grep broadcast
 }
 ```
 
-## Referência da API
+## API Reference
 
-### Schema de Config
+### Config Schema
 
 ```typescript
 interface OpenClawConfig {
@@ -411,32 +411,32 @@ interface OpenClawConfig {
 }
 ```
 
-### Campos
+### Fields
 
-- `strategy` (opcional): Como processar os agentes
-  - `"parallel"` (padrão): Todos os agentes processam simultaneamente
-  - `"sequential"`: Agentes processam na ordem do array
-- `[peerId]`: JID de grupo do WhatsApp, número E.164 ou outro ID de peer
-  - Valor: Array de IDs de agentes que devem processar mensagens
+- `strategy` (optional): How to process agents
+  - `"parallel"` (default): All agents process simultaneously
+  - `"sequential"`: Agents process in array order
+- `[peerId]`: WhatsApp group JID, E.164 number, or other peer ID
+  - Value: Array of agent IDs that should process messages
 
-## Limitações
+## Limitations
 
-1. **Máximo de agentes:** Sem limite fixo, mas 10+ agentes podem ser lentos
-2. **Contexto compartilhado:** Os agentes não veem as respostas uns dos outros (por design)
-3. **Ordenação de mensagens:** Respostas paralelas podem chegar em qualquer ordem
-4. **Limites de taxa:** Todos os agentes contam para os limites de taxa do WhatsApp
+1. **Max agents:** No hard limit, but 10+ agents may be slow
+2. **Shared context:** Agents don't see each other's responses (by design)
+3. **Message ordering:** Parallel responses may arrive in any order
+4. **Rate limits:** All agents count toward WhatsApp rate limits
 
-## Melhorias Futuras
+## Future Enhancements
 
-Recursos planejados:
+Planned features:
 
-- [ ] Modo de contexto compartilhado (agentes veem as respostas uns dos outros)
-- [ ] Coordenação de agentes (agentes podem sinalizar uns para os outros)
-- [ ] Seleção dinâmica de agentes (escolher agentes com base no conteúdo da mensagem)
-- [ ] Prioridades de agentes (alguns agentes respondem antes de outros)
+- [ ] Shared context mode (agents see each other's responses)
+- [ ] Agent coordination (agents can signal each other)
+- [ ] Dynamic agent selection (choose agents based on message content)
+- [ ] Agent priorities (some agents respond before others)
 
-## Veja Também
+## See Also
 
-- [Configuração Multi-Agente](/tools/multi-agent-sandbox-tools)
-- [Configuração de Roteamento](/channels/channel-routing)
-- [Gerenciamento de Sessão](/concepts/session)
+- [Multi-Agent Configuration](/tools/multi-agent-sandbox-tools)
+- [Routing Configuration](/channels/channel-routing)
+- [Session Management](/concepts/session)

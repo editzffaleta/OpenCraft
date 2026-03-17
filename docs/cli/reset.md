@@ -1,20 +1,20 @@
 ---
-summary: "Referência do CLI para `opencraft reset` (resetar estado/config local)"
+summary: "CLI reference for `openclaw reset` (reset local state/config)"
 read_when:
-  - Você quer apagar o estado local mantendo o CLI instalado
-  - Você quer um dry-run do que seria removido
+  - You want to wipe local state while keeping the CLI installed
+  - You want a dry-run of what would be removed
 title: "reset"
 ---
 
-# `opencraft reset`
+# `openclaw reset`
 
-Resetar config/estado local (mantém o CLI instalado).
+Reset local config/state (keeps the CLI installed).
 
 ```bash
-opencraft backup create
-opencraft reset
-opencraft reset --dry-run
-opencraft reset --scope config+creds+sessions --yes --non-interactive
+openclaw backup create
+openclaw reset
+openclaw reset --dry-run
+openclaw reset --scope config+creds+sessions --yes --non-interactive
 ```
 
-Rode `opencraft backup create` primeiro se quiser um snapshot restaurável antes de remover o estado local.
+Run `openclaw backup create` first if you want a restorable snapshot before removing local state.

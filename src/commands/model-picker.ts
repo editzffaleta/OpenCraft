@@ -9,18 +9,11 @@ import {
   normalizeProviderId,
   resolveConfiguredModelRef,
 } from "../agents/model-selection.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
-import {
-  resolveProviderPluginChoice,
-  resolveProviderModelPickerEntries,
-  runProviderModelSelectedHook,
-} from "../plugins/provider-wizard.js";
-import { resolvePluginProviders } from "../plugins/providers.js";
+import type { ProviderPlugin } from "../plugins/types.js";
 import type { WizardPrompter, WizardSelectOption } from "../wizard/prompts.js";
-import { runProviderPluginAuthMethod } from "./auth-choice.apply.plugin-provider.js";
 import { formatTokenK } from "./models/shared.js";
-import { OPENAI_CODEX_DEFAULT_MODEL } from "./openai-codex-model-default.js";
 
 const KEEP_VALUE = "__keep__";
 const MANUAL_VALUE = "__manual__";
@@ -32,7 +25,7 @@ const PROVIDER_FILTER_THRESHOLD = 30;
 const HIDDEN_ROUTER_MODELS = new Set(["openrouter/auto"]);
 
 type PromptDefaultModelParams = {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   prompter: WizardPrompter;
   allowKeep?: boolean;
   includeManual?: boolean;
@@ -46,12 +39,16 @@ type PromptDefaultModelParams = {
   message?: string;
 };
 
-type PromptDefaultModelResult = { model?: string; config?: OpenCraftConfig };
+type PromptDefaultModelResult = { model?: string; config?: OpenClawConfig };
 type PromptModelAllowlistResult = { models?: string[] };
+
+async function loadModelPickerRuntime() {
+  return import("./model-picker.runtime.js");
+}
 
 function hasAuthForProvider(
   provider: string,
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   store: ReturnType<typeof ensureAuthProfileStore>,
 ) {
   if (listProfilesForProvider(store, provider).length > 0) {
@@ -67,7 +64,7 @@ function hasAuthForProvider(
 }
 
 function createProviderAuthChecker(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
 }): (provider: string) => boolean {
   const authStore = ensureAuthProfileStore(params.agentDir, {
@@ -85,11 +82,11 @@ function createProviderAuthChecker(params: {
   };
 }
 
-function resolveConfiguredModelRaw(cfg: OpenCraftConfig): string {
+function resolveConfiguredModelRaw(cfg: OpenClawConfig): string {
   return resolveAgentModelPrimaryValue(cfg.agents?.defaults?.model) ?? "";
 }
 
-function resolveConfiguredModelKeys(cfg: OpenCraftConfig): string[] {
+function resolveConfiguredModelKeys(cfg: OpenClawConfig): string[] {
   const models = cfg.agents?.defaults?.models ?? {};
   return Object.keys(models)
     .map((key) => String(key ?? "").trim())
@@ -154,14 +151,6 @@ function addModelSelectOption(params: {
     hint: hints.length > 0 ? hints.join(" · ") : undefined,
   });
   params.seen.add(key);
-}
-
-function isAnthropicLegacyModel(entry: { provider: string; id: string }): boolean {
-  return (
-    entry.provider === "anthropic" &&
-    typeof entry.id === "string" &&
-    entry.id.toLowerCase().startsWith("claude-3")
-  );
 }
 
 async function promptManualModel(params: {
@@ -272,9 +261,6 @@ export async function promptDefaultModel(
       }
       return entry.provider === preferredProvider;
     });
-    if (preferredProvider === "anthropic") {
-      models = models.filter((entry) => !isAnthropicLegacyModel(entry));
-    }
   }
 
   const agentDir = params.agentDir;
@@ -295,6 +281,7 @@ export async function promptDefaultModel(
     options.push({ value: MANUAL_VALUE, label: "Enter model manually" });
   }
   if (includeProviderPluginSetups && agentDir) {
+    const { resolveProviderModelPickerEntries } = await loadModelPickerRuntime();
     options.push(
       ...resolveProviderModelPickerEntries({
         config: cfg,
@@ -347,20 +334,24 @@ export async function promptDefaultModel(
       initialValue: configuredRaw || resolvedKey || undefined,
     });
   }
-  const pluginProviders = resolvePluginProviders({
-    config: cfg,
-    workspaceDir: params.workspaceDir,
-    env: params.env,
-  });
-  const pluginResolution = selection.startsWith("provider-plugin:")
-    ? selection
-    : selection.includes("/")
-      ? null
-      : pluginProviders.some(
-            (provider) => normalizeProviderId(provider.id) === normalizeProviderId(selection),
-          )
-        ? selection
-        : null;
+
+  let pluginResolution: string | null = null;
+  let pluginProviders: ProviderPlugin[] = [];
+  if (selection.startsWith("provider-plugin:")) {
+    pluginResolution = selection;
+  } else if (!selection.includes("/")) {
+    const { resolvePluginProviders } = await loadModelPickerRuntime();
+    pluginProviders = resolvePluginProviders({
+      config: cfg,
+      workspaceDir: params.workspaceDir,
+      env: params.env,
+    });
+    pluginResolution = pluginProviders.some(
+      (provider) => normalizeProviderId(provider.id) === normalizeProviderId(selection),
+    )
+      ? selection
+      : null;
+  }
   if (pluginResolution) {
     if (!agentDir || !params.runtime) {
       await params.prompter.note(
@@ -368,6 +359,19 @@ export async function promptDefaultModel(
         "Provider setup unavailable",
       );
       return {};
+    }
+    const {
+      resolvePluginProviders,
+      resolveProviderPluginChoice,
+      runProviderModelSelectedHook,
+      runProviderPluginAuthMethod,
+    } = await loadModelPickerRuntime();
+    if (pluginProviders.length === 0) {
+      pluginProviders = resolvePluginProviders({
+        config: cfg,
+        workspaceDir: params.workspaceDir,
+        env: params.env,
+      });
     }
     const resolved = resolveProviderPluginChoice({
       providers: pluginProviders,
@@ -397,6 +401,7 @@ export async function promptDefaultModel(
     return { model: applied.defaultModel, config: applied.config };
   }
   const model = String(selection);
+  const { runProviderModelSelectedHook } = await loadModelPickerRuntime();
   await runProviderModelSelectedHook({
     config: cfg,
     model,
@@ -409,7 +414,7 @@ export async function promptDefaultModel(
 }
 
 export async function promptModelAllowlist(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   prompter: WizardPrompter;
   message?: string;
   agentDir?: string;
@@ -442,7 +447,7 @@ export async function promptModelAllowlist(params: {
         params.message ??
         "Allowlist models (comma-separated provider/model; blank to keep current)",
       initialValue: existingKeys.join(", "),
-      placeholder: `${OPENAI_CODEX_DEFAULT_MODEL}, anthropic/claude-opus-4-6`,
+      placeholder: "provider/model, other-provider/model",
     });
     const parsed = String(raw ?? "")
       .split(",")
@@ -511,7 +516,7 @@ export async function promptModelAllowlist(params: {
   return { models: [] };
 }
 
-export function applyPrimaryModel(cfg: OpenCraftConfig, model: string): OpenCraftConfig {
+export function applyPrimaryModel(cfg: OpenClawConfig, model: string): OpenClawConfig {
   const defaults = cfg.agents?.defaults;
   const existingModel = defaults?.model;
   const existingModels = defaults?.models;
@@ -538,7 +543,7 @@ export function applyPrimaryModel(cfg: OpenCraftConfig, model: string): OpenCraf
   };
 }
 
-export function applyModelAllowlist(cfg: OpenCraftConfig, models: string[]): OpenCraftConfig {
+export function applyModelAllowlist(cfg: OpenClawConfig, models: string[]): OpenClawConfig {
   const defaults = cfg.agents?.defaults;
   const normalized = normalizeModelKeys(models);
   if (normalized.length === 0) {
@@ -574,9 +579,9 @@ export function applyModelAllowlist(cfg: OpenCraftConfig, models: string[]): Ope
 }
 
 export function applyModelFallbacksFromSelection(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   selection: string[],
-): OpenCraftConfig {
+): OpenClawConfig {
   const normalized = normalizeModelKeys(selection);
   if (normalized.length <= 1) {
     return cfg;

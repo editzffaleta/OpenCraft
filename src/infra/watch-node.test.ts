@@ -28,7 +28,7 @@ describe("watch-node script", () => {
 
     const runPromise = runWatchMain({
       args: ["gateway", "--force"],
-      cwd: "/tmp/opencraft",
+      cwd: "/tmp/openclaw",
       createWatcher,
       env: { PATH: "/usr/bin" },
       now: () => 1700000000000,
@@ -44,10 +44,17 @@ describe("watch-node script", () => {
       { ignoreInitial: boolean; ignored: (watchPath: string) => boolean },
     ];
     expect(watchPaths).toEqual(runNodeWatchedPaths);
+    expect(watchPaths).toContain("extensions");
+    expect(watchPaths).toContain("tsdown.config.ts");
     expect(watchOptions.ignoreInitial).toBe(true);
     expect(watchOptions.ignored("src/infra/watch-node.test.ts")).toBe(true);
     expect(watchOptions.ignored("src/infra/watch-node.test.tsx")).toBe(true);
     expect(watchOptions.ignored("src/infra/watch-node-test-helpers.ts")).toBe(true);
+    expect(watchOptions.ignored("extensions/voice-call/README.md")).toBe(true);
+    expect(watchOptions.ignored("extensions/voice-call/openclaw.plugin.json")).toBe(false);
+    expect(watchOptions.ignored("extensions/voice-call/package.json")).toBe(false);
+    expect(watchOptions.ignored("extensions/voice-call/index.ts")).toBe(false);
+    expect(watchOptions.ignored("extensions/voice-call/src/runtime.ts")).toBe(false);
     expect(watchOptions.ignored("src/infra/watch-node.ts")).toBe(false);
     expect(watchOptions.ignored("tsconfig.json")).toBe(false);
 
@@ -56,13 +63,13 @@ describe("watch-node script", () => {
       "/usr/local/bin/node",
       ["scripts/run-node.mjs", "gateway", "--force"],
       expect.objectContaining({
-        cwd: "/tmp/opencraft",
+        cwd: "/tmp/openclaw",
         stdio: "inherit",
         env: expect.objectContaining({
           PATH: "/usr/bin",
-          OPENCRAFT_WATCH_MODE: "1",
-          OPENCRAFT_WATCH_SESSION: "1700000000000-4242",
-          OPENCRAFT_WATCH_COMMAND: "gateway --force",
+          OPENCLAW_WATCH_MODE: "1",
+          OPENCLAW_WATCH_SESSION: "1700000000000-4242",
+          OPENCLAW_WATCH_COMMAND: "gateway --force",
         }),
       }),
     );
@@ -120,9 +127,24 @@ describe("watch-node script", () => {
       }),
     });
     const childB = Object.assign(new EventEmitter(), {
+      kill: vi.fn(function () {
+        queueMicrotask(() => childB.emit("exit", 0, null));
+      }),
+    });
+    const childC = Object.assign(new EventEmitter(), {
+      kill: vi.fn(function () {
+        queueMicrotask(() => childC.emit("exit", 0, null));
+      }),
+    });
+    const childD = Object.assign(new EventEmitter(), {
       kill: vi.fn(() => {}),
     });
-    const spawn = vi.fn().mockReturnValueOnce(childA).mockReturnValueOnce(childB);
+    const spawn = vi
+      .fn()
+      .mockReturnValueOnce(childA)
+      .mockReturnValueOnce(childB)
+      .mockReturnValueOnce(childC)
+      .mockReturnValueOnce(childD);
     const watcher = Object.assign(new EventEmitter(), {
       close: vi.fn(async () => {}),
     });
@@ -151,10 +173,25 @@ describe("watch-node script", () => {
     expect(spawn).toHaveBeenCalledTimes(1);
     expect(childA.kill).not.toHaveBeenCalled();
 
-    watcher.emit("change", "src/infra/watch-node.ts");
+    watcher.emit("change", "extensions/voice-call/README.md");
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(spawn).toHaveBeenCalledTimes(1);
+    expect(childA.kill).not.toHaveBeenCalled();
+
+    watcher.emit("change", "extensions/voice-call/openclaw.plugin.json");
     await new Promise((resolve) => setImmediate(resolve));
     expect(childA.kill).toHaveBeenCalledWith("SIGTERM");
     expect(spawn).toHaveBeenCalledTimes(2);
+
+    watcher.emit("change", "extensions/voice-call/package.json");
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(childB.kill).toHaveBeenCalledWith("SIGTERM");
+    expect(spawn).toHaveBeenCalledTimes(3);
+
+    watcher.emit("change", "src/infra/watch-node.ts");
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(childC.kill).toHaveBeenCalledWith("SIGTERM");
+    expect(spawn).toHaveBeenCalledTimes(4);
 
     fakeProcess.emit("SIGINT");
     const exitCode = await runPromise;

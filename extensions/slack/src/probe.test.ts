@@ -33,17 +33,17 @@ describe("probeSlack", () => {
     authTestMock.mockResolvedValue({
       ok: true,
       user_id: "U123",
-      user: "opencraft-bot",
+      user: "openclaw-bot",
       team_id: "T123",
-      team: "OpenCraft",
+      team: "OpenClaw",
     });
 
     await expect(probeSlack("xoxb-test", 2500)).resolves.toEqual({
       ok: true,
       status: 200,
       elapsedMs: 45,
-      bot: { id: "U123", name: "opencraft-bot" },
-      team: { id: "T123", name: "OpenCraft" },
+      bot: { id: "U123", name: "openclaw-bot" },
+      team: { id: "T123", name: "OpenClaw" },
     });
     expect(createSlackWebClientMock).toHaveBeenCalledWith("xoxb-test");
     expect(withTimeoutMock).toHaveBeenCalledWith(expect.any(Promise), 2500);

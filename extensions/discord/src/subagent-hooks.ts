@@ -1,10 +1,10 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/discord";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { resolveDiscordAccount } from "./accounts.js";
 import {
   autoBindSpawnedDiscordSubagent,
   listThreadBindingsBySessionKey,
-  resolveDiscordAccount,
   unbindThreadBindingsBySessionKey,
-} from "opencraft/plugin-sdk/discord";
+} from "./monitor/thread-bindings.js";
 
 function summarizeError(err: unknown): string {
   if (err instanceof Error) {
@@ -16,7 +16,7 @@ function summarizeError(err: unknown): string {
   return "error";
 }
 
-export function registerDiscordSubagentHooks(api: OpenCraftPluginApi) {
+export function registerDiscordSubagentHooks(api: OpenClawPluginApi) {
   const resolveThreadBindingFlags = (accountId?: string) => {
     const account = resolveDiscordAccount({
       cfg: api.config,

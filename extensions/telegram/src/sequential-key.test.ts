@@ -66,10 +66,10 @@ describe("getTelegramSequentialKey", () => {
     ],
     [
       {
-        me: { username: "opencraft_bot" } as never,
+        me: { username: "openclaw_bot" } as never,
         message: mockMessage({
           chat: mockChat({ id: 123 }),
-          text: "/btw@opencraft_bot what is the time?",
+          text: "/btw@openclaw_bot what is the time?",
         }),
       },
       "telegram:123:btw:1",

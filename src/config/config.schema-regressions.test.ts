@@ -217,7 +217,7 @@ describe("config schema regressions", () => {
       discovery: {
         wideArea: {
           enabled: true,
-          domain: "opencraft.internal",
+          domain: "openclaw.internal",
         },
       },
     });

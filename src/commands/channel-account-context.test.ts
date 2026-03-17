@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveDefaultChannelAccountContext } from "./channel-account-context.js";
 
 describe("resolveDefaultChannelAccountContext", () => {
@@ -14,13 +14,15 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig);
 
     expect(result.accountIds).toEqual(["acc-1"]);
     expect(result.defaultAccountId).toBe("acc-1");
     expect(result.account).toBe(account);
     expect(result.enabled).toBe(true);
     expect(result.configured).toBe(true);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.degraded).toBe(false);
   });
 
   it("uses plugin enable/configure hooks", async () => {
@@ -37,11 +39,76 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig);
 
     expect(isEnabled).toHaveBeenCalledWith(account, {});
     expect(isConfigured).toHaveBeenCalledWith(account, {});
     expect(result.enabled).toBe(false);
     expect(result.configured).toBe(false);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.degraded).toBe(false);
+  });
+
+  it("keeps strict mode fail-closed when resolveAccount throws", async () => {
+    const plugin = {
+      id: "demo",
+      config: {
+        listAccountIds: () => ["acc-err"],
+        resolveAccount: () => {
+          throw new Error("missing secret");
+        },
+      },
+    } as unknown as ChannelPlugin;
+
+    await expect(resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig)).rejects.toThrow(
+      /missing secret/i,
+    );
+  });
+
+  it("degrades safely in read_only mode when resolveAccount throws", async () => {
+    const plugin = {
+      id: "demo",
+      config: {
+        listAccountIds: () => ["acc-err"],
+        resolveAccount: () => {
+          throw new Error("missing secret");
+        },
+      },
+    } as unknown as ChannelPlugin;
+
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig, {
+      mode: "read_only",
+      commandName: "status",
+    });
+
+    expect(result.enabled).toBe(false);
+    expect(result.configured).toBe(false);
+    expect(result.degraded).toBe(true);
+    expect(result.diagnostics.some((entry) => entry.includes("failed to resolve account"))).toBe(
+      true,
+    );
+  });
+
+  it("prefers inspectAccount in read_only mode", async () => {
+    const inspectAccount = vi.fn(() => ({ configured: true, enabled: true }));
+    const resolveAccount = vi.fn(() => ({ configured: false, enabled: false }));
+    const plugin = {
+      id: "demo",
+      config: {
+        listAccountIds: () => ["acc-1"],
+        inspectAccount,
+        resolveAccount,
+      },
+    } as unknown as ChannelPlugin;
+
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as OpenClawConfig, {
+      mode: "read_only",
+    });
+
+    expect(inspectAccount).toHaveBeenCalled();
+    expect(resolveAccount).not.toHaveBeenCalled();
+    expect(result.enabled).toBe(true);
+    expect(result.configured).toBe(true);
+    expect(result.degraded).toBe(true);
   });
 });

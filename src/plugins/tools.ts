@@ -2,9 +2,9 @@ import { normalizeToolName } from "../agents/tool-policy.js";
 import type { AnyAgentTool } from "../agents/tools/common.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { applyTestPluginDefaults, normalizePluginsConfig } from "./config-state.js";
-import { loadOpenCraftPlugins } from "./loader.js";
+import { loadOpenClawPlugins } from "./loader.js";
 import { createPluginLoaderLogger } from "./logger.js";
-import type { OpenCraftPluginToolContext } from "./types.js";
+import type { OpenClawPluginToolContext } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
@@ -43,10 +43,11 @@ function isOptionalToolAllowed(params: {
 }
 
 export function resolvePluginTools(params: {
-  context: OpenCraftPluginToolContext;
+  context: OpenClawPluginToolContext;
   existingToolNames?: Set<string>;
   toolAllowlist?: string[];
   suppressNameConflicts?: boolean;
+  allowGatewaySubagentBinding?: boolean;
   env?: NodeJS.ProcessEnv;
 }): AnyAgentTool[] {
   // Fast path: when plugins are effectively disabled, avoid discovery/jiti entirely.
@@ -58,9 +59,14 @@ export function resolvePluginTools(params: {
     return [];
   }
 
-  const registry = loadOpenCraftPlugins({
+  const registry = loadOpenClawPlugins({
     config: effectiveConfig,
     workspaceDir: params.context.workspaceDir,
+    runtimeOptions: params.allowGatewaySubagentBinding
+      ? {
+          allowGatewaySubagentBinding: true,
+        }
+      : undefined,
     env,
     logger: createPluginLoaderLogger(log),
   });

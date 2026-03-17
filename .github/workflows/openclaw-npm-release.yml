@@ -1,4 +1,4 @@
-name: OpenCraft NPM Release
+name: OpenClaw NPM Release
 
 on:
   push:

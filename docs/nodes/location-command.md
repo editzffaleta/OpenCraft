@@ -1,51 +1,51 @@
 ---
-summary: "Comando de localização para nodes (location.get), modos de permissão e comportamento em foreground no Android"
+summary: "Location command for nodes (location.get), permission modes, and Android foreground behavior"
 read_when:
-  - Adicionando suporte de localização em node ou UI de permissões
-  - Desenhando permissões de localização Android ou comportamento em foreground
-title: "Comando de Localização"
+  - Adding location node support or permissions UI
+  - Designing Android location permissions or foreground behavior
+title: "Location Command"
 ---
 
-# Comando de localização (nodes)
+# Location command (nodes)
 
-## Resumo
+## TL;DR
 
-- `location.get` é um comando de node (via `node.invoke`).
-- Desativado por padrão.
-- Configurações do app Android usam um seletor: Desativado / Enquanto Usando.
-- Toggle separado: Localização Precisa.
+- `location.get` is a node command (via `node.invoke`).
+- Off by default.
+- Android app settings use a selector: Off / While Using.
+- Separate toggle: Precise Location.
 
-## Por que um seletor (e não apenas um switch)
+## Why a selector (not just a switch)
 
-Permissões do SO são em múltiplos níveis. Podemos expor um seletor no app, mas o SO ainda decide a concessão real.
+OS permissions are multi-level. We can expose a selector in-app, but the OS still decides the actual grant.
 
-- iOS/macOS podem expor **Enquanto Usando** ou **Sempre** em prompts/Configurações do sistema.
-- App Android suporta atualmente apenas localização em foreground.
-- Localização precisa é uma concessão separada (iOS 14+ "Précise", Android "fine" vs "coarse").
+- iOS/macOS may expose **While Using** or **Always** in system prompts/Settings.
+- Android app currently supports foreground location only.
+- Precise location is a separate grant (iOS 14+ “Precise”, Android “fine” vs “coarse”).
 
-O seletor na UI orienta nosso modo solicitado; a concessão real fica nas configurações do SO.
+Selector in UI drives our requested mode; actual grant lives in OS settings.
 
-## Modelo de configurações
+## Settings model
 
-Por dispositivo node:
+Per node device:
 
 - `location.enabledMode`: `off | whileUsing`
 - `location.preciseEnabled`: bool
 
-Comportamento da UI:
+UI behavior:
 
-- Selecionar `whileUsing` solicita permissão de foreground.
-- Se o SO negar o nível solicitado, reverter para o nível mais alto concedido e mostrar status.
+- Selecting `whileUsing` requests foreground permission.
+- If OS denies requested level, revert to the highest granted level and show status.
 
-## Mapeamento de permissões (node.permissions)
+## Permissions mapping (node.permissions)
 
-Opcional. Node macOS reporta `location` via o mapa de permissões; iOS/Android podem omiti-lo.
+Optional. macOS node reports `location` via the permissions map; iOS/Android may omit it.
 
-## Comando: `location.get`
+## Command: `location.get`
 
-Chamado via `node.invoke`.
+Called via `node.invoke`.
 
-Params (sugeridos):
+Params (suggested):
 
 ```json
 {
@@ -55,14 +55,14 @@ Params (sugeridos):
 }
 ```
 
-Payload de resposta:
+Response payload:
 
 ```json
 {
-  "lat": -23.5505,
-  "lon": -46.6333,
+  "lat": 48.20849,
+  "lon": 16.37208,
   "accuracyMeters": 12.5,
-  "altitudeMeters": 760.0,
+  "altitudeMeters": 182.0,
   "speedMps": 0.0,
   "headingDeg": 270.0,
   "timestamp": "2026-01-03T12:34:56.000Z",
@@ -71,28 +71,28 @@ Payload de resposta:
 }
 ```
 
-Erros (códigos estáveis):
+Errors (stable codes):
 
-- `LOCATION_DISABLED`: seletor está desativado.
-- `LOCATION_PERMISSION_REQUIRED`: permissão faltando para o modo solicitado.
-- `LOCATION_BACKGROUND_UNAVAILABLE`: app está em background mas apenas Enquanto Usando está permitido.
-- `LOCATION_TIMEOUT`: nenhum fix no tempo.
-- `LOCATION_UNAVAILABLE`: falha do sistema / sem provedores.
+- `LOCATION_DISABLED`: selector is off.
+- `LOCATION_PERMISSION_REQUIRED`: permission missing for requested mode.
+- `LOCATION_BACKGROUND_UNAVAILABLE`: app is backgrounded but only While Using allowed.
+- `LOCATION_TIMEOUT`: no fix in time.
+- `LOCATION_UNAVAILABLE`: system failure / no providers.
 
-## Comportamento em background
+## Background behavior
 
-- App Android nega `location.get` enquanto em background.
-- Mantenha o OpenCraft aberto ao solicitar localização no Android.
-- Outras plataformas de node podem diferir.
+- Android app denies `location.get` while backgrounded.
+- Keep OpenClaw open when requesting location on Android.
+- Other node platforms may differ.
 
-## Integração com modelo/tooling
+## Model/tooling integration
 
-- Superfície de tool: a tool `nodes` adiciona ação `location_get` (node obrigatório).
-- CLI: `opencraft nodes location get --node <id>`.
-- Diretrizes do agente: chamar apenas quando o usuário habilitou localização e entende o escopo.
+- Tool surface: `nodes` tool adds `location_get` action (node required).
+- CLI: `openclaw nodes location get --node <id>`.
+- Agent guidelines: only call when user enabled location and understands the scope.
 
-## Textos de UX (sugeridos)
+## UX copy (suggested)
 
-- Desativado: "Compartilhamento de localização está desativado."
-- Enquanto Usando: "Apenas quando o OpenCraft está aberto."
-- Precisa: "Usar localização GPS precisa. Desative para compartilhar localização aproximada."
+- Off: “Location sharing is disabled.”
+- While Using: “Only when OpenClaw is open.”
+- Precise: “Use precise GPS location. Toggle off to share approximate location.”

@@ -2,18 +2,18 @@ import type { Skill } from "@mariozechner/pi-coding-agent";
 import { validateRegistryNpmSpec } from "../../infra/npm-registry-spec.js";
 import { parseFrontmatterBlock } from "../../markdown/frontmatter.js";
 import {
-  applyOpenCraftManifestInstallCommonFields,
+  applyOpenClawManifestInstallCommonFields,
   getFrontmatterString,
   normalizeStringList,
-  parseOpenCraftManifestInstallBase,
+  parseOpenClawManifestInstallBase,
   parseFrontmatterBool,
-  resolveOpenCraftManifestBlock,
-  resolveOpenCraftManifestInstall,
-  resolveOpenCraftManifestOs,
-  resolveOpenCraftManifestRequires,
+  resolveOpenClawManifestBlock,
+  resolveOpenClawManifestInstall,
+  resolveOpenClawManifestOs,
+  resolveOpenClawManifestRequires,
 } from "../../shared/frontmatter.js";
 import type {
-  OpenCraftSkillMetadata,
+  OpenClawSkillMetadata,
   ParsedSkillFrontmatter,
   SkillEntry,
   SkillInstallSpec,
@@ -109,12 +109,12 @@ function normalizeSafeDownloadUrl(raw: unknown): string | undefined {
 }
 
 function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
-  const parsed = parseOpenCraftManifestInstallBase(input, ["brew", "node", "go", "uv", "download"]);
+  const parsed = parseOpenClawManifestInstallBase(input, ["brew", "node", "go", "uv", "download"]);
   if (!parsed) {
     return undefined;
   }
   const { raw } = parsed;
-  const spec = applyOpenCraftManifestInstallCommonFields<SkillInstallSpec>(
+  const spec = applyOpenClawManifestInstallCommonFields<SkillInstallSpec>(
     {
       kind: parsed.kind as SkillInstallSpec["kind"],
     },
@@ -183,16 +183,16 @@ function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
   return spec;
 }
 
-export function resolveOpenCraftMetadata(
+export function resolveOpenClawMetadata(
   frontmatter: ParsedSkillFrontmatter,
-): OpenCraftSkillMetadata | undefined {
-  const metadataObj = resolveOpenCraftManifestBlock({ frontmatter });
+): OpenClawSkillMetadata | undefined {
+  const metadataObj = resolveOpenClawManifestBlock({ frontmatter });
   if (!metadataObj) {
     return undefined;
   }
-  const requires = resolveOpenCraftManifestRequires(metadataObj);
-  const install = resolveOpenCraftManifestInstall(metadataObj, parseInstallSpec);
-  const osRaw = resolveOpenCraftManifestOs(metadataObj);
+  const requires = resolveOpenClawManifestRequires(metadataObj);
+  const install = resolveOpenClawManifestInstall(metadataObj, parseInstallSpec);
+  const osRaw = resolveOpenClawManifestOs(metadataObj);
   return {
     always: typeof metadataObj.always === "boolean" ? metadataObj.always : undefined,
     emoji: typeof metadataObj.emoji === "string" ? metadataObj.emoji : undefined,

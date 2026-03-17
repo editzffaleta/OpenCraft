@@ -7,13 +7,10 @@ import {
   estimateTokens,
   SessionManager,
 } from "@mariozechner/pi-coding-agent";
-import { resolveSignalReactionLevel } from "../../../extensions/signal/src/reaction-level.js";
-import { resolveTelegramInlineButtonsScope } from "../../../extensions/telegram/src/inline-buttons.js";
-import { resolveTelegramReactionLevel } from "../../../extensions/telegram/src/reaction-level.js";
 import { resolveHeartbeatPrompt } from "../../auto-reply/heartbeat.js";
 import type { ReasoningLevel, ThinkLevel } from "../../auto-reply/thinking.js";
 import { resolveChannelCapabilities } from "../../config/channel-capabilities.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   ensureContextEnginesInitialized,
   resolveContextEngine,
@@ -22,7 +19,13 @@ import { createInternalHookEvent, triggerInternalHook } from "../../hooks/intern
 import { getMachineDisplayName } from "../../infra/machine-name.js";
 import { generateSecureToken } from "../../infra/secure-random.js";
 import { getMemorySearchManager } from "../../memory/index.js";
+import { resolveSignalReactionLevel } from "../../plugin-sdk-internal/signal.js";
+import {
+  resolveTelegramInlineButtonsScope,
+  resolveTelegramReactionLevel,
+} from "../../plugin-sdk-internal/telegram.js";
 import { getGlobalHookRunner } from "../../plugins/hook-runner-global.js";
+import { prepareProviderRuntimeAuth } from "../../plugins/provider-runtime.js";
 import { type enqueueCommand, enqueueCommandInLane } from "../../process/command-queue.js";
 import { isCronSessionKey, isSubagentSessionKey } from "../../routing/session-key.js";
 import { emitSessionTranscriptUpdate } from "../../sessions/transcript-events.js";
@@ -30,7 +33,7 @@ import { buildTtsSystemPromptHint } from "../../tts/tts.js";
 import { resolveUserPath } from "../../utils.js";
 import { normalizeMessageChannel } from "../../utils/message-channel.js";
 import { isReasoningTagProvider } from "../../utils/provider-utils.js";
-import { resolveOpenCraftAgentDir } from "../agent-paths.js";
+import { resolveOpenClawAgentDir } from "../agent-paths.js";
 import { resolveSessionAgentId, resolveSessionAgentIds } from "../agent-scope.js";
 import type { ExecElevatedDefaults } from "../bash-tools.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "../bootstrap-files.js";
@@ -39,7 +42,7 @@ import { resolveContextWindowInfo } from "../context-window-guard.js";
 import { ensureCustomApiRegistered } from "../custom-api-registry.js";
 import { formatUserTime, resolveUserTimeFormat, resolveUserTimezone } from "../date-time.js";
 import { DEFAULT_CONTEXT_TOKENS, DEFAULT_MODEL, DEFAULT_PROVIDER } from "../defaults.js";
-import { resolveOpenCraftDocsPath } from "../docs-path.js";
+import { resolveOpenClawDocsPath } from "../docs-path.js";
 import { resolveMemorySearchConfig } from "../memory-search.js";
 import {
   applyLocalNoAuthHeaderOverride,
@@ -47,7 +50,7 @@ import {
   resolveModelAuthMode,
 } from "../model-auth.js";
 import { supportsModelTools } from "../model-tool-support.js";
-import { ensureOpenCraftModelsJson } from "../models-config.js";
+import { ensureOpenClawModelsJson } from "../models-config.js";
 import { createConfiguredOllamaStreamFn } from "../ollama-stream.js";
 import { resolveOwnerDisplaySetting } from "../owner-display.js";
 import {
@@ -56,7 +59,7 @@ import {
   validateGeminiTurns,
 } from "../pi-embedded-helpers.js";
 import { createPreparedEmbeddedPiSettingsManager } from "../pi-project-settings.js";
-import { createOpenCraftCodingTools } from "../pi-tools.js";
+import { createOpenClawCodingTools } from "../pi-tools.js";
 import { ensureRuntimePluginsLoaded } from "../runtime-plugins.js";
 import { resolveSandboxContext } from "../sandbox.js";
 import { repairSessionFileIfNeeded } from "../session-file-repair.js";
@@ -125,7 +128,7 @@ export type CompactEmbeddedPiSessionParams = {
   currentTokenCount?: number;
   workspaceDir: string;
   agentDir?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   skillsSnapshot?: SkillSnapshot;
   provider?: string;
   model?: string;
@@ -144,6 +147,8 @@ export type CompactEmbeddedPiSessionParams = {
   extraSystemPrompt?: string;
   ownerNumbers?: string[];
   abortSignal?: AbortSignal;
+  /** Allow runtime plugins for this compaction to late-bind the gateway subagent. */
+  allowGatewaySubagentBinding?: boolean;
 };
 
 type CompactionMessageMetrics = {
@@ -275,7 +280,7 @@ function classifyCompactionReason(reason?: string): string {
   return "unknown";
 }
 
-function resolvePostCompactionIndexSyncMode(config?: OpenCraftConfig): "off" | "async" | "await" {
+function resolvePostCompactionIndexSyncMode(config?: OpenClawConfig): "off" | "async" | "await" {
   const mode = config?.agents?.defaults?.compaction?.postIndexSync;
   if (mode === "off" || mode === "async" || mode === "await") {
     return mode;
@@ -284,7 +289,7 @@ function resolvePostCompactionIndexSyncMode(config?: OpenCraftConfig): "off" | "
 }
 
 async function runPostCompactionSessionMemorySync(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   sessionKey?: string;
   sessionFile: string;
 }): Promise<void> {
@@ -325,7 +330,7 @@ async function runPostCompactionSessionMemorySync(params: {
 }
 
 function syncPostCompactionSessionMemory(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   sessionKey?: string;
   sessionFile: string;
   mode: "off" | "async" | "await";
@@ -347,7 +352,7 @@ function syncPostCompactionSessionMemory(params: {
 }
 
 async function runPostCompactionSideEffects(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   sessionKey?: string;
   sessionFile: string;
 }): Promise<void> {
@@ -381,6 +386,7 @@ export async function compactEmbeddedPiSessionDirect(
   ensureRuntimePluginsLoaded({
     config: params.config,
     workspaceDir: resolvedWorkspace,
+    allowGatewaySubagentBinding: params.allowGatewaySubagentBinding,
   });
   const prevCwd = process.cwd();
 
@@ -422,8 +428,8 @@ export async function compactEmbeddedPiSessionDirect(
       reason,
     };
   };
-  const agentDir = params.agentDir ?? resolveOpenCraftAgentDir();
-  await ensureOpenCraftModelsJson(params.config, agentDir);
+  const agentDir = params.agentDir ?? resolveOpenClawAgentDir();
+  await ensureOpenClawModelsJson(params.config, agentDir);
   const { model, error, authStorage, modelRegistry } = await resolveModelAsync(
     provider,
     modelId,
@@ -434,10 +440,11 @@ export async function compactEmbeddedPiSessionDirect(
     const reason = error ?? `Unknown model: ${provider}/${modelId}`;
     return fail(reason);
   }
+  let runtimeModel = model;
   let apiKeyInfo: Awaited<ReturnType<typeof getApiKeyForModel>> | null = null;
   try {
     apiKeyInfo = await getApiKeyForModel({
-      model,
+      model: runtimeModel,
       cfg: params.config,
       profileId: authProfileId,
       agentDir,
@@ -446,17 +453,36 @@ export async function compactEmbeddedPiSessionDirect(
     if (!apiKeyInfo.apiKey) {
       if (apiKeyInfo.mode !== "aws-sdk") {
         throw new Error(
-          `No API key resolved for provider "${model.provider}" (auth mode: ${apiKeyInfo.mode}).`,
+          `No API key resolved for provider "${runtimeModel.provider}" (auth mode: ${apiKeyInfo.mode}).`,
         );
       }
-    } else if (model.provider === "github-copilot") {
-      const { resolveCopilotApiToken } = await import("../../providers/github-copilot-token.js");
-      const copilotToken = await resolveCopilotApiToken({
-        githubToken: apiKeyInfo.apiKey,
-      });
-      authStorage.setRuntimeApiKey(model.provider, copilotToken.token);
     } else {
-      authStorage.setRuntimeApiKey(model.provider, apiKeyInfo.apiKey);
+      const preparedAuth = await prepareProviderRuntimeAuth({
+        provider: runtimeModel.provider,
+        config: params.config,
+        workspaceDir: resolvedWorkspace,
+        env: process.env,
+        context: {
+          config: params.config,
+          agentDir,
+          workspaceDir: resolvedWorkspace,
+          env: process.env,
+          provider: runtimeModel.provider,
+          modelId,
+          model: runtimeModel,
+          apiKey: apiKeyInfo.apiKey,
+          authMode: apiKeyInfo.mode,
+          profileId: apiKeyInfo.profileId,
+        },
+      });
+      if (preparedAuth?.baseUrl) {
+        runtimeModel = { ...runtimeModel, baseUrl: preparedAuth.baseUrl };
+      }
+      const runtimeApiKey = preparedAuth?.apiKey ?? apiKeyInfo.apiKey;
+      if (!runtimeApiKey) {
+        throw new Error(`Provider "${runtimeModel.provider}" runtime auth returned no apiKey.`);
+      }
+      authStorage.setRuntimeApiKey(runtimeModel.provider, runtimeApiKey);
     }
   } catch (err) {
     const reason = describeUnknownError(err);
@@ -521,18 +547,18 @@ export async function compactEmbeddedPiSessionDirect(
       cfg: params.config,
       provider,
       modelId,
-      modelContextWindow: model.contextWindow,
+      modelContextWindow: runtimeModel.contextWindow,
       defaultTokens: DEFAULT_CONTEXT_TOKENS,
     });
     const effectiveModel = applyLocalNoAuthHeaderOverride(
-      ctxInfo.tokens < (model.contextWindow ?? Infinity)
-        ? { ...model, contextWindow: ctxInfo.tokens }
-        : model,
+      ctxInfo.tokens < (runtimeModel.contextWindow ?? Infinity)
+        ? { ...runtimeModel, contextWindow: ctxInfo.tokens }
+        : runtimeModel,
       apiKeyInfo,
     );
 
     const runAbortController = new AbortController();
-    const toolsRaw = createOpenCraftCodingTools({
+    const toolsRaw = createOpenClawCodingTools({
       exec: {
         elevated: params.bashElevated,
       },
@@ -547,6 +573,7 @@ export async function compactEmbeddedPiSessionDirect(
       groupSpace: params.groupSpace,
       spawnedBy: params.spawnedBy,
       senderIsOwner: params.senderIsOwner,
+      allowGatewaySubagentBinding: params.allowGatewaySubagentBinding,
       agentDir,
       workspaceDir: effectiveWorkspace,
       config: params.config,
@@ -557,7 +584,7 @@ export async function compactEmbeddedPiSessionDirect(
       modelAuthMode: resolveModelAuthMode(model.provider, params.config),
     });
     const tools = sanitizeToolsForGoogle({
-      tools: supportsModelTools(model) ? toolsRaw : [],
+      tools: supportsModelTools(runtimeModel) ? toolsRaw : [],
       provider,
     });
     const allowedToolNames = collectAllowedToolNames({ tools });
@@ -649,7 +676,7 @@ export async function compactEmbeddedPiSessionDirect(
       isSubagentSessionKey(params.sessionKey) || isCronSessionKey(params.sessionKey)
         ? "minimal"
         : "full";
-    const docsPath = await resolveOpenCraftDocsPath({
+    const docsPath = await resolveOpenClawDocsPath({
       workspaceDir: effectiveWorkspace,
       argv1: process.argv[1],
       cwd: process.cwd(),
@@ -1063,6 +1090,7 @@ export async function compactEmbeddedPiSession(
       ensureRuntimePluginsLoaded({
         config: params.config,
         workspaceDir: params.workspaceDir,
+        allowGatewaySubagentBinding: params.allowGatewaySubagentBinding,
       });
       ensureContextEnginesInitialized();
       const contextEngine = await resolveContextEngine(params.config);
@@ -1072,7 +1100,7 @@ export async function compactEmbeddedPiSession(
         // automatically, but the /compact command path needs to compute it here.
         const ceProvider = (params.provider ?? DEFAULT_PROVIDER).trim() || DEFAULT_PROVIDER;
         const ceModelId = (params.model ?? DEFAULT_MODEL).trim() || DEFAULT_MODEL;
-        const agentDir = params.agentDir ?? resolveOpenCraftAgentDir();
+        const agentDir = params.agentDir ?? resolveOpenClawAgentDir();
         const { model: ceModel } = await resolveModelAsync(
           ceProvider,
           ceModelId,

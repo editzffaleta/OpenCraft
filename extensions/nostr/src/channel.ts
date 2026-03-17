@@ -6,7 +6,7 @@ import {
   formatPairingApproveHint,
   mapAllowFromEntries,
   type ChannelPlugin,
-} from "opencraft/plugin-sdk/nostr";
+} from "openclaw/plugin-sdk/nostr";
 import {
   buildPassiveChannelStatusSummary,
   buildTrafficStatusSummary,
@@ -17,6 +17,7 @@ import type { MetricEvent, MetricsSnapshot } from "./metrics.js";
 import { normalizePubkey, startNostrBus, type NostrBusHandle } from "./nostr-bus.js";
 import type { ProfilePublishResult } from "./nostr-profile.js";
 import { getNostrRuntime } from "./runtime.js";
+import { nostrSetupAdapter, nostrSetupWizard } from "./setup-surface.js";
 import {
   listNostrAccountIds,
   resolveDefaultNostrAccountId,
@@ -47,6 +48,8 @@ export const nostrPlugin: ChannelPlugin<ResolvedNostrAccount> = {
   },
   reload: { configPrefixes: ["channels.nostr"] },
   configSchema: buildChannelConfigSchema(NostrConfigSchema),
+  setup: nostrSetupAdapter,
+  setupWizard: nostrSetupWizard,
 
   config: {
     listAccountIds: (cfg) => listNostrAccountIds(cfg),
@@ -212,7 +215,7 @@ export const nostrPlugin: ChannelPlugin<ResolvedNostrAccount> = {
             `[${account.accountId}] DM from ${senderPubkey}: ${text.slice(0, 50)}...`,
           );
 
-          // Forward to OpenCraft's message pipeline
+          // Forward to OpenClaw's message pipeline
           await (
             runtime.channel.reply as { handleInboundMessage?: (params: unknown) => Promise<void> }
           ).handleInboundMessage?.({

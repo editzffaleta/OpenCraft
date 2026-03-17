@@ -1,45 +1,45 @@
 ---
-summary: "Sandbox e restrições de tools por agente, precedência e exemplos"
-title: Sandbox & Tools Multi-Agente
-read_when: "Você quer sandboxing por agente ou políticas de allow/deny de tools por agente em um gateway multi-agente."
+summary: "Per-agent sandbox + tool restrictions, precedence, and examples"
+title: Multi-Agent Sandbox & Tools
+read_when: "You want per-agent sandboxing or per-agent tool allow/deny policies in a multi-agent gateway."
 status: active
 ---
 
-# Configuração de Sandbox & Tools Multi-Agente
+# Multi-Agent Sandbox & Tools Configuration
 
-## Visão geral
+## Overview
 
-Cada agente em uma configuração multi-agente pode agora ter seu próprio:
+Each agent in a multi-agent setup can now have its own:
 
-- **Configuração de sandbox** (`agents.list[].sandbox` sobrescreve `agents.defaults.sandbox`)
-- **Restrições de tools** (`tools.allow` / `tools.deny`, mais `agents.list[].tools`)
+- **Sandbox configuration** (`agents.list[].sandbox` overrides `agents.defaults.sandbox`)
+- **Tool restrictions** (`tools.allow` / `tools.deny`, plus `agents.list[].tools`)
 
-Isso permite rodar múltiplos agentes com diferentes perfis de segurança:
+This allows you to run multiple agents with different security profiles:
 
-- Assistente pessoal com acesso completo
-- Agentes de família/trabalho com tools restritas
-- Agentes públicos em sandboxes
+- Personal assistant with full access
+- Family/work agents with restricted tools
+- Public-facing agents in sandboxes
 
-`setupCommand` pertence a `sandbox.docker` (global ou por agente) e roda uma vez
-quando o container é criado.
+`setupCommand` belongs under `sandbox.docker` (global or per-agent) and runs once
+when the container is created.
 
-A autenticação é por agente: cada agente lê do seu próprio armazém de autenticação `agentDir` em:
+Auth is per-agent: each agent reads from its own `agentDir` auth store at:
 
 ```
-~/.opencraft/agents/<agentId>/agent/auth-profiles.json
+~/.openclaw/agents/<agentId>/agent/auth-profiles.json
 ```
 
-Credenciais **não** são compartilhadas entre agentes. Nunca reutilize `agentDir` entre agentes.
-Se você quer compartilhar credenciais, copie `auth-profiles.json` para o `agentDir` do outro agente.
+Credentials are **not** shared between agents. Never reuse `agentDir` across agents.
+If you want to share creds, copy `auth-profiles.json` into the other agent's `agentDir`.
 
-Para como o sandboxing se comporta em runtime, veja [Sandboxing](/gateway/sandboxing).
-Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool vs Elevado](/gateway/sandbox-vs-tool-policy-vs-elevated) e `opencraft sandbox explain`.
+For how sandboxing behaves at runtime, see [Sandboxing](/gateway/sandboxing).
+For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) and `openclaw sandbox explain`.
 
 ---
 
-## Exemplos de configuração
+## Configuration Examples
 
-### Exemplo 1: Agente pessoal + Agente de família restrito
+### Example 1: Personal + Restricted Family Agent
 
 ```json
 {
@@ -48,14 +48,14 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
       {
         "id": "main",
         "default": true,
-        "name": "Assistente Pessoal",
-        "workspace": "~/.opencraft/workspace",
+        "name": "Personal Assistant",
+        "workspace": "~/.openclaw/workspace",
         "sandbox": { "mode": "off" }
       },
       {
         "id": "family",
-        "name": "Bot da Família",
-        "workspace": "~/.opencraft/workspace-family",
+        "name": "Family Bot",
+        "workspace": "~/.openclaw/workspace-family",
         "sandbox": {
           "mode": "all",
           "scope": "agent"
@@ -83,14 +83,14 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
 }
 ```
 
-**Resultado:**
+**Result:**
 
-- Agente `main`: Roda no host, acesso completo às tools
-- Agente `family`: Roda no Docker (um container por agente), apenas tool `read`
+- `main` agent: Runs on host, full tool access
+- `family` agent: Runs in Docker (one container per agent), only `read` tool
 
 ---
 
-### Exemplo 2: Agente de trabalho com sandbox compartilhado
+### Example 2: Work Agent with Shared Sandbox
 
 ```json
 {
@@ -98,12 +98,12 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
     "list": [
       {
         "id": "personal",
-        "workspace": "~/.opencraft/workspace-personal",
+        "workspace": "~/.openclaw/workspace-personal",
         "sandbox": { "mode": "off" }
       },
       {
         "id": "work",
-        "workspace": "~/.opencraft/workspace-work",
+        "workspace": "~/.openclaw/workspace-work",
         "sandbox": {
           "mode": "all",
           "scope": "shared",
@@ -121,7 +121,7 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
 
 ---
 
-### Exemplo 2b: Perfil coding global + agente somente mensagens
+### Example 2b: Global coding profile + messaging-only agent
 
 ```json
 {
@@ -137,37 +137,37 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
 }
 ```
 
-**Resultado:**
+**Result:**
 
-- agentes padrão recebem tools de coding
-- agente `support` é somente mensagens (+ tool Slack)
+- default agents get coding tools
+- `support` agent is messaging-only (+ Slack tool)
 
 ---
 
-### Exemplo 3: Modos de sandbox diferentes por agente
+### Example 3: Different Sandbox Modes per Agent
 
 ```json
 {
   "agents": {
     "defaults": {
       "sandbox": {
-        "mode": "non-main", // Padrão global
+        "mode": "non-main", // Global default
         "scope": "session"
       }
     },
     "list": [
       {
         "id": "main",
-        "workspace": "~/.opencraft/workspace",
+        "workspace": "~/.openclaw/workspace",
         "sandbox": {
-          "mode": "off" // Override: main nunca em sandbox
+          "mode": "off" // Override: main never sandboxed
         }
       },
       {
         "id": "public",
-        "workspace": "~/.opencraft/workspace-public",
+        "workspace": "~/.openclaw/workspace-public",
         "sandbox": {
-          "mode": "all", // Override: public sempre em sandbox
+          "mode": "all", // Override: public always sandboxed
           "scope": "agent"
         },
         "tools": {
@@ -182,13 +182,13 @@ Para depurar "por que isso está bloqueado?", veja [Sandbox vs Política de Tool
 
 ---
 
-## Precedência de configuração
+## Configuration Precedence
 
-Quando tanto config global (`agents.defaults.*`) quanto por agente (`agents.list[].*`) existem:
+When both global (`agents.defaults.*`) and agent-specific (`agents.list[].*`) configs exist:
 
-### Config de sandbox
+### Sandbox Config
 
-Configurações por agente sobrescrevem globais:
+Agent-specific settings override global:
 
 ```
 agents.list[].sandbox.mode > agents.defaults.sandbox.mode
@@ -200,31 +200,31 @@ agents.list[].sandbox.browser.* > agents.defaults.sandbox.browser.*
 agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 ```
 
-**Notas:**
+**Notes:**
 
-- `agents.list[].sandbox.{docker,browser,prune}.*` sobrescreve `agents.defaults.sandbox.{docker,browser,prune}.*` para aquele agente (ignorado quando o escopo do sandbox resolve para `"shared"`).
+- `agents.list[].sandbox.{docker,browser,prune}.*` overrides `agents.defaults.sandbox.{docker,browser,prune}.*` for that agent (ignored when sandbox scope resolves to `"shared"`).
 
-### Restrições de tools
+### Tool Restrictions
 
-A ordem de filtragem é:
+The filtering order is:
 
-1. **Perfil de tool** (`tools.profile` ou `agents.list[].tools.profile`)
-2. **Perfil de tool do provedor** (`tools.byProvider[provedor].profile` ou `agents.list[].tools.byProvider[provedor].profile`)
-3. **Política de tool global** (`tools.allow` / `tools.deny`)
-4. **Política de tool do provedor** (`tools.byProvider[provedor].allow/deny`)
-5. **Política de tool por agente** (`agents.list[].tools.allow/deny`)
-6. **Política de provedor por agente** (`agents.list[].tools.byProvider[provedor].allow/deny`)
-7. **Política de tool de sandbox** (`tools.sandbox.tools` ou `agents.list[].tools.sandbox.tools`)
-8. **Política de tool de subagente** (`tools.subagents.tools`, se aplicável)
+1. **Tool profile** (`tools.profile` or `agents.list[].tools.profile`)
+2. **Provider tool profile** (`tools.byProvider[provider].profile` or `agents.list[].tools.byProvider[provider].profile`)
+3. **Global tool policy** (`tools.allow` / `tools.deny`)
+4. **Provider tool policy** (`tools.byProvider[provider].allow/deny`)
+5. **Agent-specific tool policy** (`agents.list[].tools.allow/deny`)
+6. **Agent provider policy** (`agents.list[].tools.byProvider[provider].allow/deny`)
+7. **Sandbox tool policy** (`tools.sandbox.tools` or `agents.list[].tools.sandbox.tools`)
+8. **Subagent tool policy** (`tools.subagents.tools`, if applicable)
 
-Cada nível pode restringir ainda mais as tools, mas não pode retomar tools negadas de níveis anteriores.
-Se `agents.list[].tools.sandbox.tools` estiver definido, substitui `tools.sandbox.tools` para aquele agente.
-Se `agents.list[].tools.profile` estiver definido, sobrescreve `tools.profile` para aquele agente.
-Chaves de tool de provedor aceitam `provedor` (ex.: `google-antigravity`) ou `provedor/modelo` (ex.: `openai/gpt-5.2`).
+Each level can further restrict tools, but cannot grant back denied tools from earlier levels.
+If `agents.list[].tools.sandbox.tools` is set, it replaces `tools.sandbox.tools` for that agent.
+If `agents.list[].tools.profile` is set, it overrides `tools.profile` for that agent.
+Provider tool keys accept either `provider` (e.g. `google-antigravity`) or `provider/model` (e.g. `openai/gpt-5.2`).
 
-### Grupos de tools (atalhos)
+### Tool groups (shorthands)
 
-Políticas de tools (global, por agente, sandbox) suportam entradas `group:*` que expandem para múltiplas tools concretas:
+Tool policies (global, agent, sandbox) support `group:*` entries that expand to multiple concrete tools:
 
 - `group:runtime`: `exec`, `bash`, `process`
 - `group:fs`: `read`, `write`, `edit`, `apply_patch`
@@ -234,30 +234,30 @@ Políticas de tools (global, por agente, sandbox) suportam entradas `group:*` qu
 - `group:automation`: `cron`, `gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:openclaw`: todas as tools OpenCraft embutidas (exclui plugins de provedor)
+- `group:openclaw`: all built-in OpenClaw tools (excludes provider plugins)
 
-### Modo elevado
+### Elevated Mode
 
-`tools.elevated` é a baseline global (allowlist baseada em remetente). `agents.list[].tools.elevated` pode restringir ainda mais o modo elevado para agentes específicos (ambos devem permitir).
+`tools.elevated` is the global baseline (sender-based allowlist). `agents.list[].tools.elevated` can further restrict elevated for specific agents (both must allow).
 
-Padrões de mitigação:
+Mitigation patterns:
 
-- Negar `exec` para agentes não confiáveis (`agents.list[].tools.deny: ["exec"]`)
-- Evitar remetentes na allowlist que roteiam para agentes restritos
-- Desabilitar elevated globalmente (`tools.elevated.enabled: false`) se você quer apenas execução em sandbox
-- Desabilitar elevated por agente (`agents.list[].tools.elevated.enabled: false`) para perfis sensíveis
+- Deny `exec` for untrusted agents (`agents.list[].tools.deny: ["exec"]`)
+- Avoid allowlisting senders that route to restricted agents
+- Disable elevated globally (`tools.elevated.enabled: false`) if you only want sandboxed execution
+- Disable elevated per agent (`agents.list[].tools.elevated.enabled: false`) for sensitive profiles
 
 ---
 
-## Migração de agente único
+## Migration from Single Agent
 
-**Antes (agente único):**
+**Before (single agent):**
 
 ```json
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.opencraft/workspace",
+      "workspace": "~/.openclaw/workspace",
       "sandbox": {
         "mode": "non-main"
       }
@@ -274,7 +274,7 @@ Padrões de mitigação:
 }
 ```
 
-**Depois (multi-agente com diferentes perfis):**
+**After (multi-agent with different profiles):**
 
 ```json
 {
@@ -283,7 +283,7 @@ Padrões de mitigação:
       {
         "id": "main",
         "default": true,
-        "workspace": "~/.opencraft/workspace",
+        "workspace": "~/.openclaw/workspace",
         "sandbox": { "mode": "off" }
       }
     ]
@@ -291,13 +291,13 @@ Padrões de mitigação:
 }
 ```
 
-Configs legadas `agent.*` são migradas pelo `opencraft doctor`; prefira `agents.defaults` + `agents.list` daqui para frente.
+Legacy `agent.*` configs are migrated by `openclaw doctor`; prefer `agents.defaults` + `agents.list` going forward.
 
 ---
 
-## Exemplos de restrições de tools
+## Tool Restriction Examples
 
-### Agente somente leitura
+### Read-only Agent
 
 ```json
 {
@@ -308,7 +308,7 @@ Configs legadas `agent.*` são migradas pelo `opencraft doctor`; prefira `agents
 }
 ```
 
-### Agente de execução segura (sem modificações de arquivo)
+### Safe Execution Agent (no file modifications)
 
 ```json
 {
@@ -319,7 +319,7 @@ Configs legadas `agent.*` são migradas pelo `opencraft doctor`; prefira `agents
 }
 ```
 
-### Agente somente comunicação
+### Communication-only Agent
 
 ```json
 {
@@ -333,65 +333,65 @@ Configs legadas `agent.*` são migradas pelo `opencraft doctor`; prefira `agents
 
 ---
 
-## Armadilha comum: "non-main"
+## Common Pitfall: "non-main"
 
-`agents.defaults.sandbox.mode: "non-main"` é baseado em `session.mainKey` (padrão `"main"`),
-não no id do agente. Sessões de grupo/canal sempre recebem suas próprias chaves, então são
-tratadas como non-main e serão em sandbox. Se você quer que um agente nunca
-seja em sandbox, defina `agents.list[].sandbox.mode: "off"`.
+`agents.defaults.sandbox.mode: "non-main"` is based on `session.mainKey` (default `"main"`),
+not the agent id. Group/channel sessions always get their own keys, so they
+are treated as non-main and will be sandboxed. If you want an agent to never
+sandbox, set `agents.list[].sandbox.mode: "off"`.
 
 ---
 
-## Testes
+## Testing
 
-Após configurar sandbox multi-agente e tools:
+After configuring multi-agent sandbox and tools:
 
-1. **Verificar resolução de agente:**
+1. **Check agent resolution:**
 
    ```exec
-   opencraft agents list --bindings
+   openclaw agents list --bindings
    ```
 
-2. **Verificar containers de sandbox:**
+2. **Verify sandbox containers:**
 
    ```exec
    docker ps --filter "name=openclaw-sbx-"
    ```
 
-3. **Testar restrições de tools:**
-   - Enviar uma mensagem que requer tools restritas
-   - Verificar que o agente não pode usar tools negadas
+3. **Test tool restrictions:**
+   - Send a message requiring restricted tools
+   - Verify the agent cannot use denied tools
 
-4. **Monitorar logs:**
+4. **Monitor logs:**
 
    ```exec
-   tail -f "${OPENCLAW_STATE_DIR:-$HOME/.opencraft}/logs/gateway.log" | grep -E "routing|sandbox|tools"
+   tail -f "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/logs/gateway.log" | grep -E "routing|sandbox|tools"
    ```
 
 ---
 
-## Solução de problemas
+## Troubleshooting
 
-### Agente não em sandbox apesar de `mode: "all"`
+### Agent not sandboxed despite `mode: "all"`
 
-- Verifique se há um `agents.defaults.sandbox.mode` global que sobrescreve
-- Config por agente tem precedência, então defina `agents.list[].sandbox.mode: "all"`
+- Check if there's a global `agents.defaults.sandbox.mode` that overrides it
+- Agent-specific config takes precedence, so set `agents.list[].sandbox.mode: "all"`
 
-### Tools ainda disponíveis apesar da lista de negação
+### Tools still available despite deny list
 
-- Verifique a ordem de filtragem de tools: global → agente → sandbox → subagente
-- Cada nível só pode restringir ainda mais, não conceder de volta
-- Verifique nos logs: `[tools] filtering tools for agent:${agentId}`
+- Check tool filtering order: global → agent → sandbox → subagent
+- Each level can only further restrict, not grant back
+- Verify with logs: `[tools] filtering tools for agent:${agentId}`
 
-### Container não isolado por agente
+### Container not isolated per agent
 
-- Defina `scope: "agent"` na config de sandbox por agente
-- Padrão é `"session"` que cria um container por sessão
+- Set `scope: "agent"` in agent-specific sandbox config
+- Default is `"session"` which creates one container per session
 
 ---
 
-## Veja também
+## See Also
 
-- [Roteamento Multi-Agente](/concepts/multi-agent)
-- [Configuração de Sandbox](/gateway/configuration#agentsdefaults-sandbox)
-- [Gerenciamento de Sessão](/concepts/session)
+- [Multi-Agent Routing](/concepts/multi-agent)
+- [Sandbox Configuration](/gateway/configuration#agentsdefaults-sandbox)
+- [Session Management](/concepts/session)

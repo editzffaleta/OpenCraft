@@ -7,15 +7,15 @@ describe("buildPlatformRuntimeLogHints", () => {
       buildPlatformRuntimeLogHints({
         platform: "darwin",
         env: {
-          OPENCRAFT_STATE_DIR: "/tmp/opencraft-state",
-          OPENCRAFT_LOG_PREFIX: "gateway",
+          OPENCLAW_STATE_DIR: "/tmp/openclaw-state",
+          OPENCLAW_LOG_PREFIX: "gateway",
         },
-        systemdServiceName: "opencraft-gateway",
-        windowsTaskName: "OpenCraft Gateway",
+        systemdServiceName: "openclaw-gateway",
+        windowsTaskName: "OpenClaw Gateway",
       }),
     ).toEqual([
-      "Launchd stdout (if installed): /tmp/opencraft-state/logs/gateway.log",
-      "Launchd stderr (if installed): /tmp/opencraft-state/logs/gateway.err.log",
+      "Launchd stdout (if installed): /tmp/openclaw-state/logs/gateway.log",
+      "Launchd stderr (if installed): /tmp/openclaw-state/logs/gateway.err.log",
     ]);
   });
 
@@ -23,17 +23,17 @@ describe("buildPlatformRuntimeLogHints", () => {
     expect(
       buildPlatformRuntimeLogHints({
         platform: "linux",
-        systemdServiceName: "opencraft-gateway",
-        windowsTaskName: "OpenCraft Gateway",
+        systemdServiceName: "openclaw-gateway",
+        windowsTaskName: "OpenClaw Gateway",
       }),
-    ).toEqual(["Logs: journalctl --user -u opencraft-gateway.service -n 200 --no-pager"]);
+    ).toEqual(["Logs: journalctl --user -u openclaw-gateway.service -n 200 --no-pager"]);
     expect(
       buildPlatformRuntimeLogHints({
         platform: "win32",
-        systemdServiceName: "opencraft-gateway",
-        windowsTaskName: "OpenCraft Gateway",
+        systemdServiceName: "openclaw-gateway",
+        windowsTaskName: "OpenClaw Gateway",
       }),
-    ).toEqual(['Logs: schtasks /Query /TN "OpenCraft Gateway" /V /FO LIST']);
+    ).toEqual(['Logs: schtasks /Query /TN "OpenClaw Gateway" /V /FO LIST']);
   });
 });
 
@@ -42,30 +42,30 @@ describe("buildPlatformServiceStartHints", () => {
     expect(
       buildPlatformServiceStartHints({
         platform: "darwin",
-        installCommand: "opencraft gateway install",
-        startCommand: "opencraft gateway",
-        launchAgentPlistPath: "~/Library/LaunchAgents/com.opencraft.gateway.plist",
-        systemdServiceName: "opencraft-gateway",
-        windowsTaskName: "OpenCraft Gateway",
+        installCommand: "openclaw gateway install",
+        startCommand: "openclaw gateway",
+        launchAgentPlistPath: "~/Library/LaunchAgents/com.openclaw.gateway.plist",
+        systemdServiceName: "openclaw-gateway",
+        windowsTaskName: "OpenClaw Gateway",
       }),
     ).toEqual([
-      "opencraft gateway install",
-      "opencraft gateway",
-      "launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.opencraft.gateway.plist",
+      "openclaw gateway install",
+      "openclaw gateway",
+      "launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.openclaw.gateway.plist",
     ]);
     expect(
       buildPlatformServiceStartHints({
         platform: "linux",
-        installCommand: "opencraft gateway install",
-        startCommand: "opencraft gateway",
-        launchAgentPlistPath: "~/Library/LaunchAgents/com.opencraft.gateway.plist",
-        systemdServiceName: "opencraft-gateway",
-        windowsTaskName: "OpenCraft Gateway",
+        installCommand: "openclaw gateway install",
+        startCommand: "openclaw gateway",
+        launchAgentPlistPath: "~/Library/LaunchAgents/com.openclaw.gateway.plist",
+        systemdServiceName: "openclaw-gateway",
+        windowsTaskName: "OpenClaw Gateway",
       }),
     ).toEqual([
-      "opencraft gateway install",
-      "opencraft gateway",
-      "systemctl --user start opencraft-gateway.service",
+      "openclaw gateway install",
+      "openclaw gateway",
+      "systemctl --user start openclaw-gateway.service",
     ]);
   });
 });

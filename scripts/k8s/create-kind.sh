@@ -15,7 +15,7 @@
 set -euo pipefail
 
 # Defaults
-CLUSTER_NAME="opencraft"
+CLUSTER_NAME="openclaw"
 CONTAINER_CMD=""
 DELETE=false
 
@@ -37,7 +37,7 @@ Usage: $(basename "$0") [OPTIONS]
 
 
 Options:
-  --name NAME          Cluster name (default: opencraft)
+  --name NAME          Cluster name (default: openclaw)
   --delete             Delete the cluster instead of creating it
   -h, --help           Show this help message
 
@@ -174,7 +174,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
   labels:
-    opencraft.dev/role: control-plane
+    openclaw.dev/role: control-plane
   # Uncomment to expose services on host ports:
   # extraPortMappings:
   # - containerPort: 30080

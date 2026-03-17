@@ -1,5 +1,6 @@
 import { html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { getSafeLocalStorage } from "../../local-storage.ts";
 import type { AssistantIdentity } from "../assistant-identity.ts";
 import { icons } from "../icons.ts";
 import { toSanitizedMarkdownHtml } from "../markdown.ts";
@@ -316,13 +317,13 @@ function extractGroupText(group: MessageGroup): string {
   return parts.join("\n\n");
 }
 
-const SKIP_DELETE_CONFIRM_KEY = "opencraft:skipDeleteConfirm";
+const SKIP_DELETE_CONFIRM_KEY = "openclaw:skipDeleteConfirm";
 
 type DeleteConfirmSide = "left" | "right";
 
 function shouldSkipDeleteConfirm(): boolean {
   try {
-    return localStorage.getItem(SKIP_DELETE_CONFIRM_KEY) === "1";
+    return getSafeLocalStorage()?.getItem(SKIP_DELETE_CONFIRM_KEY) === "1";
   } catch {
     return false;
   }
@@ -370,7 +371,7 @@ function renderDeleteButton(onDelete: () => void, side: DeleteConfirmSide) {
           yes.addEventListener("click", () => {
             if (check.checked) {
               try {
-                localStorage.setItem(SKIP_DELETE_CONFIRM_KEY, "1");
+                getSafeLocalStorage()?.setItem(SKIP_DELETE_CONFIRM_KEY, "1");
               } catch {}
             }
             popover.remove();

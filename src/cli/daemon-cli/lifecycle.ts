@@ -50,11 +50,14 @@ function resolveGatewayPortFallback(): Promise<number> {
 }
 
 async function assertUnmanagedGatewayRestartEnabled(port: number): Promise<void> {
+  const cfg = await readBestEffortConfig().catch(() => undefined);
+  const tlsEnabled = !!cfg?.gateway?.tls?.enabled;
+  const scheme = tlsEnabled ? "wss" : "ws";
   const probe = await probeGateway({
-    url: `ws://127.0.0.1:${port}`,
+    url: `${scheme}://127.0.0.1:${port}`,
     auth: {
-      token: process.env.OPENCRAFT_GATEWAY_TOKEN?.trim() || undefined,
-      password: process.env.OPENCRAFT_GATEWAY_PASSWORD?.trim() || undefined,
+      token: process.env.OPENCLAW_GATEWAY_TOKEN?.trim() || undefined,
+      password: process.env.OPENCLAW_GATEWAY_PASSWORD?.trim() || undefined,
     },
     timeoutMs: 1_000,
   }).catch(() => null);
@@ -97,7 +100,7 @@ async function restartGatewayWithoutServiceManager(port: number) {
   }
   if (pids.length > 1) {
     throw new Error(
-      `multiple gateway processes are listening on port ${port}: ${formatGatewayPidList(pids)}; use "opencraft gateway status --deep" before retrying restart`,
+      `multiple gateway processes are listening on port ${port}: ${formatGatewayPidList(pids)}; use "openclaw gateway status --deep" before retrying restart`,
     );
   }
   signalVerifiedGatewayPidSync(pids[0], "SIGUSR1");
@@ -191,8 +194,8 @@ export async function runDaemonRestart(opts: DaemonLifecycleOptions = {}): Promi
         }
 
         fail(`Gateway restart timed out after ${restartWaitSeconds}s waiting for health checks.`, [
-          formatCliCommand("opencraft gateway status --deep"),
-          formatCliCommand("opencraft doctor"),
+          formatCliCommand("openclaw gateway status --deep"),
+          formatCliCommand("openclaw doctor"),
         ]);
       }
 
@@ -253,8 +256,8 @@ export async function runDaemonRestart(opts: DaemonLifecycleOptions = {}): Promi
       }
 
       fail(`Gateway restart timed out after ${restartWaitSeconds}s waiting for health checks.`, [
-        formatCliCommand("opencraft gateway status --deep"),
-        formatCliCommand("opencraft doctor"),
+        formatCliCommand("openclaw gateway status --deep"),
+        formatCliCommand("openclaw doctor"),
       ]);
     },
   });

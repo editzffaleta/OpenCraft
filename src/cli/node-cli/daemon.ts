@@ -56,8 +56,8 @@ type NodeDaemonStatusOptions = {
 
 function renderNodeServiceStartHints(): string[] {
   return buildPlatformServiceStartHints({
-    installCommand: formatCliCommand("opencraft node install"),
-    startCommand: formatCliCommand("opencraft node start"),
+    installCommand: formatCliCommand("openclaw node install"),
+    startCommand: formatCliCommand("openclaw node start"),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveNodeLaunchAgentLabel()}.plist`,
     systemdServiceName: resolveNodeSystemdServiceName(),
     windowsTaskName: resolveNodeWindowsTaskName(),
@@ -122,7 +122,7 @@ export async function runNodeDaemonInstall(opts: NodeDaemonInstallOptions) {
     });
     if (!json) {
       defaultRuntime.log(`Node service already ${service.loadedText}.`);
-      defaultRuntime.log(`Reinstall with: ${formatCliCommand("opencraft node install --force")}`);
+      defaultRuntime.log(`Reinstall with: ${formatCliCommand("openclaw node install --force")}`);
     }
     return;
   }
@@ -263,7 +263,7 @@ export async function runNodeDaemonStatus(opts: NodeDaemonStatusOptions = {}) {
   };
   const hintEnv = {
     ...baseEnv,
-    OPENCRAFT_LOG_PREFIX: baseEnv.OPENCRAFT_LOG_PREFIX ?? "node",
+    OPENCLAW_LOG_PREFIX: baseEnv.OPENCLAW_LOG_PREFIX ?? "node",
   } as NodeJS.ProcessEnv;
 
   if (runtime?.missingUnit) {

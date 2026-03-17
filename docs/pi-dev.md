@@ -1,25 +1,25 @@
 ---
-title: "Fluxo de Desenvolvimento do Pi"
-summary: "Fluxo de desenvolvimento para integração com Pi: build, teste e validação ao vivo"
+title: "Pi Development Workflow"
+summary: "Developer workflow for Pi integration: build, test, and live validation"
 read_when:
-  - Trabalhando no código de integração com Pi ou testes
-  - Rodando fluxos de lint, typecheck e testes ao vivo específicos do Pi
+  - Working on Pi integration code or tests
+  - Running Pi-specific lint, typecheck, and live test flows
 ---
 
-# Fluxo de Desenvolvimento do Pi
+# Pi Development Workflow
 
-Este guia resume um fluxo sano para trabalhar na integração com Pi no OpenCraft.
+This guide summarizes a sane workflow for working on the pi integration in OpenClaw.
 
-## Verificação de Tipos e Lint
+## Type Checking and Linting
 
-- Verificar tipos e build: `pnpm build`
+- Type check and build: `pnpm build`
 - Lint: `pnpm lint`
-- Verificação de formato: `pnpm format`
-- Gate completo antes de enviar: `pnpm lint && pnpm build && pnpm test`
+- Format check: `pnpm format`
+- Full gate before pushing: `pnpm lint && pnpm build && pnpm test`
 
-## Rodando Testes do Pi
+## Running Pi Tests
 
-Rode o conjunto de testes focado no Pi diretamente com o Vitest:
+Run the Pi-focused test set directly with Vitest:
 
 ```bash
 pnpm test -- \
@@ -31,13 +31,13 @@ pnpm test -- \
   "src/agents/pi-extensions/**/*.test.ts"
 ```
 
-Para incluir o exercício ao vivo do provedor:
+To include the live provider exercise:
 
 ```bash
 OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live.test.ts
 ```
 
-Isso cobre os principais suites unitários do Pi:
+This covers the main Pi unit suites:
 
 - `src/agents/pi-*.test.ts`
 - `src/agents/pi-embedded-*.test.ts`
@@ -46,35 +46,35 @@ Isso cobre os principais suites unitários do Pi:
 - `src/agents/pi-tool-definition-adapter.test.ts`
 - `src/agents/pi-extensions/*.test.ts`
 
-## Testes Manuais
+## Manual Testing
 
-Fluxo recomendado:
+Recommended flow:
 
-- Rodar o gateway em modo dev:
+- Run the gateway in dev mode:
   - `pnpm gateway:dev`
-- Acionar o agente diretamente:
-  - `pnpm opencraft agent --message "Olá" --thinking low`
-- Usar o TUI para depuração interativa:
+- Trigger the agent directly:
+  - `pnpm openclaw agent --message "Hello" --thinking low`
+- Use the TUI for interactive debugging:
   - `pnpm tui`
 
-Para comportamento de chamada de tool, solicite uma ação `read` ou `exec` para ver o streaming de tools e o tratamento de payload.
+For tool call behavior, prompt for a `read` or `exec` action so you can see tool streaming and payload handling.
 
-## Reset do Zero
+## Clean Slate Reset
 
-O estado fica no diretório de estado do OpenCraft. O padrão é `~/.opencraft`. Se `OPENCLAW_STATE_DIR` estiver definido, use esse diretório.
+State lives under the OpenClaw state directory. Default is `~/.openclaw`. If `OPENCLAW_STATE_DIR` is set, use that directory instead.
 
-Para resetar tudo:
+To reset everything:
 
-- `opencraft.json` para config
-- `credentials/` para perfis de auth e tokens
-- `agents/<agentId>/sessions/` para histórico de sessão do agente
-- `agents/<agentId>/sessions.json` para o índice de sessões
-- `sessions/` se existirem caminhos legados
-- `workspace/` se quiser um workspace em branco
+- `openclaw.json` for config
+- `credentials/` for auth profiles and tokens
+- `agents/<agentId>/sessions/` for agent session history
+- `agents/<agentId>/sessions.json` for the session index
+- `sessions/` if legacy paths exist
+- `workspace/` if you want a blank workspace
 
-Se quiser resetar apenas sessões, delete `agents/<agentId>/sessions/` e `agents/<agentId>/sessions.json` para aquele agente. Mantenha `credentials/` se não quiser se reautenticar.
+If you only want to reset sessions, delete `agents/<agentId>/sessions/` and `agents/<agentId>/sessions.json` for that agent. Keep `credentials/` if you do not want to reauthenticate.
 
-## Referências
+## References
 
 - [https://docs.openclaw.ai/testing](https://docs.openclaw.ai/testing)
 - [https://docs.openclaw.ai/start/getting-started](https://docs.openclaw.ai/start/getting-started)

@@ -1,12 +1,13 @@
 {
-  "name": "@opencraft/slack",
+  "name": "@openclaw/slack",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft Slack channel plugin",
+  "description": "OpenClaw Slack channel plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
-    ]
+    ],
+    "setupEntry": "./setup-entry.ts"
   }
 }

@@ -2,8 +2,8 @@ import SwiftUI
 import WidgetKit
 
 @main
-struct OpenCraftActivityWidgetBundle: WidgetBundle {
+struct OpenClawActivityWidgetBundle: WidgetBundle {
     var body: some Widget {
-        OpenCraftLiveActivity()
+        OpenClawLiveActivity()
     }
 }

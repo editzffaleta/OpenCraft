@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { BrowserProfileConfig, OpenCraftConfig } from "../config/config.js";
+import type { BrowserProfileConfig, OpenClawConfig } from "../config/config.js";
 import { loadConfig, writeConfigFile } from "../config/config.js";
 import { deriveDefaultBrowserCdpPortRange } from "../config/port-defaults.js";
-import { isLoopbackHost } from "../gateway/net.js";
-import { resolveOpenCraftUserDataDir } from "./chrome.js";
+import { resolveUserPath } from "../utils.js";
+import { resolveOpenClawUserDataDir } from "./chrome.js";
 import { parseHttpUrl, resolveProfile } from "./config.js";
 import {
   BrowserConflictError,
@@ -27,7 +27,8 @@ export type CreateProfileParams = {
   name: string;
   color?: string;
   cdpUrl?: string;
-  driver?: "opencraft" | "extension" | "existing-session";
+  userDataDir?: string;
+  driver?: "openclaw" | "existing-session";
 };
 
 export type CreateProfileResult = {
@@ -36,6 +37,7 @@ export type CreateProfileResult = {
   transport: "cdp" | "chrome-mcp";
   cdpPort: number | null;
   cdpUrl: string | null;
+  userDataDir: string | null;
   color: string;
   isRemote: boolean;
 };
@@ -80,12 +82,9 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
   const createProfile = async (params: CreateProfileParams): Promise<CreateProfileResult> => {
     const name = params.name.trim();
     const rawCdpUrl = params.cdpUrl?.trim() || undefined;
-    const driver =
-      params.driver === "extension"
-        ? "extension"
-        : params.driver === "existing-session"
-          ? "existing-session"
-          : undefined;
+    const rawUserDataDir = params.userDataDir?.trim() || undefined;
+    const normalizedUserDataDir = rawUserDataDir ? resolveUserPath(rawUserDataDir) : undefined;
+    const driver = params.driver === "existing-session" ? "existing-session" : undefined;
 
     if (!isValidProfileName(name)) {
       throw new BrowserValidationError(
@@ -110,24 +109,23 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
       params.color && HEX_COLOR_RE.test(params.color) ? params.color : allocateColor(usedColors);
 
     let profileConfig: BrowserProfileConfig;
+    if (normalizedUserDataDir && driver !== "existing-session") {
+      throw new BrowserValidationError(
+        "driver=existing-session is required when userDataDir is provided",
+      );
+    }
+    if (normalizedUserDataDir && !fs.existsSync(normalizedUserDataDir)) {
+      throw new BrowserValidationError(
+        `browser user data directory not found: ${normalizedUserDataDir}`,
+      );
+    }
+
     if (rawCdpUrl) {
       let parsed: ReturnType<typeof parseHttpUrl>;
       try {
         parsed = parseHttpUrl(rawCdpUrl, "browser.profiles.cdpUrl");
       } catch (err) {
         throw new BrowserValidationError(String(err));
-      }
-      if (driver === "extension") {
-        if (!isLoopbackHost(parsed.parsed.hostname)) {
-          throw new BrowserValidationError(
-            `driver=extension requires a loopback cdpUrl host, got: ${parsed.parsed.hostname}`,
-          );
-        }
-        if (parsed.parsed.protocol !== "http:" && parsed.parsed.protocol !== "https:") {
-          throw new BrowserValidationError(
-            `driver=extension requires an http(s) cdpUrl, got: ${parsed.parsed.protocol.replace(":", "")}`,
-          );
-        }
       }
       if (driver === "existing-session") {
         throw new BrowserValidationError(
@@ -140,14 +138,12 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
         color: profileColor,
       };
     } else {
-      if (driver === "extension") {
-        throw new BrowserValidationError("driver=extension requires an explicit loopback cdpUrl");
-      }
       if (driver === "existing-session") {
         // existing-session uses Chrome MCP auto-connect; no CDP port needed
         profileConfig = {
           driver,
           attachOnly: true,
+          ...(normalizedUserDataDir ? { userDataDir: normalizedUserDataDir } : {}),
           color: profileColor,
         };
       } else {
@@ -165,7 +161,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
       }
     }
 
-    const nextConfig: OpenCraftConfig = {
+    const nextConfig: OpenClawConfig = {
       ...cfg,
       browser: {
         ...cfg.browser,
@@ -191,6 +187,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
       transport: capabilities.usesChromeMcp ? "chrome-mcp" : "cdp",
       cdpPort: capabilities.usesChromeMcp ? null : resolved.cdpPort,
       cdpUrl: capabilities.usesChromeMcp ? null : resolved.cdpUrl,
+      userDataDir: resolved.userDataDir ?? null,
       color: resolved.color,
       isRemote: !resolved.cdpIsLoopback,
     };
@@ -221,14 +218,14 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
     let deleted = false;
     const resolved = resolveProfile(state.resolved, name);
 
-    if (resolved?.cdpIsLoopback && resolved.driver === "opencraft") {
+    if (resolved?.cdpIsLoopback && resolved.driver === "openclaw") {
       try {
         await ctx.forProfile(name).stopRunningBrowser();
       } catch {
         // ignore
       }
 
-      const userDataDir = resolveOpenCraftUserDataDir(name);
+      const userDataDir = resolveOpenClawUserDataDir(name);
       const profileDir = path.dirname(userDataDir);
       if (fs.existsSync(profileDir)) {
         await movePathToTrash(profileDir);
@@ -237,7 +234,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
     }
 
     const { [name]: _removed, ...remainingProfiles } = profiles;
-    const nextConfig: OpenCraftConfig = {
+    const nextConfig: OpenClawConfig = {
       ...cfg,
       browser: {
         ...cfg.browser,

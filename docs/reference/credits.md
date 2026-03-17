@@ -1,28 +1,28 @@
 ---
-summary: "Origem do projeto, contribuidores e licença."
+summary: "Project origin, contributors, and license."
 read_when:
-  - Você quer a história do projeto ou créditos dos contribuidores
-title: "Créditos"
+  - You want the project backstory or contributor credits
+title: "Credits"
 ---
 
-## O nome
+## The name
 
-OpenCraft = CRAFT + TARDIS, porque todo lagostim espacial precisa de uma máquina de tempo e espaço.
+OpenClaw = CLAW + TARDIS, because every space lobster needs a time and space machine.
 
-## Créditos
+## Credits
 
-- **Peter Steinberger** ([@steipete](https://x.com/steipete)) - Criador, encantador de lagostins
-- **Mario Zechner** ([@badlogicc](https://x.com/badlogicgames)) - Criador do Pi, pen tester de segurança
-- **Clawd** - O lagostim espacial que exigiu um nome melhor
+- **Peter Steinberger** ([@steipete](https://x.com/steipete)) - Creator, lobster whisperer
+- **Mario Zechner** ([@badlogicc](https://x.com/badlogicgames)) - Pi creator, security pen tester
+- **Clawd** - The space lobster who demanded a better name
 
-## Contribuidores principais
+## Core contributors
 
-- **Maxim Vovshin** (@Hyaxia, [36747317+Hyaxia@users.noreply.github.com](mailto:36747317+Hyaxia@users.noreply.github.com)) - Skill Blogwatcher
-- **Nacho Iacovino** (@nachoiacovino, [nacho.iacovino@gmail.com](mailto:nacho.iacovino@gmail.com)) - Análise de localização (Telegram e WhatsApp)
-- **Vincent Koc** ([@vincentkoc](https://github.com/vincentkoc), [@vincent_koc](https://x.com/vincent_koc)) - Agentes, Telemetria, Hooks, Segurança
+- **Maxim Vovshin** (@Hyaxia, [36747317+Hyaxia@users.noreply.github.com](mailto:36747317+Hyaxia@users.noreply.github.com)) - Blogwatcher skill
+- **Nacho Iacovino** (@nachoiacovino, [nacho.iacovino@gmail.com](mailto:nacho.iacovino@gmail.com)) - Location parsing (Telegram and WhatsApp)
+- **Vincent Koc** ([@vincentkoc](https://github.com/vincentkoc), [@vincent_koc](https://x.com/vincent_koc)) - Agents, Telemetry, Hooks, Security
 
-## Licença
+## License
 
-MIT - Livre como um lagostim no oceano.
+MIT - Free as a lobster in the ocean.
 
-> "Todos nós estamos apenas brincando com nossos próprios prompts." (Uma IA, provavelmente doidona de tokens)
+> "We are all just playing with our own prompts." (An AI, probably high on tokens)

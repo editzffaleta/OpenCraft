@@ -1,9 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { listTelegramAccountIds } from "../../extensions/telegram/src/accounts.js";
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   resolveLegacyStateDirs,
   resolveNewStateDir,
@@ -16,6 +15,7 @@ import { canonicalizeMainSessionAlias } from "../config/sessions/main-session.js
 import type { SessionScope } from "../config/sessions/types.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { resolveChannelAllowFromPath } from "../pairing/pairing-store.js";
+import { listTelegramAccountIds } from "../plugin-sdk-internal/telegram.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_ACCOUNT_ID,
@@ -465,7 +465,7 @@ export async function autoMigrateLegacyStateDir(params: {
   autoMigrateStateDirChecked = true;
 
   const env = params.env ?? process.env;
-  if (env.OPENCRAFT_STATE_DIR?.trim()) {
+  if (env.OPENCLAW_STATE_DIR?.trim()) {
     return { migrated: false, skipped: true, changes: [], warnings: [] };
   }
 
@@ -591,7 +591,7 @@ export async function autoMigrateLegacyStateDir(params: {
           `State dir moved but failed to link legacy path (${legacyDir ?? "unknown"} → ${targetDir}): ${String(fallbackErr)}`,
         );
         warnings.push(
-          `Rollback failed; set OPENCRAFT_STATE_DIR=${targetDir} to avoid split state: ${String(rollbackErr)}`,
+          `Rollback failed; set OPENCLAW_STATE_DIR=${targetDir} to avoid split state: ${String(rollbackErr)}`,
         );
         changes.push(`State dir: ${legacyDir ?? "unknown"} → ${targetDir}`);
       }
@@ -602,7 +602,7 @@ export async function autoMigrateLegacyStateDir(params: {
 }
 
 export async function detectLegacyStateMigrations(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
   homedir?: () => string;
 }): Promise<LegacyStateDetection> {
@@ -967,7 +967,7 @@ export async function runLegacyStateMigrations(params: {
 }
 
 export async function autoMigrateLegacyAgentDir(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
   homedir?: () => string;
   log?: MigrationLogger;
@@ -982,7 +982,7 @@ export async function autoMigrateLegacyAgentDir(params: {
 }
 
 export async function autoMigrateLegacyState(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
   homedir?: () => string;
   log?: MigrationLogger;
@@ -1004,7 +1004,7 @@ export async function autoMigrateLegacyState(params: {
     homedir: params.homedir,
     log: params.log,
   });
-  if (env.OPENCRAFT_AGENT_DIR?.trim() || env.PI_CODING_AGENT_DIR?.trim()) {
+  if (env.OPENCLAW_AGENT_DIR?.trim() || env.PI_CODING_AGENT_DIR?.trim()) {
     return {
       migrated: stateDirResult.migrated,
       skipped: true,

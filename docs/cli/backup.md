@@ -1,76 +1,76 @@
 ---
-summary: "Referência do CLI para `opencraft backup` (criar arquivos de backup locais)"
+summary: "CLI reference for `openclaw backup` (create local backup archives)"
 read_when:
-  - Você quer um arquivo de backup de primeira classe para estado local do OpenCraft
-  - Você quer pré-visualizar quais paths seriam incluídos antes de reset ou desinstalação
+  - You want a first-class backup archive for local OpenClaw state
+  - You want to preview which paths would be included before reset or uninstall
 title: "backup"
 ---
 
-# `opencraft backup`
+# `openclaw backup`
 
-Criar um arquivo de backup local para estado, config, credenciais, sessões e workspaces opcionais do OpenCraft.
-
-```bash
-opencraft backup create
-opencraft backup create --output ~/Backups
-opencraft backup create --dry-run --json
-opencraft backup create --verify
-opencraft backup create --no-include-workspace
-opencraft backup create --only-config
-opencraft backup verify ./2026-03-09T00-00-00.000Z-opencraft-backup.tar.gz
-```
-
-## Notas
-
-- O arquivo inclui um arquivo `manifest.json` com os paths de fonte resolvidos e layout do arquivo.
-- Saída padrão é um arquivo `.tar.gz` com timestamp no diretório de trabalho atual.
-- Se o diretório de trabalho atual estiver dentro de uma árvore de fonte salva, o OpenCraft faz fallback para seu diretório home para o local padrão do arquivo.
-- Arquivos de arquivo existentes nunca são sobrescritos.
-- Paths de saída dentro das árvores de estado/workspace de fonte são rejeitados para evitar auto-inclusão.
-- `opencraft backup verify <archive>` valida que o arquivo contém exatamente um manifesto raiz, rejeita paths de arquivo estilo traversal e verifica que cada payload declarado no manifesto existe no tarball.
-- `opencraft backup create --verify` roda essa validação imediatamente após escrever o arquivo.
-- `opencraft backup create --only-config` faz backup apenas do arquivo de config JSON ativo.
-
-## O que é salvo
-
-`opencraft backup create` planeja fontes de backup de sua instalação local do OpenCraft:
-
-- O diretório de estado retornado pelo resolvedor de estado local do OpenCraft, geralmente `~/.opencraft`
-- O path do arquivo de config ativo
-- O diretório OAuth / credenciais
-- Diretórios de workspace descobertos da config atual, a menos que você passe `--no-include-workspace`
-
-Se você usar `--only-config`, o OpenCraft pula estado, credenciais e descoberta de workspace e arquiva apenas o path do arquivo de config ativo.
-
-O OpenCraft canonicaliza paths antes de construir o arquivo. Se config, credenciais ou um workspace já residem dentro do diretório de estado, eles não são duplicados como fontes de backup de nível superior separadas. Paths ausentes são pulados.
-
-O payload do arquivo armazena conteúdo de arquivo dessas árvores de fonte, e o `manifest.json` embutido registra os paths de fonte absolutos resolvidos mais o layout do arquivo usado para cada asset.
-
-## Comportamento com config inválida
-
-`opencraft backup` intencionalmente ignora o preflight de config normal para que ainda possa ajudar durante recuperação. Como a descoberta de workspace depende de uma config válida, `opencraft backup create` agora falha rapidamente quando o arquivo de config existe mas é inválido e o backup de workspace ainda está habilitado.
-
-Se você ainda quiser um backup parcial nessa situação, execute novamente:
+Create a local backup archive for OpenClaw state, config, credentials, sessions, and optionally workspaces.
 
 ```bash
-opencraft backup create --no-include-workspace
+openclaw backup create
+openclaw backup create --output ~/Backups
+openclaw backup create --dry-run --json
+openclaw backup create --verify
+openclaw backup create --no-include-workspace
+openclaw backup create --only-config
+openclaw backup verify ./2026-03-09T00-00-00.000Z-openclaw-backup.tar.gz
 ```
 
-Isso mantém estado, config e credenciais no escopo enquanto pula inteiramente a descoberta de workspace.
+## Notes
 
-Se você só precisa de uma cópia do próprio arquivo de config, `--only-config` também funciona quando a config está malformada porque não depende de analisar a config para descoberta de workspace.
+- The archive includes a `manifest.json` file with the resolved source paths and archive layout.
+- Default output is a timestamped `.tar.gz` archive in the current working directory.
+- If the current working directory is inside a backed-up source tree, OpenClaw falls back to your home directory for the default archive location.
+- Existing archive files are never overwritten.
+- Output paths inside the source state/workspace trees are rejected to avoid self-inclusion.
+- `openclaw backup verify <archive>` validates that the archive contains exactly one root manifest, rejects traversal-style archive paths, and checks that every manifest-declared payload exists in the tarball.
+- `openclaw backup create --verify` runs that validation immediately after writing the archive.
+- `openclaw backup create --only-config` backs up just the active JSON config file.
 
-## Tamanho e performance
+## What gets backed up
 
-O OpenCraft não impõe um tamanho máximo de backup embutido ou limite de tamanho por arquivo.
+`openclaw backup create` plans backup sources from your local OpenClaw install:
 
-Limites práticos vêm da máquina local e sistema de arquivos de destino:
+- The state directory returned by OpenClaw's local state resolver, usually `~/.openclaw`
+- The active config file path
+- The OAuth / credentials directory
+- Workspace directories discovered from the current config, unless you pass `--no-include-workspace`
 
-- Espaço disponível para a escrita temporária do arquivo mais o arquivo final
-- Tempo para percorrer árvores grandes de workspace e comprimí-las em um `.tar.gz`
-- Tempo para reescanear o arquivo se você usar `opencraft backup create --verify` ou rodar `opencraft backup verify`
-- Comportamento do sistema de arquivos no path de destino. O OpenCraft prefere um passo de publicação hard-link sem sobrescrita e faz fallback para cópia exclusiva quando hard links não são suportados
+If you use `--only-config`, OpenClaw skips state, credentials, and workspace discovery and archives only the active config file path.
 
-Workspaces grandes são geralmente o principal fator do tamanho do arquivo. Se você quer um backup menor ou mais rápido, use `--no-include-workspace`.
+OpenClaw canonicalizes paths before building the archive. If config, credentials, or a workspace already live inside the state directory, they are not duplicated as separate top-level backup sources. Missing paths are skipped.
 
-Para o menor arquivo, use `--only-config`.
+The archive payload stores file contents from those source trees, and the embedded `manifest.json` records the resolved absolute source paths plus the archive layout used for each asset.
+
+## Invalid config behavior
+
+`openclaw backup` intentionally bypasses the normal config preflight so it can still help during recovery. Because workspace discovery depends on a valid config, `openclaw backup create` now fails fast when the config file exists but is invalid and workspace backup is still enabled.
+
+If you still want a partial backup in that situation, rerun:
+
+```bash
+openclaw backup create --no-include-workspace
+```
+
+That keeps state, config, and credentials in scope while skipping workspace discovery entirely.
+
+If you only need a copy of the config file itself, `--only-config` also works when the config is malformed because it does not rely on parsing the config for workspace discovery.
+
+## Size and performance
+
+OpenClaw does not enforce a built-in maximum backup size or per-file size limit.
+
+Practical limits come from the local machine and destination filesystem:
+
+- Available space for the temporary archive write plus the final archive
+- Time to walk large workspace trees and compress them into a `.tar.gz`
+- Time to rescan the archive if you use `openclaw backup create --verify` or run `openclaw backup verify`
+- Filesystem behavior at the destination path. OpenClaw prefers a no-overwrite hard-link publish step and falls back to exclusive copy when hard links are unsupported
+
+Large workspaces are usually the main driver of archive size. If you want a smaller or faster backup, use `--no-include-workspace`.
+
+For the smallest archive, use `--only-config`.

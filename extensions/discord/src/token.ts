@@ -1,5 +1,5 @@
-import type { BaseTokenResolution } from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { BaseTokenResolution } from "../../../src/channels/plugins/types.core.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { normalizeResolvedSecretInputString } from "../../../src/config/types.secrets.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../src/routing/session-key.js";
 
@@ -18,7 +18,7 @@ export function normalizeDiscordToken(raw: unknown, path: string): string | unde
 }
 
 export function resolveDiscordToken(
-  cfg?: OpenCraftConfig,
+  cfg?: OpenClawConfig,
   opts: { accountId?: string | null; envToken?: string | null } = {},
 ): DiscordTokenResolution {
   const accountId = normalizeAccountId(opts.accountId);

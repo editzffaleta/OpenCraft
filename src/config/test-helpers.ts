@@ -1,13 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
+import type { OpenClawConfig } from "./config.js";
 
 export async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeBase(fn, { prefix: "opencraft-config-" });
+  return withTempHomeBase(fn, { prefix: "openclaw-config-" });
 }
 
-export async function writeOpenCraftConfig(home: string, config: unknown): Promise<string> {
-  const configPath = path.join(home, ".opencraft", "opencraft.json");
+export async function writeOpenClawConfig(home: string, config: unknown): Promise<string> {
+  const configPath = path.join(home, ".openclaw", "openclaw.json");
   await fs.mkdir(path.dirname(configPath), { recursive: true });
   await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");
   return configPath;
@@ -18,7 +19,7 @@ export async function withTempHomeConfig<T>(
   fn: (params: { home: string; configPath: string }) => Promise<T>,
 ): Promise<T> {
   return withTempHome(async (home) => {
-    const configPath = await writeOpenCraftConfig(home, config);
+    const configPath = await writeOpenClawConfig(home, config);
     return fn({ home, configPath });
   });
 }
@@ -53,7 +54,9 @@ export async function withEnvOverride<T>(
 }
 
 export function buildWebSearchProviderConfig(params: {
-  provider: string;
+  provider: NonNullable<
+    NonNullable<NonNullable<NonNullable<OpenClawConfig["tools"]>["web"]>["search"]>["provider"]
+  >;
   enabled?: boolean;
   providerConfig?: Record<string, unknown>;
 }): Record<string, unknown> {

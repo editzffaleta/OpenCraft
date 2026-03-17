@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/diffs";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/diffs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTempDiffRoot } from "./test-helpers.js";
 
@@ -21,7 +21,7 @@ describe("PlaywrightDiffScreenshotter", () => {
 
   beforeEach(async () => {
     vi.useFakeTimers();
-    ({ rootDir, cleanup: cleanupRootDir } = await createTempDiffRoot("opencraft-diffs-browser-"));
+    ({ rootDir, cleanup: cleanupRootDir } = await createTempDiffRoot("openclaw-diffs-browser-"));
     outputPath = path.join(rootDir, "preview.png");
     launchMock.mockReset();
     const browserModule = await import("./browser.js");
@@ -182,12 +182,12 @@ describe("PlaywrightDiffScreenshotter", () => {
   });
 });
 
-function createConfig(): OpenCraftConfig {
+function createConfig(): OpenClawConfig {
   return {
     browser: {
       executablePath: process.execPath,
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 async function createScreenshotterHarness(options?: {

@@ -2,10 +2,10 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type {
-  OpenCraftPluginApi,
-  OpenCraftPluginCommandDefinition,
+  OpenClawPluginApi,
+  OpenClawPluginCommandDefinition,
   PluginCommandContext,
-} from "opencraft/plugin-sdk/phone-control";
+} from "openclaw/plugin-sdk/phone-control";
 import { describe, expect, it, vi } from "vitest";
 import { createTestPluginApi } from "../test-utils/plugin-api.js";
 import registerPhoneControl from "./index.js";
@@ -14,8 +14,8 @@ function createApi(params: {
   stateDir: string;
   getConfig: () => Record<string, unknown>;
   writeConfig: (next: Record<string, unknown>) => Promise<void>;
-  registerCommand: (command: OpenCraftPluginCommandDefinition) => void;
-}): OpenCraftPluginApi {
+  registerCommand: (command: OpenClawPluginCommandDefinition) => void;
+}): OpenClawPluginApi {
   return createTestPluginApi({
     id: "phone-control",
     name: "phone-control",
@@ -30,9 +30,9 @@ function createApi(params: {
         loadConfig: () => params.getConfig(),
         writeConfigFile: (next: Record<string, unknown>) => params.writeConfig(next),
       },
-    } as OpenCraftPluginApi["runtime"],
+    } as OpenClawPluginApi["runtime"],
     registerCommand: params.registerCommand,
-  }) as OpenCraftPluginApi;
+  }) as OpenClawPluginApi;
 }
 
 function createCommandContext(args: string): PluginCommandContext {
@@ -42,12 +42,18 @@ function createCommandContext(args: string): PluginCommandContext {
     commandBody: `/phone ${args}`,
     args,
     config: {},
+    requestConversationBinding: async () => ({
+      status: "error",
+      message: "unsupported",
+    }),
+    detachConversationBinding: async () => ({ removed: false }),
+    getCurrentConversationBinding: async () => null,
   };
 }
 
 describe("phone-control plugin", () => {
   it("arms sms.send as part of the writes group", async () => {
-    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-phone-control-test-"));
+    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-phone-control-test-"));
     try {
       let config: Record<string, unknown> = {
         gateway: {
@@ -61,7 +67,7 @@ describe("phone-control plugin", () => {
         config = next;
       });
 
-      let command: OpenCraftPluginCommandDefinition | undefined;
+      let command: OpenClawPluginCommandDefinition | undefined;
       registerPhoneControl(
         createApi({
           stateDir,

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveOpenCraftAgentDir } from "./agent-paths.js";
+import { resolveOpenClawAgentDir } from "./agent-paths.js";
 import {
   installModelsConfigTestHooks,
   MODELS_CONFIG_IMPLICIT_ENV_VARS,
@@ -10,7 +10,7 @@ import {
   withModelsTempHome,
   withTempEnv,
 } from "./models-config.e2e-harness.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
 installModelsConfigTestHooks();
@@ -47,7 +47,7 @@ describe("openai-codex implicit provider", () => {
     await withModelsTempHome(async () => {
       await withTempEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS, async () => {
         unsetEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS);
-        const agentDir = resolveOpenCraftAgentDir();
+        const agentDir = resolveOpenClawAgentDir();
         await writeCodexOauthProfile(agentDir);
 
         const providers = await resolveImplicitProvidersForTest({ agentDir });
@@ -65,7 +65,7 @@ describe("openai-codex implicit provider", () => {
     await withModelsTempHome(async () => {
       await withTempEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS, async () => {
         unsetEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS);
-        const agentDir = resolveOpenCraftAgentDir();
+        const agentDir = resolveOpenClawAgentDir();
         await writeCodexOauthProfile(agentDir);
         await fs.writeFile(
           path.join(agentDir, "models.json"),
@@ -93,7 +93,7 @@ describe("openai-codex implicit provider", () => {
           "utf8",
         );
 
-        await ensureOpenCraftModelsJson({});
+        await ensureOpenClawModelsJson({});
 
         const parsed = await readGeneratedModelsJson<{
           providers: Record<string, { baseUrl?: string; api?: string }>;
@@ -110,7 +110,7 @@ describe("openai-codex implicit provider", () => {
     await withModelsTempHome(async () => {
       await withTempEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS, async () => {
         unsetEnv(MODELS_CONFIG_IMPLICIT_ENV_VARS);
-        const agentDir = resolveOpenCraftAgentDir();
+        const agentDir = resolveOpenClawAgentDir();
         await fs.mkdir(agentDir, { recursive: true });
         await fs.writeFile(
           path.join(agentDir, "models.json"),
@@ -130,7 +130,7 @@ describe("openai-codex implicit provider", () => {
           "utf8",
         );
 
-        await ensureOpenCraftModelsJson({
+        await ensureOpenClawModelsJson({
           models: {
             mode: "merge",
             providers: {

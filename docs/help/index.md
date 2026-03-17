@@ -1,21 +1,21 @@
 ---
-summary: "Hub de ajuda: correções comuns, verificação de instalação e onde procurar quando algo quebra"
+summary: "Help hub: common fixes, install sanity, and where to look when something breaks"
 read_when:
-  - Você é novo e quer o guia "o que clicar/executar"
-  - Algo quebrou e você quer o caminho mais rápido para uma correção
-title: "Ajuda"
+  - You’re new and want the “what do I click/run” guide
+  - Something broke and you want the fastest path to a fix
+title: "Help"
 ---
 
-# Ajuda
+# Help
 
-Se quiser um fluxo rápido de "como me desbloquear", comece aqui:
+If you want a quick “get unstuck” flow, start here:
 
-- **Solução de problemas:** [Comece aqui](/help/troubleshooting)
-- **Verificação de instalação (Node/npm/PATH):** [Instalação](/install#nodejs--npm-path-sanity)
-- **Problemas com o Gateway:** [Solução de problemas do Gateway](/gateway/troubleshooting)
-- **Logs:** [Logging](/logging) e [Logging do Gateway](/gateway/logging)
-- **Reparos:** [Doctor](/gateway/doctor)
+- **Troubleshooting:** [Start here](/help/troubleshooting)
+- **Install sanity (Node/npm/PATH):** [Install](/install#nodejs--npm-path-sanity)
+- **Gateway issues:** [Gateway troubleshooting](/gateway/troubleshooting)
+- **Logs:** [Logging](/logging) and [Gateway logging](/gateway/logging)
+- **Repairs:** [Doctor](/gateway/doctor)
 
-Se você está procurando perguntas conceituais (não "algo quebrou"):
+If you’re looking for conceptual questions (not “something broke”):
 
-- [FAQ (conceitos)](/help/faq)
+- [FAQ (concepts)](/help/faq)

@@ -32,26 +32,26 @@ describe("tryRouteCli", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    originalDisableRouteFirst = process.env.OPENCRAFT_DISABLE_ROUTE_FIRST;
-    delete process.env.OPENCRAFT_DISABLE_ROUTE_FIRST;
+    originalDisableRouteFirst = process.env.OPENCLAW_DISABLE_ROUTE_FIRST;
+    delete process.env.OPENCLAW_DISABLE_ROUTE_FIRST;
     vi.resetModules();
     ({ tryRouteCli } = await import("./route.js"));
     findRoutedCommandMock.mockReturnValue({
-      loadPlugins: false,
+      loadPlugins: (argv: string[]) => !argv.includes("--json"),
       run: runRouteMock,
     });
   });
 
   afterEach(() => {
     if (originalDisableRouteFirst === undefined) {
-      delete process.env.OPENCRAFT_DISABLE_ROUTE_FIRST;
+      delete process.env.OPENCLAW_DISABLE_ROUTE_FIRST;
     } else {
-      process.env.OPENCRAFT_DISABLE_ROUTE_FIRST = originalDisableRouteFirst;
+      process.env.OPENCLAW_DISABLE_ROUTE_FIRST = originalDisableRouteFirst;
     }
   });
 
   it("passes suppressDoctorStdout=true for routed --json commands", async () => {
-    await expect(tryRouteCli(["node", "opencraft", "status", "--json"])).resolves.toBe(true);
+    await expect(tryRouteCli(["node", "openclaw", "status", "--json"])).resolves.toBe(true);
 
     expect(ensureConfigReadyMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -59,19 +59,21 @@ describe("tryRouteCli", () => {
         suppressDoctorStdout: true,
       }),
     );
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
   });
 
   it("does not pass suppressDoctorStdout for routed non-json commands", async () => {
-    await expect(tryRouteCli(["node", "opencraft", "status"])).resolves.toBe(true);
+    await expect(tryRouteCli(["node", "openclaw", "status"])).resolves.toBe(true);
 
     expect(ensureConfigReadyMock).toHaveBeenCalledWith({
       runtime: expect.any(Object),
       commandPath: ["status"],
     });
+    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledWith({ scope: "channels" });
   });
 
   it("routes status when root options precede the command", async () => {
-    await expect(tryRouteCli(["node", "opencraft", "--log-level", "debug", "status"])).resolves.toBe(
+    await expect(tryRouteCli(["node", "openclaw", "--log-level", "debug", "status"])).resolves.toBe(
       true,
     );
 
@@ -80,5 +82,6 @@ describe("tryRouteCli", () => {
       runtime: expect.any(Object),
       commandPath: ["status"],
     });
+    expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledWith({ scope: "channels" });
   });
 });

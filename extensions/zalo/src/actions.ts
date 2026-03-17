@@ -1,15 +1,15 @@
 import type {
   ChannelMessageActionAdapter,
   ChannelMessageActionName,
-  OpenCraftConfig,
-} from "opencraft/plugin-sdk/zalo";
-import { extractToolSend, jsonResult, readStringParam } from "opencraft/plugin-sdk/zalo";
+  OpenClawConfig,
+} from "openclaw/plugin-sdk/zalo";
+import { extractToolSend, jsonResult, readStringParam } from "openclaw/plugin-sdk/zalo";
 import { listEnabledZaloAccounts } from "./accounts.js";
 import { sendMessageZalo } from "./send.js";
 
 const providerId = "zalo";
 
-function listEnabledAccounts(cfg: OpenCraftConfig) {
+function listEnabledAccounts(cfg: OpenClawConfig) {
   return listEnabledZaloAccounts(cfg).filter(
     (account) => account.enabled && account.tokenSource !== "none",
   );
@@ -24,7 +24,7 @@ export const zaloMessageActions: ChannelMessageActionAdapter = {
     const actions = new Set<ChannelMessageActionName>(["send"]);
     return Array.from(actions);
   },
-  supportsButtons: () => false,
+  getCapabilities: () => [],
   extractToolSend: ({ args }) => extractToolSend(args, "sendMessage"),
   handleAction: async ({ action, params, cfg, accountId }) => {
     if (action === "send") {

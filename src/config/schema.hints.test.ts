@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { __test__, isSensitiveConfigPath } from "./schema.hints.js";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 import { sensitive } from "./zod-schema.sensitive.js";
 
 const { mapSensitivePaths } = __test__;
@@ -123,12 +123,12 @@ describe("mapSensitivePaths", () => {
   });
 
   it("main schema yields correct hints (samples)", () => {
-    const schema = OpenCraftSchema.toJSONSchema({
+    const schema = OpenClawSchema.toJSONSchema({
       target: "draft-07",
       unrepresentable: "any",
     });
-    schema.title = "OpenCraftConfig";
-    const hints = mapSensitivePaths(OpenCraftSchema, "", {});
+    schema.title = "OpenClawConfig";
+    const hints = mapSensitivePaths(OpenClawSchema, "", {});
 
     expect(hints["agents.defaults.memorySearch.remote.apiKey"]?.sensitive).toBe(true);
     expect(hints["agents.list[].memorySearch.remote.apiKey"]?.sensitive).toBe(true);

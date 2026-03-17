@@ -1,4 +1,4 @@
-package ai.opencraft.app.ui
+package ai.openclaw.app.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

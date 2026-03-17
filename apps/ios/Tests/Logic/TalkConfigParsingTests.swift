@@ -1,5 +1,5 @@
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 import Testing
 
 private let iOSSilenceTimeoutMs = 900

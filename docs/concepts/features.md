@@ -1,53 +1,53 @@
 ---
-summary: "Capacidades do OpenCraft em canais, roteamento, mídia e UX."
+summary: "OpenClaw capabilities across channels, routing, media, and UX."
 read_when:
-  - Você quer uma lista completa do que o OpenCraft suporta
-title: "Funcionalidades"
+  - You want a full list of what OpenClaw supports
+title: "Features"
 ---
 
-## Destaques
+## Highlights
 
 <Columns>
-  <Card title="Canais" icon="message-square">
-    WhatsApp, Telegram, Discord e iMessage com um único Gateway.
+  <Card title="Channels" icon="message-square">
+    WhatsApp, Telegram, Discord, and iMessage with a single Gateway.
   </Card>
   <Card title="Plugins" icon="plug">
-    Adicione Mattermost e mais com extensões.
+    Add Mattermost and more with extensions.
   </Card>
-  <Card title="Roteamento" icon="route">
-    Roteamento multi-agente com sessões isoladas.
+  <Card title="Routing" icon="route">
+    Multi-agent routing with isolated sessions.
   </Card>
-  <Card title="Mídia" icon="image">
-    Imagens, áudio e documentos de entrada e saída.
+  <Card title="Media" icon="image">
+    Images, audio, and documents in and out.
   </Card>
-  <Card title="Apps e UI" icon="monitor">
-    UI de Controle web e app companheiro macOS.
+  <Card title="Apps and UI" icon="monitor">
+    Web Control UI and macOS companion app.
   </Card>
-  <Card title="Nós móveis" icon="smartphone">
-    Nós iOS e Android com pareamento, voz/chat e comandos ricos de dispositivo.
+  <Card title="Mobile nodes" icon="smartphone">
+    iOS and Android nodes with pairing, voice/chat, and rich device commands.
   </Card>
 </Columns>
 
-## Lista completa
+## Full list
 
-- Integração WhatsApp via WhatsApp Web (Baileys)
-- Suporte a bot Telegram (grammY)
-- Suporte a bot Discord (channels.discord.js)
-- Suporte a bot Mattermost (plugin)
-- Integração iMessage via CLI imsg local (macOS)
-- Bridge de agente para Pi em modo RPC com streaming de ferramentas
-- Streaming e chunking para respostas longas
-- Roteamento multi-agente para sessões isoladas por workspace ou remetente
-- Auth de assinatura para Anthropic e OpenAI via OAuth
-- Sessões: chats diretos colapsam em `main` compartilhado; grupos são isolados
-- Suporte a chat em grupo com ativação baseada em menção
-- Suporte a mídia para imagens, áudio e documentos
-- Hook opcional de transcrição de nota de voz
-- WebChat e app de barra de menus macOS
-- Nó iOS com pareamento, Canvas, câmera, gravação de tela, localização e recursos de voz
-- Nó Android com pareamento, aba Conectar, sessões de chat, aba de voz, Canvas/câmera, mais comandos de dispositivo, notificações, contatos/calendário, movimento, fotos e SMS
+- WhatsApp integration via WhatsApp Web (Baileys)
+- Telegram bot support (grammY)
+- Discord bot support (channels.discord.js)
+- Mattermost bot support (plugin)
+- iMessage integration via local imsg CLI (macOS)
+- Agent bridge for Pi in RPC mode with tool streaming
+- Streaming and chunking for long responses
+- Multi-agent routing for isolated sessions per workspace or sender
+- Subscription auth for Anthropic and OpenAI via OAuth
+- Sessions: direct chats collapse into shared `main`; groups are isolated
+- Group chat support with mention based activation
+- Media support for images, audio, and documents
+- Optional voice note transcription hook
+- WebChat and macOS menu bar app
+- iOS node with pairing, Canvas, camera, screen recording, location, and voice features
+- Android node with pairing, Connect tab, chat sessions, voice tab, Canvas/camera, plus device, notifications, contacts/calendar, motion, photos, and SMS commands
 
 <Note>
-Caminhos legados Claude, Codex, Gemini e Opencode foram removidos. Pi é o único
-caminho de agente de código.
+Legacy Claude, Codex, Gemini, and Opencode paths have been removed. Pi is the only
+coding agent path.
 </Note>

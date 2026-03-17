@@ -12,7 +12,7 @@ import { formatCliCommand } from "../../cli/command-format.js";
 import { resolveCommandSecretRefsViaGateway } from "../../cli/command-secret-gateway.js";
 import { getChannelsCommandSecretTargetIds } from "../../cli/command-secret-targets.js";
 import { withProgress } from "../../cli/progress.js";
-import { type OpenCraftConfig, readConfigFileSnapshot } from "../../config/config.js";
+import { type OpenClawConfig, readConfigFileSnapshot } from "../../config/config.js";
 import { callGateway } from "../../gateway/call.js";
 import { collectChannelStatusIssues } from "../../infra/channels-status-issues.js";
 import { formatTimeAgo } from "../../infra/format-time/format-relative.ts";
@@ -200,7 +200,7 @@ export function formatGatewayChannelsStatusLines(payload: Record<string, unknown
         `- ${issue.channel} ${issue.accountId}: ${issue.message}${issue.fix ? ` (${issue.fix})` : ""}`,
       );
     }
-    lines.push(`- Run: ${formatCliCommand("opencraft doctor")}`);
+    lines.push(`- Run: ${formatCliCommand("openclaw doctor")}`);
     lines.push("");
   }
   lines.push(
@@ -210,9 +210,9 @@ export function formatGatewayChannelsStatusLines(payload: Record<string, unknown
 }
 
 export async function formatConfigChannelsStatusLines(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   meta: { path?: string; mode?: "local" | "remote" },
-  opts?: { sourceConfig?: OpenCraftConfig },
+  opts?: { sourceConfig?: OpenClawConfig },
 ): Promise<string[]> {
   const lines: string[] = [];
   lines.push(theme.warn("Gateway not reachable; showing config-only status."));
@@ -315,7 +315,7 @@ export async function channelsStatusCommand(
       config: cfg,
       commandName: "channels status",
       targetIds: getChannelsCommandSecretTargetIds(),
-      mode: "summary",
+      mode: "read_only_status",
     });
     for (const entry of diagnostics) {
       runtime.log(`[secrets] ${entry}`);

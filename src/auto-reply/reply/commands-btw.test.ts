@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { buildCommandTestParams } from "./commands.test-harness.js";
 import { createMockTypingController } from "./test-helpers.js";
 
@@ -15,7 +15,7 @@ function buildParams(commandBody: string) {
   const cfg = {
     commands: { text: true },
     channels: { whatsapp: { allowFrom: ["*"] } },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
   return buildCommandTestParams(commandBody, cfg, undefined, { workspaceDir: "/tmp/workspace" });
 }
 

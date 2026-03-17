@@ -10,14 +10,14 @@ const readConfigFileSnapshotForWrite = vi.fn().mockResolvedValue({
   writeOptions: {},
 });
 const setRuntimeConfigSnapshot = vi.fn();
-const ensureOpenCraftModelsJson = vi.fn().mockResolvedValue(undefined);
-const resolveOpenCraftAgentDir = vi.fn().mockReturnValue("/tmp/opencraft-agent");
+const ensureOpenClawModelsJson = vi.fn().mockResolvedValue(undefined);
+const resolveOpenClawAgentDir = vi.fn().mockReturnValue("/tmp/openclaw-agent");
 const ensureAuthProfileStore = vi.fn().mockReturnValue({ version: 1, profiles: {} });
 const listProfilesForProvider = vi.fn().mockReturnValue([]);
 const resolveAuthProfileDisplayLabel = vi.fn(({ profileId }: { profileId: string }) => profileId);
 const resolveAuthStorePathForDisplay = vi
   .fn()
-  .mockReturnValue("/tmp/opencraft-agent/auth-profiles.json");
+  .mockReturnValue("/tmp/openclaw-agent/auth-profiles.json");
 const resolveProfileUnusableUntilForDisplay = vi.fn().mockReturnValue(null);
 const resolveEnvApiKey = vi.fn().mockReturnValue(undefined);
 const resolveAwsSdkEnvVarName = vi.fn().mockReturnValue(undefined);
@@ -33,19 +33,19 @@ const modelRegistryState = {
 let previousExitCode: typeof process.exitCode;
 
 vi.mock("../config/config.js", () => ({
-  CONFIG_PATH: "/tmp/opencraft.json",
-  STATE_DIR: "/tmp/opencraft-state",
+  CONFIG_PATH: "/tmp/openclaw.json",
+  STATE_DIR: "/tmp/openclaw-state",
   loadConfig,
   readConfigFileSnapshotForWrite,
   setRuntimeConfigSnapshot,
 }));
 
 vi.mock("../agents/models-config.js", () => ({
-  ensureOpenCraftModelsJson,
+  ensureOpenClawModelsJson,
 }));
 
 vi.mock("../agents/agent-paths.js", () => ({
-  resolveOpenCraftAgentDir,
+  resolveOpenClawAgentDir,
 }));
 
 vi.mock("../agents/auth-profiles.js", () => ({
@@ -133,7 +133,7 @@ beforeEach(() => {
   modelRegistryState.getAllError = undefined;
   modelRegistryState.getAvailableError = undefined;
   listProfilesForProvider.mockReturnValue([]);
-  ensureOpenCraftModelsJson.mockClear();
+  ensureOpenClawModelsJson.mockClear();
   readConfigFileSnapshotForWrite.mockClear();
   readConfigFileSnapshotForWrite.mockResolvedValue({
     snapshot: { valid: false, resolved: {} },
@@ -384,7 +384,7 @@ describe("models list/status", () => {
 
     await loadModelRegistry(resolvedConfig as never);
 
-    expect(ensureOpenCraftModelsJson).not.toHaveBeenCalled();
+    expect(ensureOpenClawModelsJson).not.toHaveBeenCalled();
   });
 
   it("filters stale direct OpenAI spark rows from models list and registry views", async () => {
@@ -433,8 +433,8 @@ describe("models list/status", () => {
 
     await modelsListCommand({ all: true, json: true }, runtime);
 
-    expect(ensureOpenCraftModelsJson).toHaveBeenCalled();
-    expect(ensureOpenCraftModelsJson.mock.calls[0]?.[0]).toEqual(resolvedConfig);
+    expect(ensureOpenClawModelsJson).toHaveBeenCalled();
+    expect(ensureOpenClawModelsJson.mock.calls[0]?.[0]).toEqual(resolvedConfig);
   });
 
   it("toModelRow does not crash without cfg/authStore when availability is undefined", async () => {

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { resolveOpenCraftAgentDir } from "../../agents/agent-paths.js";
+import { resolveOpenClawAgentDir } from "../../agents/agent-paths.js";
 import {
   resolveAgentDir,
   resolveAgentExplicitModelPrimary,
@@ -23,7 +23,6 @@ import {
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import { formatCliCommand } from "../../cli/command-format.js";
 import { withProgressTotals } from "../../cli/progress.js";
 import { createConfigIO } from "../../config/config.js";
 import {
@@ -41,6 +40,7 @@ import type { RuntimeEnv } from "../../runtime.js";
 import { getTerminalTableWidth, renderTable } from "../../terminal/table.js";
 import { colorize, theme } from "../../terminal/theme.js";
 import { shortenHomePath } from "../../utils.js";
+import { buildProviderAuthRecoveryHint } from "../provider-auth-guidance.js";
 import { resolveProviderAuthOverview } from "./list.auth-overview.js";
 import { isRich } from "./list.format.js";
 import {
@@ -80,7 +80,7 @@ export async function modelsStatusCommand(
   const configPath = createConfigIO().configPath;
   const cfg = await loadModelsConfig({ commandName: "models status", runtime });
   const agentId = resolveKnownAgentId({ cfg, rawAgentId: opts.agent });
-  const agentDir = agentId ? resolveAgentDir(cfg, agentId) : resolveOpenCraftAgentDir();
+  const agentDir = agentId ? resolveAgentDir(cfg, agentId) : resolveOpenClawAgentDir();
   const agentModelPrimary = agentId ? resolveAgentExplicitModelPrimary(cfg, agentId) : undefined;
   const agentFallbacksOverride = agentId
     ? resolveAgentModelFallbacksOverride(cfg, agentId)
@@ -536,10 +536,11 @@ export async function modelsStatusCommand(
     runtime.log("");
     runtime.log(colorize(rich, theme.heading, "Missing auth"));
     for (const provider of missingProvidersInUse) {
-      const hint =
-        provider === "anthropic"
-          ? `Run \`claude setup-token\`, then \`${formatCliCommand("opencraft models auth setup-token")}\` or \`${formatCliCommand("opencraft configure")}\`.`
-          : `Run \`${formatCliCommand("opencraft configure")}\` or set an API key env var.`;
+      const hint = buildProviderAuthRecoveryHint({
+        provider,
+        config: cfg,
+        includeEnvVar: true,
+      });
       runtime.log(`- ${theme.heading(provider)} ${hint}`);
     }
   }

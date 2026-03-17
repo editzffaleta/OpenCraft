@@ -5,7 +5,7 @@ import {
   installModelsConfigTestHooks,
   withModelsTempHome,
 } from "./models-config.e2e-harness.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
 installModelsConfigTestHooks();
@@ -40,7 +40,7 @@ describe("models-config write serialization", () => {
       });
 
       try {
-        await Promise.all([ensureOpenCraftModelsJson(first), ensureOpenCraftModelsJson(second)]);
+        await Promise.all([ensureOpenClawModelsJson(first), ensureOpenClawModelsJson(second)]);
       } finally {
         writeSpy.mockRestore();
       }

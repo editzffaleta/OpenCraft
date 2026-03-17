@@ -1,21 +1,21 @@
 /**
- * Twitch channel plugin for OpenCraft.
+ * Twitch channel plugin for OpenClaw.
  *
  * Main plugin export combining all adapters (outbound, actions, status, gateway).
  * This is the primary entry point for the Twitch channel integration.
  */
 
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/twitch";
-import { buildChannelConfigSchema } from "opencraft/plugin-sdk/twitch";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/twitch";
+import { buildChannelConfigSchema } from "openclaw/plugin-sdk/twitch";
 import { buildPassiveProbedChannelStatusSummary } from "../../shared/channel-status-summary.js";
 import { twitchMessageActions } from "./actions.js";
 import { removeClientManager } from "./client-manager-registry.js";
 import { TwitchConfigSchema } from "./config-schema.js";
 import { DEFAULT_ACCOUNT_ID, getAccountConfig, listAccountIds } from "./config.js";
-import { twitchOnboardingAdapter } from "./onboarding.js";
 import { twitchOutbound } from "./outbound.js";
 import { probeTwitch } from "./probe.js";
 import { resolveTwitchTargets } from "./resolver.js";
+import { twitchSetupAdapter, twitchSetupWizard } from "./setup-surface.js";
 import { collectTwitchStatusIssues } from "./status.js";
 import { resolveTwitchToken } from "./token.js";
 import type {
@@ -34,7 +34,7 @@ import { isAccountConfigured } from "./utils/twitch.js";
  * Twitch channel plugin.
  *
  * Implements the ChannelPlugin interface to provide Twitch chat integration
- * for OpenCraft. Supports message sending, receiving, access control, and
+ * for OpenClaw. Supports message sending, receiving, access control, and
  * status monitoring.
  */
 export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
@@ -51,8 +51,9 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
     aliases: ["twitch-chat"],
   } satisfies ChannelMeta,
 
-  /** Onboarding adapter */
-  onboarding: twitchOnboardingAdapter,
+  /** Setup wizard surface */
+  setup: twitchSetupAdapter,
+  setupWizard: twitchSetupWizard,
 
   /** Pairing configuration */
   pairing: {
@@ -76,10 +77,10 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
   /** Account configuration management */
   config: {
     /** List all configured account IDs */
-    listAccountIds: (cfg: OpenCraftConfig): string[] => listAccountIds(cfg),
+    listAccountIds: (cfg: OpenClawConfig): string[] => listAccountIds(cfg),
 
     /** Resolve an account config by ID */
-    resolveAccount: (cfg: OpenCraftConfig, accountId?: string | null): TwitchAccountConfig => {
+    resolveAccount: (cfg: OpenClawConfig, accountId?: string | null): TwitchAccountConfig => {
       const account = getAccountConfig(cfg, accountId ?? DEFAULT_ACCOUNT_ID);
       if (!account) {
         // Return a default/empty account if not configured
@@ -97,7 +98,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
     defaultAccountId: (): string => DEFAULT_ACCOUNT_ID,
 
     /** Check if an account is configured */
-    isConfigured: (_account: unknown, cfg: OpenCraftConfig): boolean => {
+    isConfigured: (_account: unknown, cfg: OpenClawConfig): boolean => {
       const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
       const tokenResolution = resolveTwitchToken(cfg, { accountId: DEFAULT_ACCOUNT_ID });
       return account ? isAccountConfigured(account, tokenResolution.token) : false;
@@ -131,7 +132,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
       kind,
       runtime,
     }: {
-      cfg: OpenCraftConfig;
+      cfg: OpenClawConfig;
       accountId?: string | null;
       inputs: string[];
       kind: ChannelResolveKind;
@@ -192,7 +193,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
       probe,
     }: {
       account: TwitchAccountConfig;
-      cfg: OpenCraftConfig;
+      cfg: OpenClawConfig;
       runtime?: ChannelAccountSnapshot;
       probe?: unknown;
     }): ChannelAccountSnapshot => {

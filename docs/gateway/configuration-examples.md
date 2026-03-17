@@ -1,58 +1,58 @@
 ---
-summary: "Exemplos de configuração precisos para setups comuns do OpenCraft"
+summary: "Schema-accurate configuration examples for common OpenClaw setups"
 read_when:
-  - Aprendendo como configurar o OpenCraft
-  - Procurando exemplos de configuração
-  - Configurando o OpenCraft pela primeira vez
-title: "Exemplos de Configuração"
+  - Learning how to configure OpenClaw
+  - Looking for configuration examples
+  - Setting up OpenClaw for the first time
+title: "Configuration Examples"
 ---
 
-# Exemplos de Configuração
+# Configuration Examples
 
-Os exemplos abaixo estão alinhados com o schema de config atual. Para a referência exaustiva e notas por campo, veja [Configuração](/gateway/configuration).
+Examples below are aligned with the current config schema. For the exhaustive reference and per-field notes, see [Configuration](/gateway/configuration).
 
-## Início rápido
+## Quick start
 
-### Mínimo absoluto
+### Absolute minimum
 
 ```json5
 {
-  agent: { workspace: "~/.opencraft/workspace" },
-  channels: { whatsapp: { allowFrom: ["+5511999990123"] } },
+  agent: { workspace: "~/.openclaw/workspace" },
+  channels: { whatsapp: { allowFrom: ["+15555550123"] } },
 }
 ```
 
-Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao bot por esse número.
+Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
 
-### Início recomendado
+### Recommended starter
 
 ```json5
 {
   identity: {
     name: "Clawd",
-    theme: "assistente prestativo",
+    theme: "helpful assistant",
     emoji: "🦞",
   },
   agent: {
-    workspace: "~/.opencraft/workspace",
+    workspace: "~/.openclaw/workspace",
     model: { primary: "anthropic/claude-sonnet-4-5" },
   },
   channels: {
     whatsapp: {
-      allowFrom: ["+5511999990123"],
+      allowFrom: ["+15555550123"],
       groups: { "*": { requireMention: true } },
     },
   },
 }
 ```
 
-## Exemplo expandido (principais opções)
+## Expanded example (major options)
 
-> JSON5 permite comentários e vírgulas no final. JSON regular também funciona.
+> JSON5 lets you use comments and trailing commas. Regular JSON works too.
 
 ```json5
 {
-  // Ambiente + shell
+  // Environment + shell
   env: {
     OPENROUTER_API_KEY: "sk-or-...",
     vars: {
@@ -64,29 +64,29 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     },
   },
 
-  // Metadados de perfil de auth (segredos ficam em auth-profiles.json)
+  // Auth profile metadata (secrets live in auth-profiles.json)
   auth: {
     profiles: {
-      "anthropic:eu@exemplo.com": {
+      "anthropic:me@example.com": {
         provider: "anthropic",
         mode: "oauth",
-        email: "eu@exemplo.com",
+        email: "me@example.com",
       },
-      "anthropic:trabalho": { provider: "anthropic", mode: "api_key" },
+      "anthropic:work": { provider: "anthropic", mode: "api_key" },
       "openai:default": { provider: "openai", mode: "api_key" },
       "openai-codex:default": { provider: "openai-codex", mode: "oauth" },
     },
     order: {
-      anthropic: ["anthropic:eu@exemplo.com", "anthropic:trabalho"],
+      anthropic: ["anthropic:me@example.com", "anthropic:work"],
       openai: ["openai:default"],
       "openai-codex": ["openai-codex:default"],
     },
   },
 
-  // Identidade
+  // Identity
   identity: {
     name: "Samantha",
-    theme: "preguiça prestativa",
+    theme: "helpful sloth",
     emoji: "🦥",
   },
 
@@ -99,18 +99,18 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     redactSensitive: "tools",
   },
 
-  // Formatação de mensagem
+  // Message formatting
   messages: {
-    messagePrefix: "[opencraft]",
+    messagePrefix: "[openclaw]",
     responsePrefix: ">",
     ackReaction: "👀",
     ackReactionScope: "group-mentions",
   },
 
-  // Roteamento + fila
+  // Routing + queue
   routing: {
     groupChat: {
-      mentionPatterns: ["@opencraft", "opencraft"],
+      mentionPatterns: ["@openclaw", "openclaw"],
       historyLimit: 50,
     },
     queue: {
@@ -138,7 +138,7 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // Fallback CLI opcional (binário Whisper):
+          // Optional CLI fallback (Whisper binary):
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -151,7 +151,7 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     },
   },
 
-  // Comportamento de sessão
+  // Session behavior
   session: {
     scope: "per-sender",
     reset: {
@@ -163,15 +163,15 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
       discord: { mode: "idle", idleMinutes: 10080 },
     },
     resetTriggers: ["/new", "/reset"],
-    store: "~/.opencraft/agents/default/sessions/sessions.json",
+    store: "~/.openclaw/agents/default/sessions/sessions.json",
     maintenance: {
       mode: "warn",
       pruneAfter: "30d",
       maxEntries: 500,
       rotateBytes: "10mb",
-      resetArchiveRetention: "30d", // duração ou false
-      maxDiskBytes: "500mb", // opcional
-      highWaterBytes: "400mb", // opcional (padrão 80% de maxDiskBytes)
+      resetArchiveRetention: "30d", // duration or false
+      maxDiskBytes: "500mb", // optional
+      highWaterBytes: "400mb", // optional (defaults to 80% of maxDiskBytes)
     },
     typingIntervalSeconds: 5,
     sendPolicy: {
@@ -180,19 +180,19 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     },
   },
 
-  // Canais
+  // Channels
   channels: {
     whatsapp: {
       dmPolicy: "pairing",
-      allowFrom: ["+5511999990123"],
+      allowFrom: ["+15555550123"],
       groupPolicy: "allowlist",
-      groupAllowFrom: ["+5511999990123"],
+      groupAllowFrom: ["+15555550123"],
       groups: { "*": { requireMention: true } },
     },
 
     telegram: {
       enabled: true,
-      botToken: "SEU_TOKEN_DE_BOT_TELEGRAM",
+      botToken: "YOUR_TELEGRAM_BOT_TOKEN",
       allowFrom: ["123456789"],
       groupPolicy: "allowlist",
       groupAllowFrom: ["123456789"],
@@ -201,11 +201,11 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
 
     discord: {
       enabled: true,
-      token: "SEU_TOKEN_DE_BOT_DISCORD",
+      token: "YOUR_DISCORD_BOT_TOKEN",
       dm: { enabled: true, allowFrom: ["123456789012345678"] },
       guilds: {
         "123456789012345678": {
-          slug: "amigos-do-opencraft",
+          slug: "friends-of-openclaw",
           requireMention: false,
           channels: {
             general: { allow: true },
@@ -217,26 +217,26 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
 
     slack: {
       enabled: true,
-      botToken: "xoxb-SUBSTITUA_AQUI",
-      appToken: "xapp-SUBSTITUA_AQUI",
+      botToken: "xoxb-REPLACE_ME",
+      appToken: "xapp-REPLACE_ME",
       channels: {
         "#general": { allow: true, requireMention: true },
       },
       dm: { enabled: true, allowFrom: ["U123"] },
       slashCommand: {
         enabled: true,
-        name: "opencraft",
+        name: "openclaw",
         sessionPrefix: "slack:slash",
         ephemeral: true,
       },
     },
   },
 
-  // Runtime do agente
+  // Agent runtime
   agents: {
     defaults: {
-      workspace: "~/.opencraft/workspace",
-      userTimezone: "America/Sao_Paulo",
+      workspace: "~/.openclaw/workspace",
+      userTimezone: "America/Chicago",
       model: {
         primary: "anthropic/claude-sonnet-4-5",
         fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"],
@@ -273,8 +273,8 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
         every: "30m",
         model: "anthropic/claude-sonnet-4-5",
         target: "last",
-        directPolicy: "allow", // allow (padrão) | block
-        to: "+5511999990123",
+        directPolicy: "allow", // allow (default) | block
+        to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
       },
@@ -289,7 +289,7 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
       sandbox: {
         mode: "non-main",
         perSession: true,
-        workspaceRoot: "~/.opencraft/sandboxes",
+        workspaceRoot: "~/.openclaw/sandboxes",
         docker: {
           image: "openclaw-sandbox:bookworm-slim",
           workdir: "/workspace",
@@ -316,18 +316,18 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     elevated: {
       enabled: true,
       allowFrom: {
-        whatsapp: ["+5511999990123"],
+        whatsapp: ["+15555550123"],
         telegram: ["123456789"],
         discord: ["123456789012345678"],
         slack: ["U123"],
-        signal: ["+5511999990123"],
-        imessage: ["usuario@example.com"],
+        signal: ["+15555550123"],
+        imessage: ["user@example.com"],
         webchat: ["session:demo"],
       },
     },
   },
 
-  // Provedores de modelo customizados
+  // Custom model providers
   models: {
     mode: "merge",
     providers: {
@@ -353,10 +353,10 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     },
   },
 
-  // Jobs de cron
+  // Cron jobs
   cron: {
     enabled: true,
-    store: "~/.opencraft/cron/cron.json",
+    store: "~/.openclaw/cron/cron.json",
     maxConcurrentRuns: 2,
     sessionRetention: "24h",
     runLog: {
@@ -369,9 +369,9 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
   hooks: {
     enabled: true,
     path: "/hooks",
-    token: "segredo-compartilhado",
+    token: "shared-secret",
     presets: ["gmail"],
-    transformsDir: "~/.opencraft/hooks/transforms",
+    transformsDir: "~/.openclaw/hooks/transforms",
     mappings: [
       {
         id: "gmail-hook",
@@ -384,7 +384,7 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
         textTemplate: "{{messages[0].snippet}}",
         deliver: true,
         channel: "last",
-        to: "+5511999990123",
+        to: "+15555550123",
         thinking: "low",
         timeoutSeconds: 300,
         transform: {
@@ -413,7 +413,7 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
     mode: "local",
     port: 18789,
     bind: "loopback",
-    controlUi: { enabled: true, basePath: "/opencraft" },
+    controlUi: { enabled: true, basePath: "/openclaw" },
     auth: {
       mode: "token",
       token: "gateway-token",
@@ -445,68 +445,68 @@ Salve em `~/.opencraft/opencraft.json` e você pode enviar mensagens diretas ao 
 }
 ```
 
-## Padrões comuns
+## Common patterns
 
-### Setup multi-plataforma
+### Multi-platform setup
 
 ```json5
 {
-  agent: { workspace: "~/.opencraft/workspace" },
+  agent: { workspace: "~/.openclaw/workspace" },
   channels: {
-    whatsapp: { allowFrom: ["+5511999990123"] },
+    whatsapp: { allowFrom: ["+15555550123"] },
     telegram: {
       enabled: true,
-      botToken: "SEU_TOKEN",
+      botToken: "YOUR_TOKEN",
       allowFrom: ["123456789"],
     },
     discord: {
       enabled: true,
-      token: "SEU_TOKEN",
+      token: "YOUR_TOKEN",
       dm: { allowFrom: ["123456789012345678"] },
     },
   },
 }
 ```
 
-### Modo DM seguro (inbox compartilhado / DMs multi-usuário)
+### Secure DM mode (shared inbox / multi-user DMs)
 
-Se mais de uma pessoa pode enviar DM ao seu bot (múltiplas entradas em `allowFrom`, aprovações de pareamento para múltiplas pessoas, ou `dmPolicy: "open"`), habilite o **modo DM seguro** para que DMs de remetentes diferentes não compartilhem um contexto por padrão:
+If more than one person can DM your bot (multiple entries in `allowFrom`, pairing approvals for multiple people, or `dmPolicy: "open"`), enable **secure DM mode** so DMs from different senders don’t share one context by default:
 
 ```json5
 {
-  // Modo DM seguro (recomendado para agentes de DM multi-usuário ou sensíveis)
+  // Secure DM mode (recommended for multi-user or sensitive DM agents)
   session: { dmScope: "per-channel-peer" },
 
   channels: {
-    // Exemplo: inbox multi-usuário WhatsApp
+    // Example: WhatsApp multi-user inbox
     whatsapp: {
       dmPolicy: "allowlist",
-      allowFrom: ["+5511999990123", "+5511999990124"],
+      allowFrom: ["+15555550123", "+15555550124"],
     },
 
-    // Exemplo: inbox multi-usuário Discord
+    // Example: Discord multi-user inbox
     discord: {
       enabled: true,
-      token: "SEU_TOKEN_DE_BOT_DISCORD",
+      token: "YOUR_DISCORD_BOT_TOKEN",
       dm: { enabled: true, allowFrom: ["123456789012345678", "987654321098765432"] },
     },
   },
 }
 ```
 
-Para Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, a autorização de remetente é por ID por padrão.
-Habilite correspondência mutável por nome/email/nick com o `dangerouslyAllowNameMatching: true` de cada canal apenas se você aceitar explicitamente esse risco.
+For Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, sender authorization is ID-first by default.
+Only enable direct mutable name/email/nick matching with each channel's `dangerouslyAllowNameMatching: true` if you explicitly accept that risk.
 
-### OAuth com failover para chave API
+### OAuth with API key failover
 
 ```json5
 {
   auth: {
     profiles: {
-      "anthropic:assinatura": {
+      "anthropic:subscription": {
         provider: "anthropic",
         mode: "oauth",
-        email: "eu@exemplo.com",
+        email: "me@example.com",
       },
       "anthropic:api": {
         provider: "anthropic",
@@ -514,11 +514,11 @@ Habilite correspondência mutável por nome/email/nick com o `dangerouslyAllowNa
       },
     },
     order: {
-      anthropic: ["anthropic:assinatura", "anthropic:api"],
+      anthropic: ["anthropic:subscription", "anthropic:api"],
     },
   },
   agent: {
-    workspace: "~/.opencraft/workspace",
+    workspace: "~/.openclaw/workspace",
     model: {
       primary: "anthropic/claude-sonnet-4-5",
       fallbacks: ["anthropic/claude-opus-4-6"],
@@ -527,22 +527,22 @@ Habilite correspondência mutável por nome/email/nick com o `dangerouslyAllowNa
 }
 ```
 
-### Setup-token Anthropic + chave API, fallback MiniMax
+### Anthropic setup-token + API key, MiniMax fallback
 
 <Warning>
-O uso de setup-token Anthropic fora do Claude Code foi restringido para alguns
-usuários no passado. Trate isso como risco de escolha do usuário e verifique os termos
-atuais da Anthropic antes de depender de auth de assinatura.
+Anthropic setup-token usage outside Claude Code has been restricted for some
+users in the past. Treat this as user-choice risk and verify current Anthropic
+terms before depending on subscription auth.
 </Warning>
 
 ```json5
 {
   auth: {
     profiles: {
-      "anthropic:assinatura": {
+      "anthropic:subscription": {
         provider: "anthropic",
         mode: "oauth",
-        email: "usuario@exemplo.com",
+        email: "user@example.com",
       },
       "anthropic:api": {
         provider: "anthropic",
@@ -550,7 +550,7 @@ atuais da Anthropic antes de depender de auth de assinatura.
       },
     },
     order: {
-      anthropic: ["anthropic:assinatura", "anthropic:api"],
+      anthropic: ["anthropic:subscription", "anthropic:api"],
     },
   },
   models: {
@@ -563,7 +563,7 @@ atuais da Anthropic antes de depender de auth de assinatura.
     },
   },
   agent: {
-    workspace: "~/.opencraft/workspace",
+    workspace: "~/.openclaw/workspace",
     model: {
       primary: "anthropic/claude-opus-4-6",
       fallbacks: ["minimax/MiniMax-M2.5"],
@@ -572,16 +572,16 @@ atuais da Anthropic antes de depender de auth de assinatura.
 }
 ```
 
-### Bot de trabalho (acesso restrito)
+### Work bot (restricted access)
 
 ```json5
 {
   identity: {
     name: "WorkBot",
-    theme: "assistente profissional",
+    theme: "professional assistant",
   },
   agent: {
-    workspace: "~/work-opencraft",
+    workspace: "~/work-openclaw",
     elevated: { enabled: false },
   },
   channels: {
@@ -589,7 +589,7 @@ atuais da Anthropic antes de depender de auth de assinatura.
       enabled: true,
       botToken: "xoxb-...",
       channels: {
-        "#engenharia": { allow: true, requireMention: true },
+        "#engineering": { allow: true, requireMention: true },
         "#general": { allow: true, requireMention: true },
       },
     },
@@ -597,12 +597,12 @@ atuais da Anthropic antes de depender de auth de assinatura.
 }
 ```
 
-### Somente modelos locais
+### Local models only
 
 ```json5
 {
   agent: {
-    workspace: "~/.opencraft/workspace",
+    workspace: "~/.openclaw/workspace",
     model: { primary: "lmstudio/minimax-m2.5-gs32" },
   },
   models: {
@@ -629,9 +629,9 @@ atuais da Anthropic antes de depender de auth de assinatura.
 }
 ```
 
-## Dicas
+## Tips
 
-- Se você definir `dmPolicy: "open"`, a lista `allowFrom` correspondente deve incluir `"*"`.
-- IDs de provedor diferem (números de telefone, IDs de usuário, IDs de canal). Use a documentação do provedor para confirmar o formato.
-- Seções opcionais para adicionar depois: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
-- Veja [Provedores](/providers) e [Resolução de Problemas](/gateway/troubleshooting) para notas de configuração mais profundas.
+- If you set `dmPolicy: "open"`, the matching `allowFrom` list must include `"*"`.
+- Provider IDs differ (phone numbers, user IDs, channel IDs). Use the provider docs to confirm the format.
+- Optional sections to add later: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
+- See [Providers](/providers) and [Troubleshooting](/gateway/troubleshooting) for deeper setup notes.

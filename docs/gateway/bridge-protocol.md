@@ -1,91 +1,91 @@
 ---
-summary: "Protocolo bridge (nodes legados): TCP JSONL, pareamento, RPC com escopo"
+summary: "Bridge protocol (legacy nodes): TCP JSONL, pairing, scoped RPC"
 read_when:
-  - Construindo ou depurando clientes de node (iOS/Android/macOS em modo node)
-  - Investigando falhas de pareamento ou auth do bridge
-  - Auditando a superfície de node exposta pelo gateway
+  - Building or debugging node clients (iOS/Android/macOS node mode)
+  - Investigating pairing or bridge auth failures
+  - Auditing the node surface exposed by the gateway
 title: "Bridge Protocol"
 ---
 
-# Protocolo bridge (transporte de node legado)
+# Bridge protocol (legacy node transport)
 
-O protocolo Bridge é um transporte de node **legado** (TCP JSONL). Novos clientes de node
-devem usar o protocolo WebSocket unificado do Gateway.
+The Bridge protocol is a **legacy** node transport (TCP JSONL). New node clients
+should use the unified Gateway WebSocket protocol instead.
 
-Se você estiver construindo um cliente de operador ou node, use o
-[protocolo do Gateway](/gateway/protocol).
+If you are building an operator or node client, use the
+[Gateway protocol](/gateway/protocol).
 
-**Nota:** Builds atuais do OpenCraft não mais incluem o listener TCP bridge; este documento é mantido para referência histórica.
-Chaves de config legadas `bridge.*` não são mais parte do schema de config.
+**Note:** Current OpenClaw builds no longer ship the TCP bridge listener; this document is kept for historical reference.
+Legacy `bridge.*` config keys are no longer part of the config schema.
 
-## Por que temos ambos
+## Why we have both
 
-- **Fronteira de segurança**: o bridge expõe uma allowlist pequena em vez da
-  superfície completa da API do gateway.
-- **Pareamento + identidade de node**: admissão de node é de propriedade do gateway e vinculada
-  a um token por node.
-- **UX de descoberta**: nodes podem descobrir gateways via Bonjour na LAN, ou conectar
-  diretamente por um tailnet.
-- **WS de loopback**: o plano de controle WS completo permanece local a menos que tunelado via SSH.
+- **Security boundary**: the bridge exposes a small allowlist instead of the
+  full gateway API surface.
+- **Pairing + node identity**: node admission is owned by the gateway and tied
+  to a per-node token.
+- **Discovery UX**: nodes can discover gateways via Bonjour on LAN, or connect
+  directly over a tailnet.
+- **Loopback WS**: the full WS control plane stays local unless tunneled via SSH.
 
-## Transporte
+## Transport
 
-- TCP, um objeto JSON por linha (JSONL).
-- TLS opcional (quando `bridge.tls.enabled` é true).
-- Porta padrão do listener legado era `18790` (builds atuais não iniciam um bridge TCP).
+- TCP, one JSON object per line (JSONL).
+- Optional TLS (when `bridge.tls.enabled` is true).
+- Legacy default listener port was `18790` (current builds do not start a TCP bridge).
 
-Quando TLS está habilitado, registros TXT de descoberta incluem `bridgeTls=1` mais
-`bridgeTlsSha256` como um hint não secreto. Note que registros TXT Bonjour/mDNS são
-não autenticados; clientes não devem tratar o fingerprint anunciado como um
-pin autoritativo sem intenção explícita do usuário ou outra verificação fora de banda.
+When TLS is enabled, discovery TXT records include `bridgeTls=1` plus
+`bridgeTlsSha256` as a non-secret hint. Note that Bonjour/mDNS TXT records are
+unauthenticated; clients must not treat the advertised fingerprint as an
+authoritative pin without explicit user intent or other out-of-band verification.
 
-## Handshake + pareamento
+## Handshake + pairing
 
-1. Cliente envia `hello` com metadados de node + token (se já pareado).
-2. Se não pareado, gateway responde `error` (`NOT_PAIRED`/`UNAUTHORIZED`).
-3. Cliente envia `pair-request`.
-4. Gateway aguarda aprovação, depois envia `pair-ok` e `hello-ok`.
+1. Client sends `hello` with node metadata + token (if already paired).
+2. If not paired, gateway replies `error` (`NOT_PAIRED`/`UNAUTHORIZED`).
+3. Client sends `pair-request`.
+4. Gateway waits for approval, then sends `pair-ok` and `hello-ok`.
 
-`hello-ok` retorna `serverName` e pode incluir `canvasHostUrl`.
+`hello-ok` returns `serverName` and may include `canvasHostUrl`.
 
 ## Frames
 
-Cliente → Gateway:
+Client → Gateway:
 
-- `req` / `res`: RPC do gateway com escopo (chat, sessões, config, health, voicewake, skills.bins)
-- `event`: sinais de node (transcrição de voz, solicitação de agente, inscrição em chat, ciclo de vida exec)
+- `req` / `res`: scoped gateway RPC (chat, sessions, config, health, voicewake, skills.bins)
+- `event`: node signals (voice transcript, agent request, chat subscribe, exec lifecycle)
 
-Gateway → Cliente:
+Gateway → Client:
 
-- `invoke` / `invoke-res`: comandos de node (`canvas.*`, `camera.*`, `screen.record`,
+- `invoke` / `invoke-res`: node commands (`canvas.*`, `camera.*`, `screen.record`,
   `location.get`, `sms.send`)
-- `event`: atualizações de chat para sessões inscritas
+- `event`: chat updates for subscribed sessions
 - `ping` / `pong`: keepalive
 
-Aplicação de allowlist legada ficava em `src/gateway/server-bridge.ts` (removido).
+Legacy allowlist enforcement lived in `src/gateway/server-bridge.ts` (removed).
 
-## Eventos de ciclo de vida exec
+## Exec lifecycle events
 
-Nodes podem emitir eventos `exec.finished` ou `exec.denied` para surfacear atividade de system.run.
-Esses são mapeados para eventos de sistema no gateway. (Nodes legados podem ainda emitir `exec.started`.)
+Nodes can emit `exec.finished` or `exec.denied` events to surface system.run activity.
+These are mapped to system events in the gateway. (Legacy nodes may still emit `exec.started`.)
 
-Campos do payload (todos opcionais exceto quando indicado):
+Payload fields (all optional unless noted):
 
-- `sessionKey` (obrigatório): sessão de agente para receber o evento de sistema.
-- `runId`: id exec único para agrupamento.
-- `command`: string de comando raw ou formatada.
-- `exitCode`, `timedOut`, `success`, `output`: detalhes de conclusão (apenas finished).
-- `reason`: razão de negação (apenas denied).
+- `sessionKey` (required): agent session to receive the system event.
+- `runId`: unique exec id for grouping.
+- `command`: raw or formatted command string.
+- `exitCode`, `timedOut`, `success`, `output`: completion details (finished only).
+- `reason`: denial reason (denied only).
 
-## Uso com Tailnet
+## Tailnet usage
 
-- Fazer bind do bridge em um IP tailnet: `bridge.bind: "tailnet"` em
-  `~/.opencraft/opencraft.json`.
-- Clientes conectam via nome MagicDNS ou IP tailnet.
-- Bonjour **não** cruza redes; use host/porta manual ou DNS-SD wide-area
-  quando necessário.
+- Bind the bridge to a tailnet IP: `bridge.bind: "tailnet"` in
+  `~/.openclaw/openclaw.json`.
+- Clients connect via MagicDNS name or tailnet IP.
+- Bonjour does **not** cross networks; use manual host/port or wide-area DNS‑SD
+  when needed.
 
-## Versionamento
+## Versioning
 
-Bridge é atualmente **v1 implícito** (sem negociação min/max). Compatibilidade retroativa
-é esperada; adicione um campo de versão do protocolo bridge antes de qualquer mudança quebrando.
+Bridge is currently **implicit v1** (no min/max negotiation). Backward‑compat
+is expected; add a bridge protocol version field before any breaking changes.

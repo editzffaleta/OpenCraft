@@ -1,4 +1,4 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.Manifest
 import android.content.Context
@@ -8,7 +8,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 import java.time.Instant
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull

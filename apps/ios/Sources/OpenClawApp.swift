@@ -1,6 +1,6 @@
 import SwiftUI
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 import os
 import UIKit
 import BackgroundTasks
@@ -14,10 +14,10 @@ private struct PendingWatchPromptAction {
 }
 
 @MainActor
-final class OpenCraftAppDelegate: NSObject, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
-    private let logger = Logger(subsystem: "ai.opencraft.ios", category: "Push")
-    private let backgroundWakeLogger = Logger(subsystem: "ai.opencraft.ios", category: "BackgroundWake")
-    private static let wakeRefreshTaskIdentifier = "ai.opencraft.ios.bgrefresh"
+final class OpenClawAppDelegate: NSObject, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
+    private let logger = Logger(subsystem: "ai.openclaw.ios", category: "Push")
+    private let backgroundWakeLogger = Logger(subsystem: "ai.openclaw.ios", category: "BackgroundWake")
+    private static let wakeRefreshTaskIdentifier = "ai.openclaw.ios.bgrefresh"
     private var backgroundWakeTask: Task<Bool, Never>?
     private var pendingAPNsDeviceToken: Data?
     private var pendingWatchPromptActions: [PendingWatchPromptAction] = []
@@ -263,25 +263,25 @@ final class OpenCraftAppDelegate: NSObject, UIApplicationDelegate, @preconcurren
 }
 
 enum WatchPromptNotificationBridge {
-    static let typeKey = "opencraft.type"
+    static let typeKey = "openclaw.type"
     static let typeValue = "watch.prompt"
-    static let promptIDKey = "opencraft.watch.promptId"
-    static let sessionKeyKey = "opencraft.watch.sessionKey"
-    static let actionPrimaryIDKey = "opencraft.watch.action.primary.id"
-    static let actionPrimaryLabelKey = "opencraft.watch.action.primary.label"
-    static let actionSecondaryIDKey = "opencraft.watch.action.secondary.id"
-    static let actionSecondaryLabelKey = "opencraft.watch.action.secondary.label"
-    static let actionPrimaryIdentifier = "opencraft.watch.action.primary"
-    static let actionSecondaryIdentifier = "opencraft.watch.action.secondary"
-    static let actionIdentifierPrefix = "opencraft.watch.action."
-    static let actionIDKeyPrefix = "opencraft.watch.action.id."
-    static let actionLabelKeyPrefix = "opencraft.watch.action.label."
-    static let categoryPrefix = "opencraft.watch.prompt.category."
+    static let promptIDKey = "openclaw.watch.promptId"
+    static let sessionKeyKey = "openclaw.watch.sessionKey"
+    static let actionPrimaryIDKey = "openclaw.watch.action.primary.id"
+    static let actionPrimaryLabelKey = "openclaw.watch.action.primary.label"
+    static let actionSecondaryIDKey = "openclaw.watch.action.secondary.id"
+    static let actionSecondaryLabelKey = "openclaw.watch.action.secondary.label"
+    static let actionPrimaryIdentifier = "openclaw.watch.action.primary"
+    static let actionSecondaryIdentifier = "openclaw.watch.action.secondary"
+    static let actionIdentifierPrefix = "openclaw.watch.action."
+    static let actionIDKeyPrefix = "openclaw.watch.action.id."
+    static let actionLabelKeyPrefix = "openclaw.watch.action.label."
+    static let categoryPrefix = "openclaw.watch.prompt.category."
 
     @MainActor
     static func scheduleMirroredWatchPromptNotificationIfNeeded(
         invokeID: String,
-        params: OpenCraftWatchNotifyParams,
+        params: OpenClawWatchNotifyParams,
         sendResult: WatchNotificationSendResult) async
     {
         guard sendResult.queuedForDelivery || !sendResult.deliveredImmediately else { return }
@@ -291,11 +291,11 @@ enum WatchPromptNotificationBridge {
         guard !title.isEmpty || !body.isEmpty else { return }
         guard await self.requestNotificationAuthorizationIfNeeded() else { return }
 
-        let normalizedActions = (params.actions ?? []).compactMap { action -> OpenCraftWatchAction? in
+        let normalizedActions = (params.actions ?? []).compactMap { action -> OpenClawWatchAction? in
             let id = action.id.trimmingCharacters(in: .whitespacesAndNewlines)
             let label = action.label.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !id.isEmpty, !label.isEmpty else { return nil }
-            return OpenCraftWatchAction(id: id, label: label, style: action.style)
+            return OpenClawWatchAction(id: id, label: label, style: action.style)
         }
         let displayedActions = Array(normalizedActions.prefix(4))
 
@@ -334,7 +334,7 @@ enum WatchPromptNotificationBridge {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = title.isEmpty ? "OpenCraft" : title
+        content.title = title.isEmpty ? "OpenClaw" : title
         content.body = body
         content.sound = .default
         content.userInfo = userInfo
@@ -367,7 +367,7 @@ enum WatchPromptNotificationBridge {
         "\(self.actionLabelKeyPrefix)\(index)"
     }
 
-    private static func categoryActions(_ actions: [OpenCraftWatchAction]) -> [UNNotificationAction] {
+    private static func categoryActions(_ actions: [OpenClawWatchAction]) -> [UNNotificationAction] {
         actions.enumerated().map { index, action in
             let identifier: String
             switch index {
@@ -497,10 +497,10 @@ extension NodeAppModel {
 }
 
 @main
-struct OpenCraftApp: App {
+struct OpenClawApp: App {
     @State private var appModel: NodeAppModel
     @State private var gatewayController: GatewayConnectionController
-    @UIApplicationDelegateAdaptor(OpenCraftAppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(OpenClawAppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -532,9 +532,9 @@ struct OpenCraftApp: App {
     }
 }
 
-extension OpenCraftApp {
+extension OpenClawApp {
     private static func installUncaughtExceptionLogger() {
-        NSLog("OpenCraft: installing uncaught exception handler")
+        NSLog("OpenClaw: installing uncaught exception handler")
         NSSetUncaughtExceptionHandler { exception in
             // Useful when the app hits NSExceptions from SwiftUI/WebKit internals; these do not
             // produce a normal Swift error backtrace.

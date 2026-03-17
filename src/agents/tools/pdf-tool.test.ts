@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   coercePdfAssistantText,
   coercePdfModelConfig,
@@ -21,7 +21,7 @@ vi.mock("@mariozechner/pi-ai", async (importOriginal) => {
 });
 
 async function withTempAgentDir<T>(run: (agentDir: string) => Promise<T>): Promise<T> {
-  const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-pdf-"));
+  const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-pdf-"));
   try {
     return await run(agentDir);
   } finally {
@@ -111,16 +111,16 @@ function resetAuthEnv() {
   vi.stubEnv("GITHUB_TOKEN", "");
 }
 
-function withDefaultModel(primary: string): OpenCraftConfig {
+function withDefaultModel(primary: string): OpenClawConfig {
   return {
     agents: { defaults: { model: { primary } } },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
-function withPdfModel(primary: string): OpenCraftConfig {
+function withPdfModel(primary: string): OpenClawConfig {
   return {
     agents: { defaults: { pdfModel: { primary } } },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 async function stubPdfToolInfra(
@@ -150,7 +150,7 @@ async function stubPdfToolInfra(
   vi.spyOn(modelDiscovery, "discoverModels").mockReturnValue({ find } as never);
 
   const modelsConfig = await import("../models-config.js");
-  vi.spyOn(modelsConfig, "ensureOpenCraftModelsJson").mockResolvedValue({
+  vi.spyOn(modelsConfig, "ensureOpenClawModelsJson").mockResolvedValue({
     agentDir,
     wrote: false,
   });
@@ -253,7 +253,7 @@ describe("resolvePdfModelConfigForTool", () => {
 
   it("returns null without any auth", async () => {
     await withTempAgentDir(async (agentDir) => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: { defaults: { model: { primary: "openai/gpt-5.2" } } },
       };
       expect(resolvePdfModelConfigForTool({ cfg, agentDir })).toBeNull();
@@ -262,14 +262,14 @@ describe("resolvePdfModelConfigForTool", () => {
 
   it("prefers explicit pdfModel config", async () => {
     await withTempAgentDir(async (agentDir) => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: {
           defaults: {
             model: { primary: "openai/gpt-5.2" },
             pdfModel: { primary: "anthropic/claude-opus-4-6" },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
       expect(resolvePdfModelConfigForTool({ cfg, agentDir })).toEqual({
         primary: "anthropic/claude-opus-4-6",
       });
@@ -278,7 +278,7 @@ describe("resolvePdfModelConfigForTool", () => {
 
   it("falls back to imageModel config when no pdfModel set", async () => {
     await withTempAgentDir(async (agentDir) => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: {
           defaults: {
             model: { primary: "openai/gpt-5.2" },
@@ -337,7 +337,7 @@ describe("createPdfTool", () => {
 
   it("returns null without any auth configured", async () => {
     await withTempAgentDir(async (agentDir) => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: { defaults: { model: { primary: "openai/gpt-5.2" } } },
       };
       expect(createPdfTool({ config: cfg, agentDir })).toBeNull();
@@ -376,8 +376,8 @@ describe("createPdfTool", () => {
   it("respects fsPolicy.workspaceOnly for non-sandbox pdf paths", async () => {
     await withTempAgentDir(async (agentDir) => {
       vi.stubEnv("ANTHROPIC_API_KEY", "anthropic-test");
-      const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-pdf-ws-"));
-      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-pdf-out-"));
+      const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-pdf-ws-"));
+      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-pdf-out-"));
       try {
         const cfg = withDefaultModel(ANTHROPIC_PDF_MODEL);
         const tool = requirePdfTool(
@@ -745,7 +745,7 @@ describe("pdf-tool.helpers", () => {
   });
 
   it("coercePdfModelConfig reads primary and fallbacks", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       agents: {
         defaults: {
           pdfModel: {

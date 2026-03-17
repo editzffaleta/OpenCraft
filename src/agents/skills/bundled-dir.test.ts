@@ -11,24 +11,24 @@ describe("resolveBundledSkillsDir", () => {
   let envSnapshot: ReturnType<typeof captureEnv>;
 
   beforeEach(() => {
-    envSnapshot = captureEnv(["OPENCRAFT_BUNDLED_SKILLS_DIR"]);
+    envSnapshot = captureEnv(["OPENCLAW_BUNDLED_SKILLS_DIR"]);
   });
 
   afterEach(() => {
     envSnapshot.restore();
   });
 
-  it("returns OPENCRAFT_BUNDLED_SKILLS_DIR override when set", async () => {
-    const overrideDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-bundled-override-"));
-    process.env.OPENCRAFT_BUNDLED_SKILLS_DIR = ` ${overrideDir} `;
+  it("returns OPENCLAW_BUNDLED_SKILLS_DIR override when set", async () => {
+    const overrideDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-bundled-override-"));
+    process.env.OPENCLAW_BUNDLED_SKILLS_DIR = ` ${overrideDir} `;
     expect(resolveBundledSkillsDir()).toBe(overrideDir);
   });
 
   it("resolves bundled skills under a flattened dist layout", async () => {
-    delete process.env.OPENCRAFT_BUNDLED_SKILLS_DIR;
+    delete process.env.OPENCLAW_BUNDLED_SKILLS_DIR;
 
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-bundled-"));
-    await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "opencraft" }));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-bundled-"));
+    await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "openclaw" }));
 
     await writeSkill({
       dir: path.join(root, "skills", "peekaboo"),

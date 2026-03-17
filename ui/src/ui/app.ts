@@ -69,6 +69,7 @@ import type {
   AgentIdentityResult,
   ConfigSnapshot,
   ConfigUiHints,
+  ChatModelOverride,
   CronJob,
   CronRunLogEntry,
   CronStatus,
@@ -90,7 +91,7 @@ import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.
 
 declare global {
   interface Window {
-    __OPENCRAFT_CONTROL_UI_BASE_PATH__?: string;
+    __OPENCLAW_CONTROL_UI_BASE_PATH__?: string;
   }
 }
 
@@ -109,8 +110,8 @@ function resolveOnboardingMode(): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
-@customElement("opencraft-app")
-export class OpenCraftApp extends LitElement {
+@customElement("openclaw-app")
+export class OpenClawApp extends LitElement {
   private i18nController = new I18nController(this);
   clientInstanceId = generateUUID();
   connectGeneration = 0;
@@ -158,7 +159,7 @@ export class OpenCraftApp extends LitElement {
   @state() fallbackStatus: FallbackStatus | null = null;
   @state() chatAvatarUrl: string | null = null;
   @state() chatThinkingLevel: string | null = null;
-  @state() chatModelOverrides: Record<string, string | null> = {};
+  @state() chatModelOverrides: Record<string, ChatModelOverride | null> = {};
   @state() chatModelsLoading = false;
   @state() chatModelCatalog: ModelCatalogEntry[] = [];
   @state() chatQueue: ChatQueueItem[] = [];

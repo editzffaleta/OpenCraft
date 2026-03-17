@@ -1,46 +1,46 @@
 ---
-summary: "Como o OpenCraft vende identificadores de modelo de dispositivo Apple para nomes amigáveis no app macOS."
+summary: "How OpenClaw vendors Apple device model identifiers for friendly names in the macOS app."
 read_when:
-  - Atualizando mapeamentos de identificadores de modelo de dispositivo ou arquivos NOTICE/licença
-  - Alterando como a UI de Instâncias exibe nomes de dispositivos
-title: "Banco de Dados de Modelos de Dispositivo"
+  - Updating device model identifier mappings or NOTICE/license files
+  - Changing how Instances UI displays device names
+title: "Device Model Database"
 ---
 
-# Banco de dados de modelos de dispositivo (nomes amigáveis)
+# Device model database (friendly names)
 
-O app companion macOS mostra nomes amigáveis de dispositivos Apple na UI de **Instâncias** mapeando identificadores de modelo Apple (ex: `iPad16,6`, `Mac16,6`) para nomes legíveis por humanos.
+The macOS companion app shows friendly Apple device model names in the **Instances** UI by mapping Apple model identifiers (e.g. `iPad16,6`, `Mac16,6`) to human-readable names.
 
-O mapeamento é vendido como JSON em:
+The mapping is vendored as JSON under:
 
-- `apps/macos/Sources/OpenCraft/Resources/DeviceModels/`
+- `apps/macos/Sources/OpenClaw/Resources/DeviceModels/`
 
-## Fonte de dados
+## Data source
 
-Atualmente vendemos o mapeamento do repositório com licença MIT:
+We currently vendor the mapping from the MIT-licensed repository:
 
 - `kyle-seongwoo-jun/apple-device-identifiers`
 
-Para manter builds determinísticos, os arquivos JSON estão fixados em commits específicos do upstream (registrados em `apps/macos/Sources/OpenCraft/Resources/DeviceModels/NOTICE.md`).
+To keep builds deterministic, the JSON files are pinned to specific upstream commits (recorded in `apps/macos/Sources/OpenClaw/Resources/DeviceModels/NOTICE.md`).
 
-## Atualizando o banco de dados
+## Updating the database
 
-1. Escolha os commits do upstream nos quais deseja fixar (um para iOS, um para macOS).
-2. Atualize os hashes de commit em `apps/macos/Sources/OpenCraft/Resources/DeviceModels/NOTICE.md`.
-3. Baixe novamente os arquivos JSON, fixados nesses commits:
+1. Pick the upstream commits you want to pin to (one for iOS, one for macOS).
+2. Update the commit hashes in `apps/macos/Sources/OpenClaw/Resources/DeviceModels/NOTICE.md`.
+3. Re-download the JSON files, pinned to those commits:
 
 ```bash
-IOS_COMMIT="<commit sha para ios-device-identifiers.json>"
-MAC_COMMIT="<commit sha para mac-device-identifiers.json>"
+IOS_COMMIT="<commit sha for ios-device-identifiers.json>"
+MAC_COMMIT="<commit sha for mac-device-identifiers.json>"
 
 curl -fsSL "https://raw.githubusercontent.com/kyle-seongwoo-jun/apple-device-identifiers/${IOS_COMMIT}/ios-device-identifiers.json" \
-  -o apps/macos/Sources/OpenCraft/Resources/DeviceModels/ios-device-identifiers.json
+  -o apps/macos/Sources/OpenClaw/Resources/DeviceModels/ios-device-identifiers.json
 
 curl -fsSL "https://raw.githubusercontent.com/kyle-seongwoo-jun/apple-device-identifiers/${MAC_COMMIT}/mac-device-identifiers.json" \
-  -o apps/macos/Sources/OpenCraft/Resources/DeviceModels/mac-device-identifiers.json
+  -o apps/macos/Sources/OpenClaw/Resources/DeviceModels/mac-device-identifiers.json
 ```
 
-4. Certifique-se de que `apps/macos/Sources/OpenCraft/Resources/DeviceModels/LICENSE.apple-device-identifiers.txt` ainda corresponde ao upstream (substitua-o se a licença do upstream mudar).
-5. Verifique se o app macOS compila limpo (sem avisos):
+4. Ensure `apps/macos/Sources/OpenClaw/Resources/DeviceModels/LICENSE.apple-device-identifiers.txt` still matches upstream (replace it if the upstream license changes).
+5. Verify the macOS app builds cleanly (no warnings):
 
 ```bash
 swift build --package-path apps/macos

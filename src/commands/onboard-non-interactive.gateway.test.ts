@@ -90,7 +90,7 @@ vi.mock("../daemon/diagnostics.js", () => ({
   readLastGatewayErrorLine: readLastGatewayErrorLineMock,
 }));
 
-const { runNonInteractiveOnboarding } = await import("./onboard-non-interactive.js");
+const { runNonInteractiveSetup } = await import("./onboard-non-interactive.js");
 const { resolveConfigPath: resolveStateConfigPath } = await import("../config/paths.js");
 const { resolveConfigPath } = await import("../config/config.js");
 const { callGateway } = await import("../gateway/call.js");
@@ -110,8 +110,8 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       throw new Error("temp home not initialized");
     }
     const stateDir = await fs.mkdtemp(path.join(tempHome, prefix));
-    process.env.OPENCRAFT_STATE_DIR = stateDir;
-    delete process.env.OPENCRAFT_CONFIG_PATH;
+    process.env.OPENCLAW_STATE_DIR = stateDir;
+    delete process.env.OPENCLAW_CONFIG_PATH;
     return stateDir;
   };
   const withStateDir = async (
@@ -128,25 +128,25 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
   beforeAll(async () => {
     envSnapshot = captureEnv([
       "HOME",
-      "OPENCRAFT_STATE_DIR",
-      "OPENCRAFT_CONFIG_PATH",
-      "OPENCRAFT_SKIP_CHANNELS",
-      "OPENCRAFT_SKIP_GMAIL_WATCHER",
-      "OPENCRAFT_SKIP_CRON",
-      "OPENCRAFT_SKIP_CANVAS_HOST",
-      "OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER",
-      "OPENCRAFT_GATEWAY_TOKEN",
-      "OPENCRAFT_GATEWAY_PASSWORD",
+      "OPENCLAW_STATE_DIR",
+      "OPENCLAW_CONFIG_PATH",
+      "OPENCLAW_SKIP_CHANNELS",
+      "OPENCLAW_SKIP_GMAIL_WATCHER",
+      "OPENCLAW_SKIP_CRON",
+      "OPENCLAW_SKIP_CANVAS_HOST",
+      "OPENCLAW_SKIP_BROWSER_CONTROL_SERVER",
+      "OPENCLAW_GATEWAY_TOKEN",
+      "OPENCLAW_GATEWAY_PASSWORD",
     ]);
-    process.env.OPENCRAFT_SKIP_CHANNELS = "1";
-    process.env.OPENCRAFT_SKIP_GMAIL_WATCHER = "1";
-    process.env.OPENCRAFT_SKIP_CRON = "1";
-    process.env.OPENCRAFT_SKIP_CANVAS_HOST = "1";
-    process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
-    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
-    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    process.env.OPENCLAW_SKIP_CHANNELS = "1";
+    process.env.OPENCLAW_SKIP_GMAIL_WATCHER = "1";
+    process.env.OPENCLAW_SKIP_CRON = "1";
+    process.env.OPENCLAW_SKIP_CANVAS_HOST = "1";
+    process.env.OPENCLAW_SKIP_BROWSER_CONTROL_SERVER = "1";
+    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
 
-    tempHome = await makeTempWorkspace("opencraft-onboard-");
+    tempHome = await makeTempWorkspace("openclaw-onboard-");
     process.env.HOME = tempHome;
   });
 
@@ -168,9 +168,9 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
   it("writes gateway token auth into config", async () => {
     await withStateDir("state-noninteractive-", async (stateDir) => {
       const token = "tok_test_123";
-      const workspace = path.join(stateDir, "opencraft");
+      const workspace = path.join(stateDir, "openclaw");
 
-      await runNonInteractiveOnboarding(
+      await runNonInteractiveSetup(
         {
           nonInteractive: true,
           mode: "local",
@@ -200,15 +200,15 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     });
   }, 60_000);
 
-  it("uses OPENCRAFT_GATEWAY_TOKEN when --gateway-token is omitted", async () => {
+  it("uses OPENCLAW_GATEWAY_TOKEN when --gateway-token is omitted", async () => {
     await withStateDir("state-env-token-", async (stateDir) => {
       const envToken = "tok_env_fallback_123";
-      const workspace = path.join(stateDir, "opencraft");
-      const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
-      process.env.OPENCRAFT_GATEWAY_TOKEN = envToken;
+      const workspace = path.join(stateDir, "openclaw");
+      const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+      process.env.OPENCLAW_GATEWAY_TOKEN = envToken;
 
       try {
-        await runNonInteractiveOnboarding(
+        await runNonInteractiveSetup(
           {
             nonInteractive: true,
             mode: "local",
@@ -232,9 +232,9 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         expect(cfg?.gateway?.auth?.token).toBe(envToken);
       } finally {
         if (prevToken === undefined) {
-          delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+          delete process.env.OPENCLAW_GATEWAY_TOKEN;
         } else {
-          process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
+          process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
         }
       }
     });
@@ -243,12 +243,12 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
   it("writes gateway token SecretRef from --gateway-token-ref-env", async () => {
     await withStateDir("state-env-token-ref-", async (stateDir) => {
       const envToken = "tok_env_ref_123";
-      const workspace = path.join(stateDir, "opencraft");
-      const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
-      process.env.OPENCRAFT_GATEWAY_TOKEN = envToken;
+      const workspace = path.join(stateDir, "openclaw");
+      const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+      process.env.OPENCLAW_GATEWAY_TOKEN = envToken;
 
       try {
-        await runNonInteractiveOnboarding(
+        await runNonInteractiveSetup(
           {
             nonInteractive: true,
             mode: "local",
@@ -259,7 +259,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
             installDaemon: false,
             gatewayBind: "loopback",
             gatewayAuth: "token",
-            gatewayTokenRefEnv: "OPENCRAFT_GATEWAY_TOKEN",
+            gatewayTokenRefEnv: "OPENCLAW_GATEWAY_TOKEN",
           },
           runtime,
         );
@@ -273,13 +273,13 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         expect(cfg?.gateway?.auth?.token).toEqual({
           source: "env",
           provider: "default",
-          id: "OPENCRAFT_GATEWAY_TOKEN",
+          id: "OPENCLAW_GATEWAY_TOKEN",
         });
       } finally {
         if (prevToken === undefined) {
-          delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+          delete process.env.OPENCLAW_GATEWAY_TOKEN;
         } else {
-          process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
+          process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
         }
       }
     });
@@ -287,12 +287,12 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
 
   it("fails when --gateway-token-ref-env points to a missing env var", async () => {
     await withStateDir("state-env-token-ref-missing-", async (stateDir) => {
-      const workspace = path.join(stateDir, "opencraft");
+      const workspace = path.join(stateDir, "openclaw");
       const previous = process.env.MISSING_GATEWAY_TOKEN_ENV;
       delete process.env.MISSING_GATEWAY_TOKEN_ENV;
       try {
         await expect(
-          runNonInteractiveOnboarding(
+          runNonInteractiveSetup(
             {
               nonInteractive: true,
               mode: "local",
@@ -322,7 +322,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     await withStateDir("state-remote-", async () => {
       const port = getPseudoPort(30_000);
       const token = "tok_remote_123";
-      await runNonInteractiveOnboarding(
+      await runNonInteractiveSetup(
         {
           nonInteractive: true,
           mode: "remote",
@@ -359,11 +359,11 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       }));
 
       await expect(
-        runNonInteractiveOnboarding(
+        runNonInteractiveSetup(
           {
             nonInteractive: true,
             mode: "local",
-            workspace: path.join(stateDir, "opencraft"),
+            workspace: path.join(stateDir, "openclaw"),
             authChoice: "skip",
             skipSkills: true,
             skipHealth: false,
@@ -386,11 +386,11 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         return { ok: true };
       });
 
-      await runNonInteractiveOnboarding(
+      await runNonInteractiveSetup(
         {
           nonInteractive: true,
           mode: "local",
-          workspace: path.join(stateDir, "opencraft"),
+          workspace: path.join(stateDir, "openclaw"),
           authChoice: "skip",
           skipSkills: true,
           skipHealth: false,
@@ -438,11 +438,11 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
 
       try {
         await expect(
-          runNonInteractiveOnboarding(
+          runNonInteractiveSetup(
             {
               nonInteractive: true,
               mode: "local",
-              workspace: path.join(stateDir, "opencraft"),
+              workspace: path.join(stateDir, "openclaw"),
               authChoice: "skip",
               skipSkills: true,
               skipHealth: false,
@@ -509,11 +509,11 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       };
 
       await expect(
-        runNonInteractiveOnboarding(
+        runNonInteractiveSetup(
           {
             nonInteractive: true,
             mode: "local",
-            workspace: path.join(stateDir, "opencraft"),
+            workspace: path.join(stateDir, "openclaw"),
             authChoice: "skip",
             skipSkills: true,
             skipHealth: false,
@@ -547,7 +547,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       expect(parsed.installDaemon).toBe(true);
       expect(parsed.detail).toContain("1006 abnormal closure");
       expect(parsed.gateway?.wsUrl).toContain("ws://127.0.0.1:");
-      expect(parsed.hints).toContain("Run `opencraft gateway status --deep` for more detail.");
+      expect(parsed.hints).toContain("Run `openclaw gateway status --deep` for more detail.");
       expect(parsed.diagnostics?.service?.label).toBe("LaunchAgent");
       expect(parsed.diagnostics?.service?.loaded).toBe(true);
       expect(parsed.diagnostics?.service?.runtimeStatus).toBe("running");
@@ -562,13 +562,13 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       return;
     }
     await withStateDir("state-lan-", async (stateDir) => {
-      process.env.OPENCRAFT_STATE_DIR = stateDir;
-      process.env.OPENCRAFT_CONFIG_PATH = path.join(stateDir, "opencraft.json");
+      process.env.OPENCLAW_STATE_DIR = stateDir;
+      process.env.OPENCLAW_CONFIG_PATH = path.join(stateDir, "openclaw.json");
 
       const port = getPseudoPort(40_000);
-      const workspace = path.join(stateDir, "opencraft");
+      const workspace = path.join(stateDir, "openclaw");
 
-      await runNonInteractiveOnboarding(
+      await runNonInteractiveSetup(
         {
           nonInteractive: true,
           mode: "local",

@@ -1,10 +1,10 @@
 ---
 name: video-frames
-description: Extrai frames ou clipes curtos de vídeos usando ffmpeg.
+description: Extract frames or short clips from videos using ffmpeg.
 homepage: https://ffmpeg.org
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "🎬",
         "requires": { "bins": ["ffmpeg"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "ffmpeg",
               "bins": ["ffmpeg"],
-              "label": "Instalar ffmpeg (brew)",
+              "label": "Install ffmpeg (brew)",
             },
           ],
       },
@@ -24,23 +24,23 @@ metadata:
 
 # Video Frames (ffmpeg)
 
-Extraia um único frame de um vídeo ou crie miniaturas rápidas para inspeção.
+Extract a single frame from a video, or create quick thumbnails for inspection.
 
-## Início rápido
+## Quick start
 
-Primeiro frame:
-
-```bash
-{baseDir}/scripts/frame.sh /caminho/para/video.mp4 --out /tmp/frame.jpg
-```
-
-Em um timestamp:
+First frame:
 
 ```bash
-{baseDir}/scripts/frame.sh /caminho/para/video.mp4 --time 00:00:10 --out /tmp/frame-10s.jpg
+{baseDir}/scripts/frame.sh /path/to/video.mp4 --out /tmp/frame.jpg
 ```
 
-## Notas
+At a timestamp:
 
-- Prefira `--time` para "o que está acontecendo por aqui?".
-- Use `.jpg` para compartilhamento rápido; use `.png` para frames de UI nítidos.
+```bash
+{baseDir}/scripts/frame.sh /path/to/video.mp4 --time 00:00:10 --out /tmp/frame-10s.jpg
+```
+
+## Notes
+
+- Prefer `--time` for “what is happening around here?”.
+- Use a `.jpg` for quick share; use `.png` for crisp UI frames.

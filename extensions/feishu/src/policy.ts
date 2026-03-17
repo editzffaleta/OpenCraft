@@ -2,8 +2,8 @@ import type {
   AllowlistMatch,
   ChannelGroupContext,
   GroupToolPolicyConfig,
-} from "opencraft/plugin-sdk/feishu";
-import { evaluateSenderGroupAccessForPolicy } from "opencraft/plugin-sdk/feishu";
+} from "openclaw/plugin-sdk/feishu";
+import { evaluateSenderGroupAccessForPolicy } from "openclaw/plugin-sdk/feishu";
 import { normalizeFeishuTarget } from "./targets.js";
 import type { FeishuConfig, FeishuGroupConfig } from "./types.js";
 

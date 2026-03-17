@@ -10,7 +10,7 @@ import {
   type TopLevelComponents,
 } from "@buape/carbon";
 import { ButtonStyle, Routes } from "discord-api-types/v10";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import { loadSessionStore, resolveStorePath } from "../../../../src/config/sessions.js";
 import type { DiscordExecApprovalConfig } from "../../../../src/config/types.discord.js";
 import { GatewayClient } from "../../../../src/gateway/client.js";
@@ -107,7 +107,7 @@ export function parseExecApprovalData(
 }
 
 type ExecApprovalContainerParams = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   title: string;
   description?: string;
@@ -197,7 +197,7 @@ class ExecApprovalActionRow extends Row<Button> {
 }
 
 function resolveExecApprovalAccountId(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   request: ExecApprovalRequest;
 }): string | null {
   const sessionKey = params.request.request.sessionKey?.trim();
@@ -273,7 +273,7 @@ function resolveExecApprovalPreviews(
 
 function createExecApprovalRequestContainer(params: {
   request: ExecApprovalRequest;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   actionRow?: Row<Button>;
 }): ExecApprovalContainer {
@@ -302,7 +302,7 @@ function createResolvedContainer(params: {
   request: ExecApprovalRequest;
   decision: ExecApprovalDecision;
   resolvedBy?: string | null;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
 }): ExecApprovalContainer {
   const { commandPreview, commandSecondaryPreview } = resolveExecApprovalPreviews(
@@ -339,7 +339,7 @@ function createResolvedContainer(params: {
 
 function createExpiredContainer(params: {
   request: ExecApprovalRequest;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
 }): ExecApprovalContainer {
   const { commandPreview, commandSecondaryPreview } = resolveExecApprovalPreviews(
@@ -365,7 +365,7 @@ export type DiscordExecApprovalHandlerOpts = {
   accountId: string;
   config: DiscordExecApprovalConfig;
   gatewayUrl?: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runtime?: RuntimeEnv;
   onResolve?: (id: string, decision: ExecApprovalDecision) => Promise<void>;
 };

@@ -1,37 +1,37 @@
 ---
-summary: "Contexto: o que o modelo vê, como é construído e como inspecioná-lo"
+summary: "Context: what the model sees, how it is built, and how to inspect it"
 read_when:
-  - Você quer entender o que "contexto" significa no OpenCraft
-  - Você está depurando por que o modelo "sabe" algo (ou esqueceu)
-  - Você quer reduzir o overhead de contexto (/context, /status, /compact)
-title: "Contexto"
+  - You want to understand what “context” means in OpenClaw
+  - You are debugging why the model “knows” something (or forgot it)
+  - You want to reduce context overhead (/context, /status, /compact)
+title: "Context"
 ---
 
-# Contexto
+# Context
 
-"Contexto" é **tudo que o OpenCraft envia ao modelo para uma execução**. É delimitado pela **janela de contexto** do modelo (limite de tokens).
+“Context” is **everything OpenClaw sends to the model for a run**. It is bounded by the model’s **context window** (token limit).
 
-Modelo mental para iniciantes:
+Beginner mental model:
 
-- **System prompt** (construído pelo OpenCraft): regras, ferramentas, lista de skills, horário/runtime e arquivos de workspace injetados.
-- **Histórico de conversa**: suas mensagens + as mensagens do assistente para esta sessão.
-- **Chamadas/resultados de ferramentas + anexos**: output de comandos, leituras de arquivo, imagens/áudio, etc.
+- **System prompt** (OpenClaw-built): rules, tools, skills list, time/runtime, and injected workspace files.
+- **Conversation history**: your messages + the assistant’s messages for this session.
+- **Tool calls/results + attachments**: command output, file reads, images/audio, etc.
 
-Contexto _não é a mesma coisa_ que "memória": memória pode ser armazenada em disco e recarregada depois; contexto é o que está dentro da janela atual do modelo.
+Context is _not the same thing_ as “memory”: memory can be stored on disk and reloaded later; context is what’s inside the model’s current window.
 
-## Início rápido (inspecionar contexto)
+## Quick start (inspect context)
 
-- `/status` → visão rápida "quão cheia está minha janela?" + configurações da sessão.
-- `/context list` → o que está injetado + tamanhos aproximados (por arquivo + totais).
-- `/context detail` → detalhamento mais profundo: tamanhos por arquivo, por schema de ferramenta, por entrada de skill e tamanho do system prompt.
-- `/usage tokens` → adicionar rodapé de uso por resposta às respostas normais.
-- `/compact` → resumir histórico mais antigo em uma entrada compacta para liberar espaço na janela.
+- `/status` → quick “how full is my window?” view + session settings.
+- `/context list` → what’s injected + rough sizes (per file + totals).
+- `/context detail` → deeper breakdown: per-file, per-tool schema sizes, per-skill entry sizes, and system prompt size.
+- `/usage tokens` → append per-reply usage footer to normal replies.
+- `/compact` → summarize older history into a compact entry to free window space.
 
-Veja também: [Comandos slash](/tools/slash-commands), [Uso de tokens e custos](/reference/token-use), [Compactação](/concepts/compaction).
+See also: [Slash commands](/tools/slash-commands), [Token use & costs](/reference/token-use), [Compaction](/concepts/compaction).
 
-## Exemplo de output
+## Example output
 
-Os valores variam por modelo, provedor, política de ferramentas e o que está no seu workspace.
+Values vary by model, provider, tool policy, and what’s in your workspace.
 
 ### `/context list`
 
@@ -76,33 +76,33 @@ Top tools (schema size):
 … (+N more tools)
 ```
 
-## O que conta para a janela de contexto
+## What counts toward the context window
 
-Tudo que o modelo recebe conta, incluindo:
+Everything the model receives counts, including:
 
-- System prompt (todas as seções).
-- Histórico de conversa.
-- Chamadas de ferramenta + resultados de ferramentas.
-- Anexos/transcrições (imagens/áudio/arquivos).
-- Resumos de compactação e artefatos de poda.
-- "Wrappers" ou headers ocultos do provedor (não visíveis, mas contados).
+- System prompt (all sections).
+- Conversation history.
+- Tool calls + tool results.
+- Attachments/transcripts (images/audio/files).
+- Compaction summaries and pruning artifacts.
+- Provider “wrappers” or hidden headers (not visible, still counted).
 
-## Como o OpenCraft constrói o system prompt
+## How OpenClaw builds the system prompt
 
-O system prompt é **de propriedade do OpenCraft** e reconstruído em cada execução. Inclui:
+The system prompt is **OpenClaw-owned** and rebuilt each run. It includes:
 
-- Lista de ferramentas + descrições curtas.
-- Lista de skills (apenas metadados; veja abaixo).
-- Localização do workspace.
-- Horário (UTC + horário do usuário convertido se configurado).
-- Metadados de runtime (host/SO/modelo/thinking).
-- Arquivos de bootstrap do workspace injetados em **Project Context**.
+- Tool list + short descriptions.
+- Skills list (metadata only; see below).
+- Workspace location.
+- Time (UTC + converted user time if configured).
+- Runtime metadata (host/OS/model/thinking).
+- Injected workspace bootstrap files under **Project Context**.
 
-Detalhamento completo: [System Prompt](/concepts/system-prompt).
+Full breakdown: [System Prompt](/concepts/system-prompt).
 
-## Arquivos de workspace injetados (Project Context)
+## Injected workspace files (Project Context)
 
-Por padrão, o OpenCraft injeta um conjunto fixo de arquivos do workspace (se presentes):
+By default, OpenClaw injects a fixed set of workspace files (if present):
 
 - `AGENTS.md`
 - `SOUL.md`
@@ -110,59 +110,60 @@ Por padrão, o OpenCraft injeta um conjunto fixo de arquivos do workspace (se pr
 - `IDENTITY.md`
 - `USER.md`
 - `HEARTBEAT.md`
-- `BOOTSTRAP.md` (apenas na primeira execução)
+- `BOOTSTRAP.md` (first-run only)
 
-Arquivos grandes são truncados por arquivo usando `agents.defaults.bootstrapMaxChars` (padrão `20000` chars). O OpenCraft também aplica um limite total de injeção de bootstrap entre arquivos com `agents.defaults.bootstrapTotalMaxChars` (padrão `150000` chars). `/context` mostra os tamanhos **bruto vs injetado** e se houve truncamento.
+Large files are truncated per-file using `agents.defaults.bootstrapMaxChars` (default `20000` chars). OpenClaw also enforces a total bootstrap injection cap across files with `agents.defaults.bootstrapTotalMaxChars` (default `150000` chars). `/context` shows **raw vs injected** sizes and whether truncation happened.
 
-Quando ocorre truncamento, o runtime pode injetar um bloco de aviso no prompt em Project Context. Configure isso com `agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`; padrão `once`).
+When truncation occurs, the runtime can inject an in-prompt warning block under Project Context. Configure this with `agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`; default `once`).
 
-## Skills: o que é injetado vs carregado sob demanda
+## Skills: what’s injected vs loaded on-demand
 
-O system prompt inclui uma **lista de skills** compacta (nome + descrição + localização). Essa lista tem overhead real.
+The system prompt includes a compact **skills list** (name + description + location). This list has real overhead.
 
-As instruções dos skills _não_ são incluídas por padrão. O modelo deve fazer `read` no `SKILL.md` do skill **apenas quando necessário**.
+Skill instructions are _not_ included by default. The model is expected to `read` the skill’s `SKILL.md` **only when needed**.
 
-## Ferramentas: há dois custos
+## Tools: there are two costs
 
-As ferramentas afetam o contexto de duas formas:
+Tools affect context in two ways:
 
-1. **Texto da lista de ferramentas** no system prompt (o que você vê como "Tooling").
-2. **Schemas de ferramentas** (JSON). Estes são enviados ao modelo para que possa chamar ferramentas. Contam para o contexto mesmo que você não os veja como texto simples.
+1. **Tool list text** in the system prompt (what you see as “Tooling”).
+2. **Tool schemas** (JSON). These are sent to the model so it can call tools. They count toward context even though you don’t see them as plain text.
 
-`/context detail` detalha os maiores schemas de ferramentas para que você possa ver o que domina.
+`/context detail` breaks down the biggest tool schemas so you can see what dominates.
 
-## Comandos, diretivas e "atalhos inline"
+## Commands, directives, and “inline shortcuts”
 
-Comandos slash são tratados pelo Gateway. Há alguns comportamentos diferentes:
+Slash commands are handled by the Gateway. There are a few different behaviors:
 
-- **Comandos standalone**: uma mensagem que é apenas `/...` executa como um comando.
-- **Diretivas**: `/think`, `/verbose`, `/reasoning`, `/elevated`, `/model`, `/queue` são removidos antes que o modelo veja a mensagem.
-  - Mensagens apenas com diretivas persistem configurações de sessão.
-  - Diretivas inline em uma mensagem normal atuam como hints por mensagem.
-- **Atalhos inline** (apenas remetentes na allowlist): certos tokens `/...` dentro de uma mensagem normal podem ser executados imediatamente (exemplo: "ei /status"), e são removidos antes que o modelo veja o texto restante.
+- **Standalone commands**: a message that is only `/...` runs as a command.
+- **Directives**: `/think`, `/verbose`, `/reasoning`, `/elevated`, `/model`, `/queue` are stripped before the model sees the message.
+  - Directive-only messages persist session settings.
+  - Inline directives in a normal message act as per-message hints.
+- **Inline shortcuts** (allowlisted senders only): certain `/...` tokens inside a normal message can run immediately (example: “hey /status”), and are stripped before the model sees the remaining text.
 
-Detalhes: [Comandos slash](/tools/slash-commands).
+Details: [Slash commands](/tools/slash-commands).
 
-## Sessões, compactação e poda (o que persiste)
+## Sessions, compaction, and pruning (what persists)
 
-O que persiste entre mensagens depende do mecanismo:
+What persists across messages depends on the mechanism:
 
-- **Histórico normal** persiste na transcrição da sessão até ser compactado/podado pela política.
-- **Compactação** persiste um resumo na transcrição e mantém mensagens recentes intactas.
-- **Poda** remove resultados de ferramentas antigos do prompt _em memória_ para uma execução, mas não reescreve a transcrição.
+- **Normal history** persists in the session transcript until compacted/pruned by policy.
+- **Compaction** persists a summary into the transcript and keeps recent messages intact.
+- **Pruning** removes old tool results from the _in-memory_ prompt for a run, but does not rewrite the transcript.
 
-Docs: [Sessão](/concepts/session), [Compactação](/concepts/compaction), [Poda de sessão](/concepts/session-pruning).
+Docs: [Session](/concepts/session), [Compaction](/concepts/compaction), [Session pruning](/concepts/session-pruning).
 
-Por padrão, o OpenCraft usa o motor de contexto `legacy` integrado para montagem e
-compactação. Se você instalar um plugin que fornece `kind: "context-engine"` e
-selecioná-lo com `plugins.slots.contextEngine`, o OpenCraft delega montagem de contexto,
-`/compact` e hooks de ciclo de vida de contexto de subagente para esse motor.
+By default, OpenClaw uses the built-in `legacy` context engine for assembly and
+compaction. If you install a plugin that provides `kind: "context-engine"` and
+select it with `plugins.slots.contextEngine`, OpenClaw delegates context
+assembly, `/compact`, and related subagent context lifecycle hooks to that
+engine instead.
 
-## O que `/context` realmente reporta
+## What `/context` actually reports
 
-`/context` prefere o relatório de system prompt **construído na execução** mais recente quando disponível:
+`/context` prefers the latest **run-built** system prompt report when available:
 
-- `System prompt (run)` = capturado da última execução embarcada (com capacidade de ferramenta) e persistido no armazenamento de sessão.
-- `System prompt (estimate)` = calculado na hora quando nenhum relatório de execução existe (ou quando executando via backend CLI que não gera o relatório).
+- `System prompt (run)` = captured from the last embedded (tool-capable) run and persisted in the session store.
+- `System prompt (estimate)` = computed on the fly when no run report exists (or when running via a CLI backend that doesn’t generate the report).
 
-De qualquer forma, reporta tamanhos e principais contribuidores; **não** descarrega o system prompt completo ou schemas de ferramentas.
+Either way, it reports sizes and top contributors; it does **not** dump the full system prompt or tool schemas.

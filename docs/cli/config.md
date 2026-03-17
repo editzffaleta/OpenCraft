@@ -1,68 +1,68 @@
 ---
-summary: "Referência do CLI para `opencraft config` (get/set/unset/file/validate)"
+summary: "CLI reference for `openclaw config` (get/set/unset/file/validate)"
 read_when:
-  - Você quer ler ou editar config de forma não interativa
+  - You want to read or edit config non-interactively
 title: "config"
 ---
 
-# `opencraft config`
+# `openclaw config`
 
-Helpers de config: get/set/unset/validate valores por path e imprimir o arquivo
-de config ativo. Rodar sem um subcomando abre
-o wizard de configuração (mesmo que `opencraft configure`).
+Config helpers: get/set/unset/validate values by path and print the active
+config file. Run without a subcommand to open
+the configure wizard (same as `openclaw configure`).
 
-## Exemplos
+## Examples
 
 ```bash
-opencraft config file
-opencraft config get browser.executablePath
-opencraft config set browser.executablePath "/usr/bin/google-chrome"
-opencraft config set agents.defaults.heartbeat.every "2h"
-opencraft config set agents.list[0].tools.exec.node "node-id-or-name"
-opencraft config unset tools.web.search.apiKey
-opencraft config validate
-opencraft config validate --json
+openclaw config file
+openclaw config get browser.executablePath
+openclaw config set browser.executablePath "/usr/bin/google-chrome"
+openclaw config set agents.defaults.heartbeat.every "2h"
+openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
+openclaw config unset tools.web.search.apiKey
+openclaw config validate
+openclaw config validate --json
 ```
 
 ## Paths
 
-Paths usam notação de ponto ou colchete:
+Paths use dot or bracket notation:
 
 ```bash
-opencraft config get agents.defaults.workspace
-opencraft config get agents.list[0].id
+openclaw config get agents.defaults.workspace
+openclaw config get agents.list[0].id
 ```
 
-Use o índice da lista de agentes para visar um agente específico:
+Use the agent list index to target a specific agent:
 
 ```bash
-opencraft config get agents.list
-opencraft config set agents.list[1].tools.exec.node "node-id-or-name"
+openclaw config get agents.list
+openclaw config set agents.list[1].tools.exec.node "node-id-or-name"
 ```
 
-## Valores
+## Values
 
-Valores são analisados como JSON5 quando possível; caso contrário são tratados como strings.
-Use `--strict-json` para exigir análise JSON5. `--json` permanece suportado como alias legado.
+Values are parsed as JSON5 when possible; otherwise they are treated as strings.
+Use `--strict-json` to require JSON5 parsing. `--json` remains supported as a legacy alias.
 
 ```bash
-opencraft config set agents.defaults.heartbeat.every "0m"
-opencraft config set gateway.port 19001 --strict-json
-opencraft config set channels.whatsapp.groups '["*"]' --strict-json
+openclaw config set agents.defaults.heartbeat.every "0m"
+openclaw config set gateway.port 19001 --strict-json
+openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 ```
 
-## Subcomandos
+## Subcommands
 
-- `config file`: Imprimir o path do arquivo de config ativo (resolvido de `OPENCLAW_CONFIG_PATH` ou localização padrão).
+- `config file`: Print the active config file path (resolved from `OPENCLAW_CONFIG_PATH` or default location).
 
-Reiniciar o gateway após edições.
+Restart the gateway after edits.
 
-## Validar
+## Validate
 
-Validar a config atual contra o schema ativo sem iniciar o
+Validate the current config against the active schema without starting the
 gateway.
 
 ```bash
-opencraft config validate
-opencraft config validate --json
+openclaw config validate
+openclaw config validate --json
 ```

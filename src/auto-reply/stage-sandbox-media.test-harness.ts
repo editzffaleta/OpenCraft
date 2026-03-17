@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { MsgContext, TemplateContext } from "./templating.js";
 
 export async function withSandboxMediaTempHome<T>(
@@ -27,12 +27,12 @@ export function createSandboxMediaContexts(mediaPath: string): {
   return { ctx, sessionCtx: { ...ctx } };
 }
 
-export function createSandboxMediaStageConfig(home: string): OpenCraftConfig {
+export function createSandboxMediaStageConfig(home: string): OpenClawConfig {
   return {
     agents: {
       defaults: {
         model: "anthropic/claude-opus-4-5",
-        workspace: join(home, "opencraft"),
+        workspace: join(home, "openclaw"),
         sandbox: {
           mode: "non-main",
           workspaceRoot: join(home, "sandboxes"),
@@ -41,5 +41,5 @@ export function createSandboxMediaStageConfig(home: string): OpenCraftConfig {
     },
     channels: { whatsapp: { allowFrom: ["*"] } },
     session: { store: join(home, "sessions.json") },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }

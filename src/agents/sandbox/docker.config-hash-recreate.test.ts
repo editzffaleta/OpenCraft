@@ -55,7 +55,7 @@ vi.mock("node:child_process", async (importOriginal) => {
       } else if (
         args[0] === "inspect" &&
         args[1] === "-f" &&
-        args[2]?.includes('index .Config.Labels "opencraft.configHash"')
+        args[2]?.includes('index .Config.Labels "openclaw.configHash"')
       ) {
         stdout = `${spawnState.labelHash}\n`;
       } else if (
@@ -91,11 +91,12 @@ function createSandboxConfig(
 ): SandboxConfig {
   return {
     mode: "all",
+    backend: "docker",
     scope: "shared",
     workspaceAccess,
-    workspaceRoot: "~/.opencraft/sandboxes",
+    workspaceRoot: "~/.openclaw/sandboxes",
     docker: {
-      image: "opencraft-sandbox:test",
+      image: "openclaw-sandbox:test",
       containerPrefix: "oc-test-",
       workdir: "/workspace",
       readOnlyRoot: true,
@@ -108,11 +109,17 @@ function createSandboxConfig(
       binds: binds ?? ["/tmp/workspace:/workspace:rw"],
       dangerouslyAllowReservedContainerTargets: true,
     },
+    ssh: {
+      command: "ssh",
+      workspaceRoot: "/tmp/openclaw-sandboxes",
+      strictHostKeyChecking: true,
+      updateHostKeys: true,
+    },
     browser: {
       enabled: false,
-      image: "opencraft-browser:test",
+      image: "openclaw-browser:test",
       containerPrefix: "oc-browser-",
-      network: "opencraft-sandbox-browser",
+      network: "openclaw-sandbox-browser",
       cdpPort: 9222,
       vncPort: 5900,
       noVncPort: 6080,
@@ -187,7 +194,7 @@ describe("ensureSandboxContainer config-hash recreation", () => {
     ).toBe(true);
     const createCall = dockerCalls.find((call) => call.args[0] === "create");
     expect(createCall).toBeDefined();
-    expect(createCall?.args).toContain(`opencraft.configHash=${newHash}`);
+    expect(createCall?.args).toContain(`openclaw.configHash=${newHash}`);
     expect(registryMocks.updateRegistry).toHaveBeenCalledWith(
       expect.objectContaining({
         containerName: "oc-test-shared",
@@ -236,7 +243,7 @@ describe("ensureSandboxContainer config-hash recreation", () => {
       (call) => call.command === "docker" && call.args[0] === "create",
     );
     expect(createCall).toBeDefined();
-    expect(createCall?.args).toContain(`opencraft.configHash=${expectedHash}`);
+    expect(createCall?.args).toContain(`openclaw.configHash=${expectedHash}`);
 
     const bindArgs = collectDockerFlagValues(createCall?.args ?? [], "-v");
     const workspaceMountIdx = bindArgs.indexOf("/tmp/workspace:/workspace");

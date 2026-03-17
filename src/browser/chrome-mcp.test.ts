@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildChromeMcpArgs,
   evaluateChromeMcpScript,
   listChromeMcpTabs,
   openChromeMcpTab,
@@ -28,7 +29,7 @@ function createFakeSession(): ChromeMcpSession {
             text: [
               "## Pages",
               "1: https://developer.chrome.com/blog/chrome-devtools-mcp-debug-your-browser-session [selected]",
-              "2: https://github.com/opencraft/opencraft/pull/45318",
+              "2: https://github.com/openclaw/openclaw/pull/45318",
             ].join("\n"),
           },
         ],
@@ -42,7 +43,7 @@ function createFakeSession(): ChromeMcpSession {
             text: [
               "## Pages",
               "1: https://developer.chrome.com/blog/chrome-devtools-mcp-debug-your-browser-session",
-              "2: https://github.com/opencraft/opencraft/pull/45318",
+              "2: https://github.com/openclaw/openclaw/pull/45318",
               "3: https://example.com/ [selected]",
             ].join("\n"),
           },
@@ -97,9 +98,21 @@ describe("chrome MCP page parsing", () => {
       {
         targetId: "2",
         title: "",
-        url: "https://github.com/opencraft/opencraft/pull/45318",
+        url: "https://github.com/openclaw/openclaw/pull/45318",
         type: "page",
       },
+    ]);
+  });
+
+  it("adds --userDataDir when an explicit Chromium profile path is configured", () => {
+    expect(buildChromeMcpArgs("/tmp/brave-profile")).toEqual([
+      "-y",
+      "chrome-devtools-mcp@latest",
+      "--autoConnect",
+      "--experimentalStructuredContent",
+      "--experimental-page-id-routing",
+      "--userDataDir",
+      "/tmp/brave-profile",
     ]);
   });
 
@@ -248,6 +261,33 @@ describe("chrome MCP page parsing", () => {
     const tabs = await listChromeMcpTabs("chrome-live");
     expect(factoryCalls).toBe(2);
     expect(tabs).toHaveLength(2);
+  });
+
+  it("creates a fresh session when userDataDir changes for the same profile", async () => {
+    const createdSessions: ChromeMcpSession[] = [];
+    const closeMocks: Array<ReturnType<typeof vi.fn>> = [];
+    const factoryCalls: Array<{ profileName: string; userDataDir?: string }> = [];
+    const factory: ChromeMcpSessionFactory = async (profileName, userDataDir) => {
+      factoryCalls.push({ profileName, userDataDir });
+      const session = createFakeSession();
+      const closeMock = vi.fn().mockResolvedValue(undefined);
+      session.client.close = closeMock as typeof session.client.close;
+      createdSessions.push(session);
+      closeMocks.push(closeMock);
+      return session;
+    };
+    setChromeMcpSessionFactoryForTest(factory);
+
+    await listChromeMcpTabs("chrome-live", "/tmp/brave-a");
+    await listChromeMcpTabs("chrome-live", "/tmp/brave-b");
+
+    expect(factoryCalls).toEqual([
+      { profileName: "chrome-live", userDataDir: "/tmp/brave-a" },
+      { profileName: "chrome-live", userDataDir: "/tmp/brave-b" },
+    ]);
+    expect(createdSessions).toHaveLength(2);
+    expect(closeMocks[0]).toHaveBeenCalledTimes(1);
+    expect(closeMocks[1]).not.toHaveBeenCalled();
   });
 
   it("clears failed pending sessions so the next call can retry", async () => {

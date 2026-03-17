@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.app.Notification
 import android.content.Intent

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   clearConfigCache,
   clearRuntimeConfigSnapshot,
@@ -11,12 +11,12 @@ import {
   installModelsConfigTestHooks,
   withModelsTempHome as withTempHome,
 } from "./models-config.e2e-harness.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
 installModelsConfigTestHooks();
 
-function createOpenAiApiKeySourceConfig(): OpenCraftConfig {
+function createOpenAiApiKeySourceConfig(): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -31,7 +31,7 @@ function createOpenAiApiKeySourceConfig(): OpenCraftConfig {
   };
 }
 
-function createOpenAiApiKeyRuntimeConfig(): OpenCraftConfig {
+function createOpenAiApiKeyRuntimeConfig(): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -46,7 +46,7 @@ function createOpenAiApiKeyRuntimeConfig(): OpenCraftConfig {
   };
 }
 
-function createOpenAiHeaderSourceConfig(): OpenCraftConfig {
+function createOpenAiHeaderSourceConfig(): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -72,7 +72,7 @@ function createOpenAiHeaderSourceConfig(): OpenCraftConfig {
   };
 }
 
-function createOpenAiHeaderRuntimeConfig(): OpenCraftConfig {
+function createOpenAiHeaderRuntimeConfig(): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -90,7 +90,7 @@ function createOpenAiHeaderRuntimeConfig(): OpenCraftConfig {
   };
 }
 
-function withGatewayTokenMode(config: OpenCraftConfig): OpenCraftConfig {
+function withGatewayTokenMode(config: OpenClawConfig): OpenClawConfig {
   return {
     ...config,
     gateway: {
@@ -103,16 +103,16 @@ function withGatewayTokenMode(config: OpenCraftConfig): OpenCraftConfig {
 
 async function withGeneratedModelsFromRuntimeSource(
   params: {
-    sourceConfig: OpenCraftConfig;
-    runtimeConfig: OpenCraftConfig;
-    candidateConfig?: OpenCraftConfig;
+    sourceConfig: OpenClawConfig;
+    runtimeConfig: OpenClawConfig;
+    candidateConfig?: OpenClawConfig;
   },
   runAssertions: () => Promise<void>,
 ) {
   await withTempHome(async () => {
     try {
       setRuntimeConfigSnapshot(params.runtimeConfig, params.sourceConfig);
-      await ensureOpenCraftModelsJson(params.candidateConfig ?? loadConfig());
+      await ensureOpenClawModelsJson(params.candidateConfig ?? loadConfig());
       await runAssertions();
     } finally {
       clearRuntimeConfigSnapshot();
@@ -151,7 +151,7 @@ describe("models-config runtime source snapshot", () => {
 
   it("uses non-env marker from runtime source snapshot for file refs", async () => {
     await withTempHome(async () => {
-      const sourceConfig: OpenCraftConfig = {
+      const sourceConfig: OpenClawConfig = {
         models: {
           providers: {
             moonshot: {
@@ -163,7 +163,7 @@ describe("models-config runtime source snapshot", () => {
           },
         },
       };
-      const runtimeConfig: OpenCraftConfig = {
+      const runtimeConfig: OpenClawConfig = {
         models: {
           providers: {
             moonshot: {
@@ -178,7 +178,7 @@ describe("models-config runtime source snapshot", () => {
 
       try {
         setRuntimeConfigSnapshot(runtimeConfig, sourceConfig);
-        await ensureOpenCraftModelsJson(loadConfig());
+        await ensureOpenClawModelsJson(loadConfig());
 
         const parsed = await readGeneratedModelsJson<{
           providers: Record<string, { apiKey?: string }>;
@@ -195,7 +195,7 @@ describe("models-config runtime source snapshot", () => {
     await withTempHome(async () => {
       const sourceConfig = createOpenAiApiKeySourceConfig();
       const runtimeConfig = createOpenAiApiKeyRuntimeConfig();
-      const clonedRuntimeConfig: OpenCraftConfig = {
+      const clonedRuntimeConfig: OpenClawConfig = {
         ...runtimeConfig,
         agents: {
           defaults: {
@@ -206,7 +206,7 @@ describe("models-config runtime source snapshot", () => {
 
       try {
         setRuntimeConfigSnapshot(runtimeConfig, sourceConfig);
-        await ensureOpenCraftModelsJson(clonedRuntimeConfig);
+        await ensureOpenClawModelsJson(clonedRuntimeConfig);
         await expectGeneratedProviderApiKey("openai", "OPENAI_API_KEY"); // pragma: allowlist secret
       } finally {
         clearRuntimeConfigSnapshot();
@@ -229,13 +229,13 @@ describe("models-config runtime source snapshot", () => {
     await withTempHome(async () => {
       const sourceConfig = withGatewayTokenMode(createOpenAiApiKeySourceConfig());
       const runtimeConfig = withGatewayTokenMode(createOpenAiApiKeyRuntimeConfig());
-      const incompatibleCandidate: OpenCraftConfig = {
+      const incompatibleCandidate: OpenClawConfig = {
         ...createOpenAiApiKeyRuntimeConfig(),
       };
 
       try {
         setRuntimeConfigSnapshot(runtimeConfig, sourceConfig);
-        await ensureOpenCraftModelsJson(incompatibleCandidate);
+        await ensureOpenClawModelsJson(incompatibleCandidate);
         await expectGeneratedProviderApiKey("openai", "OPENAI_API_KEY"); // pragma: allowlist secret
       } finally {
         clearRuntimeConfigSnapshot();
@@ -248,13 +248,13 @@ describe("models-config runtime source snapshot", () => {
     await withTempHome(async () => {
       const sourceConfig = withGatewayTokenMode(createOpenAiHeaderSourceConfig());
       const runtimeConfig = withGatewayTokenMode(createOpenAiHeaderRuntimeConfig());
-      const incompatibleCandidate: OpenCraftConfig = {
+      const incompatibleCandidate: OpenClawConfig = {
         ...createOpenAiHeaderRuntimeConfig(),
       };
 
       try {
         setRuntimeConfigSnapshot(runtimeConfig, sourceConfig);
-        await ensureOpenCraftModelsJson(incompatibleCandidate);
+        await ensureOpenClawModelsJson(incompatibleCandidate);
         await expectGeneratedOpenAiHeaderMarkers();
       } finally {
         clearRuntimeConfigSnapshot();

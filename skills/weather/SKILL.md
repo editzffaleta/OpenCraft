@@ -1,112 +1,112 @@
 ---
 name: weather
-description: "Obtém clima atual e previsões via wttr.in ou Open-Meteo. Use quando: o usuário perguntar sobre clima, temperatura ou previsões para qualquer localidade. NÃO use para: dados históricos de clima, alertas de tempo severo ou análise meteorológica detalhada. Não precisa de chave de API."
+description: "Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed."
 homepage: https://wttr.in/:help
-metadata: { "opencraft": { "emoji": "☔", "requires": { "bins": ["curl"] } } }
+metadata: { "openclaw": { "emoji": "☔", "requires": { "bins": ["curl"] } } }
 ---
 
-# Habilidade de Clima
+# Weather Skill
 
-Obtém condições climáticas atuais e previsões.
+Get current weather conditions and forecasts.
 
-## Quando Usar
+## When to Use
 
-✅ **USE esta habilidade quando:**
+✅ **USE this skill when:**
 
-- "Como está o tempo?"
-- "Vai chover hoje/amanhã?"
-- "Temperatura em [cidade]"
-- "Previsão do tempo para a semana"
-- Verificações de clima para viagens
+- "What's the weather?"
+- "Will it rain today/tomorrow?"
+- "Temperature in [city]"
+- "Weather forecast for the week"
+- Travel planning weather checks
 
-## Quando NÃO Usar
+## When NOT to Use
 
-❌ **NÃO use esta habilidade quando:**
+❌ **DON'T use this skill when:**
 
-- Dados históricos de clima → use arquivos/APIs de clima
-- Análise climática ou tendências → use fontes de dados especializadas
-- Dados de microclima hiper-local → use sensores locais
-- Alertas de tempo severo → verifique fontes oficiais (INMET, etc.)
-- Clima para aviação/marítimo → use serviços especializados (METAR, etc.)
+- Historical weather data → use weather archives/APIs
+- Climate analysis or trends → use specialized data sources
+- Hyper-local microclimate data → use local sensors
+- Severe weather alerts → check official NWS sources
+- Aviation/marine weather → use specialized services (METAR, etc.)
 
-## Localização
+## Location
 
-Sempre inclua uma cidade, região ou código de aeroporto nas consultas de clima.
+Always include a city, region, or airport code in weather queries.
 
-## Comandos
+## Commands
 
-### Clima Atual
-
-```bash
-# Resumo em uma linha
-curl "wttr.in/SaoPaulo?format=3"
-
-# Condições atuais detalhadas
-curl "wttr.in/SaoPaulo?0"
-
-# Cidade específica
-curl "wttr.in/Rio+de+Janeiro?format=3"
-```
-
-### Previsões
+### Current Weather
 
 ```bash
-# Previsão de 3 dias
-curl "wttr.in/SaoPaulo"
+# One-line summary
+curl "wttr.in/London?format=3"
 
-# Previsão semanal
-curl "wttr.in/SaoPaulo?format=v2"
+# Detailed current conditions
+curl "wttr.in/London?0"
 
-# Dia específico (0=hoje, 1=amanhã, 2=depois de amanhã)
-curl "wttr.in/SaoPaulo?1"
+# Specific city
+curl "wttr.in/New+York?format=3"
 ```
 
-### Opções de Formato
+### Forecasts
 
 ```bash
-# Uma linha
-curl "wttr.in/SaoPaulo?format=%l:+%c+%t+%w"
+# 3-day forecast
+curl "wttr.in/London"
 
-# Saída JSON
-curl "wttr.in/SaoPaulo?format=j1"
+# Week forecast
+curl "wttr.in/London?format=v2"
 
-# Imagem PNG
-curl "wttr.in/SaoPaulo.png"
+# Specific day (0=today, 1=tomorrow, 2=day after)
+curl "wttr.in/London?1"
 ```
 
-### Códigos de Formato
-
-- `%c` — Emoji de condição climática
-- `%t` — Temperatura
-- `%f` — "Sensação térmica"
-- `%w` — Vento
-- `%h` — Umidade
-- `%p` — Precipitação
-- `%l` — Localização
-
-## Respostas Rápidas
-
-**"Como está o tempo?"**
+### Format Options
 
 ```bash
-curl -s "wttr.in/SaoPaulo?format=%l:+%c+%t+(sensacao+%f),+%w+vento,+%h+umidade"
+# One-liner
+curl "wttr.in/London?format=%l:+%c+%t+%w"
+
+# JSON output
+curl "wttr.in/London?format=j1"
+
+# PNG image
+curl "wttr.in/London.png"
 ```
 
-**"Vai chover?"**
+### Format Codes
+
+- `%c` — Weather condition emoji
+- `%t` — Temperature
+- `%f` — "Feels like"
+- `%w` — Wind
+- `%h` — Humidity
+- `%p` — Precipitation
+- `%l` — Location
+
+## Quick Responses
+
+**"What's the weather?"**
 
 ```bash
-curl -s "wttr.in/SaoPaulo?format=%l:+%c+%p"
+curl -s "wttr.in/London?format=%l:+%c+%t+(feels+like+%f),+%w+wind,+%h+humidity"
 ```
 
-**"Previsão do fim de semana"**
+**"Will it rain?"**
 
 ```bash
-curl "wttr.in/SaoPaulo?format=v2"
+curl -s "wttr.in/London?format=%l:+%c+%p"
 ```
 
-## Notas
+**"Weekend forecast"**
 
-- Não precisa de chave de API (usa wttr.in)
-- Com limite de requisições; não faça spam
-- Funciona para a maioria das cidades do mundo
-- Suporta códigos de aeroporto: `curl wttr.in/GRU`
+```bash
+curl "wttr.in/London?format=v2"
+```
+
+## Notes
+
+- No API key needed (uses wttr.in)
+- Rate limited; don't spam requests
+- Works for most global cities
+- Supports airport codes: `curl wttr.in/ORD`

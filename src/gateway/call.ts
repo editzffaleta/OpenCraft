@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   loadConfig,
   resolveConfigPath,
@@ -40,7 +40,7 @@ type CallGatewayBaseOptions = {
   token?: string;
   password?: string;
   tlsFingerprint?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   method: string;
   params?: unknown;
   expectFinal?: boolean;
@@ -86,15 +86,12 @@ function shouldAttachDeviceIdentityForGatewayCall(params: {
   token?: string;
   password?: string;
 }): boolean {
-  if (!(params.token || params.password)) {
-    return true;
-  }
-  try {
-    const parsed = new URL(params.url);
-    return !["127.0.0.1", "::1", "localhost"].includes(parsed.hostname);
-  } catch {
-    return true;
-  }
+  void params;
+  // Shared-auth local calls used to skip device identity as an optimization, but
+  // device-less operator connects now have their self-declared scopes stripped.
+  // Keep identity enabled so local authenticated calls stay device-bound and
+  // retain their least-privilege scopes.
+  return true;
 }
 
 export type ExplicitGatewayAuth = {
@@ -152,7 +149,7 @@ export function ensureExplicitGatewayAuth(params: {
 
 export function buildGatewayConnectionDetails(
   options: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     url?: string;
     configPath?: string;
     urlSource?: "cli" | "env";
@@ -175,7 +172,7 @@ export function buildGatewayConnectionDetails(
       : undefined;
   const envUrlOverride = cliUrlOverride
     ? undefined
-    : (trimToUndefined(process.env.OPENCRAFT_GATEWAY_URL) ??
+    : (trimToUndefined(process.env.OPENCLAW_GATEWAY_URL) ??
       trimToUndefined(process.env.CLAWDBOT_GATEWAY_URL));
   const urlOverride = cliUrlOverride ?? envUrlOverride;
   const remoteUrl =
@@ -186,7 +183,7 @@ export function buildGatewayConnectionDetails(
   const url = urlOverride || remoteUrl || localUrl;
   const urlSource = urlOverride
     ? urlSourceHint === "env"
-      ? "env OPENCRAFT_GATEWAY_URL"
+      ? "env OPENCLAW_GATEWAY_URL"
       : "cli --url"
     : remoteUrl
       ? "config gateway.remote.url"
@@ -198,7 +195,7 @@ export function buildGatewayConnectionDetails(
     ? "Warn: gateway.mode=remote but gateway.remote.url is missing; set gateway.remote.url or switch gateway.mode=local."
     : undefined;
 
-  const allowPrivateWs = process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS === "1";
+  const allowPrivateWs = process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS === "1";
   // Security check: block ALL insecure ws:// to non-loopback addresses (CWE-319, CVSS 9.8)
   // This applies to the FINAL resolved URL, regardless of source (config, CLI override, etc).
   // Both credentials and chat/conversation data must not be transmitted over plaintext to remote hosts.
@@ -215,9 +212,9 @@ export function buildGatewayConnectionDetails(
         "- or use Tailscale Serve/Funnel for HTTPS remote access",
         allowPrivateWs
           ? undefined
-          : "Break-glass (trusted private networks only): set OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1",
-        "Doctor: opencraft doctor --fix",
-        "Docs: https://docs.opencraft.ai/gateway/remote",
+          : "Break-glass (trusted private networks only): set OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1",
+        "Doctor: openclaw doctor --fix",
+        "Docs: https://docs.openclaw.ai/gateway/remote",
       ].join("\n"),
     );
   }
@@ -249,7 +246,7 @@ type GatewayRemoteSettings = {
 };
 
 type ResolvedGatewayCallContext = {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   configPath: string;
   isRemoteMode: boolean;
   remote?: GatewayRemoteSettings;
@@ -288,7 +285,7 @@ function resolveGatewayCallContext(opts: CallGatewayBaseOptions): ResolvedGatewa
   const cliUrlOverride = trimToUndefined(opts.url);
   const envUrlOverride = cliUrlOverride
     ? undefined
-    : (trimToUndefined(process.env.OPENCRAFT_GATEWAY_URL) ??
+    : (trimToUndefined(process.env.OPENCLAW_GATEWAY_URL) ??
       trimToUndefined(process.env.CLAWDBOT_GATEWAY_URL));
   const urlOverride = cliUrlOverride ?? envUrlOverride;
   const urlOverrideSource = cliUrlOverride ? "cli" : envUrlOverride ? "env" : undefined;
@@ -320,7 +317,7 @@ function ensureRemoteModeUrlConfigured(context: ResolvedGatewayCallContext): voi
 }
 
 async function resolveGatewaySecretInputString(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   value: unknown;
   path: string;
   env: NodeJS.ProcessEnv;
@@ -330,11 +327,8 @@ async function resolveGatewaySecretInputString(params: {
     value: params.value,
     env: params.env,
     normalize: trimToUndefined,
-    onResolveRefError: (error) => {
-      const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`${params.path} secret reference could not be resolved: ${detail}`, {
-        cause: error,
-      });
+    onResolveRefError: () => {
+      throw new GatewaySecretRefUnavailableError(params.path);
     },
   });
   if (!value) {
@@ -389,7 +383,7 @@ function isSupportedGatewaySecretInputPath(path: string): path is SupportedGatew
 }
 
 function readGatewaySecretInputValue(
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   path: SupportedGatewaySecretInputPath,
 ): unknown {
   if (path === "gateway.auth.token") {
@@ -405,7 +399,7 @@ function readGatewaySecretInputValue(
 }
 
 function hasConfiguredGatewaySecretRef(
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   path: SupportedGatewaySecretInputPath,
 ): boolean {
   return Boolean(
@@ -419,7 +413,7 @@ function hasConfiguredGatewaySecretRef(
 function resolveGatewayCredentialsFromConfigOptions(params: {
   context: ResolvedGatewayCallContext;
   env: NodeJS.ProcessEnv;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
 }) {
   const { context, env, cfg } = params;
   return {
@@ -463,7 +457,7 @@ function localAuthModeAllowsGatewaySecretInputPath(params: {
 function gatewaySecretInputPathCanWin(params: {
   context: ResolvedGatewayCallContext;
   env: NodeJS.ProcessEnv;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   path: SupportedGatewaySecretInputPath;
 }): boolean {
   if (!hasConfiguredGatewaySecretRef(params.config, params.path)) {
@@ -480,7 +474,7 @@ function gatewaySecretInputPathCanWin(params: {
   ) {
     return false;
   }
-  const sentinel = `__OPENCRAFT_GATEWAY_SECRET_REF_PROBE_${params.path.replaceAll(".", "_")}__`;
+  const sentinel = `__OPENCLAW_GATEWAY_SECRET_REF_PROBE_${params.path.replaceAll(".", "_")}__`;
   const probeConfig = structuredClone(params.config);
   for (const candidatePath of ALL_GATEWAY_SECRET_INPUT_PATHS) {
     if (!hasConfiguredGatewaySecretRef(probeConfig, candidatePath)) {
@@ -514,7 +508,7 @@ function gatewaySecretInputPathCanWin(params: {
 }
 
 async function resolveConfiguredGatewaySecretInput(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   path: SupportedGatewaySecretInputPath;
   env: NodeJS.ProcessEnv;
 }): Promise<string | undefined> {
@@ -552,7 +546,7 @@ async function resolveConfiguredGatewaySecretInput(params: {
 }
 
 function assignResolvedGatewaySecretInput(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   path: SupportedGatewaySecretInputPath;
   value: string | undefined;
 }): void {
@@ -583,8 +577,8 @@ function assignResolvedGatewaySecretInput(params: {
 async function resolvePreferredGatewaySecretInputs(params: {
   context: ResolvedGatewayCallContext;
   env: NodeJS.ProcessEnv;
-  config: OpenCraftConfig;
-}): Promise<OpenCraftConfig> {
+  config: OpenClawConfig;
+}): Promise<OpenClawConfig> {
   let nextConfig = params.config;
   for (const path of ALL_GATEWAY_SECRET_INPUT_PATHS) {
     if (
@@ -666,7 +660,7 @@ async function resolveGatewayCredentialsFromConfigWithSecretInputs(params: {
 }
 
 export async function resolveGatewayCredentialsWithSecretInputs(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   explicitAuth?: ExplicitGatewayAuth;
   urlOverride?: string;
   urlOverrideSource?: "cli" | "env";

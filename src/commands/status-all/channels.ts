@@ -17,7 +17,7 @@ import type {
   ChannelPlugin,
 } from "../../channels/plugins/types.js";
 import { inspectReadOnlyChannelAccount } from "../../channels/read-only-account-inspect.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { sha256HexPrefix } from "../../logging/redact-identifier.js";
 import { formatTimeAgo } from "./format.js";
 
@@ -39,8 +39,8 @@ type ChannelAccountRow = {
 
 type ResolvedChannelAccountRowParams = {
   plugin: ChannelPlugin;
-  cfg: OpenCraftConfig;
-  sourceConfig: OpenCraftConfig;
+  cfg: OpenClawConfig;
+  sourceConfig: OpenClawConfig;
   accountId: string;
 };
 
@@ -91,14 +91,18 @@ function formatTokenHint(token: string, opts: { showSecrets: boolean }): string 
   return `${head}…${tail} · len ${t.length}`;
 }
 
-function inspectChannelAccount(plugin: ChannelPlugin, cfg: OpenCraftConfig, accountId: string) {
+async function inspectChannelAccount(
+  plugin: ChannelPlugin,
+  cfg: OpenClawConfig,
+  accountId: string,
+) {
   return (
     plugin.config.inspectAccount?.(cfg, accountId) ??
-    inspectReadOnlyChannelAccount({
+    (await inspectReadOnlyChannelAccount({
       channelId: plugin.id,
       cfg,
       accountId,
-    })
+    }))
   );
 }
 
@@ -106,8 +110,8 @@ async function resolveChannelAccountRow(
   params: ResolvedChannelAccountRowParams,
 ): Promise<ChannelAccountRow> {
   const { plugin, cfg, sourceConfig, accountId } = params;
-  const sourceInspectedAccount = inspectChannelAccount(plugin, sourceConfig, accountId);
-  const resolvedInspectedAccount = inspectChannelAccount(plugin, cfg, accountId);
+  const sourceInspectedAccount = await inspectChannelAccount(plugin, sourceConfig, accountId);
+  const resolvedInspectedAccount = await inspectChannelAccount(plugin, cfg, accountId);
   const resolvedInspection = resolvedInspectedAccount as {
     enabled?: boolean;
     configured?: boolean;
@@ -156,7 +160,7 @@ const formatAccountLabel = (params: { accountId: string; name?: string }) => {
 
 const buildAccountNotes = (params: {
   plugin: ChannelPlugin;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   entry: ChannelAccountRow;
 }) => {
   const { plugin, cfg, entry } = params;
@@ -255,7 +259,7 @@ function collectMissingPaths(accounts: ChannelAccountRow[]): string[] {
 
 function summarizeTokenConfig(params: {
   plugin: ChannelPlugin;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accounts: ChannelAccountRow[];
   showSecrets: boolean;
 }): { state: "ok" | "setup" | "warn" | null; detail: string | null } {
@@ -466,8 +470,8 @@ function summarizeTokenConfig(params: {
 // `status --all` channels table.
 // Keep this generic: channel-specific rules belong in the channel plugin.
 export async function buildChannelsTable(
-  cfg: OpenCraftConfig,
-  opts?: { showSecrets?: boolean; sourceConfig?: OpenCraftConfig },
+  cfg: OpenClawConfig,
+  opts?: { showSecrets?: boolean; sourceConfig?: OpenClawConfig },
 ): Promise<{
   rows: ChannelRow[];
   details: Array<{

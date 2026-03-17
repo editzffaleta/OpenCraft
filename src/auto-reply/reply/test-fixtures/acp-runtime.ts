@@ -1,7 +1,7 @@
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 import type { SessionAcpMeta } from "../../../config/sessions/types.js";
 
-export function createAcpTestConfig(overrides?: Partial<OpenCraftConfig>): OpenCraftConfig {
+export function createAcpTestConfig(overrides?: Partial<OpenClawConfig>): OpenClawConfig {
   return {
     acp: {
       enabled: true,
@@ -11,7 +11,7 @@ export function createAcpTestConfig(overrides?: Partial<OpenCraftConfig>): OpenC
       },
     },
     ...overrides,
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 export function createAcpSessionMeta(overrides?: Partial<SessionAcpMeta>): SessionAcpMeta {

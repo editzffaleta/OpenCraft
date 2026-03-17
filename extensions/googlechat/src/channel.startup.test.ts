@@ -1,4 +1,4 @@
-import type { ChannelAccountSnapshot } from "opencraft/plugin-sdk/googlechat";
+import type { ChannelAccountSnapshot } from "openclaw/plugin-sdk/googlechat";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   abortStartedAccount,

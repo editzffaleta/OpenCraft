@@ -1,7 +1,7 @@
 # OpenClaw Fly.io deployment configuration
 # See https://fly.io/docs/reference/configuration/
 
-app = "opencraft"
+app = "openclaw"
 primary_region = "iad" # change to your closest region
 
 [build]
@@ -30,5 +30,5 @@ size = "shared-cpu-2x"
 memory = "2048mb"
 
 [mounts]
-source = "opencraft_data"
+source = "openclaw_data"
 destination = "/data"

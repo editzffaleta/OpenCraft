@@ -1,10 +1,3 @@
-import {
-  buildModelsKeyboard,
-  buildProviderKeyboard,
-  calculateTotalPages,
-  getModelsPageSize,
-  type ProviderInfo,
-} from "../../../extensions/telegram/src/model-buttons.js";
 import { resolveAgentDir, resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { resolveModelAuthLabel } from "../../agents/model-auth-label.js";
 import { loadModelCatalog } from "../../agents/model-catalog.js";
@@ -15,8 +8,15 @@ import {
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
+import {
+  buildModelsKeyboard,
+  buildProviderKeyboard,
+  calculateTotalPages,
+  getModelsPageSize,
+  type ProviderInfo,
+} from "../../plugin-sdk-internal/telegram.js";
 import type { ReplyPayload } from "../types.js";
 import { rejectUnauthorizedCommand } from "./command-gates.js";
 import type { CommandHandler } from "./commands-types.js";
@@ -35,7 +35,7 @@ export type ModelsProviderData = {
  * Exported for reuse by callback handlers.
  */
 export async function buildModelsProviderData(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId?: string,
 ): Promise<ModelsProviderData> {
   const resolvedDefault = resolveDefaultModelForAgent({
@@ -185,7 +185,7 @@ function parseModelsArgs(raw: string): {
 
 function resolveProviderLabel(params: {
   provider: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   sessionEntry?: SessionEntry;
 }): string {
@@ -204,7 +204,7 @@ function resolveProviderLabel(params: {
 export function formatModelsAvailableHeader(params: {
   provider: string;
   total: number;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   sessionEntry?: SessionEntry;
 }): string {
@@ -218,7 +218,7 @@ export function formatModelsAvailableHeader(params: {
 }
 
 export async function resolveModelsCommandReply(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   commandBodyNormalized: string;
   surface?: string;
   currentModel?: string;

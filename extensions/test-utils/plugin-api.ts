@@ -1,10 +1,11 @@
-import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
+import type { OpenClawPluginApi } from "../../src/plugins/types.js";
 
-type TestPluginApiInput = Partial<OpenCraftPluginApi> &
-  Pick<OpenCraftPluginApi, "id" | "name" | "source" | "config" | "runtime">;
+type TestPluginApiInput = Partial<OpenClawPluginApi> &
+  Pick<OpenClawPluginApi, "id" | "name" | "source" | "config" | "runtime">;
 
-export function createTestPluginApi(api: TestPluginApiInput): OpenCraftPluginApi {
+export function createTestPluginApi(api: TestPluginApiInput): OpenClawPluginApi {
   return {
+    registrationMode: "full",
     logger: { info() {}, warn() {}, error() {}, debug() {} },
     registerTool() {},
     registerHook() {},
@@ -14,6 +15,9 @@ export function createTestPluginApi(api: TestPluginApiInput): OpenCraftPluginApi
     registerCli() {},
     registerService() {},
     registerProvider() {},
+    registerSpeechProvider() {},
+    registerWebSearchProvider() {},
+    registerInteractiveHandler() {},
     registerCommand() {},
     registerContextEngine() {},
     resolvePath(input: string) {

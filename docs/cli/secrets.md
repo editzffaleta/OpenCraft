@@ -1,173 +1,173 @@
 ---
-summary: "Referência do CLI para `opencraft secrets` (reload, audit, configure, apply)"
+summary: "CLI reference for `openclaw secrets` (reload, audit, configure, apply)"
 read_when:
-  - Re-resolvendo refs de segredo em runtime
-  - Auditando resíduos em texto simples e refs não resolvidas
-  - Configurando SecretRefs e aplicando mudanças de scrub unidirecional
+  - Re-resolving secret refs at runtime
+  - Auditing plaintext residues and unresolved refs
+  - Configuring SecretRefs and applying one-way scrub changes
 title: "secrets"
 ---
 
-# `opencraft secrets`
+# `openclaw secrets`
 
-Use `opencraft secrets` para gerenciar SecretRefs e manter o snapshot de runtime ativo saudável.
+Use `openclaw secrets` to manage SecretRefs and keep the active runtime snapshot healthy.
 
-Papéis dos comandos:
+Command roles:
 
-- `reload`: RPC do gateway (`secrets.reload`) que re-resolve refs e troca o snapshot de runtime apenas em sucesso completo (sem writes de config).
-- `audit`: scan read-only de configuração/auth/stores de modelos gerados e resíduos legados para texto simples, refs não resolvidas e deriva de precedência.
-- `configure`: planejador interativo para setup de provedor, mapeamento de alvo e preflight (requer TTY).
-- `apply`: executar um plano salvo (`--dry-run` apenas para validação), depois scrub de resíduos em texto simples direcionados.
+- `reload`: gateway RPC (`secrets.reload`) that re-resolves refs and swaps runtime snapshot only on full success (no config writes).
+- `audit`: read-only scan of configuration/auth/generated-model stores and legacy residues for plaintext, unresolved refs, and precedence drift.
+- `configure`: interactive planner for provider setup, target mapping, and preflight (TTY required).
+- `apply`: execute a saved plan (`--dry-run` for validation only), then scrub targeted plaintext residues.
 
-Loop recomendado do operador:
-
-```bash
-opencraft secrets audit --check
-opencraft secrets configure
-opencraft secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
-opencraft secrets apply --from /tmp/openclaw-secrets-plan.json
-opencraft secrets audit --check
-opencraft secrets reload
-```
-
-Nota de código de saída para CI/gates:
-
-- `audit --check` retorna `1` em findings.
-- refs não resolvidas retornam `2`.
-
-Relacionado:
-
-- Guia de segredos: [Secrets Management](/gateway/secrets)
-- Superfície de credencial: [SecretRef Credential Surface](/reference/secretref-credential-surface)
-- Guia de segurança: [Security](/gateway/security)
-
-## Recarregar snapshot de runtime
-
-Re-resolver refs de segredo e trocar atomicamente o snapshot de runtime.
+Recommended operator loop:
 
 ```bash
-opencraft secrets reload
-opencraft secrets reload --json
+openclaw secrets audit --check
+openclaw secrets configure
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
+openclaw secrets audit --check
+openclaw secrets reload
 ```
 
-Notas:
+Exit code note for CI/gates:
 
-- Usa o método RPC do gateway `secrets.reload`.
-- Se a resolução falhar, o gateway mantém o último snapshot conhecido e retorna um erro (sem ativação parcial).
-- Resposta JSON inclui `warningCount`.
+- `audit --check` returns `1` on findings.
+- unresolved refs return `2`.
+
+Related:
+
+- Secrets guide: [Secrets Management](/gateway/secrets)
+- Credential surface: [SecretRef Credential Surface](/reference/secretref-credential-surface)
+- Security guide: [Security](/gateway/security)
+
+## Reload runtime snapshot
+
+Re-resolve secret refs and atomically swap runtime snapshot.
+
+```bash
+openclaw secrets reload
+openclaw secrets reload --json
+```
+
+Notes:
+
+- Uses gateway RPC method `secrets.reload`.
+- If resolution fails, gateway keeps last-known-good snapshot and returns an error (no partial activation).
+- JSON response includes `warningCount`.
 
 ## Audit
 
-Escanear estado do OpenCraft para:
+Scan OpenClaw state for:
 
-- armazenamento de segredo em texto simples
-- refs não resolvidas
-- deriva de precedência (credenciais de `auth-profiles.json` sombreando refs de `opencraft.json`)
-- resíduos de `agents/*/agent/models.json` gerados (valores `apiKey` do provedor e cabeçalhos sensíveis do provedor)
-- resíduos legados (entradas legadas de auth store, lembretes OAuth)
+- plaintext secret storage
+- unresolved refs
+- precedence drift (`auth-profiles.json` credentials shadowing `openclaw.json` refs)
+- generated `agents/*/agent/models.json` residues (provider `apiKey` values and sensitive provider headers)
+- legacy residues (legacy auth store entries, OAuth reminders)
 
-Nota de resíduo de cabeçalho:
+Header residue note:
 
-- Detecção de cabeçalho sensível de provedor é baseada em heurística de nome (nomes e fragmentos comuns de cabeçalho de auth/credencial como `authorization`, `x-api-key`, `token`, `secret`, `password` e `credential`).
+- Sensitive provider header detection is name-heuristic based (common auth/credential header names and fragments such as `authorization`, `x-api-key`, `token`, `secret`, `password`, and `credential`).
 
 ```bash
-opencraft secrets audit
-opencraft secrets audit --check
-opencraft secrets audit --json
+openclaw secrets audit
+openclaw secrets audit --check
+openclaw secrets audit --json
 ```
 
-Comportamento de saída:
+Exit behavior:
 
-- `--check` sai com não-zero em findings.
-- refs não resolvidas saem com código não-zero de prioridade mais alta.
+- `--check` exits non-zero on findings.
+- unresolved refs exit with higher-priority non-zero code.
 
-Destaques da forma do relatório:
+Report shape highlights:
 
 - `status`: `clean | findings | unresolved`
 - `summary`: `plaintextCount`, `unresolvedRefCount`, `shadowedRefCount`, `legacyResidueCount`
-- códigos de finding:
+- finding codes:
   - `PLAINTEXT_FOUND`
   - `REF_UNRESOLVED`
   - `REF_SHADOWED`
   - `LEGACY_RESIDUE`
 
-## Configure (helper interativo)
+## Configure (interactive helper)
 
-Construir mudanças de provedor e SecretRef interativamente, rodar preflight e opcionalmente aplicar:
+Build provider and SecretRef changes interactively, run preflight, and optionally apply:
 
 ```bash
-opencraft secrets configure
-opencraft secrets configure --plan-out /tmp/openclaw-secrets-plan.json
-opencraft secrets configure --apply --yes
-opencraft secrets configure --providers-only
-opencraft secrets configure --skip-provider-setup
-opencraft secrets configure --agent ops
-opencraft secrets configure --json
+openclaw secrets configure
+openclaw secrets configure --plan-out /tmp/openclaw-secrets-plan.json
+openclaw secrets configure --apply --yes
+openclaw secrets configure --providers-only
+openclaw secrets configure --skip-provider-setup
+openclaw secrets configure --agent ops
+openclaw secrets configure --json
 ```
 
-Fluxo:
+Flow:
 
-- Setup de provedor primeiro (`add/edit/remove` para aliases de `secrets.providers`).
-- Mapeamento de credencial segundo (selecionar campos e atribuir refs `{source, provider, id}`).
-- Preflight e apply opcional por último.
+- Provider setup first (`add/edit/remove` for `secrets.providers` aliases).
+- Credential mapping second (select fields and assign `{source, provider, id}` refs).
+- Preflight and optional apply last.
 
 Flags:
 
-- `--providers-only`: configurar apenas `secrets.providers`, pular mapeamento de credencial.
-- `--skip-provider-setup`: pular setup de provedor e mapear credenciais para provedores existentes.
-- `--agent <id>`: escopo de descoberta de alvo e writes de `auth-profiles.json` para um store de agente.
+- `--providers-only`: configure `secrets.providers` only, skip credential mapping.
+- `--skip-provider-setup`: skip provider setup and map credentials to existing providers.
+- `--agent <id>`: scope `auth-profiles.json` target discovery and writes to one agent store.
 
-Notas:
+Notes:
 
-- Requer um TTY interativo.
-- Você não pode combinar `--providers-only` com `--skip-provider-setup`.
-- `configure` visa campos com segredos em `opencraft.json` mais `auth-profiles.json` para o escopo de agente selecionado.
-- `configure` suporta criar novos mapeamentos de `auth-profiles.json` diretamente no fluxo do picker.
-- Superfície suportada canônica: [SecretRef Credential Surface](/reference/secretref-credential-surface).
-- Realiza resolução de preflight antes do apply.
-- Planos gerados padrão para opções de scrub (`scrubEnv`, `scrubAuthProfilesForProviderTargets`, `scrubLegacyAuthJson` todos habilitados).
-- Path de apply é unidirecional para valores em texto simples scrubados.
-- Sem `--apply`, o CLI ainda solicita `Apply this plan now?` após o preflight.
-- Com `--apply` (e sem `--yes`), o CLI solicita uma confirmação irreversível extra.
+- Requires an interactive TTY.
+- You cannot combine `--providers-only` with `--skip-provider-setup`.
+- `configure` targets secret-bearing fields in `openclaw.json` plus `auth-profiles.json` for the selected agent scope.
+- `configure` supports creating new `auth-profiles.json` mappings directly in the picker flow.
+- Canonical supported surface: [SecretRef Credential Surface](/reference/secretref-credential-surface).
+- It performs preflight resolution before apply.
+- Generated plans default to scrub options (`scrubEnv`, `scrubAuthProfilesForProviderTargets`, `scrubLegacyAuthJson` all enabled).
+- Apply path is one-way for scrubbed plaintext values.
+- Without `--apply`, CLI still prompts `Apply this plan now?` after preflight.
+- With `--apply` (and no `--yes`), CLI prompts an extra irreversible confirmation.
 
-Nota de segurança do provedor exec:
+Exec provider safety note:
 
-- Instalações Homebrew frequentemente expõem binários com links simbólicos em `/opt/homebrew/bin/*`.
-- Defina `allowSymlinkCommand: true` apenas quando necessário para paths de gerenciadores de pacotes confiáveis, e combine com `trustedDirs` (por exemplo `["/opt/homebrew"]`).
-- No Windows, se a verificação ACL não estiver disponível para um path de provedor, OpenCraft falha fechado. Para paths apenas confiáveis, defina `allowInsecurePath: true` naquele provedor para ignorar verificações de segurança de path.
+- Homebrew installs often expose symlinked binaries under `/opt/homebrew/bin/*`.
+- Set `allowSymlinkCommand: true` only when needed for trusted package-manager paths, and pair it with `trustedDirs` (for example `["/opt/homebrew"]`).
+- On Windows, if ACL verification is unavailable for a provider path, OpenClaw fails closed. For trusted paths only, set `allowInsecurePath: true` on that provider to bypass path security checks.
 
-## Aplicar um plano salvo
+## Apply a saved plan
 
-Aplicar ou fazer preflight de um plano gerado anteriormente:
+Apply or preflight a plan generated previously:
 
 ```bash
-opencraft secrets apply --from /tmp/openclaw-secrets-plan.json
-opencraft secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
-opencraft secrets apply --from /tmp/openclaw-secrets-plan.json --json
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --json
 ```
 
-Detalhes do contrato do plano (paths de alvo permitidos, regras de validação e semântica de falha):
+Plan contract details (allowed target paths, validation rules, and failure semantics):
 
 - [Secrets Apply Plan Contract](/gateway/secrets-plan-contract)
 
-O que `apply` pode atualizar:
+What `apply` may update:
 
-- `opencraft.json` (alvos SecretRef + upserts/deletes de provedor)
-- `auth-profiles.json` (scrubbing de alvo-provedor)
-- resíduos legados de `auth.json`
-- chaves de segredo conhecidas em `~/.opencraft/.env` cujos valores foram migrados
+- `openclaw.json` (SecretRef targets + provider upserts/deletes)
+- `auth-profiles.json` (provider-target scrubbing)
+- legacy `auth.json` residues
+- `~/.openclaw/.env` known secret keys whose values were migrated
 
-## Por que não há backups de rollback
+## Why no rollback backups
 
-`secrets apply` intencionalmente não escreve backups de rollback contendo valores antigos em texto simples.
+`secrets apply` intentionally does not write rollback backups containing old plaintext values.
 
-A segurança vem de preflight estrito + apply atômico com restauração in-memory de melhor esforço em falha.
+Safety comes from strict preflight + atomic-ish apply with best-effort in-memory restore on failure.
 
-## Exemplo
+## Example
 
 ```bash
-opencraft secrets audit --check
-opencraft secrets configure
-opencraft secrets audit --check
+openclaw secrets audit --check
+openclaw secrets configure
+openclaw secrets audit --check
 ```
 
-Se `audit --check` ainda reportar findings de texto simples, atualize os paths de alvo reportados restantes e rode o audit novamente.
+If `audit --check` still reports plaintext findings, update the remaining reported target paths and rerun audit.

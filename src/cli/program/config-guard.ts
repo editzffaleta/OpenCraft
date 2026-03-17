@@ -1,11 +1,6 @@
-import { loadAndMaybeMigrateDoctorConfig } from "../../commands/doctor-config-flow.js";
 import { readConfigFileSnapshot } from "../../config/config.js";
-import { formatConfigIssueLines } from "../../config/issue-format.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import { colorize, isRich, theme } from "../../terminal/theme.js";
-import { shortenHomePath } from "../../utils.js";
 import { shouldMigrateStateFromPath } from "../argv.js";
-import { formatCliCommand } from "../command-format.js";
 
 const ALLOWED_INVALID_COMMANDS = new Set(["doctor", "logs", "health", "help", "status"]);
 const ALLOWED_INVALID_GATEWAY_SUBCOMMANDS = new Set([
@@ -47,7 +42,7 @@ export async function ensureConfigReady(params: {
   if (!didRunDoctorConfigFlow && shouldMigrateStateFromPath(commandPath)) {
     didRunDoctorConfigFlow = true;
     const runDoctorConfigFlow = async () =>
-      loadAndMaybeMigrateDoctorConfig({
+      (await import("../../commands/doctor-config-flow.js")).loadAndMaybeMigrateDoctorConfig({
         options: { nonInteractive: true },
         confirm: async () => false,
       });
@@ -55,17 +50,17 @@ export async function ensureConfigReady(params: {
       await runDoctorConfigFlow();
     } else {
       const originalStdoutWrite = process.stdout.write.bind(process.stdout);
-      const originalSuppressNotes = process.env.OPENCRAFT_SUPPRESS_NOTES;
+      const originalSuppressNotes = process.env.OPENCLAW_SUPPRESS_NOTES;
       process.stdout.write = (() => true) as unknown as typeof process.stdout.write;
-      process.env.OPENCRAFT_SUPPRESS_NOTES = "1";
+      process.env.OPENCLAW_SUPPRESS_NOTES = "1";
       try {
         await runDoctorConfigFlow();
       } finally {
         process.stdout.write = originalStdoutWrite;
         if (originalSuppressNotes === undefined) {
-          delete process.env.OPENCRAFT_SUPPRESS_NOTES;
+          delete process.env.OPENCLAW_SUPPRESS_NOTES;
         } else {
-          process.env.OPENCRAFT_SUPPRESS_NOTES = originalSuppressNotes;
+          process.env.OPENCLAW_SUPPRESS_NOTES = originalSuppressNotes;
         }
       }
     }
@@ -80,6 +75,7 @@ export async function ensureConfigReady(params: {
         subcommandName &&
         ALLOWED_INVALID_GATEWAY_SUBCOMMANDS.has(subcommandName))
     : false;
+  const { formatConfigIssueLines } = await import("../../config/issue-format.js");
   const issues =
     snapshot.exists && !snapshot.valid
       ? formatConfigIssueLines(snapshot.issues, "-", { normalizeRoot: true })
@@ -92,6 +88,12 @@ export async function ensureConfigReady(params: {
     return;
   }
 
+  const [{ colorize, isRich, theme }, { shortenHomePath }, { formatCliCommand }] =
+    await Promise.all([
+      import("../../terminal/theme.js"),
+      import("../../utils.js"),
+      import("../command-format.js"),
+    ]);
   const rich = isRich();
   const muted = (value: string) => colorize(rich, theme.muted, value);
   const error = (value: string) => colorize(rich, theme.error, value);
@@ -110,7 +112,7 @@ export async function ensureConfigReady(params: {
   }
   params.runtime.error("");
   params.runtime.error(
-    `${muted("Run:")} ${commandText(formatCliCommand("opencraft doctor --fix"))}`,
+    `${muted("Run:")} ${commandText(formatCliCommand("openclaw doctor --fix"))}`,
   );
   if (!allowInvalid) {
     params.runtime.exit(1);

@@ -1,6 +1,7 @@
 import "./isolated-agent.mocks.js";
 import fs from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as modelSelection from "../agents/model-selection.js";
 import { runSubagentAnnounceFlow } from "../agents/subagent-announce.js";
 import type { CliDeps } from "../cli/deps.js";
 import {
@@ -261,6 +262,7 @@ async function assertExplicitTelegramTargetDelivery(params: {
 
 describe("runCronIsolatedAgentTurn", () => {
   beforeEach(() => {
+    vi.spyOn(modelSelection, "resolveThinkingDefault").mockReturnValue("off");
     setupIsolatedAgentTurnMocks();
   });
 
@@ -439,8 +441,8 @@ describe("runCronIsolatedAgentTurn", () => {
   });
 
   it("retries transient text direct delivery failures before succeeding", async () => {
-    const previousFastMode = process.env.OPENCRAFT_TEST_FAST;
-    process.env.OPENCRAFT_TEST_FAST = "1";
+    const previousFastMode = process.env.OPENCLAW_TEST_FAST;
+    process.env.OPENCLAW_TEST_FAST = "1";
     try {
       await withTelegramTextDelivery(
         { bestEffort: false },
@@ -464,9 +466,9 @@ describe("runCronIsolatedAgentTurn", () => {
       );
     } finally {
       if (previousFastMode === undefined) {
-        delete process.env.OPENCRAFT_TEST_FAST;
+        delete process.env.OPENCLAW_TEST_FAST;
       } else {
-        process.env.OPENCRAFT_TEST_FAST = previousFastMode;
+        process.env.OPENCLAW_TEST_FAST = previousFastMode;
       }
     }
   });

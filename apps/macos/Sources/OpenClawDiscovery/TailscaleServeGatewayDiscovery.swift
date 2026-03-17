@@ -1,5 +1,5 @@
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 
 struct TailscaleServeGatewayBeacon: Equatable {
     var displayName: String

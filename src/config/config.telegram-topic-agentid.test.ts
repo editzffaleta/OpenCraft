@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
 describe("telegram topic agentId schema", () => {
   it("accepts valid agentId in forum group topic config", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -30,7 +30,7 @@ describe("telegram topic agentId schema", () => {
   });
 
   it("accepts valid agentId in DM topic config", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           direct: {
@@ -58,7 +58,7 @@ describe("telegram topic agentId schema", () => {
   });
 
   it("accepts empty config without agentId (backward compatible)", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -85,7 +85,7 @@ describe("telegram topic agentId schema", () => {
   });
 
   it("accepts multiple topics with different agentIds", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -113,7 +113,7 @@ describe("telegram topic agentId schema", () => {
   });
 
   it("rejects unknown fields in topic config (strict schema)", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {

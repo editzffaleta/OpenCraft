@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 
 export {
   buildSecretInputSchema,

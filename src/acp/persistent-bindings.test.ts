@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import { discordPlugin } from "../../extensions/discord/src/channel.js";
+import { feishuPlugin } from "../../extensions/feishu/src/channel.js";
+import { telegramPlugin } from "../../extensions/telegram/src/channel.js";
+import type { OpenClawConfig } from "../config/config.js";
+import { setActivePluginRegistry } from "../plugins/runtime.js";
+import { createTestRegistry } from "../test-utils/channel-plugins.js";
 const managerMocks = vi.hoisted(() => ({
   resolveSession: vi.fn(),
   closeSession: vi.fn(),
@@ -30,7 +35,7 @@ import {
   resolveConfiguredAcpBindingSpecBySessionKey,
 } from "./persistent-bindings.js";
 
-type ConfiguredBinding = NonNullable<OpenCraftConfig["bindings"]>[number];
+type ConfiguredBinding = NonNullable<OpenClawConfig["bindings"]>[number];
 type BindingRecordInput = Parameters<typeof resolveConfiguredAcpBindingRecord>[0];
 type BindingSpec = Parameters<typeof ensureConfiguredAcpBindingSession>[0]["spec"];
 
@@ -39,20 +44,20 @@ const baseCfg = {
   agents: {
     list: [{ id: "codex" }, { id: "claude" }],
   },
-} satisfies OpenCraftConfig;
+} satisfies OpenClawConfig;
 
 const defaultDiscordConversationId = "1478836151241412759";
 const defaultDiscordAccountId = "default";
 
 function createCfgWithBindings(
   bindings: ConfiguredBinding[],
-  overrides?: Partial<OpenCraftConfig>,
-): OpenCraftConfig {
+  overrides?: Partial<OpenClawConfig>,
+): OpenClawConfig {
   return {
     ...baseCfg,
     ...overrides,
     bindings,
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 function createDiscordBinding(params: {
@@ -111,7 +116,7 @@ function createFeishuBinding(params: {
   } as ConfiguredBinding;
 }
 
-function resolveBindingRecord(cfg: OpenCraftConfig, overrides: Partial<BindingRecordInput> = {}) {
+function resolveBindingRecord(cfg: OpenClawConfig, overrides: Partial<BindingRecordInput> = {}) {
   return resolveConfiguredAcpBindingRecord({
     cfg,
     channel: "discord",
@@ -122,7 +127,7 @@ function resolveBindingRecord(cfg: OpenCraftConfig, overrides: Partial<BindingRe
 }
 
 function resolveDiscordBindingSpecBySession(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   conversationId = defaultDiscordConversationId,
 ) {
   const resolved = resolveBindingRecord(cfg, { conversationId });
@@ -162,6 +167,13 @@ function mockReadySession(params: { spec: BindingSpec; cwd: string }) {
 }
 
 beforeEach(() => {
+  setActivePluginRegistry(
+    createTestRegistry([
+      { pluginId: "discord", plugin: discordPlugin, source: "test" },
+      { pluginId: "telegram", plugin: telegramPlugin, source: "test" },
+      { pluginId: "feishu", plugin: feishuPlugin, source: "test" },
+    ]),
+  );
   managerMocks.resolveSession.mockReset();
   managerMocks.closeSession.mockReset().mockResolvedValue({
     runtimeClosed: true,
@@ -178,7 +190,7 @@ describe("resolveConfiguredAcpBindingRecord", () => {
       createDiscordBinding({
         agentId: "codex",
         conversationId: defaultDiscordConversationId,
-        acp: { cwd: "/repo/opencraft" },
+        acp: { cwd: "/repo/openclaw" },
       }),
     ]);
     const resolved = resolveBindingRecord(cfg);
@@ -588,7 +600,7 @@ describe("ensureConfiguredAcpBindingSession", () => {
     const spec = createDiscordPersistentSpec();
     const sessionKey = mockReadySession({
       spec,
-      cwd: "/workspace/opencraft",
+      cwd: "/workspace/openclaw",
     });
 
     const ensured = await ensureConfiguredAcpBindingSession({
@@ -719,7 +731,7 @@ describe("resetAcpSessionInPlace", () => {
       agents: {
         list: [{ id: "main" }, { id: "coding" }],
       },
-    } satisfies OpenCraftConfig;
+    } satisfies OpenClawConfig;
     const sessionKey = "agent:coding:acp:binding:discord:default:9373ab192b2317f4";
     sessionMetaMocks.readAcpSessionEntry.mockReturnValue({
       acp: {

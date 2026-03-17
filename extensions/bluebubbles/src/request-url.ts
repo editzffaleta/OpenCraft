@@ -1,1 +1,1 @@
-export { resolveRequestUrl } from "opencraft/plugin-sdk/bluebubbles";
+export { resolveRequestUrl } from "openclaw/plugin-sdk/bluebubbles";

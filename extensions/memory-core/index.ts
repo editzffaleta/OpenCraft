@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/memory-core";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/memory-core";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/memory-core";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/memory-core";
 
 const memoryCorePlugin = {
   id: "memory-core",
@@ -7,7 +7,7 @@ const memoryCorePlugin = {
   description: "File-backed memory search tools and CLI",
   kind: "memory",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     api.registerTool(
       (ctx) => {
         const memorySearchTool = api.runtime.tools.createMemorySearchTool({

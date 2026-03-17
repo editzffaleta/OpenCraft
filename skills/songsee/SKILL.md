@@ -1,10 +1,10 @@
 ---
 name: songsee
-description: Gere espectrogramas e visualizações de painel de recursos a partir de áudio com o CLI songsee.
+description: Generate spectrograms and feature-panel visualizations from audio with the songsee CLI.
 homepage: https://github.com/steipete/songsee
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "🌊",
         "requires": { "bins": ["songsee"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/songsee",
               "bins": ["songsee"],
-              "label": "Instalar songsee (brew)",
+              "label": "Install songsee (brew)",
             },
           ],
       },
@@ -24,26 +24,26 @@ metadata:
 
 # songsee
 
-Gere espectrogramas + painéis de recursos a partir de áudio.
+Generate spectrograms + feature panels from audio.
 
-Início rápido
+Quick start
 
-- Espectrograma: `songsee faixa.mp3`
-- Multi-painel: `songsee faixa.mp3 --viz spectrogram,mel,chroma,hpss,selfsim,loudness,tempogram,mfcc,flux`
-- Fatia de tempo: `songsee faixa.mp3 --start 12.5 --duration 8 -o fatia.jpg`
-- Stdin: `cat faixa.mp3 | songsee - --format png -o saida.png`
+- Spectrogram: `songsee track.mp3`
+- Multi-panel: `songsee track.mp3 --viz spectrogram,mel,chroma,hpss,selfsim,loudness,tempogram,mfcc,flux`
+- Time slice: `songsee track.mp3 --start 12.5 --duration 8 -o slice.jpg`
+- Stdin: `cat track.mp3 | songsee - --format png -o out.png`
 
-Flags comuns
+Common flags
 
-- `--viz` lista (repetível ou separado por vírgula)
-- `--style` paleta (classic, magma, inferno, viridis, gray)
-- `--width` / `--height` tamanho da saída
-- `--window` / `--hop` configurações FFT
-- `--min-freq` / `--max-freq` faixa de frequência
-- `--start` / `--duration` fatia de tempo
+- `--viz` list (repeatable or comma-separated)
+- `--style` palette (classic, magma, inferno, viridis, gray)
+- `--width` / `--height` output size
+- `--window` / `--hop` FFT settings
+- `--min-freq` / `--max-freq` frequency range
+- `--start` / `--duration` time slice
 - `--format` jpg|png
 
-Notas
+Notes
 
-- WAV/MP3 decodificados nativamente; outros formatos usam ffmpeg se disponível.
-- Múltiplos `--viz` renderizam uma grade.
+- WAV/MP3 decode native; other formats use ffmpeg if available.
+- Multiple `--viz` renders a grid.

@@ -1,51 +1,51 @@
 ---
-summary: "Plugin Zalo Personal: login por QR + mensagens via zca-js nativo (instalação de plugin + config de canal + tool)"
+summary: "Zalo Personal plugin: QR login + messaging via native zca-js (plugin install + channel config + tool)"
 read_when:
-  - Você quer suporte ao Zalo Personal (não oficial) no OpenCraft
-  - Você está configurando ou desenvolvendo o plugin zalouser
-title: "Plugin Zalo Personal"
+  - You want Zalo Personal (unofficial) support in OpenClaw
+  - You are configuring or developing the zalouser plugin
+title: "Zalo Personal Plugin"
 ---
 
 # Zalo Personal (plugin)
 
-Suporte ao Zalo Personal para o OpenCraft via plugin, usando `zca-js` nativo para automatizar uma conta de usuário Zalo normal.
+Zalo Personal support for OpenClaw via a plugin, using native `zca-js` to automate a normal Zalo user account.
 
-> **Aviso:** A automação não oficial pode levar à suspensão/banimento da conta. Use por sua conta e risco.
+> **Warning:** Unofficial automation may lead to account suspension/ban. Use at your own risk.
 
-## Nomenclatura
+## Naming
 
-O id de canal é `zalouser` para deixar explícito que isso automatiza uma **conta de usuário Zalo pessoal** (não oficial). Mantemos `zalo` reservado para uma possível futura integração com a API oficial do Zalo.
+Channel id is `zalouser` to make it explicit this automates a **personal Zalo user account** (unofficial). We keep `zalo` reserved for a potential future official Zalo API integration.
 
-## Onde roda
+## Where it runs
 
-Este plugin roda **dentro do processo do Gateway**.
+This plugin runs **inside the Gateway process**.
 
-Se você usa um Gateway remoto, instale/configure-o na **máquina rodando o Gateway**, depois reinicie o Gateway.
+If you use a remote Gateway, install/configure it on the **machine running the Gateway**, then restart the Gateway.
 
-Nenhum binário CLI `zca`/`openzca` externo é necessário.
+No external `zca`/`openzca` CLI binary is required.
 
-## Instalar
+## Install
 
-### Opção A: instalar do npm
+### Option A: install from npm
 
 ```bash
-opencraft plugins install @openclaw/zalouser
+openclaw plugins install @openclaw/zalouser
 ```
 
-Reinicie o Gateway depois.
+Restart the Gateway afterwards.
 
-### Opção B: instalar de uma pasta local (dev)
+### Option B: install from a local folder (dev)
 
 ```bash
-opencraft plugins install ./extensions/zalouser
+openclaw plugins install ./extensions/zalouser
 cd ./extensions/zalouser && pnpm install
 ```
 
-Reinicie o Gateway depois.
+Restart the Gateway afterwards.
 
 ## Config
 
-A config de canal fica em `channels.zalouser` (não em `plugins.entries.*`):
+Channel config lives under `channels.zalouser` (not `plugins.entries.*`):
 
 ```json5
 {
@@ -61,17 +61,17 @@ A config de canal fica em `channels.zalouser` (não em `plugins.entries.*`):
 ## CLI
 
 ```bash
-opencraft channels login --channel zalouser
-opencraft channels logout --channel zalouser
-opencraft channels status --probe
-opencraft message send --channel zalouser --target <threadId> --message "Olá do OpenCraft"
-opencraft directory peers list --channel zalouser --query "nome"
+openclaw channels login --channel zalouser
+openclaw channels logout --channel zalouser
+openclaw channels status --probe
+openclaw message send --channel zalouser --target <threadId> --message "Hello from OpenClaw"
+openclaw directory peers list --channel zalouser --query "name"
 ```
 
-## Tool do agente
+## Agent tool
 
-Nome da tool: `zalouser`
+Tool name: `zalouser`
 
-Ações: `send`, `image`, `link`, `friends`, `groups`, `me`, `status`
+Actions: `send`, `image`, `link`, `friends`, `groups`, `me`, `status`
 
-Ações de mensagem de canal também suportam `react` para reações a mensagens.
+Channel message actions also support `react` for message reactions.

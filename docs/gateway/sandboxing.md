@@ -1,86 +1,273 @@
 ---
-summary: "Como o sandboxing do OpenCraft funciona: modos, escopos, acesso ao workspace e imagens"
+summary: "How OpenClaw sandboxing works: modes, scopes, workspace access, and images"
 title: Sandboxing
-read_when: "Você quer uma explicação dedicada sobre sandboxing ou precisa ajustar agents.defaults.sandbox."
+read_when: "You want a dedicated explanation of sandboxing or need to tune agents.defaults.sandbox."
 status: active
 ---
 
 # Sandboxing
 
-O OpenCraft pode rodar **tools dentro de containers Docker** para reduzir o raio de explosão.
-Isso é **opcional** e controlado por configuração (`agents.defaults.sandbox` ou
-`agents.list[].sandbox`). Se o sandboxing estiver desativado, as tools rodam no host.
-O Gateway permanece no host; a execução de tools roda em um sandbox isolado
-quando habilitado.
+OpenClaw can run **tools inside sandbox backends** to reduce blast radius.
+This is **optional** and controlled by configuration (`agents.defaults.sandbox` or
+`agents.list[].sandbox`). If sandboxing is off, tools run on the host.
+The Gateway stays on the host; tool execution runs in an isolated sandbox
+when enabled.
 
-Isso não é um limite de segurança perfeito, mas limita materialmente o acesso ao
-sistema de arquivos e a processos quando o modelo faz algo indesejado.
+This is not a perfect security boundary, but it materially limits filesystem
+and process access when the model does something dumb.
 
-## O que é sandboxado
+## What gets sandboxed
 
-- Execução de tools (`exec`, `read`, `write`, `edit`, `apply_patch`, `process`, etc.).
-- Browser sandboxado opcional (`agents.defaults.sandbox.browser`).
-  - Por padrão, o browser do sandbox inicia automaticamente (garante que CDP seja acessível) quando a tool de browser precisar.
-    Configure via `agents.defaults.sandbox.browser.autoStart` e `agents.defaults.sandbox.browser.autoStartTimeoutMs`.
-  - Por padrão, containers do browser do sandbox usam uma rede Docker dedicada (`openclaw-sandbox-browser`) em vez da rede `bridge` global.
-    Configure com `agents.defaults.sandbox.browser.network`.
-  - `agents.defaults.sandbox.browser.cdpSourceRange` opcional restringe o ingresso CDP da borda do container com uma allowlist CIDR (por exemplo `172.21.0.1/32`).
-  - O acesso do observador noVNC é protegido por senha por padrão; o OpenCraft emite uma URL de token de curta duração que serve uma página de bootstrap local e abre o noVNC com a senha no fragmento de URL (não em logs de query/header).
-  - `agents.defaults.sandbox.browser.allowHostControl` permite que sessões sandboxadas direcionem explicitamente para o browser do host.
-  - Allowlists opcionais portam `target: "custom"`: `allowedControlUrls`, `allowedControlHosts`, `allowedControlPorts`.
+- Tool execution (`exec`, `read`, `write`, `edit`, `apply_patch`, `process`, etc.).
+- Optional sandboxed browser (`agents.defaults.sandbox.browser`).
+  - By default, the sandbox browser auto-starts (ensures CDP is reachable) when the browser tool needs it.
+    Configure via `agents.defaults.sandbox.browser.autoStart` and `agents.defaults.sandbox.browser.autoStartTimeoutMs`.
+  - By default, sandbox browser containers use a dedicated Docker network (`openclaw-sandbox-browser`) instead of the global `bridge` network.
+    Configure with `agents.defaults.sandbox.browser.network`.
+  - Optional `agents.defaults.sandbox.browser.cdpSourceRange` restricts container-edge CDP ingress with a CIDR allowlist (for example `172.21.0.1/32`).
+  - noVNC observer access is password-protected by default; OpenClaw emits a short-lived token URL that serves a local bootstrap page and opens noVNC with password in URL fragment (not query/header logs).
+  - `agents.defaults.sandbox.browser.allowHostControl` lets sandboxed sessions target the host browser explicitly.
+  - Optional allowlists gate `target: "custom"`: `allowedControlUrls`, `allowedControlHosts`, `allowedControlPorts`.
 
-Não sandboxado:
+Not sandboxed:
 
-- O próprio processo do Gateway.
-- Qualquer tool explicitamente permitida a rodar no host (ex. `tools.elevated`).
-  - **Exec elevado roda no host e bypassa o sandboxing.**
-  - Se o sandboxing está desativado, `tools.elevated` não muda a execução (já no host). Veja [Modo Elevated](/tools/elevated).
+- The Gateway process itself.
+- Any tool explicitly allowed to run on the host (e.g. `tools.elevated`).
+  - **Elevated exec runs on the host and bypasses sandboxing.**
+  - If sandboxing is off, `tools.elevated` does not change execution (already on host). See [Elevated Mode](/tools/elevated).
 
-## Modos
+## Modes
 
-`agents.defaults.sandbox.mode` controla **quando** o sandboxing é usado:
+`agents.defaults.sandbox.mode` controls **when** sandboxing is used:
 
-- `"off"`: sem sandboxing.
-- `"non-main"`: sandbox apenas sessões **não-main** (padrão se você quer chats normais no host).
-- `"all"`: cada sessão roda em um sandbox.
-  Nota: `"non-main"` é baseado em `session.mainKey` (padrão `"main"`), não no id do agente.
-  Sessões de grupo/canal usam suas próprias chaves, então contam como não-main e serão sandboxadas.
+- `"off"`: no sandboxing.
+- `"non-main"`: sandbox only **non-main** sessions (default if you want normal chats on host).
+- `"all"`: every session runs in a sandbox.
+  Note: `"non-main"` is based on `session.mainKey` (default `"main"`), not agent id.
+  Group/channel sessions use their own keys, so they count as non-main and will be sandboxed.
 
-## Escopo
+## Scope
 
-`agents.defaults.sandbox.scope` controla **quantos containers** são criados:
+`agents.defaults.sandbox.scope` controls **how many containers** are created:
 
-- `"session"` (padrão): um container por sessão.
-- `"agent"`: um container por agente.
-- `"shared"`: um container compartilhado por todas as sessões sandboxadas.
+- `"session"` (default): one container per session.
+- `"agent"`: one container per agent.
+- `"shared"`: one container shared by all sandboxed sessions.
 
-## Acesso ao workspace
+## Backend
 
-`agents.defaults.sandbox.workspaceAccess` controla **o que o sandbox pode ver**:
+`agents.defaults.sandbox.backend` controls **which runtime** provides the sandbox:
 
-- `"none"` (padrão): tools veem um workspace do sandbox em `~/.opencraft/sandboxes`.
-- `"ro"`: monta o workspace do agente somente-leitura em `/agent` (desabilita `write`/`edit`/`apply_patch`).
-- `"rw"`: monta o workspace do agente em leitura/escrita em `/workspace`.
+- `"docker"` (default): local Docker-backed sandbox runtime.
+- `"ssh"`: generic SSH-backed remote sandbox runtime.
+- `"openshell"`: OpenShell-backed sandbox runtime.
 
-Mídia de entrada é copiada para o workspace do sandbox ativo (`media/inbound/*`).
-Nota sobre skills: a tool `read` tem raiz no sandbox. Com `workspaceAccess: "none"`,
-o OpenCraft espelha skills elegíveis para o workspace do sandbox (`.../skills`) para
-que possam ser lidas. Com `"rw"`, skills do workspace são legíveis em
+SSH-specific config lives under `agents.defaults.sandbox.ssh`.
+OpenShell-specific config lives under `plugins.entries.openshell.config`.
+
+### SSH backend
+
+Use `backend: "ssh"` when you want OpenClaw to sandbox `exec`, file tools, and media reads on
+an arbitrary SSH-accessible machine.
+
+```json5
+{
+  agents: {
+    defaults: {
+      sandbox: {
+        mode: "all",
+        backend: "ssh",
+        scope: "session",
+        workspaceAccess: "rw",
+        ssh: {
+          target: "user@gateway-host:22",
+          workspaceRoot: "/tmp/openclaw-sandboxes",
+          strictHostKeyChecking: true,
+          updateHostKeys: true,
+          identityFile: "~/.ssh/id_ed25519",
+          certificateFile: "~/.ssh/id_ed25519-cert.pub",
+          knownHostsFile: "~/.ssh/known_hosts",
+          // Or use SecretRefs / inline contents instead of local files:
+          // identityData: { source: "env", provider: "default", id: "SSH_IDENTITY" },
+          // certificateData: { source: "env", provider: "default", id: "SSH_CERTIFICATE" },
+          // knownHostsData: { source: "env", provider: "default", id: "SSH_KNOWN_HOSTS" },
+        },
+      },
+    },
+  },
+}
+```
+
+How it works:
+
+- OpenClaw creates a per-scope remote root under `sandbox.ssh.workspaceRoot`.
+- On first use after create or recreate, OpenClaw seeds that remote workspace from the local workspace once.
+- After that, `exec`, `read`, `write`, `edit`, `apply_patch`, prompt media reads, and inbound media staging run directly against the remote workspace over SSH.
+- OpenClaw does not sync remote changes back to the local workspace automatically.
+
+Authentication material:
+
+- `identityFile`, `certificateFile`, `knownHostsFile`: use existing local files and pass them through OpenSSH config.
+- `identityData`, `certificateData`, `knownHostsData`: use inline strings or SecretRefs. OpenClaw resolves them through the normal secrets runtime snapshot, writes them to temp files with `0600`, and deletes them when the SSH session ends.
+- If both `*File` and `*Data` are set for the same item, `*Data` wins for that SSH session.
+
+This is a **remote-canonical** model. The remote SSH workspace becomes the real sandbox state after the initial seed.
+
+Important consequences:
+
+- Host-local edits made outside OpenClaw after the seed step are not visible remotely until you recreate the sandbox.
+- `openclaw sandbox recreate` deletes the per-scope remote root and seeds again from local on next use.
+- Browser sandboxing is not supported on the SSH backend.
+- `sandbox.docker.*` settings do not apply to the SSH backend.
+
+```json5
+{
+  agents: {
+    defaults: {
+      sandbox: {
+        mode: "all",
+        backend: "openshell",
+        scope: "session",
+        workspaceAccess: "rw",
+      },
+    },
+  },
+  plugins: {
+    entries: {
+      openshell: {
+        enabled: true,
+        config: {
+          from: "openclaw",
+          mode: "remote", // mirror | remote
+          remoteWorkspaceDir: "/sandbox",
+          remoteAgentWorkspaceDir: "/agent",
+        },
+      },
+    },
+  },
+}
+```
+
+OpenShell modes:
+
+- `mirror` (default): local workspace stays canonical. OpenClaw syncs local files into OpenShell before exec and syncs the remote workspace back after exec.
+- `remote`: OpenShell workspace is canonical after the sandbox is created. OpenClaw seeds the remote workspace once from the local workspace, then file tools and exec run directly against the remote sandbox without syncing changes back.
+
+OpenShell reuses the same core SSH transport and remote filesystem bridge as the generic SSH backend.
+The plugin adds OpenShell-specific lifecycle (`sandbox create/get/delete`, `sandbox ssh-config`) and the optional `mirror` mode.
+
+Remote transport details:
+
+- OpenClaw asks OpenShell for sandbox-specific SSH config via `openshell sandbox ssh-config <name>`.
+- Core writes that SSH config to a temp file, opens the SSH session, and reuses the same remote filesystem bridge used by `backend: "ssh"`.
+- In `mirror` mode only the lifecycle differs: sync local to remote before exec, then sync back after exec.
+
+Current OpenShell limitations:
+
+- sandbox browser is not supported yet
+- `sandbox.docker.binds` is not supported on the OpenShell backend
+- Docker-specific runtime knobs under `sandbox.docker.*` still apply only to the Docker backend
+
+## OpenShell workspace modes
+
+OpenShell has two workspace models. This is the part that matters most in practice.
+
+### `mirror`
+
+Use `plugins.entries.openshell.config.mode: "mirror"` when you want the **local workspace to stay canonical**.
+
+Behavior:
+
+- Before `exec`, OpenClaw syncs the local workspace into the OpenShell sandbox.
+- After `exec`, OpenClaw syncs the remote workspace back to the local workspace.
+- File tools still operate through the sandbox bridge, but the local workspace remains the source of truth between turns.
+
+Use this when:
+
+- you edit files locally outside OpenClaw and want those changes to show up in the sandbox automatically
+- you want the OpenShell sandbox to behave as much like the Docker backend as possible
+- you want the host workspace to reflect sandbox writes after each exec turn
+
+Tradeoff:
+
+- extra sync cost before and after exec
+
+### `remote`
+
+Use `plugins.entries.openshell.config.mode: "remote"` when you want the **OpenShell workspace to become canonical**.
+
+Behavior:
+
+- When the sandbox is first created, OpenClaw seeds the remote workspace from the local workspace once.
+- After that, `exec`, `read`, `write`, `edit`, and `apply_patch` operate directly against the remote OpenShell workspace.
+- OpenClaw does **not** sync remote changes back into the local workspace after exec.
+- Prompt-time media reads still work because file and media tools read through the sandbox bridge instead of assuming a local host path.
+- Transport is SSH into the OpenShell sandbox returned by `openshell sandbox ssh-config`.
+
+Important consequences:
+
+- If you edit files on the host outside OpenClaw after the seed step, the remote sandbox will **not** see those changes automatically.
+- If the sandbox is recreated, the remote workspace is seeded from the local workspace again.
+- With `scope: "agent"` or `scope: "shared"`, that remote workspace is shared at that same scope.
+
+Use this when:
+
+- the sandbox should live primarily on the remote OpenShell side
+- you want lower per-turn sync overhead
+- you do not want host-local edits to silently overwrite remote sandbox state
+
+Choose `mirror` if you think of the sandbox as a temporary execution environment.
+Choose `remote` if you think of the sandbox as the real workspace.
+
+## OpenShell lifecycle
+
+OpenShell sandboxes are still managed through the normal sandbox lifecycle:
+
+- `openclaw sandbox list` shows OpenShell runtimes as well as Docker runtimes
+- `openclaw sandbox recreate` deletes the current runtime and lets OpenClaw recreate it on next use
+- prune logic is backend-aware too
+
+For `remote` mode, recreate is especially important:
+
+- recreate deletes the canonical remote workspace for that scope
+- the next use seeds a fresh remote workspace from the local workspace
+
+For `mirror` mode, recreate mainly resets the remote execution environment
+because the local workspace remains canonical anyway.
+
+## Workspace access
+
+`agents.defaults.sandbox.workspaceAccess` controls **what the sandbox can see**:
+
+- `"none"` (default): tools see a sandbox workspace under `~/.openclaw/sandboxes`.
+- `"ro"`: mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`).
+- `"rw"`: mounts the agent workspace read/write at `/workspace`.
+
+With the OpenShell backend:
+
+- `mirror` mode still uses the local workspace as the canonical source between exec turns
+- `remote` mode uses the remote OpenShell workspace as the canonical source after the initial seed
+- `workspaceAccess: "ro"` and `"none"` still restrict write behavior the same way
+
+Inbound media is copied into the active sandbox workspace (`media/inbound/*`).
+Skills note: the `read` tool is sandbox-rooted. With `workspaceAccess: "none"`,
+OpenClaw mirrors eligible skills into the sandbox workspace (`.../skills`) so
+they can be read. With `"rw"`, workspace skills are readable from
 `/workspace/skills`.
 
-## Bind mounts customizados
+## Custom bind mounts
 
-`agents.defaults.sandbox.docker.binds` monta diretórios adicionais do host no container.
-Formato: `host:container:mode` (ex., `"/home/usuario/source:/source:rw"`).
+`agents.defaults.sandbox.docker.binds` mounts additional host directories into the container.
+Format: `host:container:mode` (e.g., `"/home/user/source:/source:rw"`).
 
-Binds globais e por agente são **mesclados** (não substituídos). Sob `scope: "shared"`, binds por agente são ignorados.
+Global and per-agent binds are **merged** (not replaced). Under `scope: "shared"`, per-agent binds are ignored.
 
-`agents.defaults.sandbox.browser.binds` monta diretórios adicionais do host apenas no container do **browser do sandbox**.
+`agents.defaults.sandbox.browser.binds` mounts additional host directories into the **sandbox browser** container only.
 
-- Quando definido (incluindo `[]`), substitui `agents.defaults.sandbox.docker.binds` para o container do browser.
-- Quando omitido, o container do browser usa `agents.defaults.sandbox.docker.binds` como fallback (compatível com versões anteriores).
+- When set (including `[]`), it replaces `agents.defaults.sandbox.docker.binds` for the browser container.
+- When omitted, the browser container falls back to `agents.defaults.sandbox.docker.binds` (backwards compatible).
 
-Exemplo (código-fonte somente-leitura + um diretório de dados extra):
+Example (read-only source + an extra data directory):
 
 ```json5
 {
@@ -88,7 +275,7 @@ Exemplo (código-fonte somente-leitura + um diretório de dados extra):
     defaults: {
       sandbox: {
         docker: {
-          binds: ["/home/usuario/source:/source:ro", "/var/data/myapp:/data:ro"],
+          binds: ["/home/user/source:/source:ro", "/var/data/myapp:/data:ro"],
         },
       },
     },
@@ -106,53 +293,53 @@ Exemplo (código-fonte somente-leitura + um diretório de dados extra):
 }
 ```
 
-Notas de segurança:
+Security notes:
 
-- Binds bypassam o sistema de arquivos do sandbox: eles expõem paths do host com qualquer modo que você definir (`:ro` ou `:rw`).
-- O OpenCraft bloqueia fontes de bind perigosas (por exemplo: `docker.sock`, `/etc`, `/proc`, `/sys`, `/dev`, e montagens pai que os exporiam).
-- Montagens sensíveis (segredos, chaves SSH, credenciais de serviço) devem ser `:ro` a menos que absolutamente necessário.
-- Combine com `workspaceAccess: "ro"` se você só precisa de acesso de leitura ao workspace; os modos de bind permanecem independentes.
-- Veja [Sandbox vs Política de Tool vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) para como os binds interagem com a política de tool e exec elevado.
+- Binds bypass the sandbox filesystem: they expose host paths with whatever mode you set (`:ro` or `:rw`).
+- OpenClaw blocks dangerous bind sources (for example: `docker.sock`, `/etc`, `/proc`, `/sys`, `/dev`, and parent mounts that would expose them).
+- Sensitive mounts (secrets, SSH keys, service credentials) should be `:ro` unless absolutely required.
+- Combine with `workspaceAccess: "ro"` if you only need read access to the workspace; bind modes stay independent.
+- See [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) for how binds interact with tool policy and elevated exec.
 
-## Imagens + configuração
+## Images + setup
 
-Imagem padrão: `openclaw-sandbox:bookworm-slim`
+Default Docker image: `openclaw-sandbox:bookworm-slim`
 
-Construa uma vez:
+Build it once:
 
 ```bash
 scripts/sandbox-setup.sh
 ```
 
-Nota: a imagem padrão **não** inclui Node. Se uma skill precisa de Node (ou
-outros runtimes), bake uma imagem customizada ou instale via
-`sandbox.docker.setupCommand` (requer egress de rede + raiz gravável +
-usuário root).
+Note: the default image does **not** include Node. If a skill needs Node (or
+other runtimes), either bake a custom image or install via
+`sandbox.docker.setupCommand` (requires network egress + writable root +
+root user).
 
-Se você quer uma imagem de sandbox mais funcional com tooling comum (por exemplo
-`curl`, `jq`, `nodejs`, `python3`, `git`), construa:
+If you want a more functional sandbox image with common tooling (for example
+`curl`, `jq`, `nodejs`, `python3`, `git`), build:
 
 ```bash
 scripts/sandbox-common-setup.sh
 ```
 
-Depois defina `agents.defaults.sandbox.docker.image` como
+Then set `agents.defaults.sandbox.docker.image` to
 `openclaw-sandbox-common:bookworm-slim`.
 
-Imagem do browser sandboxado:
+Sandboxed browser image:
 
 ```bash
 scripts/sandbox-browser-setup.sh
 ```
 
-Por padrão, containers do sandbox rodam **sem rede**.
-Substitua com `agents.defaults.sandbox.docker.network`.
+By default, Docker sandbox containers run with **no network**.
+Override with `agents.defaults.sandbox.docker.network`.
 
-A imagem do browser do sandbox incluída também aplica padrões conservadores de inicialização do Chromium
-para workloads em container. Os padrões atuais do container incluem:
+The bundled sandbox browser image also applies conservative Chromium startup defaults
+for containerized workloads. Current container defaults include:
 
 - `--remote-debugging-address=127.0.0.1`
-- `--remote-debugging-port=<derivado de OPENCLAW_BROWSER_CDP_PORT>`
+- `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
 - `--user-data-dir=${HOME}/.chrome`
 - `--no-first-run`
 - `--no-default-browser-check`
@@ -168,75 +355,75 @@ para workloads em container. Os padrões atuais do container incluem:
 - `--no-zygote`
 - `--metrics-recording-only`
 - `--renderer-process-limit=2`
-- `--no-sandbox` e `--disable-setuid-sandbox` quando `noSandbox` está habilitado.
-- As três flags de endurecimento de gráficos (`--disable-3d-apis`,
-  `--disable-software-rasterizer`, `--disable-gpu`) são opcionais e úteis
-  quando containers não têm suporte a GPU. Defina `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0`
-  se sua workload requer WebGL ou outros recursos 3D/browser.
-- `--disable-extensions` está habilitado por padrão e pode ser desabilitado com
-  `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` para fluxos que dependem de extensões.
-- `--renderer-process-limit=2` é controlado por
-  `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>`, onde `0` mantém o padrão do Chromium.
+- `--no-sandbox` and `--disable-setuid-sandbox` when `noSandbox` is enabled.
+- The three graphics hardening flags (`--disable-3d-apis`,
+  `--disable-software-rasterizer`, `--disable-gpu`) are optional and are useful
+  when containers lack GPU support. Set `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0`
+  if your workload requires WebGL or other 3D/browser features.
+- `--disable-extensions` is enabled by default and can be disabled with
+  `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` for extension-reliant flows.
+- `--renderer-process-limit=2` is controlled by
+  `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>`, where `0` keeps Chromium's default.
 
-Se você precisa de um perfil de runtime diferente, use uma imagem de browser customizada e forneça
-seu próprio entrypoint. Para perfis Chromium locais (não em container), use
-`browser.extraArgs` para adicionar flags de inicialização extras.
+If you need a different runtime profile, use a custom browser image and provide
+your own entrypoint. For local (non-container) Chromium profiles, use
+`browser.extraArgs` to append additional startup flags.
 
-Padrões de segurança:
+Security defaults:
 
-- `network: "host"` está bloqueado.
-- `network: "container:<id>"` está bloqueado por padrão (risco de bypass de junção de namespace).
-- Override break-glass: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
+- `network: "host"` is blocked.
+- `network: "container:<id>"` is blocked by default (namespace join bypass risk).
+- Break-glass override: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
 
-Instalações Docker e o gateway em container ficam aqui:
+Docker installs and the containerized gateway live here:
 [Docker](/install/docker)
 
-Para deployments de gateway Docker, `docker-setup.sh` pode fazer bootstrap da config do sandbox.
-Defina `OPENCLAW_SANDBOX=1` (ou `true`/`yes`/`on`) para habilitar esse caminho. Você pode
-substituir a localização do socket com `OPENCLAW_DOCKER_SOCKET`. Configuração completa e referência de env:
-[Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in).
+For Docker gateway deployments, `docker-setup.sh` can bootstrap sandbox config.
+Set `OPENCLAW_SANDBOX=1` (or `true`/`yes`/`on`) to enable that path. You can
+override socket location with `OPENCLAW_DOCKER_SOCKET`. Full setup and env
+reference: [Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in).
 
-## setupCommand (configuração única do container)
+## setupCommand (one-time container setup)
 
-`setupCommand` roda **uma vez** após o container do sandbox ser criado (não a cada run).
-Ele é executado dentro do container via `sh -lc`.
+`setupCommand` runs **once** after the sandbox container is created (not on every run).
+It executes inside the container via `sh -lc`.
 
-Caminhos:
+Paths:
 
 - Global: `agents.defaults.sandbox.docker.setupCommand`
-- Por agente: `agents.list[].sandbox.docker.setupCommand`
+- Per-agent: `agents.list[].sandbox.docker.setupCommand`
 
-Armadilhas comuns:
+Common pitfalls:
 
-- `docker.network` padrão é `"none"` (sem egress), então instalações de pacotes falharão.
-- `docker.network: "container:<id>"` requer `dangerouslyAllowContainerNamespaceJoin: true` e é somente break-glass.
-- `readOnlyRoot: true` impede escritas; defina `readOnlyRoot: false` ou bake uma imagem customizada.
-- `user` deve ser root para instalações de pacotes (omita `user` ou defina `user: "0:0"`).
-- Exec do sandbox **não** herda `process.env` do host. Use
-  `agents.defaults.sandbox.docker.env` (ou uma imagem customizada) para chaves de API de skills.
+- Default `docker.network` is `"none"` (no egress), so package installs will fail.
+- `docker.network: "container:<id>"` requires `dangerouslyAllowContainerNamespaceJoin: true` and is break-glass only.
+- `readOnlyRoot: true` prevents writes; set `readOnlyRoot: false` or bake a custom image.
+- `user` must be root for package installs (omit `user` or set `user: "0:0"`).
+- Sandbox exec does **not** inherit host `process.env`. Use
+  `agents.defaults.sandbox.docker.env` (or a custom image) for skill API keys.
 
-## Política de tool + válvulas de escape
+## Tool policy + escape hatches
 
-Políticas de allow/deny de tool ainda se aplicam antes das regras do sandbox. Se uma tool está negada
-globalmente ou por agente, o sandboxing não a restaura.
+Tool allow/deny policies still apply before sandbox rules. If a tool is denied
+globally or per-agent, sandboxing doesn’t bring it back.
 
-`tools.elevated` é uma válvula de escape explícita que roda `exec` no host.
-Diretivas `/exec` se aplicam apenas para remetentes autorizados e persistem por sessão; para hard-disable
-`exec`, use deny de política de tool (veja [Sandbox vs Política de Tool vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)).
+`tools.elevated` is an explicit escape hatch that runs `exec` on the host.
+`/exec` directives only apply for authorized senders and persist per session; to hard-disable
+`exec`, use tool policy deny (see [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)).
 
-Depuração:
+Debugging:
 
-- Use `opencraft sandbox explain` para inspecionar o modo efetivo do sandbox, política de tool e chaves de config de correção.
-- Veja [Sandbox vs Política de Tool vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) para o modelo mental "por que está bloqueado?".
-  Mantenha tudo bem restrito.
+- Use `openclaw sandbox explain` to inspect effective sandbox mode, tool policy, and fix-it config keys.
+- See [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) for the “why is this blocked?” mental model.
+  Keep it locked down.
 
-## Overrides multi-agente
+## Multi-agent overrides
 
-Cada agente pode substituir sandbox + tools:
-`agents.list[].sandbox` e `agents.list[].tools` (mais `agents.list[].tools.sandbox.tools` para política de tool do sandbox).
-Veja [Sandbox & Tools Multi-Agente](/tools/multi-agent-sandbox-tools) para precedência.
+Each agent can override sandbox + tools:
+`agents.list[].sandbox` and `agents.list[].tools` (plus `agents.list[].tools.sandbox.tools` for sandbox tool policy).
+See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for precedence.
 
-## Exemplo mínimo de habilitação
+## Minimal enable example
 
 ```json5
 {
@@ -252,8 +439,8 @@ Veja [Sandbox & Tools Multi-Agente](/tools/multi-agent-sandbox-tools) para prece
 }
 ```
 
-## Docs relacionados
+## Related docs
 
-- [Configuração do Sandbox](/gateway/configuration#agentsdefaults-sandbox)
-- [Sandbox & Tools Multi-Agente](/tools/multi-agent-sandbox-tools)
-- [Segurança](/gateway/security)
+- [Sandbox Configuration](/gateway/configuration#agentsdefaults-sandbox)
+- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools)
+- [Security](/gateway/security)

@@ -1,13 +1,13 @@
-import { upsertAuthProfileWithLock } from "../agents/auth-profiles.js";
+import { upsertAuthProfileWithLock } from "../agents/auth-profiles/upsert-with-lock.js";
+import { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-defaults.js";
 import {
-  OLLAMA_DEFAULT_BASE_URL,
   buildOllamaModelDefinition,
   enrichOllamaModelsWithContext,
   fetchOllamaModels,
   resolveOllamaApiBase,
   type OllamaModelWithContext,
 } from "../agents/ollama-models.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { WizardCancelledError, type WizardPrompter } from "../wizard/prompts.js";
 import { isRemoteEnvironment } from "./oauth-env.js";
@@ -15,7 +15,7 @@ import { applyAgentDefaultModelPrimary } from "./onboard-auth.config-shared.js";
 import { openUrl } from "./onboard-helpers.js";
 import type { OnboardMode, OnboardOptions } from "./onboard-types.js";
 
-export { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-models.js";
+export { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-defaults.js";
 export const OLLAMA_DEFAULT_MODEL = "glm-4.7-flash";
 
 const OLLAMA_SUGGESTED_MODELS_LOCAL = ["glm-4.7-flash"];
@@ -251,11 +251,11 @@ function buildOllamaModelsConfig(
 }
 
 function applyOllamaProviderConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   baseUrl: string,
   modelNames: string[],
   discoveredModelsByName?: Map<string, OllamaModelWithContext>,
-): OpenCraftConfig {
+): OpenClawConfig {
   return {
     ...cfg,
     models: {
@@ -287,9 +287,9 @@ async function storeOllamaCredential(agentDir?: string): Promise<void> {
  * Model selection is handled by the standard model picker downstream.
  */
 export async function promptAndConfigureOllama(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   prompter: WizardPrompter;
-}): Promise<{ config: OpenCraftConfig; defaultModelId: string }> {
+}): Promise<{ config: OpenClawConfig; defaultModelId: string }> {
   const { prompter } = params;
 
   // 1. Prompt base URL
@@ -313,7 +313,7 @@ export async function promptAndConfigureOllama(params: {
         `Ollama could not be reached at ${baseUrl}.`,
         "Download it at https://ollama.com/download",
         "",
-        "Start Ollama and re-run onboarding.",
+        "Start Ollama and re-run setup.",
       ].join("\n"),
       "Ollama",
     );
@@ -406,10 +406,10 @@ export async function promptAndConfigureOllama(params: {
 
 /** Non-interactive: auto-discover models and configure provider. */
 export async function configureOllamaNonInteractive(params: {
-  nextConfig: OpenCraftConfig;
+  nextConfig: OpenClawConfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-}): Promise<OpenCraftConfig> {
+}): Promise<OpenClawConfig> {
   const { opts, runtime } = params;
   const configuredBaseUrl = (opts.customBaseUrl?.trim() || OLLAMA_DEFAULT_BASE_URL).replace(
     /\/+$/,
@@ -486,7 +486,7 @@ export async function configureOllamaNonInteractive(params: {
       runtime.error(
         [
           `No Ollama models are available at ${baseUrl}.`,
-          "Pull a model first, then re-run onboarding.",
+          "Pull a model first, then re-run setup.",
         ].join("\n"),
       );
       runtime.exit(1);
@@ -507,7 +507,7 @@ export async function configureOllamaNonInteractive(params: {
 
 /** Pull the configured default Ollama model if it isn't already available locally. */
 export async function ensureOllamaModelPulled(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   prompter: WizardPrompter;
 }): Promise<void> {
   const modelCfg = params.config.agents?.defaults?.model;

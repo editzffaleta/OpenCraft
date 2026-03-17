@@ -1,4 +1,4 @@
-package ai.opencraft.app.voice
+package ai.openclaw.app.voice
 
 object VoiceWakeCommandExtractor {
   fun extractCommand(text: String, triggerWords: List<String>): String? {

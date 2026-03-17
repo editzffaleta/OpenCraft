@@ -1,100 +1,100 @@
 ---
-summary: "Configuração opcional do Docker e onboarding para o OpenCraft"
+summary: "Optional Docker-based setup and onboarding for OpenClaw"
 read_when:
-  - Você quer um gateway em contêiner em vez de instalações locais
-  - Você está validando o fluxo do Docker
+  - You want a containerized gateway instead of local installs
+  - You are validating the Docker flow
 title: "Docker"
 ---
 
-# Docker (opcional)
+# Docker (optional)
 
-O Docker é **opcional**. Use-o apenas se quiser um gateway em contêiner ou para validar o fluxo do Docker.
+Docker is **optional**. Use it only if you want a containerized gateway or to validate the Docker flow.
 
-## O Docker é certo para mim?
+## Is Docker right for me?
 
-- **Sim**: você quer um ambiente de gateway isolado e descartável ou executar o OpenCraft em um host sem instalações locais.
-- **Não**: você está executando na sua própria máquina e só quer o loop de desenvolvimento mais rápido. Use o fluxo de instalação normal.
-- **Nota sobre sandboxing**: o sandboxing do agente também usa Docker, mas ele **não** exige que o gateway completo execute no Docker. Veja [Sandboxing](/gateway/sandboxing).
+- **Yes**: you want an isolated, throwaway gateway environment or to run OpenClaw on a host without local installs.
+- **No**: you’re running on your own machine and just want the fastest dev loop. Use the normal install flow instead.
+- **Sandboxing note**: agent sandboxing uses Docker too, but it does **not** require the full gateway to run in Docker. See [Sandboxing](/gateway/sandboxing).
 
-Este guia cobre:
+This guide covers:
 
-- Gateway em Contêiner (OpenCraft completo no Docker)
-- Sandbox de Agente por Sessão (gateway no host + ferramentas do agente isoladas no Docker)
+- Containerized Gateway (full OpenClaw in Docker)
+- Per-session Agent Sandbox (host gateway + Docker-isolated agent tools)
 
-Detalhes de sandboxing: [Sandboxing](/gateway/sandboxing)
+Sandboxing details: [Sandboxing](/gateway/sandboxing)
 
-## Requisitos
+## Requirements
 
-- Docker Desktop (ou Docker Engine) + Docker Compose v2
-- Pelo menos 2 GB de RAM para build da imagem (`pnpm install` pode ser morto por OOM em hosts com 1 GB com exit 137)
-- Espaço em disco suficiente para imagens + logs
-- Se executando em um VPS/host público, revise
-  [Hardening de segurança para exposição de rede](/gateway/security#04-network-exposure-bind--port--firewall),
-  especialmente a política de firewall `DOCKER-USER` do Docker.
+- Docker Desktop (or Docker Engine) + Docker Compose v2
+- At least 2 GB RAM for image build (`pnpm install` may be OOM-killed on 1 GB hosts with exit 137)
+- Enough disk for images + logs
+- If running on a VPS/public host, review
+  [Security hardening for network exposure](/gateway/security#04-network-exposure-bind--port--firewall),
+  especially Docker `DOCKER-USER` firewall policy.
 
-## Gateway em Contêiner (Docker Compose)
+## Containerized Gateway (Docker Compose)
 
-### Início rápido (recomendado)
+### Quick start (recommended)
 
 <Note>
-Os padrões do Docker aqui assumem modos bind (`lan`/`loopback`), não aliases de host. Use
-valores de modo bind em `gateway.bind` (por exemplo `lan` ou `loopback`), não aliases de host como
-`0.0.0.0` ou `localhost`.
+Docker defaults here assume bind modes (`lan`/`loopback`), not host aliases. Use bind
+mode values in `gateway.bind` (for example `lan` or `loopback`), not host aliases like
+`0.0.0.0` or `localhost`.
 </Note>
 
-A partir da raiz do repositório:
+From repo root:
 
 ```bash
 ./docker-setup.sh
 ```
 
-Este script:
+This script:
 
-- compila a imagem do gateway localmente (ou puxa uma imagem remota se `OPENCLAW_IMAGE` estiver definido)
-- executa o assistente de onboarding
-- imprime dicas opcionais de configuração de provedor
-- inicia o gateway via Docker Compose
-- gera um token do gateway e o escreve em `.env`
+- builds the gateway image locally (or pulls a remote image if `OPENCLAW_IMAGE` is set)
+- runs onboarding
+- prints optional provider setup hints
+- starts the gateway via Docker Compose
+- generates a gateway token and writes it to `.env`
 
-Variáveis de ambiente opcionais:
+Optional env vars:
 
-- `OPENCLAW_IMAGE` — usar uma imagem remota em vez de compilar localmente (ex.: `ghcr.io/openclaw/openclaw:latest`)
-- `OPENCLAW_DOCKER_APT_PACKAGES` — instalar pacotes apt extras durante o build
-- `OPENCLAW_EXTENSIONS` — pré-instalar dependências de extensão no momento do build (nomes de extensão separados por espaço, ex.: `diagnostics-otel matrix`)
-- `OPENCLAW_EXTRA_MOUNTS` — adicionar bind mounts de host extras
-- `OPENCLAW_HOME_VOLUME` — persistir `/home/node` em um volume nomeado
-- `OPENCLAW_SANDBOX` — optar pelo bootstrap de sandbox do gateway Docker. Apenas valores truthy explícitos o habilitam: `1`, `true`, `yes`, `on`
-- `OPENCLAW_INSTALL_DOCKER_CLI` — passagem de build arg para builds de imagem local (`1` instala o Docker CLI na imagem). `docker-setup.sh` define isso automaticamente quando `OPENCLAW_SANDBOX=1` para builds locais.
-- `OPENCLAW_DOCKER_SOCKET` — sobrescrever o caminho do socket Docker (padrão: caminho `DOCKER_HOST=unix://...`, caso contrário `/var/run/docker.sock`)
-- `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` — break-glass: permitir alvos `ws://` de rede privada confiável
-  para caminhos de cliente CLI/onboarding (o padrão é apenas loopback)
-- `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` — desabilitar flags de hardening do navegador do contêiner
-  `--disable-3d-apis`, `--disable-software-rasterizer`, `--disable-gpu` quando você precisa
-  de compatibilidade com WebGL/3D.
-- `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` — manter extensões habilitadas quando fluxos do navegador
-  as requerem (o padrão mantém extensões desabilitadas no navegador sandbox).
-- `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>` — definir limite de processo de renderização do Chromium;
-  definir como `0` para pular a flag e usar o comportamento padrão do Chromium.
+- `OPENCLAW_IMAGE` — use a remote image instead of building locally (e.g. `ghcr.io/openclaw/openclaw:latest`)
+- `OPENCLAW_DOCKER_APT_PACKAGES` — install extra apt packages during build
+- `OPENCLAW_EXTENSIONS` — pre-install extension dependencies at build time (space-separated extension names, e.g. `diagnostics-otel matrix`)
+- `OPENCLAW_EXTRA_MOUNTS` — add extra host bind mounts
+- `OPENCLAW_HOME_VOLUME` — persist `/home/node` in a named volume
+- `OPENCLAW_SANDBOX` — opt in to Docker gateway sandbox bootstrap. Only explicit truthy values enable it: `1`, `true`, `yes`, `on`
+- `OPENCLAW_INSTALL_DOCKER_CLI` — build arg passthrough for local image builds (`1` installs Docker CLI in the image). `docker-setup.sh` sets this automatically when `OPENCLAW_SANDBOX=1` for local builds.
+- `OPENCLAW_DOCKER_SOCKET` — override Docker socket path (default: `DOCKER_HOST=unix://...` path, else `/var/run/docker.sock`)
+- `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` — break-glass: allow trusted private-network
+  `ws://` targets for CLI/onboarding client paths (default is loopback-only)
+- `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` — disable container browser hardening flags
+  `--disable-3d-apis`, `--disable-software-rasterizer`, `--disable-gpu` when you need
+  WebGL/3D compatibility.
+- `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` — keep extensions enabled when browser
+  flows require them (default keeps extensions disabled in sandbox browser).
+- `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>` — set Chromium renderer process
+  limit; set to `0` to skip the flag and use Chromium default behavior.
 
-Após concluir:
+After it finishes:
 
-- Abra `http://127.0.0.1:18789/` no seu navegador.
-- Cole o token na UI de Controle (Configurações → token).
-- Precisa da URL novamente? Execute `docker compose run --rm openclaw-cli dashboard --no-open`.
+- Open `http://127.0.0.1:18789/` in your browser.
+- Paste the token into the Control UI (Settings → token).
+- Need the URL again? Run `docker compose run --rm openclaw-cli dashboard --no-open`.
 
-### Habilitar sandbox de agente para gateway Docker (opt-in)
+### Enable agent sandbox for Docker gateway (opt-in)
 
-`docker-setup.sh` também pode fazer o bootstrap de `agents.defaults.sandbox.*` para implantações
-Docker.
+`docker-setup.sh` can also bootstrap `agents.defaults.sandbox.*` for Docker
+deployments.
 
-Habilite com:
+Enable with:
 
 ```bash
 export OPENCLAW_SANDBOX=1
 ./docker-setup.sh
 ```
 
-Caminho de socket personalizado (por exemplo Docker rootless):
+Custom socket path (for example rootless Docker):
 
 ```bash
 export OPENCLAW_SANDBOX=1
@@ -102,71 +102,73 @@ export OPENCLAW_DOCKER_SOCKET=/run/user/1000/docker.sock
 ./docker-setup.sh
 ```
 
-Notas:
+Notes:
 
-- O script monta `docker.sock` apenas após os pré-requisitos de sandbox passarem.
-- Se a configuração do sandbox não puder ser concluída, o script redefine
-  `agents.defaults.sandbox.mode` para `off` para evitar config de sandbox obsoleta/quebrada
-  em reexecuções.
-- Se `Dockerfile.sandbox` estiver ausente, o script imprime um aviso e continua;
-  compile `openclaw-sandbox:bookworm-slim` com `scripts/sandbox-setup.sh` se
-  necessário.
-- Para valores `OPENCLAW_IMAGE` não locais, a imagem já deve conter
-  suporte ao Docker CLI para execução de sandbox.
+- The script mounts `docker.sock` only after sandbox prerequisites pass.
+- If sandbox setup cannot be completed, the script resets
+  `agents.defaults.sandbox.mode` to `off` to avoid stale/broken sandbox config
+  on reruns.
+- If `Dockerfile.sandbox` is missing, the script prints a warning and continues;
+  build `openclaw-sandbox:bookworm-slim` with `scripts/sandbox-setup.sh` if
+  needed.
+- For non-local `OPENCLAW_IMAGE` values, the image must already contain Docker
+  CLI support for sandbox execution.
 
-### Automação/CI (não interativo, sem ruído de TTY)
+### Automation/CI (non-interactive, no TTY noise)
 
-Para scripts e CI, desabilite a alocação de pseudo-TTY do Compose com `-T`:
+For scripts and CI, disable Compose pseudo-TTY allocation with `-T`:
 
 ```bash
 docker compose run -T --rm openclaw-cli gateway probe
 docker compose run -T --rm openclaw-cli devices list --json
 ```
 
-Se sua automação não exportar variáveis de sessão Claude, deixá-las indefinidas agora resolve para
-valores vazios por padrão em `docker-compose.yml` para evitar avisos repetidos de "variável não definida".
+If your automation exports no Claude session vars, leaving them unset now resolves to
+empty values by default in `docker-compose.yml` to avoid repeated "variable is not set"
+warnings.
 
-### Nota de segurança de rede compartilhada (CLI + gateway)
+### Shared-network security note (CLI + gateway)
 
-`openclaw-cli` usa `network_mode: "service:openclaw-gateway"` para que comandos CLI possam
-alcançar de forma confiável o gateway via `127.0.0.1` no Docker.
+`openclaw-cli` uses `network_mode: "service:openclaw-gateway"` so CLI commands can
+reliably reach the gateway over `127.0.0.1` in Docker.
 
-Trate isso como um limite de confiança compartilhada: o bind de loopback não é isolamento entre esses dois
-contêineres. Se você precisar de separação mais forte, execute comandos de um contêiner/caminho de rede de host
-separado em vez do serviço `openclaw-cli` incluído.
+Treat this as a shared trust boundary: loopback binding is not isolation between these two
+containers. If you need stronger separation, run commands from a separate container/host
+network path instead of the bundled `openclaw-cli` service.
 
-Para reduzir o impacto se o processo CLI for comprometido, a config do compose descarta
-`NET_RAW`/`NET_ADMIN` e habilita `no-new-privileges` em `openclaw-cli`.
+To reduce impact if the CLI process is compromised, the compose config drops
+`NET_RAW`/`NET_ADMIN` and enables `no-new-privileges` on `openclaw-cli`.
 
-Ele escreve config/workspace no host:
+It writes config/workspace on the host:
 
-- `~/.opencraft/`
-- `~/.opencraft/workspace`
+- `~/.openclaw/`
+- `~/.openclaw/workspace`
 
-Executando em um VPS? Veja [Hetzner (Docker VPS)](/install/hetzner).
+Running on a VPS? See [Hetzner (Docker VPS)](/install/hetzner).
 
-### Usar uma imagem remota (pular build local)
+### Use a remote image (skip local build)
 
-Imagens pré-compiladas oficiais são publicadas em:
+Official pre-built images are published at:
 
-- [Pacote do GitHub Container Registry](https://github.com/openclaw/openclaw/pkgs/container/openclaw)
+- [GitHub Container Registry package](https://github.com/openclaw/openclaw/pkgs/container/openclaw)
 
-Use o nome de imagem `ghcr.io/openclaw/openclaw` (não imagens do Docker Hub com nomes similares).
+Use image name `ghcr.io/openclaw/openclaw` (not similarly named Docker Hub
+images).
 
-Tags comuns:
+Common tags:
 
-- `main` — build mais recente de `main`
-- `<version>` — builds de tag de release (por exemplo `2026.2.26`)
-- `latest` — tag de release estável mais recente
+- `main` — latest build from `main`
+- `<version>` — release tag builds (for example `2026.2.26`)
+- `latest` — latest stable release tag
 
-### Metadados da imagem base
+### Base image metadata
 
-A imagem Docker principal atualmente usa:
+The main Docker image currently uses:
 
 - `node:24-bookworm`
 
-A imagem docker agora publica anotações OCI de imagem base (sha256 é um exemplo,
-e aponta para o manifesto multi-arch fixado para aquela tag):
+The docker image now publishes OCI base-image annotations (sha256 is an example,
+and points at the pinned multi-arch manifest list for that tag):
 
 - `org.opencontainers.image.base.name=docker.io/library/node:24-bookworm`
 - `org.opencontainers.image.base.digest=sha256:3a09aa6354567619221ef6c45a5051b671f953f0a1924d1f819ffb236e520e6b`
@@ -174,52 +176,52 @@ e aponta para o manifesto multi-arch fixado para aquela tag):
 - `org.opencontainers.image.url=https://openclaw.ai`
 - `org.opencontainers.image.documentation=https://docs.openclaw.ai/install/docker`
 - `org.opencontainers.image.licenses=MIT`
-- `org.opencontainers.image.title=OpenCraft`
-- `org.opencontainers.image.description=Imagem de contêiner do gateway e runtime CLI do OpenCraft`
+- `org.opencontainers.image.title=OpenClaw`
+- `org.opencontainers.image.description=OpenClaw gateway and CLI runtime container image`
 - `org.opencontainers.image.revision=<git-sha>`
 - `org.opencontainers.image.version=<tag-or-main>`
 - `org.opencontainers.image.created=<rfc3339 timestamp>`
 
-Referência: [Anotações de imagem OCI](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
+Reference: [OCI image annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
 
-Contexto de release: o histórico de tags deste repositório já usa Bookworm em
-`v2026.2.22` e tags anteriores de 2026 (por exemplo `v2026.2.21`, `v2026.2.9`).
+Release context: this repository's tagged history already uses Bookworm in
+`v2026.2.22` and earlier 2026 tags (for example `v2026.2.21`, `v2026.2.9`).
 
-Por padrão, o script de configuração compila a imagem a partir do código-fonte. Para puxar uma imagem
-pré-compilada, defina `OPENCLAW_IMAGE` antes de executar o script:
+By default the setup script builds the image from source. To pull a pre-built
+image instead, set `OPENCLAW_IMAGE` before running the script:
 
 ```bash
 export OPENCLAW_IMAGE="ghcr.io/openclaw/openclaw:latest"
 ./docker-setup.sh
 ```
 
-O script detecta que `OPENCLAW_IMAGE` não é o padrão `openclaw:local` e
-executa `docker pull` em vez de `docker build`. Todo o resto (onboarding,
-início do gateway, geração de token) funciona da mesma forma.
+The script detects that `OPENCLAW_IMAGE` is not the default `openclaw:local` and
+runs `docker pull` instead of `docker build`. Everything else (onboarding,
+gateway start, token generation) works the same way.
 
-`docker-setup.sh` ainda executa a partir da raiz do repositório porque usa o
-`docker-compose.yml` local e arquivos auxiliares. `OPENCLAW_IMAGE` pula o tempo de build
-da imagem local; não substitui o fluxo de trabalho compose/setup.
+`docker-setup.sh` still runs from the repository root because it uses the local
+`docker-compose.yml` and helper files. `OPENCLAW_IMAGE` skips local image build
+time; it does not replace the compose/setup workflow.
 
-### Auxiliares de shell (opcional)
+### Shell Helpers (optional)
 
-Para gerenciamento mais fácil do Docker no dia a dia, instale o `ClawDock`:
+For easier day-to-day Docker management, install `ClawDock`:
 
 ```bash
 mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/openclaw/openclaw/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
 ```
 
-**Adicione ao seu config de shell (zsh):**
+**Add to your shell config (zsh):**
 
 ```bash
 echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 ```
 
-Em seguida, use `clawdock-start`, `clawdock-stop`, `clawdock-dashboard`, etc. Execute `clawdock-help` para todos os comandos.
+Then use `clawdock-start`, `clawdock-stop`, `clawdock-dashboard`, etc. Run `clawdock-help` for all commands.
 
-Veja o [README do Auxiliar `ClawDock`](https://github.com/openclaw/openclaw/blob/main/scripts/shell-helpers/README.md) para detalhes.
+See [`ClawDock` Helper README](https://github.com/openclaw/openclaw/blob/main/scripts/shell-helpers/README.md) for details.
 
-### Fluxo manual (compose)
+### Manual flow (compose)
 
 ```bash
 docker build -t openclaw:local -f Dockerfile .
@@ -227,18 +229,18 @@ docker compose run --rm openclaw-cli onboard
 docker compose up -d openclaw-gateway
 ```
 
-Nota: execute `docker compose ...` a partir da raiz do repositório. Se você habilitou
-`OPENCLAW_EXTRA_MOUNTS` ou `OPENCLAW_HOME_VOLUME`, o script de configuração escreve
-`docker-compose.extra.yml`; inclua-o ao executar o Compose em outro lugar:
+Note: run `docker compose ...` from the repo root. If you enabled
+`OPENCLAW_EXTRA_MOUNTS` or `OPENCLAW_HOME_VOLUME`, the setup script writes
+`docker-compose.extra.yml`; include it when running Compose elsewhere:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.extra.yml <command>
 ```
 
-### Token da UI de Controle + pareamento (Docker)
+### Control UI token + pairing (Docker)
 
-Se você vir "unauthorized" ou "disconnected (1008): pairing required", obtenha um
-link de dashboard novo e aprove o dispositivo do navegador:
+If you see “unauthorized” or “disconnected (1008): pairing required”, fetch a
+fresh dashboard link and approve the browser device:
 
 ```bash
 docker compose run --rm openclaw-cli dashboard --no-open
@@ -246,46 +248,46 @@ docker compose run --rm openclaw-cli devices list
 docker compose run --rm openclaw-cli devices approve <requestId>
 ```
 
-Mais detalhes: [Dashboard](/web/dashboard), [Dispositivos](/cli/devices).
+More detail: [Dashboard](/web/dashboard), [Devices](/cli/devices).
 
-### Mounts extras (opcional)
+### Extra mounts (optional)
 
-Se você quiser montar diretórios de host adicionais nos contêineres, defina
-`OPENCLAW_EXTRA_MOUNTS` antes de executar `docker-setup.sh`. Isso aceita uma
-lista separada por vírgulas de bind mounts do Docker e os aplica tanto ao
-`openclaw-gateway` quanto ao `openclaw-cli` gerando `docker-compose.extra.yml`.
+If you want to mount additional host directories into the containers, set
+`OPENCLAW_EXTRA_MOUNTS` before running `docker-setup.sh`. This accepts a
+comma-separated list of Docker bind mounts and applies them to both
+`openclaw-gateway` and `openclaw-cli` by generating `docker-compose.extra.yml`.
 
-Exemplo:
+Example:
 
 ```bash
 export OPENCLAW_EXTRA_MOUNTS="$HOME/.codex:/home/node/.codex:ro,$HOME/github:/home/node/github:rw"
 ./docker-setup.sh
 ```
 
-Notas:
+Notes:
 
-- Os caminhos devem ser compartilhados com o Docker Desktop no macOS/Windows.
-- Cada entrada deve ser `source:target[:options]` sem espaços, tabs ou quebras de linha.
-- Se você editar `OPENCLAW_EXTRA_MOUNTS`, execute novamente `docker-setup.sh` para regenerar o
-  arquivo compose extra.
-- `docker-compose.extra.yml` é gerado. Não o edite manualmente.
+- Paths must be shared with Docker Desktop on macOS/Windows.
+- Each entry must be `source:target[:options]` with no spaces, tabs, or newlines.
+- If you edit `OPENCLAW_EXTRA_MOUNTS`, rerun `docker-setup.sh` to regenerate the
+  extra compose file.
+- `docker-compose.extra.yml` is generated. Don’t hand-edit it.
 
-### Persistir o home do contêiner inteiro (opcional)
+### Persist the entire container home (optional)
 
-Se você quiser que `/home/node` persista entre recriações de contêiner, defina um volume
-nomeado via `OPENCLAW_HOME_VOLUME`. Isso cria um volume Docker e o monta em
-`/home/node`, mantendo os bind mounts padrão de config/workspace. Use um
-volume nomeado aqui (não um caminho bind); para bind mounts, use
+If you want `/home/node` to persist across container recreation, set a named
+volume via `OPENCLAW_HOME_VOLUME`. This creates a Docker volume and mounts it at
+`/home/node`, while keeping the standard config/workspace bind mounts. Use a
+named volume here (not a bind path); for bind mounts, use
 `OPENCLAW_EXTRA_MOUNTS`.
 
-Exemplo:
+Example:
 
 ```bash
 export OPENCLAW_HOME_VOLUME="openclaw_home"
 ./docker-setup.sh
 ```
 
-Você pode combinar com mounts extras:
+You can combine this with extra mounts:
 
 ```bash
 export OPENCLAW_HOME_VOLUME="openclaw_home"
@@ -293,122 +295,122 @@ export OPENCLAW_EXTRA_MOUNTS="$HOME/.codex:/home/node/.codex:ro,$HOME/github:/ho
 ./docker-setup.sh
 ```
 
-Notas:
+Notes:
 
-- Volumes nomeados devem corresponder a `^[A-Za-z0-9][A-Za-z0-9_.-]*$`.
-- Se você mudar `OPENCLAW_HOME_VOLUME`, execute novamente `docker-setup.sh` para regenerar o
-  arquivo compose extra.
-- O volume nomeado persiste até ser removido com `docker volume rm <name>`.
+- Named volumes must match `^[A-Za-z0-9][A-Za-z0-9_.-]*$`.
+- If you change `OPENCLAW_HOME_VOLUME`, rerun `docker-setup.sh` to regenerate the
+  extra compose file.
+- The named volume persists until removed with `docker volume rm <name>`.
 
-### Instalar pacotes apt extras (opcional)
+### Install extra apt packages (optional)
 
-Se você precisar de pacotes do sistema dentro da imagem (por exemplo, ferramentas de build ou bibliotecas
-de mídia), defina `OPENCLAW_DOCKER_APT_PACKAGES` antes de executar `docker-setup.sh`.
-Isso instala os pacotes durante o build da imagem, para que persistam mesmo se o
-contêiner for excluído.
+If you need system packages inside the image (for example, build tools or media
+libraries), set `OPENCLAW_DOCKER_APT_PACKAGES` before running `docker-setup.sh`.
+This installs the packages during the image build, so they persist even if the
+container is deleted.
 
-Exemplo:
+Example:
 
 ```bash
 export OPENCLAW_DOCKER_APT_PACKAGES="ffmpeg build-essential"
 ./docker-setup.sh
 ```
 
-Notas:
+Notes:
 
-- Aceita uma lista separada por espaços de nomes de pacotes apt.
-- Se você mudar `OPENCLAW_DOCKER_APT_PACKAGES`, execute novamente `docker-setup.sh` para reconstruir
-  a imagem.
+- This accepts a space-separated list of apt package names.
+- If you change `OPENCLAW_DOCKER_APT_PACKAGES`, rerun `docker-setup.sh` to rebuild
+  the image.
 
-### Pré-instalar dependências de extensão (opcional)
+### Pre-install extension dependencies (optional)
 
-Extensões com seu próprio `package.json` (ex.: `diagnostics-otel`, `matrix`,
-`msteams`) instalam suas dependências npm na primeira carga. Para inserir essas
-dependências na imagem em vez disso, defina `OPENCLAW_EXTENSIONS` antes de
-executar `docker-setup.sh`:
+Extensions with their own `package.json` (e.g. `diagnostics-otel`, `matrix`,
+`msteams`) install their npm dependencies on first load. To bake those
+dependencies into the image instead, set `OPENCLAW_EXTENSIONS` before
+running `docker-setup.sh`:
 
 ```bash
 export OPENCLAW_EXTENSIONS="diagnostics-otel matrix"
 ./docker-setup.sh
 ```
 
-Ou ao compilar diretamente:
+Or when building directly:
 
 ```bash
 docker build --build-arg OPENCLAW_EXTENSIONS="diagnostics-otel matrix" .
 ```
 
-Notas:
+Notes:
 
-- Aceita uma lista separada por espaços de nomes de diretório de extensão (em `extensions/`).
-- Apenas extensões com um `package.json` são afetadas; plugins leves sem um são ignorados.
-- Se você mudar `OPENCLAW_EXTENSIONS`, execute novamente `docker-setup.sh` para reconstruir
-  a imagem.
+- This accepts a space-separated list of extension directory names (under `extensions/`).
+- Only extensions with a `package.json` are affected; lightweight plugins without one are ignored.
+- If you change `OPENCLAW_EXTENSIONS`, rerun `docker-setup.sh` to rebuild
+  the image.
 
-### Contêiner completo / para usuários avançados (opt-in)
+### Power-user / full-featured container (opt-in)
 
-A imagem Docker padrão é **segurança em primeiro lugar** e executa como o usuário não-root `node`.
-Isso mantém a superfície de ataque pequena, mas significa:
+The default Docker image is **security-first** and runs as the non-root `node`
+user. This keeps the attack surface small, but it means:
 
-- sem instalações de pacotes do sistema em runtime
-- sem Homebrew por padrão
-- sem navegadores Chromium/Playwright incluídos
+- no system package installs at runtime
+- no Homebrew by default
+- no bundled Chromium/Playwright browsers
 
-Se você quiser um contêiner mais completo, use esses controles opt-in:
+If you want a more full-featured container, use these opt-in knobs:
 
-1. **Persistir `/home/node`** para que downloads de navegador e caches de ferramentas sobrevivam:
+1. **Persist `/home/node`** so browser downloads and tool caches survive:
 
 ```bash
 export OPENCLAW_HOME_VOLUME="openclaw_home"
 ./docker-setup.sh
 ```
 
-2. **Inserir deps do sistema na imagem** (repetível + persistente):
+2. **Bake system deps into the image** (repeatable + persistent):
 
 ```bash
 export OPENCLAW_DOCKER_APT_PACKAGES="git curl jq"
 ./docker-setup.sh
 ```
 
-3. **Instalar navegadores Playwright sem `npx`** (evita conflitos de override do npm):
+3. **Install Playwright browsers without `npx`** (avoids npm override conflicts):
 
 ```bash
 docker compose run --rm openclaw-cli \
   node /app/node_modules/playwright-core/cli.js install chromium
 ```
 
-Se você precisar que o Playwright instale deps do sistema, reconstrua a imagem com
-`OPENCLAW_DOCKER_APT_PACKAGES` em vez de usar `--with-deps` em runtime.
+If you need Playwright to install system deps, rebuild the image with
+`OPENCLAW_DOCKER_APT_PACKAGES` instead of using `--with-deps` at runtime.
 
-4. **Persistir downloads de navegador Playwright**:
+4. **Persist Playwright browser downloads**:
 
-- Defina `PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright` em
+- Set `PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright` in
   `docker-compose.yml`.
-- Certifique-se de que `/home/node` persiste via `OPENCLAW_HOME_VOLUME`, ou monte
+- Ensure `/home/node` persists via `OPENCLAW_HOME_VOLUME`, or mount
   `/home/node/.cache/ms-playwright` via `OPENCLAW_EXTRA_MOUNTS`.
 
-### Permissões + EACCES
+### Permissions + EACCES
 
-A imagem executa como `node` (uid 1000). Se você vir erros de permissão em
-`/home/node/.opencraft`, certifique-se de que seus bind mounts de host são de propriedade do uid 1000.
+The image runs as `node` (uid 1000). If you see permission errors on
+`/home/node/.openclaw`, make sure your host bind mounts are owned by uid 1000.
 
-Exemplo (host Linux):
+Example (Linux host):
 
 ```bash
-sudo chown -R 1000:1000 /path/to/opencraft-config /path/to/opencraft-workspace
+sudo chown -R 1000:1000 /path/to/openclaw-config /path/to/openclaw-workspace
 ```
 
-Se você optar por executar como root por conveniência, você aceita a troca de segurança.
+If you choose to run as root for convenience, you accept the security tradeoff.
 
-### Rebuilds mais rápidos (recomendado)
+### Faster rebuilds (recommended)
 
-Para acelerar os rebuilds, ordene seu Dockerfile para que as camadas de dependência sejam cacheadas.
-Isso evita re-executar `pnpm install` a menos que os lockfiles mudem:
+To speed up rebuilds, order your Dockerfile so dependency layers are cached.
+This avoids re-running `pnpm install` unless lockfiles change:
 
 ```dockerfile
 FROM node:24-bookworm
 
-# Instalar Bun (necessário para scripts de build)
+# Install Bun (required for build scripts)
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
 
@@ -416,7 +418,7 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Cachear dependências a menos que metadados de pacote mudem
+# Cache dependencies unless package metadata changes
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
 COPY scripts ./scripts
@@ -433,9 +435,9 @@ ENV NODE_ENV=production
 CMD ["node","dist/index.js"]
 ```
 
-### Configuração de canal (opcional)
+### Channel setup (optional)
 
-Use o contêiner CLI para configurar canais, depois reinicie o gateway se necessário.
+Use the CLI container to configure channels, then restart the gateway if needed.
 
 WhatsApp (QR):
 
@@ -443,13 +445,13 @@ WhatsApp (QR):
 docker compose run --rm openclaw-cli channels login
 ```
 
-Telegram (token do bot):
+Telegram (bot token):
 
 ```bash
 docker compose run --rm openclaw-cli channels add --channel telegram --token "<token>"
 ```
 
-Discord (token do bot):
+Discord (bot token):
 
 ```bash
 docker compose run --rm openclaw-cli channels add --channel discord --token "<token>"
@@ -457,47 +459,47 @@ docker compose run --rm openclaw-cli channels add --channel discord --token "<to
 
 Docs: [WhatsApp](/channels/whatsapp), [Telegram](/channels/telegram), [Discord](/channels/discord)
 
-### OAuth do OpenAI Codex (Docker headless)
+### OpenAI Codex OAuth (headless Docker)
 
-Se você escolher o OAuth do OpenAI Codex no assistente, ele abre uma URL do navegador e tenta
-capturar um callback em `http://127.0.0.1:1455/auth/callback`. No Docker ou
-configurações headless, esse callback pode mostrar um erro do navegador. Copie a URL de redirect completa
-em que você chegar e cole-a de volta no assistente para concluir a autenticação.
+If you pick OpenAI Codex OAuth in the wizard, it opens a browser URL and tries
+to capture a callback on `http://127.0.0.1:1455/auth/callback`. In Docker or
+headless setups that callback can show a browser error. Copy the full redirect
+URL you land on and paste it back into the wizard to finish auth.
 
-### Verificações de saúde
+### Health checks
 
-Endpoints de probe do contêiner (sem autenticação necessária):
+Container probe endpoints (no auth required):
 
 ```bash
 curl -fsS http://127.0.0.1:18789/healthz
 curl -fsS http://127.0.0.1:18789/readyz
 ```
 
-Aliases: `/health` e `/ready`.
+Aliases: `/health` and `/ready`.
 
-`/healthz` é uma probe de liveness superficial para "o processo do gateway está ativo".
-`/readyz` permanece pronto durante a graça de inicialização, depois fica `503` apenas se os canais gerenciados
-obrigatórios ainda estiverem desconectados após a graça ou se desconectarem depois.
+`/healthz` is a shallow liveness probe for "the gateway process is up".
+`/readyz` stays ready during startup grace, then becomes `503` only if required
+managed channels are still disconnected after grace or disconnect later.
 
-A imagem Docker inclui um `HEALTHCHECK` integrado que faz ping em `/healthz` em
-segundo plano. Em termos simples: o Docker continua verificando se o OpenCraft ainda está
-responsivo. Se as verificações continuarem falhando, o Docker marca o contêiner como `unhealthy`,
-e sistemas de orquestração (política de reinicialização do Docker Compose, Swarm, Kubernetes,
-etc.) podem reiniciá-lo ou substituí-lo automaticamente.
+The Docker image includes a built-in `HEALTHCHECK` that pings `/healthz` in the
+background. In plain terms: Docker keeps checking if OpenClaw is still
+responsive. If checks keep failing, Docker marks the container as `unhealthy`,
+and orchestration systems (Docker Compose restart policy, Swarm, Kubernetes,
+etc.) can automatically restart or replace it.
 
-Snapshot de saúde profunda autenticada (gateway + canais):
+Authenticated deep health snapshot (gateway + channels):
 
 ```bash
 docker compose exec openclaw-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
 ```
 
-### Teste de fumaça E2E (Docker)
+### E2E smoke test (Docker)
 
 ```bash
 scripts/e2e/onboard-docker.sh
 ```
 
-### Teste de fumaça de importação QR (Docker)
+### QR import smoke test (Docker)
 
 ```bash
 pnpm test:docker:qr
@@ -505,22 +507,22 @@ pnpm test:docker:qr
 
 ### LAN vs loopback (Docker Compose)
 
-`docker-setup.sh` define `OPENCLAW_GATEWAY_BIND=lan` por padrão para que o acesso do host a
-`http://127.0.0.1:18789` funcione com publicação de porta do Docker.
+`docker-setup.sh` defaults `OPENCLAW_GATEWAY_BIND=lan` so host access to
+`http://127.0.0.1:18789` works with Docker port publishing.
 
-- `lan` (padrão): navegador do host + CLI do host podem alcançar a porta do gateway publicada.
-- `loopback`: apenas processos dentro do namespace de rede do contêiner podem alcançar
-  o gateway diretamente; o acesso via porta publicada do host pode falhar.
+- `lan` (default): host browser + host CLI can reach the published gateway port.
+- `loopback`: only processes inside the container network namespace can reach
+  the gateway directly; host-published port access may fail.
 
-O script de configuração também fixa `gateway.mode=local` após o onboarding para que comandos CLI do Docker
-usem como padrão o targeting de loopback local.
+The setup script also pins `gateway.mode=local` after onboarding so Docker CLI
+commands default to local loopback targeting.
 
-Nota de config legada: use valores de modo bind em `gateway.bind` (`lan` / `loopback` /
-`custom` / `tailnet` / `auto`), não aliases de host (`0.0.0.0`, `127.0.0.1`,
+Legacy config note: use bind mode values in `gateway.bind` (`lan` / `loopback` /
+`custom` / `tailnet` / `auto`), not host aliases (`0.0.0.0`, `127.0.0.1`,
 `localhost`, `::`, `::1`).
 
-Se você vir `Gateway target: ws://172.x.x.x:18789` ou erros repetidos de `pairing required`
-de comandos CLI do Docker, execute:
+If you see `Gateway target: ws://172.x.x.x:18789` or repeated `pairing required`
+errors from Docker CLI commands, run:
 
 ```bash
 docker compose run --rm openclaw-cli config set gateway.mode local
@@ -528,77 +530,77 @@ docker compose run --rm openclaw-cli config set gateway.bind lan
 docker compose run --rm openclaw-cli devices list --url ws://127.0.0.1:18789
 ```
 
-### Notas
+### Notes
 
-- O bind do gateway usa `lan` por padrão para uso em contêiner (`OPENCLAW_GATEWAY_BIND`).
-- O CMD do Dockerfile usa `--allow-unconfigured`; config montada com `gateway.mode` diferente de `local` ainda iniciará. Sobrescreva o CMD para impor a proteção.
-- O contêiner do gateway é a fonte da verdade para sessões (`~/.opencraft/agents/<agentId>/sessions/`).
+- Gateway bind defaults to `lan` for container use (`OPENCLAW_GATEWAY_BIND`).
+- Dockerfile CMD uses `--allow-unconfigured`; mounted config with `gateway.mode` not `local` will still start. Override CMD to enforce the guard.
+- The gateway container is the source of truth for sessions (`~/.openclaw/agents/<agentId>/sessions/`).
 
-### Modelo de armazenamento
+### Storage model
 
-- **Dados persistentes do host:** o Docker Compose bind-monta `OPENCLAW_CONFIG_DIR` em `/home/node/.opencraft` e `OPENCLAW_WORKSPACE_DIR` em `/home/node/.opencraft/workspace`, para que esses caminhos sobrevivam à substituição do contêiner.
-- **tmpfs efêmero de sandbox:** quando `agents.defaults.sandbox` está habilitado, os contêineres de sandbox usam `tmpfs` para `/tmp`, `/var/tmp` e `/run`. Esses mounts são separados da pilha Compose de nível superior e desaparecem com o contêiner de sandbox.
-- **Pontos quentes de crescimento de disco:** observe `media/`, `agents/<agentId>/sessions/sessions.json`, arquivos JSONL de transcrição, `cron/runs/*.jsonl` e logs de arquivo rotativo em `/tmp/openclaw/` (ou seu `logging.file` configurado). Se você também executa o app macOS fora do Docker, seus logs de serviço são separados: `~/.opencraft/logs/gateway.log`, `~/.opencraft/logs/gateway.err.log` e `/tmp/openclaw/openclaw-gateway.log`.
+- **Persistent host data:** Docker Compose bind-mounts `OPENCLAW_CONFIG_DIR` to `/home/node/.openclaw` and `OPENCLAW_WORKSPACE_DIR` to `/home/node/.openclaw/workspace`, so those paths survive container replacement.
+- **Ephemeral sandbox tmpfs:** when `agents.defaults.sandbox` is enabled, the sandbox containers use `tmpfs` for `/tmp`, `/var/tmp`, and `/run`. Those mounts are separate from the top-level Compose stack and disappear with the sandbox container.
+- **Disk growth hotspots:** watch `media/`, `agents/<agentId>/sessions/sessions.json`, transcript JSONL files, `cron/runs/*.jsonl`, and rolling file logs under `/tmp/openclaw/` (or your configured `logging.file`). If you also run the macOS app outside Docker, its service logs are separate again: `~/.openclaw/logs/gateway.log`, `~/.openclaw/logs/gateway.err.log`, and `/tmp/openclaw/openclaw-gateway.log`.
 
-## Sandbox de Agente (gateway no host + ferramentas Docker)
+## Agent Sandbox (host gateway + Docker tools)
 
-Aprofundamento: [Sandboxing](/gateway/sandboxing)
+Deep dive: [Sandboxing](/gateway/sandboxing)
 
-### O que faz
+### What it does
 
-Quando `agents.defaults.sandbox` está habilitado, **sessões não-main** executam ferramentas dentro de um contêiner
-Docker. O gateway permanece no seu host, mas a execução de ferramentas é isolada:
+When `agents.defaults.sandbox` is enabled, **non-main sessions** run tools inside a Docker
+container. The gateway stays on your host, but the tool execution is isolated:
 
-- escopo: `"agent"` por padrão (um contêiner + workspace por agente)
-- escopo: `"session"` para isolamento por sessão
-- pasta de workspace por escopo montada em `/workspace`
-- acesso opcional ao workspace do agente (`agents.defaults.sandbox.workspaceAccess`)
-- política de ferramentas de allow/deny (deny vence)
-- mídia de entrada é copiada para o workspace do sandbox ativo (`media/inbound/*`) para que ferramentas possam lê-la (com `workspaceAccess: "rw"`, isso vai para o workspace do agente)
+- scope: `"agent"` by default (one container + workspace per agent)
+- scope: `"session"` for per-session isolation
+- per-scope workspace folder mounted at `/workspace`
+- optional agent workspace access (`agents.defaults.sandbox.workspaceAccess`)
+- allow/deny tool policy (deny wins)
+- inbound media is copied into the active sandbox workspace (`media/inbound/*`) so tools can read it (with `workspaceAccess: "rw"`, this lands in the agent workspace)
 
-Aviso: `scope: "shared"` desabilita o isolamento entre sessões. Todas as sessões compartilham
-um contêiner e um workspace.
+Warning: `scope: "shared"` disables cross-session isolation. All sessions share
+one container and one workspace.
 
-### Perfis de sandbox por agente (multi-agente)
+### Per-agent sandbox profiles (multi-agent)
 
-Se você usa roteamento multi-agente, cada agente pode sobrescrever configurações de sandbox + ferramenta:
-`agents.list[].sandbox` e `agents.list[].tools` (mais `agents.list[].tools.sandbox.tools`). Isso permite executar
-níveis de acesso mistos em um único gateway:
+If you use multi-agent routing, each agent can override sandbox + tool settings:
+`agents.list[].sandbox` and `agents.list[].tools` (plus `agents.list[].tools.sandbox.tools`). This lets you run
+mixed access levels in one gateway:
 
-- Acesso completo (agente pessoal)
-- Ferramentas somente leitura + workspace somente leitura (agente de família/trabalho)
-- Sem ferramentas de sistema de arquivos/shell (agente público)
+- Full access (personal agent)
+- Read-only tools + read-only workspace (family/work agent)
+- No filesystem/shell tools (public agent)
 
-Veja [Sandbox e Ferramentas Multi-Agente](/tools/multi-agent-sandbox-tools) para exemplos,
-precedência e solução de problemas.
+See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for examples,
+precedence, and troubleshooting.
 
-### Comportamento padrão
+### Default behavior
 
-- Imagem: `openclaw-sandbox:bookworm-slim`
-- Um contêiner por agente
-- Acesso ao workspace do agente: `workspaceAccess: "none"` (padrão) usa `~/.opencraft/sandboxes`
-  - `"ro"` mantém o workspace do sandbox em `/workspace` e monta o workspace do agente somente leitura em `/agent` (desabilita `write`/`edit`/`apply_patch`)
-  - `"rw"` monta o workspace do agente em leitura/escrita em `/workspace`
-- Poda automática: inativo > 24h OU idade > 7d
-- Rede: `none` por padrão (opte explicitamente se precisar de egresso)
-  - `host` está bloqueado.
-  - `container:<id>` está bloqueado por padrão (risco de namespace-join).
-- Allow padrão: `exec`, `process`, `read`, `write`, `edit`, `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
-- Deny padrão: `browser`, `canvas`, `nodes`, `cron`, `discord`, `gateway`
+- Image: `openclaw-sandbox:bookworm-slim`
+- One container per agent
+- Agent workspace access: `workspaceAccess: "none"` (default) uses `~/.openclaw/sandboxes`
+  - `"ro"` keeps the sandbox workspace at `/workspace` and mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`)
+  - `"rw"` mounts the agent workspace read/write at `/workspace`
+- Auto-prune: idle > 24h OR age > 7d
+- Network: `none` by default (explicitly opt-in if you need egress)
+  - `host` is blocked.
+  - `container:<id>` is blocked by default (namespace-join risk).
+- Default allow: `exec`, `process`, `read`, `write`, `edit`, `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
+- Default deny: `browser`, `canvas`, `nodes`, `cron`, `discord`, `gateway`
 
-### Habilitar sandboxing
+### Enable sandboxing
 
-Se você planeja instalar pacotes em `setupCommand`, note:
+If you plan to install packages in `setupCommand`, note:
 
-- `docker.network` padrão é `"none"` (sem egresso).
-- `docker.network: "host"` está bloqueado.
-- `docker.network: "container:<id>"` está bloqueado por padrão.
-- Override break-glass: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
-- `readOnlyRoot: true` bloqueia instalações de pacotes.
-- `user` deve ser root para `apt-get` (omita `user` ou defina `user: "0:0"`).
-  O OpenCraft recria automaticamente contêineres quando `setupCommand` (ou config docker) muda
-  a menos que o contêiner tenha sido **usado recentemente** (dentro de ~5 minutos). Contêineres quentes
-  registram um aviso com o comando exato `opencraft sandbox recreate ...`.
+- Default `docker.network` is `"none"` (no egress).
+- `docker.network: "host"` is blocked.
+- `docker.network: "container:<id>"` is blocked by default.
+- Break-glass override: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
+- `readOnlyRoot: true` blocks package installs.
+- `user` must be root for `apt-get` (omit `user` or set `user: "0:0"`).
+  OpenClaw auto-recreates containers when `setupCommand` (or docker config) changes
+  unless the container was **recently used** (within ~5 minutes). Hot containers
+  log a warning with the exact `openclaw sandbox recreate ...` command.
 
 ```json5
 {
@@ -606,9 +608,9 @@ Se você planeja instalar pacotes em `setupCommand`, note:
     defaults: {
       sandbox: {
         mode: "non-main", // off | non-main | all
-        scope: "agent", // session | agent | shared (agent é o padrão)
+        scope: "agent", // session | agent | shared (agent is default)
         workspaceAccess: "none", // none | ro | rw
-        workspaceRoot: "~/.opencraft/sandboxes",
+        workspaceRoot: "~/.openclaw/sandboxes",
         docker: {
           image: "openclaw-sandbox:bookworm-slim",
           workdir: "/workspace",
@@ -633,8 +635,8 @@ Se você planeja instalar pacotes em `setupCommand`, note:
           extraHosts: ["internal.service:10.0.0.5"],
         },
         prune: {
-          idleHours: 24, // 0 desabilita poda por inatividade
-          maxAgeDays: 7, // 0 desabilita poda por idade máxima
+          idleHours: 24, // 0 disables idle pruning
+          maxAgeDays: 7, // 0 disables max-age pruning
         },
       },
     },
@@ -661,31 +663,31 @@ Se você planeja instalar pacotes em `setupCommand`, note:
 }
 ```
 
-Controles de hardening ficam em `agents.defaults.sandbox.docker`:
+Hardening knobs live under `agents.defaults.sandbox.docker`:
 `network`, `user`, `pidsLimit`, `memory`, `memorySwap`, `cpus`, `ulimits`,
 `seccompProfile`, `apparmorProfile`, `dns`, `extraHosts`,
-`dangerouslyAllowContainerNamespaceJoin` (apenas break-glass).
+`dangerouslyAllowContainerNamespaceJoin` (break-glass only).
 
-Multi-agente: sobrescreva `agents.defaults.sandbox.{docker,browser,prune}.*` por agente via `agents.list[].sandbox.{docker,browser,prune}.*`
-(ignorado quando `agents.defaults.sandbox.scope` / `agents.list[].sandbox.scope` é `"shared"`).
+Multi-agent: override `agents.defaults.sandbox.{docker,browser,prune}.*` per agent via `agents.list[].sandbox.{docker,browser,prune}.*`
+(ignored when `agents.defaults.sandbox.scope` / `agents.list[].sandbox.scope` is `"shared"`).
 
-### Compilar a imagem de sandbox padrão
+### Build the default sandbox image
 
 ```bash
 scripts/sandbox-setup.sh
 ```
 
-Isso compila `openclaw-sandbox:bookworm-slim` usando `Dockerfile.sandbox`.
+This builds `openclaw-sandbox:bookworm-slim` using `Dockerfile.sandbox`.
 
-### Imagem comum de sandbox (opcional)
+### Sandbox common image (optional)
 
-Se você quiser uma imagem de sandbox com ferramentas de build comuns (Node, Go, Rust, etc.), compile a imagem comum:
+If you want a sandbox image with common build tooling (Node, Go, Rust, etc.), build the common image:
 
 ```bash
 scripts/sandbox-common-setup.sh
 ```
 
-Isso compila `openclaw-sandbox-common:bookworm-slim`. Para usá-la:
+This builds `openclaw-sandbox-common:bookworm-slim`. To use it:
 
 ```json5
 {
@@ -697,29 +699,30 @@ Isso compila `openclaw-sandbox-common:bookworm-slim`. Para usá-la:
 }
 ```
 
-### Imagem de sandbox do navegador
+### Sandbox browser image
 
-Para executar a ferramenta de navegador dentro do sandbox, compile a imagem do navegador:
+To run the browser tool inside the sandbox, build the browser image:
 
 ```bash
 scripts/sandbox-browser-setup.sh
 ```
 
-Isso compila `openclaw-sandbox-browser:bookworm-slim` usando
-`Dockerfile.sandbox-browser`. O contêiner executa o Chromium com CDP habilitado e
-um observador noVNC opcional (headful via Xvfb).
+This builds `openclaw-sandbox-browser:bookworm-slim` using
+`Dockerfile.sandbox-browser`. The container runs Chromium with CDP enabled and
+an optional noVNC observer (headful via Xvfb).
 
-Notas:
+Notes:
 
-- Headful (Xvfb) reduz o bloqueio por bot vs headless.
-- Headless ainda pode ser usado definindo `agents.defaults.sandbox.browser.headless=true`.
-- Nenhum ambiente de desktop completo (GNOME) é necessário; o Xvfb fornece o display.
-- Contêineres de navegador usam por padrão uma rede Docker dedicada (`openclaw-sandbox-browser`) em vez do `bridge` global.
-- `agents.defaults.sandbox.browser.cdpSourceRange` opcional restringe o ingresso CDP na borda do contêiner por CIDR (por exemplo `172.21.0.1/32`).
-- O acesso ao observador noVNC é protegido por senha por padrão; o OpenCraft fornece uma URL de token de observador de curta duração que serve uma página de bootstrap local e mantém a senha no fragmento da URL (em vez da query da URL).
-- Os padrões de inicialização do contêiner do navegador são conservadores para cargas de trabalho compartilhadas/em contêiner, incluindo:
+- Docker and other headless/container browser flows stay on raw CDP. Chrome MCP `existing-session` is for host-local Chrome, not container takeover.
+- Headful (Xvfb) reduces bot blocking vs headless.
+- Headless can still be used by setting `agents.defaults.sandbox.browser.headless=true`.
+- No full desktop environment (GNOME) is needed; Xvfb provides the display.
+- Browser containers default to a dedicated Docker network (`openclaw-sandbox-browser`) instead of global `bridge`.
+- Optional `agents.defaults.sandbox.browser.cdpSourceRange` restricts container-edge CDP ingress by CIDR (for example `172.21.0.1/32`).
+- noVNC observer access is password-protected by default; OpenClaw provides a short-lived observer token URL that serves a local bootstrap page and keeps the password in URL fragment (instead of URL query).
+- Browser container startup defaults are conservative for shared/container workloads, including:
   - `--remote-debugging-address=127.0.0.1`
-  - `--remote-debugging-port=<derivado de OPENCLAW_BROWSER_CDP_PORT>`
+  - `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
   - `--user-data-dir=${HOME}/.chrome`
   - `--no-first-run`
   - `--no-default-browser-check`
@@ -735,20 +738,20 @@ Notas:
   - `--renderer-process-limit=2`
   - `--no-zygote`
   - `--disable-extensions`
-  - Se `agents.defaults.sandbox.browser.noSandbox` estiver definido, `--no-sandbox` e
-    `--disable-setuid-sandbox` também são acrescentados.
-  - As três flags de hardening gráfico acima são opcionais. Se sua carga de trabalho precisar
-    de WebGL/3D, defina `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` para executar sem
-    `--disable-3d-apis`, `--disable-software-rasterizer` e `--disable-gpu`.
-  - O comportamento de extensão é controlado por `--disable-extensions` e pode ser desabilitado
-    (habilita extensões) via `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` para
-    fluxos dependentes de extensão ou extensão-heavy.
-  - `--renderer-process-limit=2` também é configurável com
-    `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT`; defina `0` para deixar o Chromium escolher seu
-    limite de processo padrão quando a concorrência do navegador precisar de ajuste.
+  - If `agents.defaults.sandbox.browser.noSandbox` is set, `--no-sandbox` and
+    `--disable-setuid-sandbox` are also appended.
+  - The three graphics hardening flags above are optional. If your workload needs
+    WebGL/3D, set `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` to run without
+    `--disable-3d-apis`, `--disable-software-rasterizer`, and `--disable-gpu`.
+  - Extension behavior is controlled by `--disable-extensions` and can be disabled
+    (enables extensions) via `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` for
+    extension-dependent pages or extensions-heavy workflows.
+  - `--renderer-process-limit=2` is also configurable with
+    `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT`; set `0` to let Chromium choose its
+    default process limit when browser concurrency needs tuning.
 
-Os padrões são aplicados por padrão na imagem incluída. Se você precisar de flags Chromium diferentes,
-use uma imagem de navegador personalizada e forneça seu próprio entrypoint.
+Defaults are applied by default in the bundled image. If you need different
+Chromium flags, use a custom browser image and provide your own entrypoint.
 
 Use config:
 
@@ -764,7 +767,7 @@ Use config:
 }
 ```
 
-Imagem de navegador personalizada:
+Custom browser image:
 
 ```json5
 {
@@ -776,18 +779,18 @@ Imagem de navegador personalizada:
 }
 ```
 
-Quando habilitado, o agente recebe:
+When enabled, the agent receives:
 
-- uma URL de controle do navegador sandbox (para a ferramenta `browser`)
-- uma URL noVNC (se habilitado e headless=false)
+- a sandbox browser control URL (for the `browser` tool)
+- a noVNC URL (if enabled and headless=false)
 
-Lembre-se: se você usar uma allowlist de ferramentas, adicione `browser` (e remova-o do
-deny) ou a ferramenta permanece bloqueada.
-As regras de poda (`agents.defaults.sandbox.prune`) também se aplicam a contêineres de navegador.
+Remember: if you use an allowlist for tools, add `browser` (and remove it from
+deny) or the tool remains blocked.
+Prune rules (`agents.defaults.sandbox.prune`) apply to browser containers too.
 
-### Imagem de sandbox personalizada
+### Custom sandbox image
 
-Compile sua própria imagem e aponte a config para ela:
+Build your own image and point config to it:
 
 ```bash
 docker build -t my-openclaw-sbx -f Dockerfile.sandbox .
@@ -803,38 +806,39 @@ docker build -t my-openclaw-sbx -f Dockerfile.sandbox .
 }
 ```
 
-### Política de ferramentas (allow/deny)
+### Tool policy (allow/deny)
 
-- `deny` vence sobre `allow`.
-- Se `allow` estiver vazio: todas as ferramentas (exceto deny) estão disponíveis.
-- Se `allow` não estiver vazio: apenas ferramentas em `allow` estão disponíveis (menos deny).
+- `deny` wins over `allow`.
+- If `allow` is empty: all tools (except deny) are available.
+- If `allow` is non-empty: only tools in `allow` are available (minus deny).
 
-### Estratégia de poda
+### Pruning strategy
 
-Dois controles:
+Two knobs:
 
-- `prune.idleHours`: remover contêineres não usados em X horas (0 = desabilitar)
-- `prune.maxAgeDays`: remover contêineres com mais de X dias (0 = desabilitar)
+- `prune.idleHours`: remove containers not used in X hours (0 = disable)
+- `prune.maxAgeDays`: remove containers older than X days (0 = disable)
 
-Exemplo:
+Example:
 
-- Manter sessões ativas mas limitar o tempo de vida:
+- Keep busy sessions but cap lifetime:
   `idleHours: 24`, `maxAgeDays: 7`
-- Nunca podar:
+- Never prune:
   `idleHours: 0`, `maxAgeDays: 0`
 
-### Notas de segurança
+### Security notes
 
-- A barreira rígida aplica-se apenas a **ferramentas** (exec/read/write/edit/apply_patch).
-- Ferramentas somente-host como browser/camera/canvas são bloqueadas por padrão.
-- Permitir `browser` no sandbox **quebra o isolamento** (o navegador executa no host).
+- Hard wall only applies to **tools** (exec/read/write/edit/apply_patch).
+- Host-only tools like browser/camera/canvas are blocked by default.
+- Allowing `browser` in sandbox **breaks isolation** (browser runs on host).
 
-## Solução de problemas
+## Troubleshooting
 
-- Imagem ausente: compile com [`scripts/sandbox-setup.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/sandbox-setup.sh) ou defina `agents.defaults.sandbox.docker.image`.
-- Contêiner não em execução: será criado automaticamente por sessão sob demanda.
-- Erros de permissão no sandbox: defina `docker.user` para um UID:GID que corresponda à propriedade do workspace montado (ou faça chown na pasta do workspace).
-- Ferramentas personalizadas não encontradas: o OpenCraft executa comandos com `sh -lc` (shell de login), que
-  carrega `/etc/profile` e pode redefinir o PATH. Defina `docker.env.PATH` para prefixar seus
-  caminhos de ferramentas personalizadas (ex.: `/custom/bin:/usr/local/share/npm-global/bin`), ou adicione
-  um script em `/etc/profile.d/` no seu Dockerfile.
+- Image missing: build with [`scripts/sandbox-setup.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/sandbox-setup.sh) or set `agents.defaults.sandbox.docker.image`.
+- Container not running: it will auto-create per session on demand.
+- Permission errors in sandbox: set `docker.user` to a UID:GID that matches your
+  mounted workspace ownership (or chown the workspace folder).
+- Custom tools not found: OpenClaw runs commands with `sh -lc` (login shell), which
+  sources `/etc/profile` and may reset PATH. Set `docker.env.PATH` to prepend your
+  custom tool paths (e.g., `/custom/bin:/usr/local/share/npm-global/bin`), or add
+  a script under `/etc/profile.d/` in your Dockerfile.

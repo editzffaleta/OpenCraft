@@ -1,12 +1,12 @@
-# @opencraft/zalouser
+# @openclaw/zalouser
 
-OpenCraft extension for Zalo Personal Account messaging via native `zca-js` integration.
+OpenClaw extension for Zalo Personal Account messaging via native `zca-js` integration.
 
 > **Warning:** Using Zalo automation may result in account suspension or ban. Use at your own risk. This is an unofficial integration.
 
 ## Features
 
-- Channel plugin integration with onboarding + QR login
+- Channel plugin integration with setup wizard + QR login
 - In-process listener/sender via `zca-js` (no external CLI)
 - Multi-account support
 - Agent tool integration (`zalouser`)
@@ -14,7 +14,7 @@ OpenCraft extension for Zalo Personal Account messaging via native `zca-js` inte
 
 ## Prerequisites
 
-- OpenCraft Gateway
+- OpenClaw Gateway
 - Zalo mobile app (for QR login)
 
 No external `zca`, `openzca`, or `zca-cli` binary is required.
@@ -24,13 +24,13 @@ No external `zca`, `openzca`, or `zca-cli` binary is required.
 ### Option A: npm
 
 ```bash
-opencraft plugins install @opencraft/zalouser
+openclaw plugins install @openclaw/zalouser
 ```
 
 ### Option B: local source checkout
 
 ```bash
-opencraft plugins install ./extensions/zalouser
+openclaw plugins install ./extensions/zalouser
 cd ./extensions/zalouser && pnpm install
 ```
 
@@ -41,7 +41,7 @@ Restart the Gateway after install.
 ### Login (QR)
 
 ```bash
-opencraft channels login --channel zalouser
+openclaw channels login --channel zalouser
 ```
 
 Scan the QR code with the Zalo app on your phone.
@@ -58,7 +58,7 @@ channels:
 ### Send a message
 
 ```bash
-opencraft message send --channel zalouser --target <threadId> --message "Hello from OpenCraft"
+openclaw message send --channel zalouser --target <threadId> --message "Hello from OpenClaw"
 ```
 
 ## Configuration
@@ -91,15 +91,15 @@ channels:
 ## Useful commands
 
 ```bash
-opencraft channels login --channel zalouser
-opencraft channels login --channel zalouser --account work
-opencraft channels status --probe
-opencraft channels logout --channel zalouser
+openclaw channels login --channel zalouser
+openclaw channels login --channel zalouser --account work
+openclaw channels status --probe
+openclaw channels logout --channel zalouser
 
-opencraft directory self --channel zalouser
-opencraft directory peers list --channel zalouser --query "name"
-opencraft directory groups list --channel zalouser --query "work"
-opencraft directory groups members --channel zalouser --group-id <id>
+openclaw directory self --channel zalouser
+openclaw directory peers list --channel zalouser --query "name"
+openclaw directory groups list --channel zalouser --query "work"
+openclaw directory groups members --channel zalouser --group-id <id>
 ```
 
 ## Agent tool
@@ -110,8 +110,8 @@ Available actions: `send`, `image`, `link`, `friends`, `groups`, `me`, `status`
 
 ## Troubleshooting
 
-- Login not persisted: `opencraft channels logout --channel zalouser && opencraft channels login --channel zalouser`
-- Probe status: `opencraft channels status --probe`
+- Login not persisted: `openclaw channels logout --channel zalouser && openclaw channels login --channel zalouser`
+- Probe status: `openclaw channels status --probe`
 - Name resolution issues (allowlist/groups): use numeric IDs or exact Zalo names
 
 ## Credits

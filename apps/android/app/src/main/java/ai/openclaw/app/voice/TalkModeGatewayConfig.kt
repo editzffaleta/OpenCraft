@@ -1,6 +1,6 @@
-package ai.opencraft.app.voice
+package ai.openclaw.app.voice
 
-import ai.opencraft.app.normalizeMainKey
+import ai.openclaw.app.normalizeMainKey
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive

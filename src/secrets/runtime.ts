@@ -1,4 +1,4 @@
-import { resolveOpenCraftAgentDir } from "../agents/agent-paths.js";
+import { resolveOpenClawAgentDir } from "../agents/agent-paths.js";
 import { listAgentIds, resolveAgentDir } from "../agents/agent-scope.js";
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
 import {
@@ -10,7 +10,7 @@ import {
   clearRuntimeConfigSnapshot,
   setRuntimeConfigSnapshotRefreshHandler,
   setRuntimeConfigSnapshot,
-  type OpenCraftConfig,
+  type OpenClawConfig,
 } from "../config/config.js";
 import { resolveUserPath } from "../utils.js";
 import {
@@ -30,8 +30,8 @@ import { resolveRuntimeWebTools, type RuntimeWebToolsMetadata } from "./runtime-
 export type { SecretResolverWarning } from "./runtime-shared.js";
 
 export type PreparedSecretsRuntimeSnapshot = {
-  sourceConfig: OpenCraftConfig;
-  config: OpenCraftConfig;
+  sourceConfig: OpenClawConfig;
+  config: OpenClawConfig;
   authStores: Array<{ agentDir: string; store: AuthProfileStore }>;
   warnings: SecretResolverWarning[];
   webTools: RuntimeWebToolsMetadata;
@@ -79,20 +79,23 @@ function clearActiveSecretsRuntimeState(): void {
   clearRuntimeAuthProfileStoreSnapshots();
 }
 
-function collectCandidateAgentDirs(config: OpenCraftConfig): string[] {
+function collectCandidateAgentDirs(
+  config: OpenClawConfig,
+  env: NodeJS.ProcessEnv = process.env,
+): string[] {
   const dirs = new Set<string>();
-  dirs.add(resolveUserPath(resolveOpenCraftAgentDir()));
+  dirs.add(resolveUserPath(resolveOpenClawAgentDir(env), env));
   for (const agentId of listAgentIds(config)) {
-    dirs.add(resolveUserPath(resolveAgentDir(config, agentId)));
+    dirs.add(resolveUserPath(resolveAgentDir(config, agentId, env), env));
   }
   return [...dirs];
 }
 
 function resolveRefreshAgentDirs(
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   context: SecretsRuntimeRefreshContext,
 ): string[] {
-  const configDerived = collectCandidateAgentDirs(config);
+  const configDerived = collectCandidateAgentDirs(config, context.env);
   if (!context.explicitAgentDirs || context.explicitAgentDirs.length === 0) {
     return configDerived;
   }
@@ -100,7 +103,7 @@ function resolveRefreshAgentDirs(
 }
 
 export async function prepareSecretsRuntimeSnapshot(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
   agentDirs?: string[];
   loadAuthStore?: (agentDir?: string) => AuthProfileStore;
@@ -119,8 +122,12 @@ export async function prepareSecretsRuntimeSnapshot(params: {
 
   const loadAuthStore = params.loadAuthStore ?? loadAuthProfileStoreForSecretsRuntime;
   const candidateDirs = params.agentDirs?.length
-    ? [...new Set(params.agentDirs.map((entry) => resolveUserPath(entry)))]
-    : collectCandidateAgentDirs(resolvedConfig);
+    ? [
+        ...new Set(
+          params.agentDirs.map((entry) => resolveUserPath(entry, params.env ?? process.env)),
+        ),
+      ]
+    : collectCandidateAgentDirs(resolvedConfig, params.env ?? process.env);
 
   const authStores: Array<{ agentDir: string; store: AuthProfileStore }> = [];
   for (const agentDir of candidateDirs) {

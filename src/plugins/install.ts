@@ -31,6 +31,7 @@ import { validateRegistryNpmSpec } from "../infra/npm-registry-spec.js";
 import { extensionUsesSkippedScannerPath, isPathInside } from "../security/scan-paths.js";
 import * as skillScanner from "../security/skill-scanner.js";
 import { CONFIG_DIR, resolveUserPath } from "../utils.js";
+import { detectBundleManifestFormat, loadBundleManifest } from "./bundle-manifest.js";
 import {
   loadPluginManifest,
   resolvePackageExtensionEntries,
@@ -47,12 +48,12 @@ type PackageManifest = PluginPackageManifest & {
 };
 
 const MISSING_EXTENSIONS_ERROR =
-  'package.json missing opencraft.extensions; update the plugin package to include opencraft.extensions (for example ["./dist/index.js"]). See https://docs.opencraft.ai/help/troubleshooting#plugin-install-fails-with-missing-opencraft-extensions';
+  'package.json missing openclaw.extensions; update the plugin package to include openclaw.extensions (for example ["./dist/index.js"]). See https://docs.openclaw.ai/help/troubleshooting#plugin-install-fails-with-missing-openclaw-extensions';
 
 export const PLUGIN_INSTALL_ERROR_CODE = {
   INVALID_NPM_SPEC: "invalid_npm_spec",
-  MISSING_OPENCRAFT_EXTENSIONS: "missing_opencraft_extensions",
-  EMPTY_OPENCRAFT_EXTENSIONS: "empty_opencraft_extensions",
+  MISSING_OPENCLAW_EXTENSIONS: "missing_openclaw_extensions",
+  EMPTY_OPENCLAW_EXTENSIONS: "empty_openclaw_extensions",
   NPM_PACKAGE_NOT_FOUND: "npm_package_not_found",
   PLUGIN_ID_MISMATCH: "plugin_id_mismatch",
 } as const;
@@ -147,7 +148,7 @@ function matchesExpectedPluginId(params: {
   );
 }
 
-function ensureOpenCraftExtensions(params: { manifest: PackageManifest }):
+function ensureOpenClawExtensions(params: { manifest: PackageManifest }):
   | {
       ok: true;
       entries: string[];
@@ -162,14 +163,14 @@ function ensureOpenCraftExtensions(params: { manifest: PackageManifest }):
     return {
       ok: false,
       error: MISSING_EXTENSIONS_ERROR,
-      code: PLUGIN_INSTALL_ERROR_CODE.MISSING_OPENCRAFT_EXTENSIONS,
+      code: PLUGIN_INSTALL_ERROR_CODE.MISSING_OPENCLAW_EXTENSIONS,
     };
   }
   if (resolved.status === "empty") {
     return {
       ok: false,
-      error: "package.json opencraft.extensions is empty",
-      code: PLUGIN_INSTALL_ERROR_CODE.EMPTY_OPENCRAFT_EXTENSIONS,
+      error: "package.json openclaw.extensions is empty",
+      code: PLUGIN_INSTALL_ERROR_CODE.EMPTY_OPENCLAW_EXTENSIONS,
     };
   }
   return {
@@ -253,6 +254,156 @@ export function resolvePluginInstallDir(pluginId: string, extensionsDir?: string
   return targetDirResult.path;
 }
 
+async function installBundleFromSourceDir(
+  params: {
+    sourceDir: string;
+  } & PackageInstallCommonParams,
+): Promise<InstallPluginResult | null> {
+  const bundleFormat = detectBundleManifestFormat(params.sourceDir);
+  if (!bundleFormat) {
+    return null;
+  }
+
+  const { logger, timeoutMs, mode, dryRun } = resolveTimedInstallModeOptions(params, defaultLogger);
+  const manifestRes = loadBundleManifest({
+    rootDir: params.sourceDir,
+    bundleFormat,
+    rejectHardlinks: true,
+  });
+  if (!manifestRes.ok) {
+    return { ok: false, error: manifestRes.error };
+  }
+
+  const pluginId = manifestRes.manifest.id;
+  const pluginIdError = validatePluginId(pluginId);
+  if (pluginIdError) {
+    return { ok: false, error: pluginIdError };
+  }
+  if (params.expectedPluginId && params.expectedPluginId !== pluginId) {
+    return {
+      ok: false,
+      error: `plugin id mismatch: expected ${params.expectedPluginId}, got ${pluginId}`,
+      code: PLUGIN_INSTALL_ERROR_CODE.PLUGIN_ID_MISMATCH,
+    };
+  }
+
+  try {
+    const scanSummary = await skillScanner.scanDirectoryWithSummary(params.sourceDir);
+    if (scanSummary.critical > 0) {
+      const criticalDetails = scanSummary.findings
+        .filter((f) => f.severity === "critical")
+        .map((f) => `${f.message} (${f.file}:${f.line})`)
+        .join("; ");
+      logger.warn?.(
+        `WARNING: Bundle "${pluginId}" contains dangerous code patterns: ${criticalDetails}`,
+      );
+    } else if (scanSummary.warn > 0) {
+      logger.warn?.(
+        `Bundle "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "openclaw security audit --deep" for details.`,
+      );
+    }
+  } catch (err) {
+    logger.warn?.(
+      `Bundle "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "openclaw security audit --deep" after install.`,
+    );
+  }
+
+  const extensionsDir = params.extensionsDir
+    ? resolveUserPath(params.extensionsDir)
+    : path.join(CONFIG_DIR, "extensions");
+  const targetDirResult = await resolveCanonicalInstallTarget({
+    baseDir: extensionsDir,
+    id: pluginId,
+    invalidNameMessage: "invalid plugin name: path traversal detected",
+    boundaryLabel: "extensions directory",
+  });
+  if (!targetDirResult.ok) {
+    return { ok: false, error: targetDirResult.error };
+  }
+  const targetDir = targetDirResult.targetDir;
+  const availability = await ensureInstallTargetAvailable({
+    mode,
+    targetDir,
+    alreadyExistsError: `plugin already exists: ${targetDir} (delete it first)`,
+  });
+  if (!availability.ok) {
+    return availability;
+  }
+
+  if (dryRun) {
+    return {
+      ok: true,
+      pluginId,
+      targetDir,
+      manifestName: manifestRes.manifest.name,
+      version: manifestRes.manifest.version,
+      extensions: [],
+    };
+  }
+
+  const installRes = await installPackageDir({
+    sourceDir: params.sourceDir,
+    targetDir,
+    mode,
+    timeoutMs,
+    logger,
+    copyErrorPrefix: "failed to copy plugin bundle",
+    hasDeps: false,
+    depsLogMessage: "",
+  });
+  if (!installRes.ok) {
+    return installRes;
+  }
+
+  return {
+    ok: true,
+    pluginId,
+    targetDir,
+    manifestName: manifestRes.manifest.name,
+    version: manifestRes.manifest.version,
+    extensions: [],
+  };
+}
+
+async function installPluginFromSourceDir(
+  params: {
+    sourceDir: string;
+  } & PackageInstallCommonParams,
+): Promise<InstallPluginResult> {
+  const nativePackageDetected = await detectNativePackageInstallSource(params.sourceDir);
+  if (nativePackageDetected) {
+    return await installPluginFromPackageDir({
+      packageDir: params.sourceDir,
+      ...pickPackageInstallCommonParams(params),
+    });
+  }
+  const bundleResult = await installBundleFromSourceDir({
+    sourceDir: params.sourceDir,
+    ...pickPackageInstallCommonParams(params),
+  });
+  if (bundleResult) {
+    return bundleResult;
+  }
+  return await installPluginFromPackageDir({
+    packageDir: params.sourceDir,
+    ...pickPackageInstallCommonParams(params),
+  });
+}
+
+async function detectNativePackageInstallSource(packageDir: string): Promise<boolean> {
+  const manifestPath = path.join(packageDir, "package.json");
+  if (!(await fileExists(manifestPath))) {
+    return false;
+  }
+
+  try {
+    const manifest = await readJsonFile<PackageManifest>(manifestPath);
+    return ensureOpenClawExtensions({ manifest }).ok;
+  } catch {
+    return false;
+  }
+}
+
 async function installPluginFromPackageDir(
   params: {
     packageDir: string;
@@ -272,7 +423,7 @@ async function installPluginFromPackageDir(
     return { ok: false, error: `invalid package.json: ${String(err)}` };
   }
 
-  const extensionsResult = ensureOpenCraftExtensions({
+  const extensionsResult = ensureOpenClawExtensions({
     manifest,
   });
   if (!extensionsResult.ok) {
@@ -287,9 +438,9 @@ async function installPluginFromPackageDir(
   const pkgName = typeof manifest.name === "string" ? manifest.name.trim() : "";
   const npmPluginId = pkgName || "plugin";
 
-  // Prefer the canonical `id` from opencraft.plugin.json over the npm package name.
+  // Prefer the canonical `id` from openclaw.plugin.json over the npm package name.
   // This avoids a latent key-mismatch bug: if the manifest id (e.g. "memory-cognee")
-  // differs from the npm package name (e.g. "cognee-opencraft"), the plugin registry
+  // differs from the npm package name (e.g. "cognee-openclaw"), the plugin registry
   // uses the manifest id as the authoritative key, so the config entry must match it.
   const ocManifestResult = loadPluginManifest(params.packageDir);
   const manifestPluginId =
@@ -354,12 +505,12 @@ async function installPluginFromPackageDir(
       );
     } else if (scanSummary.warn > 0) {
       logger.warn?.(
-        `Plugin "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "opencraft security audit --deep" for details.`,
+        `Plugin "${pluginId}" has ${scanSummary.warn} suspicious code pattern(s). Run "openclaw security audit --deep" for details.`,
       );
     }
   } catch (err) {
     logger.warn?.(
-      `Plugin "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "opencraft security audit --deep" after install.`,
+      `Plugin "${pluginId}" code safety scan failed (${String(err)}). Installation continues; run "openclaw security audit --deep" after install.`,
     );
   }
 
@@ -451,12 +602,12 @@ export async function installPluginFromArchive(
 
   return await withExtractedArchiveRoot({
     archivePath,
-    tempDirPrefix: "opencraft-plugin-",
+    tempDirPrefix: "openclaw-plugin-",
     timeoutMs,
     logger,
-    onExtracted: async (packageDir) =>
-      await installPluginFromPackageDir({
-        packageDir,
+    onExtracted: async (sourceDir) =>
+      await installPluginFromSourceDir({
+        sourceDir,
         ...pickPackageInstallCommonParams({
           extensionsDir: params.extensionsDir,
           timeoutMs,
@@ -483,8 +634,8 @@ export async function installPluginFromDir(
     return { ok: false, error: `not a directory: ${dirPath}` };
   }
 
-  return await installPluginFromPackageDir({
-    packageDir: dirPath,
+  return await installPluginFromSourceDir({
+    sourceDir: dirPath,
     ...pickPackageInstallCommonParams(params),
   });
 }
@@ -568,7 +719,7 @@ export async function installPluginFromNpmSpec(params: {
 
   logger.info?.(`Downloading ${spec}…`);
   const flowResult = await installFromNpmSpecArchiveWithInstaller({
-    tempDirPrefix: "opencraft-npm-pack-",
+    tempDirPrefix: "openclaw-npm-pack-",
     spec,
     timeoutMs,
     expectedIntegrity: params.expectedIntegrity,

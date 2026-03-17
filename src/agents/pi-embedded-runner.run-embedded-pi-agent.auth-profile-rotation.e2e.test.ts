@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { registerLogTransport, resetLogger, setLoggerOverride } from "../logging/logger.js";
 import { redactIdentifier } from "../logging/redact-identifier.js";
 import type { AuthProfileFailureReason } from "./auth-profiles.js";
@@ -33,10 +33,34 @@ vi.mock("../infra/backoff.js", () => ({
   sleepWithAbort: (ms: number, abortSignal?: AbortSignal) => sleepWithAbortMock(ms, abortSignal),
 }));
 
-vi.mock("../providers/github-copilot-token.js", () => ({
+vi.mock("../../extensions/github-copilot/token.js", () => ({
   DEFAULT_COPILOT_API_BASE_URL: "https://api.individual.githubcopilot.com",
   resolveCopilotApiToken: (...args: unknown[]) => resolveCopilotApiTokenMock(...args),
 }));
+
+vi.mock("../plugins/provider-runtime.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../plugins/provider-runtime.js")>();
+  return {
+    ...actual,
+    prepareProviderRuntimeAuth: async (params: {
+      provider: string;
+      context: { apiKey: string; env: NodeJS.ProcessEnv };
+    }) => {
+      if (params.provider !== "github-copilot") {
+        return undefined;
+      }
+      const token = await resolveCopilotApiTokenMock({
+        githubToken: params.context.apiKey,
+        env: params.context.env,
+      });
+      return {
+        apiKey: token.token,
+        baseUrl: token.baseUrl,
+        expiresAt: token.expiresAt,
+      };
+    },
+  };
+});
 
 vi.mock("./pi-embedded-runner/compact.js", () => ({
   compactEmbeddedPiSessionDirect: vi.fn(async () => {
@@ -48,7 +72,7 @@ vi.mock("./models-config.js", async (importOriginal) => {
   const mod = await importOriginal<typeof import("./models-config.js")>();
   return {
     ...mod,
-    ensureOpenCraftModelsJson: vi.fn(async () => ({ wrote: false })),
+    ensureOpenClawModelsJson: vi.fn(async () => ({ wrote: false })),
   };
 });
 
@@ -114,7 +138,7 @@ const makeAttempt = (overrides: Partial<EmbeddedRunAttemptResult>): EmbeddedRunA
   ...overrides,
 });
 
-const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): OpenCraftConfig =>
+const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): OpenClawConfig =>
   ({
     agents: {
       defaults: {
@@ -143,9 +167,9 @@ const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): OpenCraft
         },
       },
     },
-  }) satisfies OpenCraftConfig;
+  }) satisfies OpenClawConfig;
 
-const makeAgentOverrideOnlyFallbackConfig = (agentId: string): OpenCraftConfig =>
+const makeAgentOverrideOnlyFallbackConfig = (agentId: string): OpenClawConfig =>
   ({
     agents: {
       defaults: {
@@ -182,11 +206,11 @@ const makeAgentOverrideOnlyFallbackConfig = (agentId: string): OpenCraftConfig =
         },
       },
     },
-  }) satisfies OpenCraftConfig;
+  }) satisfies OpenClawConfig;
 
 const copilotModelId = "gpt-4o";
 
-const makeCopilotConfig = (): OpenCraftConfig =>
+const makeCopilotConfig = (): OpenClawConfig =>
   ({
     models: {
       providers: {
@@ -207,7 +231,7 @@ const makeCopilotConfig = (): OpenCraftConfig =>
         },
       },
     },
-  }) satisfies OpenCraftConfig;
+  }) satisfies OpenClawConfig;
 
 const writeAuthStore = async (
   agentDir: string,
@@ -424,8 +448,8 @@ async function withTimedAgentWorkspace<T>(
 ) {
   vi.useFakeTimers();
   try {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-agent-"));
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-agent-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
     const now = Date.now();
     vi.setSystemTime(now);
 
@@ -443,8 +467,8 @@ async function withTimedAgentWorkspace<T>(
 async function withAgentWorkspace<T>(
   run: (ctx: { agentDir: string; workspaceDir: string }) => Promise<T>,
 ) {
-  const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-agent-"));
-  const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
+  const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-agent-"));
+  const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
   try {
     return await run({ agentDir, workspaceDir });
   } finally {
@@ -491,8 +515,8 @@ async function runTurnWithCooldownSeed(params: {
 
 describe("runEmbeddedPiAgent auth profile rotation", () => {
   it("refreshes copilot token after auth error and retries once", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-agent-"));
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-agent-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
     vi.useFakeTimers();
     try {
       await writeCopilotAuthStore(agentDir);
@@ -558,8 +582,8 @@ describe("runEmbeddedPiAgent auth profile rotation", () => {
   });
 
   it("allows another auth refresh after a successful retry", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-agent-"));
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-agent-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
     vi.useFakeTimers();
     try {
       await writeCopilotAuthStore(agentDir);
@@ -645,8 +669,8 @@ describe("runEmbeddedPiAgent auth profile rotation", () => {
   });
 
   it("does not reschedule copilot refresh after shutdown", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-agent-"));
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-workspace-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-agent-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-workspace-"));
     vi.useFakeTimers();
     try {
       await writeCopilotAuthStore(agentDir);
@@ -735,7 +759,7 @@ describe("runEmbeddedPiAgent auth profile rotation", () => {
     setLoggerOverride({
       level: "trace",
       consoleLevel: "silent",
-      file: path.join(os.tmpdir(), `opencraft-auth-rotation-${Date.now()}.log`),
+      file: path.join(os.tmpdir(), `openclaw-auth-rotation-${Date.now()}.log`),
     });
     unregisterLogTransport = registerLogTransport((record) => {
       records.push(record);

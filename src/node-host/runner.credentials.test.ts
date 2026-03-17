@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import { resolveNodeHostGatewayCredentials } from "./runner.js";
 
-function createRemoteGatewayTokenRefConfig(tokenId: string): OpenCraftConfig {
+function createRemoteGatewayTokenRefConfig(tokenId: string): OpenClawConfig {
   return {
     secrets: {
       providers: {
@@ -16,11 +16,11 @@ function createRemoteGatewayTokenRefConfig(tokenId: string): OpenCraftConfig {
         token: { source: "env", provider: "default", id: tokenId },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 async function expectNoGatewayCredentials(
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   env: Record<string, string | undefined>,
 ) {
   await withEnvAsync(env, async () => {
@@ -37,11 +37,11 @@ describe("resolveNodeHostGatewayCredentials", () => {
         mode: "local",
         remote: { token: "remote-only-token" },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     await expectNoGatewayCredentials(config, {
-      OPENCRAFT_GATEWAY_TOKEN: undefined,
-      OPENCRAFT_GATEWAY_PASSWORD: undefined,
+      OPENCLAW_GATEWAY_TOKEN: undefined,
+      OPENCLAW_GATEWAY_PASSWORD: undefined,
     });
   });
 
@@ -58,11 +58,11 @@ describe("resolveNodeHostGatewayCredentials", () => {
           token: { source: "env", provider: "default", id: "MISSING_REMOTE_GATEWAY_TOKEN" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     await expectNoGatewayCredentials(config, {
-      OPENCRAFT_GATEWAY_TOKEN: undefined,
-      OPENCRAFT_GATEWAY_PASSWORD: undefined,
+      OPENCLAW_GATEWAY_TOKEN: undefined,
+      OPENCLAW_GATEWAY_PASSWORD: undefined,
       MISSING_REMOTE_GATEWAY_TOKEN: undefined,
     });
   });
@@ -72,8 +72,8 @@ describe("resolveNodeHostGatewayCredentials", () => {
 
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: undefined,
-        OPENCRAFT_GATEWAY_PASSWORD: undefined,
+        OPENCLAW_GATEWAY_TOKEN: undefined,
+        OPENCLAW_GATEWAY_PASSWORD: undefined,
         REMOTE_GATEWAY_TOKEN: "token-from-ref",
       },
       async () => {
@@ -83,13 +83,13 @@ describe("resolveNodeHostGatewayCredentials", () => {
     );
   });
 
-  it("prefers OPENCRAFT_GATEWAY_TOKEN over configured refs", async () => {
+  it("prefers OPENCLAW_GATEWAY_TOKEN over configured refs", async () => {
     const config = createRemoteGatewayTokenRefConfig("REMOTE_GATEWAY_TOKEN");
 
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: "token-from-env",
-        OPENCRAFT_GATEWAY_PASSWORD: undefined,
+        OPENCLAW_GATEWAY_TOKEN: "token-from-env",
+        OPENCLAW_GATEWAY_PASSWORD: undefined,
         REMOTE_GATEWAY_TOKEN: "token-from-ref",
       },
       async () => {
@@ -104,8 +104,8 @@ describe("resolveNodeHostGatewayCredentials", () => {
 
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: undefined,
-        OPENCRAFT_GATEWAY_PASSWORD: undefined,
+        OPENCLAW_GATEWAY_TOKEN: undefined,
+        OPENCLAW_GATEWAY_PASSWORD: undefined,
         MISSING_REMOTE_GATEWAY_TOKEN: undefined,
       },
       async () => {
@@ -130,12 +130,12 @@ describe("resolveNodeHostGatewayCredentials", () => {
           password: { source: "env", provider: "default", id: "MISSING_REMOTE_GATEWAY_PASSWORD" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: undefined,
-        OPENCRAFT_GATEWAY_PASSWORD: undefined,
+        OPENCLAW_GATEWAY_TOKEN: undefined,
+        OPENCLAW_GATEWAY_PASSWORD: undefined,
         REMOTE_GATEWAY_TOKEN: "token-from-ref",
         MISSING_REMOTE_GATEWAY_PASSWORD: undefined,
       },

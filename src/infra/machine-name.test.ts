@@ -48,7 +48,7 @@ describe("getMachineDisplayName", () => {
     vi.spyOn(os, "hostname").mockReturnValue("   ");
     const machineName = await importMachineName("blank-hostname");
 
-    await expect(machineName.getMachineDisplayName()).resolves.toBe("opencraft");
+    await expect(machineName.getMachineDisplayName()).resolves.toBe("openclaw");
     expect(execFileMock).not.toHaveBeenCalled();
   });
 });

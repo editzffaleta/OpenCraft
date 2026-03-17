@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/twitch";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/twitch";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/twitch";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/twitch";
 import { twitchPlugin } from "./src/plugin.js";
 import { setTwitchRuntime } from "./src/runtime.js";
 
@@ -10,7 +10,7 @@ const plugin = {
   name: "Twitch",
   description: "Twitch channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setTwitchRuntime(api.runtime);
     // oxlint-disable-next-line typescript/no-explicit-any
     api.registerChannel({ plugin: twitchPlugin as any });

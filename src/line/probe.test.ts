@@ -37,9 +37,9 @@ describe("probeLineBot", () => {
 
   it("returns bot info when available", async () => {
     getBotInfoMock.mockResolvedValue({
-      displayName: "OpenCraft",
+      displayName: "OpenClaw",
       userId: "U123",
-      basicId: "@opencraft",
+      basicId: "@openclaw",
       pictureUrl: "https://example.com/bot.png",
     });
 

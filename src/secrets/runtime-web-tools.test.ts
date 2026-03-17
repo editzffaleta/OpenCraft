@@ -1,16 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
+import * as webSearchProviders from "../plugins/web-search-providers.js";
 import * as secretResolve from "./resolve.js";
 import { createResolverContext } from "./runtime-shared.js";
 import { resolveRuntimeWebTools } from "./runtime-web-tools.js";
 
 type ProviderUnderTest = "brave" | "gemini" | "grok" | "kimi" | "perplexity";
 
-function asConfig(value: unknown): OpenCraftConfig {
-  return value as OpenCraftConfig;
+function asConfig(value: unknown): OpenClawConfig {
+  return value as OpenClawConfig;
 }
 
-async function runRuntimeWebTools(params: { config: OpenCraftConfig; env?: NodeJS.ProcessEnv }) {
+async function runRuntimeWebTools(params: { config: OpenClawConfig; env?: NodeJS.ProcessEnv }) {
   const sourceConfig = structuredClone(params.config);
   const resolvedConfig = structuredClone(params.config);
   const context = createResolverContext({
@@ -28,7 +29,7 @@ async function runRuntimeWebTools(params: { config: OpenCraftConfig; env?: NodeJ
 function createProviderSecretRefConfig(
   provider: ProviderUnderTest,
   envRefId: string,
-): OpenCraftConfig {
+): OpenClawConfig {
   const search: Record<string, unknown> = {
     enabled: true,
     provider,
@@ -49,7 +50,7 @@ function createProviderSecretRefConfig(
   });
 }
 
-function readProviderKey(config: OpenCraftConfig, provider: ProviderUnderTest): unknown {
+function readProviderKey(config: OpenClawConfig, provider: ProviderUnderTest): unknown {
   if (provider === "brave") {
     return config.tools?.web?.search?.apiKey;
   }
@@ -86,6 +87,32 @@ function expectInactiveFirecrawlSecretRef(params: {
 describe("runtime web tools resolution", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("skips loading web search providers when search config is absent", async () => {
+    const providerSpy = vi.spyOn(webSearchProviders, "resolvePluginWebSearchProviders");
+
+    const { metadata } = await runRuntimeWebTools({
+      config: asConfig({
+        tools: {
+          web: {
+            fetch: {
+              firecrawl: {
+                apiKey: { source: "env", provider: "default", id: "FIRECRAWL_API_KEY_REF" },
+              },
+            },
+          },
+        },
+      }),
+      env: {
+        FIRECRAWL_API_KEY: "firecrawl-runtime-key", // pragma: allowlist secret
+      },
+    });
+
+    expect(providerSpy).not.toHaveBeenCalled();
+    expect(metadata.search.providerSource).toBe("none");
+    expect(metadata.fetch.firecrawl.active).toBe(true);
+    expect(metadata.fetch.firecrawl.apiKeySource).toBe("env");
   });
 
   it.each([

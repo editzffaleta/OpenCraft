@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createBrowserRouteContext } from "./server-context.js";
 import type { BrowserServerState } from "./server-context.js";
@@ -12,7 +13,7 @@ vi.mock("./chrome-mcp.js", () => ({
   openChromeMcpTab: vi.fn(async () => ({
     targetId: "8",
     title: "",
-    url: "https://opencraft.ai",
+    url: "https://openclaw.ai",
     type: "page",
   })),
   closeChromeMcpTab: vi.fn(async () => {}),
@@ -47,6 +48,7 @@ function makeState(): BrowserServerState {
           color: "#0066CC",
           driver: "existing-session",
           attachOnly: true,
+          userDataDir: "/tmp/brave-profile",
         },
       },
       extraArgs: [],
@@ -62,6 +64,7 @@ afterEach(() => {
 
 describe("browser server-context existing-session profile", () => {
   it("routes tab operations through the Chrome MCP backend", async () => {
+    fs.mkdirSync("/tmp/brave-profile", { recursive: true });
     const state = makeState();
     const ctx = createBrowserRouteContext({ getState: () => state });
     const live = ctx.forProfile("chrome-live");
@@ -71,10 +74,10 @@ describe("browser server-context existing-session profile", () => {
         { targetId: "7", title: "", url: "https://example.com", type: "page" },
       ])
       .mockResolvedValueOnce([
-        { targetId: "8", title: "", url: "https://opencraft.ai", type: "page" },
+        { targetId: "8", title: "", url: "https://openclaw.ai", type: "page" },
       ])
       .mockResolvedValueOnce([
-        { targetId: "8", title: "", url: "https://opencraft.ai", type: "page" },
+        { targetId: "8", title: "", url: "https://openclaw.ai", type: "page" },
       ])
       .mockResolvedValueOnce([
         { targetId: "7", title: "", url: "https://example.com", type: "page" },
@@ -84,7 +87,7 @@ describe("browser server-context existing-session profile", () => {
     const tabs = await live.listTabs();
     expect(tabs.map((tab) => tab.targetId)).toEqual(["7"]);
 
-    const opened = await live.openTab("https://opencraft.ai");
+    const opened = await live.openTab("https://openclaw.ai");
     expect(opened.targetId).toBe("8");
 
     const selected = await live.ensureTabAvailable();
@@ -93,10 +96,21 @@ describe("browser server-context existing-session profile", () => {
     await live.focusTab("7");
     await live.stopRunningBrowser();
 
-    expect(chromeMcp.ensureChromeMcpAvailable).toHaveBeenCalledWith("chrome-live");
-    expect(chromeMcp.listChromeMcpTabs).toHaveBeenCalledWith("chrome-live");
-    expect(chromeMcp.openChromeMcpTab).toHaveBeenCalledWith("chrome-live", "https://opencraft.ai");
-    expect(chromeMcp.focusChromeMcpTab).toHaveBeenCalledWith("chrome-live", "7");
+    expect(chromeMcp.ensureChromeMcpAvailable).toHaveBeenCalledWith(
+      "chrome-live",
+      "/tmp/brave-profile",
+    );
+    expect(chromeMcp.listChromeMcpTabs).toHaveBeenCalledWith("chrome-live", "/tmp/brave-profile");
+    expect(chromeMcp.openChromeMcpTab).toHaveBeenCalledWith(
+      "chrome-live",
+      "https://openclaw.ai",
+      "/tmp/brave-profile",
+    );
+    expect(chromeMcp.focusChromeMcpTab).toHaveBeenCalledWith(
+      "chrome-live",
+      "7",
+      "/tmp/brave-profile",
+    );
     expect(chromeMcp.closeChromeMcpSession).toHaveBeenCalledWith("chrome-live");
   });
 });

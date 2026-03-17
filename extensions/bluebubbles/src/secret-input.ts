@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/bluebubbles";
+} from "openclaw/plugin-sdk/bluebubbles";
 
 export {
   buildSecretInputSchema,

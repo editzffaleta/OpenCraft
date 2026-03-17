@@ -1,131 +1,131 @@
 ---
-summary: "Referência do CLI para `opencraft devices` (pareamento de dispositivos + rotação/revogação de token)"
+summary: "CLI reference for `openclaw devices` (device pairing + token rotation/revocation)"
 read_when:
-  - Você está aprovando solicitações de pareamento de dispositivos
-  - Você precisa rotacionar ou revogar tokens de dispositivo
+  - You are approving device pairing requests
+  - You need to rotate or revoke device tokens
 title: "devices"
 ---
 
-# `opencraft devices`
+# `openclaw devices`
 
-Gerenciar solicitações de pareamento de dispositivos e tokens com escopo de dispositivo.
+Manage device pairing requests and device-scoped tokens.
 
-## Comandos
+## Commands
 
-### `opencraft devices list`
+### `openclaw devices list`
 
-Listar solicitações de pareamento pendentes e dispositivos pareados.
-
-```
-opencraft devices list
-opencraft devices list --json
-```
-
-### `opencraft devices remove <deviceId>`
-
-Remover uma entrada de dispositivo pareado.
+List pending pairing requests and paired devices.
 
 ```
-opencraft devices remove <deviceId>
-opencraft devices remove <deviceId> --json
+openclaw devices list
+openclaw devices list --json
 ```
 
-### `opencraft devices clear --yes [--pending]`
+### `openclaw devices remove <deviceId>`
 
-Limpar dispositivos pareados em massa.
-
-```
-opencraft devices clear --yes
-opencraft devices clear --yes --pending
-opencraft devices clear --yes --pending --json
-```
-
-### `opencraft devices approve [requestId] [--latest]`
-
-Aprovar uma solicitação de pareamento de dispositivo pendente. Se `requestId` for omitido, OpenCraft
-aprova automaticamente a solicitação pendente mais recente.
+Remove one paired device entry.
 
 ```
-opencraft devices approve
-opencraft devices approve <requestId>
-opencraft devices approve --latest
+openclaw devices remove <deviceId>
+openclaw devices remove <deviceId> --json
 ```
 
-### `opencraft devices reject <requestId>`
+### `openclaw devices clear --yes [--pending]`
 
-Rejeitar uma solicitação de pareamento de dispositivo pendente.
-
-```
-opencraft devices reject <requestId>
-```
-
-### `opencraft devices rotate --device <id> --role <role> [--scope <scope...>]`
-
-Rotacionar um token de dispositivo para uma função específica (opcionalmente atualizando escopos).
+Clear paired devices in bulk.
 
 ```
-opencraft devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
+openclaw devices clear --yes
+openclaw devices clear --yes --pending
+openclaw devices clear --yes --pending --json
 ```
 
-### `opencraft devices revoke --device <id> --role <role>`
+### `openclaw devices approve [requestId] [--latest]`
 
-Revogar um token de dispositivo para uma função específica.
+Approve a pending device pairing request. If `requestId` is omitted, OpenClaw
+automatically approves the most recent pending request.
 
 ```
-opencraft devices revoke --device <deviceId> --role node
+openclaw devices approve
+openclaw devices approve <requestId>
+openclaw devices approve --latest
 ```
 
-## Opções comuns
+### `openclaw devices reject <requestId>`
 
-- `--url <url>`: URL WebSocket do Gateway (padrão: `gateway.remote.url` quando configurado).
-- `--token <token>`: Token do Gateway (se necessário).
-- `--password <password>`: Senha do Gateway (auth por senha).
-- `--timeout <ms>`: Timeout de RPC.
-- `--json`: Saída JSON (recomendado para scripts).
+Reject a pending device pairing request.
 
-Nota: ao definir `--url`, o CLI não retorna para credenciais de config ou ambiente.
-Passe `--token` ou `--password` explicitamente. Credenciais explícitas ausentes são um erro.
+```
+openclaw devices reject <requestId>
+```
 
-## Notas
+### `openclaw devices rotate --device <id> --role <role> [--scope <scope...>]`
 
-- Rotação de token retorna um novo token (sensível). Trate-o como um segredo.
-- Esses comandos requerem escopo `operator.pairing` (ou `operator.admin`).
-- `devices clear` é intencionalmente protegido por `--yes`.
-- Se o escopo de pareamento não estiver disponível no loopback local (e nenhum `--url` explícito for passado), list/approve podem usar um fallback de pareamento local.
+Rotate a device token for a specific role (optionally updating scopes).
 
-## Checklist de recuperação de deriva de token
+```
+openclaw devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
+```
 
-Use quando a UI de Controle ou outros clientes continuam falhando com `AUTH_TOKEN_MISMATCH` ou `AUTH_DEVICE_TOKEN_MISMATCH`.
+### `openclaw devices revoke --device <id> --role <role>`
 
-1. Confirmar a fonte atual do token do gateway:
+Revoke a device token for a specific role.
+
+```
+openclaw devices revoke --device <deviceId> --role node
+```
+
+## Common options
+
+- `--url <url>`: Gateway WebSocket URL (defaults to `gateway.remote.url` when configured).
+- `--token <token>`: Gateway token (if required).
+- `--password <password>`: Gateway password (password auth).
+- `--timeout <ms>`: RPC timeout.
+- `--json`: JSON output (recommended for scripting).
+
+Note: when you set `--url`, the CLI does not fall back to config or environment credentials.
+Pass `--token` or `--password` explicitly. Missing explicit credentials is an error.
+
+## Notes
+
+- Token rotation returns a new token (sensitive). Treat it like a secret.
+- These commands require `operator.pairing` (or `operator.admin`) scope.
+- `devices clear` is intentionally gated by `--yes`.
+- If pairing scope is unavailable on local loopback (and no explicit `--url` is passed), list/approve can use a local pairing fallback.
+
+## Token drift recovery checklist
+
+Use this when Control UI or other clients keep failing with `AUTH_TOKEN_MISMATCH` or `AUTH_DEVICE_TOKEN_MISMATCH`.
+
+1. Confirm current gateway token source:
 
 ```bash
-opencraft config get gateway.auth.token
+openclaw config get gateway.auth.token
 ```
 
-2. Listar dispositivos pareados e identificar o id do dispositivo afetado:
+2. List paired devices and identify the affected device id:
 
 ```bash
-opencraft devices list
+openclaw devices list
 ```
 
-3. Rotacionar token de operador para o dispositivo afetado:
+3. Rotate operator token for the affected device:
 
 ```bash
-opencraft devices rotate --device <deviceId> --role operator
+openclaw devices rotate --device <deviceId> --role operator
 ```
 
-4. Se a rotação não for suficiente, remover o pareamento obsoleto e aprovar novamente:
+4. If rotation is not enough, remove stale pairing and approve again:
 
 ```bash
-opencraft devices remove <deviceId>
-opencraft devices list
-opencraft devices approve <requestId>
+openclaw devices remove <deviceId>
+openclaw devices list
+openclaw devices approve <requestId>
 ```
 
-5. Tentar conexão do cliente novamente com o token/senha compartilhado atual.
+5. Retry client connection with the current shared token/password.
 
-Relacionado:
+Related:
 
-- [Resolução de problemas de auth do Dashboard](/web/dashboard#if-you-see-unauthorized-1008)
-- [Resolução de problemas do Gateway](/gateway/troubleshooting#dashboard-control-ui-connectivity)
+- [Dashboard auth troubleshooting](/web/dashboard#if-you-see-unauthorized-1008)
+- [Gateway troubleshooting](/gateway/troubleshooting#dashboard-control-ui-connectivity)

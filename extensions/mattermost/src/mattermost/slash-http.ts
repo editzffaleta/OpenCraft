@@ -10,11 +10,13 @@ import {
   buildModelsProviderData,
   createReplyPrefixOptions,
   createTypingCallbacks,
+  isRequestBodyLimitError,
   logTypingFailure,
-  type OpenCraftConfig,
+  readRequestBodyWithLimit,
+  type OpenClawConfig,
   type ReplyPayload,
   type RuntimeEnv,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import type { ResolvedMattermostAccount } from "../mattermost/accounts.js";
 import { getMattermostRuntime } from "../runtime.js";
 import {
@@ -45,7 +47,7 @@ import {
 
 type SlashHttpHandlerParams = {
   account: ResolvedMattermostAccount;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runtime: RuntimeEnv;
   /** Expected token from registered commands (for validation). */
   commandTokens: Set<string>;
@@ -54,24 +56,16 @@ type SlashHttpHandlerParams = {
   log?: (msg: string) => void;
 };
 
+const MAX_BODY_BYTES = 64 * 1024;
+const BODY_READ_TIMEOUT_MS = 5_000;
+
 /**
  * Read the full request body as a string.
  */
 function readBody(req: IncomingMessage, maxBytes: number): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    let size = 0;
-    req.on("data", (chunk: Buffer) => {
-      size += chunk.length;
-      if (size > maxBytes) {
-        req.destroy();
-        reject(new Error("Request body too large"));
-        return;
-      }
-      chunks.push(chunk);
-    });
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
+  return readRequestBodyWithLimit(req, {
+    maxBytes,
+    timeoutMs: BODY_READ_TIMEOUT_MS,
   });
 }
 
@@ -99,7 +93,7 @@ type SlashInvocationAuth = {
 
 async function authorizeSlashInvocation(params: {
   account: ResolvedMattermostAccount;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   client: ReturnType<typeof createMattermostClient>;
   commandText: string;
   channelId: string;
@@ -215,8 +209,6 @@ async function authorizeSlashInvocation(params: {
 export function createSlashCommandHttpHandler(params: SlashHttpHandlerParams) {
   const { account, cfg, runtime, commandTokens, triggerMap, log } = params;
 
-  const MAX_BODY_BYTES = 64 * 1024; // 64KB
-
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     if (req.method !== "POST") {
       res.statusCode = 405;
@@ -228,7 +220,12 @@ export function createSlashCommandHttpHandler(params: SlashHttpHandlerParams) {
     let body: string;
     try {
       body = await readBody(req, MAX_BODY_BYTES);
-    } catch {
+    } catch (error) {
+      if (isRequestBodyLimitError(error, "REQUEST_BODY_TIMEOUT")) {
+        res.statusCode = 408;
+        res.end("Request body timeout");
+        return;
+      }
       res.statusCode = 413;
       res.end("Payload Too Large");
       return;
@@ -331,7 +328,7 @@ export function createSlashCommandHttpHandler(params: SlashHttpHandlerParams) {
 
 async function handleSlashCommandAsync(params: {
   account: ResolvedMattermostAccount;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runtime: RuntimeEnv;
   client: ReturnType<typeof createMattermostClient>;
   commandText: string;

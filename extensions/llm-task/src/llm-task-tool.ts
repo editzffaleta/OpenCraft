@@ -6,41 +6,10 @@ import {
   formatThinkingLevels,
   formatXHighModelHint,
   normalizeThinkLevel,
-  resolvePreferredOpenCraftTmpDir,
+  resolvePreferredOpenClawTmpDir,
   supportsXHighThinking,
-} from "opencraft/plugin-sdk/llm-task";
-// NOTE: This extension is intended to be bundled with OpenCraft.
-// When running from source (tests/dev), OpenCraft internals live under src/.
-// When running from a built install, internals live under dist/ (no src/ tree).
-// So we resolve internal imports dynamically with src-first, dist-fallback.
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/llm-task";
-
-type RunEmbeddedPiAgentFn = (params: Record<string, unknown>) => Promise<unknown>;
-
-async function loadRunEmbeddedPiAgent(): Promise<RunEmbeddedPiAgentFn> {
-  // Source checkout (tests/dev)
-  try {
-    const mod = await import("../../../src/agents/pi-embedded-runner.js");
-    // oxlint-disable-next-line typescript/no-explicit-any
-    if (typeof (mod as any).runEmbeddedPiAgent === "function") {
-      // oxlint-disable-next-line typescript/no-explicit-any
-      return (mod as any).runEmbeddedPiAgent;
-    }
-  } catch {
-    // ignore
-  }
-
-  // Bundled install (built)
-  // NOTE: there is no src/ tree in a packaged install. Prefer a stable internal entrypoint.
-  const distExtensionApi = "../../../dist/extensionAPI.js";
-  const mod = (await import(distExtensionApi)) as { runEmbeddedPiAgent?: unknown };
-  // oxlint-disable-next-line typescript/no-explicit-any
-  const fn = (mod as any).runEmbeddedPiAgent;
-  if (typeof fn !== "function") {
-    throw new Error("Internal error: runEmbeddedPiAgent not available");
-  }
-  return fn as RunEmbeddedPiAgentFn;
-}
+} from "openclaw/plugin-sdk/llm-task";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/llm-task";
 
 function stripCodeFences(s: string): string {
   const trimmed = s.trim();
@@ -76,12 +45,12 @@ type PluginCfg = {
   timeoutMs?: number;
 };
 
-export function createLlmTaskTool(api: OpenCraftPluginApi) {
+export function createLlmTaskTool(api: OpenClawPluginApi) {
   return {
     name: "llm-task",
     label: "LLM Task",
     description:
-      "Run a generic JSON-only LLM task and return schema-validated JSON. Designed for orchestration from Lobster workflows via opencraft.invoke.",
+      "Run a generic JSON-only LLM task and return schema-validated JSON. Designed for orchestration from Lobster workflows via openclaw.invoke.",
     parameters: Type.Object({
       prompt: Type.String({ description: "Task instruction for the LLM." }),
       input: Type.Optional(Type.Unknown({ description: "Optional input payload for the task." })),
@@ -204,14 +173,12 @@ export function createLlmTaskTool(api: OpenCraftPluginApi) {
       let tmpDir: string | null = null;
       try {
         tmpDir = await fs.mkdtemp(
-          path.join(resolvePreferredOpenCraftTmpDir(), "opencraft-llm-task-"),
+          path.join(resolvePreferredOpenClawTmpDir(), "openclaw-llm-task-"),
         );
         const sessionId = `llm-task-${Date.now()}`;
         const sessionFile = path.join(tmpDir, "session.json");
 
-        const runEmbeddedPiAgent = await loadRunEmbeddedPiAgent();
-
-        const result = await runEmbeddedPiAgent({
+        const result = await api.runtime.agent.runEmbeddedPiAgent({
           sessionId,
           sessionFile,
           workspaceDir: api.config?.agents?.defaults?.workspace ?? process.cwd(),

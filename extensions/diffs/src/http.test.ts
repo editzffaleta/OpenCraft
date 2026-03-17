@@ -23,7 +23,7 @@ describe("createDiffsHttpHandler", () => {
   }
 
   beforeEach(async () => {
-    ({ store, cleanup: cleanupRootDir } = await createDiffStoreHarness("opencraft-diffs-http-"));
+    ({ store, cleanup: cleanupRootDir } = await createDiffStoreHarness("openclaw-diffs-http-"));
   });
 
   afterEach(async () => {
@@ -94,7 +94,7 @@ describe("createDiffsHttpHandler", () => {
 
     expect(handled).toBe(true);
     expect(res.statusCode).toBe(200);
-    expect(String(res.body)).toContain("opencraftDiffsReady");
+    expect(String(res.body)).toContain("openclawDiffsReady");
   });
 
   it.each([

@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/msteams";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/msteams";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/msteams";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/msteams";
 import { msteamsPlugin } from "./src/channel.js";
 import { setMSTeamsRuntime } from "./src/runtime.js";
 
@@ -8,7 +8,7 @@ const plugin = {
   name: "Microsoft Teams",
   description: "Microsoft Teams channel plugin (Bot Framework)",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setMSTeamsRuntime(api.runtime);
     api.registerChannel({ plugin: msteamsPlugin });
   },

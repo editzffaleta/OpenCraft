@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { ChannelGroupPolicy } from "../../../src/config/group-policy.js";
 import type { TelegramAccountConfig } from "../../../src/config/types.js";
 import {
@@ -10,7 +10,7 @@ import {
 
 describe("native command auth in groups", () => {
   function setup(params: {
-    cfg?: OpenCraftConfig;
+    cfg?: OpenClawConfig;
     telegramCfg?: TelegramAccountConfig;
     allowFrom?: string[];
     groupAllowFrom?: string[];
@@ -19,7 +19,7 @@ describe("native command auth in groups", () => {
     resolveGroupPolicy?: () => ChannelGroupPolicy;
   }) {
     return createNativeCommandsHarness({
-      cfg: params.cfg ?? ({} as OpenCraftConfig),
+      cfg: params.cfg ?? ({} as OpenClawConfig),
       telegramCfg: params.telegramCfg ?? ({} as TelegramAccountConfig),
       allowFrom: params.allowFrom ?? [],
       groupAllowFrom: params.groupAllowFrom ?? [],
@@ -58,7 +58,7 @@ describe("native command auth in groups", () => {
             telegram: ["12345"],
           },
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       allowFrom: ["99999"],
       groupAllowFrom: ["99999"],
       useAccessGroups: true,
@@ -80,7 +80,7 @@ describe("native command auth in groups", () => {
             telegram: ["99999"],
           },
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       groupAllowFrom: ["12345"],
       useAccessGroups: true,
     });
@@ -104,7 +104,7 @@ describe("native command auth in groups", () => {
             telegram: ["12345"],
           },
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       telegramCfg: {
         groupPolicy: "disabled",
       } as TelegramAccountConfig,
@@ -135,7 +135,7 @@ describe("native command auth in groups", () => {
             telegram: ["12345"],
           },
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       useAccessGroups: true,
       resolveGroupPolicy: () =>
         ({

@@ -1,16 +1,16 @@
 import { vi } from "vitest";
+import { parseTelegramTarget } from "../../extensions/telegram/src/targets.js";
+import { signalOutbound, telegramOutbound } from "../../test/channel-outbounds.js";
 import { loadModelCatalog } from "../agents/model-catalog.js";
 import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import { runSubagentAnnounceFlow } from "../agents/subagent-announce.js";
-import { signalOutbound } from "../channels/plugins/outbound/signal.js";
-import { telegramOutbound } from "../channels/plugins/outbound/telegram.js";
 import { callGateway } from "../gateway/call.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
 
 export function setupIsolatedAgentTurnMocks(params?: { fast?: boolean }): void {
   if (params?.fast) {
-    vi.stubEnv("OPENCRAFT_TEST_FAST", "1");
+    vi.stubEnv("OPENCLAW_TEST_FAST", "1");
   }
   vi.mocked(runEmbeddedPiAgent).mockReset();
   vi.mocked(loadModelCatalog).mockResolvedValue([]);
@@ -20,7 +20,20 @@ export function setupIsolatedAgentTurnMocks(params?: { fast?: boolean }): void {
     createTestRegistry([
       {
         pluginId: "telegram",
-        plugin: createOutboundTestPlugin({ id: "telegram", outbound: telegramOutbound }),
+        plugin: createOutboundTestPlugin({
+          id: "telegram",
+          outbound: telegramOutbound,
+          messaging: {
+            parseExplicitTarget: ({ raw }) => {
+              const target = parseTelegramTarget(raw);
+              return {
+                to: target.chatId,
+                threadId: target.messageThreadId,
+                chatType: target.chatType === "unknown" ? undefined : target.chatType,
+              };
+            },
+          },
+        }),
         source: "test",
       },
       {

@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 
 export {
   buildSecretInputSchema,

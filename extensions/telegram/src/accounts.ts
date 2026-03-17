@@ -1,7 +1,7 @@
 import util from "node:util";
+import type { TelegramAccountConfig, TelegramActionConfig } from "openclaw/plugin-sdk/telegram";
 import { createAccountActionGate } from "../../../src/channels/plugins/account-action-gate.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { TelegramAccountConfig, TelegramActionConfig } from "../../../src/config/types.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { isTruthyEnvValue } from "../../../src/infra/env.js";
 import { createSubsystemLogger } from "../../../src/logging/subsystem.js";
 import {
@@ -21,7 +21,14 @@ import {
 } from "../../../src/routing/session-key.js";
 import { resolveTelegramToken } from "./token.js";
 
-const log = createSubsystemLogger("telegram/accounts");
+let log: ReturnType<typeof createSubsystemLogger> | null = null;
+
+function getLog() {
+  if (!log) {
+    log = createSubsystemLogger("telegram/accounts");
+  }
+  return log;
+}
 
 function formatDebugArg(value: unknown): string {
   if (typeof value === "string") {
@@ -34,9 +41,9 @@ function formatDebugArg(value: unknown): string {
 }
 
 const debugAccounts = (...args: unknown[]) => {
-  if (isTruthyEnvValue(process.env.OPENCRAFT_DEBUG_TELEGRAM_ACCOUNTS)) {
+  if (isTruthyEnvValue(process.env.OPENCLAW_DEBUG_TELEGRAM_ACCOUNTS)) {
     const parts = args.map((arg) => formatDebugArg(arg));
-    log.warn(parts.join(" ").trim());
+    getLog().warn(parts.join(" ").trim());
   }
 };
 
@@ -49,14 +56,14 @@ export type ResolvedTelegramAccount = {
   config: TelegramAccountConfig;
 };
 
-function listConfiguredAccountIds(cfg: OpenCraftConfig): string[] {
+function listConfiguredAccountIds(cfg: OpenClawConfig): string[] {
   return listConfiguredAccountIdsFromSection({
     accounts: cfg.channels?.telegram?.accounts,
     normalizeAccountId,
   });
 }
 
-export function listTelegramAccountIds(cfg: OpenCraftConfig): string[] {
+export function listTelegramAccountIds(cfg: OpenClawConfig): string[] {
   const ids = Array.from(
     new Set([...listConfiguredAccountIds(cfg), ...listBoundAccountIds(cfg, "telegram")]),
   );
@@ -74,7 +81,7 @@ export function resetMissingDefaultWarnFlag(): void {
   emittedMissingDefaultWarn = false;
 }
 
-export function resolveDefaultTelegramAccountId(cfg: OpenCraftConfig): string {
+export function resolveDefaultTelegramAccountId(cfg: OpenClawConfig): string {
   const boundDefault = resolveDefaultAgentBoundAccountId(cfg, "telegram");
   if (boundDefault) {
     return boundDefault;
@@ -92,7 +99,7 @@ export function resolveDefaultTelegramAccountId(cfg: OpenCraftConfig): string {
   }
   if (ids.length > 1 && !emittedMissingDefaultWarn) {
     emittedMissingDefaultWarn = true;
-    log.warn(
+    getLog().warn(
       `channels.telegram: accounts.default is missing; falling back to "${ids[0]}". ` +
         `${formatSetExplicitDefaultInstruction("telegram")} to avoid routing surprises in multi-account setups.`,
     );
@@ -101,7 +108,7 @@ export function resolveDefaultTelegramAccountId(cfg: OpenCraftConfig): string {
 }
 
 export function resolveTelegramAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): TelegramAccountConfig | undefined {
   const normalized = normalizeAccountId(accountId);
@@ -109,7 +116,7 @@ export function resolveTelegramAccountConfig(
 }
 
 export function mergeTelegramAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): TelegramAccountConfig {
   const {
@@ -129,7 +136,7 @@ export function mergeTelegramAccountConfig(
   // this failure disrupts message delivery for *all* accounts.
   // Single-account setups keep backward compat: channel-level groups still
   // applies when the account has no override.
-  // See: https://github.com/editzffaleta/OpenCraft/issues/30673
+  // See: https://github.com/openclaw/openclaw/issues/30673
   const configuredAccountIds = Object.keys(cfg.channels?.telegram?.accounts ?? {});
   const isMultiAccount = configuredAccountIds.length > 1;
   const groups = account.groups ?? (isMultiAccount ? undefined : channelGroups);
@@ -138,7 +145,7 @@ export function mergeTelegramAccountConfig(
 }
 
 export function createTelegramActionGate(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): (key: keyof TelegramActionConfig, defaultValue?: boolean) => boolean {
   const accountId = normalizeAccountId(params.accountId);
@@ -167,7 +174,7 @@ export function resolveTelegramPollActionGateState(
 }
 
 export function resolveTelegramAccount(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedTelegramAccount {
   const baseEnabled = params.cfg.channels?.telegram?.enabled !== false;
@@ -204,7 +211,7 @@ export function resolveTelegramAccount(params: {
   });
 }
 
-export function listEnabledTelegramAccounts(cfg: OpenCraftConfig): ResolvedTelegramAccount[] {
+export function listEnabledTelegramAccounts(cfg: OpenClawConfig): ResolvedTelegramAccount[] {
   return listTelegramAccountIds(cfg)
     .map((accountId) => resolveTelegramAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

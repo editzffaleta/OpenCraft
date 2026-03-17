@@ -1,24 +1,24 @@
 ---
-summary: "Superfície de credencial SecretRef suportada vs não suportada canônica"
+summary: "Canonical supported vs unsupported SecretRef credential surface"
 read_when:
-  - Verificando cobertura de credencial SecretRef
-  - Auditando se uma credencial é elegível para `secrets configure` ou `secrets apply`
-  - Verificando por que uma credencial está fora da superfície suportada
-title: "Superfície de Credencial SecretRef"
+  - Verifying SecretRef credential coverage
+  - Auditing whether a credential is eligible for `secrets configure` or `secrets apply`
+  - Verifying why a credential is outside the supported surface
+title: "SecretRef Credential Surface"
 ---
 
-# Superfície de credencial SecretRef
+# SecretRef credential surface
 
-Esta página define a superfície de credencial SecretRef canônica.
+This page defines the canonical SecretRef credential surface.
 
-Intenção do escopo:
+Scope intent:
 
-- Em escopo: estritamente credenciais fornecidas pelo usuário que o OpenCraft não cria nem rotaciona.
-- Fora do escopo: credenciais criadas em runtime ou rotativas, material de refresh OAuth e artefatos tipo sessão.
+- In scope: strictly user-supplied credentials that OpenClaw does not mint or rotate.
+- Out of scope: runtime-minted or rotating credentials, OAuth refresh material, and session-like artifacts.
 
-## Credenciais suportadas
+## Supported credentials
 
-### Alvos do `opencraft.json` (`secrets configure` + `secrets apply` + `secrets audit`)
+### `openclaw.json` targets (`secrets configure` + `secrets apply` + `secrets audit`)
 
 [//]: # "secretref-supported-list-start"
 
@@ -87,31 +87,31 @@ Intenção do escopo:
 - `channels.zalo.webhookSecret`
 - `channels.zalo.accounts.*.botToken`
 - `channels.zalo.accounts.*.webhookSecret`
-- `channels.googlechat.serviceAccount` via irmão `serviceAccountRef` (exceção de compatibilidade)
-- `channels.googlechat.accounts.*.serviceAccount` via irmão `serviceAccountRef` (exceção de compatibilidade)
+- `channels.googlechat.serviceAccount` via sibling `serviceAccountRef` (compatibility exception)
+- `channels.googlechat.accounts.*.serviceAccount` via sibling `serviceAccountRef` (compatibility exception)
 
-### Alvos do `auth-profiles.json` (`secrets configure` + `secrets apply` + `secrets audit`)
+### `auth-profiles.json` targets (`secrets configure` + `secrets apply` + `secrets audit`)
 
 - `profiles.*.keyRef` (`type: "api_key"`)
 - `profiles.*.tokenRef` (`type: "token"`)
 
 [//]: # "secretref-supported-list-end"
 
-Notas:
+Notes:
 
-- Os alvos do plano de perfil de auth requerem `agentId`.
-- As entradas do plano têm como alvo `profiles.*.key` / `profiles.*.token` e escrevem refs irmãos (`keyRef` / `tokenRef`).
-- As refs de perfil de auth estão incluídas na resolução em runtime e na cobertura de auditoria.
-- Para provedores de modelo gerenciados por SecretRef, as entradas `agents/*/agent/models.json` geradas persistem marcadores não-secretos (não valores de segredo resolvidos) para superfícies de `apiKey`/cabeçalho.
-- A persistência de marcador é autoritativa da fonte: o OpenCraft escreve marcadores do snapshot de config de fonte ativo (pré-resolução), não de valores de segredo de runtime resolvidos.
-- Para pesquisa web:
-  - No modo de provedor explícito (`tools.web.search.provider` definido), apenas a chave do provedor selecionado está ativa.
-  - No modo automático (`tools.web.search.provider` não definido), apenas a primeira chave de provedor que resolve por precedência está ativa.
-  - No modo automático, refs de provedor não selecionados são tratados como inativos até serem selecionados.
+- Auth-profile plan targets require `agentId`.
+- Plan entries target `profiles.*.key` / `profiles.*.token` and write sibling refs (`keyRef` / `tokenRef`).
+- Auth-profile refs are included in runtime resolution and audit coverage.
+- For SecretRef-managed model providers, generated `agents/*/agent/models.json` entries persist non-secret markers (not resolved secret values) for `apiKey`/header surfaces.
+- Marker persistence is source-authoritative: OpenClaw writes markers from the active source config snapshot (pre-resolution), not from resolved runtime secret values.
+- For web search:
+  - In explicit provider mode (`tools.web.search.provider` set), only the selected provider key is active.
+  - In auto mode (`tools.web.search.provider` unset), only the first provider key that resolves by precedence is active.
+  - In auto mode, non-selected provider refs are treated as inactive until selected.
 
-## Credenciais não suportadas
+## Unsupported credentials
 
-As credenciais fora do escopo incluem:
+Out-of-scope credentials include:
 
 [//]: # "secretref-unsupported-list-start"
 
@@ -127,6 +127,6 @@ As credenciais fora do escopo incluem:
 
 [//]: # "secretref-unsupported-list-end"
 
-Justificativa:
+Rationale:
 
-- Essas credenciais são classes criadas, rotativas, portadoras de sessão ou duráveis OAuth que não se encaixam na resolução de SecretRef externo somente leitura.
+- These credentials are minted, rotated, session-bearing, or OAuth-durable classes that do not fit read-only external SecretRef resolution.

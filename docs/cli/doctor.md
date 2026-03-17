@@ -1,40 +1,41 @@
 ---
-summary: "Referência do CLI para `opencraft doctor` (verificações de saúde + reparos guiados)"
+summary: "CLI reference for `openclaw doctor` (health checks + guided repairs)"
 read_when:
-  - Você tem problemas de conectividade/auth e quer correções guiadas
-  - Você atualizou e quer uma verificação de sanidade
+  - You have connectivity/auth issues and want guided fixes
+  - You updated and want a sanity check
 title: "doctor"
 ---
 
-# `opencraft doctor`
+# `openclaw doctor`
 
-Verificações de saúde + correções rápidas para o gateway e canais.
+Health checks + quick fixes for the gateway and channels.
 
-Relacionado:
+Related:
 
-- Resolução de problemas: [Troubleshooting](/gateway/troubleshooting)
-- Auditoria de segurança: [Security](/gateway/security)
+- Troubleshooting: [Troubleshooting](/gateway/troubleshooting)
+- Security audit: [Security](/gateway/security)
 
-## Exemplos
+## Examples
 
 ```bash
-opencraft doctor
-opencraft doctor --repair
-opencraft doctor --deep
+openclaw doctor
+openclaw doctor --repair
+openclaw doctor --deep
 ```
 
-Notas:
+Notes:
 
-- Prompts interativos (como correções de keychain/OAuth) só rodam quando stdin é um TTY e `--non-interactive` **não** está definido. Execuções headless (cron, Telegram, sem terminal) vão pular os prompts.
-- `--fix` (alias para `--repair`) escreve um backup em `~/.opencraft/opencraft.json.bak` e remove chaves de config desconhecidas, listando cada remoção.
-- Verificações de integridade de estado agora detectam arquivos de transcrição órfãos no diretório de sessões e podem arquivá-los como `.deleted.<timestamp>` para recuperar espaço com segurança.
-- Doctor também escaneia `~/.opencraft/cron/jobs.json` (ou `cron.store`) para shapes legados de cron job e pode reescrevê-los no lugar antes que o agendador precise auto-normalizá-los em runtime.
-- Doctor inclui uma verificação de prontidão de busca em memória e pode recomendar `opencraft configure --section model` quando credenciais de embedding estão ausentes.
-- Se o modo sandbox está habilitado mas o Docker não está disponível, doctor reporta um aviso de alto sinal com remediação (`install Docker` ou `opencraft config set agents.defaults.sandbox.mode off`).
+- Interactive prompts (like keychain/OAuth fixes) only run when stdin is a TTY and `--non-interactive` is **not** set. Headless runs (cron, Telegram, no terminal) will skip prompts.
+- `--fix` (alias for `--repair`) writes a backup to `~/.openclaw/openclaw.json.bak` and drops unknown config keys, listing each removal.
+- State integrity checks now detect orphan transcript files in the sessions directory and can archive them as `.deleted.<timestamp>` to reclaim space safely.
+- Doctor also scans `~/.openclaw/cron/jobs.json` (or `cron.store`) for legacy cron job shapes and can rewrite them in place before the scheduler has to auto-normalize them at runtime.
+- Doctor includes a memory-search readiness check and can recommend `openclaw configure --section model` when embedding credentials are missing.
+- If sandbox mode is enabled but Docker is unavailable, doctor reports a high-signal warning with remediation (`install Docker` or `openclaw config set agents.defaults.sandbox.mode off`).
+- If `gateway.auth.token`/`gateway.auth.password` are SecretRef-managed and unavailable in the current command path, doctor reports a read-only warning and does not write plaintext fallback credentials.
 
-## macOS: overrides de env `launchctl`
+## macOS: `launchctl` env overrides
 
-Se você previamente rodou `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (ou `...PASSWORD`), esse valor sobrescreve seu arquivo de config e pode causar erros persistentes de "unauthorized".
+If you previously ran `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (or `...PASSWORD`), that value overrides your config file and can cause persistent “unauthorized” errors.
 
 ```bash
 launchctl getenv OPENCLAW_GATEWAY_TOKEN

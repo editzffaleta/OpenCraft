@@ -1,5 +1,9 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
+import { withEnvAsync } from "../test-utils/env.js";
 import { buildProviderRegistry, runCapability } from "./runner.js";
 import { withAudioFixture } from "./runner.test-utils.js";
 
@@ -15,7 +19,7 @@ function createOpenAiAudioProvider(
   });
 }
 
-function createOpenAiAudioCfg(extra?: Partial<OpenCraftConfig>): OpenCraftConfig {
+function createOpenAiAudioCfg(extra?: Partial<OpenClawConfig>): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -26,15 +30,15 @@ function createOpenAiAudioCfg(extra?: Partial<OpenCraftConfig>): OpenCraftConfig
       },
     },
     ...extra,
-  } as unknown as OpenCraftConfig;
+  } as unknown as OpenClawConfig;
 }
 
 async function runAutoAudioCase(params: {
   transcribeAudio: (req: { model?: string }) => Promise<{ text: string; model: string }>;
-  cfgExtra?: Partial<OpenCraftConfig>;
+  cfgExtra?: Partial<OpenClawConfig>;
 }) {
   let runResult: Awaited<ReturnType<typeof runCapability>> | undefined;
-  await withAudioFixture("opencraft-auto-audio", async ({ ctx, media, cache }) => {
+  await withAudioFixture("openclaw-auto-audio", async ({ ctx, media, cache }) => {
     const providerRegistry = createOpenAiAudioProvider(params.transcribeAudio);
     const cfg = createOpenAiAudioCfg(params.cfgExtra);
     runResult = await runCapability({
@@ -109,68 +113,71 @@ describe("runCapability auto audio entries", () => {
   });
 
   it("uses mistral when only mistral key is configured", async () => {
-    const priorEnv: Record<string, string | undefined> = {
-      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-      GROQ_API_KEY: process.env.GROQ_API_KEY,
-      DEEPGRAM_API_KEY: process.env.DEEPGRAM_API_KEY,
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-      MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
-    };
-    delete process.env.OPENAI_API_KEY;
-    delete process.env.GROQ_API_KEY;
-    delete process.env.DEEPGRAM_API_KEY;
-    delete process.env.GEMINI_API_KEY;
-    process.env.MISTRAL_API_KEY = "mistral-test-key"; // pragma: allowlist secret
+    const isolatedAgentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-audio-agent-"));
     let runResult: Awaited<ReturnType<typeof runCapability>> | undefined;
     try {
-      await withAudioFixture("opencraft-auto-audio-mistral", async ({ ctx, media, cache }) => {
-        const providerRegistry = buildProviderRegistry({
-          openai: {
-            id: "openai",
-            capabilities: ["audio"],
-            transcribeAudio: async () => ({ text: "openai", model: "gpt-4o-mini-transcribe" }),
-          },
-          mistral: {
-            id: "mistral",
-            capabilities: ["audio"],
-            transcribeAudio: async (req) => ({ text: "mistral", model: req.model ?? "unknown" }),
-          },
-        });
-        const cfg = {
-          models: {
-            providers: {
+      await withEnvAsync(
+        {
+          OPENAI_API_KEY: undefined,
+          GROQ_API_KEY: undefined,
+          DEEPGRAM_API_KEY: undefined,
+          GEMINI_API_KEY: undefined,
+          GOOGLE_API_KEY: undefined,
+          MISTRAL_API_KEY: "mistral-test-key", // pragma: allowlist secret
+          OPENCLAW_AGENT_DIR: isolatedAgentDir,
+          PI_CODING_AGENT_DIR: isolatedAgentDir,
+        },
+        async () => {
+          await withAudioFixture("openclaw-auto-audio-mistral", async ({ ctx, media, cache }) => {
+            const providerRegistry = buildProviderRegistry({
+              openai: {
+                id: "openai",
+                capabilities: ["audio"],
+                transcribeAudio: async () => ({
+                  text: "openai",
+                  model: "gpt-4o-mini-transcribe",
+                }),
+              },
               mistral: {
-                apiKey: "mistral-test-key", // pragma: allowlist secret
-                models: [],
+                id: "mistral",
+                capabilities: ["audio"],
+                transcribeAudio: async (req) => ({
+                  text: "mistral",
+                  model: req.model ?? "unknown",
+                }),
               },
-            },
-          },
-          tools: {
-            media: {
-              audio: {
-                enabled: true,
+            });
+            const cfg = {
+              models: {
+                providers: {
+                  mistral: {
+                    apiKey: "mistral-test-key", // pragma: allowlist secret
+                    models: [],
+                  },
+                },
               },
-            },
-          },
-        } as unknown as OpenCraftConfig;
+              tools: {
+                media: {
+                  audio: {
+                    enabled: true,
+                  },
+                },
+              },
+            } as unknown as OpenClawConfig;
 
-        runResult = await runCapability({
-          capability: "audio",
-          cfg,
-          ctx,
-          attachments: cache,
-          media,
-          providerRegistry,
-        });
-      });
+            runResult = await runCapability({
+              capability: "audio",
+              cfg,
+              ctx,
+              attachments: cache,
+              media,
+              providerRegistry,
+            });
+          });
+        },
+      );
     } finally {
-      for (const [key, value] of Object.entries(priorEnv)) {
-        if (value === undefined) {
-          delete process.env[key];
-        } else {
-          process.env[key] = value;
-        }
-      }
+      await fs.rm(isolatedAgentDir, { recursive: true, force: true });
     }
     if (!runResult) {
       throw new Error("Expected auto audio mistral result");

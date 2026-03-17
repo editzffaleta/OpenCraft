@@ -1,6 +1,6 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 
-export function buildModelAliasLines(cfg?: OpenCraftConfig) {
+export function buildModelAliasLines(cfg?: OpenClawConfig) {
   const models = cfg?.agents?.defaults?.models ?? {};
   const entries: Array<{ alias: string; model: string }> = [];
   for (const [keyRaw, entryRaw] of Object.entries(models)) {

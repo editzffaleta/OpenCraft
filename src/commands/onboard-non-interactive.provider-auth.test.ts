@@ -1,10 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { makeTempWorkspace } from "../test-helpers/workspace.js";
 import { withEnvAsync } from "../test-utils/env.js";
-import { MINIMAX_API_BASE_URL, MINIMAX_CN_API_BASE_URL } from "./onboard-auth.js";
+import {
+  MINIMAX_API_BASE_URL,
+  MINIMAX_CN_API_BASE_URL,
+  ZAI_CODING_CN_BASE_URL,
+  ZAI_CODING_GLOBAL_BASE_URL,
+  ZAI_GLOBAL_BASE_URL,
+} from "./onboard-auth.js";
 import {
   createThrowingRuntime,
   readJsonFile,
@@ -18,8 +24,6 @@ type OnboardEnv = {
 };
 
 const ensureWorkspaceAndSessionsMock = vi.hoisted(() => vi.fn(async (..._args: unknown[]) => {}));
-type DetectZaiEndpoint = typeof import("./zai-endpoint-detect.js").detectZaiEndpoint;
-const detectZaiEndpoint = vi.hoisted(() => vi.fn<DetectZaiEndpoint>(async () => null));
 
 vi.mock("./onboard-helpers.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./onboard-helpers.js")>();
@@ -29,11 +33,7 @@ vi.mock("./onboard-helpers.js", async (importOriginal) => {
   };
 });
 
-vi.mock("./zai-endpoint-detect.js", () => ({
-  detectZaiEndpoint,
-}));
-
-const { runNonInteractiveOnboarding } = await import("./onboard-non-interactive.js");
+const { runNonInteractiveSetup } = await import("./onboard-non-interactive.js");
 
 const NON_INTERACTIVE_DEFAULT_OPTIONS = {
   nonInteractive: true,
@@ -61,6 +61,45 @@ type ProviderAuthConfigSnapshot = {
   };
 };
 
+function createZaiFetchMock(responses: Record<string, number>): typeof fetch {
+  return vi.fn(async (input, init) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : "";
+    const parsedBody =
+      typeof init?.body === "string" ? (JSON.parse(init.body) as { model?: string }) : {};
+    const key = `${url}::${parsedBody.model ?? ""}`;
+    const status = responses[key] ?? 404;
+    return new Response(
+      JSON.stringify(
+        status === 200 ? { ok: true } : { error: { code: "unsupported", message: "unsupported" } },
+      ),
+      {
+        status,
+        headers: { "content-type": "application/json" },
+      },
+    );
+  }) as typeof fetch;
+}
+
+async function withZaiProbeFetch<T>(
+  responses: Record<string, number>,
+  run: (fetchMock: typeof fetch) => Promise<T>,
+): Promise<T> {
+  const originalVitest = process.env.VITEST;
+  delete process.env.VITEST;
+  const fetchMock = createZaiFetchMock(responses);
+  vi.stubGlobal("fetch", fetchMock);
+  try {
+    return await run(fetchMock);
+  } finally {
+    vi.unstubAllGlobals();
+    if (originalVitest === undefined) {
+      delete process.env.VITEST;
+    } else {
+      process.env.VITEST = originalVitest;
+    }
+  }
+}
+
 async function removeDirWithRetry(dir: string): Promise<void> {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
@@ -82,23 +121,23 @@ async function withOnboardEnv(
   run: (ctx: OnboardEnv) => Promise<void>,
 ): Promise<void> {
   const tempHome = await makeTempWorkspace(prefix);
-  const configPath = path.join(tempHome, "opencraft.json");
+  const configPath = path.join(tempHome, "openclaw.json");
   const runtime = createThrowingRuntime();
 
   try {
     await withEnvAsync(
       {
         HOME: tempHome,
-        OPENCRAFT_STATE_DIR: tempHome,
-        OPENCRAFT_CONFIG_PATH: configPath,
-        OPENCRAFT_SKIP_CHANNELS: "1",
-        OPENCRAFT_SKIP_GMAIL_WATCHER: "1",
-        OPENCRAFT_SKIP_CRON: "1",
-        OPENCRAFT_SKIP_CANVAS_HOST: "1",
-        OPENCRAFT_GATEWAY_TOKEN: undefined,
-        OPENCRAFT_GATEWAY_PASSWORD: undefined,
+        OPENCLAW_STATE_DIR: tempHome,
+        OPENCLAW_CONFIG_PATH: configPath,
+        OPENCLAW_SKIP_CHANNELS: "1",
+        OPENCLAW_SKIP_GMAIL_WATCHER: "1",
+        OPENCLAW_SKIP_CRON: "1",
+        OPENCLAW_SKIP_CANVAS_HOST: "1",
+        OPENCLAW_GATEWAY_TOKEN: undefined,
+        OPENCLAW_GATEWAY_PASSWORD: undefined,
         CUSTOM_API_KEY: undefined,
-        OPENCRAFT_DISABLE_CONFIG_CACHE: "1",
+        OPENCLAW_DISABLE_CONFIG_CACHE: "1",
       },
       async () => {
         await run({ configPath, runtime });
@@ -109,11 +148,11 @@ async function withOnboardEnv(
   }
 }
 
-async function runNonInteractiveOnboardingWithDefaults(
+async function runNonInteractiveSetupWithDefaults(
   runtime: NonInteractiveRuntime,
   options: Record<string, unknown>,
 ): Promise<void> {
-  await runNonInteractiveOnboarding(
+  await runNonInteractiveSetup(
     {
       ...NON_INTERACTIVE_DEFAULT_OPTIONS,
       ...options,
@@ -126,7 +165,7 @@ async function runOnboardingAndReadConfig(
   env: OnboardEnv,
   options: Record<string, unknown>,
 ): Promise<ProviderAuthConfigSnapshot> {
-  await runNonInteractiveOnboardingWithDefaults(env.runtime, {
+  await runNonInteractiveSetupWithDefaults(env.runtime, {
     skipSkills: true,
     ...options,
   });
@@ -141,7 +180,7 @@ async function runCustomLocalNonInteractive(
   runtime: NonInteractiveRuntime,
   overrides: Record<string, unknown> = {},
 ): Promise<void> {
-  await runNonInteractiveOnboardingWithDefaults(runtime, {
+  await runNonInteractiveSetupWithDefaults(runtime, {
     authChoice: "custom-api-key",
     customBaseUrl: CUSTOM_LOCAL_BASE_URL,
     customModelId: CUSTOM_LOCAL_MODEL_ID,
@@ -186,13 +225,8 @@ describe("onboard (non-interactive): provider auth", () => {
     ({ ensureAuthProfileStore, upsertAuthProfile } = await import("../agents/auth-profiles.js"));
   });
 
-  beforeEach(() => {
-    detectZaiEndpoint.mockReset();
-    detectZaiEndpoint.mockResolvedValue(null);
-  });
-
   it("stores MiniMax API key and uses global baseUrl by default", async () => {
-    await withOnboardEnv("opencraft-onboard-minimax-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-minimax-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "minimax-global-api",
         minimaxApiKey: "sk-minimax-test", // pragma: allowlist secret
@@ -211,7 +245,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("supports MiniMax CN API endpoint auth choice", async () => {
-    await withOnboardEnv("opencraft-onboard-minimax-cn-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-minimax-cn-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "minimax-cn-api",
         minimaxApiKey: "sk-minimax-test", // pragma: allowlist secret
@@ -230,66 +264,72 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores Z.AI API key and uses global baseUrl by default", async () => {
-    await withOnboardEnv("opencraft-onboard-zai-", async (env) => {
-      detectZaiEndpoint.mockResolvedValueOnce({
-        endpoint: "global",
-        baseUrl: "https://api.z.ai/api/paas/v4",
-        modelId: "glm-5",
-        note: "Verified GLM-5 on global endpoint.",
-      });
-      const cfg = await runOnboardingAndReadConfig(env, {
-        authChoice: "zai-api-key",
-        zaiApiKey: "zai-test-key", // pragma: allowlist secret
-      });
+    await withZaiProbeFetch(
+      {
+        [`${ZAI_GLOBAL_BASE_URL}/chat/completions::glm-5`]: 200,
+      },
+      async (fetchMock) =>
+        await withOnboardEnv("openclaw-onboard-zai-", async (env) => {
+          const cfg = await runOnboardingAndReadConfig(env, {
+            authChoice: "zai-api-key",
+            zaiApiKey: "zai-test-key", // pragma: allowlist secret
+          });
 
-      expect(cfg.auth?.profiles?.["zai:default"]?.provider).toBe("zai");
-      expect(cfg.auth?.profiles?.["zai:default"]?.mode).toBe("api_key");
-      expect(cfg.models?.providers?.zai?.baseUrl).toBe("https://api.z.ai/api/paas/v4");
-      expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-5");
-      await expectApiKeyProfile({ profileId: "zai:default", provider: "zai", key: "zai-test-key" });
-    });
+          expect(cfg.auth?.profiles?.["zai:default"]?.provider).toBe("zai");
+          expect(cfg.auth?.profiles?.["zai:default"]?.mode).toBe("api_key");
+          expect(cfg.models?.providers?.zai?.baseUrl).toBe(ZAI_GLOBAL_BASE_URL);
+          expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-5");
+          expect(fetchMock).toHaveBeenCalled();
+          await expectApiKeyProfile({
+            profileId: "zai:default",
+            provider: "zai",
+            key: "zai-test-key",
+          });
+        }),
+    );
   });
 
   it("supports Z.AI CN coding endpoint auth choice", async () => {
-    await withOnboardEnv("opencraft-onboard-zai-cn-", async (env) => {
-      detectZaiEndpoint.mockResolvedValueOnce({
-        endpoint: "coding-cn",
-        baseUrl: "https://open.bigmodel.cn/api/coding/paas/v4",
-        modelId: "glm-4.7",
-        note: "Coding Plan CN endpoint verified, but this key/plan does not expose GLM-5 there. Defaulting to GLM-4.7.",
-      });
-      const cfg = await runOnboardingAndReadConfig(env, {
-        authChoice: "zai-coding-cn",
-        zaiApiKey: "zai-test-key", // pragma: allowlist secret
-      });
+    await withZaiProbeFetch(
+      {
+        [`${ZAI_CODING_CN_BASE_URL}/chat/completions::glm-5`]: 404,
+        [`${ZAI_CODING_CN_BASE_URL}/chat/completions::glm-4.7`]: 200,
+      },
+      async (fetchMock) =>
+        await withOnboardEnv("openclaw-onboard-zai-cn-", async (env) => {
+          const cfg = await runOnboardingAndReadConfig(env, {
+            authChoice: "zai-coding-cn",
+            zaiApiKey: "zai-test-key", // pragma: allowlist secret
+          });
 
-      expect(cfg.models?.providers?.zai?.baseUrl).toBe(
-        "https://open.bigmodel.cn/api/coding/paas/v4",
-      );
-      expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-4.7");
-    });
+          expect(cfg.models?.providers?.zai?.baseUrl).toBe(ZAI_CODING_CN_BASE_URL);
+          expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-4.7");
+          expect(fetchMock).toHaveBeenCalled();
+        }),
+    );
   });
 
   it("supports Z.AI Coding Plan global endpoint with GLM-5 when available", async () => {
-    await withOnboardEnv("opencraft-onboard-zai-coding-global-", async (env) => {
-      detectZaiEndpoint.mockResolvedValueOnce({
-        endpoint: "coding-global",
-        baseUrl: "https://api.z.ai/api/coding/paas/v4",
-        modelId: "glm-5",
-        note: "Verified GLM-5 on coding-global endpoint.",
-      });
-      const cfg = await runOnboardingAndReadConfig(env, {
-        authChoice: "zai-coding-global",
-        zaiApiKey: "zai-test-key", // pragma: allowlist secret
-      });
+    await withZaiProbeFetch(
+      {
+        [`${ZAI_CODING_GLOBAL_BASE_URL}/chat/completions::glm-5`]: 200,
+      },
+      async (fetchMock) =>
+        await withOnboardEnv("openclaw-onboard-zai-coding-global-", async (env) => {
+          const cfg = await runOnboardingAndReadConfig(env, {
+            authChoice: "zai-coding-global",
+            zaiApiKey: "zai-test-key", // pragma: allowlist secret
+          });
 
-      expect(cfg.models?.providers?.zai?.baseUrl).toBe("https://api.z.ai/api/coding/paas/v4");
-      expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-5");
-    });
+          expect(cfg.models?.providers?.zai?.baseUrl).toBe(ZAI_CODING_GLOBAL_BASE_URL);
+          expect(cfg.agents?.defaults?.model?.primary).toBe("zai/glm-5");
+          expect(fetchMock).toHaveBeenCalled();
+        }),
+    );
   });
 
   it("stores xAI API key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-xai-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-xai-", async (env) => {
       const rawKey = "xai-test-\r\nkey";
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "xai-api-key",
@@ -304,7 +344,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("infers Mistral auth choice from --mistral-api-key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-mistral-infer-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-mistral-infer-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         mistralApiKey: "mistral-test-key", // pragma: allowlist secret
       });
@@ -321,7 +361,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores Volcano Engine API key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-volcengine-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-volcengine-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "volcengine-api-key",
         volcengineApiKey: "volcengine-test-key", // pragma: allowlist secret
@@ -332,7 +372,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("infers BytePlus auth choice from --byteplus-api-key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-byteplus-infer-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-byteplus-infer-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         byteplusApiKey: "byteplus-test-key", // pragma: allowlist secret
       });
@@ -342,7 +382,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores Vercel AI Gateway API key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-ai-gateway-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-ai-gateway-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "ai-gateway-api-key",
         aiGatewayApiKey: "gateway-test-key", // pragma: allowlist secret
@@ -362,11 +402,11 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores token auth profile", async () => {
-    await withOnboardEnv("opencraft-onboard-token-", async ({ configPath, runtime }) => {
+    await withOnboardEnv("openclaw-onboard-token-", async ({ configPath, runtime }) => {
       const cleanToken = `sk-ant-oat01-${"a".repeat(80)}`;
       const token = `${cleanToken.slice(0, 30)}\r${cleanToken.slice(30)}`;
 
-      await runNonInteractiveOnboardingWithDefaults(runtime, {
+      await runNonInteractiveSetupWithDefaults(runtime, {
         authChoice: "token",
         tokenProvider: "anthropic",
         token,
@@ -389,7 +429,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores OpenAI API key and sets OpenAI default model", async () => {
-    await withOnboardEnv("opencraft-onboard-openai-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-openai-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "openai-api-key",
         openaiApiKey: "sk-openai-test", // pragma: allowlist secret
@@ -402,7 +442,7 @@ describe("onboard (non-interactive): provider auth", () => {
   it.each([
     {
       name: "anthropic",
-      prefix: "opencraft-onboard-ref-flag-anthropic-",
+      prefix: "openclaw-onboard-ref-flag-anthropic-",
       authChoice: "apiKey",
       optionKey: "anthropicApiKey",
       flagName: "--anthropic-api-key",
@@ -410,7 +450,7 @@ describe("onboard (non-interactive): provider auth", () => {
     },
     {
       name: "openai",
-      prefix: "opencraft-onboard-ref-flag-openai-",
+      prefix: "openclaw-onboard-ref-flag-openai-",
       authChoice: "openai-api-key",
       optionKey: "openaiApiKey",
       flagName: "--openai-api-key",
@@ -418,7 +458,7 @@ describe("onboard (non-interactive): provider auth", () => {
     },
     {
       name: "openrouter",
-      prefix: "opencraft-onboard-ref-flag-openrouter-",
+      prefix: "openclaw-onboard-ref-flag-openrouter-",
       authChoice: "openrouter-api-key",
       optionKey: "openrouterApiKey",
       flagName: "--openrouter-api-key",
@@ -426,7 +466,7 @@ describe("onboard (non-interactive): provider auth", () => {
     },
     {
       name: "xai",
-      prefix: "opencraft-onboard-ref-flag-xai-",
+      prefix: "openclaw-onboard-ref-flag-xai-",
       authChoice: "xai-api-key",
       optionKey: "xaiApiKey",
       flagName: "--xai-api-key",
@@ -434,7 +474,7 @@ describe("onboard (non-interactive): provider auth", () => {
     },
     {
       name: "volcengine",
-      prefix: "opencraft-onboard-ref-flag-volcengine-",
+      prefix: "openclaw-onboard-ref-flag-volcengine-",
       authChoice: "volcengine-api-key",
       optionKey: "volcengineApiKey",
       flagName: "--volcengine-api-key",
@@ -442,7 +482,7 @@ describe("onboard (non-interactive): provider auth", () => {
     },
     {
       name: "byteplus",
-      prefix: "opencraft-onboard-ref-flag-byteplus-",
+      prefix: "openclaw-onboard-ref-flag-byteplus-",
       authChoice: "byteplus-api-key",
       optionKey: "byteplusApiKey",
       flagName: "--byteplus-api-key",
@@ -466,7 +506,7 @@ describe("onboard (non-interactive): provider auth", () => {
         await withEnvAsync(envOverrides, async () => {
           let thrown: Error | undefined;
           try {
-            await runNonInteractiveOnboardingWithDefaults(runtime, options);
+            await runNonInteractiveSetupWithDefaults(runtime, options);
           } catch (error) {
             thrown = error as Error;
           }
@@ -485,14 +525,14 @@ describe("onboard (non-interactive): provider auth", () => {
   );
 
   it("stores the detected env alias as keyRef for both OpenCode runtime providers", async () => {
-    await withOnboardEnv("opencraft-onboard-ref-opencode-alias-", async ({ runtime }) => {
+    await withOnboardEnv("openclaw-onboard-ref-opencode-alias-", async ({ runtime }) => {
       await withEnvAsync(
         {
           OPENCODE_API_KEY: undefined,
           OPENCODE_ZEN_API_KEY: "opencode-zen-env-key", // pragma: allowlist secret
         },
         async () => {
-          await runNonInteractiveOnboardingWithDefaults(runtime, {
+          await runNonInteractiveSetupWithDefaults(runtime, {
             authChoice: "opencode-zen",
             secretInputMode: "ref", // pragma: allowlist secret
             skipSkills: true,
@@ -517,7 +557,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("configures vLLM via the provider plugin in non-interactive mode", async () => {
-    await withOnboardEnv("opencraft-onboard-vllm-non-interactive-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-vllm-non-interactive-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "vllm",
         customBaseUrl: "http://127.0.0.1:8100/v1",
@@ -547,7 +587,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("configures SGLang via the provider plugin in non-interactive mode", async () => {
-    await withOnboardEnv("opencraft-onboard-sglang-non-interactive-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-sglang-non-interactive-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "sglang",
         customBaseUrl: "http://127.0.0.1:31000/v1",
@@ -577,7 +617,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("stores LiteLLM API key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-litellm-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-litellm-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         authChoice: "litellm-api-key",
         litellmApiKey: "litellm-test-key", // pragma: allowlist secret
@@ -597,19 +637,19 @@ describe("onboard (non-interactive): provider auth", () => {
   it.each([
     {
       name: "stores Cloudflare AI Gateway API key and metadata",
-      prefix: "opencraft-onboard-cf-gateway-",
+      prefix: "openclaw-onboard-cf-gateway-",
       options: {
         authChoice: "cloudflare-ai-gateway-api-key",
       },
     },
     {
       name: "infers Cloudflare auth choice from API key flags",
-      prefix: "opencraft-onboard-cf-gateway-infer-",
+      prefix: "openclaw-onboard-cf-gateway-infer-",
       options: {},
     },
   ])("$name", async ({ prefix, options }) => {
     await withOnboardEnv(prefix, async ({ configPath, runtime }) => {
-      await runNonInteractiveOnboardingWithDefaults(runtime, {
+      await runNonInteractiveSetupWithDefaults(runtime, {
         cloudflareAiGatewayAccountId: "cf-account-id",
         cloudflareAiGatewayGatewayId: "cf-gateway-id",
         cloudflareAiGatewayApiKey: "cf-gateway-test-key", // pragma: allowlist secret
@@ -634,7 +674,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("infers Together auth choice from --together-api-key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-together-infer-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-together-infer-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         togetherApiKey: "together-test-key", // pragma: allowlist secret
       });
@@ -651,7 +691,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("infers QIANFAN auth choice from --qianfan-api-key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-qianfan-infer-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-qianfan-infer-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         qianfanApiKey: "qianfan-test-key", // pragma: allowlist secret
       });
@@ -668,7 +708,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("infers Model Studio auth choice from --modelstudio-api-key and sets default model", async () => {
-    await withOnboardEnv("opencraft-onboard-modelstudio-infer-", async (env) => {
+    await withOnboardEnv("openclaw-onboard-modelstudio-infer-", async (env) => {
       const cfg = await runOnboardingAndReadConfig(env, {
         modelstudioApiKey: "modelstudio-test-key", // pragma: allowlist secret
       });
@@ -688,8 +728,8 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("configures a custom provider from non-interactive flags", async () => {
-    await withOnboardEnv("opencraft-onboard-custom-provider-", async ({ configPath, runtime }) => {
-      await runNonInteractiveOnboardingWithDefaults(runtime, {
+    await withOnboardEnv("openclaw-onboard-custom-provider-", async ({ configPath, runtime }) => {
+      await runNonInteractiveSetupWithDefaults(runtime, {
         authChoice: "custom-api-key",
         customBaseUrl: "https://llm.example.com/v1",
         customApiKey: "custom-test-key", // pragma: allowlist secret
@@ -711,9 +751,9 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("infers custom provider auth choice from custom flags", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-infer-",
+      "openclaw-onboard-custom-provider-infer-",
       async ({ configPath, runtime }) => {
-        await runNonInteractiveOnboardingWithDefaults(runtime, {
+        await runNonInteractiveSetupWithDefaults(runtime, {
           customBaseUrl: "https://models.custom.local/v1",
           customModelId: "local-large",
           customApiKey: "custom-test-key", // pragma: allowlist secret
@@ -735,7 +775,7 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("uses CUSTOM_API_KEY env fallback for non-interactive custom provider auth", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-env-fallback-",
+      "openclaw-onboard-custom-provider-env-fallback-",
       async ({ configPath, runtime }) => {
         process.env.CUSTOM_API_KEY = "custom-env-key"; // pragma: allowlist secret
         await runCustomLocalNonInteractive(runtime);
@@ -746,7 +786,7 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("stores CUSTOM_API_KEY env ref for non-interactive custom provider auth in ref mode", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-env-ref-",
+      "openclaw-onboard-custom-provider-env-ref-",
       async ({ configPath, runtime }) => {
         process.env.CUSTOM_API_KEY = "custom-env-key"; // pragma: allowlist secret
         await runCustomLocalNonInteractive(runtime, {
@@ -762,7 +802,7 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("fails fast for custom provider ref mode when --custom-api-key is set but CUSTOM_API_KEY env is missing", async () => {
-    await withOnboardEnv("opencraft-onboard-custom-provider-ref-flag-", async ({ runtime }) => {
+    await withOnboardEnv("openclaw-onboard-custom-provider-ref-flag-", async ({ runtime }) => {
       const providedSecret = "custom-inline-key-should-not-leak"; // pragma: allowlist secret
       await withEnvAsync({ CUSTOM_API_KEY: undefined }, async () => {
         let thrown: Error | undefined;
@@ -789,7 +829,7 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("uses matching profile fallback for non-interactive custom provider auth", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-profile-fallback-",
+      "openclaw-onboard-custom-provider-profile-fallback-",
       async ({ configPath, runtime }) => {
         upsertAuthProfile({
           profileId: `${CUSTOM_LOCAL_PROVIDER_ID}:default`,
@@ -807,10 +847,10 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("fails custom provider auth when compatibility is invalid", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-invalid-compat-",
+      "openclaw-onboard-custom-provider-invalid-compat-",
       async ({ runtime }) => {
         await expect(
-          runNonInteractiveOnboardingWithDefaults(runtime, {
+          runNonInteractiveSetupWithDefaults(runtime, {
             authChoice: "custom-api-key",
             customBaseUrl: "https://models.custom.local/v1",
             customModelId: "local-large",
@@ -823,9 +863,9 @@ describe("onboard (non-interactive): provider auth", () => {
   });
 
   it("fails custom provider auth when explicit provider id is invalid", async () => {
-    await withOnboardEnv("opencraft-onboard-custom-provider-invalid-id-", async ({ runtime }) => {
+    await withOnboardEnv("openclaw-onboard-custom-provider-invalid-id-", async ({ runtime }) => {
       await expect(
-        runNonInteractiveOnboardingWithDefaults(runtime, {
+        runNonInteractiveSetupWithDefaults(runtime, {
           authChoice: "custom-api-key",
           customBaseUrl: "https://models.custom.local/v1",
           customModelId: "local-large",
@@ -840,10 +880,10 @@ describe("onboard (non-interactive): provider auth", () => {
 
   it("fails inferred custom auth when required flags are incomplete", async () => {
     await withOnboardEnv(
-      "opencraft-onboard-custom-provider-missing-required-",
+      "openclaw-onboard-custom-provider-missing-required-",
       async ({ runtime }) => {
         await expect(
-          runNonInteractiveOnboardingWithDefaults(runtime, {
+          runNonInteractiveSetupWithDefaults(runtime, {
             customApiKey: "custom-test-key", // pragma: allowlist secret
             skipSkills: true,
           }),

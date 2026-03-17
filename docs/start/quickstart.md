@@ -1,22 +1,22 @@
 ---
-summary: "O início rápido foi movido para Primeiros Passos."
+summary: "Quick start has moved to Getting Started."
 read_when:
-  - Você está procurando as etapas de configuração mais rápidas
-  - Você foi redirecionado de um link mais antigo
-title: "Início rápido"
+  - You are looking for the fastest setup steps
+  - You were sent here from an older link
+title: "Quick start"
 ---
 
-# Início rápido
+# Quick start
 
 <Info>
-O início rápido agora faz parte de [Primeiros Passos](/start/getting-started).
+Quick start is now part of [Getting Started](/start/getting-started).
 </Info>
 
 <Columns>
-  <Card title="Primeiros Passos" href="/start/getting-started">
-    Instale o OpenCraft e faça seu primeiro chat em minutos.
+  <Card title="Getting Started" href="/start/getting-started">
+    Install OpenClaw and run your first chat in minutes.
   </Card>
-  <Card title="Assistente de Onboarding" href="/start/wizard">
-    Referência completa do assistente CLI e opções avançadas.
+  <Card title="Onboarding (CLI)" href="/start/wizard">
+    Full CLI onboarding reference and advanced options.
   </Card>
 </Columns>

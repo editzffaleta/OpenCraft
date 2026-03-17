@@ -12,7 +12,7 @@ import {
   testState,
 } from "./test-helpers.js";
 
-const { createOpenCraftTools } = await import("../agents/opencraft-tools.js");
+const { createOpenClawTools } = await import("../agents/openclaw-tools.js");
 
 installGatewayTestHooks({ scope: "suite" });
 
@@ -21,7 +21,7 @@ let gatewayPort: number;
 const gatewayToken = "test-token";
 let envSnapshot: ReturnType<typeof captureEnv>;
 
-type SessionSendTool = ReturnType<typeof createOpenCraftTools>[number];
+type SessionSendTool = ReturnType<typeof createOpenClawTools>[number];
 const SESSION_SEND_E2E_TIMEOUT_MS = 10_000;
 let cachedSessionsSendTool: SessionSendTool | null = null;
 
@@ -29,7 +29,7 @@ function getSessionsSendTool(): SessionSendTool {
   if (cachedSessionsSendTool) {
     return cachedSessionsSendTool;
   }
-  const tool = createOpenCraftTools().find((candidate) => candidate.name === "sessions_send");
+  const tool = createOpenClawTools().find((candidate) => candidate.name === "sessions_send");
   if (!tool) {
     throw new Error("missing sessions_send tool");
   }
@@ -76,11 +76,11 @@ async function emitLifecycleAssistantReply(params: {
 }
 
 beforeAll(async () => {
-  envSnapshot = captureEnv(["OPENCRAFT_GATEWAY_PORT", "OPENCRAFT_GATEWAY_TOKEN"]);
+  envSnapshot = captureEnv(["OPENCLAW_GATEWAY_PORT", "OPENCLAW_GATEWAY_TOKEN"]);
   gatewayPort = await getFreePort();
   testState.gatewayAuth = { mode: "token", token: gatewayToken };
-  process.env.OPENCRAFT_GATEWAY_PORT = String(gatewayPort);
-  process.env.OPENCRAFT_GATEWAY_TOKEN = gatewayToken;
+  process.env.OPENCLAW_GATEWAY_PORT = String(gatewayPort);
+  process.env.OPENCLAW_GATEWAY_TOKEN = gatewayToken;
   const { approveDevicePairing, requestDevicePairing } = await import("../infra/device-pairing.js");
   const { loadOrCreateDeviceIdentity, publicKeyRawBase64UrlFromPem } =
     await import("../infra/device-identity.js");
@@ -88,7 +88,7 @@ beforeAll(async () => {
   const pending = await requestDevicePairing({
     deviceId: identity.deviceId,
     publicKey: publicKeyRawBase64UrlFromPem(identity.publicKeyPem),
-    clientId: "opencraft-cli",
+    clientId: "openclaw-cli",
     clientMode: "cli",
     role: "operator",
     scopes: ["operator.admin", "operator.read", "operator.write", "operator.approvals"],
@@ -156,9 +156,9 @@ describe("sessions_send label lookup", () => {
     { timeout: SESSION_SEND_E2E_TIMEOUT_MS },
     async () => {
       // This is an operator feature; enable broader session tool targeting for this test.
-      const configPath = process.env.OPENCRAFT_CONFIG_PATH;
+      const configPath = process.env.OPENCLAW_CONFIG_PATH;
       if (!configPath) {
-        throw new Error("OPENCRAFT_CONFIG_PATH missing in gateway test environment");
+        throw new Error("OPENCLAW_CONFIG_PATH missing in gateway test environment");
       }
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await fs.writeFile(
@@ -184,7 +184,7 @@ describe("sessions_send label lookup", () => {
         timeoutMs: 5000,
       });
 
-      const tool = createOpenCraftTools({
+      const tool = createOpenClawTools({
         config: {
           tools: {
             sessions: {

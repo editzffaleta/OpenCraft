@@ -2,8 +2,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { discordPlugin } from "../../../extensions/discord/src/channel.js";
 import type { ReplyPayload } from "../../auto-reply/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import { setDefaultChannelPluginRegistryForTests } from "../../commands/channel-test-helpers.js";
+import type { OpenClawConfig } from "../../config/config.js";
+import { setActivePluginRegistry } from "../../plugins/runtime.js";
+import { createTestRegistry } from "../../test-utils/channel-plugins.js";
 import { typedCases } from "../../test-utils/typed-cases.js";
 import {
   ackDelivery,
@@ -39,13 +43,19 @@ import {
 } from "./payloads.js";
 import { runResolveOutboundTargetCoreTests } from "./targets.shared-test.js";
 
+beforeEach(() => {
+  setActivePluginRegistry(
+    createTestRegistry([{ pluginId: "discord", plugin: discordPlugin, source: "test" }]),
+  );
+});
+
 describe("delivery-queue", () => {
   let tmpDir: string;
   let fixtureRoot = "";
   let fixtureCount = 0;
 
   beforeAll(() => {
-    fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-dq-suite-"));
+    fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-dq-suite-"));
   });
 
   beforeEach(() => {
@@ -619,7 +629,7 @@ describe("delivery-queue", () => {
 });
 
 describe("DirectoryCache", () => {
-  const cfg = {} as OpenCraftConfig;
+  const cfg = {} as OpenClawConfig;
 
   afterEach(() => {
     vi.useRealTimers();
@@ -870,22 +880,26 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as OpenCraftConfig;
+} as OpenClawConfig;
 
 const discordConfig = {
   channels: {
     discord: {},
   },
-} as OpenCraftConfig;
+} as OpenClawConfig;
 
 describe("outbound policy", () => {
+  beforeEach(() => {
+    setDefaultChannelPluginRegistryForTests();
+  });
+
   it("allows cross-provider sends when enabled", () => {
     const cfg = {
       ...slackConfig,
       tools: {
         message: { crossContext: { allowAcrossProviders: true } },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     expect(() =>
       enforceCrossContextPolicy({
@@ -921,10 +935,14 @@ describe("outbound policy", () => {
 });
 
 describe("resolveOutboundSessionRoute", () => {
-  const baseConfig = {} as OpenCraftConfig;
+  beforeEach(() => {
+    setDefaultChannelPluginRegistryForTests();
+  });
+
+  const baseConfig = {} as OpenClawConfig;
 
   it("resolves provider-specific session routes", async () => {
-    const perChannelPeerCfg = { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig;
+    const perChannelPeerCfg = { session: { dmScope: "per-channel-peer" } } as OpenClawConfig;
     const identityLinksCfg = {
       session: {
         dmScope: "per-peer",
@@ -932,7 +950,7 @@ describe("resolveOutboundSessionRoute", () => {
           alice: ["discord:123"],
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const slackMpimCfg = {
       channels: {
         slack: {
@@ -941,10 +959,10 @@ describe("resolveOutboundSessionRoute", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const cases: Array<{
       name: string;
-      cfg: OpenCraftConfig;
+      cfg: OpenClawConfig;
       channel: string;
       target: string;
       replyToId?: string;
@@ -1123,7 +1141,7 @@ describe("resolveOutboundSessionRoute", () => {
 
   it("uses resolved Discord user targets to route bare numeric ids as DMs", async () => {
     const route = await resolveOutboundSessionRoute({
-      cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+      cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
       channel: "discord",
       agentId: "main",
       target: "123",
@@ -1145,7 +1163,7 @@ describe("resolveOutboundSessionRoute", () => {
   it("uses resolved Mattermost user targets to route bare ids as DMs", async () => {
     const userId = "dthcxgoxhifn3pwh65cut3ud3w";
     const route = await resolveOutboundSessionRoute({
-      cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+      cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
       channel: "mattermost",
       agentId: "main",
       target: userId,
@@ -1167,7 +1185,7 @@ describe("resolveOutboundSessionRoute", () => {
   it("rejects bare numeric Discord targets when the caller has no kind hint", async () => {
     await expect(
       resolveOutboundSessionRoute({
-        cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+        cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
         channel: "discord",
         agentId: "main",
         target: "123",

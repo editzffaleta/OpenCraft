@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { expectInboundContextContract } from "../../../../../test/helpers/inbound-contract.js";
+import { expectChannelInboundContextContract as expectInboundContextContract } from "../../../../../src/channels/plugins/contracts/suites.js";
 
 let capturedCtx: unknown;
 let capturedDispatchParams: unknown;
@@ -115,7 +115,7 @@ describe("web processMessage inbound contract", () => {
     capturedDispatchParams = undefined;
     backgroundTasks = new Set();
     deliverWebReplyMock.mockClear();
-    sessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-process-message-"));
+    sessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-process-message-"));
     sessionStorePath = path.join(sessionDir, "sessions.json");
   });
 
@@ -227,7 +227,7 @@ describe("web processMessage inbound contract", () => {
     expect(getDispatcherResponsePrefix()).toBe("[Mainbot]");
   });
 
-  it("does not force an [opencraft] response prefix in self-chats when identity is unset", async () => {
+  it("does not force an [openclaw] response prefix in self-chats when identity is unset", async () => {
     await processSelfDirectMessage({
       messages: {},
       session: { store: sessionStorePath },

@@ -1,58 +1,58 @@
 ---
-title: "Criando Skills"
-summary: "Crie e teste skills personalizadas de workspace com SKILL.md"
+title: "Creating Skills"
+summary: "Build and test custom workspace skills with SKILL.md"
 read_when:
-  - Você está criando uma nova skill personalizada no seu workspace
-  - Você precisa de um fluxo de trabalho de início rápido para skills baseadas em SKILL.md
+  - You are creating a new custom skill in your workspace
+  - You need a quick starter workflow for SKILL.md-based skills
 ---
 
-# Criando Skills Personalizadas
+# Creating Custom Skills 🛠
 
-O OpenCraft foi projetado para ser facilmente extensível. "Skills" são a principal forma de adicionar novas capacidades ao seu assistente.
+OpenClaw is designed to be easily extensible. "Skills" are the primary way to add new capabilities to your assistant.
 
-## O que é uma Skill?
+## What is a Skill?
 
-Uma skill é um diretório contendo um arquivo `SKILL.md` (que fornece instruções e definições de tools ao LLM) e, opcionalmente, alguns scripts ou recursos.
+A skill is a directory containing a `SKILL.md` file (which provides instructions and tool definitions to the LLM) and optionally some scripts or resources.
 
-## Passo a Passo: Sua Primeira Skill
+## Step-by-Step: Your First Skill
 
-### 1. Criar o Diretório
+### 1. Create the Directory
 
-Skills ficam no seu workspace, geralmente em `~/.opencraft/workspace/skills/`. Crie uma nova pasta para sua skill:
+Skills live in your workspace, usually `~/.openclaw/workspace/skills/`. Create a new folder for your skill:
 
 ```bash
-mkdir -p ~/.opencraft/workspace/skills/ola-mundo
+mkdir -p ~/.openclaw/workspace/skills/hello-world
 ```
 
-### 2. Definir o `SKILL.md`
+### 2. Define the `SKILL.md`
 
-Crie um arquivo `SKILL.md` naquele diretório. Este arquivo usa frontmatter YAML para metadados e Markdown para instruções.
+Create a `SKILL.md` file in that directory. This file uses YAML frontmatter for metadata and Markdown for instructions.
 
 ```markdown
 ---
-name: ola_mundo
-description: Uma skill simples que diz olá.
+name: hello_world
+description: A simple skill that says hello.
 ---
 
-# Skill Olá Mundo
+# Hello World Skill
 
-Quando o usuário pedir uma saudação, use a tool `echo` para dizer "Olá da sua skill personalizada!".
+When the user asks for a greeting, use the `echo` tool to say "Hello from your custom skill!".
 ```
 
-### 3. Adicionar Tools (Opcional)
+### 3. Add Tools (Optional)
 
-Você pode definir tools personalizadas no frontmatter ou instruir o agente a usar tools do sistema existentes (como `bash` ou `browser`).
+You can define custom tools in the frontmatter or instruct the agent to use existing system tools (like `bash` or `browser`).
 
-### 4. Atualizar o OpenCraft
+### 4. Refresh OpenClaw
 
-Peça ao seu agente para "atualizar skills" ou reinicie o gateway. O OpenCraft descobrirá o novo diretório e indexará o `SKILL.md`.
+Ask your agent to "refresh skills" or restart the gateway. OpenClaw will discover the new directory and index the `SKILL.md`.
 
-## Boas Práticas
+## Best Practices
 
-- **Seja Conciso**: Instrua o modelo sobre _o que_ fazer, não como ser uma IA.
-- **Segurança em Primeiro Lugar**: Se sua skill usa `bash`, garanta que os prompts não permitam injeção arbitrária de comandos a partir de entrada não confiável do usuário.
-- **Teste Localmente**: Use `opencraft agent --message "use minha nova skill"` para testar.
+- **Be Concise**: Instruct the model on _what_ to do, not how to be an AI.
+- **Safety First**: If your skill uses `bash`, ensure the prompts don't allow arbitrary command injection from untrusted user input.
+- **Test Locally**: Use `openclaw agent --message "use my new skill"` to test.
 
-## Skills Compartilhadas
+## Shared Skills
 
-Você também pode navegar e contribuir skills para o [ClawHub](https://clawhub.com).
+You can also browse and contribute skills to [ClawHub](https://clawhub.com).

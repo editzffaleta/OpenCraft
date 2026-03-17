@@ -32,7 +32,7 @@ vi.mock("../../infra/git-commit.js", () => ({
 }));
 
 vi.mock("../cli-name.js", () => ({
-  resolveCliName: () => "opencraft",
+  resolveCliName: () => "openclaw",
   replaceCliName: (cmd: string) => cmd,
 }));
 
@@ -108,7 +108,7 @@ describe("configureProgramHelp", () => {
   }
 
   it("adds root help hint and marks commands with subcommands", () => {
-    process.argv = ["node", "opencraft", "--help"];
+    process.argv = ["node", "openclaw", "--help"];
     const program = makeProgramWithCommands();
     configureProgramHelp(program, testProgramContext);
 
@@ -120,24 +120,24 @@ describe("configureProgramHelp", () => {
   });
 
   it("includes banner and docs/examples in root help output", () => {
-    process.argv = ["node", "opencraft", "--help"];
+    process.argv = ["node", "openclaw", "--help"];
     const program = makeProgramWithCommands();
     configureProgramHelp(program, testProgramContext);
 
     const help = captureHelpOutput(program);
     expect(help).toContain("BANNER-LINE");
     expect(help).toContain("Examples:");
-    expect(help).toContain("https://docs.opencraft.ai/cli");
+    expect(help).toContain("https://docs.openclaw.ai/cli");
   });
 
   it("prints version and exits immediately when version flags are present", () => {
-    process.argv = ["node", "opencraft", "--version"];
-    expectVersionExit({ expectedVersion: "OpenCraft 9.9.9-test (abc1234)" });
+    process.argv = ["node", "openclaw", "--version"];
+    expectVersionExit({ expectedVersion: "OpenClaw 9.9.9-test (abc1234)" });
   });
 
   it("prints version and exits immediately without commit metadata", () => {
-    process.argv = ["node", "opencraft", "--version"];
+    process.argv = ["node", "openclaw", "--version"];
     resolveCommitHashMock.mockReturnValue(null);
-    expectVersionExit({ expectedVersion: "OpenCraft 9.9.9-test" });
+    expectVersionExit({ expectedVersion: "OpenClaw 9.9.9-test" });
   });
 });

@@ -1,15 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { applyDefaultModelChoice } from "./auth-choice.default-model.js";
 import {
   applyGoogleGeminiModelDefault,
   GOOGLE_GEMINI_DEFAULT_MODEL,
 } from "./google-gemini-model-default.js";
-import {
-  applyOpenAICodexModelDefault,
-  OPENAI_CODEX_DEFAULT_MODEL,
-} from "./openai-codex-model-default.js";
 import {
   applyOpenAIConfig,
   applyOpenAIProviderConfig,
@@ -34,7 +30,7 @@ function makePrompter(): WizardPrompter {
 }
 
 function expectPrimaryModelChanged(
-  applied: { changed: boolean; next: OpenCraftConfig },
+  applied: { changed: boolean; next: OpenClawConfig },
   primary: string,
 ) {
   expect(applied.changed).toBe(true);
@@ -42,18 +38,18 @@ function expectPrimaryModelChanged(
 }
 
 function expectConfigUnchanged(
-  applied: { changed: boolean; next: OpenCraftConfig },
-  cfg: OpenCraftConfig,
+  applied: { changed: boolean; next: OpenClawConfig },
+  cfg: OpenClawConfig,
 ) {
   expect(applied.changed).toBe(false);
   expect(applied.next).toEqual(cfg);
 }
 
 type SharedDefaultModelCase = {
-  apply: (cfg: OpenCraftConfig) => { changed: boolean; next: OpenCraftConfig };
+  apply: (cfg: OpenClawConfig) => { changed: boolean; next: OpenClawConfig };
   defaultModel: string;
-  overrideConfig: OpenCraftConfig;
-  alreadyDefaultConfig: OpenCraftConfig;
+  overrideConfig: OpenClawConfig;
+  alreadyDefaultConfig: OpenClawConfig;
 };
 
 const SHARED_DEFAULT_MODEL_CASES: SharedDefaultModelCase[] = [
@@ -62,20 +58,20 @@ const SHARED_DEFAULT_MODEL_CASES: SharedDefaultModelCase[] = [
     defaultModel: GOOGLE_GEMINI_DEFAULT_MODEL,
     overrideConfig: {
       agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
-    } as OpenCraftConfig,
+    } as OpenClawConfig,
     alreadyDefaultConfig: {
       agents: { defaults: { model: { primary: GOOGLE_GEMINI_DEFAULT_MODEL } } },
-    } as OpenCraftConfig,
+    } as OpenClawConfig,
   },
   {
     apply: applyOpencodeZenModelDefault,
     defaultModel: OPENCODE_ZEN_DEFAULT_MODEL,
     overrideConfig: {
       agents: { defaults: { model: "anthropic/claude-opus-4-5" } },
-    } as OpenCraftConfig,
+    } as OpenClawConfig,
     alreadyDefaultConfig: {
       agents: { defaults: { model: OPENCODE_ZEN_DEFAULT_MODEL } },
-    } as OpenCraftConfig,
+    } as OpenClawConfig,
   },
 ];
 
@@ -88,8 +84,8 @@ describe("applyDefaultModelChoice", () => {
       setDefaultModel: false,
       defaultModel,
       // Simulate a provider function that does not explicitly add the entry.
-      applyProviderConfig: (config: OpenCraftConfig) => config,
-      applyDefaultConfig: (config: OpenCraftConfig) => config,
+      applyProviderConfig: (config: OpenClawConfig) => config,
+      applyDefaultConfig: (config: OpenClawConfig) => config,
       noteAgentModel,
       prompter: makePrompter(),
     });
@@ -105,8 +101,8 @@ describe("applyDefaultModelChoice", () => {
       config: {},
       setDefaultModel: false,
       defaultModel,
-      applyProviderConfig: (config: OpenCraftConfig) => config,
-      applyDefaultConfig: (config: OpenCraftConfig) => config,
+      applyProviderConfig: (config: OpenClawConfig) => config,
+      applyDefaultConfig: (config: OpenClawConfig) => config,
       noteAgentModel: async () => {},
       prompter: makePrompter(),
     });
@@ -121,7 +117,7 @@ describe("applyDefaultModelChoice", () => {
       config: {},
       setDefaultModel: true,
       defaultModel,
-      applyProviderConfig: (config: OpenCraftConfig) => config,
+      applyProviderConfig: (config: OpenClawConfig) => config,
       applyDefaultConfig: () => ({
         agents: {
           defaults: {
@@ -142,7 +138,7 @@ describe("applyDefaultModelChoice", () => {
 describe("shared default model behavior", () => {
   it("sets defaults when model is unset", () => {
     for (const testCase of SHARED_DEFAULT_MODEL_CASES) {
-      const cfg: OpenCraftConfig = { agents: { defaults: {} } };
+      const cfg: OpenClawConfig = { agents: { defaults: {} } };
       const applied = testCase.apply(cfg);
       expectPrimaryModelChanged(applied, testCase.defaultModel);
     }
@@ -197,49 +193,17 @@ describe("applyOpenAIConfig", () => {
   });
 });
 
-describe("applyOpenAICodexModelDefault", () => {
-  it("sets openai-codex default when model is unset", () => {
-    const cfg: OpenCraftConfig = { agents: { defaults: {} } };
-    const applied = applyOpenAICodexModelDefault(cfg);
-    expectPrimaryModelChanged(applied, OPENAI_CODEX_DEFAULT_MODEL);
-  });
-
-  it("sets openai-codex default when model is openai/*", () => {
-    const cfg: OpenCraftConfig = {
-      agents: { defaults: { model: { primary: OPENAI_DEFAULT_MODEL } } },
-    };
-    const applied = applyOpenAICodexModelDefault(cfg);
-    expectPrimaryModelChanged(applied, OPENAI_CODEX_DEFAULT_MODEL);
-  });
-
-  it("does not override openai-codex/*", () => {
-    const cfg: OpenCraftConfig = {
-      agents: { defaults: { model: { primary: OPENAI_CODEX_DEFAULT_MODEL } } },
-    };
-    const applied = applyOpenAICodexModelDefault(cfg);
-    expectConfigUnchanged(applied, cfg);
-  });
-
-  it("does not override non-openai models", () => {
-    const cfg: OpenCraftConfig = {
-      agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
-    };
-    const applied = applyOpenAICodexModelDefault(cfg);
-    expectConfigUnchanged(applied, cfg);
-  });
-});
-
 describe("applyOpencodeZenModelDefault", () => {
   it("no-ops when already legacy opencode-zen default", () => {
     const cfg = {
       agents: { defaults: { model: "opencode-zen/claude-opus-4-5" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const applied = applyOpencodeZenModelDefault(cfg);
     expectConfigUnchanged(applied, cfg);
   });
 
   it("preserves fallbacks when setting primary", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       agents: {
         defaults: {
           model: {

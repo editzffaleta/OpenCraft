@@ -5,15 +5,18 @@ import type { SandboxContext } from "./sandbox.js";
 function createSandboxContext(overrides?: Partial<SandboxContext>): SandboxContext {
   const base = {
     enabled: true,
+    backendId: "docker",
     sessionKey: "session:test",
-    workspaceDir: "/tmp/opencraft-sandbox",
-    agentWorkspaceDir: "/tmp/opencraft-workspace",
+    workspaceDir: "/tmp/openclaw-sandbox",
+    agentWorkspaceDir: "/tmp/openclaw-workspace",
     workspaceAccess: "none",
-    containerName: "opencraft-sbx-test",
+    runtimeId: "openclaw-sbx-test",
+    runtimeLabel: "openclaw-sbx-test",
+    containerName: "openclaw-sbx-test",
     containerWorkdir: "/workspace",
     docker: {
-      image: "opencraft-sandbox:bookworm-slim",
-      containerPrefix: "opencraft-sbx-",
+      image: "openclaw-sandbox:bookworm-slim",
+      containerPrefix: "openclaw-sbx-",
       workdir: "/workspace",
       readOnlyRoot: true,
       tmpfs: ["/tmp"],
@@ -30,7 +33,7 @@ function createSandboxContext(overrides?: Partial<SandboxContext>): SandboxConte
     browser: {
       bridgeUrl: "http://localhost:9222",
       noVncUrl: "http://localhost:6080",
-      containerName: "opencraft-sbx-browser-test",
+      containerName: "openclaw-sbx-browser-test",
     },
   } satisfies SandboxContext;
   return { ...base, ...overrides };
@@ -46,7 +49,7 @@ describe("buildEmbeddedSandboxInfo", () => {
 
     expect(buildEmbeddedSandboxInfo(sandbox)).toEqual({
       enabled: true,
-      workspaceDir: "/tmp/opencraft-sandbox",
+      workspaceDir: "/tmp/openclaw-sandbox",
       containerWorkspaceDir: "/workspace",
       workspaceAccess: "none",
       agentWorkspaceMount: undefined,
@@ -70,7 +73,7 @@ describe("buildEmbeddedSandboxInfo", () => {
       }),
     ).toEqual({
       enabled: true,
-      workspaceDir: "/tmp/opencraft-sandbox",
+      workspaceDir: "/tmp/openclaw-sandbox",
       containerWorkspaceDir: "/workspace",
       workspaceAccess: "none",
       agentWorkspaceMount: undefined,

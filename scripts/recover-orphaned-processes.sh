@@ -144,9 +144,9 @@ if (candidatePids.length > 0) {
 const includePattern = /codex|claude/i;
 
 const excludePatterns = [
-  /opencraft-gateway/i,
+  /openclaw-gateway/i,
   /signal-cli/i,
-  /node_modules\/\.bin\/opencraft/i,
+  /node_modules\/\.bin\/openclaw/i,
   /recover-orphaned-processes\.sh/i,
 ];
 

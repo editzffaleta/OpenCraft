@@ -1,7 +1,7 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/mattermost";
 import { expect, vi } from "vitest";
 
-export function createMattermostTestConfig(): OpenCraftConfig {
+export function createMattermostTestConfig(): OpenClawConfig {
   return {
     channels: {
       mattermost: {

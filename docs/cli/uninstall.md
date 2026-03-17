@@ -1,20 +1,20 @@
 ---
-summary: "Referência do CLI para `opencraft uninstall` (remover serviço do gateway + dados locais)"
+summary: "CLI reference for `openclaw uninstall` (remove gateway service + local data)"
 read_when:
-  - Você quer remover o serviço do gateway e/ou estado local
-  - Você quer fazer um dry-run primeiro
+  - You want to remove the gateway service and/or local state
+  - You want a dry-run first
 title: "uninstall"
 ---
 
-# `opencraft uninstall`
+# `openclaw uninstall`
 
-Desinstalar o serviço do gateway + dados locais (CLI permanece).
+Uninstall the gateway service + local data (CLI remains).
 
 ```bash
-opencraft backup create
-opencraft uninstall
-opencraft uninstall --all --yes
-opencraft uninstall --dry-run
+openclaw backup create
+openclaw uninstall
+openclaw uninstall --all --yes
+openclaw uninstall --dry-run
 ```
 
-Rode `opencraft backup create` primeiro se quiser um snapshot restaurável antes de remover estado ou workspaces.
+Run `openclaw backup create` first if you want a restorable snapshot before removing state or workspaces.

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { type Api, getEnvApiKey, type Model } from "@mariozechner/pi-ai";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ModelProviderAuthMode, ModelProviderConfig } from "../config/types.js";
 import { coerceSecretRef } from "../config/types.secrets.js";
 import { getShellEnvAppliedKeys } from "../infra/shell-env.js";
@@ -25,7 +25,7 @@ import {
   isNonSecretApiKeyMarker,
   OLLAMA_LOCAL_AUTH_MARKER,
 } from "./model-auth-markers.js";
-import { normalizeProviderId } from "./model-selection.js";
+import { normalizeProviderId, normalizeProviderIdForAuth } from "./model-selection.js";
 
 export { ensureAuthProfileStore, resolveAuthProfileOrder } from "./auth-profiles.js";
 
@@ -35,9 +35,17 @@ const AWS_BEARER_ENV = "AWS_BEARER_TOKEN_BEDROCK";
 const AWS_ACCESS_KEY_ENV = "AWS_ACCESS_KEY_ID";
 const AWS_SECRET_KEY_ENV = "AWS_SECRET_ACCESS_KEY";
 const AWS_PROFILE_ENV = "AWS_PROFILE";
+let providerRuntimePromise:
+  | Promise<typeof import("../plugins/provider-runtime.runtime.js")>
+  | undefined;
+
+function loadProviderRuntime() {
+  providerRuntimePromise ??= import("../plugins/provider-runtime.runtime.js");
+  return providerRuntimePromise;
+}
 
 function resolveProviderConfig(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
 ): ModelProviderConfig | undefined {
   const providers = cfg?.models?.providers ?? {};
@@ -59,7 +67,7 @@ function resolveProviderConfig(
 }
 
 export function getCustomProviderApiKey(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
 ): string | undefined {
   const entry = resolveProviderConfig(cfg, provider);
@@ -72,7 +80,7 @@ type ResolvedCustomProviderApiKey = {
 };
 
 export function resolveUsableCustomProviderApiKey(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   provider: string;
   env?: NodeJS.ProcessEnv;
 }): ResolvedCustomProviderApiKey | null {
@@ -102,7 +110,7 @@ export function resolveUsableCustomProviderApiKey(params: {
 }
 
 export function hasUsableCustomProviderApiKey(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
   env?: NodeJS.ProcessEnv,
 ): boolean {
@@ -110,7 +118,7 @@ export function hasUsableCustomProviderApiKey(
 }
 
 function resolveProviderAuthOverride(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
 ): ModelProviderAuthMode | undefined {
   const entry = resolveProviderConfig(cfg, provider);
@@ -156,7 +164,7 @@ function isCustomLocalProviderConfig(providerConfig: ModelProviderConfig): boole
 }
 
 function resolveSyntheticLocalProviderAuth(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   provider: string;
 }): ResolvedProviderAuth | null {
   const providerConfig = resolveProviderConfig(params.cfg, params.provider);
@@ -194,7 +202,7 @@ function resolveSyntheticLocalProviderAuth(params: {
 
   // Custom providers pointing at a local server (e.g. llama.cpp, vLLM, LocalAI)
   // typically don't require auth. Synthesize a local key so the auth resolver
-  // doesn't reject them when the user left the API key blank during onboarding.
+  // doesn't reject them when the user left the API key blank during setup.
   if (providerConfig.baseUrl && isLocalBaseUrl(providerConfig.baseUrl)) {
     return {
       apiKey: CUSTOM_LOCAL_AUTH_MARKER,
@@ -273,7 +281,7 @@ export type ResolvedProviderAuth = {
 
 export async function resolveApiKeyForProvider(params: {
   provider: string;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   profileId?: string;
   preferredProfile?: string;
   store?: AuthProfileStore;
@@ -358,13 +366,20 @@ export async function resolveApiKeyForProvider(params: {
     return resolveAwsSdkAuthInfo();
   }
 
-  if (provider === "openai") {
-    const hasCodex = listProfilesForProvider(store, "openai-codex").length > 0;
-    if (hasCodex) {
-      throw new Error(
-        'No API key found for provider "openai". You are authenticated with OpenAI Codex OAuth. Use openai-codex/gpt-5.4 (OAuth) or set OPENAI_API_KEY to use openai/gpt-5.4.',
-      );
-    }
+  const { buildProviderMissingAuthMessageWithPlugin } = await loadProviderRuntime();
+  const pluginMissingAuthMessage = buildProviderMissingAuthMessageWithPlugin({
+    provider,
+    config: cfg,
+    context: {
+      config: cfg,
+      agentDir: params.agentDir,
+      env: process.env,
+      provider,
+      listProfileIds: (providerId) => listProfilesForProvider(store, providerId),
+    },
+  });
+  if (pluginMissingAuthMessage) {
+    throw new Error(pluginMissingAuthMessage);
   }
 
   const authStorePath = resolveAuthStorePathForDisplay(params.agentDir);
@@ -373,7 +388,7 @@ export async function resolveApiKeyForProvider(params: {
     [
       `No API key found for provider "${provider}".`,
       `Auth store: ${authStorePath} (agentDir: ${resolvedAgentDir}).`,
-      `Configure auth for this agent (${formatCliCommand("opencraft agents add <id>")}) or copy auth-profiles.json from the main agentDir.`,
+      `Configure auth for this agent (${formatCliCommand("openclaw agents add <id>")}) or copy auth-profiles.json from the main agentDir.`,
     ].join(" "),
   );
 }
@@ -385,7 +400,7 @@ export function resolveEnvApiKey(
   provider: string,
   env: NodeJS.ProcessEnv = process.env,
 ): EnvApiKeyResult | null {
-  const normalized = normalizeProviderId(provider);
+  const normalized = normalizeProviderIdForAuth(provider);
   const applied = new Set(getShellEnvAppliedKeys());
   const pick = (envVar: string): EnvApiKeyResult | null => {
     const value = normalizeOptionalSecretInput(env[envVar]);
@@ -418,7 +433,7 @@ export function resolveEnvApiKey(
 
 export function resolveModelAuthMode(
   provider?: string,
-  cfg?: OpenCraftConfig,
+  cfg?: OpenClawConfig,
   store?: AuthProfileStore,
 ): ModelAuthMode | undefined {
   const resolved = provider?.trim();
@@ -472,9 +487,59 @@ export function resolveModelAuthMode(
   return "unknown";
 }
 
+export async function hasAvailableAuthForProvider(params: {
+  provider: string;
+  cfg?: OpenClawConfig;
+  preferredProfile?: string;
+  store?: AuthProfileStore;
+  agentDir?: string;
+}): Promise<boolean> {
+  const { provider, cfg, preferredProfile } = params;
+  const store = params.store ?? ensureAuthProfileStore(params.agentDir);
+
+  const authOverride = resolveProviderAuthOverride(cfg, provider);
+  if (authOverride === "aws-sdk") {
+    return true;
+  }
+
+  const order = resolveAuthProfileOrder({
+    cfg,
+    store,
+    provider,
+    preferredProfile,
+  });
+  for (const candidate of order) {
+    try {
+      const resolved = await resolveApiKeyForProfile({
+        cfg,
+        store,
+        profileId: candidate,
+        agentDir: params.agentDir,
+      });
+      if (resolved) {
+        return true;
+      }
+    } catch (err) {
+      log.debug?.(`auth profile "${candidate}" failed for provider "${provider}": ${String(err)}`);
+    }
+  }
+
+  if (resolveEnvApiKey(provider)) {
+    return true;
+  }
+  if (resolveUsableCustomProviderApiKey({ cfg, provider })) {
+    return true;
+  }
+  if (resolveSyntheticLocalProviderAuth({ cfg, provider })) {
+    return true;
+  }
+
+  return authOverride === undefined && normalizeProviderId(provider) === "amazon-bedrock";
+}
+
 export async function getApiKeyForModel(params: {
   model: Model<Api>;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   profileId?: string;
   preferredProfile?: string;
   store?: AuthProfileStore;

@@ -1,15 +1,15 @@
 {
-  "name": "@opencraft/memory-lancedb",
+  "name": "@openclaw/memory-lancedb",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft LanceDB-backed long-term memory plugin with auto-recall/capture",
+  "description": "OpenClaw LanceDB-backed long-term memory plugin with auto-recall/capture",
   "type": "module",
   "dependencies": {
     "@lancedb/lancedb": "^0.26.2",
     "@sinclair/typebox": "0.34.48",
     "openai": "^6.29.0"
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

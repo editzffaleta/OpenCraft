@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "./config.js";
+import type { OpenClawConfig } from "./config.js";
 
 export type DangerousNameMatchingConfig = {
   dangerouslyAllowNameMatching?: boolean;
@@ -29,7 +29,7 @@ export function isDangerousNameMatchingEnabled(
 }
 
 export function collectProviderDangerousNameMatchingScopes(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   provider: string,
 ): ProviderDangerousNameMatchingScope[] {
   const scopes: ProviderDangerousNameMatchingScope[] = [];

@@ -1,5 +1,5 @@
 import type { RequestClient } from "@buape/carbon";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { RetryConfig } from "../../../src/infra/retry.js";
 
 export class DiscordSendError extends Error {
@@ -29,7 +29,7 @@ export type DiscordSendResult = {
 };
 
 export type DiscordReactOpts = {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   token?: string;
   accountId?: string;
   rest?: RequestClient;

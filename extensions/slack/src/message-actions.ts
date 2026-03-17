@@ -3,10 +3,10 @@ import type {
   ChannelMessageActionName,
   ChannelToolSend,
 } from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { listEnabledSlackAccounts } from "./accounts.js";
 
-export function listSlackMessageActions(cfg: OpenCraftConfig): ChannelMessageActionName[] {
+export function listSlackMessageActions(cfg: OpenClawConfig): ChannelMessageActionName[] {
   const accounts = listEnabledSlackAccounts(cfg).filter(
     (account) => account.botTokenSource !== "none",
   );

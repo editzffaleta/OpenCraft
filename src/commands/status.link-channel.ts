@@ -1,6 +1,6 @@
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveDefaultChannelAccountContext } from "./channel-account-context.js";
 
 export type LinkChannelContext = {
@@ -12,11 +12,14 @@ export type LinkChannelContext = {
 };
 
 export async function resolveLinkChannelContext(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
 ): Promise<LinkChannelContext | null> {
   for (const plugin of listChannelPlugins()) {
     const { defaultAccountId, account, enabled, configured } =
-      await resolveDefaultChannelAccountContext(plugin, cfg);
+      await resolveDefaultChannelAccountContext(plugin, cfg, {
+        mode: "read_only",
+        commandName: "status",
+      });
     const snapshot = plugin.config.describeAccount
       ? plugin.config.describeAccount(account, cfg)
       : ({

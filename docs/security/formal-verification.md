@@ -1,165 +1,167 @@
 ---
-title: Verificação Formal (Modelos de Segurança)
-summary: Modelos de segurança verificados por máquina para os caminhos de maior risco do OpenCraft.
+title: Formal Verification (Security Models)
+summary: Machine-checked security models for OpenClaw’s highest-risk paths.
 read_when:
-  - Revisando garantias ou limites de modelos de segurança formal
-  - Reproduzindo ou atualizando verificações de modelo de segurança TLA+/TLC
+  - Reviewing formal security model guarantees or limits
+  - Reproducing or updating TLA+/TLC security model checks
 permalink: /security/formal-verification/
 ---
 
-# Verificação Formal (Modelos de Segurança)
+# Formal Verification (Security Models)
 
-Esta página acompanha os **modelos de segurança formais** do OpenCraft (TLA+/TLC atualmente; mais conforme necessário).
+This page tracks OpenClaw’s **formal security models** (TLA+/TLC today; more as needed).
 
-> Nota: alguns links mais antigos podem se referir ao nome anterior do projeto.
+> Note: some older links may refer to the previous project name.
 
-**Objetivo (norte verdadeiro):** fornecer um argumento verificado por máquina de que o OpenCraft aplica sua política de segurança pretendida (autorização, isolamento de sessão, controle de ferramentas e segurança contra má configuração), sob premissas explícitas.
+**Goal (north star):** provide a machine-checked argument that OpenClaw enforces its
+intended security policy (authorization, session isolation, tool gating, and
+misconfiguration safety), under explicit assumptions.
 
-**O que isso é (hoje):** um **conjunto de regressão de segurança** executável e orientado por atacante:
+**What this is (today):** an executable, attacker-driven **security regression suite**:
 
-- Cada afirmação tem uma verificação de modelo executável sobre um espaço de estados finito.
-- Muitas afirmações têm um **modelo negativo** pareado que produz um trace de contraexemplo para uma classe de bug realista.
+- Each claim has a runnable model-check over a finite state space.
+- Many claims have a paired **negative model** that produces a counterexample trace for a realistic bug class.
 
-**O que ainda não é:** uma prova de que "o OpenCraft é seguro em todos os aspectos" ou que a implementação TypeScript completa está correta.
+**What this is not (yet):** a proof that “OpenClaw is secure in all respects” or that the full TypeScript implementation is correct.
 
-## Onde ficam os modelos
+## Where the models live
 
-Os modelos são mantidos em um repositório separado: [vignesh07/openclaw-formal-models](https://github.com/vignesh07/openclaw-formal-models).
+Models are maintained in a separate repo: [vignesh07/openclaw-formal-models](https://github.com/vignesh07/openclaw-formal-models).
 
-## Ressalvas importantes
+## Important caveats
 
-- Estes são **modelos**, não a implementação TypeScript completa. Divergência entre modelo e código é possível.
-- Os resultados são limitados pelo espaço de estados explorado pelo TLC; "verde" não implica segurança além das premissas e limites modelados.
-- Algumas afirmações dependem de premissas ambientais explícitas (ex.: implantação correta, entradas de configuração corretas).
+- These are **models**, not the full TypeScript implementation. Drift between model and code is possible.
+- Results are bounded by the state space explored by TLC; “green” does not imply security beyond the modeled assumptions and bounds.
+- Some claims rely on explicit environmental assumptions (e.g., correct deployment, correct configuration inputs).
 
-## Reproduzindo resultados
+## Reproducing results
 
-Atualmente, os resultados são reproduzidos clonando o repositório de modelos localmente e executando o TLC (veja abaixo). Uma iteração futura poderia oferecer:
+Today, results are reproduced by cloning the models repo locally and running TLC (see below). A future iteration could offer:
 
-- Modelos executados em CI com artefatos públicos (traces de contraexemplo, logs de execução)
-- um fluxo de trabalho hospedado "execute este modelo" para verificações pequenas e limitadas
+- CI-run models with public artifacts (counterexample traces, run logs)
+- a hosted “run this model” workflow for small, bounded checks
 
-Primeiros passos:
+Getting started:
 
 ```bash
 git clone https://github.com/vignesh07/openclaw-formal-models
 cd openclaw-formal-models
 
-# Java 11+ necessário (TLC roda na JVM).
-# O repositório inclui um `tla2tools.jar` fixado (ferramentas TLA+) e fornece `bin/tlc` + alvos Make.
+# Java 11+ required (TLC runs on the JVM).
+# The repo vendors a pinned `tla2tools.jar` (TLA+ tools) and provides `bin/tlc` + Make targets.
 
-make <alvo>
+make <target>
 ```
 
-### Exposição do gateway e má configuração de gateway aberto
+### Gateway exposure and open gateway misconfiguration
 
-**Afirmação:** vincular além do loopback sem autenticação pode tornar o comprometimento remoto possível / aumenta a exposição; token/senha bloqueia atacantes não autenticados (conforme as premissas do modelo).
+**Claim:** binding beyond loopback without auth can make remote compromise possible / increases exposure; token/password blocks unauth attackers (per the model assumptions).
 
-- Execuções verdes:
+- Green runs:
   - `make gateway-exposure-v2`
   - `make gateway-exposure-v2-protected`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make gateway-exposure-v2-negative`
 
-Veja também: `docs/gateway-exposure-matrix.md` no repositório de modelos.
+See also: `docs/gateway-exposure-matrix.md` in the models repo.
 
-### Pipeline Nodes.run (capacidade de maior risco)
+### Nodes.run pipeline (highest-risk capability)
 
-**Afirmação:** `nodes.run` requer (a) lista de permissões de comandos de node mais comandos declarados e (b) aprovação em tempo real quando configurado; aprovações são tokenizadas para evitar replay (no modelo).
+**Claim:** `nodes.run` requires (a) node command allowlist plus declared commands and (b) live approval when configured; approvals are tokenized to prevent replay (in the model).
 
-- Execuções verdes:
+- Green runs:
   - `make nodes-pipeline`
   - `make approvals-token`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make nodes-pipeline-negative`
   - `make approvals-token-negative`
 
-### Armazenamento de pareamento (controle de DM)
+### Pairing store (DM gating)
 
-**Afirmação:** solicitações de pareamento respeitam TTL e limites de solicitações pendentes.
+**Claim:** pairing requests respect TTL and pending-request caps.
 
-- Execuções verdes:
+- Green runs:
   - `make pairing`
   - `make pairing-cap`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make pairing-negative`
   - `make pairing-cap-negative`
 
-### Controle de entrada (menções + bypass de comando de controle)
+### Ingress gating (mentions + control-command bypass)
 
-**Afirmação:** em contextos de grupo que exigem menção, um "comando de controle" não autorizado não pode contornar o controle de menção.
+**Claim:** in group contexts requiring mention, an unauthorized “control command” cannot bypass mention gating.
 
-- Verdes:
+- Green:
   - `make ingress-gating`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make ingress-gating-negative`
 
-### Isolamento de roteamento/chave de sessão
+### Routing/session-key isolation
 
-**Afirmação:** DMs de pares distintos não colapsam na mesma sessão, a menos que explicitamente vinculados/configurados.
+**Claim:** DMs from distinct peers do not collapse into the same session unless explicitly linked/configured.
 
-- Verdes:
+- Green:
   - `make routing-isolation`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make routing-isolation-negative`
 
-## v1++: modelos limitados adicionais (concorrência, retries, correção de trace)
+## v1++: additional bounded models (concurrency, retries, trace correctness)
 
-Estes são modelos de acompanhamento que aumentam a fidelidade em torno de modos de falha do mundo real (atualizações não atômicas, retries e fan-out de mensagens).
+These are follow-on models that tighten fidelity around real-world failure modes (non-atomic updates, retries, and message fan-out).
 
-### Concorrência / idempotência do armazenamento de pareamento
+### Pairing store concurrency / idempotency
 
-**Afirmação:** um armazenamento de pareamento deve aplicar `MaxPending` e idempotência mesmo sob intercalações (ou seja, "verificar-depois-escrever" deve ser atômico/bloqueado; atualização não deve criar duplicatas).
+**Claim:** a pairing store should enforce `MaxPending` and idempotency even under interleavings (i.e., “check-then-write” must be atomic / locked; refresh shouldn’t create duplicates).
 
-O que significa:
+What it means:
 
-- Sob solicitações concorrentes, você não pode exceder `MaxPending` para um canal.
-- Solicitações/atualizações repetidas para o mesmo `(canal, remetente)` não devem criar linhas pendentes vivas duplicadas.
+- Under concurrent requests, you can’t exceed `MaxPending` for a channel.
+- Repeated requests/refreshes for the same `(channel, sender)` should not create duplicate live pending rows.
 
-- Execuções verdes:
-  - `make pairing-race` (verificação de limite atômico/bloqueado)
+- Green runs:
+  - `make pairing-race` (atomic/locked cap check)
   - `make pairing-idempotency`
   - `make pairing-refresh`
   - `make pairing-refresh-race`
-- Vermelhas (esperadas):
-  - `make pairing-race-negative` (corrida de início/commit não atômico no limite)
+- Red (expected):
+  - `make pairing-race-negative` (non-atomic begin/commit cap race)
   - `make pairing-idempotency-negative`
   - `make pairing-refresh-negative`
   - `make pairing-refresh-race-negative`
 
-### Correlação de trace de entrada / idempotência
+### Ingress trace correlation / idempotency
 
-**Afirmação:** a ingestão deve preservar a correlação de trace entre fan-out e ser idempotente sob retries do provedor.
+**Claim:** ingestion should preserve trace correlation across fan-out and be idempotent under provider retries.
 
-O que significa:
+What it means:
 
-- Quando um evento externo se torna múltiplas mensagens internas, cada parte mantém a mesma identidade de trace/evento.
-- Retries não resultam em processamento duplo.
-- Se os IDs de evento do provedor estiverem ausentes, a deduplicação recorre a uma chave segura (ex.: ID de trace) para evitar descartar eventos distintos.
+- When one external event becomes multiple internal messages, every part keeps the same trace/event identity.
+- Retries do not result in double-processing.
+- If provider event IDs are missing, dedupe falls back to a safe key (e.g., trace ID) to avoid dropping distinct events.
 
-- Verdes:
+- Green:
   - `make ingress-trace`
   - `make ingress-trace2`
   - `make ingress-idempotency`
   - `make ingress-dedupe-fallback`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make ingress-trace-negative`
   - `make ingress-trace2-negative`
   - `make ingress-idempotency-negative`
   - `make ingress-dedupe-fallback-negative`
 
-### Precedência de dmScope de roteamento + identityLinks
+### Routing dmScope precedence + identityLinks
 
-**Afirmação:** o roteamento deve manter sessões de DM isoladas por padrão e apenas colapsar sessões quando explicitamente configurado (precedência de canal + links de identidade).
+**Claim:** routing must keep DM sessions isolated by default, and only collapse sessions when explicitly configured (channel precedence + identity links).
 
-O que significa:
+What it means:
 
-- Substituições de dmScope específicas de canal devem prevalecer sobre padrões globais.
-- identityLinks deve colapsar apenas dentro de grupos vinculados explicitamente, não entre pares não relacionados.
+- Channel-specific dmScope overrides must win over global defaults.
+- identityLinks should collapse only within explicit linked groups, not across unrelated peers.
 
-- Verdes:
+- Green:
   - `make routing-precedence`
   - `make routing-identitylinks`
-- Vermelhas (esperadas):
+- Red (expected):
   - `make routing-precedence-negative`
   - `make routing-identitylinks-negative`

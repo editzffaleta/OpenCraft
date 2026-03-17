@@ -1,7 +1,7 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
-import ai.opencraft.app.SecurePrefs
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.SecurePrefs
+import ai.openclaw.app.gateway.GatewaySession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/tlon";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/tlon";
 
 export type TlonResolvedAccount = {
   accountId: string;
@@ -23,7 +23,7 @@ export type TlonResolvedAccount = {
 };
 
 export function resolveTlonAccount(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId?: string | null,
 ): TlonResolvedAccount {
   const base = cfg.channels?.tlon as
@@ -121,7 +121,7 @@ export function resolveTlonAccount(
   };
 }
 
-export function listTlonAccountIds(cfg: OpenCraftConfig): string[] {
+export function listTlonAccountIds(cfg: OpenClawConfig): string[] {
   const base = cfg.channels?.tlon as
     | { ship?: string; accounts?: Record<string, Record<string, unknown>> }
     | undefined;

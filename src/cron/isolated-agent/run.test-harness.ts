@@ -363,7 +363,7 @@ export function resetRunCronIsolatedAgentTurnHarness(): void {
   resolveConfiguredModelRefMock.mockReturnValue({ provider: "openai", model: "gpt-4" });
   resolveAllowedModelRefMock.mockReturnValue({ ref: { provider: "openai", model: "gpt-4" } });
   resolveHooksGmailModelMock.mockReturnValue(null);
-  resolveThinkingDefaultMock.mockReturnValue(undefined);
+  resolveThinkingDefaultMock.mockReturnValue("off");
   getModelRefStatusMock.mockReturnValue({ allowed: false });
   isCliProviderMock.mockReturnValue(false);
 
@@ -401,17 +401,17 @@ export function resetRunCronIsolatedAgentTurnHarness(): void {
 }
 
 export function clearFastTestEnv(): string | undefined {
-  const previousFastTestEnv = process.env.OPENCRAFT_TEST_FAST;
-  delete process.env.OPENCRAFT_TEST_FAST;
+  const previousFastTestEnv = process.env.OPENCLAW_TEST_FAST;
+  delete process.env.OPENCLAW_TEST_FAST;
   return previousFastTestEnv;
 }
 
 export function restoreFastTestEnv(previousFastTestEnv: string | undefined): void {
   if (previousFastTestEnv == null) {
-    delete process.env.OPENCRAFT_TEST_FAST;
+    delete process.env.OPENCLAW_TEST_FAST;
     return;
   }
-  process.env.OPENCRAFT_TEST_FAST = previousFastTestEnv;
+  process.env.OPENCLAW_TEST_FAST = previousFastTestEnv;
 }
 
 export async function loadRunCronIsolatedAgentTurn() {

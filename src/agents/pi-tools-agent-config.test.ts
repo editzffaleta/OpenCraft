@@ -3,8 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import "./test-helpers/fast-coding-tools.js";
-import type { OpenCraftConfig } from "../config/config.js";
-import { createOpenCraftCodingTools } from "./pi-tools.js";
+import type { OpenClawConfig } from "../config/config.js";
+import { createOpenClawCodingTools } from "./pi-tools.js";
 import type { SandboxDockerConfig } from "./sandbox.js";
 import type { SandboxFsBridge } from "./sandbox/fs-bridge.js";
 import { createRestrictedAgentSandboxConfig } from "./test-helpers/sandbox-agent-config-fixtures.js";
@@ -46,7 +46,7 @@ describe("Agent-specific tool filtering", () => {
       patch: string;
     }) => Promise<void>,
   ) {
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-pi-tools-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-pi-tools-"));
     const escapedPath = path.join(
       path.dirname(workspaceDir),
       `escaped-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.txt`,
@@ -54,7 +54,7 @@ describe("Agent-specific tool filtering", () => {
     const relativeEscape = path.relative(workspaceDir, escapedPath);
 
     try {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         tools: {
           allow: ["read", "exec"],
           exec: {
@@ -66,7 +66,7 @@ describe("Agent-specific tool filtering", () => {
         },
       };
 
-      const tools = createOpenCraftCodingTools({
+      const tools = createOpenClawCodingTools({
         config: cfg,
         sessionKey: "agent:main:main",
         workspaceDir,
@@ -96,8 +96,8 @@ describe("Agent-specific tool filtering", () => {
     }
   }
 
-  function createMainSessionTools(cfg: OpenCraftConfig) {
-    return createOpenCraftCodingTools({
+  function createMainSessionTools(cfg: OpenClawConfig) {
+    return createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test",
@@ -106,16 +106,16 @@ describe("Agent-specific tool filtering", () => {
   }
 
   function createMainAgentConfig(params: {
-    tools: NonNullable<OpenCraftConfig["tools"]>;
-    agentTools?: NonNullable<NonNullable<OpenCraftConfig["agents"]>["list"]>[number]["tools"];
-  }): OpenCraftConfig {
+    tools: NonNullable<OpenClawConfig["tools"]>;
+    agentTools?: NonNullable<NonNullable<OpenClawConfig["agents"]>["list"]>[number]["tools"];
+  }): OpenClawConfig {
     return {
       tools: params.tools,
       agents: {
         list: [
           {
             id: "main",
-            workspace: "~/opencraft",
+            workspace: "~/openclaw",
             ...(params.agentTools ? { tools: params.agentTools } : {}),
           },
         ],
@@ -125,7 +125,7 @@ describe("Agent-specific tool filtering", () => {
 
   function createExecHostDefaultsConfig(
     agents: Array<{ id: string; execHost?: "gateway" | "sandbox" }>,
-  ): OpenCraftConfig {
+  ): OpenClawConfig {
     return {
       tools: {
         exec: {
@@ -189,7 +189,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should allow apply_patch when exec is allow-listed and applyPatch is enabled", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         allow: ["read", "exec"],
         exec: {
@@ -198,7 +198,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test",
@@ -234,7 +234,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply agent-specific tool policy", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         allow: ["read", "write", "exec"],
         deny: [],
@@ -243,7 +243,7 @@ describe("Agent-specific tool filtering", () => {
         list: [
           {
             id: "restricted",
-            workspace: "~/opencraft-restricted",
+            workspace: "~/openclaw-restricted",
             tools: {
               allow: ["read"], // Agent override: only read
               deny: ["exec", "write", "edit"],
@@ -253,7 +253,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:restricted:main",
       workspaceDir: "/tmp/test-restricted",
@@ -267,7 +267,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply provider-specific tool policy", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         allow: ["read", "write", "exec"],
         byProvider: {
@@ -278,7 +278,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-provider",
@@ -291,7 +291,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply provider-specific tool profile overrides", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         profile: "coding",
         byProvider: {
@@ -302,7 +302,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-provider-profile",
@@ -316,17 +316,17 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should allow different tool policies for different agents", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       agents: {
         list: [
           {
             id: "main",
-            workspace: "~/opencraft",
+            workspace: "~/openclaw",
             // No tools restriction - all tools available
           },
           {
             id: "family",
-            workspace: "~/opencraft-family",
+            workspace: "~/openclaw-family",
             tools: {
               allow: ["read"],
               deny: ["exec", "write", "edit", "process"],
@@ -337,7 +337,7 @@ describe("Agent-specific tool filtering", () => {
     };
 
     // main agent: all tools
-    const mainTools = createOpenCraftCodingTools({
+    const mainTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-main",
@@ -350,7 +350,7 @@ describe("Agent-specific tool filtering", () => {
     expect(mainToolNames).not.toContain("apply_patch");
 
     // family agent: restricted
-    const familyTools = createOpenCraftCodingTools({
+    const familyTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:family:whatsapp:group:123",
       workspaceDir: "/tmp/test-family",
@@ -365,7 +365,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply group tool policy overrides (group-specific beats wildcard)", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         whatsapp: {
           groups: {
@@ -380,7 +380,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const trustedTools = createOpenCraftCodingTools({
+    const trustedTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:whatsapp:group:trusted",
       messageProvider: "whatsapp",
@@ -391,7 +391,7 @@ describe("Agent-specific tool filtering", () => {
     expect(trustedNames).toContain("read");
     expect(trustedNames).toContain("exec");
 
-    const defaultTools = createOpenCraftCodingTools({
+    const defaultTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:whatsapp:group:unknown",
       messageProvider: "whatsapp",
@@ -404,7 +404,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply per-sender tool policies for group tools", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         whatsapp: {
           groups: {
@@ -419,7 +419,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const aliceTools = createOpenCraftCodingTools({
+    const aliceTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:whatsapp:group:family",
       senderId: "alice",
@@ -430,7 +430,7 @@ describe("Agent-specific tool filtering", () => {
     expect(aliceNames).toContain("read");
     expect(aliceNames).toContain("exec");
 
-    const bobTools = createOpenCraftCodingTools({
+    const bobTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:whatsapp:group:family",
       senderId: "bob",
@@ -443,7 +443,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should not let default sender policy override group tools", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         whatsapp: {
           groups: {
@@ -460,7 +460,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const adminTools = createOpenCraftCodingTools({
+    const adminTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:whatsapp:group:locked",
       senderId: "admin",
@@ -473,7 +473,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should resolve telegram group tool policy for topic session keys", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         telegram: {
           groups: {
@@ -485,7 +485,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:telegram:group:123:topic:456",
       messageProvider: "telegram",
@@ -498,7 +498,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should inherit group tool policy for subagents from spawnedBy session keys", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       channels: {
         whatsapp: {
           groups: {
@@ -510,7 +510,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:subagent:test",
       spawnedBy: "agent:main:whatsapp:group:trusted",
@@ -523,7 +523,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should apply global tool policy before agent-specific policy", () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         deny: ["browser"], // Global deny
       },
@@ -531,7 +531,7 @@ describe("Agent-specific tool filtering", () => {
         list: [
           {
             id: "work",
-            workspace: "~/opencraft-work",
+            workspace: "~/openclaw-work",
             tools: {
               deny: ["exec", "process"], // Agent deny (override)
             },
@@ -540,7 +540,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:work:slack:dm:user123",
       workspaceDir: "/tmp/test-work",
@@ -567,17 +567,20 @@ describe("Agent-specific tool filtering", () => {
       },
     });
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:restricted:main",
       workspaceDir: "/tmp/test-restricted",
       agentDir: "/tmp/agent-restricted",
       sandbox: {
         enabled: true,
+        backendId: "docker",
         sessionKey: "agent:restricted:main",
         workspaceDir: "/tmp/sandbox",
         agentWorkspaceDir: "/tmp/test-restricted",
         workspaceAccess: "none",
+        runtimeId: "test-container",
+        runtimeLabel: "test-container",
         containerName: "test-container",
         containerWorkdir: "/workspace",
         docker: {
@@ -608,7 +611,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("should run exec synchronously when process is denied", async () => {
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       tools: {
         deny: ["process"],
         exec: {
@@ -618,7 +621,7 @@ describe("Agent-specific tool filtering", () => {
       },
     };
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-main",
@@ -637,7 +640,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("keeps sandbox as the implicit exec host default without forcing gateway approvals", async () => {
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: {},
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-main-implicit-sandbox",
@@ -661,7 +664,7 @@ describe("Agent-specific tool filtering", () => {
   });
 
   it("fails closed when exec host=sandbox is requested without sandbox runtime", async () => {
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: {},
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-main-fail-closed",
@@ -683,7 +686,7 @@ describe("Agent-specific tool filtering", () => {
       { id: "helper" },
     ]);
 
-    const mainTools = createOpenCraftCodingTools({
+    const mainTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:main:main",
       workspaceDir: "/tmp/test-main-exec-defaults",
@@ -704,7 +707,7 @@ describe("Agent-specific tool filtering", () => {
       }),
     ).rejects.toThrow("exec host not allowed");
 
-    const helperTools = createOpenCraftCodingTools({
+    const helperTools = createOpenClawCodingTools({
       config: cfg,
       sessionKey: "agent:helper:main",
       workspaceDir: "/tmp/test-helper-exec-defaults",
@@ -730,7 +733,7 @@ describe("Agent-specific tool filtering", () => {
   it("applies explicit agentId exec defaults when sessionKey is opaque", async () => {
     const cfg = createExecHostDefaultsConfig([{ id: "main", execHost: "gateway" }]);
 
-    const tools = createOpenCraftCodingTools({
+    const tools = createOpenClawCodingTools({
       config: cfg,
       agentId: "main",
       sessionKey: "run-opaque-123",

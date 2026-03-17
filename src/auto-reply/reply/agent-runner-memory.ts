@@ -13,7 +13,7 @@ import {
   normalizeUsage,
   type UsageLike,
 } from "../../agents/usage.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveAgentIdFromSessionKey,
   resolveSessionFilePath,
@@ -248,7 +248,7 @@ export async function readPromptTokensFromSessionLog(
 }
 
 export async function runMemoryFlushIfNeeded(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   followupRun: FollowupRun;
   promptForEstimate?: string;
   sessionCtx: TemplateContext;
@@ -494,6 +494,7 @@ export async function runMemoryFlushIfNeeded(params: {
           ...embeddedContext,
           ...senderContext,
           ...runBaseParams,
+          allowGatewaySubagentBinding: true,
           trigger: "memory",
           memoryFlushWritePath,
           prompt: resolveMemoryFlushPromptForRun({

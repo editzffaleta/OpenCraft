@@ -1,7 +1,7 @@
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import type { ChatType } from "../channels/chat-type.js";
 import { normalizeChatType } from "../channels/chat-type.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { shouldLogVerbose } from "../globals.js";
 import { logDebug } from "../logger.js";
 import { listBindings } from "./bindings.js";
@@ -24,7 +24,7 @@ export type RoutePeer = {
 };
 
 export type ResolveAgentRouteInput = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   channel: string;
   accountId?: string | null;
   peer?: RoutePeer | null;
@@ -111,20 +111,20 @@ export function buildAgentSessionKey(params: {
   });
 }
 
-function listAgents(cfg: OpenCraftConfig) {
+function listAgents(cfg: OpenClawConfig) {
   const agents = cfg.agents?.list;
   return Array.isArray(agents) ? agents : [];
 }
 
 type AgentLookupCache = {
-  agentsRef: OpenCraftConfig["agents"] | undefined;
+  agentsRef: OpenClawConfig["agents"] | undefined;
   byNormalizedId: Map<string, string>;
   fallbackDefaultAgentId: string;
 };
 
-const agentLookupCacheByCfg = new WeakMap<OpenCraftConfig, AgentLookupCache>();
+const agentLookupCacheByCfg = new WeakMap<OpenClawConfig, AgentLookupCache>();
 
-function resolveAgentLookupCache(cfg: OpenCraftConfig): AgentLookupCache {
+function resolveAgentLookupCache(cfg: OpenClawConfig): AgentLookupCache {
   const agentsRef = cfg.agents;
   const existing = agentLookupCacheByCfg.get(cfg);
   if (existing && existing.agentsRef === agentsRef) {
@@ -148,7 +148,7 @@ function resolveAgentLookupCache(cfg: OpenCraftConfig): AgentLookupCache {
   return next;
 }
 
-export function pickFirstExistingAgentId(cfg: OpenCraftConfig, agentId: string): string {
+export function pickFirstExistingAgentId(cfg: OpenClawConfig, agentId: string): string {
   const lookup = resolveAgentLookupCache(cfg);
   const trimmed = (agentId ?? "").trim();
   if (!trimmed) {
@@ -192,20 +192,20 @@ type BindingScope = {
 };
 
 type EvaluatedBindingsCache = {
-  bindingsRef: OpenCraftConfig["bindings"];
+  bindingsRef: OpenClawConfig["bindings"];
   byChannel: Map<string, EvaluatedBindingsByChannel>;
   byChannelAccount: Map<string, EvaluatedBinding[]>;
   byChannelAccountIndex: Map<string, EvaluatedBindingsIndex>;
 };
 
-const evaluatedBindingsCacheByCfg = new WeakMap<OpenCraftConfig, EvaluatedBindingsCache>();
+const evaluatedBindingsCacheByCfg = new WeakMap<OpenClawConfig, EvaluatedBindingsCache>();
 const MAX_EVALUATED_BINDINGS_CACHE_KEYS = 2000;
 const resolvedRouteCacheByCfg = new WeakMap<
-  OpenCraftConfig,
+  OpenClawConfig,
   {
-    bindingsRef: OpenCraftConfig["bindings"];
-    agentsRef: OpenCraftConfig["agents"];
-    sessionRef: OpenCraftConfig["session"];
+    bindingsRef: OpenClawConfig["bindings"];
+    agentsRef: OpenClawConfig["agents"];
+    sessionRef: OpenClawConfig["session"];
     byKey: Map<string, ResolvedAgentRoute>;
   }
 >();
@@ -233,7 +233,7 @@ function resolveAccountPatternKey(accountPattern: string): string {
 }
 
 function buildEvaluatedBindingsByChannel(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
 ): Map<string, EvaluatedBindingsByChannel> {
   const byChannel = new Map<string, EvaluatedBindingsByChannel>();
   let order = 0;
@@ -411,7 +411,7 @@ function buildEvaluatedBindingsIndex(bindings: EvaluatedBinding[]): EvaluatedBin
 }
 
 function getEvaluatedBindingsForChannelAccount(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   channel: string,
   accountId: string,
 ): EvaluatedBinding[] {
@@ -454,7 +454,7 @@ function getEvaluatedBindingsForChannelAccount(
 }
 
 function getEvaluatedBindingIndexForChannelAccount(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   channel: string,
   accountId: string,
 ): EvaluatedBindingsIndex {
@@ -505,7 +505,7 @@ function normalizeBindingMatch(
   };
 }
 
-function resolveRouteCacheForConfig(cfg: OpenCraftConfig): Map<string, ResolvedAgentRoute> {
+function resolveRouteCacheForConfig(cfg: OpenClawConfig): Map<string, ResolvedAgentRoute> {
   const existing = resolvedRouteCacheByCfg.get(cfg);
   if (
     existing &&

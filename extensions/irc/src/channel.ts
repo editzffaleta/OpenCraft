@@ -4,7 +4,7 @@ import {
   collectAllowlistProviderGroupPolicyWarnings,
   createScopedAccountConfigAccessors,
   formatNormalizedAllowFromEntries,
-} from "opencraft/plugin-sdk/compat";
+} from "openclaw/plugin-sdk/compat";
 import {
   buildBaseAccountStatusSnapshot,
   buildBaseChannelStatusSummary,
@@ -16,7 +16,7 @@ import {
   PAIRING_APPROVED_MESSAGE,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
-} from "opencraft/plugin-sdk/irc";
+} from "openclaw/plugin-sdk/irc";
 import { runStoppablePassiveMonitor } from "../../shared/passive-monitor.js";
 import {
   listIrcAccountIds,
@@ -32,11 +32,12 @@ import {
   isChannelTarget,
   normalizeIrcAllowEntry,
 } from "./normalize.js";
-import { ircOnboardingAdapter } from "./onboarding.js";
 import { resolveIrcGroupMatch, resolveIrcRequireMention } from "./policy.js";
 import { probeIrc } from "./probe.js";
 import { getIrcRuntime } from "./runtime.js";
 import { sendMessageIrc } from "./send.js";
+import { ircSetupAdapter } from "./setup-core.js";
+import { ircSetupWizard } from "./setup-surface.js";
 import type { CoreConfig, IrcProbe } from "./types.js";
 
 const meta = getChatChannelMeta("irc");
@@ -66,7 +67,8 @@ export const ircPlugin: ChannelPlugin<ResolvedIrcAccount, IrcProbe> = {
     ...meta,
     quickstartAllowFrom: true,
   },
-  onboarding: ircOnboardingAdapter,
+  setup: ircSetupAdapter,
+  setupWizard: ircSetupWizard,
   pairing: {
     idLabel: "ircUser",
     normalizeAllowEntry: (entry) => normalizeIrcAllowEntry(entry),

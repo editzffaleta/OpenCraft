@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 enum class VoiceWakeMode(val rawValue: String) {
   Off("off"),

@@ -1,10 +1,10 @@
 ---
 name: oracle
-description: Melhores práticas para usar o CLI oracle (bundling de prompt + arquivos, engines, sessões e padrões de anexo de arquivos).
+description: Best practices for using the oracle CLI (prompt + file bundling, engines, sessions, and file attachment patterns).
 homepage: https://askoracle.dev
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "🧿",
         "requires": { "bins": ["oracle"] },
@@ -15,111 +15,111 @@ metadata:
               "kind": "node",
               "package": "@steipete/oracle",
               "bins": ["oracle"],
-              "label": "Instalar oracle (node)",
+              "label": "Install oracle (node)",
             },
           ],
       },
   }
 ---
 
-# oracle — melhor uso
+# oracle — best use
 
-O Oracle agrupa seu prompt + arquivos selecionados em uma única solicitação "one-shot" para que outro modelo possa responder com contexto real do repositório (API ou automação de navegador). Trate a saída como consultiva: verifique com código + testes.
+Oracle bundles your prompt + selected files into one “one-shot” request so another model can answer with real repo context (API or browser automation). Treat output as advisory: verify against code + tests.
 
-## Caso de uso principal (navegador, GPT-5.2 Pro)
+## Main use case (browser, GPT‑5.2 Pro)
 
-Fluxo padrão aqui: `--engine browser` com GPT-5.2 Pro no ChatGPT. Este é o caminho comum de "longa reflexão": ~10 minutos a ~1 hora é normal; espere uma sessão armazenada que você pode reatachar.
+Default workflow here: `--engine browser` with GPT‑5.2 Pro in ChatGPT. This is the common “long think” path: ~10 minutes to ~1 hour is normal; expect a stored session you can reattach to.
 
-Padrões recomendados:
+Recommended defaults:
 
 - Engine: browser (`--engine browser`)
-- Modelo: GPT-5.2 Pro (`--model gpt-5.2-pro` ou `--model "5.2 Pro"`)
+- Model: GPT‑5.2 Pro (`--model gpt-5.2-pro` or `--model "5.2 Pro"`)
 
-## Caminho dourado
+## Golden path
 
-1. Escolha um conjunto de arquivos enxuto (o menor número de arquivos que ainda contém a verdade).
-2. Pré-visualize payload + custo de tokens (`--dry-run` + `--files-report`).
-3. Use modo browser para o fluxo usual GPT-5.2 Pro; use API apenas quando explicitamente quiser.
-4. Se a execução se desconectar/timeout: reatachar à sessão armazenada (não re-executar).
+1. Pick a tight file set (fewest files that still contain the truth).
+2. Preview payload + token spend (`--dry-run` + `--files-report`).
+3. Use browser mode for the usual GPT‑5.2 Pro workflow; use API only when you explicitly want it.
+4. If the run detaches/timeouts: reattach to the stored session (don’t re-run).
 
-## Comandos (preferidos)
+## Commands (preferred)
 
-- Ajuda:
+- Help:
   - `oracle --help`
-  - Se o binário não estiver instalado: `npx -y @steipete/oracle --help` (evite `pnpx` aqui; bindings sqlite).
+  - If the binary isn’t installed: `npx -y @steipete/oracle --help` (avoid `pnpx` here; sqlite bindings).
 
-- Pré-visualizar (sem tokens):
-  - `oracle --dry-run summary -p "<tarefa>" --file "src/**" --file "!**/*.test.*"`
-  - `oracle --dry-run full -p "<tarefa>" --file "src/**"`
+- Preview (no tokens):
+  - `oracle --dry-run summary -p "<task>" --file "src/**" --file "!**/*.test.*"`
+  - `oracle --dry-run full -p "<task>" --file "src/**"`
 
-- Verificação de tokens:
-  - `oracle --dry-run summary --files-report -p "<tarefa>" --file "src/**"`
+- Token sanity:
+  - `oracle --dry-run summary --files-report -p "<task>" --file "src/**"`
 
-- Execução browser (caminho principal; longa duração é normal):
-  - `oracle --engine browser --model gpt-5.2-pro -p "<tarefa>" --file "src/**"`
+- Browser run (main path; long-running is normal):
+  - `oracle --engine browser --model gpt-5.2-pro -p "<task>" --file "src/**"`
 
-- Fallback de cole manual:
-  - `oracle --render --copy -p "<tarefa>" --file "src/**"`
-  - Nota: `--copy` é um alias oculto para `--copy-markdown`.
+- Manual paste fallback:
+  - `oracle --render --copy -p "<task>" --file "src/**"`
+  - Note: `--copy` is a hidden alias for `--copy-markdown`.
 
-## Anexar arquivos (`--file`)
+## Attaching files (`--file`)
 
-`--file` aceita arquivos, diretórios e globs. Pode ser passado múltiplas vezes; entradas podem ser separadas por vírgula.
+`--file` accepts files, directories, and globs. You can pass it multiple times; entries can be comma-separated.
 
-- Incluir:
+- Include:
   - `--file "src/**"`
   - `--file src/index.ts`
   - `--file docs --file README.md`
 
-- Excluir:
+- Exclude:
   - `--file "src/**" --file "!src/**/*.test.ts" --file "!**/*.snap"`
 
-- Padrões (comportamento de implementação):
-  - Diretórios ignorados por padrão: `node_modules`, `dist`, `coverage`, `.git`, `.turbo`, `.next`, `build`, `tmp` (ignorados a menos que passados explicitamente como dirs/arquivos literais).
-  - Respeita `.gitignore` ao expandir globs.
-  - Não segue symlinks.
-  - Dotfiles filtrados a menos que opted in via padrão (ex: `--file ".github/**"`).
-  - Arquivos > 1 MB rejeitados.
+- Defaults (implementation behavior):
+  - Default-ignored dirs: `node_modules`, `dist`, `coverage`, `.git`, `.turbo`, `.next`, `build`, `tmp` (skipped unless explicitly passed as literal dirs/files).
+  - Honors `.gitignore` when expanding globs.
+  - Does not follow symlinks.
+  - Dotfiles filtered unless opted in via pattern (e.g. `--file ".github/**"`).
+  - Files > 1 MB rejected.
 
-## Engines (API vs navegador)
+## Engines (API vs browser)
 
-- Auto-selecionar: `api` quando `OPENAI_API_KEY` está definida; caso contrário `browser`.
-- Browser suporta apenas GPT + Gemini; use `--engine api` para Claude/Grok/Codex ou execuções multi-modelo.
-- Anexos browser:
-  - `--browser-attachments auto|never|always` (auto cola inline até ~60k chars e então faz upload).
-- Host browser remoto:
-  - Host: `oracle serve --host 0.0.0.0 --port 9473 --token <segredo>`
-  - Cliente: `oracle --engine browser --remote-host <host:porta> --remote-token <segredo> -p "<tarefa>" --file "src/**"`
+- Auto-pick: `api` when `OPENAI_API_KEY` is set; otherwise `browser`.
+- Browser supports GPT + Gemini only; use `--engine api` for Claude/Grok/Codex or multi-model runs.
+- Browser attachments:
+  - `--browser-attachments auto|never|always` (auto pastes inline up to ~60k chars then uploads).
+- Remote browser host:
+  - Host: `oracle serve --host 0.0.0.0 --port 9473 --token <secret>`
+  - Client: `oracle --engine browser --remote-host <host:port> --remote-token <secret> -p "<task>" --file "src/**"`
 
-## Sessões + slugs
+## Sessions + slugs
 
-- Armazenadas em `~/.oracle/sessions` (sobrescreva com `ORACLE_HOME_DIR`).
-- Execuções podem se desconectar ou demorar muito (browser + GPT-5.2 Pro frequentemente faz isso). Se o CLI timeout: não re-execute; reatachar.
-  - Listar: `oracle status --hours 72`
-  - Atachar: `oracle session <id> --render`
-- Use `--slug "<3-5 palavras>"` para manter IDs de sessão legíveis.
-- Há proteção contra prompt duplicado; use `--force` apenas quando realmente quiser uma nova execução.
+- Stored under `~/.oracle/sessions` (override with `ORACLE_HOME_DIR`).
+- Runs may detach or take a long time (browser + GPT‑5.2 Pro often does). If the CLI times out: don’t re-run; reattach.
+  - List: `oracle status --hours 72`
+  - Attach: `oracle session <id> --render`
+- Use `--slug "<3-5 words>"` to keep session IDs readable.
+- Duplicate prompt guard exists; use `--force` only when you truly want a fresh run.
 
-## Template de prompt (alto sinal)
+## Prompt template (high signal)
 
-O Oracle começa com **zero** conhecimento do projeto. Assuma que o modelo não pode inferir sua stack, ferramentas de build, convenções ou caminhos "óbvios". Inclua:
+Oracle starts with **zero** project knowledge. Assume the model cannot infer your stack, build tooling, conventions, or “obvious” paths. Include:
 
-- Briefing do projeto (stack + comandos de build/teste + restrições de plataforma).
-- "Onde as coisas ficam" (diretórios chave, pontos de entrada, arquivos de configuração, limites).
-- Pergunta exata + o que você tentou + o texto do erro (verbatim).
-- Restrições ("não mude X", "deve manter API pública", etc).
-- Saída desejada ("retorne plano de patch + testes", "dê 3 opções com trade-offs").
+- Project briefing (stack + build/test commands + platform constraints).
+- “Where things live” (key directories, entrypoints, config files, boundaries).
+- Exact question + what you tried + the error text (verbatim).
+- Constraints (“don’t change X”, “must keep public API”, etc).
+- Desired output (“return patch plan + tests”, “give 3 options with tradeoffs”).
 
-## Segurança
+## Safety
 
-- Não anexe segredos por padrão (`.env`, arquivos de chave, tokens de autenticação). Redija agressivamente; compartilhe apenas o necessário.
+- Don’t attach secrets by default (`.env`, key files, auth tokens). Redact aggressively; share only what’s required.
 
-## Padrão de restauração de "prompt exaustivo"
+## “Exhaustive prompt” restoration pattern
 
-Para investigações longas, escreva um prompt independente + conjunto de arquivos para poder re-executar dias depois:
+For long investigations, write a standalone prompt + file set so you can rerun days later:
 
-- Briefing do projeto de 6–30 frases + o objetivo.
-- Passos de reprodução + erros exatos + o que você tentou.
-- Anexe todos os arquivos de contexto necessários (pontos de entrada, configs, módulos chave, docs).
+- 6–30 sentence project briefing + the goal.
+- Repro steps + exact errors + what you tried.
+- Attach all context files needed (entrypoints, configs, key modules, docs).
 
-Execuções Oracle são one-shot; o modelo não lembra execuções anteriores. "Restaurar contexto" significa re-executar com o mesmo prompt + conjunto `--file …` (ou reatachar uma sessão armazenada ainda em execução).
+Oracle runs are one-shot; the model doesn’t remember prior runs. “Restoring context” means re-running with the same prompt + `--file …` set (or reattaching a still-running stored session).

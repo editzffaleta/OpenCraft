@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "./config.js";
+import type { OpenClawConfig } from "./config.js";
 import { DEFAULT_GATEWAY_PORT } from "./paths.js";
 
 export type GatewayNonLoopbackBindMode = "lan" | "tailnet" | "custom";
@@ -44,10 +44,10 @@ export function buildDefaultControlUiAllowedOrigins(params: {
 }
 
 export function ensureControlUiAllowedOriginsForNonLoopbackBind(
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   opts?: { defaultPort?: number; requireControlUiEnabled?: boolean },
 ): {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   seededOrigins: string[] | null;
   bind: GatewayNonLoopbackBindMode | null;
 } {

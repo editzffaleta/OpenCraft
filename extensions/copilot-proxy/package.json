@@ -1,10 +1,10 @@
 {
-  "name": "@opencraft/copilot-proxy",
+  "name": "@openclaw/copilot-proxy",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft Copilot Proxy provider plugin",
+  "description": "OpenClaw Copilot Proxy provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

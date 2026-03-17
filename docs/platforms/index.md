@@ -1,21 +1,21 @@
 ---
-summary: "Visão geral de suporte a plataformas (Gateway + apps companion)"
+summary: "Platform support overview (Gateway + companion apps)"
 read_when:
-  - Procurando suporte de OS ou caminhos de instalação
-  - Decidindo onde rodar o Gateway
-title: "Plataformas"
+  - Looking for OS support or install paths
+  - Deciding where to run the Gateway
+title: "Platforms"
 ---
 
-# Plataformas
+# Platforms
 
-O core do OpenCraft é escrito em TypeScript. **Node é o runtime recomendado**.
-Bun não é recomendado para o Gateway (bugs no WhatsApp/Telegram).
+OpenClaw core is written in TypeScript. **Node is the recommended runtime**.
+Bun is not recommended for the Gateway (WhatsApp/Telegram bugs).
 
-Apps companion existem para macOS (app da barra de menu) e nós mobile (iOS/Android). Apps companion
-para Windows e Linux estão planejados, mas o Gateway é totalmente suportado hoje.
-Apps companion nativos para Windows também estão planejados; o Gateway é recomendado via WSL2.
+Companion apps exist for macOS (menu bar app) and mobile nodes (iOS/Android). Windows and
+Linux companion apps are planned, but the Gateway is fully supported today.
+Native companion apps for Windows are also planned; the Gateway is recommended via WSL2.
 
-## Escolha seu OS
+## Choose your OS
 
 - macOS: [macOS](/platforms/macos)
 - iOS: [iOS](/platforms/ios)
@@ -23,31 +23,31 @@ Apps companion nativos para Windows também estão planejados; o Gateway é reco
 - Windows: [Windows](/platforms/windows)
 - Linux: [Linux](/platforms/linux)
 
-## VPS e hospedagem
+## VPS & hosting
 
-- Hub VPS: [Hospedagem VPS](/vps)
+- VPS hub: [VPS hosting](/vps)
 - Fly.io: [Fly.io](/install/fly)
 - Hetzner (Docker): [Hetzner](/install/hetzner)
 - GCP (Compute Engine): [GCP](/install/gcp)
-- exe.dev (VM + proxy HTTPS): [exe.dev](/install/exe-dev)
+- exe.dev (VM + HTTPS proxy): [exe.dev](/install/exe-dev)
 
-## Links comuns
+## Common links
 
-- Guia de instalação: [Primeiros Passos](/start/getting-started)
-- Runbook do Gateway: [Gateway](/gateway)
-- Configuração do Gateway: [Configuração](/gateway/configuration)
-- Status do serviço: `opencraft gateway status`
+- Install guide: [Getting Started](/start/getting-started)
+- Gateway runbook: [Gateway](/gateway)
+- Gateway configuration: [Configuration](/gateway/configuration)
+- Service status: `openclaw gateway status`
 
-## Instalação do serviço Gateway (CLI)
+## Gateway service install (CLI)
 
-Use um destes (todos suportados):
+Use one of these (all supported):
 
-- Wizard (recomendado): `opencraft onboard --install-daemon`
-- Direto: `opencraft gateway install`
-- Fluxo de configuração: `opencraft configure` → selecionar **Gateway service**
-- Reparar/migrar: `opencraft doctor` (oferece instalar ou corrigir o serviço)
+- Wizard (recommended): `openclaw onboard --install-daemon`
+- Direct: `openclaw gateway install`
+- Configure flow: `openclaw configure` → select **Gateway service**
+- Repair/migrate: `openclaw doctor` (offers to install or fix the service)
 
-O alvo do serviço depende do OS:
+The service target depends on OS:
 
-- macOS: LaunchAgent (`ai.openclaw.gateway` ou `ai.openclaw.<profile>`; legado `com.openclaw.*`)
-- Linux/WSL2: serviço de usuário systemd (`openclaw-gateway[-<profile>].service`)
+- macOS: LaunchAgent (`ai.openclaw.gateway` or `ai.openclaw.<profile>`; legacy `com.openclaw.*`)
+- Linux/WSL2: systemd user service (`openclaw-gateway[-<profile>].service`)

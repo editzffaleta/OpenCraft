@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { collectCommandSecretAssignmentsFromSnapshot } from "./command-config.js";
 
 describe("collectCommandSecretAssignmentsFromSnapshot", () => {
@@ -8,12 +8,12 @@ describe("collectCommandSecretAssignmentsFromSnapshot", () => {
       talk: {
         apiKey: { source: "env", provider: "default", id: "TALK_API_KEY" },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     const resolvedConfig = {
       talk: {
         apiKey: "talk-key", // pragma: allowlist secret
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = collectCommandSecretAssignmentsFromSnapshot({
       sourceConfig,
@@ -36,10 +36,10 @@ describe("collectCommandSecretAssignmentsFromSnapshot", () => {
       talk: {
         apiKey: { source: "env", provider: "default", id: "TALK_API_KEY" },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     const resolvedConfig = {
       talk: {},
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     expect(() =>
       collectCommandSecretAssignmentsFromSnapshot({
@@ -62,7 +62,7 @@ describe("collectCommandSecretAssignmentsFromSnapshot", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     const resolvedConfig = {
       agents: {
         defaults: {
@@ -73,7 +73,7 @@ describe("collectCommandSecretAssignmentsFromSnapshot", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = collectCommandSecretAssignmentsFromSnapshot({
       sourceConfig,

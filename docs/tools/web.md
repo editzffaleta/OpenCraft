@@ -1,109 +1,114 @@
 ---
-summary: "Tools de busca web + fetch (provedores Brave, Gemini, Grok, Kimi e Perplexity)"
+summary: "Web search + fetch tools (Brave, Firecrawl, Gemini, Grok, Kimi, and Perplexity providers)"
 read_when:
-  - Você quer habilitar web_search ou web_fetch
-  - Você precisa configurar uma chave de API de provedor
-  - Você quer usar Gemini com grounding do Google Search
+  - You want to enable web_search or web_fetch
+  - You need provider API key setup
+  - You want to use Gemini with Google Search grounding
 title: "Web Tools"
 ---
 
 # Web tools
 
-O OpenCraft inclui duas tools web leves:
+OpenClaw ships two lightweight web tools:
 
-- `web_search` — Buscar na web usando a Brave Search API, Gemini com grounding do Google Search, Grok, Kimi ou Perplexity Search API.
-- `web_fetch` — Fetch HTTP + extração legível (HTML → markdown/texto).
+- `web_search` — Search the web using Brave Search API, Firecrawl Search, Gemini with Google Search grounding, Grok, Kimi, or Perplexity Search API.
+- `web_fetch` — HTTP fetch + readable extraction (HTML → markdown/text).
 
-Estas **não** são automação de browser. Para sites pesados em JS ou com login, use a
-[Tool Browser](/tools/browser).
+These are **not** browser automation. For JS-heavy sites or logins, use the
+[Browser tool](/tools/browser).
 
-## Como funciona
+## How it works
 
-- `web_search` chama seu provedor configurado e retorna resultados.
-- Resultados são cacheados por query por 15 minutos (configurável).
-- `web_fetch` faz um GET HTTP simples e extrai conteúdo legível
-  (HTML → markdown/texto). Ele **não** executa JavaScript.
-- `web_fetch` está habilitado por padrão (a menos que explicitamente desabilitado).
+- `web_search` calls your configured provider and returns results.
+- Results are cached by query for 15 minutes (configurable).
+- `web_fetch` does a plain HTTP GET and extracts readable content
+  (HTML → markdown/text). It does **not** execute JavaScript.
+- `web_fetch` is enabled by default (unless explicitly disabled).
+- The bundled Firecrawl plugin also adds `firecrawl_search` and `firecrawl_scrape` when enabled.
 
-Veja [Configuração do Brave Search](/brave-search) e [Configuração do Perplexity Search](/perplexity) para detalhes específicos por provedor.
+See [Brave Search setup](/brave-search) and [Perplexity Search setup](/perplexity) for provider-specific details.
 
-## Escolhendo um provedor de busca
+## Choosing a search provider
 
-| Provedor                  | Formato de resultado                   | Filtros específicos do provedor               | Notas                                                                             | Chave API                                    |
-| ------------------------- | -------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Brave Search API**      | Resultados estruturados com snippets   | `country`, `language`, `ui_lang`, tempo       | Suporta modo Brave `llm-context`                                                  | `BRAVE_API_KEY`                              |
-| **Gemini**                | Respostas sintetizadas por IA + citações | —                                           | Usa grounding do Google Search                                                    | `GEMINI_API_KEY`                             |
-| **Grok**                  | Respostas sintetizadas por IA + citações | —                                           | Usa respostas com grounding web do xAI                                            | `XAI_API_KEY`                                |
-| **Kimi**                  | Respostas sintetizadas por IA + citações | —                                           | Usa busca web do Moonshot                                                         | `KIMI_API_KEY` / `MOONSHOT_API_KEY`          |
-| **Perplexity Search API** | Resultados estruturados com snippets   | `country`, `language`, tempo, `domain_filter` | Suporta controles de extração de conteúdo; OpenRouter usa caminho de compatibilidade Sonar | `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` |
+| Provider                  | Result shape                       | Provider-specific filters                                    | Notes                                                                          | API key                                     |
+| ------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------- |
+| **Brave Search API**      | Structured results with snippets   | `country`, `language`, `ui_lang`, time                       | Supports Brave `llm-context` mode                                              | `BRAVE_API_KEY`                             |
+| **Firecrawl Search**      | Structured results with snippets   | Use `firecrawl_search` for Firecrawl-specific search options | Best for pairing search with Firecrawl scraping/extraction                     | `FIRECRAWL_API_KEY`                         |
+| **Gemini**                | AI-synthesized answers + citations | —                                                            | Uses Google Search grounding                                                   | `GEMINI_API_KEY`                            |
+| **Grok**                  | AI-synthesized answers + citations | —                                                            | Uses xAI web-grounded responses                                                | `XAI_API_KEY`                               |
+| **Kimi**                  | AI-synthesized answers + citations | —                                                            | Uses Moonshot web search                                                       | `KIMI_API_KEY` / `MOONSHOT_API_KEY`         |
+| **Perplexity Search API** | Structured results with snippets   | `country`, `language`, time, `domain_filter`                 | Supports content extraction controls; OpenRouter uses Sonar compatibility path | `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` |
 
-### Auto-detecção
+### Auto-detection
 
-A tabela acima está em ordem alfabética. Se nenhum `provider` está explicitamente definido, a auto-detecção em runtime verifica provedores nesta ordem:
+The table above is alphabetical. If no `provider` is explicitly set, runtime auto-detection checks providers in this order:
 
-1. **Brave** — var de env `BRAVE_API_KEY` ou config `tools.web.search.apiKey`
-2. **Gemini** — var de env `GEMINI_API_KEY` ou config `tools.web.search.gemini.apiKey`
-3. **Grok** — var de env `XAI_API_KEY` ou config `tools.web.search.grok.apiKey`
-4. **Kimi** — var de env `KIMI_API_KEY` / `MOONSHOT_API_KEY` ou config `tools.web.search.kimi.apiKey`
-5. **Perplexity** — `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, ou config `tools.web.search.perplexity.apiKey`
+1. **Brave** — `BRAVE_API_KEY` env var or `tools.web.search.apiKey` config
+2. **Gemini** — `GEMINI_API_KEY` env var or `tools.web.search.gemini.apiKey` config
+3. **Grok** — `XAI_API_KEY` env var or `tools.web.search.grok.apiKey` config
+4. **Kimi** — `KIMI_API_KEY` / `MOONSHOT_API_KEY` env var or `tools.web.search.kimi.apiKey` config
+5. **Perplexity** — `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, or `tools.web.search.perplexity.apiKey` config
+6. **Firecrawl** — `FIRECRAWL_API_KEY` env var or `tools.web.search.firecrawl.apiKey` config
 
-Se nenhuma chave for encontrada, volta para Brave (você receberá um erro de chave ausente pedindo para configurar uma).
+If no keys are found, it falls back to Brave (you'll get a missing-key error prompting you to configure one).
 
-Comportamento de SecretRef em runtime:
+Runtime SecretRef behavior:
 
-- SecretRefs de web tool são resolvidos atomicamente na inicialização/reload do gateway.
-- No modo auto-detect, o OpenCraft resolve apenas a chave do provedor selecionado. SecretRefs de provedores não selecionados ficam inativos até serem selecionados.
-- Se o SecretRef do provedor selecionado não estiver resolvido e nenhum fallback de env existir, inicialização/reload falha imediatamente.
+- Web tool SecretRefs are resolved atomically at gateway startup/reload.
+- In auto-detect mode, OpenClaw resolves only the selected provider key. Non-selected provider SecretRefs stay inactive until selected.
+- If the selected provider SecretRef is unresolved and no provider env fallback exists, startup/reload fails fast.
 
-## Configurando busca web
+## Setting up web search
 
-Use `opencraft configure --section web` para configurar sua chave API e escolher um provedor.
+Use `openclaw configure --section web` to set up your API key and choose a provider.
 
 ### Brave Search
 
-1. Crie uma conta da Brave Search API em [brave.com/search/api](https://brave.com/search/api/)
-2. No painel, escolha o plano **Search** e gere uma chave API.
-3. Execute `opencraft configure --section web` para armazenar a chave na config, ou defina `BRAVE_API_KEY` no seu ambiente.
+1. Create a Brave Search API account at [brave.com/search/api](https://brave.com/search/api/)
+2. In the dashboard, choose the **Search** plan and generate an API key.
+3. Run `openclaw configure --section web` to store the key in config, or set `BRAVE_API_KEY` in your environment.
 
-Cada plano Brave inclui **$5/mês em crédito gratuito** (renovável). O plano Search
-custa $5 por 1.000 requisições, então o crédito cobre 1.000 queries/mês. Defina
-seu limite de uso no painel do Brave para evitar cobranças inesperadas. Veja o
-[portal da API Brave](https://brave.com/search/api/) para planos atuais e
-preços.
+Each Brave plan includes **\$5/month in free credit** (renewing). The Search
+plan costs \$5 per 1,000 requests, so the credit covers 1,000 queries/month. Set
+your usage limit in the Brave dashboard to avoid unexpected charges. See the
+[Brave API portal](https://brave.com/search/api/) for current plans and
+pricing.
 
 ### Perplexity Search
 
-1. Crie uma conta Perplexity em [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
-2. Gere uma chave API no painel
-3. Execute `opencraft configure --section web` para armazenar a chave na config, ou defina `PERPLEXITY_API_KEY` no seu ambiente.
+1. Create a Perplexity account at [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
+2. Generate an API key in the dashboard
+3. Run `openclaw configure --section web` to store the key in config, or set `PERPLEXITY_API_KEY` in your environment.
 
-Para compatibilidade legada Sonar/OpenRouter, defina `OPENROUTER_API_KEY`, ou configure `tools.web.search.perplexity.apiKey` com uma chave `sk-or-...`. Definir `tools.web.search.perplexity.baseUrl` ou `model` também faz o Perplexity voltar para o caminho de compatibilidade chat-completions.
+For legacy Sonar/OpenRouter compatibility, set `OPENROUTER_API_KEY` instead, or configure `tools.web.search.perplexity.apiKey` with an `sk-or-...` key. Setting `tools.web.search.perplexity.baseUrl` or `model` also opts Perplexity back into the chat-completions compatibility path.
 
-Veja [Docs da API Perplexity Search](https://docs.perplexity.ai/guides/search-quickstart) para mais detalhes.
+See [Perplexity Search API Docs](https://docs.perplexity.ai/guides/search-quickstart) for more details.
 
-### Onde armazenar a chave
+### Where to store the key
 
-**Via config:** execute `opencraft configure --section web`. Armazena a chave no caminho de config específico do provedor:
+**Via config:** run `openclaw configure --section web`. It stores the key under the provider-specific config path:
 
 - Brave: `tools.web.search.apiKey`
+- Firecrawl: `tools.web.search.firecrawl.apiKey`
 - Gemini: `tools.web.search.gemini.apiKey`
 - Grok: `tools.web.search.grok.apiKey`
 - Kimi: `tools.web.search.kimi.apiKey`
 - Perplexity: `tools.web.search.perplexity.apiKey`
 
-Todos esses campos também suportam objetos SecretRef.
+All of these fields also support SecretRef objects.
 
-**Via ambiente:** defina vars de env do provedor no ambiente do processo Gateway:
+**Via environment:** set provider env vars in the Gateway process environment:
 
 - Brave: `BRAVE_API_KEY`
+- Firecrawl: `FIRECRAWL_API_KEY`
 - Gemini: `GEMINI_API_KEY`
 - Grok: `XAI_API_KEY`
-- Kimi: `KIMI_API_KEY` ou `MOONSHOT_API_KEY`
-- Perplexity: `PERPLEXITY_API_KEY` ou `OPENROUTER_API_KEY`
+- Kimi: `KIMI_API_KEY` or `MOONSHOT_API_KEY`
+- Perplexity: `PERPLEXITY_API_KEY` or `OPENROUTER_API_KEY`
 
-Para uma instalação de gateway, coloque-as em `~/.opencraft/.env` (ou no seu ambiente de serviço). Veja [Vars de env](/help/faq#how-does-opencraft-load-environment-variables).
+For a gateway install, put these in `~/.openclaw/.env` (or your service environment). See [Env vars](/help/faq#how-does-openclaw-load-environment-variables).
 
-### Exemplos de config
+### Config examples
 
 **Brave Search:**
 
@@ -114,14 +119,42 @@ Para uma instalação de gateway, coloque-as em `~/.opencraft/.env` (ou no seu a
       search: {
         enabled: true,
         provider: "brave",
-        apiKey: "SUA_BRAVE_API_KEY", // opcional se BRAVE_API_KEY estiver definido // pragma: allowlist secret
+        apiKey: "YOUR_BRAVE_API_KEY", // optional if BRAVE_API_KEY is set // pragma: allowlist secret
       },
     },
   },
 }
 ```
 
-**Modo Brave LLM Context:**
+**Firecrawl Search:**
+
+```json5
+{
+  plugins: {
+    entries: {
+      firecrawl: {
+        enabled: true,
+      },
+    },
+  },
+  tools: {
+    web: {
+      search: {
+        enabled: true,
+        provider: "firecrawl",
+        firecrawl: {
+          apiKey: "fc-...", // optional if FIRECRAWL_API_KEY is set
+          baseUrl: "https://api.firecrawl.dev",
+        },
+      },
+    },
+  },
+}
+```
+
+When you choose Firecrawl in onboarding or `openclaw configure --section web`, OpenClaw enables the bundled Firecrawl plugin automatically so `web_search`, `firecrawl_search`, and `firecrawl_scrape` are all available.
+
+**Brave LLM Context mode:**
 
 ```json5
 {
@@ -130,7 +163,7 @@ Para uma instalação de gateway, coloque-as em `~/.opencraft/.env` (ou no seu a
       search: {
         enabled: true,
         provider: "brave",
-        apiKey: "SUA_BRAVE_API_KEY", // opcional se BRAVE_API_KEY estiver definido // pragma: allowlist secret
+        apiKey: "YOUR_BRAVE_API_KEY", // optional if BRAVE_API_KEY is set // pragma: allowlist secret
         brave: {
           mode: "llm-context",
         },
@@ -140,9 +173,9 @@ Para uma instalação de gateway, coloque-as em `~/.opencraft/.env` (ou no seu a
 }
 ```
 
-`llm-context` retorna chunks extraídos de página para grounding em vez de snippets Brave padrão.
-Neste modo, `country` e `language` / `search_lang` ainda funcionam, mas `ui_lang`,
-`freshness`, `date_after` e `date_before` são rejeitados.
+`llm-context` returns extracted page chunks for grounding instead of standard Brave snippets.
+In this mode, `country` and `language` / `search_lang` still work, but `ui_lang`,
+`freshness`, `date_after`, and `date_before` are rejected.
 
 **Perplexity Search:**
 
@@ -154,7 +187,7 @@ Neste modo, `country` e `language` / `search_lang` ainda funcionam, mas `ui_lang
         enabled: true,
         provider: "perplexity",
         perplexity: {
-          apiKey: "pplx-...", // opcional se PERPLEXITY_API_KEY estiver definido
+          apiKey: "pplx-...", // optional if PERPLEXITY_API_KEY is set
         },
       },
     },
@@ -162,7 +195,7 @@ Neste modo, `country` e `language` / `search_lang` ainda funcionam, mas `ui_lang
 }
 ```
 
-**Perplexity via OpenRouter / compatibilidade Sonar:**
+**Perplexity via OpenRouter / Sonar compatibility:**
 
 ```json5
 {
@@ -172,7 +205,7 @@ Neste modo, `country` e `language` / `search_lang` ainda funcionam, mas `ui_lang
         enabled: true,
         provider: "perplexity",
         perplexity: {
-          apiKey: "<openrouter-api-key>", // opcional se OPENROUTER_API_KEY estiver definido
+          apiKey: "<openrouter-api-key>", // optional if OPENROUTER_API_KEY is set
           baseUrl: "https://openrouter.ai/api/v1",
           model: "perplexity/sonar-pro",
         },
@@ -182,18 +215,18 @@ Neste modo, `country` e `language` / `search_lang` ainda funcionam, mas `ui_lang
 }
 ```
 
-## Usando Gemini (grounding do Google Search)
+## Using Gemini (Google Search grounding)
 
-Modelos Gemini suportam [grounding do Google Search](https://ai.google.dev/gemini-api/docs/grounding) integrado,
-que retorna respostas sintetizadas por IA com base em resultados ao vivo do Google Search com citações.
+Gemini models support built-in [Google Search grounding](https://ai.google.dev/gemini-api/docs/grounding),
+which returns AI-synthesized answers backed by live Google Search results with citations.
 
-### Obtendo uma chave de API Gemini
+### Getting a Gemini API key
 
-1. Vá para [Google AI Studio](https://aistudio.google.com/apikey)
-2. Crie uma chave API
-3. Defina `GEMINI_API_KEY` no ambiente do Gateway, ou configure `tools.web.search.gemini.apiKey`
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Create an API key
+3. Set `GEMINI_API_KEY` in the Gateway environment, or configure `tools.web.search.gemini.apiKey`
 
-### Configurando busca Gemini
+### Setting up Gemini search
 
 ```json5
 {
@@ -202,9 +235,9 @@ que retorna respostas sintetizadas por IA com base em resultados ao vivo do Goog
       search: {
         provider: "gemini",
         gemini: {
-          // Chave API (opcional se GEMINI_API_KEY estiver definido)
+          // API key (optional if GEMINI_API_KEY is set)
           apiKey: "AIza...",
-          // Modelo (padrão "gemini-2.5-flash")
+          // Model (defaults to "gemini-2.5-flash")
           model: "gemini-2.5-flash",
         },
       },
@@ -213,30 +246,33 @@ que retorna respostas sintetizadas por IA com base em resultados ao vivo do Goog
 }
 ```
 
-**Alternativa via ambiente:** defina `GEMINI_API_KEY` no ambiente do Gateway.
-Para uma instalação de gateway, coloque em `~/.opencraft/.env`.
+**Environment alternative:** set `GEMINI_API_KEY` in the Gateway environment.
+For a gateway install, put it in `~/.openclaw/.env`.
 
-### Notas
+### Notes
 
-- URLs de citação do grounding Gemini são automaticamente resolvidas de URLs de redirecionamento do Google para URLs diretas.
-- Resolução de redirecionamento usa o caminho de guarda SSRF (HEAD + verificações de redirecionamento + validação http/https) antes de retornar a URL de citação final.
-- Resolução de redirecionamento usa padrões SSRF estritos, então redirecionamentos para alvos privados/internos são bloqueados.
-- O modelo padrão (`gemini-2.5-flash`) é rápido e econômico. Qualquer modelo Gemini que suporte grounding pode ser usado.
+- Citation URLs from Gemini grounding are automatically resolved from Google's
+  redirect URLs to direct URLs.
+- Redirect resolution uses the SSRF guard path (HEAD + redirect checks + http/https validation) before returning the final citation URL.
+- Redirect resolution uses strict SSRF defaults, so redirects to private/internal targets are blocked.
+- The default model (`gemini-2.5-flash`) is fast and cost-effective.
+  Any Gemini model that supports grounding can be used.
 
 ## web_search
 
-Buscar na web usando seu provedor configurado.
+Search the web using your configured provider.
 
-### Requisitos
+### Requirements
 
-- `tools.web.search.enabled` não deve ser `false` (padrão: habilitado)
-- Chave API para seu provedor escolhido:
-  - **Brave**: `BRAVE_API_KEY` ou `tools.web.search.apiKey`
-  - **Gemini**: `GEMINI_API_KEY` ou `tools.web.search.gemini.apiKey`
-  - **Grok**: `XAI_API_KEY` ou `tools.web.search.grok.apiKey`
-  - **Kimi**: `KIMI_API_KEY`, `MOONSHOT_API_KEY`, ou `tools.web.search.kimi.apiKey`
-  - **Perplexity**: `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, ou `tools.web.search.perplexity.apiKey`
-- Todos os campos de chave de provedor acima suportam objetos SecretRef.
+- `tools.web.search.enabled` must not be `false` (default: enabled)
+- API key for your chosen provider:
+  - **Brave**: `BRAVE_API_KEY` or `tools.web.search.apiKey`
+  - **Firecrawl**: `FIRECRAWL_API_KEY` or `tools.web.search.firecrawl.apiKey`
+  - **Gemini**: `GEMINI_API_KEY` or `tools.web.search.gemini.apiKey`
+  - **Grok**: `XAI_API_KEY` or `tools.web.search.grok.apiKey`
+  - **Kimi**: `KIMI_API_KEY`, `MOONSHOT_API_KEY`, or `tools.web.search.kimi.apiKey`
+  - **Perplexity**: `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, or `tools.web.search.perplexity.apiKey`
+- All provider key fields above support SecretRef objects.
 
 ### Config
 
@@ -246,7 +282,7 @@ Buscar na web usando seu provedor configurado.
     web: {
       search: {
         enabled: true,
-        apiKey: "BRAVE_API_KEY_AQUI", // opcional se BRAVE_API_KEY estiver definido
+        apiKey: "BRAVE_API_KEY_HERE", // optional if BRAVE_API_KEY is set
         maxResults: 5,
         timeoutSeconds: 30,
         cacheTtlMinutes: 15,
@@ -256,77 +292,86 @@ Buscar na web usando seu provedor configurado.
 }
 ```
 
-### Parâmetros da tool
+### Tool parameters
 
-Todos os parâmetros funcionam para Brave e para a API Perplexity Search nativa, a menos que indicado.
+Parameters depend on the selected provider.
 
-O caminho de compatibilidade OpenRouter / Sonar do Perplexity suporta apenas `query` e `freshness`.
-Se você definir `tools.web.search.perplexity.baseUrl` / `model`, usar `OPENROUTER_API_KEY`, ou configurar uma chave `sk-or-...`, filtros somente da Search API retornam erros explícitos.
+Perplexity's OpenRouter / Sonar compatibility path supports only `query` and `freshness`.
+If you set `tools.web.search.perplexity.baseUrl` / `model`, use `OPENROUTER_API_KEY`, or configure an `sk-or-...` key, Search API-only filters return explicit errors.
 
-| Parâmetro             | Descrição                                             |
+| Parameter             | Description                                           |
 | --------------------- | ----------------------------------------------------- |
-| `query`               | Query de busca (obrigatório)                          |
-| `count`               | Resultados a retornar (1-10, padrão: 5)               |
-| `country`             | Código de país ISO de 2 letras (ex: "BR", "US")       |
-| `language`            | Código de idioma ISO 639-1 (ex: "pt", "en")           |
-| `freshness`           | Filtro de tempo: `day`, `week`, `month` ou `year`     |
-| `date_after`          | Resultados após esta data (AAAA-MM-DD)                |
-| `date_before`         | Resultados antes desta data (AAAA-MM-DD)              |
-| `ui_lang`             | Código de idioma da UI (somente Brave)                |
-| `domain_filter`       | Array de allowlist/denylist de domínio (somente Perplexity) |
-| `max_tokens`          | Orçamento total de conteúdo, padrão 25000 (somente Perplexity) |
-| `max_tokens_per_page` | Limite de token por página, padrão 2048 (somente Perplexity) |
+| `query`               | Search query (required)                               |
+| `count`               | Results to return (1-10, default: 5)                  |
+| `country`             | 2-letter ISO country code (e.g., "US", "DE")          |
+| `language`            | ISO 639-1 language code (e.g., "en", "de")            |
+| `freshness`           | Time filter: `day`, `week`, `month`, or `year`        |
+| `date_after`          | Results after this date (YYYY-MM-DD)                  |
+| `date_before`         | Results before this date (YYYY-MM-DD)                 |
+| `ui_lang`             | UI language code (Brave only)                         |
+| `domain_filter`       | Domain allowlist/denylist array (Perplexity only)     |
+| `max_tokens`          | Total content budget, default 25000 (Perplexity only) |
+| `max_tokens_per_page` | Per-page token limit, default 2048 (Perplexity only)  |
 
-**Exemplos:**
+Firecrawl `web_search` supports `query` and `count`. For Firecrawl-specific controls like `sources`, `categories`, result scraping, or scrape timeout, use `firecrawl_search` from the bundled Firecrawl plugin.
+
+**Examples:**
 
 ```javascript
-// Busca específica em português
+// German-specific search
 await web_search({
-  query: "assistente de IA no Brasil",
-  country: "BR",
-  language: "pt",
+  query: "TV online schauen",
+  country: "DE",
+  language: "de",
 });
 
-// Resultados recentes (semana passada)
+// Recent results (past week)
 await web_search({
-  query: "notícias tecnologia",
+  query: "TMBG interview",
   freshness: "week",
 });
 
-// Busca por intervalo de datas
+// Date range search
 await web_search({
-  query: "desenvolvimentos em IA",
+  query: "AI developments",
   date_after: "2024-01-01",
   date_before: "2024-06-30",
 });
 
-// Filtro de domínio (somente Perplexity)
+// Domain filtering (Perplexity only)
 await web_search({
-  query: "pesquisa climática",
+  query: "climate research",
   domain_filter: ["nature.com", "science.org", ".edu"],
 });
 
-// Excluir domínios (somente Perplexity)
+// Exclude domains (Perplexity only)
 await web_search({
-  query: "avaliações de produto",
+  query: "product reviews",
   domain_filter: ["-reddit.com", "-pinterest.com"],
+});
+
+// More content extraction (Perplexity only)
+await web_search({
+  query: "detailed AI research",
+  max_tokens: 50000,
+  max_tokens_per_page: 4096,
 });
 ```
 
-Quando o modo Brave `llm-context` está habilitado, `ui_lang`, `freshness`, `date_after` e
-`date_before` não são suportados. Use o modo Brave `web` para esses filtros.
+When Brave `llm-context` mode is enabled, `ui_lang`, `freshness`, `date_after`, and
+`date_before` are not supported. Use Brave `web` mode for those filters.
 
 ## web_fetch
 
-Buscar uma URL e extrair conteúdo legível.
+Fetch a URL and extract readable content.
 
-### Requisitos do web_fetch
+### web_fetch requirements
 
-- `tools.web.fetch.enabled` não deve ser `false` (padrão: habilitado)
-- Fallback Firecrawl opcional: defina `tools.web.fetch.firecrawl.apiKey` ou `FIRECRAWL_API_KEY`.
-- `tools.web.fetch.firecrawl.apiKey` suporta objetos SecretRef.
+- `tools.web.fetch.enabled` must not be `false` (default: enabled)
+- Optional Firecrawl fallback: set `tools.web.fetch.firecrawl.apiKey` or `FIRECRAWL_API_KEY`.
+- `tools.web.fetch.firecrawl.apiKey` supports SecretRef objects.
 
-### Config do web_fetch
+### web_fetch config
 
 ```json5
 {
@@ -344,10 +389,10 @@ Buscar uma URL e extrair conteúdo legível.
         readability: true,
         firecrawl: {
           enabled: true,
-          apiKey: "FIRECRAWL_API_KEY_AQUI", // opcional se FIRECRAWL_API_KEY estiver definido
+          apiKey: "FIRECRAWL_API_KEY_HERE", // optional if FIRECRAWL_API_KEY is set
           baseUrl: "https://api.firecrawl.dev",
           onlyMainContent: true,
-          maxAgeMs: 86400000, // ms (1 dia)
+          maxAgeMs: 86400000, // ms (1 day)
           timeoutSeconds: 60,
         },
       },
@@ -356,24 +401,24 @@ Buscar uma URL e extrair conteúdo legível.
 }
 ```
 
-### Parâmetros da tool web_fetch
+### web_fetch tool parameters
 
-- `url` (obrigatório, somente http/https)
+- `url` (required, http/https only)
 - `extractMode` (`markdown` | `text`)
-- `maxChars` (truncar páginas longas)
+- `maxChars` (truncate long pages)
 
-Notas:
+Notes:
 
-- `web_fetch` usa Readability (extração de conteúdo principal) primeiro, depois Firecrawl (se configurado). Se ambos falharem, a tool retorna um erro.
-- Requisições Firecrawl usam modo de contorno de bot e cacheia resultados por padrão.
-- SecretRefs do Firecrawl são resolvidos apenas quando o Firecrawl está ativo (`tools.web.fetch.enabled !== false` e `tools.web.fetch.firecrawl.enabled !== false`).
-- Se o Firecrawl está ativo e seu SecretRef não está resolvido sem fallback `FIRECRAWL_API_KEY`, inicialização/reload falha imediatamente.
-- `web_fetch` envia um User-Agent similar ao Chrome e `Accept-Language` por padrão; sobrescreva `userAgent` se necessário.
-- `web_fetch` bloqueia hostnames privados/internos e verifica novamente redirecionamentos (limite com `maxRedirects`).
-- `maxChars` é limitado por `tools.web.fetch.maxCharsCap`.
-- `web_fetch` limita o tamanho do corpo de resposta baixado para `tools.web.fetch.maxResponseBytes` antes de analisar; respostas muito grandes são truncadas e incluem um aviso.
-- `web_fetch` é extração best-effort; alguns sites precisarão da tool browser.
-- Veja [Firecrawl](/tools/firecrawl) para configuração de chave e detalhes do serviço.
-- Respostas são cacheadas (padrão 15 minutos) para reduzir fetches repetidos.
-- Se você usar perfis de tool/allowlists, adicione `web_search`/`web_fetch` ou `group:web`.
-- Se a chave API estiver faltando, `web_search` retorna uma dica de configuração curta com link para docs.
+- `web_fetch` uses Readability (main-content extraction) first, then Firecrawl (if configured). If both fail, the tool returns an error.
+- Firecrawl requests use bot-circumvention mode and cache results by default.
+- Firecrawl SecretRefs are resolved only when Firecrawl is active (`tools.web.fetch.enabled !== false` and `tools.web.fetch.firecrawl.enabled !== false`).
+- If Firecrawl is active and its SecretRef is unresolved with no `FIRECRAWL_API_KEY` fallback, startup/reload fails fast.
+- `web_fetch` sends a Chrome-like User-Agent and `Accept-Language` by default; override `userAgent` if needed.
+- `web_fetch` blocks private/internal hostnames and re-checks redirects (limit with `maxRedirects`).
+- `maxChars` is clamped to `tools.web.fetch.maxCharsCap`.
+- `web_fetch` caps the downloaded response body size to `tools.web.fetch.maxResponseBytes` before parsing; oversized responses are truncated and include a warning.
+- `web_fetch` is best-effort extraction; some sites will need the browser tool.
+- See [Firecrawl](/tools/firecrawl) for key setup and service details.
+- Responses are cached (default 15 minutes) to reduce repeated fetches.
+- If you use tool profiles/allowlists, add `web_search`/`web_fetch` or `group:web`.
+- If the API key is missing, `web_search` returns a short setup hint with a docs link.

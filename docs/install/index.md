@@ -1,39 +1,39 @@
 ---
-summary: "Instalar o OpenCraft — script instalador, npm/pnpm, a partir do código-fonte, Docker e mais"
+summary: "Install OpenClaw — installer script, npm/pnpm, from source, Docker, and more"
 read_when:
-  - Você precisa de um método de instalação diferente do quickstart do Getting Started
-  - Você quer implantar em uma plataforma de nuvem
-  - Você precisa atualizar, migrar ou desinstalar
-title: "Instalação"
+  - You need an install method other than the Getting Started quickstart
+  - You want to deploy to a cloud platform
+  - You need to update, migrate, or uninstall
+title: "Install"
 ---
 
-# Instalação
+# Install
 
-Já seguiu o [Getting Started](/start/getting-started)? Você está pronto — esta página é para métodos alternativos de instalação, instruções específicas de plataforma e manutenção.
+Already followed [Getting Started](/start/getting-started)? You're all set — this page is for alternative install methods, platform-specific instructions, and maintenance.
 
-## Requisitos do sistema
+## System requirements
 
-- **[Node 24 (recomendado)](/install/node)** (Node 22 LTS, atualmente `22.16+`, ainda é suportado para compatibilidade; o [script instalador](#install-methods) instalará o Node 24 se não estiver presente)
-- macOS, Linux ou Windows
-- `pnpm` apenas se você compilar a partir do código-fonte
+- **[Node 24 (recommended)](/install/node)** (Node 22 LTS, currently `22.16+`, is still supported for compatibility; the [installer script](#install-methods) will install Node 24 if missing)
+- macOS, Linux, or Windows
+- `pnpm` only if you build from source
 
 <Note>
-No Windows, recomendamos fortemente executar o OpenCraft sob o [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+On Windows, we strongly recommend running OpenClaw under [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
 </Note>
 
-## Métodos de instalação
+## Install methods
 
 <Tip>
-O **script instalador** é a forma recomendada de instalar o OpenCraft. Ele gerencia a detecção do Node, instalação e onboarding em uma única etapa.
+The **installer script** is the recommended way to install OpenClaw. It handles Node detection, installation, and onboarding in one step.
 </Tip>
 
 <Warning>
-Para hosts VPS/nuvem, evite imagens de marketplace "1-clique" de terceiros quando possível. Prefira uma imagem base limpa do SO (por exemplo Ubuntu LTS) e instale o OpenCraft você mesmo com o script instalador.
+For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possible. Prefer a clean base OS image (for example Ubuntu LTS), then install OpenClaw yourself with the installer script.
 </Warning>
 
 <AccordionGroup>
-  <Accordion title="Script instalador" icon="rocket" defaultOpen>
-    Baixa o CLI, instala globalmente via npm e inicia o assistente de onboarding.
+  <Accordion title="Installer script" icon="rocket" defaultOpen>
+    Downloads the CLI, installs it globally via npm, and launches onboarding.
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -48,9 +48,9 @@ Para hosts VPS/nuvem, evite imagens de marketplace "1-clique" de terceiros quand
       </Tab>
     </Tabs>
 
-    É só isso — o script gerencia a detecção do Node, instalação e onboarding.
+    That's it — the script handles Node detection, installation, and onboarding.
 
-    Para pular o onboarding e apenas instalar o binário:
+    To skip onboarding and just install the binary:
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -65,51 +65,61 @@ Para hosts VPS/nuvem, evite imagens de marketplace "1-clique" de terceiros quand
       </Tab>
     </Tabs>
 
-    Para todas as flags, variáveis de ambiente e opções de CI/automação, veja [Detalhes do instalador](/install/installer).
+    For all flags, env vars, and CI/automation options, see [Installer internals](/install/installer).
 
   </Accordion>
 
   <Accordion title="npm / pnpm" icon="package">
-    Se você já gerencia o Node por conta própria, recomendamos o Node 24. O OpenCraft ainda suporta Node 22 LTS, atualmente `22.16+`, para compatibilidade:
+    If you already manage Node yourself, we recommend Node 24. OpenClaw still supports Node 22 LTS, currently `22.16+`, for compatibility:
 
     <Tabs>
       <Tab title="npm">
         ```bash
-        npm install -g opencraft@latest
-        opencraft onboard --install-daemon
+        npm install -g openclaw@latest
+        openclaw onboard --install-daemon
         ```
 
-        <Accordion title="Erros de build do sharp?">
-          Se você tem o libvips instalado globalmente (comum no macOS via Homebrew) e o `sharp` falha, force os binários pré-compilados:
+        <Accordion title="sharp build errors?">
+          If you have libvips installed globally (common on macOS via Homebrew) and `sharp` fails, force prebuilt binaries:
 
           ```bash
-          SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g opencraft@latest
+          SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest
           ```
 
-          Se você vir `sharp: Please add node-gyp to your dependencies`, instale as ferramentas de build (macOS: Xcode CLT + `npm install -g node-gyp`) ou use a variável de ambiente acima.
+          If you see `sharp: Please add node-gyp to your dependencies`, either install build tooling (macOS: Xcode CLT + `npm install -g node-gyp`) or use the env var above.
         </Accordion>
       </Tab>
       <Tab title="pnpm">
         ```bash
-        pnpm add -g opencraft@latest
-        pnpm approve-builds -g        # aprove opencraft, node-llama-cpp, sharp, etc.
-        opencraft onboard --install-daemon
+        pnpm add -g openclaw@latest
+        pnpm approve-builds -g        # approve openclaw, node-llama-cpp, sharp, etc.
+        openclaw onboard --install-daemon
         ```
 
         <Note>
-        O pnpm requer aprovação explícita para pacotes com scripts de build. Após a primeira instalação mostrar o aviso "Ignored build scripts", execute `pnpm approve-builds -g` e selecione os pacotes listados.
+        pnpm requires explicit approval for packages with build scripts. After the first install shows the "Ignored build scripts" warning, run `pnpm approve-builds -g` and select the listed packages.
         </Note>
       </Tab>
     </Tabs>
 
+    Want the current GitHub `main` head with a package-manager install?
+
+    ```bash
+    npm install -g github:openclaw/openclaw#main
+    ```
+
+    ```bash
+    pnpm add -g github:openclaw/openclaw#main
+    ```
+
   </Accordion>
 
-  <Accordion title="A partir do código-fonte" icon="github">
-    Para colaboradores ou qualquer pessoa que queira executar a partir de um checkout local.
+  <Accordion title="From source" icon="github">
+    For contributors or anyone who wants to run from a local checkout.
 
     <Steps>
-      <Step title="Clonar e compilar">
-        Clone o [repositório OpenCraft](https://github.com/openclaw/openclaw) e compile:
+      <Step title="Clone and build">
+        Clone the [OpenClaw repo](https://github.com/openclaw/openclaw) and build:
 
         ```bash
         git clone https://github.com/openclaw/openclaw.git
@@ -119,69 +129,69 @@ Para hosts VPS/nuvem, evite imagens de marketplace "1-clique" de terceiros quand
         pnpm build
         ```
       </Step>
-      <Step title="Vincular o CLI">
-        Torne o comando `opencraft` disponível globalmente:
+      <Step title="Link the CLI">
+        Make the `openclaw` command available globally:
 
         ```bash
         pnpm link --global
         ```
 
-        Alternativamente, pule o link e execute comandos via `pnpm opencraft ...` de dentro do repositório.
+        Alternatively, skip the link and run commands via `pnpm openclaw ...` from inside the repo.
       </Step>
-      <Step title="Executar o onboarding">
+      <Step title="Run onboarding">
         ```bash
-        opencraft onboard --install-daemon
+        openclaw onboard --install-daemon
         ```
       </Step>
     </Steps>
 
-    Para fluxos de trabalho de desenvolvimento mais aprofundados, veja [Setup](/start/setup).
+    For deeper development workflows, see [Setup](/start/setup).
 
   </Accordion>
 </AccordionGroup>
 
-## Outros métodos de instalação
+## Other install methods
 
 <CardGroup cols={2}>
   <Card title="Docker" href="/install/docker" icon="container">
-    Implantações em contêiner ou headless.
+    Containerized or headless deployments.
   </Card>
   <Card title="Podman" href="/install/podman" icon="container">
-    Contêiner rootless: execute `setup-podman.sh` uma vez, depois o script de inicialização.
+    Rootless container: run `setup-podman.sh` once, then the launch script.
   </Card>
   <Card title="Nix" href="/install/nix" icon="snowflake">
-    Instalação declarativa via Nix.
+    Declarative install via Nix.
   </Card>
   <Card title="Ansible" href="/install/ansible" icon="server">
-    Provisionamento automatizado de frota.
+    Automated fleet provisioning.
   </Card>
   <Card title="Bun" href="/install/bun" icon="zap">
-    Uso somente de CLI via runtime Bun.
+    CLI-only usage via the Bun runtime.
   </Card>
 </CardGroup>
 
-## Após a instalação
+## After install
 
-Verifique se tudo está funcionando:
+Verify everything is working:
 
 ```bash
-opencraft doctor         # verificar problemas de configuração
-opencraft status         # status do gateway
-opencraft dashboard      # abrir a UI no navegador
+openclaw doctor         # check for config issues
+openclaw status         # gateway status
+openclaw dashboard      # open the browser UI
 ```
 
-Se você precisar de caminhos de runtime personalizados, use:
+If you need custom runtime paths, use:
 
-- `OPENCLAW_HOME` para caminhos internos baseados no diretório home
-- `OPENCLAW_STATE_DIR` para localização do estado mutável
-- `OPENCLAW_CONFIG_PATH` para localização do arquivo de config
+- `OPENCLAW_HOME` for home-directory based internal paths
+- `OPENCLAW_STATE_DIR` for mutable state location
+- `OPENCLAW_CONFIG_PATH` for config file location
 
-Veja [Variáveis de ambiente](/help/environment) para precedência e detalhes completos.
+See [Environment vars](/help/environment) for precedence and full details.
 
-## Solução de problemas: `opencraft` não encontrado
+## Troubleshooting: `openclaw` not found
 
-<Accordion title="Diagnóstico e correção do PATH">
-  Diagnóstico rápido:
+<Accordion title="PATH diagnosis and fix">
+  Quick diagnosis:
 
 ```bash
 node -v
@@ -190,29 +200,29 @@ npm prefix -g
 echo "$PATH"
 ```
 
-Se `$(npm prefix -g)/bin` (macOS/Linux) ou `$(npm prefix -g)` (Windows) **não** estiver no seu `$PATH`, seu shell não consegue encontrar os binários globais do npm (incluindo `opencraft`).
+If `$(npm prefix -g)/bin` (macOS/Linux) or `$(npm prefix -g)` (Windows) is **not** in your `$PATH`, your shell can't find global npm binaries (including `openclaw`).
 
-Correção — adicione ao seu arquivo de inicialização do shell (`~/.zshrc` ou `~/.bashrc`):
+Fix — add it to your shell startup file (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
 export PATH="$(npm prefix -g)/bin:$PATH"
 ```
 
-No Windows, adicione a saída de `npm prefix -g` ao seu PATH.
+On Windows, add the output of `npm prefix -g` to your PATH.
 
-Em seguida, abra um novo terminal (ou `rehash` no zsh / `hash -r` no bash).
+Then open a new terminal (or `rehash` in zsh / `hash -r` in bash).
 </Accordion>
 
-## Atualizar / desinstalar
+## Update / uninstall
 
 <CardGroup cols={3}>
-  <Card title="Atualizando" href="/install/updating" icon="refresh-cw">
-    Mantenha o OpenCraft atualizado.
+  <Card title="Updating" href="/install/updating" icon="refresh-cw">
+    Keep OpenClaw up to date.
   </Card>
-  <Card title="Migrando" href="/install/migrating" icon="arrow-right">
-    Mover para uma nova máquina.
+  <Card title="Migrating" href="/install/migrating" icon="arrow-right">
+    Move to a new machine.
   </Card>
-  <Card title="Desinstalar" href="/install/uninstall" icon="trash-2">
-    Remover o OpenCraft completamente.
+  <Card title="Uninstall" href="/install/uninstall" icon="trash-2">
+    Remove OpenClaw completely.
   </Card>
 </CardGroup>

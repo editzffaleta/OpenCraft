@@ -11,7 +11,6 @@ import { DEFAULT_HEARTBEAT_FILENAME } from "../agents/workspace.js";
 import { resolveHeartbeatReplyPayload } from "../auto-reply/heartbeat-reply-payload.js";
 import {
   DEFAULT_HEARTBEAT_ACK_MAX_CHARS,
-  DEFAULT_HEARTBEAT_EVERY,
   isHeartbeatContentEffectivelyEmpty,
   resolveHeartbeatPrompt as resolveHeartbeatPromptText,
   stripHeartbeatToken,
@@ -21,8 +20,7 @@ import { HEARTBEAT_TOKEN } from "../auto-reply/tokens.js";
 import type { ReplyPayload } from "../auto-reply/types.js";
 import { getChannelPlugin } from "../channels/plugins/index.js";
 import type { ChannelHeartbeatDeps } from "../channels/plugins/types.js";
-import { parseDurationMs } from "../cli/parse-duration.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import {
   canonicalizeMainSessionAlias,
@@ -56,6 +54,12 @@ import {
 } from "./heartbeat-events-filter.js";
 import { emitHeartbeatEvent, resolveIndicatorType } from "./heartbeat-events.js";
 import { resolveHeartbeatReasonKind } from "./heartbeat-reason.js";
+import {
+  isHeartbeatEnabledForAgent,
+  resolveHeartbeatIntervalMs,
+  resolveHeartbeatSummaryForAgent,
+  type HeartbeatSummary,
+} from "./heartbeat-summary.js";
 import { resolveHeartbeatVisibility } from "./heartbeat-visibility.js";
 import {
   areHeartbeatsEnabled,
@@ -84,6 +88,12 @@ export type HeartbeatDeps = OutboundSendDeps &
 const log = createSubsystemLogger("gateway/heartbeat");
 
 export { areHeartbeatsEnabled, setHeartbeatsEnabled };
+export {
+  isHeartbeatEnabledForAgent,
+  resolveHeartbeatIntervalMs,
+  resolveHeartbeatSummaryForAgent,
+  type HeartbeatSummary,
+} from "./heartbeat-summary.js";
 
 type HeartbeatConfig = AgentDefaultsConfig["heartbeat"];
 type HeartbeatAgent = {
@@ -91,17 +101,6 @@ type HeartbeatAgent = {
   heartbeat?: HeartbeatConfig;
 };
 
-export type HeartbeatSummary = {
-  enabled: boolean;
-  every: string;
-  everyMs: number | null;
-  prompt: string;
-  target: string;
-  model?: string;
-  ackMaxChars: number;
-};
-
-const DEFAULT_HEARTBEAT_TARGET = "none";
 export { isCronSystemEvent };
 
 type HeartbeatAgentState = {
@@ -114,28 +113,16 @@ type HeartbeatAgentState = {
 
 export type HeartbeatRunner = {
   stop: () => void;
-  updateConfig: (cfg: OpenCraftConfig) => void;
+  updateConfig: (cfg: OpenClawConfig) => void;
 };
 
-function hasExplicitHeartbeatAgents(cfg: OpenCraftConfig) {
+function hasExplicitHeartbeatAgents(cfg: OpenClawConfig) {
   const list = cfg.agents?.list ?? [];
   return list.some((entry) => Boolean(entry?.heartbeat));
 }
 
-export function isHeartbeatEnabledForAgent(cfg: OpenCraftConfig, agentId?: string): boolean {
-  const resolvedAgentId = normalizeAgentId(agentId ?? resolveDefaultAgentId(cfg));
-  const list = cfg.agents?.list ?? [];
-  const hasExplicit = hasExplicitHeartbeatAgents(cfg);
-  if (hasExplicit) {
-    return list.some(
-      (entry) => Boolean(entry?.heartbeat) && normalizeAgentId(entry?.id) === resolvedAgentId,
-    );
-  }
-  return resolvedAgentId === resolveDefaultAgentId(cfg);
-}
-
 function resolveHeartbeatConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId?: string,
 ): HeartbeatConfig | undefined {
   const defaults = cfg.agents?.defaults?.heartbeat;
@@ -149,55 +136,7 @@ function resolveHeartbeatConfig(
   return { ...defaults, ...overrides };
 }
 
-export function resolveHeartbeatSummaryForAgent(
-  cfg: OpenCraftConfig,
-  agentId?: string,
-): HeartbeatSummary {
-  const defaults = cfg.agents?.defaults?.heartbeat;
-  const overrides = agentId ? resolveAgentConfig(cfg, agentId)?.heartbeat : undefined;
-  const enabled = isHeartbeatEnabledForAgent(cfg, agentId);
-
-  if (!enabled) {
-    return {
-      enabled: false,
-      every: "disabled",
-      everyMs: null,
-      prompt: resolveHeartbeatPromptText(defaults?.prompt),
-      target: defaults?.target ?? DEFAULT_HEARTBEAT_TARGET,
-      model: defaults?.model,
-      ackMaxChars: Math.max(0, defaults?.ackMaxChars ?? DEFAULT_HEARTBEAT_ACK_MAX_CHARS),
-    };
-  }
-
-  const merged = defaults || overrides ? { ...defaults, ...overrides } : undefined;
-  const every = merged?.every ?? defaults?.every ?? overrides?.every ?? DEFAULT_HEARTBEAT_EVERY;
-  const everyMs = resolveHeartbeatIntervalMs(cfg, undefined, merged);
-  const prompt = resolveHeartbeatPromptText(
-    merged?.prompt ?? defaults?.prompt ?? overrides?.prompt,
-  );
-  const target =
-    merged?.target ?? defaults?.target ?? overrides?.target ?? DEFAULT_HEARTBEAT_TARGET;
-  const model = merged?.model ?? defaults?.model ?? overrides?.model;
-  const ackMaxChars = Math.max(
-    0,
-    merged?.ackMaxChars ??
-      defaults?.ackMaxChars ??
-      overrides?.ackMaxChars ??
-      DEFAULT_HEARTBEAT_ACK_MAX_CHARS,
-  );
-
-  return {
-    enabled: true,
-    every,
-    everyMs,
-    prompt,
-    target,
-    model,
-    ackMaxChars,
-  };
-}
-
-function resolveHeartbeatAgents(cfg: OpenCraftConfig): HeartbeatAgent[] {
+function resolveHeartbeatAgents(cfg: OpenClawConfig): HeartbeatAgent[] {
   const list = cfg.agents?.list ?? [];
   if (hasExplicitHeartbeatAgents(cfg)) {
     return list
@@ -212,40 +151,11 @@ function resolveHeartbeatAgents(cfg: OpenCraftConfig): HeartbeatAgent[] {
   return [{ agentId: fallbackId, heartbeat: resolveHeartbeatConfig(cfg, fallbackId) }];
 }
 
-export function resolveHeartbeatIntervalMs(
-  cfg: OpenCraftConfig,
-  overrideEvery?: string,
-  heartbeat?: HeartbeatConfig,
-) {
-  const raw =
-    overrideEvery ??
-    heartbeat?.every ??
-    cfg.agents?.defaults?.heartbeat?.every ??
-    DEFAULT_HEARTBEAT_EVERY;
-  if (!raw) {
-    return null;
-  }
-  const trimmed = String(raw).trim();
-  if (!trimmed) {
-    return null;
-  }
-  let ms: number;
-  try {
-    ms = parseDurationMs(trimmed, { defaultUnit: "m" });
-  } catch {
-    return null;
-  }
-  if (ms <= 0) {
-    return null;
-  }
-  return ms;
-}
-
-export function resolveHeartbeatPrompt(cfg: OpenCraftConfig, heartbeat?: HeartbeatConfig) {
+export function resolveHeartbeatPrompt(cfg: OpenClawConfig, heartbeat?: HeartbeatConfig) {
   return resolveHeartbeatPromptText(heartbeat?.prompt ?? cfg.agents?.defaults?.heartbeat?.prompt);
 }
 
-function resolveHeartbeatAckMaxChars(cfg: OpenCraftConfig, heartbeat?: HeartbeatConfig) {
+function resolveHeartbeatAckMaxChars(cfg: OpenClawConfig, heartbeat?: HeartbeatConfig) {
   return Math.max(
     0,
     heartbeat?.ackMaxChars ??
@@ -255,7 +165,7 @@ function resolveHeartbeatAckMaxChars(cfg: OpenCraftConfig, heartbeat?: Heartbeat
 }
 
 function resolveHeartbeatSession(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId?: string,
   heartbeat?: HeartbeatConfig,
   forcedSessionKey?: string,
@@ -499,7 +409,7 @@ function resolveHeartbeatReasonFlags(reason?: string): HeartbeatReasonFlags {
 }
 
 async function resolveHeartbeatPreflight(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   heartbeat?: HeartbeatConfig;
   forcedSessionKey?: string;
@@ -577,7 +487,7 @@ function appendHeartbeatWorkspacePathHint(prompt: string, workspaceDir: string):
 }
 
 function resolveHeartbeatRunPrompt(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   heartbeat?: HeartbeatConfig;
   preflight: HeartbeatPreflight;
   canRelayToUser: boolean;
@@ -607,7 +517,7 @@ function resolveHeartbeatRunPrompt(params: {
 }
 
 export async function runHeartbeatOnce(opts: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   agentId?: string;
   sessionKey?: string;
   heartbeat?: HeartbeatConfig;
@@ -1034,7 +944,7 @@ export async function runHeartbeatOnce(opts: {
 }
 
 export function startHeartbeatRunner(opts: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   runOnce?: typeof runHeartbeatOnce;
@@ -1094,7 +1004,7 @@ export function startHeartbeatRunner(opts: {
     state.timer.unref?.();
   };
 
-  const updateConfig = (cfg: OpenCraftConfig) => {
+  const updateConfig = (cfg: OpenClawConfig) => {
     if (state.stopped) {
       return;
     }

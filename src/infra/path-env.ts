@@ -4,7 +4,7 @@ import path from "node:path";
 import { resolveBrewPathDirs } from "./brew.js";
 import { isTruthyEnvValue } from "./env.js";
 
-type EnsureOpenCraftPathOpts = {
+type EnsureOpenClawPathOpts = {
   execPath?: string;
   cwd?: string;
   homeDir?: string;
@@ -49,7 +49,7 @@ function mergePath(params: { existing: string; prepend?: string[]; append?: stri
   return merged.join(path.delimiter);
 }
 
-function candidateBinDirs(opts: EnsureOpenCraftPathOpts): { prepend: string[]; append: string[] } {
+function candidateBinDirs(opts: EnsureOpenClawPathOpts): { prepend: string[]; append: string[] } {
   const execPath = opts.execPath ?? process.execPath;
   const cwd = opts.cwd ?? process.cwd();
   const homeDir = opts.homeDir ?? os.homedir();
@@ -58,10 +58,10 @@ function candidateBinDirs(opts: EnsureOpenCraftPathOpts): { prepend: string[]; a
   const prepend: string[] = [];
   const append: string[] = [];
 
-  // Bundled macOS app: `opencraft` lives next to the executable (process.execPath).
+  // Bundled macOS app: `openclaw` lives next to the executable (process.execPath).
   try {
     const execDir = path.dirname(execPath);
-    const siblingCli = path.join(execDir, "opencraft");
+    const siblingCli = path.join(execDir, "openclaw");
     if (isExecutable(siblingCli)) {
       prepend.push(execDir);
     }
@@ -73,10 +73,10 @@ function candidateBinDirs(opts: EnsureOpenCraftPathOpts): { prepend: string[]; a
   // disabled by default; if an operator explicitly enables it, only append (never prepend).
   const allowProjectLocalBin =
     opts.allowProjectLocalBin === true ||
-    isTruthyEnvValue(process.env.OPENCRAFT_ALLOW_PROJECT_LOCAL_BIN);
+    isTruthyEnvValue(process.env.OPENCLAW_ALLOW_PROJECT_LOCAL_BIN);
   if (allowProjectLocalBin) {
     const localBinDir = path.join(cwd, "node_modules", ".bin");
-    if (isExecutable(path.join(localBinDir, "opencraft"))) {
+    if (isExecutable(path.join(localBinDir, "openclaw"))) {
       append.push(localBinDir);
     }
   }
@@ -106,14 +106,14 @@ function candidateBinDirs(opts: EnsureOpenCraftPathOpts): { prepend: string[]; a
 }
 
 /**
- * Best-effort PATH bootstrap so skills that require the `opencraft` CLI can run
+ * Best-effort PATH bootstrap so skills that require the `openclaw` CLI can run
  * under launchd/minimal environments (and inside the macOS app bundle).
  */
-export function ensureOpenCraftCliOnPath(opts: EnsureOpenCraftPathOpts = {}) {
-  if (isTruthyEnvValue(process.env.OPENCRAFT_PATH_BOOTSTRAPPED)) {
+export function ensureOpenClawCliOnPath(opts: EnsureOpenClawPathOpts = {}) {
+  if (isTruthyEnvValue(process.env.OPENCLAW_PATH_BOOTSTRAPPED)) {
     return;
   }
-  process.env.OPENCRAFT_PATH_BOOTSTRAPPED = "1";
+  process.env.OPENCLAW_PATH_BOOTSTRAPPED = "1";
 
   const existing = opts.pathEnv ?? process.env.PATH ?? "";
   const { prepend, append } = candidateBinDirs(opts);

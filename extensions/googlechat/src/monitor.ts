@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/googlechat";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/googlechat";
 import {
   createWebhookInFlightLimiter,
   createReplyPrefixOptions,
   registerWebhookTargetWithPluginRoute,
   resolveInboundRouteEnvelopeBuilderWithRuntime,
   resolveWebhookPath,
-} from "opencraft/plugin-sdk/googlechat";
+} from "openclaw/plugin-sdk/googlechat";
 import { type ResolvedGoogleChatAccount } from "./accounts.js";
 import {
   downloadGoogleChatMedia,
@@ -113,12 +113,12 @@ async function processGoogleChatEvent(event: GoogleChatEvent, target: WebhookTar
  * Resolve bot display name with fallback chain:
  * 1. Account config name
  * 2. Agent name from config
- * 3. "OpenCraft" as generic fallback
+ * 3. "OpenClaw" as generic fallback
  */
 function resolveBotDisplayName(params: {
   accountName?: string;
   agentId: string;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
 }): string {
   const { accountName, agentId, config } = params;
   if (accountName?.trim()) {
@@ -128,13 +128,13 @@ function resolveBotDisplayName(params: {
   if (agent?.name?.trim()) {
     return agent.name.trim();
   }
-  return "OpenCraft";
+  return "OpenClaw";
 }
 
 async function processMessageWithPipeline(params: {
   event: GoogleChatEvent;
   account: ResolvedGoogleChatAccount;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   runtime: GoogleChatRuntimeEnv;
   core: GoogleChatCoreRuntime;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
@@ -369,7 +369,7 @@ async function deliverGoogleChatReply(params: {
   spaceId: string;
   runtime: GoogleChatRuntimeEnv;
   core: GoogleChatCoreRuntime;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
   typingMessageName?: string;
 }): Promise<void> {

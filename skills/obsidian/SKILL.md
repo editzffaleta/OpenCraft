@@ -1,10 +1,10 @@
 ---
 name: obsidian
-description: Trabalhe com vaults do Obsidian (notas Markdown simples) e automatize via obsidian-cli.
+description: Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.
 homepage: https://help.obsidian.md
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "💎",
         "requires": { "bins": ["obsidian-cli"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "yakitrak/yakitrak/obsidian-cli",
               "bins": ["obsidian-cli"],
-              "label": "Instalar obsidian-cli (brew)",
+              "label": "Install obsidian-cli (brew)",
             },
           ],
       },
@@ -24,58 +24,58 @@ metadata:
 
 # Obsidian
 
-Vault do Obsidian = uma pasta normal no disco.
+Obsidian vault = a normal folder on disk.
 
-Estrutura do vault (típica):
+Vault structure (typical)
 
-- Notas: `*.md` (Markdown em texto simples; edite com qualquer editor)
-- Configuração: `.obsidian/` (configurações de workspace e plugins; geralmente não toque via scripts)
+- Notes: `*.md` (plain text Markdown; edit with any editor)
+- Config: `.obsidian/` (workspace + plugin settings; usually don’t touch from scripts)
 - Canvases: `*.canvas` (JSON)
-- Anexos: a pasta que você escolheu nas configurações do Obsidian (imagens/PDFs/etc.)
+- Attachments: whatever folder you chose in Obsidian settings (images/PDFs/etc.)
 
-## Encontrar o(s) vault(s) ativo(s)
+## Find the active vault(s)
 
-O Obsidian desktop rastreia vaults aqui (fonte da verdade):
+Obsidian desktop tracks vaults here (source of truth):
 
 - `~/Library/Application Support/obsidian/obsidian.json`
 
-O `obsidian-cli` resolve vaults desse arquivo; o nome do vault é tipicamente o **nome da pasta** (sufixo do caminho).
+`obsidian-cli` resolves vaults from that file; vault name is typically the **folder name** (path suffix).
 
-Forma rápida de saber "qual vault está ativo / onde estão as notas?":
+Fast “what vault is active / where are the notes?”
 
-- Se você já definiu um padrão: `obsidian-cli print-default --path-only`
-- Caso contrário, leia `~/Library/Application Support/obsidian/obsidian.json` e use a entrada do vault com `"open": true`.
+- If you’ve already set a default: `obsidian-cli print-default --path-only`
+- Otherwise, read `~/Library/Application Support/obsidian/obsidian.json` and use the vault entry with `"open": true`.
 
-Notas:
+Notes
 
-- Múltiplos vaults são comuns (iCloud vs `~/Documents`, trabalho/pessoal, etc.). Não adivinhe; leia a configuração.
-- Evite escrever caminhos de vault fixos nos scripts; prefira ler a configuração ou usar `print-default`.
+- Multiple vaults common (iCloud vs `~/Documents`, work/personal, etc.). Don’t guess; read config.
+- Avoid writing hardcoded vault paths into scripts; prefer reading the config or using `print-default`.
 
-## Início rápido do obsidian-cli
+## obsidian-cli quick start
 
-Escolha um vault padrão (uma vez):
+Pick a default vault (once):
 
-- `obsidian-cli set-default "<nome-da-pasta-do-vault>"`
+- `obsidian-cli set-default "<vault-folder-name>"`
 - `obsidian-cli print-default` / `obsidian-cli print-default --path-only`
 
-Pesquisar:
+Search
 
-- `obsidian-cli search "consulta"` (nomes de notas)
-- `obsidian-cli search-content "consulta"` (dentro das notas; mostra trechos + linhas)
+- `obsidian-cli search "query"` (note names)
+- `obsidian-cli search-content "query"` (inside notes; shows snippets + lines)
 
-Criar:
+Create
 
-- `obsidian-cli create "Pasta/Nova nota" --content "..." --open`
-- Requer o handler de URI do Obsidian (`obsidian://…`) funcionando (Obsidian instalado).
-- Evite criar notas em pastas "ocultas" com ponto (ex: `.algo/...`) via URI; o Obsidian pode recusar.
+- `obsidian-cli create "Folder/New note" --content "..." --open`
+- Requires Obsidian URI handler (`obsidian://…`) working (Obsidian installed).
+- Avoid creating notes under “hidden” dot-folders (e.g. `.something/...`) via URI; Obsidian may refuse.
 
-Mover/renomear (refatoração segura):
+Move/rename (safe refactor)
 
-- `obsidian-cli move "caminho/antigo/nota" "caminho/novo/nota"`
-- Atualiza `[[wikilinks]]` e links Markdown comuns em todo o vault (esta é a grande vantagem vs `mv`).
+- `obsidian-cli move "old/path/note" "new/path/note"`
+- Updates `[[wikilinks]]` and common Markdown links across the vault (this is the main win vs `mv`).
 
-Deletar:
+Delete
 
-- `obsidian-cli delete "caminho/nota"`
+- `obsidian-cli delete "path/note"`
 
-Prefira edições diretas quando apropriado: abra o arquivo `.md` e altere-o; o Obsidian vai capturar a mudança.
+Prefer direct edits when appropriate: open the `.md` file and change it; Obsidian will pick it up.

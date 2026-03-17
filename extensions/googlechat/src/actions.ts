@@ -1,8 +1,8 @@
 import type {
   ChannelMessageActionAdapter,
   ChannelMessageActionName,
-  OpenCraftConfig,
-} from "opencraft/plugin-sdk/googlechat";
+  OpenClawConfig,
+} from "openclaw/plugin-sdk/googlechat";
 import {
   createActionGate,
   extractToolSend,
@@ -10,7 +10,7 @@ import {
   readNumberParam,
   readReactionParams,
   readStringParam,
-} from "opencraft/plugin-sdk/googlechat";
+} from "openclaw/plugin-sdk/googlechat";
 import { listEnabledGoogleChatAccounts, resolveGoogleChatAccount } from "./accounts.js";
 import {
   createGoogleChatReaction,
@@ -24,13 +24,13 @@ import { resolveGoogleChatOutboundSpace } from "./targets.js";
 
 const providerId = "googlechat";
 
-function listEnabledAccounts(cfg: OpenCraftConfig) {
+function listEnabledAccounts(cfg: OpenClawConfig) {
   return listEnabledGoogleChatAccounts(cfg).filter(
     (account) => account.enabled && account.credentialSource !== "none",
   );
 }
 
-function isReactionsEnabled(accounts: ReturnType<typeof listEnabledAccounts>, cfg: OpenCraftConfig) {
+function isReactionsEnabled(accounts: ReturnType<typeof listEnabledAccounts>, cfg: OpenClawConfig) {
   for (const account of accounts) {
     const gate = createActionGate(
       (account.config.actions ??

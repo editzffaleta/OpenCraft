@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { telegramOutbound } from "../channels/plugins/outbound/telegram.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import { discordPlugin } from "../../extensions/discord/src/channel.js";
+import { telegramPlugin } from "../../extensions/telegram/src/channel.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import { createOutboundTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
+import { createTestRegistry } from "../test-utils/channel-plugins.js";
 import { createExecApprovalForwarder } from "./exec-approval-forwarder.js";
 
 const baseRequest = {
@@ -25,7 +26,12 @@ const emptyRegistry = createTestRegistry([]);
 const defaultRegistry = createTestRegistry([
   {
     pluginId: "telegram",
-    plugin: createOutboundTestPlugin({ id: "telegram", outbound: telegramOutbound }),
+    plugin: telegramPlugin,
+    source: "test",
+  },
+  {
+    pluginId: "discord",
+    plugin: discordPlugin,
     source: "test",
   },
 ]);
@@ -45,10 +51,10 @@ const TARGETS_CFG = {
       targets: [{ channel: "slack", to: "U123" }],
     },
   },
-} as OpenCraftConfig;
+} as OpenClawConfig;
 
 function createForwarder(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   deliver?: ReturnType<typeof vi.fn>;
   resolveSessionTarget?: () => { channel: string; to: string } | null;
 }) {
@@ -67,7 +73,7 @@ function createForwarder(params: {
   return { deliver, forwarder };
 }
 
-function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {}): OpenCraftConfig {
+function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {}): OpenClawConfig {
   return {
     ...(options.discordExecApprovalsEnabled
       ? {
@@ -82,11 +88,11 @@ function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {})
         }
       : {}),
     approvals: { exec: { enabled: true, mode: "session" } },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 async function expectDiscordSessionTargetRequest(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   expectedAccepted: boolean;
   expectedDeliveryCount: number;
 }) {
@@ -118,7 +124,7 @@ async function expectSessionFilterRequestResult(params: {
         sessionFilter: params.sessionFilter,
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 
   const { deliver, forwarder } = createForwarder({
     cfg,
@@ -150,7 +156,7 @@ describe("exec approval forwarder", () => {
     vi.useFakeTimers();
     const cfg = {
       approvals: { exec: { enabled: true, mode: "session" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const { deliver, forwarder } = createForwarder({
       cfg,
@@ -202,7 +208,7 @@ describe("exec approval forwarder", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const { deliver, forwarder } = createForwarder({
       cfg,
@@ -235,7 +241,7 @@ describe("exec approval forwarder", () => {
           targets: [{ channel: "telegram", to: "123" }],
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const { deliver, forwarder } = createForwarder({ cfg });
 
@@ -329,7 +335,7 @@ describe("exec approval forwarder", () => {
 
   it("returns false when forwarding is disabled", async () => {
     const { deliver, forwarder } = createForwarder({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
     });
     await expect(forwarder.handleRequested(baseRequest)).resolves.toBe(false);
     expect(deliver).not.toHaveBeenCalled();
@@ -387,7 +393,7 @@ describe("exec approval forwarder", () => {
           targets: [{ channel: "telegram", to: "123" }],
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const { deliver, forwarder } = createForwarder({ cfg });
 
     await forwarder.handleResolved({

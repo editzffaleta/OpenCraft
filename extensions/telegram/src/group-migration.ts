@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { TelegramGroupConfig } from "../../../src/config/types.telegram.js";
 import { normalizeAccountId } from "../../../src/routing/session-key.js";
 
@@ -13,7 +13,7 @@ export type TelegramGroupMigrationResult = {
 };
 
 function resolveAccountGroups(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId?: string | null,
 ): { groups?: TelegramGroups } {
   if (!accountId) {
@@ -57,7 +57,7 @@ export function migrateTelegramGroupsInPlace(
 }
 
 export function migrateTelegramGroupConfig(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   oldChatId: string;
   newChatId: string;

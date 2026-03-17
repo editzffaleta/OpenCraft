@@ -35,7 +35,7 @@ describe("acp prompt cwd prefix", () => {
     sessionStore.createSession({
       sessionId: TEST_SESSION_ID,
       sessionKey: TEST_SESSION_KEY,
-      cwd: options.cwd ?? path.join(os.homedir(), "opencraft-test"),
+      cwd: options.cwd ?? path.join(os.homedir(), "openclaw-test"),
     });
 
     const requestSpy = createStopAfterSendSpy();
@@ -55,18 +55,18 @@ describe("acp prompt cwd prefix", () => {
 
   async function runPromptWithCwd(cwd: string) {
     const pinnedHome = os.homedir();
-    const previousOpenCraftHome = process.env.OPENCRAFT_HOME;
+    const previousOpenClawHome = process.env.OPENCLAW_HOME;
     const previousHome = process.env.HOME;
-    delete process.env.OPENCRAFT_HOME;
+    delete process.env.OPENCLAW_HOME;
     process.env.HOME = pinnedHome;
 
     try {
       return await runPromptAndCaptureRequest({ cwd, prefixCwd: true });
     } finally {
-      if (previousOpenCraftHome === undefined) {
-        delete process.env.OPENCRAFT_HOME;
+      if (previousOpenClawHome === undefined) {
+        delete process.env.OPENCLAW_HOME;
       } else {
-        process.env.OPENCRAFT_HOME = previousOpenCraftHome;
+        process.env.OPENCLAW_HOME = previousOpenClawHome;
       }
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -77,22 +77,22 @@ describe("acp prompt cwd prefix", () => {
   }
 
   it("redacts home directory in prompt prefix", async () => {
-    const requestSpy = await runPromptWithCwd(path.join(os.homedir(), "opencraft-test"));
+    const requestSpy = await runPromptWithCwd(path.join(os.homedir(), "openclaw-test"));
     expect(requestSpy).toHaveBeenCalledWith(
       "chat.send",
       expect.objectContaining({
-        message: expect.stringMatching(/\[Working directory: ~[\\/]opencraft-test\]/),
+        message: expect.stringMatching(/\[Working directory: ~[\\/]openclaw-test\]/),
       }),
       { expectFinal: true },
     );
   });
 
   it("keeps backslash separators when cwd uses them", async () => {
-    const requestSpy = await runPromptWithCwd(`${os.homedir()}\\opencraft-test`);
+    const requestSpy = await runPromptWithCwd(`${os.homedir()}\\openclaw-test`);
     expect(requestSpy).toHaveBeenCalledWith(
       "chat.send",
       expect.objectContaining({
-        message: expect.stringContaining("[Working directory: ~\\opencraft-test]"),
+        message: expect.stringContaining("[Working directory: ~\\openclaw-test]"),
       }),
       { expectFinal: true },
     );
@@ -107,7 +107,7 @@ describe("acp prompt cwd prefix", () => {
           kind: "external_user",
           originSessionId: TEST_SESSION_ID,
           sourceChannel: "acp",
-          sourceTool: "opencraft_acp",
+          sourceTool: "openclaw_acp",
         },
         systemProvenanceReceipt: undefined,
       }),
@@ -124,7 +124,7 @@ describe("acp prompt cwd prefix", () => {
           kind: "external_user",
           originSessionId: TEST_SESSION_ID,
           sourceChannel: "acp",
-          sourceTool: "opencraft_acp",
+          sourceTool: "openclaw_acp",
         },
         systemProvenanceReceipt: expect.stringContaining("[Source Receipt]"),
       }),
@@ -133,7 +133,7 @@ describe("acp prompt cwd prefix", () => {
     expect(requestSpy).toHaveBeenCalledWith(
       "chat.send",
       expect.objectContaining({
-        systemProvenanceReceipt: expect.stringContaining("bridge=opencraft-acp"),
+        systemProvenanceReceipt: expect.stringContaining("bridge=openclaw-acp"),
       }),
       { expectFinal: true },
     );

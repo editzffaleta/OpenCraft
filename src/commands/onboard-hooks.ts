@@ -1,21 +1,21 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { buildWorkspaceHookStatus } from "../hooks/hooks-status.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 
 export async function setupInternalHooks(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
-): Promise<OpenCraftConfig> {
+): Promise<OpenClawConfig> {
   await prompter.note(
     [
       "Hooks let you automate actions when agent commands are issued.",
       "Example: Save session context to memory when you issue /new or /reset.",
       "",
-      "Learn more: https://docs.opencraft.ai/automation/hooks",
+      "Learn more: https://docs.openclaw.ai/automation/hooks",
     ].join("\n"),
     "Hooks",
   );
@@ -24,7 +24,7 @@ export async function setupInternalHooks(
   const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
   const report = buildWorkspaceHookStatus(workspaceDir, { config: cfg });
 
-  // Show every eligible hook so users can opt in during onboarding.
+  // Show every eligible hook so users can opt in during setup.
   const eligibleHooks = report.hooks.filter((h) => h.eligible);
 
   if (eligibleHooks.length === 0) {
@@ -58,7 +58,7 @@ export async function setupInternalHooks(
     entries[name] = { enabled: true };
   }
 
-  const next: OpenCraftConfig = {
+  const next: OpenClawConfig = {
     ...cfg,
     hooks: {
       ...cfg.hooks,
@@ -74,9 +74,9 @@ export async function setupInternalHooks(
       `Enabled ${selected.length} hook${selected.length > 1 ? "s" : ""}: ${selected.join(", ")}`,
       "",
       "You can manage hooks later with:",
-      `  ${formatCliCommand("opencraft hooks list")}`,
-      `  ${formatCliCommand("opencraft hooks enable <name>")}`,
-      `  ${formatCliCommand("opencraft hooks disable <name>")}`,
+      `  ${formatCliCommand("openclaw hooks list")}`,
+      `  ${formatCliCommand("openclaw hooks enable <name>")}`,
+      `  ${formatCliCommand("openclaw hooks disable <name>")}`,
     ].join("\n"),
     "Hooks Configured",
   );

@@ -1,6 +1,6 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 
 class SmsHandler(
   private val sms: SmsManager,

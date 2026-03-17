@@ -5,7 +5,12 @@ import type { Api, Model } from "@mariozechner/pi-ai";
 import { describe, expect, it } from "vitest";
 import { withEnvAsync } from "../test-utils/env.js";
 import { ensureAuthProfileStore } from "./auth-profiles.js";
-import { getApiKeyForModel, resolveApiKeyForProvider, resolveEnvApiKey } from "./model-auth.js";
+import {
+  getApiKeyForModel,
+  hasAvailableAuthForProvider,
+  resolveApiKeyForProvider,
+  resolveEnvApiKey,
+} from "./model-auth.js";
 
 const envVar = (...parts: string[]) => parts.join("_");
 
@@ -51,14 +56,14 @@ async function expectBedrockAuthSource(params: {
 
 describe("getApiKeyForModel", () => {
   it("migrates legacy oauth.json into auth-profiles.json", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-oauth-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-oauth-"));
 
     try {
       const agentDir = path.join(tempDir, "agent");
       await withEnvAsync(
         {
-          OPENCRAFT_STATE_DIR: tempDir,
-          OPENCRAFT_AGENT_DIR: agentDir,
+          OPENCLAW_STATE_DIR: tempDir,
+          OPENCLAW_AGENT_DIR: agentDir,
           PI_CODING_AGENT_DIR: agentDir,
         },
         async () => {
@@ -76,7 +81,7 @@ describe("getApiKeyForModel", () => {
             api: "openai-codex-responses",
           } as Model<Api>;
 
-          const store = ensureAuthProfileStore(process.env.OPENCRAFT_AGENT_DIR, {
+          const store = ensureAuthProfileStore(process.env.OPENCLAW_AGENT_DIR, {
             allowKeychainPrompt: false,
           });
           const apiKey = await getApiKeyForModel({
@@ -92,7 +97,7 @@ describe("getApiKeyForModel", () => {
               },
             },
             store,
-            agentDir: process.env.OPENCRAFT_AGENT_DIR,
+            agentDir: process.env.OPENCLAW_AGENT_DIR,
           });
           expect(apiKey.apiKey).toBe(oauthFixture.access);
 
@@ -117,15 +122,15 @@ describe("getApiKeyForModel", () => {
   });
 
   it("suggests openai-codex when only Codex OAuth is configured", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-auth-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-auth-"));
 
     try {
       const agentDir = path.join(tempDir, "agent");
       await withEnvAsync(
         {
           OPENAI_API_KEY: undefined,
-          OPENCRAFT_STATE_DIR: tempDir,
-          OPENCRAFT_AGENT_DIR: agentDir,
+          OPENCLAW_STATE_DIR: tempDir,
+          OPENCLAW_AGENT_DIR: agentDir,
           PI_CODING_AGENT_DIR: agentDir,
         },
         async () => {
@@ -202,6 +207,40 @@ describe("getApiKeyForModel", () => {
         });
         expect(resolved.apiKey).toBe("zai-test-key");
         expect(resolved.source).toContain("Z_AI_API_KEY");
+      },
+    );
+  });
+
+  it("hasAvailableAuthForProvider('google') accepts GOOGLE_API_KEY fallback", async () => {
+    await withEnvAsync(
+      {
+        GEMINI_API_KEY: undefined,
+        GOOGLE_API_KEY: "google-test-key", // pragma: allowlist secret
+      },
+      async () => {
+        await expect(
+          hasAvailableAuthForProvider({
+            provider: "google",
+            store: { version: 1, profiles: {} },
+          }),
+        ).resolves.toBe(true);
+      },
+    );
+  });
+
+  it("hasAvailableAuthForProvider returns false when no provider auth is available", async () => {
+    await withEnvAsync(
+      {
+        ZAI_API_KEY: undefined,
+        Z_AI_API_KEY: undefined,
+      },
+      async () => {
+        await expect(
+          hasAvailableAuthForProvider({
+            provider: "zai",
+            store: { version: 1, profiles: {} },
+          }),
+        ).resolves.toBe(false);
       },
     );
   });
@@ -423,6 +462,47 @@ describe("getApiKeyForModel", () => {
         const resolved = resolveEnvApiKey("opencode-go");
         expect(resolved?.apiKey).toBe("sk-opencode-zen-fallback");
         expect(resolved?.source).toContain("OPENCODE_ZEN_API_KEY");
+      },
+    );
+  });
+
+  it("resolveEnvApiKey('qwen-portal') accepts QWEN_OAUTH_TOKEN", async () => {
+    await withEnvAsync(
+      {
+        QWEN_OAUTH_TOKEN: "qwen-oauth-token",
+        QWEN_PORTAL_API_KEY: undefined,
+      },
+      async () => {
+        const resolved = resolveEnvApiKey("qwen");
+        expect(resolved?.apiKey).toBe("qwen-oauth-token");
+        expect(resolved?.source).toContain("QWEN_OAUTH_TOKEN");
+      },
+    );
+  });
+
+  it("resolveEnvApiKey('minimax-portal') accepts MINIMAX_OAUTH_TOKEN", async () => {
+    await withEnvAsync(
+      {
+        MINIMAX_OAUTH_TOKEN: "minimax-oauth-token",
+        MINIMAX_API_KEY: undefined,
+      },
+      async () => {
+        const resolved = resolveEnvApiKey("minimax-portal");
+        expect(resolved?.apiKey).toBe("minimax-oauth-token");
+        expect(resolved?.source).toContain("MINIMAX_OAUTH_TOKEN");
+      },
+    );
+  });
+
+  it("resolveEnvApiKey('volcengine-plan') uses volcengine auth candidates", async () => {
+    await withEnvAsync(
+      {
+        VOLCANO_ENGINE_API_KEY: "volcengine-plan-key",
+      },
+      async () => {
+        const resolved = resolveEnvApiKey("volcengine-plan");
+        expect(resolved?.apiKey).toBe("volcengine-plan-key");
+        expect(resolved?.source).toContain("VOLCANO_ENGINE_API_KEY");
       },
     );
   });

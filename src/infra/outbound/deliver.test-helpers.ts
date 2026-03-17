@@ -1,8 +1,10 @@
 import { vi } from "vitest";
-import { signalOutbound } from "../../channels/plugins/outbound/signal.js";
-import { telegramOutbound } from "../../channels/plugins/outbound/telegram.js";
-import { whatsappOutbound } from "../../channels/plugins/outbound/whatsapp.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import {
+  signalOutbound,
+  telegramOutbound,
+  whatsappOutbound,
+} from "../../../test/channel-outbounds.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
 import { createIMessageTestPlugin } from "../../test-utils/imessage-test-plugin.js";
@@ -141,7 +143,7 @@ vi.mock("../../logging/subsystem.js", () => ({
   },
 }));
 
-export const whatsappChunkConfig: OpenCraftConfig = {
+export const whatsappChunkConfig: OpenClawConfig = {
   channels: { whatsapp: { textChunkLimit: 4000 } },
 };
 
@@ -225,7 +227,7 @@ export async function runChunkedWhatsAppDelivery(params: {
     >()
     .mockResolvedValueOnce({ messageId: "w1", toJid: "jid" })
     .mockResolvedValueOnce({ messageId: "w2", toJid: "jid" });
-  const cfg: OpenCraftConfig = {
+  const cfg: OpenClawConfig = {
     channels: { whatsapp: { textChunkLimit: 2 } },
   };
   const results = await params.deliverOutboundPayloads({

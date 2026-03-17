@@ -26,11 +26,11 @@ import type {
 } from "./service-types.js";
 
 function resolveTaskName(env: GatewayServiceEnv): string {
-  const override = env.OPENCRAFT_WINDOWS_TASK_NAME?.trim();
+  const override = env.OPENCLAW_WINDOWS_TASK_NAME?.trim();
   if (override) {
     return override;
   }
-  return resolveGatewayWindowsTaskName(env.OPENCRAFT_PROFILE);
+  return resolveGatewayWindowsTaskName(env.OPENCLAW_PROFILE);
 }
 
 function shouldFallbackToStartupEntry(params: { code: number; detail: string }): boolean {
@@ -43,11 +43,11 @@ function shouldFallbackToStartupEntry(params: { code: number; detail: string }):
 }
 
 export function resolveTaskScriptPath(env: GatewayServiceEnv): string {
-  const override = env.OPENCRAFT_TASK_SCRIPT?.trim();
+  const override = env.OPENCLAW_TASK_SCRIPT?.trim();
   if (override) {
     return override;
   }
-  const scriptName = env.OPENCRAFT_TASK_SCRIPT_NAME?.trim() || "gateway.cmd";
+  const scriptName = env.OPENCLAW_TASK_SCRIPT_NAME?.trim() || "gateway.cmd";
   const stateDir = resolveGatewayStateDir(env);
   return path.join(stateDir, scriptName);
 }
@@ -178,7 +178,9 @@ export function parseSchtasksQuery(output: string): ScheduledTaskInfo {
   if (lastRunTime) {
     info.lastRunTime = lastRunTime;
   }
-  const lastRunResult = entries["last run result"];
+  // Some Windows locales/versions emit "Last Result" instead of "Last Run Result".
+  // Accept both so gateway status is not falsely reported as "unknown" (#47726).
+  const lastRunResult = entries["last run result"] ?? entries["last result"];
   if (lastRunResult) {
     info.lastRunResult = lastRunResult;
   }
@@ -312,7 +314,7 @@ function launchFallbackTaskScript(scriptPath: string): void {
 }
 
 function resolveConfiguredGatewayPort(env: GatewayServiceEnv): number | null {
-  const raw = env.OPENCRAFT_GATEWAY_PORT?.trim();
+  const raw = env.OPENCLAW_GATEWAY_PORT?.trim();
   if (!raw) {
     return null;
   }
@@ -356,7 +358,7 @@ async function resolveScheduledTaskPort(env: GatewayServiceEnv): Promise<number 
   const command = await readScheduledTaskCommand(env).catch(() => null);
   return (
     parsePortFromProgramArguments(command?.programArguments) ??
-    parsePositivePort(command?.environment?.OPENCRAFT_GATEWAY_PORT) ??
+    parsePositivePort(command?.environment?.OPENCLAW_GATEWAY_PORT) ??
     resolveConfiguredGatewayPort(env)
   );
 }

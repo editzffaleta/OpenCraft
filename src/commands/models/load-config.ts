@@ -4,17 +4,17 @@ import {
   loadConfig,
   readConfigFileSnapshotForWrite,
   setRuntimeConfigSnapshot,
-  type OpenCraftConfig,
+  type OpenClawConfig,
 } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 
 export type LoadedModelsConfig = {
-  sourceConfig: OpenCraftConfig;
-  resolvedConfig: OpenCraftConfig;
+  sourceConfig: OpenClawConfig;
+  resolvedConfig: OpenClawConfig;
   diagnostics: string[];
 };
 
-async function loadSourceConfigSnapshot(fallback: OpenCraftConfig): Promise<OpenCraftConfig> {
+async function loadSourceConfigSnapshot(fallback: OpenClawConfig): Promise<OpenClawConfig> {
   try {
     const { snapshot } = await readConfigFileSnapshotForWrite();
     if (snapshot.valid) {
@@ -53,6 +53,6 @@ export async function loadModelsConfigWithSource(params: {
 export async function loadModelsConfig(params: {
   commandName: string;
   runtime?: RuntimeEnv;
-}): Promise<OpenCraftConfig> {
+}): Promise<OpenClawConfig> {
   return (await loadModelsConfigWithSource(params)).resolvedConfig;
 }

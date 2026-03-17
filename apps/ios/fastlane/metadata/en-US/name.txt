@@ -1,1 +1,1 @@
-OpenCraft - iOS Client
+OpenClaw - iOS Client

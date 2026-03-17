@@ -1,6 +1,5 @@
-import { resolveWhatsAppAccount } from "../../../extensions/whatsapp/src/accounts.js";
 import type { ChannelId } from "../../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   loadSessionStore,
   resolveAgentMainSessionKey,
@@ -14,6 +13,7 @@ import {
   resolveSessionDeliveryTarget,
 } from "../../infra/outbound/targets.js";
 import { readChannelAllowFromStoreSync } from "../../pairing/pairing-store.js";
+import { resolveWhatsAppAccount } from "../../plugin-sdk-internal/whatsapp.js";
 import { buildChannelAccountBindings } from "../../routing/bindings.js";
 import { normalizeAccountId, normalizeAgentId } from "../../routing/session-key.js";
 import { normalizeWhatsAppTarget } from "../../whatsapp/normalize.js";
@@ -38,7 +38,7 @@ export type DeliveryTargetResolution =
     };
 
 export async function resolveDeliveryTarget(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   agentId: string,
   jobPayload: {
     channel?: "last" | ChannelId;

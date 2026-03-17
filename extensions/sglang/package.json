@@ -1,10 +1,10 @@
 {
-  "name": "@opencraft/sglang-provider",
+  "name": "@openclaw/sglang-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft SGLang provider plugin",
+  "description": "OpenClaw SGLang provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

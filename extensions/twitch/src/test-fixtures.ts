@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/twitch";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/twitch";
 import { afterEach, beforeEach, vi } from "vitest";
 
 export const BASE_TWITCH_TEST_ACCOUNT = {
@@ -7,7 +7,7 @@ export const BASE_TWITCH_TEST_ACCOUNT = {
   channel: "#testchannel",
 };
 
-export function makeTwitchTestConfig(account: Record<string, unknown>): OpenCraftConfig {
+export function makeTwitchTestConfig(account: Record<string, unknown>): OpenClawConfig {
   return {
     channels: {
       twitch: {
@@ -16,7 +16,7 @@ export function makeTwitchTestConfig(account: Record<string, unknown>): OpenCraf
         },
       },
     },
-  } as unknown as OpenCraftConfig;
+  } as unknown as OpenClawConfig;
 }
 
 export function installTwitchTestHooks() {

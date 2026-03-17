@@ -43,14 +43,14 @@ describe("rewriteUpdateFlagArgv", () => {
 
 describe("shouldRegisterPrimarySubcommand", () => {
   it("skips eager primary registration for help/version invocations", () => {
-    expect(shouldRegisterPrimarySubcommand(["node", "opencraft", "status", "--help"])).toBe(false);
-    expect(shouldRegisterPrimarySubcommand(["node", "opencraft", "-V"])).toBe(false);
-    expect(shouldRegisterPrimarySubcommand(["node", "opencraft", "-v"])).toBe(false);
+    expect(shouldRegisterPrimarySubcommand(["node", "openclaw", "status", "--help"])).toBe(false);
+    expect(shouldRegisterPrimarySubcommand(["node", "openclaw", "-V"])).toBe(false);
+    expect(shouldRegisterPrimarySubcommand(["node", "openclaw", "-v"])).toBe(false);
   });
 
   it("keeps eager primary registration for regular command runs", () => {
-    expect(shouldRegisterPrimarySubcommand(["node", "opencraft", "status"])).toBe(true);
-    expect(shouldRegisterPrimarySubcommand(["node", "opencraft", "acp", "-v"])).toBe(true);
+    expect(shouldRegisterPrimarySubcommand(["node", "openclaw", "status"])).toBe(true);
+    expect(shouldRegisterPrimarySubcommand(["node", "openclaw", "acp", "-v"])).toBe(true);
   });
 });
 
@@ -58,7 +58,7 @@ describe("shouldSkipPluginCommandRegistration", () => {
   it("skips plugin registration for root help/version", () => {
     expect(
       shouldSkipPluginCommandRegistration({
-        argv: ["node", "opencraft", "--help"],
+        argv: ["node", "openclaw", "--help"],
         primary: null,
         hasBuiltinPrimary: false,
       }),
@@ -68,7 +68,7 @@ describe("shouldSkipPluginCommandRegistration", () => {
   it("skips plugin registration for builtin subcommand help", () => {
     expect(
       shouldSkipPluginCommandRegistration({
-        argv: ["node", "opencraft", "config", "--help"],
+        argv: ["node", "openclaw", "config", "--help"],
         primary: "config",
         hasBuiltinPrimary: true,
       }),
@@ -78,7 +78,7 @@ describe("shouldSkipPluginCommandRegistration", () => {
   it("skips plugin registration for builtin command runs", () => {
     expect(
       shouldSkipPluginCommandRegistration({
-        argv: ["node", "opencraft", "sessions", "--json"],
+        argv: ["node", "openclaw", "sessions", "--json"],
         primary: "sessions",
         hasBuiltinPrimary: true,
       }),
@@ -88,7 +88,7 @@ describe("shouldSkipPluginCommandRegistration", () => {
   it("keeps plugin registration for non-builtin help", () => {
     expect(
       shouldSkipPluginCommandRegistration({
-        argv: ["node", "opencraft", "voicecall", "--help"],
+        argv: ["node", "openclaw", "voicecall", "--help"],
         primary: "voicecall",
         hasBuiltinPrimary: false,
       }),
@@ -98,7 +98,7 @@ describe("shouldSkipPluginCommandRegistration", () => {
   it("keeps plugin registration for non-builtin command runs", () => {
     expect(
       shouldSkipPluginCommandRegistration({
-        argv: ["node", "opencraft", "voicecall", "status"],
+        argv: ["node", "openclaw", "voicecall", "status"],
         primary: "voicecall",
         hasBuiltinPrimary: false,
       }),
@@ -108,31 +108,31 @@ describe("shouldSkipPluginCommandRegistration", () => {
 
 describe("shouldEnsureCliPath", () => {
   it("skips path bootstrap for help/version invocations", () => {
-    expect(shouldEnsureCliPath(["node", "opencraft", "--help"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "-V"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "-v"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "--help"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "-V"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "-v"])).toBe(false);
   });
 
   it("skips path bootstrap for read-only fast paths", () => {
-    expect(shouldEnsureCliPath(["node", "opencraft", "status"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "--log-level", "debug", "status"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "sessions", "--json"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "config", "get", "update"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "models", "status", "--json"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "status"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "--log-level", "debug", "status"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "sessions", "--json"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "config", "get", "update"])).toBe(false);
+    expect(shouldEnsureCliPath(["node", "openclaw", "models", "status", "--json"])).toBe(false);
   });
 
   it("keeps path bootstrap for mutating or unknown commands", () => {
-    expect(shouldEnsureCliPath(["node", "opencraft", "message", "send"])).toBe(true);
-    expect(shouldEnsureCliPath(["node", "opencraft", "voicecall", "status"])).toBe(true);
-    expect(shouldEnsureCliPath(["node", "opencraft", "acp", "-v"])).toBe(true);
+    expect(shouldEnsureCliPath(["node", "openclaw", "message", "send"])).toBe(true);
+    expect(shouldEnsureCliPath(["node", "openclaw", "voicecall", "status"])).toBe(true);
+    expect(shouldEnsureCliPath(["node", "openclaw", "acp", "-v"])).toBe(true);
   });
 });
 
 describe("shouldUseRootHelpFastPath", () => {
   it("uses the fast path for root help only", () => {
-    expect(shouldUseRootHelpFastPath(["node", "opencraft", "--help"])).toBe(true);
-    expect(shouldUseRootHelpFastPath(["node", "opencraft", "--profile", "work", "-h"])).toBe(true);
-    expect(shouldUseRootHelpFastPath(["node", "opencraft", "status", "--help"])).toBe(false);
-    expect(shouldUseRootHelpFastPath(["node", "opencraft", "--help", "status"])).toBe(false);
+    expect(shouldUseRootHelpFastPath(["node", "openclaw", "--help"])).toBe(true);
+    expect(shouldUseRootHelpFastPath(["node", "openclaw", "--profile", "work", "-h"])).toBe(true);
+    expect(shouldUseRootHelpFastPath(["node", "openclaw", "status", "--help"])).toBe(false);
+    expect(shouldUseRootHelpFastPath(["node", "openclaw", "--help", "status"])).toBe(false);
   });
 });

@@ -1,126 +1,126 @@
 ---
-summary: "Plano: Adicionar endpoint /v1/responses do OpenResponses e descontinuar chat completions de forma limpa"
+summary: "Plan: Add OpenResponses /v1/responses endpoint and deprecate chat completions cleanly"
 read_when:
-  - Projetando ou implementando suporte ao gateway `/v1/responses`
-  - Planejando migração da compatibilidade com Chat Completions
-owner: "opencraft"
+  - Designing or implementing `/v1/responses` gateway support
+  - Planning migration from Chat Completions compatibility
+owner: "openclaw"
 status: "draft"
 last_updated: "2026-01-19"
-title: "Plano Gateway OpenResponses"
+title: "OpenResponses Gateway Plan"
 ---
 
-# Plano de Integração do Gateway OpenResponses
+# OpenResponses Gateway Integration Plan
 
-## Contexto
+## Context
 
-O Gateway OpenCraft atualmente expõe um endpoint mínimo de Chat Completions compatível com OpenAI em
-`/v1/chat/completions` (veja [API HTTP OpenAI](/gateway/openai-http-api)).
+OpenClaw Gateway currently exposes a minimal OpenAI-compatible Chat Completions endpoint at
+`/v1/chat/completions` (see [OpenAI Chat Completions](/gateway/openai-http-api)).
 
-Open Responses é um padrão de inferência aberto baseado na API Responses do OpenAI. Ele é projetado
-para fluxos de trabalho agênticos e usa entradas baseadas em itens mais eventos de streaming semântico. A
-especificação OpenResponses define `/v1/responses`, não `/v1/chat/completions`.
+Open Responses is an open inference standard based on the OpenAI Responses API. It is designed
+for agentic workflows and uses item-based inputs plus semantic streaming events. The OpenResponses
+spec defines `/v1/responses`, not `/v1/chat/completions`.
 
-## Objetivos
+## Goals
 
-- Adicionar um endpoint `/v1/responses` que adere à semântica do OpenResponses.
-- Manter Chat Completions como uma camada de compatibilidade fácil de desabilitar e eventualmente remover.
-- Padronizar validação e parsing com esquemas isolados e reutilizáveis.
+- Add a `/v1/responses` endpoint that adheres to OpenResponses semantics.
+- Keep Chat Completions as a compatibility layer that is easy to disable and eventually remove.
+- Standardize validation and parsing with isolated, reusable schemas.
 
-## Não-Objetivos
+## Non-goals
 
-- Paridade completa de recursos OpenResponses na primeira passagem (imagens, arquivos, ferramentas hospedadas).
-- Substituição da lógica interna de execução do agente ou orquestração de ferramentas.
-- Mudança do comportamento existente de `/v1/chat/completions` durante a primeira fase.
+- Full OpenResponses feature parity in the first pass (images, files, hosted tools).
+- Replacing internal agent execution logic or tool orchestration.
+- Changing the existing `/v1/chat/completions` behavior during the first phase.
 
-## Resumo de Pesquisa
+## Research Summary
 
-Fontes: OpenAPI do OpenResponses, site de especificação do OpenResponses e post do blog do Hugging Face.
+Sources: OpenResponses OpenAPI, OpenResponses specification site, and the Hugging Face blog post.
 
-Pontos-chave extraídos:
+Key points extracted:
 
-- `POST /v1/responses` aceita campos `CreateResponseBody` como `model`, `input` (string ou
-  `ItemParam[]`), `instructions`, `tools`, `tool_choice`, `stream`, `max_output_tokens` e
+- `POST /v1/responses` accepts `CreateResponseBody` fields like `model`, `input` (string or
+  `ItemParam[]`), `instructions`, `tools`, `tool_choice`, `stream`, `max_output_tokens`, and
   `max_tool_calls`.
-- `ItemParam` é uma union discriminada de:
-  - itens `message` com roles `system`, `developer`, `user`, `assistant`
-  - `function_call` e `function_call_output`
+- `ItemParam` is a discriminated union of:
+  - `message` items with roles `system`, `developer`, `user`, `assistant`
+  - `function_call` and `function_call_output`
   - `reasoning`
   - `item_reference`
-- Respostas bem-sucedidas retornam um `ResponseResource` com `object: "response"`, `status` e
-  itens de `output`.
-- Streaming usa eventos semânticos como:
+- Successful responses return a `ResponseResource` with `object: "response"`, `status`, and
+  `output` items.
+- Streaming uses semantic events such as:
   - `response.created`, `response.in_progress`, `response.completed`, `response.failed`
   - `response.output_item.added`, `response.output_item.done`
   - `response.content_part.added`, `response.content_part.done`
   - `response.output_text.delta`, `response.output_text.done`
-- A especificação requer:
+- The spec requires:
   - `Content-Type: text/event-stream`
-  - `event:` deve corresponder ao campo `type` do JSON
-  - evento terminal deve ser o literal `[DONE]`
-- Itens de reasoning podem expor `content`, `encrypted_content` e `summary`.
-- Exemplos do HF incluem `OpenResponses-Version: latest` nas requisições (header opcional).
+  - `event:` must match the JSON `type` field
+  - terminal event must be literal `[DONE]`
+- Reasoning items may expose `content`, `encrypted_content`, and `summary`.
+- HF examples include `OpenResponses-Version: latest` in requests (optional header).
 
-## Arquitetura Proposta
+## Proposed Architecture
 
-- Adicionar `src/gateway/open-responses.schema.ts` contendo apenas esquemas Zod (sem importações de gateway).
-- Adicionar `src/gateway/openresponses-http.ts` (ou `open-responses-http.ts`) para `/v1/responses`.
-- Manter `src/gateway/openai-http.ts` intacto como adaptador de compatibilidade legado.
-- Adicionar configuração `gateway.http.endpoints.responses.enabled` (padrão `false`).
-- Manter `gateway.http.endpoints.chatCompletions.enabled` independente; permitir que ambos os endpoints sejam
-  alternados separadamente.
-- Emitir aviso na inicialização quando Chat Completions estiver habilitado para sinalizar status legado.
+- Add `src/gateway/open-responses.schema.ts` containing Zod schemas only (no gateway imports).
+- Add `src/gateway/openresponses-http.ts` (or `open-responses-http.ts`) for `/v1/responses`.
+- Keep `src/gateway/openai-http.ts` intact as a legacy compatibility adapter.
+- Add config `gateway.http.endpoints.responses.enabled` (default `false`).
+- Keep `gateway.http.endpoints.chatCompletions.enabled` independent; allow both endpoints to be
+  toggled separately.
+- Emit a startup warning when Chat Completions is enabled to signal legacy status.
 
-## Caminho de Descontinuação para Chat Completions
+## Deprecation Path for Chat Completions
 
-- Manter limites estritos de módulo: sem tipos de esquema compartilhados entre responses e chat completions.
-- Tornar Chat Completions opt-in por configuração para que possa ser desabilitado sem mudanças de código.
-- Atualizar docs para rotular Chat Completions como legado assim que `/v1/responses` estiver estável.
-- Etapa futura opcional: mapear requisições de Chat Completions para o handler Responses para um caminho de
-  remoção mais simples.
+- Maintain strict module boundaries: no shared schema types between responses and chat completions.
+- Make Chat Completions opt-in by config so it can be disabled without code changes.
+- Update docs to label Chat Completions as legacy once `/v1/responses` is stable.
+- Optional future step: map Chat Completions requests to the Responses handler for a simpler
+  removal path.
 
-## Subconjunto Suportado na Fase 1
+## Phase 1 Support Subset
 
-- Aceitar `input` como string ou `ItemParam[]` com roles de mensagem e `function_call_output`.
-- Extrair mensagens de system e developer para `extraSystemPrompt`.
-- Usar a mensagem mais recente `user` ou `function_call_output` como mensagem atual para execuções do agente.
-- Rejeitar partes de conteúdo não suportadas (imagem/arquivo) com `invalid_request_error`.
-- Retornar uma única mensagem de assistant com conteúdo `output_text`.
-- Retornar `usage` com valores zerados até que a contabilização de tokens seja conectada.
+- Accept `input` as string or `ItemParam[]` with message roles and `function_call_output`.
+- Extract system and developer messages into `extraSystemPrompt`.
+- Use the most recent `user` or `function_call_output` as the current message for agent runs.
+- Reject unsupported content parts (image/file) with `invalid_request_error`.
+- Return a single assistant message with `output_text` content.
+- Return `usage` with zeroed values until token accounting is wired.
 
-## Estratégia de Validação (Sem SDK)
+## Validation Strategy (No SDK)
 
-- Implementar esquemas Zod para o subconjunto suportado de:
+- Implement Zod schemas for the supported subset of:
   - `CreateResponseBody`
-  - Unions de `ItemParam` + partes de conteúdo de mensagem
+  - `ItemParam` + message content part unions
   - `ResponseResource`
-  - Formatos de eventos de streaming usados pelo gateway
-- Manter esquemas em um único módulo isolado para evitar divergência e permitir futura geração de código.
+  - Streaming event shapes used by the gateway
+- Keep schemas in a single, isolated module to avoid drift and allow future codegen.
 
-## Implementação de Streaming (Fase 1)
+## Streaming Implementation (Phase 1)
 
-- Linhas SSE com `event:` e `data:`.
-- Sequência necessária (mínimo viável):
+- SSE lines with both `event:` and `data:`.
+- Required sequence (minimum viable):
   - `response.created`
   - `response.output_item.added`
   - `response.content_part.added`
-  - `response.output_text.delta` (repetir conforme necessário)
+  - `response.output_text.delta` (repeat as needed)
   - `response.output_text.done`
   - `response.content_part.done`
   - `response.completed`
   - `[DONE]`
 
-## Plano de Testes e Verificação
+## Tests and Verification Plan
 
-- Adicionar cobertura e2e para `/v1/responses`:
-  - Autenticação necessária
-  - Formato de resposta não-stream
-  - Ordenação de eventos de stream e `[DONE]`
-  - Roteamento de sessão com headers e `user`
-- Manter `src/gateway/openai-http.test.ts` inalterado.
-- Manual: curl para `/v1/responses` com `stream: true` e verificar ordenação de eventos e
-  `[DONE]` terminal.
+- Add e2e coverage for `/v1/responses`:
+  - Auth required
+  - Non-stream response shape
+  - Stream event ordering and `[DONE]`
+  - Session routing with headers and `user`
+- Keep `src/gateway/openai-http.test.ts` unchanged.
+- Manual: curl to `/v1/responses` with `stream: true` and verify event ordering and terminal
+  `[DONE]`.
 
-## Atualizações de Documentação (Acompanhamento)
+## Doc Updates (Follow-up)
 
-- Adicionar uma nova página de docs para uso e exemplos de `/v1/responses`.
-- Atualizar `/gateway/openai-http-api` com uma nota de legado e ponteiro para `/v1/responses`.
+- Add a new docs page for `/v1/responses` usage and examples.
+- Update `/gateway/openai-http-api` with a legacy note and pointer to `/v1/responses`.

@@ -28,14 +28,11 @@ export {
 export { buildChannelConfigSchema } from "../channels/plugins/config-schema.js";
 export { formatPairingApproveHint } from "../channels/plugins/helpers.js";
 export { resolveChannelMediaMaxBytes } from "../channels/plugins/media-limits.js";
-export type { ChannelOnboardingAdapter } from "../channels/plugins/onboarding-types.js";
 export {
   buildSingleChannelSecretPromptState,
-  promptAccountId,
   promptSingleChannelSecretInput,
   runSingleChannelSecretStep,
-  resolveAccountIdForConfigure,
-} from "../channels/plugins/onboarding/helpers.js";
+} from "../channels/plugins/setup-wizard-helpers.js";
 export {
   applyAccountNameToChannelSection,
   applySetupAccountConfigPatch,
@@ -55,7 +52,7 @@ export type { ChannelDirectoryEntry } from "../channels/plugins/types.core.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { createTypingCallbacks } from "../channels/typing.js";
-export type { OpenCraftConfig } from "../config/config.js";
+export type { OpenClawConfig } from "../config/config.js";
 export { isDangerousNameMatchingEnabled } from "../config/dangerous-name-matching.js";
 export { loadSessionStore, resolveStorePath } from "../config/sessions.js";
 export {
@@ -85,7 +82,7 @@ export { isLoopbackHost, isTrustedProxyAddress, resolveClientIp } from "../gatew
 export { registerPluginHttpRoute } from "../plugins/http-registry.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 export {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
@@ -104,3 +101,4 @@ export { buildAgentMediaPayload } from "./agent-media-payload.js";
 export { getAgentScopedMediaLocalRoots } from "../media/local-roots.js";
 export { loadOutboundMediaFromUrl } from "./outbound-media.js";
 export { createScopedPairingAccess } from "./pairing-access.js";
+export { isRequestBodyLimitError, readRequestBodyWithLimit } from "../infra/http-body.js";

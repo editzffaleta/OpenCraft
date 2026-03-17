@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { PluginManifestRegistry } from "../../plugins/manifest-registry.js";
 import { createTrackedTempDirs } from "../../test-utils/tracked-temp-dirs.js";
 
@@ -27,10 +27,11 @@ function buildRegistry(params: { acpxRoot: string; helperRoot: string }): Plugin
         channels: [],
         providers: [],
         skills: ["./skills"],
+        hooks: [],
         origin: "workspace",
         rootDir: params.acpxRoot,
         source: params.acpxRoot,
-        manifestPath: path.join(params.acpxRoot, "opencraft.plugin.json"),
+        manifestPath: path.join(params.acpxRoot, "openclaw.plugin.json"),
       },
       {
         id: "helper",
@@ -38,10 +39,11 @@ function buildRegistry(params: { acpxRoot: string; helperRoot: string }): Plugin
         channels: [],
         providers: [],
         skills: ["./skills"],
+        hooks: [],
         origin: "workspace",
         rootDir: params.helperRoot,
         source: params.helperRoot,
-        manifestPath: path.join(params.helperRoot, "opencraft.plugin.json"),
+        manifestPath: path.join(params.helperRoot, "openclaw.plugin.json"),
       },
     ],
   };
@@ -50,6 +52,7 @@ function buildRegistry(params: { acpxRoot: string; helperRoot: string }): Plugin
 function createSinglePluginRegistry(params: {
   pluginRoot: string;
   skills: string[];
+  format?: "openclaw" | "bundle";
 }): PluginManifestRegistry {
   return {
     diagnostics: [],
@@ -57,22 +60,24 @@ function createSinglePluginRegistry(params: {
       {
         id: "helper",
         name: "Helper",
+        format: params.format,
         channels: [],
         providers: [],
         skills: params.skills,
+        hooks: [],
         origin: "workspace",
         rootDir: params.pluginRoot,
         source: params.pluginRoot,
-        manifestPath: path.join(params.pluginRoot, "opencraft.plugin.json"),
+        manifestPath: path.join(params.pluginRoot, "openclaw.plugin.json"),
       },
     ],
   };
 }
 
 async function setupAcpxAndHelperRegistry() {
-  const workspaceDir = await tempDirs.make("opencraft-");
-  const acpxRoot = await tempDirs.make("opencraft-acpx-plugin-");
-  const helperRoot = await tempDirs.make("opencraft-helper-plugin-");
+  const workspaceDir = await tempDirs.make("openclaw-");
+  const acpxRoot = await tempDirs.make("openclaw-acpx-plugin-");
+  const helperRoot = await tempDirs.make("openclaw-helper-plugin-");
   await fs.mkdir(path.join(acpxRoot, "skills"), { recursive: true });
   await fs.mkdir(path.join(helperRoot, "skills"), { recursive: true });
   hoisted.loadPluginManifestRegistry.mockReturnValue(buildRegistry({ acpxRoot, helperRoot }));
@@ -80,9 +85,9 @@ async function setupAcpxAndHelperRegistry() {
 }
 
 async function setupPluginOutsideSkills() {
-  const workspaceDir = await tempDirs.make("opencraft-");
-  const pluginRoot = await tempDirs.make("opencraft-plugin-");
-  const outsideDir = await tempDirs.make("opencraft-outside-");
+  const workspaceDir = await tempDirs.make("openclaw-");
+  const pluginRoot = await tempDirs.make("openclaw-plugin-");
+  const outsideDir = await tempDirs.make("openclaw-outside-");
   const outsideSkills = path.join(outsideDir, "skills");
   return { workspaceDir, pluginRoot, outsideSkills };
 }
@@ -116,7 +121,13 @@ describe("resolvePluginSkillDirs", () => {
       workspaceDir,
       config: {
         acp: { enabled: acpEnabled },
-      } as OpenCraftConfig,
+        plugins: {
+          entries: {
+            acpx: { enabled: true },
+            helper: { enabled: true },
+          },
+        },
+      } as OpenClawConfig,
     });
 
     expect(dirs).toEqual(expectedDirs({ acpxRoot, helperRoot }));
@@ -137,7 +148,13 @@ describe("resolvePluginSkillDirs", () => {
 
     const dirs = resolvePluginSkillDirs({
       workspaceDir,
-      config: {} as OpenCraftConfig,
+      config: {
+        plugins: {
+          entries: {
+            helper: { enabled: true },
+          },
+        },
+      } as OpenClawConfig,
     });
 
     expect(dirs).toEqual([path.resolve(pluginRoot, "skills")]);
@@ -162,9 +179,46 @@ describe("resolvePluginSkillDirs", () => {
 
     const dirs = resolvePluginSkillDirs({
       workspaceDir,
-      config: {} as OpenCraftConfig,
+      config: {
+        plugins: {
+          entries: {
+            helper: { enabled: true },
+          },
+        },
+      } as OpenClawConfig,
     });
 
     expect(dirs).toEqual([]);
+  });
+
+  it("resolves Claude bundle command roots through the normal plugin skill path", async () => {
+    const workspaceDir = await tempDirs.make("openclaw-");
+    const pluginRoot = await tempDirs.make("openclaw-claude-bundle-");
+    await fs.mkdir(path.join(pluginRoot, "commands"), { recursive: true });
+    await fs.mkdir(path.join(pluginRoot, "skills"), { recursive: true });
+
+    hoisted.loadPluginManifestRegistry.mockReturnValue(
+      createSinglePluginRegistry({
+        pluginRoot,
+        format: "bundle",
+        skills: ["./skills", "./commands"],
+      }),
+    );
+
+    const dirs = resolvePluginSkillDirs({
+      workspaceDir,
+      config: {
+        plugins: {
+          entries: {
+            helper: { enabled: true },
+          },
+        },
+      } as OpenClawConfig,
+    });
+
+    expect(dirs).toEqual([
+      path.resolve(pluginRoot, "skills"),
+      path.resolve(pluginRoot, "commands"),
+    ]);
   });
 });

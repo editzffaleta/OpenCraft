@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
   MarkdownTableMode,
-  OpenCraftConfig,
+  OpenClawConfig,
   OutboundReplyPayload,
-} from "opencraft/plugin-sdk/zalo";
+} from "openclaw/plugin-sdk/zalo";
 import {
   createTypingCallbacks,
   createScopedPairingAccess,
@@ -19,7 +19,7 @@ import {
   resolveWebhookPath,
   waitForAbortSignal,
   warnMissingProviderGroupPolicyFallbackOnce,
-} from "opencraft/plugin-sdk/zalo";
+} from "openclaw/plugin-sdk/zalo";
 import type { ResolvedZaloAccount } from "./accounts.js";
 import {
   ZaloApiError,
@@ -58,7 +58,7 @@ export type ZaloRuntimeEnv = {
 export type ZaloMonitorOptions = {
   token: string;
   account: ResolvedZaloAccount;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   runtime: ZaloRuntimeEnv;
   abortSignal: AbortSignal;
   useWebhook?: boolean;
@@ -79,7 +79,7 @@ type ZaloStatusSink = (patch: { lastInboundAt?: number; lastOutboundAt?: number 
 type ZaloProcessingContext = {
   token: string;
   account: ResolvedZaloAccount;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   runtime: ZaloRuntimeEnv;
   core: ZaloCoreRuntime;
   statusSink?: ZaloStatusSink;
@@ -576,7 +576,7 @@ async function deliverZaloReply(params: {
   chatId: string;
   runtime: ZaloRuntimeEnv;
   core: ZaloCoreRuntime;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   accountId?: string;
   statusSink?: ZaloStatusSink;
   fetcher?: ZaloFetch;

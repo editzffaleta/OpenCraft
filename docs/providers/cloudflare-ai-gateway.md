@@ -1,31 +1,31 @@
 ---
 title: "Cloudflare AI Gateway"
-summary: "Configuração do Cloudflare AI Gateway (auth + seleção de modelo)"
+summary: "Cloudflare AI Gateway setup (auth + model selection)"
 read_when:
-  - Você quer usar o Cloudflare AI Gateway com o OpenCraft
-  - Você precisa do ID de conta, ID de gateway ou variável de env de chave de API
+  - You want to use Cloudflare AI Gateway with OpenClaw
+  - You need the account ID, gateway ID, or API key env var
 ---
 
 # Cloudflare AI Gateway
 
-O Cloudflare AI Gateway fica na frente das APIs de provedores e permite adicionar analytics, cache e controles. Para Anthropic, o OpenCraft usa a API de Mensagens Anthropic pelo seu endpoint do Gateway.
+Cloudflare AI Gateway sits in front of provider APIs and lets you add analytics, caching, and controls. For Anthropic, OpenClaw uses the Anthropic Messages API through your Gateway endpoint.
 
-- Provedor: `cloudflare-ai-gateway`
-- URL base: `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
-- Modelo padrão: `cloudflare-ai-gateway/claude-sonnet-4-5`
-- Chave de API: `CLOUDFLARE_AI_GATEWAY_API_KEY` (sua chave de API do provedor para requisições pelo Gateway)
+- Provider: `cloudflare-ai-gateway`
+- Base URL: `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
+- Default model: `cloudflare-ai-gateway/claude-sonnet-4-5`
+- API key: `CLOUDFLARE_AI_GATEWAY_API_KEY` (your provider API key for requests through the Gateway)
 
-Para modelos Anthropic, use sua chave de API Anthropic.
+For Anthropic models, use your Anthropic API key.
 
-## Início rápido
+## Quick start
 
-1. Defina a chave de API do provedor e os detalhes do Gateway:
+1. Set the provider API key and Gateway details:
 
 ```bash
-opencraft onboard --auth-choice cloudflare-ai-gateway-api-key
+openclaw onboard --auth-choice cloudflare-ai-gateway-api-key
 ```
 
-2. Defina um modelo padrão:
+2. Set a default model:
 
 ```json5
 {
@@ -37,10 +37,10 @@ opencraft onboard --auth-choice cloudflare-ai-gateway-api-key
 }
 ```
 
-## Exemplo não-interativo
+## Non-interactive example
 
 ```bash
-opencraft onboard --non-interactive \
+openclaw onboard --non-interactive \
   --mode local \
   --auth-choice cloudflare-ai-gateway-api-key \
   --cloudflare-ai-gateway-account-id "your-account-id" \
@@ -48,9 +48,9 @@ opencraft onboard --non-interactive \
   --cloudflare-ai-gateway-api-key "$CLOUDFLARE_AI_GATEWAY_API_KEY"
 ```
 
-## Gateways autenticados
+## Authenticated gateways
 
-Se você habilitou autenticação de Gateway no Cloudflare, adicione o header `cf-aig-authorization` (além da sua chave de API do provedor).
+If you enabled Gateway authentication in Cloudflare, add the `cf-aig-authorization` header (this is in addition to your provider API key).
 
 ```json5
 {
@@ -66,6 +66,6 @@ Se você habilitou autenticação de Gateway no Cloudflare, adicione o header `c
 }
 ```
 
-## Nota sobre ambiente
+## Environment note
 
-Se o Gateway roda como daemon (launchd/systemd), certifique-se de que `CLOUDFLARE_AI_GATEWAY_API_KEY` está disponível para esse processo (por exemplo, em `~/.opencraft/.env` ou via `env.shellEnv`).
+If the Gateway runs as a daemon (launchd/systemd), make sure `CLOUDFLARE_AI_GATEWAY_API_KEY` is available to that process (for example, in `~/.openclaw/.env` or via `env.shellEnv`).

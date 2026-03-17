@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.content.pm.PackageManager
 import android.content.Intent
@@ -115,7 +115,7 @@ class PermissionRequester(private val activity: ComponentActivity) {
 
   private fun buildRationaleMessage(permissions: List<String>): String {
     val labels = permissions.map { permissionLabel(it) }
-    return "OpenCraft needs ${labels.joinToString(", ")} permissions to continue."
+    return "OpenClaw needs ${labels.joinToString(", ")} permissions to continue."
   }
 
   private fun buildSettingsMessage(permissions: List<String>): String {

@@ -1,42 +1,42 @@
 ---
-summary: "Como áudio/notas de voz de entrada são baixados, transcritos e injetados nas respostas"
+summary: "How inbound audio/voice notes are downloaded, transcribed, and injected into replies"
 read_when:
-  - Alterando transcrição de áudio ou tratamento de mídia
-title: "Áudio e Notas de Voz"
+  - Changing audio transcription or media handling
+title: "Audio and Voice Notes"
 ---
 
-# Áudio / Notas de Voz — 2026-01-17
+# Audio / Voice Notes — 2026-01-17
 
-## O que funciona
+## What works
 
-- **Entendimento de mídia (áudio)**: Se o entendimento de áudio está habilitado (ou auto-detectado), o OpenCraft:
-  1. Localiza o primeiro anexo de áudio (caminho local ou URL) e faz download se necessário.
-  2. Aplica `maxBytes` antes de enviar para cada entrada de modelo.
-  3. Roda a primeira entrada de modelo elegível em ordem (provedor ou CLI).
-  4. Se falhar ou pular (tamanho/timeout), tenta a próxima entrada.
-  5. Em caso de sucesso, substitui `Body` por um bloco `[Audio]` e define `{{Transcript}}`.
-- **Análise de comandos**: Quando a transcrição tem sucesso, `CommandBody`/`RawBody` são definidos para o transcript para que slash commands ainda funcionem.
-- **Logging verboso**: Em `--verbose`, logamos quando a transcrição roda e quando substitui o corpo.
+- **Media understanding (audio)**: If audio understanding is enabled (or auto‑detected), OpenClaw:
+  1. Locates the first audio attachment (local path or URL) and downloads it if needed.
+  2. Enforces `maxBytes` before sending to each model entry.
+  3. Runs the first eligible model entry in order (provider or CLI).
+  4. If it fails or skips (size/timeout), it tries the next entry.
+  5. On success, it replaces `Body` with an `[Audio]` block and sets `{{Transcript}}`.
+- **Command parsing**: When transcription succeeds, `CommandBody`/`RawBody` are set to the transcript so slash commands still work.
+- **Verbose logging**: In `--verbose`, we log when transcription runs and when it replaces the body.
 
-## Auto-detecção (padrão)
+## Auto-detection (default)
 
-Se você **não configurar modelos** e `tools.media.audio.enabled` **não** estiver definido como `false`,
-o OpenCraft auto-detecta nesta ordem e para na primeira opção funcional:
+If you **don’t configure models** and `tools.media.audio.enabled` is **not** set to `false`,
+OpenClaw auto-detects in this order and stops at the first working option:
 
-1. **CLIs locais** (se instalados)
-   - `sherpa-onnx-offline` (requer `SHERPA_ONNX_MODEL_DIR` com encoder/decoder/joiner/tokens)
-   - `whisper-cli` (do `whisper-cpp`; usa `WHISPER_CPP_MODEL` ou o modelo tiny embutido)
-   - `whisper` (CLI Python; baixa modelos automaticamente)
-2. **Gemini CLI** (`gemini`) usando `read_many_files`
-3. **Chaves de provedor** (OpenAI → Groq → Deepgram → Google)
+1. **Local CLIs** (if installed)
+   - `sherpa-onnx-offline` (requires `SHERPA_ONNX_MODEL_DIR` with encoder/decoder/joiner/tokens)
+   - `whisper-cli` (from `whisper-cpp`; uses `WHISPER_CPP_MODEL` or the bundled tiny model)
+   - `whisper` (Python CLI; downloads models automatically)
+2. **Gemini CLI** (`gemini`) using `read_many_files`
+3. **Provider keys** (OpenAI → Groq → Deepgram → Google)
 
-Para desativar a auto-detecção, defina `tools.media.audio.enabled: false`.
-Para personalizar, defina `tools.media.audio.models`.
-Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-se de que o CLI está no `PATH` (expandimos `~`), ou defina um modelo CLI explícito com caminho completo do comando.
+To disable auto-detection, set `tools.media.audio.enabled: false`.
+To customize, set `tools.media.audio.models`.
+Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI is on `PATH` (we expand `~`), or set an explicit CLI model with a full command path.
 
-## Exemplos de configuração
+## Config examples
 
-### Provedor + fallback CLI (OpenAI + Whisper CLI)
+### Provider + CLI fallback (OpenAI + Whisper CLI)
 
 ```json5
 {
@@ -60,7 +60,7 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
 }
 ```
 
-### Apenas provedor com escopo restrito
+### Provider-only with scope gating
 
 ```json5
 {
@@ -79,7 +79,7 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
 }
 ```
 
-### Apenas provedor (Deepgram)
+### Provider-only (Deepgram)
 
 ```json5
 {
@@ -94,7 +94,7 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
 }
 ```
 
-### Apenas provedor (Mistral Voxtral)
+### Provider-only (Mistral Voxtral)
 
 ```json5
 {
@@ -109,7 +109,7 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
 }
 ```
 
-### Ecoar transcript no chat (opt-in)
+### Echo transcript to chat (opt-in)
 
 ```json5
 {
@@ -117,8 +117,8 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
     media: {
       audio: {
         enabled: true,
-        echoTranscript: true, // padrão é false
-        echoFormat: '📝 "{transcript}"', // opcional, suporta {transcript}
+        echoTranscript: true, // default is false
+        echoFormat: '📝 "{transcript}"', // optional, supports {transcript}
         models: [{ provider: "openai", model: "gpt-4o-mini-transcribe" }],
       },
     },
@@ -126,62 +126,62 @@ Nota: Detecção de binários é best-effort em macOS/Linux/Windows; certifique-
 }
 ```
 
-## Notas e limites
+## Notes & limits
 
-- Autenticação de provedor segue a ordem padrão de autenticação de modelo (perfis de autenticação, vars de ambiente, `models.providers.*.apiKey`).
-- Deepgram usa `DEEPGRAM_API_KEY` quando `provider: "deepgram"` é usado.
-- Detalhes de configuração Deepgram: [Deepgram (transcrição de áudio)](/providers/deepgram).
-- Detalhes de configuração Mistral: [Mistral](/providers/mistral).
-- Provedores de áudio podem sobrescrever `baseUrl`, `headers` e `providerOptions` via `tools.media.audio`.
-- Limite de tamanho padrão é 20MB (`tools.media.audio.maxBytes`). Áudio muito grande é pulado para aquele modelo e a próxima entrada é tentada.
-- Arquivos de áudio pequenos/vazios abaixo de 1024 bytes são pulados antes da transcrição por provedor/CLI.
-- `maxChars` padrão para áudio é **não definido** (transcript completo). Defina `tools.media.audio.maxChars` ou `maxChars` por entrada para reduzir a saída.
-- Padrão OpenAI automático é `gpt-4o-mini-transcribe`; defina `model: "gpt-4o-transcribe"` para maior precisão.
-- Use `tools.media.audio.attachments` para processar múltiplas notas de voz (`mode: "all"` + `maxAttachments`).
-- Transcript está disponível para templates como `{{Transcript}}`.
-- `tools.media.audio.echoTranscript` está desativado por padrão; habilite para enviar confirmação do transcript de volta ao chat de origem antes do processamento pelo agente.
-- `tools.media.audio.echoFormat` personaliza o texto de eco (placeholder: `{transcript}`).
-- Stdout do CLI é limitado (5MB); mantenha saída do CLI concisa.
+- Provider auth follows the standard model auth order (auth profiles, env vars, `models.providers.*.apiKey`).
+- Deepgram picks up `DEEPGRAM_API_KEY` when `provider: "deepgram"` is used.
+- Deepgram setup details: [Deepgram (audio transcription)](/providers/deepgram).
+- Mistral setup details: [Mistral](/providers/mistral).
+- Audio providers can override `baseUrl`, `headers`, and `providerOptions` via `tools.media.audio`.
+- Default size cap is 20MB (`tools.media.audio.maxBytes`). Oversize audio is skipped for that model and the next entry is tried.
+- Tiny/empty audio files below 1024 bytes are skipped before provider/CLI transcription.
+- Default `maxChars` for audio is **unset** (full transcript). Set `tools.media.audio.maxChars` or per-entry `maxChars` to trim output.
+- OpenAI auto default is `gpt-4o-mini-transcribe`; set `model: "gpt-4o-transcribe"` for higher accuracy.
+- Use `tools.media.audio.attachments` to process multiple voice notes (`mode: "all"` + `maxAttachments`).
+- Transcript is available to templates as `{{Transcript}}`.
+- `tools.media.audio.echoTranscript` is off by default; enable it to send transcript confirmation back to the originating chat before agent processing.
+- `tools.media.audio.echoFormat` customizes the echo text (placeholder: `{transcript}`).
+- CLI stdout is capped (5MB); keep CLI output concise.
 
-### Suporte a proxy de ambiente
+### Proxy environment support
 
-Transcrição de áudio baseada em provedor respeita vars de ambiente de proxy de saída padrão:
+Provider-based audio transcription honors standard outbound proxy env vars:
 
 - `HTTPS_PROXY`
 - `HTTP_PROXY`
 - `https_proxy`
 - `http_proxy`
 
-Se nenhuma var de proxy estiver definida, egress direto é usado. Se a configuração de proxy estiver malformada, o OpenCraft loga um aviso e volta para fetch direto.
+If no proxy env vars are set, direct egress is used. If proxy config is malformed, OpenClaw logs a warning and falls back to direct fetch.
 
-## Detecção de Menção em Grupos
+## Mention Detection in Groups
 
-Quando `requireMention: true` está definido para um chat em grupo, o OpenCraft transcreve áudio **antes** de verificar menções. Isso permite que notas de voz sejam processadas mesmo quando contêm menções.
+When `requireMention: true` is set for a group chat, OpenClaw now transcribes audio **before** checking for mentions. This allows voice notes to be processed even when they contain mentions.
 
-**Como funciona:**
+**How it works:**
 
-1. Se uma mensagem de voz não tem corpo de texto e o grupo requer menções, o OpenCraft faz uma transcrição "preflight".
-2. O transcript é verificado em busca de padrões de menção (ex: `@NomeBot`, gatilhos emoji).
-3. Se uma menção for encontrada, a mensagem prossegue pelo pipeline de resposta completo.
-4. O transcript é usado para detecção de menção para que notas de voz possam passar pelo gate de menção.
+1. If a voice message has no text body and the group requires mentions, OpenClaw performs a "preflight" transcription.
+2. The transcript is checked for mention patterns (e.g., `@BotName`, emoji triggers).
+3. If a mention is found, the message proceeds through the full reply pipeline.
+4. The transcript is used for mention detection so voice notes can pass the mention gate.
 
-**Comportamento de fallback:**
+**Fallback behavior:**
 
-- Se a transcrição falhar durante o preflight (timeout, erro de API, etc.), a mensagem é processada com base na detecção de menção apenas por texto.
-- Isso garante que mensagens mistas (texto + áudio) nunca sejam descartadas incorretamente.
+- If transcription fails during preflight (timeout, API error, etc.), the message is processed based on text-only mention detection.
+- This ensures that mixed messages (text + audio) are never incorrectly dropped.
 
-**Opt-out por grupo/tópico Telegram:**
+**Opt-out per Telegram group/topic:**
 
-- Defina `channels.telegram.groups.<chatId>.disableAudioPreflight: true` para pular verificações de menção no transcript preflight para aquele grupo.
-- Defina `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` para sobrescrever por tópico (`true` para pular, `false` para forçar ativação).
-- Padrão é `false` (preflight habilitado quando condições de gate de menção correspondem).
+- Set `channels.telegram.groups.<chatId>.disableAudioPreflight: true` to skip preflight transcript mention checks for that group.
+- Set `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` to override per-topic (`true` to skip, `false` to force-enable).
+- Default is `false` (preflight enabled when mention-gated conditions match).
 
-**Exemplo:** Um usuário envia uma nota de voz dizendo "Ei @Claude, qual é a previsão do tempo?" em um grupo Telegram com `requireMention: true`. A nota de voz é transcrita, a menção é detectada e o agente responde.
+**Example:** A user sends a voice note saying "Hey @Claude, what's the weather?" in a Telegram group with `requireMention: true`. The voice note is transcribed, the mention is detected, and the agent replies.
 
-## Armadilhas
+## Gotchas
 
-- Regras de escopo usam primeiro-match ganha. `chatType` é normalizado para `direct`, `group` ou `room`.
-- Certifique-se de que seu CLI sai com 0 e imprime texto simples; JSON precisa ser processado via `jq -r .text`.
-- Para `parakeet-mlx`, se você passar `--output-dir`, o OpenCraft lê `<output-dir>/<media-basename>.txt` quando `--output-format` é `txt` (ou omitido); formatos de saída não-`txt` voltam para análise de stdout.
-- Mantenha timeouts razoáveis (`timeoutSeconds`, padrão 60s) para evitar bloquear a fila de respostas.
-- Transcrição preflight processa apenas o **primeiro** anexo de áudio para detecção de menção. Áudio adicional é processado durante a fase principal de entendimento de mídia.
+- Scope rules use first-match wins. `chatType` is normalized to `direct`, `group`, or `room`.
+- Ensure your CLI exits 0 and prints plain text; JSON needs to be massaged via `jq -r .text`.
+- For `parakeet-mlx`, if you pass `--output-dir`, OpenClaw reads `<output-dir>/<media-basename>.txt` when `--output-format` is `txt` (or omitted); non-`txt` output formats fall back to stdout parsing.
+- Keep timeouts reasonable (`timeoutSeconds`, default 60s) to avoid blocking the reply queue.
+- Preflight transcription only processes the **first** audio attachment for mention detection. Additional audio is processed during the main media understanding phase.

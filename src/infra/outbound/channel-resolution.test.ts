@@ -4,7 +4,7 @@ const resolveDefaultAgentIdMock = vi.hoisted(() => vi.fn());
 const resolveAgentWorkspaceDirMock = vi.hoisted(() => vi.fn());
 const getChannelPluginMock = vi.hoisted(() => vi.fn());
 const applyPluginAutoEnableMock = vi.hoisted(() => vi.fn());
-const loadOpenCraftPluginsMock = vi.hoisted(() => vi.fn());
+const loadOpenClawPluginsMock = vi.hoisted(() => vi.fn());
 const getActivePluginRegistryMock = vi.hoisted(() => vi.fn());
 const getActivePluginRegistryKeyMock = vi.hoisted(() => vi.fn());
 const normalizeMessageChannelMock = vi.hoisted(() => vi.fn());
@@ -24,7 +24,7 @@ vi.mock("../../config/plugin-auto-enable.js", () => ({
 }));
 
 vi.mock("../../plugins/loader.js", () => ({
-  loadOpenCraftPlugins: (...args: unknown[]) => loadOpenCraftPluginsMock(...args),
+  loadOpenClawPlugins: (...args: unknown[]) => loadOpenClawPluginsMock(...args),
 }));
 
 vi.mock("../../plugins/runtime.js", () => ({
@@ -52,7 +52,7 @@ describe("outbound channel resolution", () => {
     resolveAgentWorkspaceDirMock.mockReset();
     getChannelPluginMock.mockReset();
     applyPluginAutoEnableMock.mockReset();
-    loadOpenCraftPluginsMock.mockReset();
+    loadOpenClawPluginsMock.mockReset();
     getActivePluginRegistryMock.mockReset();
     getActivePluginRegistryKeyMock.mockReset();
     normalizeMessageChannelMock.mockReset();
@@ -90,7 +90,7 @@ describe("outbound channel resolution", () => {
         cfg: {} as never,
       }),
     ).toBe(plugin);
-    expect(loadOpenCraftPluginsMock).not.toHaveBeenCalled();
+    expect(loadOpenClawPluginsMock).not.toHaveBeenCalled();
   });
 
   it("falls back to the active registry when getChannelPlugin misses", async () => {
@@ -120,9 +120,12 @@ describe("outbound channel resolution", () => {
         cfg: { channels: {} } as never,
       }),
     ).toBe(plugin);
-    expect(loadOpenCraftPluginsMock).toHaveBeenCalledWith({
+    expect(loadOpenClawPluginsMock).toHaveBeenCalledWith({
       config: { autoEnabled: true },
       workspaceDir: "/tmp/workspace",
+      runtimeOptions: {
+        allowGatewaySubagentBinding: true,
+      },
     });
 
     getChannelPluginMock.mockReturnValue(undefined);
@@ -130,12 +133,36 @@ describe("outbound channel resolution", () => {
       channel: "telegram",
       cfg: { channels: {} } as never,
     });
-    expect(loadOpenCraftPluginsMock).toHaveBeenCalledTimes(1);
+    expect(loadOpenClawPluginsMock).toHaveBeenCalledTimes(1);
+    expect(loadOpenClawPluginsMock).toHaveBeenLastCalledWith({
+      config: { autoEnabled: true },
+      workspaceDir: "/tmp/workspace",
+      runtimeOptions: {
+        allowGatewaySubagentBinding: true,
+      },
+    });
+  });
+
+  it("bootstraps when the active registry has other channels but not the requested one", async () => {
+    const plugin = { id: "telegram" };
+    getChannelPluginMock.mockReturnValueOnce(undefined).mockReturnValueOnce(plugin);
+    getActivePluginRegistryMock.mockReturnValue({
+      channels: [{ plugin: { id: "discord" } }],
+    });
+    const channelResolution = await importChannelResolution("bootstrap-missing-target");
+
+    expect(
+      channelResolution.resolveOutboundChannelPlugin({
+        channel: "telegram",
+        cfg: { channels: {} } as never,
+      }),
+    ).toBe(plugin);
+    expect(loadOpenClawPluginsMock).toHaveBeenCalledTimes(1);
   });
 
   it("retries bootstrap after a transient load failure", async () => {
     getChannelPluginMock.mockReturnValue(undefined);
-    loadOpenCraftPluginsMock.mockImplementationOnce(() => {
+    loadOpenClawPluginsMock.mockImplementationOnce(() => {
       throw new Error("transient");
     });
     const channelResolution = await importChannelResolution("bootstrap-retry");
@@ -151,6 +178,6 @@ describe("outbound channel resolution", () => {
       channel: "telegram",
       cfg: { channels: {} } as never,
     });
-    expect(loadOpenCraftPluginsMock).toHaveBeenCalledTimes(2);
+    expect(loadOpenClawPluginsMock).toHaveBeenCalledTimes(2);
   });
 });

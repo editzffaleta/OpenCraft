@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -7,12 +7,12 @@ import org.junit.Test
 class WakeWordsTest {
   @Test
   fun parseCommaSeparatedTrimsAndDropsEmpty() {
-    assertEquals(listOf("opencraft", "claude"), WakeWords.parseCommaSeparated("  opencraft , claude, ,  "))
+    assertEquals(listOf("openclaw", "claude"), WakeWords.parseCommaSeparated("  openclaw , claude, ,  "))
   }
 
   @Test
   fun sanitizeTrimsCapsAndFallsBack() {
-    val defaults = listOf("opencraft", "claude")
+    val defaults = listOf("openclaw", "claude")
     val long = "x".repeat(WakeWords.maxWordLength + 10)
     val words = listOf(" ", "  hello  ", long)
 
@@ -26,7 +26,7 @@ class WakeWordsTest {
 
   @Test
   fun sanitizeLimitsWordCount() {
-    val defaults = listOf("opencraft")
+    val defaults = listOf("openclaw")
     val words = (1..(WakeWords.maxWords + 5)).map { "w$it" }
     val sanitized = WakeWords.sanitize(words, defaults)
     assertEquals(WakeWords.maxWords, sanitized.size)
@@ -36,15 +36,15 @@ class WakeWordsTest {
 
   @Test
   fun parseIfChangedSkipsWhenUnchanged() {
-    val current = listOf("opencraft", "claude")
-    val parsed = WakeWords.parseIfChanged(" opencraft , claude ", current)
+    val current = listOf("openclaw", "claude")
+    val parsed = WakeWords.parseIfChanged(" openclaw , claude ", current)
     assertNull(parsed)
   }
 
   @Test
   fun parseIfChangedReturnsUpdatedList() {
-    val current = listOf("opencraft")
-    val parsed = WakeWords.parseIfChanged(" opencraft , jarvis ", current)
-    assertEquals(listOf("opencraft", "jarvis"), parsed)
+    val current = listOf("openclaw")
+    val parsed = WakeWords.parseIfChanged(" openclaw , jarvis ", current)
+    assertEquals(listOf("openclaw", "jarvis"), parsed)
   }
 }

@@ -1,60 +1,60 @@
 ---
-summary: "Referência do CLI para `opencraft system` (eventos de sistema, heartbeat, presence)"
+summary: "CLI reference for `openclaw system` (system events, heartbeat, presence)"
 read_when:
-  - Você quer enfileirar um evento de sistema sem criar um cron job
-  - Você precisa habilitar ou desabilitar heartbeats
-  - Você quer inspecionar entradas de presença de sistema
+  - You want to enqueue a system event without creating a cron job
+  - You need to enable or disable heartbeats
+  - You want to inspect system presence entries
 title: "system"
 ---
 
-# `opencraft system`
+# `openclaw system`
 
-Helpers de nível de sistema para o Gateway: enfileirar eventos de sistema, controlar heartbeats
-e ver presença.
+System-level helpers for the Gateway: enqueue system events, control heartbeats,
+and view presence.
 
-## Comandos comuns
+## Common commands
 
 ```bash
-opencraft system event --text "Check for urgent follow-ups" --mode now
-opencraft system heartbeat enable
-opencraft system heartbeat last
-opencraft system presence
+openclaw system event --text "Check for urgent follow-ups" --mode now
+openclaw system heartbeat enable
+openclaw system heartbeat last
+openclaw system presence
 ```
 
 ## `system event`
 
-Enfileirar um evento de sistema na sessão **main**. O próximo heartbeat irá injetá-lo
-como uma linha `System:` no prompt. Use `--mode now` para acionar o heartbeat
-imediatamente; `next-heartbeat` aguarda o próximo tick agendado.
+Enqueue a system event on the **main** session. The next heartbeat will inject
+it as a `System:` line in the prompt. Use `--mode now` to trigger the heartbeat
+immediately; `next-heartbeat` waits for the next scheduled tick.
 
 Flags:
 
-- `--text <text>`: texto do evento de sistema (obrigatório).
-- `--mode <mode>`: `now` ou `next-heartbeat` (padrão).
-- `--json`: saída legível por máquina.
+- `--text <text>`: required system event text.
+- `--mode <mode>`: `now` or `next-heartbeat` (default).
+- `--json`: machine-readable output.
 
 ## `system heartbeat last|enable|disable`
 
-Controles de heartbeat:
+Heartbeat controls:
 
-- `last`: mostrar o último evento de heartbeat.
-- `enable`: ligar heartbeats de volta (use se foram desabilitados).
-- `disable`: pausar heartbeats.
+- `last`: show the last heartbeat event.
+- `enable`: turn heartbeats back on (use this if they were disabled).
+- `disable`: pause heartbeats.
 
 Flags:
 
-- `--json`: saída legível por máquina.
+- `--json`: machine-readable output.
 
 ## `system presence`
 
-Listar as entradas de presença de sistema atuais que o Gateway conhece (nodes,
-instâncias e linhas de status similares).
+List the current system presence entries the Gateway knows about (nodes,
+instances, and similar status lines).
 
 Flags:
 
-- `--json`: saída legível por máquina.
+- `--json`: machine-readable output.
 
-## Notas
+## Notes
 
-- Requer um Gateway em execução acessível pela sua config atual (local ou remoto).
-- Eventos de sistema são efêmeros e não persistem entre reinicializações.
+- Requires a running Gateway reachable by your current config (local or remote).
+- System events are ephemeral and not persisted across restarts.

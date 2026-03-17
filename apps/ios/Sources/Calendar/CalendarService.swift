@@ -1,9 +1,9 @@
 import EventKit
 import Foundation
-import OpenCraftKit
+import OpenClawKit
 
 final class CalendarService: CalendarServicing {
-    func events(params: OpenCraftCalendarEventsParams) async throws -> OpenCraftCalendarEventsPayload {
+    func events(params: OpenClawCalendarEventsParams) async throws -> OpenClawCalendarEventsPayload {
         let store = EKEventStore()
         let status = EKEventStore.authorizationStatus(for: .event)
         let authorized = EventKitAuthorization.allowsRead(status: status)
@@ -23,7 +23,7 @@ final class CalendarService: CalendarServicing {
 
         let formatter = ISO8601DateFormatter()
         let payload = selected.map { event in
-            OpenCraftCalendarEventPayload(
+            OpenClawCalendarEventPayload(
                 identifier: event.eventIdentifier ?? UUID().uuidString,
                 title: event.title ?? "(untitled)",
                 startISO: formatter.string(from: event.startDate),
@@ -33,10 +33,10 @@ final class CalendarService: CalendarServicing {
                 calendarTitle: event.calendar.title)
         }
 
-        return OpenCraftCalendarEventsPayload(events: payload)
+        return OpenClawCalendarEventsPayload(events: payload)
     }
 
-    func add(params: OpenCraftCalendarAddParams) async throws -> OpenCraftCalendarAddPayload {
+    func add(params: OpenClawCalendarAddParams) async throws -> OpenClawCalendarAddPayload {
         let store = EKEventStore()
         let status = EKEventStore.authorizationStatus(for: .event)
         let authorized = EventKitAuthorization.allowsWrite(status: status)
@@ -83,7 +83,7 @@ final class CalendarService: CalendarServicing {
 
         try store.save(event, span: .thisEvent)
 
-        let payload = OpenCraftCalendarEventPayload(
+        let payload = OpenClawCalendarEventPayload(
             identifier: event.eventIdentifier ?? UUID().uuidString,
             title: event.title ?? title,
             startISO: formatter.string(from: event.startDate),
@@ -92,7 +92,7 @@ final class CalendarService: CalendarServicing {
             location: event.location,
             calendarTitle: event.calendar.title)
 
-        return OpenCraftCalendarAddPayload(event: payload)
+        return OpenClawCalendarAddPayload(event: payload)
     }
 
     private static func resolveCalendar(

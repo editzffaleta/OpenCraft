@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/bluebubbles";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/bluebubbles";
 import { resolveBlueBubblesAccount } from "./accounts.js";
 import { normalizeResolvedSecretInputString } from "./secret-input.js";
 
@@ -6,7 +6,7 @@ export type BlueBubblesAccountResolveOpts = {
   serverUrl?: string;
   password?: string;
   accountId?: string;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
 };
 
 export function resolveBlueBubblesServerAccount(params: BlueBubblesAccountResolveOpts): {

@@ -6,7 +6,7 @@ import {
   loadSkillsFromDir,
   type Skill,
 } from "@mariozechner/pi-coding-agent";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { isPathInside } from "../../infra/path-guards.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
@@ -16,7 +16,7 @@ import { shouldIncludeSkill } from "./config.js";
 import { normalizeSkillFilter } from "./filter.js";
 import {
   parseFrontmatter,
-  resolveOpenCraftMetadata,
+  resolveOpenClawMetadata,
   resolveSkillInvocationPolicy,
 } from "./frontmatter.js";
 import { resolvePluginSkillDirs } from "./plugin-skills.js";
@@ -67,7 +67,7 @@ function debugSkillCommandOnce(
 
 function filterSkillEntries(
   entries: SkillEntry[],
-  config?: OpenCraftConfig,
+  config?: OpenClawConfig,
   skillFilter?: string[],
   eligibility?: SkillEligibilityContext,
 ): SkillEntry[] {
@@ -136,7 +136,7 @@ type ResolvedSkillsLimits = {
   maxSkillFileBytes: number;
 };
 
-function resolveSkillsLimits(config?: OpenCraftConfig): ResolvedSkillsLimits {
+function resolveSkillsLimits(config?: OpenClawConfig): ResolvedSkillsLimits {
   const limits = config?.skills?.limits;
   return {
     maxCandidatesPerRoot: limits?.maxCandidatesPerRoot ?? DEFAULT_MAX_CANDIDATES_PER_ROOT,
@@ -292,7 +292,7 @@ function unwrapLoadedSkills(loaded: unknown): Skill[] {
 function loadSkillEntries(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
   },
@@ -458,19 +458,19 @@ function loadSkillEntries(
   const bundledSkills = bundledSkillsDir
     ? loadSkills({
         dir: bundledSkillsDir,
-        source: "opencraft-bundled",
+        source: "openclaw-bundled",
       })
     : [];
   const extraSkills = mergedExtraDirs.flatMap((dir) => {
     const resolved = resolveUserPath(dir);
     return loadSkills({
       dir: resolved,
-      source: "opencraft-extra",
+      source: "openclaw-extra",
     });
   });
   const managedSkills = loadSkills({
     dir: managedSkillsDir,
-    source: "opencraft-managed",
+    source: "openclaw-managed",
   });
   const personalAgentsSkillsDir = path.resolve(os.homedir(), ".agents", "skills");
   const personalAgentsSkills = loadSkills({
@@ -484,7 +484,7 @@ function loadSkillEntries(
   });
   const workspaceSkills = loadSkills({
     dir: workspaceSkillsDir,
-    source: "opencraft-workspace",
+    source: "openclaw-workspace",
   });
 
   const merged = new Map<string, Skill>();
@@ -519,17 +519,54 @@ function loadSkillEntries(
     return {
       skill,
       frontmatter,
-      metadata: resolveOpenCraftMetadata(frontmatter),
+      metadata: resolveOpenClawMetadata(frontmatter),
       invocation: resolveSkillInvocationPolicy(frontmatter),
     };
   });
   return skillEntries;
 }
 
-function applySkillsPromptLimits(params: { skills: Skill[]; config?: OpenCraftConfig }): {
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+/**
+ * Compact skill catalog: name + location only (no description).
+ * Used as a fallback when the full format exceeds the char budget,
+ * preserving awareness of all skills before resorting to dropping.
+ */
+export function formatSkillsCompact(skills: Skill[]): string {
+  const visible = skills.filter((s) => !s.disableModelInvocation);
+  if (visible.length === 0) return "";
+  const lines = [
+    "\n\nThe following skills provide specialized instructions for specific tasks.",
+    "Use the read tool to load a skill's file when the task matches its name.",
+    "When a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.",
+    "",
+    "<available_skills>",
+  ];
+  for (const skill of visible) {
+    lines.push("  <skill>");
+    lines.push(`    <name>${escapeXml(skill.name)}</name>`);
+    lines.push(`    <location>${escapeXml(skill.filePath)}</location>`);
+    lines.push("  </skill>");
+  }
+  lines.push("</available_skills>");
+  return lines.join("\n");
+}
+
+// Budget reserved for the compact-mode warning line prepended by the caller.
+const COMPACT_WARNING_OVERHEAD = 150;
+
+function applySkillsPromptLimits(params: { skills: Skill[]; config?: OpenClawConfig }): {
   skillsForPrompt: Skill[];
   truncated: boolean;
-  truncatedReason: "count" | "chars" | null;
+  compact: boolean;
 } {
   const limits = resolveSkillsLimits(params.config);
   const total = params.skills.length;
@@ -537,31 +574,41 @@ function applySkillsPromptLimits(params: { skills: Skill[]; config?: OpenCraftCo
 
   let skillsForPrompt = byCount;
   let truncated = total > byCount.length;
-  let truncatedReason: "count" | "chars" | null = truncated ? "count" : null;
+  let compact = false;
 
-  const fits = (skills: Skill[]): boolean => {
-    const block = formatSkillsForPrompt(skills);
-    return block.length <= limits.maxSkillsPromptChars;
-  };
+  const fitsFull = (skills: Skill[]): boolean =>
+    formatSkillsForPrompt(skills).length <= limits.maxSkillsPromptChars;
 
-  if (!fits(skillsForPrompt)) {
-    // Binary search the largest prefix that fits in the char budget.
-    let lo = 0;
-    let hi = skillsForPrompt.length;
-    while (lo < hi) {
-      const mid = Math.ceil((lo + hi) / 2);
-      if (fits(skillsForPrompt.slice(0, mid))) {
-        lo = mid;
-      } else {
-        hi = mid - 1;
+  // Reserve space for the warning line the caller prepends in compact mode.
+  const compactBudget = limits.maxSkillsPromptChars - COMPACT_WARNING_OVERHEAD;
+  const fitsCompact = (skills: Skill[]): boolean =>
+    formatSkillsCompact(skills).length <= compactBudget;
+
+  if (!fitsFull(skillsForPrompt)) {
+    // Full format exceeds budget. Try compact (name + location, no description)
+    // to preserve awareness of all skills before dropping any.
+    if (fitsCompact(skillsForPrompt)) {
+      compact = true;
+      // No skills dropped — only format downgraded. Preserve existing truncated state.
+    } else {
+      // Compact still too large — binary search the largest prefix that fits.
+      compact = true;
+      let lo = 0;
+      let hi = skillsForPrompt.length;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (fitsCompact(skillsForPrompt.slice(0, mid))) {
+          lo = mid;
+        } else {
+          hi = mid - 1;
+        }
       }
+      skillsForPrompt = skillsForPrompt.slice(0, lo);
+      truncated = true;
     }
-    skillsForPrompt = skillsForPrompt.slice(0, lo);
-    truncated = true;
-    truncatedReason = "chars";
   }
 
-  return { skillsForPrompt, truncated, truncatedReason };
+  return { skillsForPrompt, truncated, compact };
 }
 
 export function buildWorkspaceSkillSnapshot(
@@ -591,7 +638,7 @@ export function buildWorkspaceSkillsPrompt(
 }
 
 type WorkspaceSkillBuildOptions = {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   managedSkillsDir?: string;
   bundledSkillsDir?: string;
   entries?: SkillEntry[];
@@ -620,17 +667,24 @@ function resolveWorkspaceSkillPromptState(
   );
   const remoteNote = opts?.eligibility?.remote?.note?.trim();
   const resolvedSkills = promptEntries.map((entry) => entry.skill);
-  const { skillsForPrompt, truncated } = applySkillsPromptLimits({
-    skills: resolvedSkills,
+  // Derive prompt-facing skills with compacted paths (e.g. ~/...) once.
+  // Budget checks and final render both use this same representation so the
+  // tier decision is based on the exact strings that end up in the prompt.
+  // resolvedSkills keeps canonical paths for snapshot / runtime consumers.
+  const promptSkills = compactSkillPaths(resolvedSkills);
+  const { skillsForPrompt, truncated, compact } = applySkillsPromptLimits({
+    skills: promptSkills,
     config: opts?.config,
   });
   const truncationNote = truncated
-    ? `⚠️ Skills truncated: included ${skillsForPrompt.length} of ${resolvedSkills.length}. Run \`opencraft skills check\` to audit.`
-    : "";
+    ? `⚠️ Skills truncated: included ${skillsForPrompt.length} of ${resolvedSkills.length}${compact ? " (compact format, descriptions omitted)" : ""}. Run \`openclaw skills check\` to audit.`
+    : compact
+      ? `⚠️ Skills catalog using compact format (descriptions omitted). Run \`openclaw skills check\` to audit.`
+      : "";
   const prompt = [
     remoteNote,
     truncationNote,
-    formatSkillsForPrompt(compactSkillPaths(skillsForPrompt)),
+    compact ? formatSkillsCompact(skillsForPrompt) : formatSkillsForPrompt(skillsForPrompt),
   ]
     .filter(Boolean)
     .join("\n");
@@ -640,7 +694,7 @@ function resolveWorkspaceSkillPromptState(
 export function resolveSkillsPromptForRun(params: {
   skillsSnapshot?: SkillSnapshot;
   entries?: SkillEntry[];
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   workspaceDir: string;
 }): string {
   const snapshotPrompt = params.skillsSnapshot?.prompt?.trim();
@@ -660,7 +714,7 @@ export function resolveSkillsPromptForRun(params: {
 export function loadWorkspaceSkillEntries(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
   },
@@ -710,7 +764,7 @@ function resolveSyncedSkillDestinationPath(params: {
 export async function syncSkillsToWorkspace(params: {
   sourceWorkspaceDir: string;
   targetWorkspaceDir: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   managedSkillsDir?: string;
   bundledSkillsDir?: string;
 }) {
@@ -767,7 +821,7 @@ export async function syncSkillsToWorkspace(params: {
 
 export function filterWorkspaceSkillEntries(
   entries: SkillEntry[],
-  config?: OpenCraftConfig,
+  config?: OpenClawConfig,
 ): SkillEntry[] {
   return filterSkillEntries(entries, config);
 }
@@ -775,7 +829,7 @@ export function filterWorkspaceSkillEntries(
 export function buildWorkspaceSkillCommandSpecs(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
     entries?: SkillEntry[];

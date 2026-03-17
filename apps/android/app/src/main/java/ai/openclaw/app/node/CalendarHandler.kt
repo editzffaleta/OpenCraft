@@ -1,4 +1,4 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.Manifest
 import android.content.ContentResolver
@@ -7,7 +7,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.provider.CalendarContract
 import androidx.core.content.ContextCompat
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.TimeZone

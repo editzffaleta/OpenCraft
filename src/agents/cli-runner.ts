@@ -1,7 +1,7 @@
 import type { ImageContent } from "@mariozechner/pi-ai";
 import { resolveHeartbeatPrompt } from "../auto-reply/heartbeat.js";
 import type { ThinkLevel } from "../auto-reply/thinking.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { shouldLogVerbose } from "../globals.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";
@@ -18,6 +18,7 @@ import {
 } from "./bootstrap-budget.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "./bootstrap-files.js";
 import { resolveCliBackendConfig } from "./cli-backends.js";
+import { prepareCliBundleMcpConfig } from "./cli-runner/bundle-mcp.js";
 import {
   appendImagePathsToPrompt,
   buildCliSupervisorScopeKey,
@@ -33,7 +34,7 @@ import {
   resolveSystemPromptUsage,
   writeCliImages,
 } from "./cli-runner/helpers.js";
-import { resolveOpenCraftDocsPath } from "./docs-path.js";
+import { resolveOpenClawDocsPath } from "./docs-path.js";
 import { FailoverError, resolveFailoverStatus } from "./failover-error.js";
 import {
   classifyFailoverReason,
@@ -54,7 +55,7 @@ export async function runCliAgent(params: {
   agentId?: string;
   sessionFile: string;
   workspaceDir: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   prompt: string;
   provider: string;
   model?: string;
@@ -92,7 +93,14 @@ export async function runCliAgent(params: {
   if (!backendResolved) {
     throw new Error(`Unknown CLI backend: ${params.provider}`);
   }
-  const backend = backendResolved.config;
+  const preparedBackend = await prepareCliBundleMcpConfig({
+    backendId: backendResolved.id,
+    backend: backendResolved.config,
+    workspaceDir,
+    config: params.config,
+    warn: (message) => log.warn(message),
+  });
+  const backend = preparedBackend.backend;
   const modelId = (params.model ?? "default").trim() || "default";
   const normalizedModel = normalizeCliModel(modelId, backend);
   const modelDisplay = `${params.provider}/${modelId}`;
@@ -138,7 +146,7 @@ export async function runCliAgent(params: {
     sessionAgentId === defaultAgentId
       ? resolveHeartbeatPrompt(params.config?.agents?.defaults?.heartbeat?.prompt)
       : undefined;
-  const docsPath = await resolveOpenCraftDocsPath({
+  const docsPath = await resolveOpenClawDocsPath({
     workspaceDir,
     argv1: process.argv[1],
     cwd: process.cwd(),
@@ -248,7 +256,7 @@ export async function runCliAgent(params: {
         log.info(
           `cli exec: provider=${params.provider} model=${normalizedModel} promptChars=${params.prompt.length}`,
         );
-        const logOutputText = isTruthyEnvValue(process.env.OPENCRAFT_CLAUDE_CLI_LOG_OUTPUT);
+        const logOutputText = isTruthyEnvValue(process.env.OPENCLAW_CLAUDE_CLI_LOG_OUTPUT);
         if (logOutputText) {
           const logArgs: string[] = [];
           for (let i = 0; i < args.length; i += 1) {
@@ -406,68 +414,72 @@ export async function runCliAgent(params: {
 
   // Try with the provided CLI session ID first
   try {
-    const output = await executeCliWithSession(params.cliSessionId);
-    const text = output.text?.trim();
-    const payloads = text ? [{ text }] : undefined;
+    try {
+      const output = await executeCliWithSession(params.cliSessionId);
+      const text = output.text?.trim();
+      const payloads = text ? [{ text }] : undefined;
 
-    return {
-      payloads,
-      meta: {
-        durationMs: Date.now() - started,
-        systemPromptReport,
-        agentMeta: {
-          sessionId: output.sessionId ?? params.cliSessionId ?? params.sessionId ?? "",
+      return {
+        payloads,
+        meta: {
+          durationMs: Date.now() - started,
+          systemPromptReport,
+          agentMeta: {
+            sessionId: output.sessionId ?? params.cliSessionId ?? params.sessionId ?? "",
+            provider: params.provider,
+            model: modelId,
+            usage: output.usage,
+          },
+        },
+      };
+    } catch (err) {
+      if (err instanceof FailoverError) {
+        // Check if this is a session expired error and we have a session to clear
+        if (err.reason === "session_expired" && params.cliSessionId && params.sessionKey) {
+          log.warn(
+            `CLI session expired, clearing session ID and retrying: provider=${params.provider} session=${redactRunIdentifier(params.cliSessionId)}`,
+          );
+
+          // Clear the expired session ID from the session entry
+          // This requires access to the session store, which we don't have here
+          // We'll need to modify the caller to handle this case
+
+          // For now, retry without the session ID to create a new session
+          const output = await executeCliWithSession(undefined);
+          const text = output.text?.trim();
+          const payloads = text ? [{ text }] : undefined;
+
+          return {
+            payloads,
+            meta: {
+              durationMs: Date.now() - started,
+              systemPromptReport,
+              agentMeta: {
+                sessionId: output.sessionId ?? params.sessionId ?? "",
+                provider: params.provider,
+                model: modelId,
+                usage: output.usage,
+              },
+            },
+          };
+        }
+        throw err;
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      if (isFailoverErrorMessage(message)) {
+        const reason = classifyFailoverReason(message) ?? "unknown";
+        const status = resolveFailoverStatus(reason);
+        throw new FailoverError(message, {
+          reason,
           provider: params.provider,
           model: modelId,
-          usage: output.usage,
-        },
-      },
-    };
-  } catch (err) {
-    if (err instanceof FailoverError) {
-      // Check if this is a session expired error and we have a session to clear
-      if (err.reason === "session_expired" && params.cliSessionId && params.sessionKey) {
-        log.warn(
-          `CLI session expired, clearing session ID and retrying: provider=${params.provider} session=${redactRunIdentifier(params.cliSessionId)}`,
-        );
-
-        // Clear the expired session ID from the session entry
-        // This requires access to the session store, which we don't have here
-        // We'll need to modify the caller to handle this case
-
-        // For now, retry without the session ID to create a new session
-        const output = await executeCliWithSession(undefined);
-        const text = output.text?.trim();
-        const payloads = text ? [{ text }] : undefined;
-
-        return {
-          payloads,
-          meta: {
-            durationMs: Date.now() - started,
-            systemPromptReport,
-            agentMeta: {
-              sessionId: output.sessionId ?? params.sessionId ?? "",
-              provider: params.provider,
-              model: modelId,
-              usage: output.usage,
-            },
-          },
-        };
+          status,
+        });
       }
       throw err;
     }
-    const message = err instanceof Error ? err.message : String(err);
-    if (isFailoverErrorMessage(message)) {
-      const reason = classifyFailoverReason(message) ?? "unknown";
-      const status = resolveFailoverStatus(reason);
-      throw new FailoverError(message, {
-        reason,
-        provider: params.provider,
-        model: modelId,
-        status,
-      });
-    }
-    throw err;
+  } finally {
+    await preparedBackend.cleanup?.();
   }
 }
 
@@ -477,7 +489,7 @@ export async function runClaudeCliAgent(params: {
   agentId?: string;
   sessionFile: string;
   workspaceDir: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   prompt: string;
   provider?: string;
   model?: string;

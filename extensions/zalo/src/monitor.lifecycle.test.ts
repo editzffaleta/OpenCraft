@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/zalo";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/zalo";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createEmptyPluginRegistry } from "../../../src/plugins/registry.js";
 import { setActivePluginRegistry } from "../../../src/plugins/runtime.js";
@@ -37,7 +37,7 @@ const TEST_ACCOUNT = {
   config: {},
 } as unknown as ResolvedZaloAccount;
 
-const TEST_CONFIG = {} as OpenCraftConfig;
+const TEST_CONFIG = {} as OpenClawConfig;
 
 function createLifecycleRuntime() {
   return {

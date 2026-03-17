@@ -7,7 +7,7 @@ import {
   createExitThrowingRuntime,
   createWizardPrompter,
   readAuthProfilesForAgent,
-  requireOpenCraftAgentDir,
+  requireOpenClawAgentDir,
   setupAuthTestEnv,
 } from "./test-wizard-helpers.js";
 
@@ -17,14 +17,14 @@ function createPrompter(overrides: Partial<WizardPrompter>): WizardPrompter {
 
 describe("applyAuthChoice (moonshot)", () => {
   const lifecycle = createAuthTestLifecycle([
-    "OPENCRAFT_STATE_DIR",
-    "OPENCRAFT_AGENT_DIR",
+    "OPENCLAW_STATE_DIR",
+    "OPENCLAW_AGENT_DIR",
     "PI_CODING_AGENT_DIR",
     "MOONSHOT_API_KEY",
   ]);
 
   async function setupTempState() {
-    const env = await setupAuthTestEnv("opencraft-auth-");
+    const env = await setupAuthTestEnv("openclaw-auth-");
     lifecycle.setStateDir(env.stateDir);
     delete process.env.MOONSHOT_API_KEY;
   }
@@ -32,7 +32,7 @@ describe("applyAuthChoice (moonshot)", () => {
   async function readAuthProfiles() {
     return await readAuthProfilesForAgent<{
       profiles?: Record<string, { key?: string }>;
-    }>(requireOpenCraftAgentDir());
+    }>(requireOpenClawAgentDir());
   }
 
   async function runMoonshotCnFlow(params: {

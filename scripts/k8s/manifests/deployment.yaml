@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opencraft
+  name: openclaw
   labels:
-    app: opencraft
+    app: openclaw
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: opencraft
+      app: openclaw
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: opencraft
+        app: openclaw
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -29,9 +29,9 @@ spec:
             - sh
             - -c
             - |
-              cp /config/opencraft.json /home/node/.opencraft/opencraft.json
-              mkdir -p /home/node/.opencraft/workspace
-              cp /config/AGENTS.md /home/node/.opencraft/workspace/AGENTS.md
+              cp /config/openclaw.json /home/node/.openclaw/openclaw.json
+              mkdir -p /home/node/.openclaw/workspace
+              cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -43,13 +43,13 @@ spec:
               memory: 64Mi
               cpu: 100m
           volumeMounts:
-            - name: opencraft-home
-              mountPath: /home/node/.opencraft
+            - name: openclaw-home
+              mountPath: /home/node/.openclaw
             - name: config
               mountPath: /config
       containers:
         - name: gateway
-          image: ghcr.io/editzffaleta/opencraft:slim
+          image: ghcr.io/openclaw/openclaw:slim
           imagePullPolicy: IfNotPresent
           command:
             - node
@@ -64,36 +64,36 @@ spec:
             - name: HOME
               value: /home/node
             - name: OPENCLAW_CONFIG_DIR
-              value: /home/node/.opencraft
+              value: /home/node/.openclaw
             - name: NODE_ENV
               value: production
             - name: OPENCLAW_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: opencraft-secrets
+                  name: openclaw-secrets
                   key: OPENCLAW_GATEWAY_TOKEN
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: opencraft-secrets
+                  name: openclaw-secrets
                   key: ANTHROPIC_API_KEY
                   optional: true
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: opencraft-secrets
+                  name: openclaw-secrets
                   key: OPENAI_API_KEY
                   optional: true
             - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: opencraft-secrets
+                  name: openclaw-secrets
                   key: GEMINI_API_KEY
                   optional: true
             - name: OPENROUTER_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: opencraft-secrets
+                  name: openclaw-secrets
                   key: OPENROUTER_API_KEY
                   optional: true
           resources:
@@ -122,8 +122,8 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
           volumeMounts:
-            - name: opencraft-home
-              mountPath: /home/node/.opencraft
+            - name: openclaw-home
+              mountPath: /home/node/.openclaw
             - name: tmp-volume
               mountPath: /tmp
           securityContext:
@@ -136,11 +136,11 @@ spec:
               drop:
                 - ALL
       volumes:
-        - name: opencraft-home
+        - name: openclaw-home
           persistentVolumeClaim:
-            claimName: opencraft-home-pvc
+            claimName: openclaw-home-pvc
         - name: config
           configMap:
-            name: opencraft-config
+            name: openclaw-config
         - name: tmp-volume
           emptyDir: {}

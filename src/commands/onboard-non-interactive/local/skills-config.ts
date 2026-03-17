@@ -1,9 +1,9 @@
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import type { OnboardOptions } from "../../onboard-types.js";
 
 export function applyNonInteractiveSkillsConfig(params: {
-  nextConfig: OpenCraftConfig;
+  nextConfig: OpenClawConfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
 }) {

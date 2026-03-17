@@ -1,10 +1,10 @@
 ---
 name: himalaya
-description: "CLI para gerenciar e-mails via IMAP/SMTP. Use `himalaya` para listar, ler, escrever, responder, encaminhar, pesquisar e organizar e-mails pelo terminal. Suporta múltiplas contas e composição com MML (MIME Meta Language)."
+description: "CLI to manage emails via IMAP/SMTP. Use `himalaya` to list, read, write, reply, forward, search, and organize emails from the terminal. Supports multiple accounts and message composition with MML (MIME Meta Language)."
 homepage: https://github.com/pimalaya/himalaya
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "📧",
         "requires": { "bins": ["himalaya"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "himalaya",
               "bins": ["himalaya"],
-              "label": "Instalar Himalaya (brew)",
+              "label": "Install Himalaya (brew)",
             },
           ],
       },
@@ -24,234 +24,234 @@ metadata:
 
 # Himalaya Email CLI
 
-O Himalaya é um cliente de e-mail CLI que permite gerenciar e-mails pelo terminal usando backends IMAP, SMTP, Notmuch ou Sendmail.
+Himalaya is a CLI email client that lets you manage emails from the terminal using IMAP, SMTP, Notmuch, or Sendmail backends.
 
-## Referências
+## References
 
-- `references/configuration.md` (configuração do arquivo de config + autenticação IMAP/SMTP)
-- `references/message-composition.md` (sintaxe MML para composição de e-mails)
+- `references/configuration.md` (config file setup + IMAP/SMTP authentication)
+- `references/message-composition.md` (MML syntax for composing emails)
 
-## Pré-requisitos
+## Prerequisites
 
-1. CLI do Himalaya instalado (`himalaya --version` para verificar)
-2. Arquivo de configuração em `~/.config/himalaya/config.toml`
-3. Credenciais IMAP/SMTP configuradas (senha armazenada com segurança)
+1. Himalaya CLI installed (`himalaya --version` to verify)
+2. A configuration file at `~/.config/himalaya/config.toml`
+3. IMAP/SMTP credentials configured (password stored securely)
 
-## Configuração
+## Configuration Setup
 
-Execute o assistente interativo para configurar uma conta:
+Run the interactive wizard to set up an account:
 
 ```bash
 himalaya account configure
 ```
 
-Ou crie `~/.config/himalaya/config.toml` manualmente:
+Or create `~/.config/himalaya/config.toml` manually:
 
 ```toml
-[accounts.pessoal]
-email = "voce@exemplo.com"
-display-name = "Seu Nome"
+[accounts.personal]
+email = "you@example.com"
+display-name = "Your Name"
 default = true
 
 backend.type = "imap"
-backend.host = "imap.exemplo.com"
+backend.host = "imap.example.com"
 backend.port = 993
 backend.encryption.type = "tls"
-backend.login = "voce@exemplo.com"
+backend.login = "you@example.com"
 backend.auth.type = "password"
-backend.auth.cmd = "pass show email/imap"  # ou use keyring
+backend.auth.cmd = "pass show email/imap"  # or use keyring
 
 message.send.backend.type = "smtp"
-message.send.backend.host = "smtp.exemplo.com"
+message.send.backend.host = "smtp.example.com"
 message.send.backend.port = 587
 message.send.backend.encryption.type = "start-tls"
-message.send.backend.login = "voce@exemplo.com"
+message.send.backend.login = "you@example.com"
 message.send.backend.auth.type = "password"
 message.send.backend.auth.cmd = "pass show email/smtp"
 ```
 
-## Operações Comuns
+## Common Operations
 
-### Listar Pastas
+### List Folders
 
 ```bash
 himalaya folder list
 ```
 
-### Listar E-mails
+### List Emails
 
-Listar e-mails na INBOX (padrão):
+List emails in INBOX (default):
 
 ```bash
 himalaya envelope list
 ```
 
-Listar e-mails em uma pasta específica:
+List emails in a specific folder:
 
 ```bash
 himalaya envelope list --folder "Sent"
 ```
 
-Listar com paginação:
+List with pagination:
 
 ```bash
 himalaya envelope list --page 1 --page-size 20
 ```
 
-### Pesquisar E-mails
+### Search Emails
 
 ```bash
-himalaya envelope list from joao@exemplo.com subject reuniao
+himalaya envelope list from john@example.com subject meeting
 ```
 
-### Ler um E-mail
+### Read an Email
 
-Ler e-mail por ID (exibe texto simples):
+Read email by ID (shows plain text):
 
 ```bash
 himalaya message read 42
 ```
 
-Exportar MIME bruto:
+Export raw MIME:
 
 ```bash
 himalaya message export 42 --full
 ```
 
-### Responder a um E-mail
+### Reply to an Email
 
-Resposta interativa (abre $EDITOR):
+Interactive reply (opens $EDITOR):
 
 ```bash
 himalaya message reply 42
 ```
 
-Responder a todos:
+Reply-all:
 
 ```bash
 himalaya message reply 42 --all
 ```
 
-### Encaminhar um E-mail
+### Forward an Email
 
 ```bash
 himalaya message forward 42
 ```
 
-### Escrever um Novo E-mail
+### Write a New Email
 
-Composição interativa (abre $EDITOR):
+Interactive compose (opens $EDITOR):
 
 ```bash
 himalaya message write
 ```
 
-Enviar diretamente usando template:
+Send directly using template:
 
 ```bash
 cat << 'EOF' | himalaya template send
-From: voce@exemplo.com
-To: destinatario@exemplo.com
-Subject: Mensagem de Teste
+From: you@example.com
+To: recipient@example.com
+Subject: Test Message
 
-Olá do Himalaya!
+Hello from Himalaya!
 EOF
 ```
 
-Ou com flag de cabeçalhos:
+Or with headers flag:
 
 ```bash
-himalaya message write -H "To:destinatario@exemplo.com" -H "Subject:Teste" "Corpo da mensagem aqui"
+himalaya message write -H "To:recipient@example.com" -H "Subject:Test" "Message body here"
 ```
 
-### Mover/Copiar E-mails
+### Move/Copy Emails
 
-Mover para pasta:
+Move to folder:
 
 ```bash
 himalaya message move 42 "Archive"
 ```
 
-Copiar para pasta:
+Copy to folder:
 
 ```bash
 himalaya message copy 42 "Important"
 ```
 
-### Excluir um E-mail
+### Delete an Email
 
 ```bash
 himalaya message delete 42
 ```
 
-### Gerenciar Flags
+### Manage Flags
 
-Adicionar flag:
+Add flag:
 
 ```bash
 himalaya flag add 42 --flag seen
 ```
 
-Remover flag:
+Remove flag:
 
 ```bash
 himalaya flag remove 42 --flag seen
 ```
 
-## Múltiplas Contas
+## Multiple Accounts
 
-Listar contas:
+List accounts:
 
 ```bash
 himalaya account list
 ```
 
-Usar uma conta específica:
+Use a specific account:
 
 ```bash
-himalaya --account trabalho envelope list
+himalaya --account work envelope list
 ```
 
-## Anexos
+## Attachments
 
-Salvar anexos de uma mensagem:
+Save attachments from a message:
 
 ```bash
 himalaya attachment download 42
 ```
 
-Salvar em diretório específico:
+Save to specific directory:
 
 ```bash
 himalaya attachment download 42 --dir ~/Downloads
 ```
 
-## Formatos de Saída
+## Output Formats
 
-A maioria dos comandos suporta `--output` para saída estruturada:
+Most commands support `--output` for structured output:
 
 ```bash
 himalaya envelope list --output json
 himalaya envelope list --output plain
 ```
 
-## Depuração
+## Debugging
 
-Habilitar log de debug:
+Enable debug logging:
 
 ```bash
 RUST_LOG=debug himalaya envelope list
 ```
 
-Trace completo com backtrace:
+Full trace with backtrace:
 
 ```bash
 RUST_LOG=trace RUST_BACKTRACE=1 himalaya envelope list
 ```
 
-## Dicas
+## Tips
 
-- Use `himalaya --help` ou `himalaya <comando> --help` para uso detalhado.
-- IDs de mensagem são relativos à pasta atual; relist após trocar de pasta.
-- Para compor e-mails ricos com anexos, use sintaxe MML (veja `references/message-composition.md`).
-- Armazene senhas com segurança usando `pass`, keyring do sistema ou um comando que retorna a senha.
+- Use `himalaya --help` or `himalaya <command> --help` for detailed usage.
+- Message IDs are relative to the current folder; re-list after folder changes.
+- For composing rich emails with attachments, use MML syntax (see `references/message-composition.md`).
+- Store passwords securely using `pass`, system keyring, or a command that outputs the password.

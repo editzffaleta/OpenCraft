@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveGatewayCredentialsWithSecretInputs } from "./call.js";
 import {
   type ExplicitGatewayAuth,
@@ -7,7 +7,7 @@ import {
 } from "./credentials.js";
 
 function buildGatewayProbeCredentialPolicy(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
@@ -25,7 +25,7 @@ function buildGatewayProbeCredentialPolicy(params: {
 }
 
 export function resolveGatewayProbeAuth(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
 }): { token?: string; password?: string } {
@@ -34,7 +34,7 @@ export function resolveGatewayProbeAuth(params: {
 }
 
 export async function resolveGatewayProbeAuthWithSecretInputs(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
@@ -51,13 +51,25 @@ export async function resolveGatewayProbeAuthWithSecretInputs(params: {
 }
 
 export function resolveGatewayProbeAuthSafe(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
+  explicitAuth?: ExplicitGatewayAuth;
 }): {
   auth: { token?: string; password?: string };
   warning?: string;
 } {
+  const explicitToken = params.explicitAuth?.token?.trim();
+  const explicitPassword = params.explicitAuth?.password?.trim();
+  if (explicitToken || explicitPassword) {
+    return {
+      auth: {
+        ...(explicitToken ? { token: explicitToken } : {}),
+        ...(explicitPassword ? { password: explicitPassword } : {}),
+      },
+    };
+  }
+
   try {
     return { auth: resolveGatewayProbeAuth(params) };
   } catch (error) {

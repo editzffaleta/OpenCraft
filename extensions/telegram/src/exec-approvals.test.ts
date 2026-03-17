@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import {
   isTelegramExecApprovalApprover,
   isTelegramExecApprovalClientEnabled,
@@ -9,8 +9,8 @@ import {
 } from "./exec-approvals.js";
 
 function buildConfig(
-  execApprovals?: NonNullable<NonNullable<OpenCraftConfig["channels"]>["telegram"]>["execApprovals"],
-): OpenCraftConfig {
+  execApprovals?: NonNullable<NonNullable<OpenClawConfig["channels"]>["telegram"]>["execApprovals"],
+): OpenClawConfig {
   return {
     channels: {
       telegram: {
@@ -18,7 +18,7 @@ function buildConfig(
         execApprovals,
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 describe("telegram exec approvals", () => {
@@ -71,7 +71,7 @@ describe("telegram exec approvals", () => {
           execApprovals: { enabled: true, approvers: ["123"], target: "dm" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     expect(shouldEnableTelegramExecApprovalButtons({ cfg, to: "123" })).toBe(true);
   });
@@ -85,7 +85,7 @@ describe("telegram exec approvals", () => {
           execApprovals: { enabled: true, approvers: ["123"], target: "dm" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     expect(shouldEnableTelegramExecApprovalButtons({ cfg, to: "123" })).toBe(false);
   });

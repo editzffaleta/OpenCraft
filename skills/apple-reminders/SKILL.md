@@ -1,10 +1,10 @@
 ---
 name: apple-reminders
-description: Gerencia o Apple Reminders via CLI remindctl (listar, adicionar, editar, concluir, deletar). Suporta listas, filtros de data e saída JSON/simples.
+description: Manage Apple Reminders via remindctl CLI (list, add, edit, complete, delete). Supports lists, date filters, and JSON/plain output.
 homepage: https://github.com/steipete/remindctl
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "⏰",
         "os": ["darwin"],
@@ -16,103 +16,103 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/remindctl",
               "bins": ["remindctl"],
-              "label": "Instalar remindctl via Homebrew",
+              "label": "Install remindctl via Homebrew",
             },
           ],
       },
   }
 ---
 
-# CLI do Apple Reminders (remindctl)
+# Apple Reminders CLI (remindctl)
 
-Use `remindctl` para gerenciar o Apple Reminders diretamente do terminal.
+Use `remindctl` to manage Apple Reminders directly from the terminal.
 
-## Quando Usar
+## When to Use
 
-✅ **USE esta habilidade quando:**
+✅ **USE this skill when:**
 
-- O usuário mencionar explicitamente "lembrete" ou "app Lembretes"
-- Criar to-dos pessoais com datas de vencimento que sincronizam com o iOS
-- Gerenciar listas do Apple Reminders
-- O usuário quiser que as tarefas apareçam no app Lembretes do iPhone/iPad
+- User explicitly mentions "reminder" or "Reminders app"
+- Creating personal to-dos with due dates that sync to iOS
+- Managing Apple Reminders lists
+- User wants tasks to appear in their iPhone/iPad Reminders app
 
-## Quando NÃO Usar
+## When NOT to Use
 
-❌ **NÃO use esta habilidade quando:**
+❌ **DON'T use this skill when:**
 
-- Agendar tarefas ou alertas do OpenCraft → use a ferramenta `cron` com systemEvent
-- Eventos de calendário ou compromissos → use o Apple Calendar
-- Gerenciamento de tarefas de projeto/trabalho → use Notion, GitHub Issues ou fila de tarefas
-- Notificações únicas → use a ferramenta `cron` para alertas temporizados
-- O usuário diz "me lembre" mas quer um alerta do OpenCraft → esclareça primeiro
+- Scheduling OpenClaw tasks or alerts → use `cron` tool with systemEvent instead
+- Calendar events or appointments → use Apple Calendar
+- Project/work task management → use Notion, GitHub Issues, or task queue
+- One-time notifications → use `cron` tool for timed alerts
+- User says "remind me" but means an OpenClaw alert → clarify first
 
-## Configuração
+## Setup
 
-- Instalar: `brew install steipete/tap/remindctl`
-- Apenas macOS; conceda permissão de Lembretes quando solicitado
-- Verificar status: `remindctl status`
-- Solicitar acesso: `remindctl authorize`
+- Install: `brew install steipete/tap/remindctl`
+- macOS-only; grant Reminders permission when prompted
+- Check status: `remindctl status`
+- Request access: `remindctl authorize`
 
-## Comandos Comuns
+## Common Commands
 
-### Visualizar Lembretes
-
-```bash
-remindctl                    # Lembretes de hoje
-remindctl today              # Hoje
-remindctl tomorrow           # Amanhã
-remindctl week               # Esta semana
-remindctl overdue            # Vencidos
-remindctl all                # Tudo
-remindctl 2026-01-04         # Data específica
-```
-
-### Gerenciar Listas
+### View Reminders
 
 ```bash
-remindctl list               # Listar todas as listas
-remindctl list Trabalho      # Mostrar lista específica
-remindctl list Projetos --create    # Criar lista
-remindctl list Trabalho --delete    # Deletar lista
+remindctl                    # Today's reminders
+remindctl today              # Today
+remindctl tomorrow           # Tomorrow
+remindctl week               # This week
+remindctl overdue            # Past due
+remindctl all                # Everything
+remindctl 2026-01-04         # Specific date
 ```
 
-### Criar Lembretes
+### Manage Lists
 
 ```bash
-remindctl add "Comprar leite"
-remindctl add --title "Ligar para a mãe" --list Pessoal --due tomorrow
-remindctl add --title "Preparar reunião" --due "2026-02-15 09:00"
+remindctl list               # List all lists
+remindctl list Work          # Show specific list
+remindctl list Projects --create    # Create list
+remindctl list Work --delete        # Delete list
 ```
 
-### Concluir/Deletar
+### Create Reminders
 
 ```bash
-remindctl complete 1 2 3     # Concluir por ID
-remindctl delete 4A83 --force  # Deletar por ID
+remindctl add "Buy milk"
+remindctl add --title "Call mom" --list Personal --due tomorrow
+remindctl add --title "Meeting prep" --due "2026-02-15 09:00"
 ```
 
-### Formatos de Saída
+### Complete/Delete
 
 ```bash
-remindctl today --json       # JSON para scripts
-remindctl today --plain      # Formato TSV
-remindctl today --quiet      # Apenas contagens
+remindctl complete 1 2 3     # Complete by ID
+remindctl delete 4A83 --force  # Delete by ID
 ```
 
-## Formatos de Data
+### Output Formats
 
-Aceitos por `--due` e filtros de data:
+```bash
+remindctl today --json       # JSON for scripting
+remindctl today --plain      # TSV format
+remindctl today --quiet      # Counts only
+```
+
+## Date Formats
+
+Accepted by `--due` and date filters:
 
 - `today`, `tomorrow`, `yesterday`
 - `YYYY-MM-DD`
 - `YYYY-MM-DD HH:mm`
 - ISO 8601 (`2026-01-04T12:34:56Z`)
 
-## Exemplo: Esclarecendo a Intenção do Usuário
+## Example: Clarifying User Intent
 
-Usuário: "Me lembre de verificar o deploy em 2 horas"
+User: "Remind me to check on the deploy in 2 hours"
 
-**Pergunte:** "Você quer isso no Apple Reminders (sincroniza com seu celular) ou como um alerta do OpenCraft (te aviso aqui)?"
+**Ask:** "Do you want this in Apple Reminders (syncs to your phone) or as an OpenClaw alert (I'll message you here)?"
 
-- Apple Reminders → use esta habilidade
-- Alerta do OpenCraft → use a ferramenta `cron` com systemEvent
+- Apple Reminders → use this skill
+- OpenClaw alert → use `cron` tool with systemEvent

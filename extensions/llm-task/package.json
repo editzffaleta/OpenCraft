@@ -1,14 +1,14 @@
 {
-  "name": "@opencraft/llm-task",
+  "name": "@openclaw/llm-task",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft JSON-only LLM task plugin",
+  "description": "OpenClaw JSON-only LLM task plugin",
   "type": "module",
   "dependencies": {
     "@sinclair/typebox": "0.34.48",
     "ajv": "^8.18.0"
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

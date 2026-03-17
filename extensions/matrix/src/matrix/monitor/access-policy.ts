@@ -4,7 +4,7 @@ import {
   readStoreAllowFromForDmPolicy,
   resolveDmGroupAccessWithLists,
   resolveSenderScopedGroupPolicy,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 import {
   normalizeMatrixAllowList,
   resolveMatrixAllowListMatch,
@@ -98,12 +98,12 @@ export async function enforceMatrixDirectMessageAccess(params: {
       upsertPairingRequest: params.upsertPairingRequest,
       buildReplyText: ({ code }) =>
         [
-          "OpenCraft: access not configured.",
+          "OpenClaw: access not configured.",
           "",
           `Pairing code: ${code}`,
           "",
           "Ask the bot owner to approve with:",
-          "opencraft pairing approve matrix <code>",
+          "openclaw pairing approve matrix <code>",
         ].join("\n"),
       sendPairingReply: params.sendPairingReply,
       onCreated: () => {

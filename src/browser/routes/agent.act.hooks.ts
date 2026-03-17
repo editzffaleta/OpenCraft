@@ -65,6 +65,7 @@ export function registerBrowserAgentActHookRoutes(
           }
           await uploadChromeMcpFile({
             profileName: profileCtx.profile.name,
+            userDataDir: profileCtx.profile.userDataDir,
             targetId: tab.targetId,
             uid,
             filePath: resolvedPaths[0] ?? "",
@@ -134,9 +135,10 @@ export function registerBrowserAgentActHookRoutes(
           }
           await evaluateChromeMcpScript({
             profileName: profileCtx.profile.name,
+            userDataDir: profileCtx.profile.userDataDir,
             targetId: tab.targetId,
             fn: `() => {
-              const state = (window.__opencraftDialogHook ??= {});
+              const state = (window.__openclawDialogHook ??= {});
               if (!state.originals) {
                 state.originals = {
                   alert: window.alert.bind(window),
@@ -149,7 +151,7 @@ export function registerBrowserAgentActHookRoutes(
                 window.alert = originals.alert;
                 window.confirm = originals.confirm;
                 window.prompt = originals.prompt;
-                delete window.__opencraftDialogHook;
+                delete window.__openclawDialogHook;
               };
               window.alert = (...args) => {
                 try {

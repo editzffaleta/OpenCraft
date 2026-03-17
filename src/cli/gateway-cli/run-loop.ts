@@ -10,6 +10,7 @@ import {
   consumeGatewaySigusr1RestartAuthorization,
   isGatewaySigusr1RestartExternallyAllowed,
   markGatewaySigusr1RestartHandled,
+  scheduleGatewaySigusr1Restart,
 } from "../../infra/restart.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import {
@@ -81,7 +82,7 @@ export async function runGatewayLoop(params: {
       );
     } else {
       gatewayLog.info(
-        `restart mode: in-process restart (${respawn.detail ?? "OPENCRAFT_NO_RESPAWN"})`,
+        `restart mode: in-process restart (${respawn.detail ?? "OPENCLAW_NO_RESPAWN"})`,
       );
     }
     if (hadLock && !(await reacquireLockForInProcessRestart())) {
@@ -186,10 +187,20 @@ export async function runGatewayLoop(params: {
   const onSigusr1 = () => {
     gatewayLog.info("signal SIGUSR1 received");
     const authorized = consumeGatewaySigusr1RestartAuthorization();
-    if (!authorized && !isGatewaySigusr1RestartExternallyAllowed()) {
-      gatewayLog.warn(
-        "SIGUSR1 restart ignored (not authorized; commands.restart=false or use gateway tool).",
-      );
+    if (!authorized) {
+      if (!isGatewaySigusr1RestartExternallyAllowed()) {
+        gatewayLog.warn(
+          "SIGUSR1 restart ignored (not authorized; commands.restart=false or use gateway tool).",
+        );
+        return;
+      }
+      if (shuttingDown) {
+        gatewayLog.info("received SIGUSR1 during shutdown; ignoring");
+        return;
+      }
+      // External SIGUSR1 requests should still reuse the in-process restart
+      // scheduler so idle drain and restart coalescing stay consistent.
+      scheduleGatewaySigusr1Restart({ delayMs: 0, reason: "SIGUSR1" });
       return;
     }
     markGatewaySigusr1RestartHandled();

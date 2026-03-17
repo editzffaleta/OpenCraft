@@ -1,6 +1,6 @@
-package ai.opencraft.app.protocol
+package ai.openclaw.app.protocol
 
-enum class OpenCraftCapability(val rawValue: String) {
+enum class OpenClawCapability(val rawValue: String) {
   Canvas("canvas"),
   Camera("camera"),
   Sms("sms"),
@@ -16,7 +16,7 @@ enum class OpenCraftCapability(val rawValue: String) {
   CallLog("callLog"),
 }
 
-enum class OpenCraftCanvasCommand(val rawValue: String) {
+enum class OpenClawCanvasCommand(val rawValue: String) {
   Present("canvas.present"),
   Hide("canvas.hide"),
   Navigate("canvas.navigate"),
@@ -29,7 +29,7 @@ enum class OpenCraftCanvasCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftCanvasA2UICommand(val rawValue: String) {
+enum class OpenClawCanvasA2UICommand(val rawValue: String) {
   Push("canvas.a2ui.push"),
   PushJSONL("canvas.a2ui.pushJSONL"),
   Reset("canvas.a2ui.reset"),
@@ -40,7 +40,7 @@ enum class OpenCraftCanvasA2UICommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftCameraCommand(val rawValue: String) {
+enum class OpenClawCameraCommand(val rawValue: String) {
   List("camera.list"),
   Snap("camera.snap"),
   Clip("camera.clip"),
@@ -51,7 +51,7 @@ enum class OpenCraftCameraCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftSmsCommand(val rawValue: String) {
+enum class OpenClawSmsCommand(val rawValue: String) {
   Send("sms.send"),
   ;
 
@@ -60,7 +60,7 @@ enum class OpenCraftSmsCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftLocationCommand(val rawValue: String) {
+enum class OpenClawLocationCommand(val rawValue: String) {
   Get("location.get"),
   ;
 
@@ -69,7 +69,7 @@ enum class OpenCraftLocationCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftDeviceCommand(val rawValue: String) {
+enum class OpenClawDeviceCommand(val rawValue: String) {
   Status("device.status"),
   Info("device.info"),
   Permissions("device.permissions"),
@@ -81,7 +81,7 @@ enum class OpenCraftDeviceCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftNotificationsCommand(val rawValue: String) {
+enum class OpenClawNotificationsCommand(val rawValue: String) {
   List("notifications.list"),
   Actions("notifications.actions"),
   ;
@@ -91,7 +91,7 @@ enum class OpenCraftNotificationsCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftSystemCommand(val rawValue: String) {
+enum class OpenClawSystemCommand(val rawValue: String) {
   Notify("system.notify"),
   ;
 
@@ -100,7 +100,7 @@ enum class OpenCraftSystemCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftPhotosCommand(val rawValue: String) {
+enum class OpenClawPhotosCommand(val rawValue: String) {
   Latest("photos.latest"),
   ;
 
@@ -109,7 +109,7 @@ enum class OpenCraftPhotosCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftContactsCommand(val rawValue: String) {
+enum class OpenClawContactsCommand(val rawValue: String) {
   Search("contacts.search"),
   Add("contacts.add"),
   ;
@@ -119,7 +119,7 @@ enum class OpenCraftContactsCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftCalendarCommand(val rawValue: String) {
+enum class OpenClawCalendarCommand(val rawValue: String) {
   Events("calendar.events"),
   Add("calendar.add"),
   ;
@@ -129,7 +129,7 @@ enum class OpenCraftCalendarCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftMotionCommand(val rawValue: String) {
+enum class OpenClawMotionCommand(val rawValue: String) {
   Activity("motion.activity"),
   Pedometer("motion.pedometer"),
   ;
@@ -139,7 +139,7 @@ enum class OpenCraftMotionCommand(val rawValue: String) {
   }
 }
 
-enum class OpenCraftCallLogCommand(val rawValue: String) {
+enum class OpenClawCallLogCommand(val rawValue: String) {
   Search("callLog.search"),
   ;
 

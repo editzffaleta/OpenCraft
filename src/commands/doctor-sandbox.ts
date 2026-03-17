@@ -6,7 +6,7 @@ import {
   DEFAULT_SANDBOX_IMAGE,
   resolveSandboxScope,
 } from "../agents/sandbox.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { runCommandWithTimeout, runExec } from "../process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { note } from "../terminal/note.js";
@@ -89,17 +89,22 @@ async function dockerImageExists(image: string): Promise<boolean> {
   }
 }
 
-function resolveSandboxDockerImage(cfg: OpenCraftConfig): string {
+function resolveSandboxDockerImage(cfg: OpenClawConfig): string {
   const image = cfg.agents?.defaults?.sandbox?.docker?.image?.trim();
   return image ? image : DEFAULT_SANDBOX_IMAGE;
 }
 
-function resolveSandboxBrowserImage(cfg: OpenCraftConfig): string {
+function resolveSandboxBackend(cfg: OpenClawConfig): string {
+  const backend = cfg.agents?.defaults?.sandbox?.backend?.trim();
+  return backend || "docker";
+}
+
+function resolveSandboxBrowserImage(cfg: OpenClawConfig): string {
   const image = cfg.agents?.defaults?.sandbox?.browser?.image?.trim();
   return image ? image : DEFAULT_SANDBOX_BROWSER_IMAGE;
 }
 
-function updateSandboxDockerImage(cfg: OpenCraftConfig, image: string): OpenCraftConfig {
+function updateSandboxDockerImage(cfg: OpenClawConfig, image: string): OpenClawConfig {
   return {
     ...cfg,
     agents: {
@@ -118,7 +123,7 @@ function updateSandboxDockerImage(cfg: OpenCraftConfig, image: string): OpenCraf
   };
 }
 
-function updateSandboxBrowserImage(cfg: OpenCraftConfig, image: string): OpenCraftConfig {
+function updateSandboxBrowserImage(cfg: OpenClawConfig, image: string): OpenClawConfig {
   return {
     ...cfg,
     agents: {
@@ -176,13 +181,23 @@ async function handleMissingSandboxImage(
 }
 
 export async function maybeRepairSandboxImages(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   runtime: RuntimeEnv,
   prompter: DoctorPrompter,
-): Promise<OpenCraftConfig> {
+): Promise<OpenClawConfig> {
   const sandbox = cfg.agents?.defaults?.sandbox;
   const mode = sandbox?.mode ?? "off";
   if (!sandbox || mode === "off") {
+    return cfg;
+  }
+  const backend = resolveSandboxBackend(cfg);
+  if (backend !== "docker") {
+    if (sandbox.browser?.enabled) {
+      note(
+        `Sandbox backend "${backend}" selected. Docker browser health checks are skipped; browser sandbox currently requires the docker backend.`,
+        "Sandbox",
+      );
+    }
     return cfg;
   }
 
@@ -195,7 +210,7 @@ export async function maybeRepairSandboxImages(
       "",
       "Options:",
       "- Install Docker and restart the gateway",
-      "- Disable sandbox mode: opencraft config set agents.defaults.sandbox.mode off",
+      "- Disable sandbox mode: openclaw config set agents.defaults.sandbox.mode off",
     ];
     note(lines.join("\n"), "Sandbox");
     return cfg;
@@ -247,7 +262,7 @@ export async function maybeRepairSandboxImages(
   return next;
 }
 
-export function noteSandboxScopeWarnings(cfg: OpenCraftConfig) {
+export function noteSandboxScopeWarnings(cfg: OpenClawConfig) {
   const globalSandbox = cfg.agents?.defaults?.sandbox;
   const agents = Array.isArray(cfg.agents?.list) ? cfg.agents.list : [];
   const warnings: string[] = [];

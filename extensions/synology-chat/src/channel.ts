@@ -1,5 +1,5 @@
 /**
- * Synology Chat Channel Plugin for OpenCraft.
+ * Synology Chat Channel Plugin for OpenClaw.
  *
  * Implements the ChannelPlugin interface following the LINE pattern.
  */
@@ -9,11 +9,12 @@ import {
   setAccountEnabledInConfigSection,
   registerPluginHttpRoute,
   buildChannelConfigSchema,
-} from "opencraft/plugin-sdk/synology-chat";
+} from "openclaw/plugin-sdk/synology-chat";
 import { z } from "zod";
 import { listAccountIds, resolveAccount } from "./accounts.js";
 import { sendMessage, sendFileUrl } from "./client.js";
 import { getSynologyRuntime } from "./runtime.js";
+import { synologyChatSetupAdapter, synologyChatSetupWizard } from "./setup-surface.js";
 import type { ResolvedSynologyChatAccount } from "./types.js";
 import { createWebhookHandler } from "./webhook-handler.js";
 
@@ -49,7 +50,7 @@ export function createSynologyChatPlugin() {
       selectionLabel: "Synology Chat (Webhook)",
       detailLabel: "Synology Chat (Webhook)",
       docsPath: "/channels/synology-chat",
-      blurb: "Connect your Synology NAS Chat to OpenCraft",
+      blurb: "Connect your Synology NAS Chat to OpenClaw",
       order: 90,
     },
 
@@ -68,6 +69,8 @@ export function createSynologyChatPlugin() {
     reload: { configPrefixes: [`channels.${CHANNEL_ID}`] },
 
     configSchema: SynologyChatConfigSchema,
+    setup: synologyChatSetupAdapter,
+    setupWizard: synologyChatSetupWizard,
 
     config: {
       listAccountIds: (cfg: any) => listAccountIds(cfg),
@@ -104,7 +107,7 @@ export function createSynologyChatPlugin() {
         if (!account.incomingUrl) return;
         await sendMessage(
           account.incomingUrl,
-          "OpenCraft: your access has been approved.",
+          "OpenClaw: your access has been approved.",
           id,
           account.allowInsecureSsl,
         );
@@ -132,7 +135,7 @@ export function createSynologyChatPlugin() {
           allowFrom: account.allowedUserIds ?? [],
           policyPath: `${basePath}dmPolicy`,
           allowFromPath: basePath,
-          approveHint: "opencraft pairing approve synology-chat <code>",
+          approveHint: "openclaw pairing approve synology-chat <code>",
           normalizeEntry: (raw: string) => raw.toLowerCase().trim(),
         };
       },
@@ -377,3 +380,5 @@ export function createSynologyChatPlugin() {
     },
   };
 }
+
+export const synologyChatPlugin = createSynologyChatPlugin();

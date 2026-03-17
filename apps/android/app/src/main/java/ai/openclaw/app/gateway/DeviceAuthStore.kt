@@ -1,6 +1,6 @@
-package ai.opencraft.app.gateway
+package ai.openclaw.app.gateway
 
-import ai.opencraft.app.SecurePrefs
+import ai.openclaw.app.SecurePrefs
 
 interface DeviceAuthTokenStore {
   fun loadToken(deviceId: String, role: String): String?

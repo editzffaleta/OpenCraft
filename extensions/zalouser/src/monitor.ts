@@ -7,13 +7,13 @@ import {
   clearHistoryEntriesIfEnabled,
   recordPendingHistoryEntryIfEnabled,
   resolveDmGroupAccessWithLists,
-} from "opencraft/plugin-sdk/compat";
+} from "openclaw/plugin-sdk/compat";
 import type {
   MarkdownTableMode,
-  OpenCraftConfig,
+  OpenClawConfig,
   OutboundReplyPayload,
   RuntimeEnv,
-} from "opencraft/plugin-sdk/zalouser";
+} from "openclaw/plugin-sdk/zalouser";
 import {
   createTypingCallbacks,
   createScopedPairingAccess,
@@ -31,7 +31,7 @@ import {
   sendMediaWithLeadingCaption,
   summarizeMapping,
   warnMissingProviderGroupPolicyFallbackOnce,
-} from "opencraft/plugin-sdk/zalouser";
+} from "openclaw/plugin-sdk/zalouser";
 import { createDeferred } from "../../shared/deferred.js";
 import {
   buildZalouserGroupCandidates,
@@ -56,7 +56,7 @@ import {
 
 export type ZalouserMonitorOptions = {
   account: ResolvedZalouserAccount;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   runtime: RuntimeEnv;
   abortSignal: AbortSignal;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
@@ -131,14 +131,14 @@ function resolveInboundQueueKey(message: ZaloInboundMessage): string {
   return `direct:${senderId || threadId}`;
 }
 
-function resolveZalouserDmSessionScope(config: OpenCraftConfig) {
+function resolveZalouserDmSessionScope(config: OpenClawConfig) {
   const configured = config.session?.dmScope;
   return configured === "main" || !configured ? "per-channel-peer" : configured;
 }
 
 function resolveZalouserInboundSessionKey(params: {
   core: ZalouserCoreRuntime;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   route: { agentId: string; accountId: string; sessionKey: string };
   storePath: string;
   isGroup: boolean;
@@ -244,7 +244,7 @@ async function sendZalouserDeliveryAcks(params: {
 async function processMessage(
   message: ZaloInboundMessage,
   account: ResolvedZalouserAccount,
-  config: OpenCraftConfig,
+  config: OpenClawConfig,
   core: ZalouserCoreRuntime,
   runtime: RuntimeEnv,
   historyState: ZalouserGroupHistoryState,
@@ -697,7 +697,7 @@ async function deliverZalouserReply(params: {
   isGroup: boolean;
   runtime: RuntimeEnv;
   core: ZalouserCoreRuntime;
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   accountId?: string;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
   tableMode?: MarkdownTableMode;
@@ -961,7 +961,7 @@ export const __testing = {
   processMessage: async (params: {
     message: ZaloInboundMessage;
     account: ResolvedZalouserAccount;
-    config: OpenCraftConfig;
+    config: OpenClawConfig;
     runtime: RuntimeEnv;
     historyState?: {
       historyLimit?: number;

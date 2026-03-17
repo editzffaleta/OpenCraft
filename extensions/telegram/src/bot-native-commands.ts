@@ -18,7 +18,7 @@ import { resolveCommandAuthorizedFromAuthorizers } from "../../../src/channels/c
 import { resolveNativeCommandSessionTargets } from "../../../src/channels/native-command-session-targets.js";
 import { createReplyPrefixOptions } from "../../../src/channels/reply-prefix.js";
 import { recordInboundSessionMetaSafe } from "../../../src/channels/session-meta.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { ChannelGroupPolicy } from "../../../src/config/group-policy.js";
 import { resolveMarkdownTableMode } from "../../../src/config/markdown-tables.js";
 import {
@@ -90,7 +90,7 @@ type TelegramCommandAuthResult = {
 };
 
 export type RegisterTelegramHandlerParams = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   bot: Bot;
   mediaMaxBytes: number;
@@ -121,7 +121,7 @@ export type RegisterTelegramHandlerParams = {
 
 type RegisterTelegramNativeCommandsParams = {
   bot: Bot;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runtime: RuntimeEnv;
   accountId: string;
   telegramCfg: TelegramAccountConfig;
@@ -145,7 +145,7 @@ type RegisterTelegramNativeCommandsParams = {
 async function resolveTelegramCommandAuth(params: {
   msg: NonNullable<TelegramNativeCommandContext["message"]>;
   bot: Bot;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   telegramCfg: TelegramAccountConfig;
   allowFrom?: Array<string | number>;
@@ -363,6 +363,7 @@ export const registerTelegramNativeCommands = ({
   shouldSkipUpdate,
   opts,
 }: RegisterTelegramNativeCommandsParams) => {
+  const silentErrorReplies = telegramCfg.silentErrorReplies === true;
   const boundRoute =
     nativeEnabled && nativeSkillsEnabled
       ? resolveAgentRoute({ cfg, channel: "telegram", accountId })
@@ -734,7 +735,6 @@ export const registerTelegramNativeCommands = ({
             typeof telegramCfg.blockStreaming === "boolean"
               ? !telegramCfg.blockStreaming
               : undefined;
-
           const deliveryState = {
             delivered: false,
             skippedNonSilent: 0,
@@ -766,6 +766,7 @@ export const registerTelegramNativeCommands = ({
                 const result = await deliverReplies({
                   replies: [payload],
                   ...deliveryBaseOptions,
+                  silent: silentErrorReplies && payload.isError === true,
                 });
                 if (result.delivered) {
                   deliveryState.delivered = true;
@@ -885,6 +886,7 @@ export const registerTelegramNativeCommands = ({
             await deliverReplies({
               replies: [result],
               ...deliveryBaseOptions,
+              silent: silentErrorReplies && result.isError === true,
             });
           }
         });

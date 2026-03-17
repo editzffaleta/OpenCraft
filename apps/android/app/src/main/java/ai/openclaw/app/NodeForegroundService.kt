@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -25,10 +25,14 @@ class NodeForegroundService : Service() {
   override fun onCreate() {
     super.onCreate()
     ensureChannel()
-    val initial = buildNotification(title = "OpenCraft Node", text = "Starting…")
+    val initial = buildNotification(title = "OpenClaw Node", text = "Starting…")
     startForegroundWithTypes(notification = initial)
 
-    val runtime = (application as NodeApp).runtime
+    val runtime = (application as NodeApp).peekRuntime()
+    if (runtime == null) {
+      stopSelf()
+      return
+    }
     notificationJob =
       scope.launch {
         combine(
@@ -40,7 +44,7 @@ class NodeForegroundService : Service() {
         ) { status, server, connected, micEnabled, micListening ->
           Quint(status, server, connected, micEnabled, micListening)
         }.collect { (status, server, connected, micEnabled, micListening) ->
-          val title = if (connected) "OpenCraft Node · Connected" else "OpenCraft Node"
+          val title = if (connected) "OpenClaw Node · Connected" else "OpenClaw Node"
           val micSuffix =
             if (micEnabled) {
               if (micListening) " · Mic: Listening" else " · Mic: Pending"
@@ -59,7 +63,7 @@ class NodeForegroundService : Service() {
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     when (intent?.action) {
       ACTION_STOP -> {
-        (application as NodeApp).runtime.disconnect()
+        (application as NodeApp).peekRuntime()?.disconnect()
         stopSelf()
         return START_NOT_STICKY
       }
@@ -84,7 +88,7 @@ class NodeForegroundService : Service() {
         "Connection",
         NotificationManager.IMPORTANCE_LOW,
       ).apply {
-        description = "OpenCraft node connection status"
+        description = "OpenClaw node connection status"
         setShowBadge(false)
       }
     mgr.createNotificationChannel(channel)
@@ -141,7 +145,7 @@ class NodeForegroundService : Service() {
     private const val CHANNEL_ID = "connection"
     private const val NOTIFICATION_ID = 1
 
-    private const val ACTION_STOP = "ai.opencraft.app.action.STOP"
+    private const val ACTION_STOP = "ai.openclaw.app.action.STOP"
 
     fun start(context: Context) {
       val intent = Intent(context, NodeForegroundService::class.java)

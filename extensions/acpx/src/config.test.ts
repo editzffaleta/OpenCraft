@@ -1,13 +1,44 @@
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   ACPX_BUNDLED_BIN,
   ACPX_PINNED_VERSION,
   createAcpxPluginConfigSchema,
+  resolveAcpxPluginRoot,
   resolveAcpxPluginConfig,
 } from "./config.js";
 
 describe("acpx plugin config parsing", () => {
+  it("resolves source-layout plugin root from a file under src", () => {
+    const pluginRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acpx-root-source-"));
+    try {
+      fs.mkdirSync(path.join(pluginRoot, "src"), { recursive: true });
+      fs.writeFileSync(path.join(pluginRoot, "package.json"), "{}\n", "utf8");
+      fs.writeFileSync(path.join(pluginRoot, "openclaw.plugin.json"), "{}\n", "utf8");
+
+      const moduleUrl = pathToFileURL(path.join(pluginRoot, "src", "config.ts")).href;
+      expect(resolveAcpxPluginRoot(moduleUrl)).toBe(pluginRoot);
+    } finally {
+      fs.rmSync(pluginRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("resolves bundled-layout plugin root from the dist entry file", () => {
+    const pluginRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acpx-root-dist-"));
+    try {
+      fs.writeFileSync(path.join(pluginRoot, "package.json"), "{}\n", "utf8");
+      fs.writeFileSync(path.join(pluginRoot, "openclaw.plugin.json"), "{}\n", "utf8");
+
+      const moduleUrl = pathToFileURL(path.join(pluginRoot, "index.js")).href;
+      expect(resolveAcpxPluginRoot(moduleUrl)).toBe(pluginRoot);
+    } finally {
+      fs.rmSync(pluginRoot, { recursive: true, force: true });
+    }
+  });
+
   it("resolves bundled acpx with pinned version by default", () => {
     const resolved = resolveAcpxPluginConfig({
       rawConfig: {
@@ -44,10 +75,10 @@ describe("acpx plugin config parsing", () => {
       rawConfig: {
         command: "../acpx/dist/cli.js",
       },
-      workspaceDir: "/home/user/repos/opencraft",
+      workspaceDir: "/home/user/repos/openclaw",
     });
 
-    expect(resolved.command).toBe(path.resolve("/home/user/repos/opencraft", "../acpx/dist/cli.js"));
+    expect(resolved.command).toBe(path.resolve("/home/user/repos/openclaw", "../acpx/dist/cli.js"));
     expect(resolved.expectedVersion).toBeUndefined();
     expect(resolved.allowPluginLocalInstall).toBe(false);
     expect(resolved.stripProviderAuthEnvVars).toBe(false);

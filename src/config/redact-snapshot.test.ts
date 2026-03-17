@@ -7,11 +7,11 @@ import {
 } from "./redact-snapshot.js";
 import { __test__ } from "./schema.hints.js";
 import type { ConfigUiHints } from "./schema.js";
-import type { ConfigFileSnapshot } from "./types.opencraft.js";
-import { OpenCraftSchema } from "./zod-schema.js";
+import type { ConfigFileSnapshot } from "./types.openclaw.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
 const { mapSensitivePaths } = __test__;
-const mainSchemaHints = mapSensitivePaths(OpenCraftSchema, "", {});
+const mainSchemaHints = mapSensitivePaths(OpenClawSchema, "", {});
 
 type TestSnapshot<TConfig extends Record<string, unknown>> = ConfigFileSnapshot & {
   parsed: TConfig;
@@ -24,7 +24,7 @@ function makeSnapshot<TConfig extends Record<string, unknown>>(
   raw?: string,
 ): TestSnapshot<TConfig> {
   return {
-    path: "/home/user/.opencraft/config.json5",
+    path: "/home/user/.openclaw/config.json5",
     exists: true,
     raw: raw ?? JSON.stringify(config),
     parsed: config,
@@ -163,6 +163,36 @@ describe("redactConfigSnapshot", () => {
     expect(result.config).toEqual(snapshot.config);
   });
 
+  it("removes embedded credentials from URL-valued endpoint fields", () => {
+    const raw = `{
+  models: {
+    providers: {
+      openai: {
+        baseUrl: "https://alice:secret@example.test/v1",
+      },
+    },
+  },
+}`;
+    const snapshot = makeSnapshot(
+      {
+        models: {
+          providers: {
+            openai: {
+              baseUrl: "https://alice:secret@example.test/v1",
+            },
+          },
+        },
+      },
+      raw,
+    );
+
+    const result = redactConfigSnapshot(snapshot);
+    const cfg = result.config as typeof snapshot.config;
+    expect(cfg.models.providers.openai.baseUrl).toBe(REDACTED_SENTINEL);
+    expect(result.raw).toContain(REDACTED_SENTINEL);
+    expect(result.raw).not.toContain("alice:secret@");
+  });
+
   it("does not redact maxTokens-style fields", () => {
     const snapshot = makeSnapshot({
       maxTokens: 16384,
@@ -221,9 +251,9 @@ describe("redactConfigSnapshot", () => {
     const snapshot = makeSnapshot({
       channels: {
         irc: {
-          passwordFile: "/etc/opencraft/irc-password.txt",
+          passwordFile: "/etc/openclaw/irc-password.txt",
           nickserv: {
-            passwordFile: "/etc/opencraft/nickserv-password.txt",
+            passwordFile: "/etc/openclaw/nickserv-password.txt",
             password: "super-secret-nickserv-password",
           },
         },
@@ -235,8 +265,8 @@ describe("redactConfigSnapshot", () => {
     const irc = channels.irc;
     const nickserv = irc.nickserv as Record<string, unknown>;
 
-    expect(irc.passwordFile).toBe("/etc/opencraft/irc-password.txt");
-    expect(nickserv.passwordFile).toBe("/etc/opencraft/nickserv-password.txt");
+    expect(irc.passwordFile).toBe("/etc/openclaw/irc-password.txt");
+    expect(nickserv.passwordFile).toBe("/etc/openclaw/nickserv-password.txt");
     expect(nickserv.password).toBe(REDACTED_SENTINEL);
   });
 
@@ -890,6 +920,25 @@ describe("redactConfigSnapshot", () => {
 });
 
 describe("restoreRedactedValues", () => {
+  it("restores redacted URL endpoint fields on round-trip", () => {
+    const incoming = {
+      models: {
+        providers: {
+          openai: { baseUrl: REDACTED_SENTINEL },
+        },
+      },
+    };
+    const original = {
+      models: {
+        providers: {
+          openai: { baseUrl: "https://alice:secret@example.test/v1" },
+        },
+      },
+    };
+    const result = restoreRedactedValues(incoming, original, mainSchemaHints);
+    expect(result.models.providers.openai.baseUrl).toBe("https://alice:secret@example.test/v1");
+  });
+
   it("restores sentinel values from original config", () => {
     const incoming = {
       gateway: { auth: { token: REDACTED_SENTINEL } },
@@ -1098,11 +1147,11 @@ describe("restoreRedactedValues", () => {
 
 describe("realredactConfigSnapshot_real", () => {
   it("main schema redact works (samples)", () => {
-    const schema = OpenCraftSchema.toJSONSchema({
+    const schema = OpenClawSchema.toJSONSchema({
       target: "draft-07",
       unrepresentable: "any",
     });
-    schema.title = "OpenCraftConfig";
+    schema.title = "OpenClawConfig";
     const hints = mainSchemaHints;
 
     const snapshot = makeSnapshot({

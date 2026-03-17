@@ -1,9 +1,9 @@
-import type { StickerMetadata } from "../../extensions/telegram/src/bot/types.js";
 import type { ChannelId } from "../channels/plugins/types.js";
 import type {
   MediaUnderstandingDecision,
   MediaUnderstandingOutput,
 } from "../media-understanding/types.js";
+import type { StickerMetadata } from "../plugin-sdk-internal/telegram.js";
 import type { InputProvenance } from "../sessions/input-provenance.js";
 import type { InternalMessageChannel } from "../utils/message-channel.js";
 import type { CommandArgs } from "./commands-registry.types.js";
@@ -99,7 +99,7 @@ export type MsgContext = {
   StickerMediaIncluded?: boolean;
   OutputDir?: string;
   OutputBase?: string;
-  /** Remote host for SCP when media lives on a different machine (e.g., opencraft@192.168.64.3). */
+  /** Remote host for SCP when media lives on a different machine (e.g., openclaw@192.168.64.3). */
   MediaRemoteHost?: string;
   Transcript?: string;
   MediaUnderstanding?: MediaUnderstandingOutput[];

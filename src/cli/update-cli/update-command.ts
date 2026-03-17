@@ -24,6 +24,7 @@ import {
   checkUpdateStatus,
 } from "../../infra/update-check.js";
 import {
+  canResolveRegistryVersionForPackageTarget,
   createGlobalInstallEnv,
   cleanupGlobalRenameDirs,
   globalInstallArgs,
@@ -70,10 +71,10 @@ import { suppressDeprecations } from "./suppress-deprecations.js";
 const CLI_NAME = resolveCliName();
 const SERVICE_REFRESH_TIMEOUT_MS = 60_000;
 const SERVICE_REFRESH_PATH_ENV_KEYS = [
-  "OPENCRAFT_HOME",
-  "OPENCRAFT_STATE_DIR",
+  "OPENCLAW_HOME",
+  "OPENCLAW_STATE_DIR",
   "CLAWDBOT_STATE_DIR",
-  "OPENCRAFT_CONFIG_PATH",
+  "OPENCLAW_CONFIG_PATH",
   "CLAWDBOT_CONFIG_PATH",
 ] as const;
 
@@ -282,7 +283,7 @@ async function tryInstallShellCompletion(opts: {
       if (!opts.skipPrompt) {
         defaultRuntime.log(
           theme.muted(
-            `Skipped. Run \`${replaceCliName(formatCliCommand("opencraft completion --install"), CLI_NAME)}\` later to enable.`,
+            `Skipped. Run \`${replaceCliName(formatCliCommand("openclaw completion --install"), CLI_NAME)}\` later to enable.`,
           ),
         );
       }
@@ -598,7 +599,7 @@ async function maybeRestartService(params: {
       if (!params.opts.json && restarted) {
         defaultRuntime.log(theme.success("Daemon restarted successfully."));
         defaultRuntime.log("");
-        process.env.OPENCRAFT_UPDATE_IN_PROGRESS = "1";
+        process.env.OPENCLAW_UPDATE_IN_PROGRESS = "1";
         try {
           const interactiveDoctor =
             Boolean(process.stdin.isTTY) && !params.opts.json && params.opts.yes !== true;
@@ -608,7 +609,7 @@ async function maybeRestartService(params: {
         } catch (err) {
           defaultRuntime.log(theme.warn(`Doctor failed: ${String(err)}`));
         } finally {
-          delete process.env.OPENCRAFT_UPDATE_IN_PROGRESS;
+          delete process.env.OPENCLAW_UPDATE_IN_PROGRESS;
         }
       }
 
@@ -643,7 +644,7 @@ async function maybeRestartService(params: {
           }
           defaultRuntime.log(
             theme.muted(
-              `Run \`${replaceCliName(formatCliCommand("opencraft gateway status --deep"), CLI_NAME)}\` for details.`,
+              `Run \`${replaceCliName(formatCliCommand("openclaw gateway status --deep"), CLI_NAME)}\` for details.`,
             ),
           );
         }
@@ -654,7 +655,7 @@ async function maybeRestartService(params: {
         defaultRuntime.log(theme.warn(`Daemon restart failed: ${String(err)}`));
         defaultRuntime.log(
           theme.muted(
-            `You may need to restart the service manually: ${replaceCliName(formatCliCommand("opencraft gateway restart"), CLI_NAME)}`,
+            `You may need to restart the service manually: ${replaceCliName(formatCliCommand("openclaw gateway restart"), CLI_NAME)}`,
           ),
         );
       }
@@ -667,13 +668,13 @@ async function maybeRestartService(params: {
     if (params.result.mode === "npm" || params.result.mode === "pnpm") {
       defaultRuntime.log(
         theme.muted(
-          `Tip: Run \`${replaceCliName(formatCliCommand("opencraft doctor"), CLI_NAME)}\`, then \`${replaceCliName(formatCliCommand("opencraft gateway restart"), CLI_NAME)}\` to apply updates to a running gateway.`,
+          `Tip: Run \`${replaceCliName(formatCliCommand("openclaw doctor"), CLI_NAME)}\`, then \`${replaceCliName(formatCliCommand("openclaw gateway restart"), CLI_NAME)}\` to apply updates to a running gateway.`,
         ),
       );
     } else {
       defaultRuntime.log(
         theme.muted(
-          `Tip: Run \`${replaceCliName(formatCliCommand("opencraft gateway restart"), CLI_NAME)}\` to apply updates to a running gateway.`,
+          `Tip: Run \`${replaceCliName(formatCliCommand("openclaw gateway restart"), CLI_NAME)}\` to apply updates to a running gateway.`,
         ),
       );
     }
@@ -731,22 +732,31 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
   let targetVersion: string | null = null;
   let downgradeRisk = false;
   let fallbackToLatest = false;
+  let packageInstallSpec: string | null = null;
 
   if (updateInstallKind !== "git") {
     currentVersion = switchToPackage ? null : await readPackageVersion(root);
-    targetVersion = explicitTag
-      ? await resolveTargetVersion(tag, timeoutMs)
-      : await resolveNpmChannelTag({ channel, timeoutMs }).then((resolved) => {
-          tag = resolved.tag;
-          fallbackToLatest = channel === "beta" && resolved.tag === "latest";
-          return resolved.version;
-        });
+    if (explicitTag) {
+      targetVersion = await resolveTargetVersion(tag, timeoutMs);
+    } else {
+      targetVersion = await resolveNpmChannelTag({ channel, timeoutMs }).then((resolved) => {
+        tag = resolved.tag;
+        fallbackToLatest = channel === "beta" && resolved.tag === "latest";
+        return resolved.version;
+      });
+    }
     const cmp =
       currentVersion && targetVersion ? compareSemverStrings(currentVersion, targetVersion) : null;
     downgradeRisk =
+      canResolveRegistryVersionForPackageTarget(tag) &&
       !fallbackToLatest &&
       currentVersion != null &&
       (targetVersion == null || (cmp != null && cmp > 0));
+    packageInstallSpec = resolveGlobalInstallSpec({
+      packageName: DEFAULT_PACKAGE_NAME,
+      tag,
+      env: process.env,
+    });
   }
 
   if (opts.dryRun) {
@@ -772,7 +782,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     } else if (updateInstallKind === "git") {
       actions.push(`Run git update flow on channel ${channel} (fetch/rebase/build/doctor)`);
     } else {
-      actions.push(`Run global package manager update with spec opencraft@${tag}`);
+      actions.push(`Run global package manager update with spec ${packageInstallSpec ?? tag}`);
     }
     actions.push("Run plugin update sync after core update");
     actions.push("Refresh shell completion cache (if needed)");
@@ -789,6 +799,9 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     if (fallbackToLatest) {
       notes.push("Beta channel resolves to latest for this run (fallback).");
     }
+    if (explicitTag && !canResolveRegistryVersionForPackageTarget(tag)) {
+      notes.push("Non-registry package specs skip npm version lookup and downgrade previews.");
+    }
 
     printDryRunPreview(
       {
@@ -803,7 +816,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
         requestedChannel,
         storedChannel,
         effectiveChannel: channel,
-        tag,
+        tag: packageInstallSpec ?? tag,
         currentVersion,
         targetVersion,
         downgradeRisk,
@@ -864,7 +877,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
 
   const showProgress = !opts.json && process.stdout.isTTY;
   if (!opts.json) {
-    defaultRuntime.log(theme.heading("Updating OpenCraft..."));
+    defaultRuntime.log(theme.heading("Updating OpenClaw..."));
     defaultRuntime.log("");
   }
 
@@ -932,12 +945,12 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     if (result.reason === "not-git-install") {
       defaultRuntime.log(
         theme.warn(
-          `Skipped: this OpenCraft install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${replaceCliName(formatCliCommand("opencraft doctor"), CLI_NAME)}\` and \`${replaceCliName(formatCliCommand("opencraft gateway restart"), CLI_NAME)}\`.`,
+          `Skipped: this OpenClaw install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${replaceCliName(formatCliCommand("openclaw doctor"), CLI_NAME)}\` and \`${replaceCliName(formatCliCommand("openclaw gateway restart"), CLI_NAME)}\`.`,
         ),
       );
       defaultRuntime.log(
         theme.muted(
-          `Examples: \`${replaceCliName("npm i -g opencraft@latest", CLI_NAME)}\` or \`${replaceCliName("pnpm add -g opencraft@latest", CLI_NAME)}\``,
+          `Examples: \`${replaceCliName("npm i -g openclaw@latest", CLI_NAME)}\` or \`${replaceCliName("pnpm add -g openclaw@latest", CLI_NAME)}\``,
         ),
       );
     }

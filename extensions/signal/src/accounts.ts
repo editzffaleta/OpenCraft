@@ -1,8 +1,10 @@
-import { createAccountListHelpers } from "../../../src/channels/plugins/account-helpers.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { SignalAccountConfig } from "../../../src/config/types.js";
-import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import type { SignalAccountConfig } from "openclaw/plugin-sdk/signal";
+import {
+  type OpenClawConfig,
+  createAccountListHelpers,
+  normalizeAccountId,
+  resolveAccountEntry,
+} from "../../../src/plugin-sdk-internal/accounts.js";
 
 export type ResolvedSignalAccount = {
   accountId: string;
@@ -18,13 +20,13 @@ export const listSignalAccountIds = listAccountIds;
 export const resolveDefaultSignalAccountId = resolveDefaultAccountId;
 
 function resolveAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): SignalAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.signal?.accounts, accountId);
 }
 
-function mergeSignalAccountConfig(cfg: OpenCraftConfig, accountId: string): SignalAccountConfig {
+function mergeSignalAccountConfig(cfg: OpenClawConfig, accountId: string): SignalAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.signal ?? {}) as SignalAccountConfig & {
     accounts?: unknown;
   };
@@ -33,7 +35,7 @@ function mergeSignalAccountConfig(cfg: OpenCraftConfig, accountId: string): Sign
 }
 
 export function resolveSignalAccount(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedSignalAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -62,7 +64,7 @@ export function resolveSignalAccount(params: {
   };
 }
 
-export function listEnabledSignalAccounts(cfg: OpenCraftConfig): ResolvedSignalAccount[] {
+export function listEnabledSignalAccounts(cfg: OpenClawConfig): ResolvedSignalAccount[] {
   return listSignalAccountIds(cfg)
     .map((accountId) => resolveSignalAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

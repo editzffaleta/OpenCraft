@@ -18,16 +18,19 @@ export function createPiToolsSandboxContext(params: PiToolsSandboxContextParams)
   const workspaceDir = params.workspaceDir;
   return {
     enabled: true,
+    backendId: "docker",
     sessionKey: params.sessionKey ?? "sandbox:test",
     workspaceDir,
     agentWorkspaceDir: params.agentWorkspaceDir ?? workspaceDir,
     workspaceAccess: params.workspaceAccess ?? "rw",
-    containerName: params.containerName ?? "opencraft-sbx-test",
+    runtimeId: params.containerName ?? "openclaw-sbx-test",
+    runtimeLabel: params.containerName ?? "openclaw-sbx-test",
+    containerName: params.containerName ?? "openclaw-sbx-test",
     containerWorkdir: params.containerWorkdir ?? "/workspace",
     fsBridge: params.fsBridge,
     docker: {
-      image: "opencraft-sandbox:bookworm-slim",
-      containerPrefix: "opencraft-sbx-",
+      image: "openclaw-sandbox:bookworm-slim",
+      containerPrefix: "openclaw-sbx-",
       workdir: "/workspace",
       readOnlyRoot: true,
       tmpfs: [],

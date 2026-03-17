@@ -71,7 +71,7 @@ function createBasePreflightParams(overrides?: Record<string, unknown>) {
       discordConfig: {
         allowBots: true,
       } as NonNullable<
-        import("../../../../src/config/config.js").OpenCraftConfig["channels"]
+        import("../../../../src/config/config.js").OpenClawConfig["channels"]
       >["discord"],
       data: createGuildEvent({
         channelId: CHANNEL_ID,
@@ -85,7 +85,7 @@ function createBasePreflightParams(overrides?: Record<string, unknown>) {
     discordConfig: {
       allowBots: true,
     } as NonNullable<
-      import("../../../../src/config/config.js").OpenCraftConfig["channels"]
+      import("../../../../src/config/config.js").OpenClawConfig["channels"]
     >["discord"],
     ...overrides,
   } satisfies Parameters<typeof preflightDiscordMessage>[0];

@@ -2,68 +2,23 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import { pluginSdkSubpaths } from "./scripts/lib/plugin-sdk-entries.mjs";
 
 const repoRoot = path.dirname(fileURLToPath(import.meta.url));
 const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 const isWindows = process.platform === "win32";
 const localWorkers = Math.max(4, Math.min(16, os.cpus().length));
 const ciWorkers = isWindows ? 2 : 3;
-const pluginSdkSubpaths = [
-  "account-id",
-  "core",
-  "compat",
-  "telegram",
-  "discord",
-  "slack",
-  "signal",
-  "imessage",
-  "whatsapp",
-  "line",
-  "msteams",
-  "acpx",
-  "bluebubbles",
-  "copilot-proxy",
-  "device-pair",
-  "diagnostics-otel",
-  "diffs",
-  "feishu",
-  "google-gemini-cli-auth",
-  "googlechat",
-  "irc",
-  "llm-task",
-  "lobster",
-  "matrix",
-  "mattermost",
-  "memory-core",
-  "memory-lancedb",
-  "minimax-portal-auth",
-  "nextcloud-talk",
-  "nostr",
-  "open-prose",
-  "phone-control",
-  "qwen-portal-auth",
-  "synology-chat",
-  "talk-voice",
-  "test-utils",
-  "thread-ownership",
-  "tlon",
-  "twitch",
-  "voice-call",
-  "zalo",
-  "zalouser",
-  "keyed-async-queue",
-] as const;
-
 export default defineConfig({
   resolve: {
-    // Keep this ordered: the base `opencraft/plugin-sdk` alias is a prefix match.
+    // Keep this ordered: the base `openclaw/plugin-sdk` alias is a prefix match.
     alias: [
       ...pluginSdkSubpaths.map((subpath) => ({
-        find: `opencraft/plugin-sdk/${subpath}`,
+        find: `openclaw/plugin-sdk/${subpath}`,
         replacement: path.join(repoRoot, "src", "plugin-sdk", `${subpath}.ts`),
       })),
       {
-        find: "opencraft/plugin-sdk",
+        find: "openclaw/plugin-sdk",
         replacement: path.join(repoRoot, "src", "plugin-sdk", "index.ts"),
       },
     ],
@@ -96,7 +51,7 @@ export default defineConfig({
       "apps/macos/.build/**",
       "**/node_modules/**",
       "**/vendor/**",
-      "dist/OpenCraft.app/**",
+      "dist/OpenClaw.app/**",
       "**/*.live.test.ts",
       "**/*.e2e.test.ts",
     ],
@@ -127,7 +82,6 @@ export default defineConfig({
         "src/index.ts",
         "src/runtime.ts",
         "src/channel-web.ts",
-        "src/extensionAPI.ts",
         "src/logging.ts",
         "src/cli/**",
         "src/commands/**",

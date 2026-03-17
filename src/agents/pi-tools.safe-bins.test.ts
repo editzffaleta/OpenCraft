@@ -2,17 +2,17 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ExecApprovalsResolved } from "../infra/exec-approvals.js";
 import type { SafeBinProfileFixture } from "../infra/exec-safe-bin-policy.js";
 import { captureEnv } from "../test-utils/env.js";
 
-const bundledPluginsDirSnapshot = captureEnv(["OPENCRAFT_BUNDLED_PLUGINS_DIR"]);
+const bundledPluginsDirSnapshot = captureEnv(["OPENCLAW_BUNDLED_PLUGINS_DIR"]);
 
 beforeAll(() => {
-  process.env.OPENCRAFT_BUNDLED_PLUGINS_DIR = path.join(
+  process.env.OPENCLAW_BUNDLED_PLUGINS_DIR = path.join(
     os.tmpdir(),
-    "opencraft-test-no-bundled-extensions",
+    "openclaw-test-no-bundled-extensions",
   );
 });
 
@@ -68,7 +68,7 @@ vi.mock("../infra/exec-approvals.js", async (importOriginal) => {
   return { ...mod, resolveExecApprovals: () => approvals };
 });
 
-const { createOpenCraftCodingTools } = await import("./pi-tools.js");
+const { createOpenClawCodingTools } = await import("./pi-tools.js");
 
 type ExecToolResult = {
   content: Array<{ type: string; text?: string }>;
@@ -97,7 +97,7 @@ async function createSafeBinsExecTool(params: {
     fs.writeFileSync(path.join(tmpDir, file.name), file.contents, "utf8");
   }
 
-  const cfg: OpenCraftConfig = {
+  const cfg: OpenClawConfig = {
     tools: {
       exec: {
         host: "gateway",
@@ -109,7 +109,7 @@ async function createSafeBinsExecTool(params: {
     },
   };
 
-  const tools = createOpenCraftCodingTools({
+  const tools = createOpenClawCodingTools({
     config: cfg,
     sessionKey: "agent:main:main",
     workspaceDir: tmpDir,
@@ -137,11 +137,11 @@ async function withSafeBinsExecTool(
   }
 }
 
-describe("createOpenCraftCodingTools safeBins", () => {
+describe("createOpenClawCodingTools safeBins", () => {
   it("threads tools.exec.safeBins into exec allowlist checks", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-",
+        tmpPrefix: "openclaw-safe-bins-",
         safeBins: ["echo"],
         safeBinProfiles: {
           echo: { maxPositional: 1 },
@@ -165,7 +165,7 @@ describe("createOpenCraftCodingTools safeBins", () => {
   it("rejects unprofiled custom safe-bin entries", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-unprofiled-",
+        tmpPrefix: "openclaw-safe-bins-unprofiled-",
         safeBins: ["echo"],
       },
       async ({ tmpDir, execTool }) => {
@@ -182,7 +182,7 @@ describe("createOpenCraftCodingTools safeBins", () => {
   it("does not allow env var expansion to smuggle file args via safeBins", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-expand-",
+        tmpPrefix: "openclaw-safe-bins-expand-",
         safeBins: ["head", "wc"],
         files: [{ name: "secret.txt", contents: "TOP_SECRET\n" }],
       },
@@ -201,7 +201,7 @@ describe("createOpenCraftCodingTools safeBins", () => {
   it("blocks sort output/compress bypass attempts in safeBins mode", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-sort-",
+        tmpPrefix: "openclaw-safe-bins-sort-",
         safeBins: ["sort"],
         files: [{ name: "existing.txt", contents: "x\n" }],
       },
@@ -248,7 +248,7 @@ describe("createOpenCraftCodingTools safeBins", () => {
   it("blocks shell redirection metacharacters in safeBins mode", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-redirect-",
+        tmpPrefix: "openclaw-safe-bins-redirect-",
         safeBins: ["head"],
         files: [{ name: "source.txt", contents: "line1\nline2\n" }],
       },
@@ -267,7 +267,7 @@ describe("createOpenCraftCodingTools safeBins", () => {
   it("blocks grep recursive flags from reading cwd via safeBins", async () => {
     await withSafeBinsExecTool(
       {
-        tmpPrefix: "opencraft-safe-bins-grep-",
+        tmpPrefix: "openclaw-safe-bins-grep-",
         safeBins: ["grep"],
         files: [{ name: "secret.txt", contents: "SAFE_BINS_RECURSIVE_SHOULD_NOT_LEAK\n" }],
       },

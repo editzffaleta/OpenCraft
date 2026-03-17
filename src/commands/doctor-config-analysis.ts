@@ -1,8 +1,8 @@
 import path from "node:path";
 import type { ZodIssue } from "zod";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { CONFIG_PATH } from "../config/config.js";
-import { OpenCraftSchema } from "../config/zod-schema.js";
+import { OpenClawSchema } from "../config/zod-schema.js";
 import { note } from "../terminal/note.js";
 import { isRecord } from "../utils.js";
 
@@ -59,11 +59,11 @@ export function resolveConfigPathTarget(root: unknown, path: Array<string | numb
   return current;
 }
 
-export function stripUnknownConfigKeys(config: OpenCraftConfig): {
-  config: OpenCraftConfig;
+export function stripUnknownConfigKeys(config: OpenClawConfig): {
+  config: OpenClawConfig;
   removed: string[];
 } {
-  const parsed = OpenCraftSchema.safeParse(config);
+  const parsed = OpenClawSchema.safeParse(config);
   if (parsed.success) {
     return { config, removed: [] };
   }
@@ -92,7 +92,7 @@ export function stripUnknownConfigKeys(config: OpenCraftConfig): {
   return { config: next, removed };
 }
 
-export function noteOpencodeProviderOverrides(cfg: OpenCraftConfig): void {
+export function noteOpencodeProviderOverrides(cfg: OpenClawConfig): void {
   const providers = cfg.models?.providers;
   if (!providers) {
     return;
@@ -126,7 +126,7 @@ export function noteOpencodeProviderOverrides(cfg: OpenCraftConfig): void {
   });
 
   lines.push(
-    "- Remove these entries to restore per-model API routing + costs (then re-run onboarding if needed).",
+    "- Remove these entries to restore per-model API routing + costs (then re-run setup if needed).",
   );
   note(lines.join("\n"), "OpenCode");
 }

@@ -2,11 +2,11 @@ import type {
   ChannelThreadingContext,
   ChannelThreadingToolContext,
 } from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { resolveSlackAccount, resolveSlackReplyToMode } from "./accounts.js";
 
 export function buildSlackThreadingToolContext(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   context: ChannelThreadingContext;
   hasRepliedRef?: { value: boolean };

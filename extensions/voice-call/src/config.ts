@@ -3,7 +3,7 @@ import {
   TtsConfigSchema,
   TtsModeSchema,
   TtsProviderSchema,
-} from "opencraft/plugin-sdk/voice-call";
+} from "openclaw/plugin-sdk/voice-call";
 import { z } from "zod";
 import { deepMergeDefined } from "./deep-merge.js";
 

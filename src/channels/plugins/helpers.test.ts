@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   buildAccountScopedDmSecurityPolicy,
   formatPairingApproveHint,
   parseOptionalDelimitedEntries,
 } from "./helpers.js";
 
-function cfgWithChannel(channelKey: string, accounts?: Record<string, unknown>): OpenCraftConfig {
+function cfgWithChannel(channelKey: string, accounts?: Record<string, unknown>): OpenClawConfig {
   return {
     channels: {
       [channelKey]: accounts ? { accounts } : {},
     },
-  } as unknown as OpenCraftConfig;
+  } as unknown as OpenClawConfig;
 }
 
 describe("buildAccountScopedDmSecurityPolicy", () => {
@@ -85,14 +85,14 @@ describe("buildAccountScopedDmSecurityPolicy", () => {
         allowFrom: ["user-1"],
         defaultPolicy: "allowlist",
         policyPathSuffix: "dmPolicy",
-        approveHint: "opencraft pairing approve synology-chat <code>",
+        approveHint: "openclaw pairing approve synology-chat <code>",
       }),
     ).toEqual({
       policy: "allowlist",
       allowFrom: ["user-1"],
       policyPath: "channels.synology-chat.dmPolicy",
       allowFromPath: "channels.synology-chat.",
-      approveHint: "opencraft pairing approve synology-chat <code>",
+      approveHint: "openclaw pairing approve synology-chat <code>",
       normalizeEntry: undefined,
     });
   });

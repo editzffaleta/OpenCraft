@@ -1,4 +1,4 @@
-package ai.opencraft.app.ui.chat
+package ai.openclaw.app.ui.chat
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -25,26 +25,26 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ai.opencraft.app.chat.ChatMessage
-import ai.opencraft.app.chat.ChatMessageContent
-import ai.opencraft.app.chat.ChatPendingToolCall
-import ai.opencraft.app.tools.ToolDisplayRegistry
-import ai.opencraft.app.ui.mobileAccent
-import ai.opencraft.app.ui.mobileAccentSoft
-import ai.opencraft.app.ui.mobileBorder
-import ai.opencraft.app.ui.mobileBorderStrong
-import ai.opencraft.app.ui.mobileCallout
-import ai.opencraft.app.ui.mobileCaption1
-import ai.opencraft.app.ui.mobileCaption2
-import ai.opencraft.app.ui.mobileCardSurface
-import ai.opencraft.app.ui.mobileCodeBg
-import ai.opencraft.app.ui.mobileCodeBorder
-import ai.opencraft.app.ui.mobileCodeText
-import ai.opencraft.app.ui.mobileHeadline
-import ai.opencraft.app.ui.mobileText
-import ai.opencraft.app.ui.mobileTextSecondary
-import ai.opencraft.app.ui.mobileWarning
-import ai.opencraft.app.ui.mobileWarningSoft
+import ai.openclaw.app.chat.ChatMessage
+import ai.openclaw.app.chat.ChatMessageContent
+import ai.openclaw.app.chat.ChatPendingToolCall
+import ai.openclaw.app.tools.ToolDisplayRegistry
+import ai.openclaw.app.ui.mobileAccent
+import ai.openclaw.app.ui.mobileAccentSoft
+import ai.openclaw.app.ui.mobileBorder
+import ai.openclaw.app.ui.mobileBorderStrong
+import ai.openclaw.app.ui.mobileCallout
+import ai.openclaw.app.ui.mobileCaption1
+import ai.openclaw.app.ui.mobileCaption2
+import ai.openclaw.app.ui.mobileCardSurface
+import ai.openclaw.app.ui.mobileCodeBg
+import ai.openclaw.app.ui.mobileCodeBorder
+import ai.openclaw.app.ui.mobileCodeText
+import ai.openclaw.app.ui.mobileHeadline
+import ai.openclaw.app.ui.mobileText
+import ai.openclaw.app.ui.mobileTextSecondary
+import ai.openclaw.app.ui.mobileWarning
+import ai.openclaw.app.ui.mobileWarningSoft
 import java.util.Locale
 
 private data class ChatBubbleStyle(
@@ -190,7 +190,7 @@ fun ChatPendingToolsBubble(toolCalls: List<ChatPendingToolCall>) {
 fun ChatStreamingAssistantBubble(text: String) {
   ChatBubbleContainer(
     style = bubbleStyle("assistant").copy(borderColor = mobileAccent),
-    roleLabel = "OpenCraft · Live",
+    roleLabel = "OpenClaw · Live",
   ) {
     ChatMarkdown(text = text, textColor = mobileText)
   }
@@ -229,7 +229,7 @@ private fun roleLabel(role: String): String {
   return when (role) {
     "user" -> "You"
     "system" -> "System"
-    else -> "OpenCraft"
+    else -> "OpenClaw"
   }
 }
 

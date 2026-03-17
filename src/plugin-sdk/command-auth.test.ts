@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveSenderCommandAuthorization } from "./command-auth.js";
 
 const baseCfg = {
   commands: { useAccessGroups: true },
-} as unknown as OpenCraftConfig;
+} as unknown as OpenClawConfig;
 
 describe("plugin-sdk/command-auth", () => {
   it("authorizes group commands from explicit group allowlist", async () => {

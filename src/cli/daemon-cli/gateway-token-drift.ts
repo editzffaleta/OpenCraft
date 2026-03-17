@@ -1,8 +1,8 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { resolveGatewayDriftCheckCredentialsFromConfig } from "../../gateway/credentials.js";
 
 export function resolveGatewayTokenForDriftCheck(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
 }) {
   void params.env;

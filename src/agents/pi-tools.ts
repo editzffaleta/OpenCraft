@@ -1,5 +1,5 @@
 import { codingTools, createReadTool, readTool } from "@mariozechner/pi-coding-agent";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ToolLoopDetectionConfig } from "../config/types.tools.js";
 import { resolveMergedSafeBinProfileFixtures } from "../infra/exec-safe-bin-runtime-policy.js";
 import { logWarn } from "../logger.js";
@@ -17,7 +17,7 @@ import {
 import { listChannelAgentTools } from "./channel-tools.js";
 import { resolveImageSanitizationLimits } from "./image-sanitization.js";
 import type { ModelAuthMode } from "./model-auth.js";
-import { createOpenCraftTools } from "./opencraft-tools.js";
+import { createOpenClawTools } from "./openclaw-tools.js";
 import { wrapToolWithAbortSignal } from "./pi-tools.abort.js";
 import { wrapToolWithBeforeToolCallHook } from "./pi-tools.before-tool-call.js";
 import {
@@ -30,7 +30,7 @@ import {
   assertRequiredParams,
   createHostWorkspaceEditTool,
   createHostWorkspaceWriteTool,
-  createOpenCraftReadTool,
+  createOpenClawReadTool,
   createSandboxedEditTool,
   createSandboxedReadTool,
   createSandboxedWriteTool,
@@ -97,7 +97,7 @@ function applyModelProviderToolPolicy(
   if (!isXaiProvider(params?.modelProvider, params?.modelId)) {
     return tools;
   }
-  // xAI/Grok providers expose a native web_search tool; sending OpenCraft's
+  // xAI/Grok providers expose a native web_search tool; sending OpenClaw's
   // web_search alongside it causes duplicate-name request failures.
   return tools.filter((tool) => !TOOL_DENY_FOR_XAI_PROVIDERS.has(tool.name));
 }
@@ -130,7 +130,7 @@ function isApplyPatchAllowedForModel(params: {
   });
 }
 
-function resolveExecConfig(params: { cfg?: OpenCraftConfig; agentId?: string }) {
+function resolveExecConfig(params: { cfg?: OpenClawConfig; agentId?: string }) {
   const cfg = params.cfg;
   const globalExec = cfg?.tools?.exec;
   const agentExec =
@@ -160,7 +160,7 @@ function resolveExecConfig(params: { cfg?: OpenCraftConfig; agentId?: string }) 
 }
 
 export function resolveToolLoopDetectionConfig(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   agentId?: string;
 }): ToolLoopDetectionConfig | undefined {
   const global = params.cfg?.tools?.loopDetection;
@@ -195,7 +195,7 @@ export const __testing = {
   applyModelProviderToolPolicy,
 } as const;
 
-export function createOpenCraftCodingTools(options?: {
+export function createOpenClawCodingTools(options?: {
   agentId?: string;
   exec?: ExecToolDefaults & ProcessToolDefaults;
   messageProvider?: string;
@@ -221,7 +221,7 @@ export function createOpenCraftCodingTools(options?: {
    * Defaults to workspaceDir when not set.
    */
   spawnWorkspaceDir?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   abortSignal?: AbortSignal;
   /**
    * Provider of the currently selected model (used for provider-specific tool quirks).
@@ -259,6 +259,8 @@ export function createOpenCraftCodingTools(options?: {
   replyToMode?: "off" | "first" | "all";
   /** Mutable ref to track if a reply was sent (for "first" mode). */
   hasRepliedRef?: { value: boolean };
+  /** Allow plugin tools for this run to late-bind the gateway subagent. */
+  allowGatewaySubagentBinding?: boolean;
   /** If true, the model has native vision capability */
   modelHasVision?: boolean;
   /** Require explicit message targets (no implicit last-route sends). */
@@ -381,7 +383,7 @@ export function createOpenCraftCodingTools(options?: {
         ];
       }
       const freshReadTool = createReadTool(workspaceRoot);
-      const wrapped = createOpenCraftReadTool(freshReadTool, {
+      const wrapped = createOpenClawReadTool(freshReadTool, {
         modelContextWindowTokens: options?.modelContextWindowTokens,
         imageSanitization,
       });
@@ -438,7 +440,9 @@ export function createOpenCraftCodingTools(options?: {
           containerName: sandbox.containerName,
           workspaceDir: sandbox.workspaceDir,
           containerWorkdir: sandbox.containerWorkdir,
-          env: sandbox.docker.env,
+          env: sandbox.backend?.env ?? sandbox.docker.env,
+          buildExecSpec: sandbox.backend?.buildExecSpec.bind(sandbox.backend),
+          finalizeExec: sandbox.backend?.finalizeExec?.bind(sandbox.backend),
         }
       : undefined,
   });
@@ -488,7 +492,7 @@ export function createOpenCraftCodingTools(options?: {
     processTool as unknown as AnyAgentTool,
     // Channel docking: include channel-defined agent tools (login, etc.).
     ...listChannelAgentTools({ cfg: options?.config }),
-    ...createOpenCraftTools({
+    ...createOpenClawTools({
       sandboxBrowserBridgeUrl: sandbox?.browser?.bridgeUrl,
       allowHostBrowserControl: sandbox ? sandbox.browserAllowHostControl : true,
       agentSessionKey: options?.sessionKey,
@@ -533,6 +537,7 @@ export function createOpenCraftCodingTools(options?: {
       senderIsOwner: options?.senderIsOwner,
       sessionId: options?.sessionId,
       onYield: options?.onYield,
+      allowGatewaySubagentBinding: options?.allowGatewaySubagentBinding,
     }),
   ];
   const toolsForMemoryFlush =

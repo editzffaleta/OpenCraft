@@ -1,24 +1,27 @@
 import { afterEach, beforeEach, vi } from "vitest";
+import { resetProviderRuntimeHookCacheForTest } from "../plugins/provider-runtime.js";
 import { __setModelCatalogImportForTest, resetModelCatalogCacheForTest } from "./model-catalog.js";
 
 export type PiSdkModule = typeof import("./pi-model-discovery.js");
 
 vi.mock("./models-config.js", () => ({
-  ensureOpenCraftModelsJson: vi.fn().mockResolvedValue({ agentDir: "/tmp", wrote: false }),
+  ensureOpenClawModelsJson: vi.fn().mockResolvedValue({ agentDir: "/tmp", wrote: false }),
 }));
 
 vi.mock("./agent-paths.js", () => ({
-  resolveOpenCraftAgentDir: () => "/tmp/opencraft",
+  resolveOpenClawAgentDir: () => "/tmp/openclaw",
 }));
 
 export function installModelCatalogTestHooks() {
   beforeEach(() => {
     resetModelCatalogCacheForTest();
+    resetProviderRuntimeHookCacheForTest();
   });
 
   afterEach(() => {
     __setModelCatalogImportForTest();
     resetModelCatalogCacheForTest();
+    resetProviderRuntimeHookCacheForTest();
     vi.restoreAllMocks();
   });
 }

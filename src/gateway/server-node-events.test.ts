@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { loadSessionEntry as loadSessionEntryType } from "./session-utils.js";
 
 const buildSessionLookup = (
@@ -11,7 +11,7 @@ const buildSessionLookup = (
     updatedAt?: number;
   } = {},
 ): ReturnType<typeof loadSessionEntryType> => ({
-  cfg: { session: { mainKey: "agent:main:main" } } as OpenCraftConfig,
+  cfg: { session: { mainKey: "agent:main:main" } } as OpenClawConfig,
   storePath: "/tmp/sessions.json",
   store: {} as ReturnType<typeof loadSessionEntryType>["store"],
   entry: {
@@ -46,7 +46,7 @@ vi.mock("../commands/agent.js", () => ({
 }));
 vi.mock("../config/config.js", () => ({
   loadConfig: vi.fn(() => ({ session: { mainKey: "agent:main:main" } })),
-  STATE_DIR: "/tmp/opencraft-state",
+  STATE_DIR: "/tmp/openclaw-state",
 }));
 vi.mock("../config/sessions.js", () => ({
   updateSessionStore: vi.fn(),
@@ -59,6 +59,13 @@ vi.mock("../infra/device-identity.js", () => ({
 }));
 vi.mock("./session-utils.js", () => ({
   loadSessionEntry: vi.fn((sessionKey: string) => buildSessionLookup(sessionKey)),
+  migrateAndPruneGatewaySessionStoreKey: vi.fn(
+    ({ key, store }: { key: string; store: Record<string, unknown> }) => ({
+      target: { canonicalKey: key, storeKeys: [key] },
+      primaryKey: key,
+      entry: store[key],
+    }),
+  ),
   pruneLegacyStoreKeys: vi.fn(),
   resolveGatewaySessionStoreTarget: vi.fn(({ key }: { key: string }) => ({
     canonicalKey: key,
@@ -280,7 +287,7 @@ describe("node exec events", () => {
       event: "push.apns.register",
       payloadJSON: JSON.stringify({
         token: "abcd1234abcd1234abcd1234abcd1234",
-        topic: "ai.opencraft.ios",
+        topic: "ai.openclaw.ios",
         environment: "sandbox",
       }),
     });
@@ -289,7 +296,7 @@ describe("node exec events", () => {
       nodeId: "node-direct",
       transport: "direct",
       token: "abcd1234abcd1234abcd1234abcd1234",
-      topic: "ai.opencraft.ios",
+      topic: "ai.openclaw.ios",
       environment: "sandbox",
     });
   });
@@ -304,7 +311,7 @@ describe("node exec events", () => {
         sendGrant: "send-grant-123",
         gatewayDeviceId: "gateway-device-1",
         installationId: "install-123",
-        topic: "ai.opencraft.ios",
+        topic: "ai.openclaw.ios",
         environment: "production",
         distribution: "official",
         tokenDebugSuffix: "abcd1234",
@@ -317,7 +324,7 @@ describe("node exec events", () => {
       relayHandle: "relay-handle-123",
       sendGrant: "send-grant-123",
       installationId: "install-123",
-      topic: "ai.opencraft.ios",
+      topic: "ai.openclaw.ios",
       environment: "production",
       distribution: "official",
       tokenDebugSuffix: "abcd1234",
@@ -334,7 +341,7 @@ describe("node exec events", () => {
         sendGrant: "send-grant-123",
         gatewayDeviceId: "gateway-device-other",
         installationId: "install-123",
-        topic: "ai.opencraft.ios",
+        topic: "ai.openclaw.ios",
         environment: "production",
         distribution: "official",
       }),

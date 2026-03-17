@@ -1,4 +1,4 @@
-package ai.opencraft.app.gateway
+package ai.openclaw.app.gateway
 
 data class GatewayEndpoint(
   val stableId: String,

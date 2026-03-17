@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -20,12 +20,12 @@ class SecurePrefs(
   private val securePrefsOverride: SharedPreferences? = null,
 ) {
   companion object {
-    val defaultWakeWords: List<String> = listOf("opencraft", "claude")
+    val defaultWakeWords: List<String> = listOf("openclaw", "claude")
     private const val displayNameKey = "node.displayName"
     private const val locationModeKey = "location.enabledMode"
     private const val voiceWakeModeKey = "voiceWake.mode"
-    private const val plainPrefsName = "opencraft.node"
-    private const val securePrefsName = "opencraft.node.secure"
+    private const val plainPrefsName = "openclaw.node"
+    private const val securePrefsName = "openclaw.node.secure"
   }
 
   private val appContext = context.applicationContext

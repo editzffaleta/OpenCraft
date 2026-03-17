@@ -1,16 +1,17 @@
 {
-  "name": "@opencraft/zalo",
+  "name": "@openclaw/zalo",
   "version": "2026.3.14",
-  "description": "OpenCraft Zalo channel plugin",
+  "description": "OpenClaw Zalo channel plugin",
   "type": "module",
   "dependencies": {
     "undici": "7.24.1",
     "zod": "^4.3.6"
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],
+    "setupEntry": "./setup-entry.ts",
     "channel": {
       "id": "zalo",
       "label": "Zalo",
@@ -25,7 +26,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@opencraft/zalo",
+      "npmSpec": "@openclaw/zalo",
       "localPath": "extensions/zalo",
       "defaultChoice": "npm"
     }

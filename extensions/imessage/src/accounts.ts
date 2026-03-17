@@ -1,8 +1,10 @@
-import { createAccountListHelpers } from "../../../src/channels/plugins/account-helpers.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { IMessageAccountConfig } from "../../../src/config/types.js";
-import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import type { IMessageAccountConfig } from "openclaw/plugin-sdk/imessage";
+import {
+  type OpenClawConfig,
+  createAccountListHelpers,
+  normalizeAccountId,
+  resolveAccountEntry,
+} from "../../../src/plugin-sdk-internal/accounts.js";
 
 export type ResolvedIMessageAccount = {
   accountId: string;
@@ -17,13 +19,13 @@ export const listIMessageAccountIds = listAccountIds;
 export const resolveDefaultIMessageAccountId = resolveDefaultAccountId;
 
 function resolveAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): IMessageAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.imessage?.accounts, accountId);
 }
 
-function mergeIMessageAccountConfig(cfg: OpenCraftConfig, accountId: string): IMessageAccountConfig {
+function mergeIMessageAccountConfig(cfg: OpenClawConfig, accountId: string): IMessageAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.imessage ??
     {}) as IMessageAccountConfig & { accounts?: unknown };
   const account = resolveAccountConfig(cfg, accountId) ?? {};
@@ -31,7 +33,7 @@ function mergeIMessageAccountConfig(cfg: OpenCraftConfig, accountId: string): IM
 }
 
 export function resolveIMessageAccount(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedIMessageAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -63,7 +65,7 @@ export function resolveIMessageAccount(params: {
   };
 }
 
-export function listEnabledIMessageAccounts(cfg: OpenCraftConfig): ResolvedIMessageAccount[] {
+export function listEnabledIMessageAccounts(cfg: OpenClawConfig): ResolvedIMessageAccount[] {
   return listIMessageAccountIds(cfg)
     .map((accountId) => resolveIMessageAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

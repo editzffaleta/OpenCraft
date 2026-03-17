@@ -1,10 +1,10 @@
 {
-  "name": "@opencraft/ollama-provider",
+  "name": "@openclaw/ollama-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft Ollama provider plugin",
+  "description": "OpenClaw Ollama provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,378 +1,377 @@
 ---
-summary: "Runbook de diagnóstico profundo para gateway, canais, automação, nodes e browser"
+summary: "Deep troubleshooting runbook for gateway, channels, automation, nodes, and browser"
 read_when:
-  - O hub de resolução de problemas te direcionou aqui para diagnóstico mais profundo
-  - Você precisa de seções de runbook estáveis baseadas em sintomas com comandos exatos
-title: "Resolução de Problemas"
+  - The troubleshooting hub pointed you here for deeper diagnosis
+  - You need stable symptom based runbook sections with exact commands
+title: "Troubleshooting"
 ---
 
-# Resolução de problemas do Gateway
+# Gateway troubleshooting
 
-Esta página é o runbook profundo.
-Comece em [/help/troubleshooting](/help/troubleshooting) se quiser o fluxo rápido de triagem primeiro.
+This page is the deep runbook.
+Start at [/help/troubleshooting](/help/troubleshooting) if you want the fast triage flow first.
 
-## Escada de comandos
+## Command ladder
 
-Execute estes primeiro, nesta ordem:
+Run these first, in this order:
 
 ```bash
-opencraft status
-opencraft gateway status
-opencraft logs --follow
-opencraft doctor
-opencraft channels status --probe
+openclaw status
+openclaw gateway status
+openclaw logs --follow
+openclaw doctor
+openclaw channels status --probe
 ```
 
-Sinais esperados de saúde:
+Expected healthy signals:
 
-- `opencraft gateway status` mostra `Runtime: running` e `RPC probe: ok`.
-- `opencraft doctor` não reporta problemas de config/serviço bloqueantes.
-- `opencraft channels status --probe` mostra canais conectados/prontos.
+- `openclaw gateway status` shows `Runtime: running` and `RPC probe: ok`.
+- `openclaw doctor` reports no blocking config/service issues.
+- `openclaw channels status --probe` shows connected/ready channels.
 
-## Anthropic 429 - uso extra necessário para contexto longo
+## Anthropic 429 extra usage required for long context
 
-Use quando logs/erros incluem:
+Use this when logs/errors include:
 `HTTP 429: rate_limit_error: Extra usage is required for long context requests`.
 
 ```bash
-opencraft logs --follow
-opencraft models status
-opencraft config get agents.defaults.models
+openclaw logs --follow
+openclaw models status
+openclaw config get agents.defaults.models
 ```
 
-Procure por:
+Look for:
 
-- Modelo Anthropic Opus/Sonnet selecionado tem `params.context1m: true`.
-- Credencial Anthropic atual não é elegível para uso de contexto longo.
-- Requisições falham apenas em sessões/runs de modelo longos que precisam do caminho beta 1M.
+- Selected Anthropic Opus/Sonnet model has `params.context1m: true`.
+- Current Anthropic credential is not eligible for long-context usage.
+- Requests fail only on long sessions/model runs that need the 1M beta path.
 
-Opções de correção:
+Fix options:
 
-1. Desabilite `context1m` para esse modelo para voltar à janela de contexto normal.
-2. Use uma chave API Anthropic com cobrança, ou habilite Anthropic Extra Usage na conta de assinatura.
-3. Configure modelos de fallback para que runs continuem quando requisições de contexto longo Anthropic são rejeitadas.
+1. Disable `context1m` for that model to fall back to the normal context window.
+2. Use an Anthropic API key with billing, or enable Anthropic Extra Usage on the subscription account.
+3. Configure fallback models so runs continue when Anthropic long-context requests are rejected.
 
-Relacionado:
+Related:
 
 - [/providers/anthropic](/providers/anthropic)
 - [/reference/token-use](/reference/token-use)
 - [/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic](/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic)
 
-## Sem respostas
+## No replies
 
-Se os canais estão ativos mas nada responde, verifique roteamento e política antes de reconectar qualquer coisa.
+If channels are up but nothing answers, check routing and policy before reconnecting anything.
 
 ```bash
-opencraft status
-opencraft channels status --probe
-opencraft pairing list --channel <channel> [--account <id>]
-opencraft config get channels
-opencraft logs --follow
+openclaw status
+openclaw channels status --probe
+openclaw pairing list --channel <channel> [--account <id>]
+openclaw config get channels
+openclaw logs --follow
 ```
 
-Procure por:
+Look for:
 
-- Pareamento pendente para remetentes de DM.
-- Portão de menção em grupo (`requireMention`, `mentionPatterns`).
-- Incompatibilidades de allowlist de canal/grupo.
+- Pairing pending for DM senders.
+- Group mention gating (`requireMention`, `mentionPatterns`).
+- Channel/group allowlist mismatches.
 
-Assinaturas comuns:
+Common signatures:
 
-- `drop guild message (mention required` → mensagem de grupo ignorada até menção.
-- `pairing request` → remetente precisa de aprovação.
-- `blocked` / `allowlist` → remetente/canal foi filtrado por política.
+- `drop guild message (mention required` → group message ignored until mention.
+- `pairing request` → sender needs approval.
+- `blocked` / `allowlist` → sender/channel was filtered by policy.
 
-Relacionado:
+Related:
 
 - [/channels/troubleshooting](/channels/troubleshooting)
 - [/channels/pairing](/channels/pairing)
 - [/channels/groups](/channels/groups)
 
-## Conectividade da control UI do dashboard
+## Dashboard control ui connectivity
 
-Quando o dashboard/control UI não conecta, valide URL, modo de auth e suposições de contexto seguro.
-
-```bash
-opencraft gateway status
-opencraft status
-opencraft logs --follow
-opencraft doctor
-opencraft gateway status --json
-```
-
-Procure por:
-
-- URL de probe e URL do dashboard corretos.
-- Incompatibilidade de modo de auth/token entre cliente e gateway.
-- Uso de HTTP onde identidade de dispositivo é obrigatória.
-
-Assinaturas comuns:
-
-- `device identity required` → contexto não-seguro ou auth de dispositivo ausente.
-- `device nonce required` / `device nonce mismatch` → cliente não está completando o
-  fluxo de auth de dispositivo baseado em challenge (`connect.challenge` + `device.nonce`).
-- `device signature invalid` / `device signature expired` → cliente assinou o payload errado
-  (ou timestamp obsoleto) para o handshake atual.
-- `AUTH_TOKEN_MISMATCH` com `canRetryWithDeviceToken=true` → cliente pode fazer uma nova tentativa confiável com token de dispositivo em cache.
-- `unauthorized` repetido após essa nova tentativa → deriva de token compartilhado/token de dispositivo; atualize a config de token e re-aprove/rotacione o token de dispositivo se necessário.
-- `gateway connect failed:` → alvo de host/porta/url errado.
-
-### Mapa rápido de códigos de detalhe de auth
-
-Use `error.details.code` da resposta `connect` com falha para escolher a próxima ação:
-
-| Código de detalhe            | Significado                                                  | Ação recomendada                                                                                                                                                          |
-| ---------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AUTH_TOKEN_MISSING`         | Cliente não enviou um token compartilhado obrigatório.       | Cole/defina o token no cliente e tente novamente. Para caminhos de dashboard: `opencraft config get gateway.auth.token` depois cole nas configurações da Control UI.       |
-| `AUTH_TOKEN_MISMATCH`        | Token compartilhado não correspondeu ao token de auth do gateway. | Se `canRetryWithDeviceToken=true`, permita uma nova tentativa confiável. Se ainda falhar, execute o [checklist de recuperação de deriva de token](/cli/devices#token-drift-recovery-checklist). |
-| `AUTH_DEVICE_TOKEN_MISMATCH` | Token por dispositivo em cache está obsoleto ou revogado.    | Rotacione/re-aprove o token de dispositivo usando o [CLI de devices](/cli/devices), depois reconecte.                                                                    |
-| `PAIRING_REQUIRED`           | Identidade de dispositivo é conhecida mas não aprovada para este role. | Aprove a requisição pendente: `opencraft devices list` depois `opencraft devices approve <requestId>`.                                                               |
-
-Verificação de migração de auth de dispositivo v2:
+When dashboard/control UI will not connect, validate URL, auth mode, and secure context assumptions.
 
 ```bash
-opencraft --version
-opencraft doctor
-opencraft gateway status
+openclaw gateway status
+openclaw status
+openclaw logs --follow
+openclaw doctor
+openclaw gateway status --json
 ```
 
-Se os logs mostrarem erros de nonce/assinatura, atualize o cliente conectado e verifique se ele:
+Look for:
 
-1. aguarda `connect.challenge`
-2. assina o payload vinculado ao challenge
-3. envia `connect.params.device.nonce` com o mesmo nonce do challenge
+- Correct probe URL and dashboard URL.
+- Auth mode/token mismatch between client and gateway.
+- HTTP usage where device identity is required.
 
-Relacionado:
+Common signatures:
+
+- `device identity required` → non-secure context or missing device auth.
+- `device nonce required` / `device nonce mismatch` → client is not completing the
+  challenge-based device auth flow (`connect.challenge` + `device.nonce`).
+- `device signature invalid` / `device signature expired` → client signed the wrong
+  payload (or stale timestamp) for the current handshake.
+- `AUTH_TOKEN_MISMATCH` with `canRetryWithDeviceToken=true` → client can do one trusted retry with cached device token.
+- repeated `unauthorized` after that retry → shared token/device token drift; refresh token config and re-approve/rotate device token if needed.
+- `gateway connect failed:` → wrong host/port/url target.
+
+### Auth detail codes quick map
+
+Use `error.details.code` from the failed `connect` response to pick the next action:
+
+| Detail code                  | Meaning                                                  | Recommended action                                                                                                                                                   |
+| ---------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AUTH_TOKEN_MISSING`         | Client did not send a required shared token.             | Paste/set token in the client and retry. For dashboard paths: `openclaw config get gateway.auth.token` then paste into Control UI settings.                          |
+| `AUTH_TOKEN_MISMATCH`        | Shared token did not match gateway auth token.           | If `canRetryWithDeviceToken=true`, allow one trusted retry. If still failing, run the [token drift recovery checklist](/cli/devices#token-drift-recovery-checklist). |
+| `AUTH_DEVICE_TOKEN_MISMATCH` | Cached per-device token is stale or revoked.             | Rotate/re-approve device token using [devices CLI](/cli/devices), then reconnect.                                                                                    |
+| `PAIRING_REQUIRED`           | Device identity is known but not approved for this role. | Approve pending request: `openclaw devices list` then `openclaw devices approve <requestId>`.                                                                        |
+
+Device auth v2 migration check:
+
+```bash
+openclaw --version
+openclaw doctor
+openclaw gateway status
+```
+
+If logs show nonce/signature errors, update the connecting client and verify it:
+
+1. waits for `connect.challenge`
+2. signs the challenge-bound payload
+3. sends `connect.params.device.nonce` with the same challenge nonce
+
+Related:
 
 - [/web/control-ui](/web/control-ui)
 - [/gateway/authentication](/gateway/authentication)
 - [/gateway/remote](/gateway/remote)
 - [/cli/devices](/cli/devices)
 
-## Serviço de gateway não está rodando
+## Gateway service not running
 
-Use quando o serviço está instalado mas o processo não permanece ativo.
+Use this when service is installed but process does not stay up.
 
 ```bash
-opencraft gateway status
-opencraft status
-opencraft logs --follow
-opencraft doctor
-opencraft gateway status --deep
+openclaw gateway status
+openclaw status
+openclaw logs --follow
+openclaw doctor
+openclaw gateway status --deep
 ```
 
-Procure por:
+Look for:
 
-- `Runtime: stopped` com hints de saída.
-- Incompatibilidade de config de serviço (`Config (cli)` vs `Config (service)`).
-- Conflitos de porta/listener.
+- `Runtime: stopped` with exit hints.
+- Service config mismatch (`Config (cli)` vs `Config (service)`).
+- Port/listener conflicts.
 
-Assinaturas comuns:
+Common signatures:
 
-- `Gateway start blocked: set gateway.mode=local` → modo de gateway local não está habilitado. Correção: defina `gateway.mode="local"` na sua config (ou rode `opencraft configure`). Se você está rodando o OpenCraft via Podman usando o usuário dedicado `openclaw`, a config fica em `~openclaw/.opencraft/opencraft.json`.
-- `refusing to bind gateway ... without auth` → bind não-loopback sem token/senha.
-- `another gateway instance is already listening` / `EADDRINUSE` → conflito de porta.
+- `Gateway start blocked: set gateway.mode=local` → local gateway mode is not enabled. Fix: set `gateway.mode="local"` in your config (or run `openclaw configure`). If you are running OpenClaw via Podman using the dedicated `openclaw` user, the config lives at `~openclaw/.openclaw/openclaw.json`.
+- `refusing to bind gateway ... without auth` → non-loopback bind without token/password.
+- `another gateway instance is already listening` / `EADDRINUSE` → port conflict.
 
-Relacionado:
+Related:
 
 - [/gateway/background-process](/gateway/background-process)
 - [/gateway/configuration](/gateway/configuration)
 - [/gateway/doctor](/gateway/doctor)
 
-## Mensagens de canal conectado não fluindo
+## Channel connected messages not flowing
 
-Se o estado do canal está conectado mas o fluxo de mensagens está morto, foque em política, permissões e regras de entrega específicas do canal.
+If channel state is connected but message flow is dead, focus on policy, permissions, and channel specific delivery rules.
 
 ```bash
-opencraft channels status --probe
-opencraft pairing list --channel <channel> [--account <id>]
-opencraft status --deep
-opencraft logs --follow
-opencraft config get channels
+openclaw channels status --probe
+openclaw pairing list --channel <channel> [--account <id>]
+openclaw status --deep
+openclaw logs --follow
+openclaw config get channels
 ```
 
-Procure por:
+Look for:
 
-- Política de DM (`pairing`, `allowlist`, `open`, `disabled`).
-- Allowlist de grupo e requisitos de menção.
-- Permissões/escopos ausentes na API do canal.
+- DM policy (`pairing`, `allowlist`, `open`, `disabled`).
+- Group allowlist and mention requirements.
+- Missing channel API permissions/scopes.
 
-Assinaturas comuns:
+Common signatures:
 
-- `mention required` → mensagem ignorada pela política de menção de grupo.
-- `pairing` / rastros de aprovação pendente → remetente não está aprovado.
-- `missing_scope`, `not_in_channel`, `Forbidden`, `401/403` → problema de auth/permissões do canal.
+- `mention required` → message ignored by group mention policy.
+- `pairing` / pending approval traces → sender is not approved.
+- `missing_scope`, `not_in_channel`, `Forbidden`, `401/403` → channel auth/permissions issue.
 
-Relacionado:
+Related:
 
 - [/channels/troubleshooting](/channels/troubleshooting)
 - [/channels/whatsapp](/channels/whatsapp)
 - [/channels/telegram](/channels/telegram)
 - [/channels/discord](/channels/discord)
 
-## Entrega de cron e heartbeat
+## Cron and heartbeat delivery
 
-Se cron ou heartbeat não rodou ou não entregou, verifique o estado do agendador primeiro, depois o alvo de entrega.
+If cron or heartbeat did not run or did not deliver, verify scheduler state first, then delivery target.
 
 ```bash
-opencraft cron status
-opencraft cron list
-opencraft cron runs --id <jobId> --limit 20
-opencraft system heartbeat last
-opencraft logs --follow
+openclaw cron status
+openclaw cron list
+openclaw cron runs --id <jobId> --limit 20
+openclaw system heartbeat last
+openclaw logs --follow
 ```
 
-Procure por:
+Look for:
 
-- Cron habilitado e próximo wake presente.
-- Status do histórico de run do job (`ok`, `skipped`, `error`).
-- Razões de pulo do heartbeat (`quiet-hours`, `requests-in-flight`, `alerts-disabled`).
+- Cron enabled and next wake present.
+- Job run history status (`ok`, `skipped`, `error`).
+- Heartbeat skip reasons (`quiet-hours`, `requests-in-flight`, `alerts-disabled`).
 
-Assinaturas comuns:
+Common signatures:
 
-- `cron: scheduler disabled; jobs will not run automatically` → cron desabilitado.
-- `cron: timer tick failed` → tick do agendador falhou; verifique erros de arquivo/log/runtime.
-- `heartbeat skipped` com `reason=quiet-hours` → fora da janela de horas ativas.
-- `heartbeat: unknown accountId` → id de conta inválido para alvo de entrega de heartbeat.
-- `heartbeat skipped` com `reason=dm-blocked` → alvo de heartbeat resolveu para um destino estilo DM enquanto `agents.defaults.heartbeat.directPolicy` (ou override por agente) está definido como `block`.
+- `cron: scheduler disabled; jobs will not run automatically` → cron disabled.
+- `cron: timer tick failed` → scheduler tick failed; check file/log/runtime errors.
+- `heartbeat skipped` with `reason=quiet-hours` → outside active hours window.
+- `heartbeat: unknown accountId` → invalid account id for heartbeat delivery target.
+- `heartbeat skipped` with `reason=dm-blocked` → heartbeat target resolved to a DM-style destination while `agents.defaults.heartbeat.directPolicy` (or per-agent override) is set to `block`.
 
-Relacionado:
+Related:
 
 - [/automation/troubleshooting](/automation/troubleshooting)
 - [/automation/cron-jobs](/automation/cron-jobs)
 - [/gateway/heartbeat](/gateway/heartbeat)
 
-## Tool de node pareado falha
+## Node paired tool fails
 
-Se um node está pareado mas tools falham, isole estado de foreground, permissão e aprovação.
+If a node is paired but tools fail, isolate foreground, permission, and approval state.
 
 ```bash
-opencraft nodes status
-opencraft nodes describe --node <idOrNameOrIp>
-opencraft approvals get --node <idOrNameOrIp>
-opencraft logs --follow
-opencraft status
+openclaw nodes status
+openclaw nodes describe --node <idOrNameOrIp>
+openclaw approvals get --node <idOrNameOrIp>
+openclaw logs --follow
+openclaw status
 ```
 
-Procure por:
+Look for:
 
-- Node online com capacidades esperadas.
-- Concessões de permissão do OS para câmera/microfone/localização/tela.
-- Estado de aprovações de exec e allowlist.
+- Node online with expected capabilities.
+- OS permission grants for camera/mic/location/screen.
+- Exec approvals and allowlist state.
 
-Assinaturas comuns:
+Common signatures:
 
-- `NODE_BACKGROUND_UNAVAILABLE` → app do node deve estar em foreground.
-- `*_PERMISSION_REQUIRED` / `LOCATION_PERMISSION_REQUIRED` → permissão do OS ausente.
-- `SYSTEM_RUN_DENIED: approval required` → aprovação de exec pendente.
-- `SYSTEM_RUN_DENIED: allowlist miss` → comando bloqueado pela allowlist.
+- `NODE_BACKGROUND_UNAVAILABLE` → node app must be in foreground.
+- `*_PERMISSION_REQUIRED` / `LOCATION_PERMISSION_REQUIRED` → missing OS permission.
+- `SYSTEM_RUN_DENIED: approval required` → exec approval pending.
+- `SYSTEM_RUN_DENIED: allowlist miss` → command blocked by allowlist.
 
-Relacionado:
+Related:
 
 - [/nodes/troubleshooting](/nodes/troubleshooting)
 - [/nodes/index](/nodes/index)
 - [/tools/exec-approvals](/tools/exec-approvals)
 
-## Tool de browser falha
+## Browser tool fails
 
-Use quando ações da tool de browser falham mesmo que o próprio gateway esteja saudável.
+Use this when browser tool actions fail even though the gateway itself is healthy.
 
 ```bash
-opencraft browser status
-opencraft browser start --browser-profile openclaw
-opencraft browser profiles
-opencraft logs --follow
-opencraft doctor
+openclaw browser status
+openclaw browser start --browser-profile openclaw
+openclaw browser profiles
+openclaw logs --follow
+openclaw doctor
 ```
 
-Procure por:
+Look for:
 
-- Path de executável de browser válido.
-- Acessibilidade do perfil CDP.
-- Anexo da aba de relay de extensão (se um perfil de relay de extensão estiver configurado).
+- Valid browser executable path.
+- CDP profile reachability.
+- Local Chrome availability for `existing-session` / `user` profiles.
 
-Assinaturas comuns:
+Common signatures:
 
-- `Failed to start Chrome CDP on port` → processo de browser falhou ao iniciar.
-- `browser.executablePath not found` → path configurado é inválido.
-- `Chrome extension relay is running, but no tab is connected` → relay de extensão não anexado.
-- `Browser attachOnly is enabled ... not reachable` → perfil somente-attach não tem alvo acessível.
+- `Failed to start Chrome CDP on port` → browser process failed to launch.
+- `browser.executablePath not found` → configured path is invalid.
+- `No Chrome tabs found for profile="user"` → the Chrome MCP attach profile has no open local Chrome tabs.
+- `Browser attachOnly is enabled ... not reachable` → attach-only profile has no reachable target.
 
-Relacionado:
+Related:
 
 - [/tools/browser-linux-troubleshooting](/tools/browser-linux-troubleshooting)
-- [/tools/chrome-extension](/tools/chrome-extension)
 - [/tools/browser](/tools/browser)
 
-## Se você atualizou e algo quebrou de repente
+## If you upgraded and something suddenly broke
 
-A maioria das quebras pós-atualização é deriva de config ou padrões mais rígidos agora sendo aplicados.
+Most post-upgrade breakage is config drift or stricter defaults now being enforced.
 
-### 1) Comportamento de substituição de auth e URL mudou
-
-```bash
-opencraft gateway status
-opencraft config get gateway.mode
-opencraft config get gateway.remote.url
-opencraft config get gateway.auth.mode
-```
-
-O que verificar:
-
-- Se `gateway.mode=remote`, chamadas do CLI podem estar direcionando para remoto enquanto seu serviço local está bem.
-- Chamadas explícitas `--url` não usam credenciais armazenadas como fallback.
-
-Assinaturas comuns:
-
-- `gateway connect failed:` → alvo de URL errado.
-- `unauthorized` → endpoint acessível mas auth errada.
-
-### 2) Proteções de bind e auth são mais rígidas
+### 1) Auth and URL override behavior changed
 
 ```bash
-opencraft config get gateway.bind
-opencraft config get gateway.auth.token
-opencraft gateway status
-opencraft logs --follow
+openclaw gateway status
+openclaw config get gateway.mode
+openclaw config get gateway.remote.url
+openclaw config get gateway.auth.mode
 ```
 
-O que verificar:
+What to check:
 
-- Binds não-loopback (`lan`, `tailnet`, `custom`) precisam de auth configurada.
-- Chaves antigas como `gateway.token` não substituem `gateway.auth.token`.
+- If `gateway.mode=remote`, CLI calls may be targeting remote while your local service is fine.
+- Explicit `--url` calls do not fall back to stored credentials.
 
-Assinaturas comuns:
+Common signatures:
 
-- `refusing to bind gateway ... without auth` → incompatibilidade de bind+auth.
-- `RPC probe: failed` enquanto o runtime está rodando → gateway vivo mas inacessível com auth/url atual.
+- `gateway connect failed:` → wrong URL target.
+- `unauthorized` → endpoint reachable but wrong auth.
 
-### 3) Estado de pareamento e identidade de dispositivo mudou
+### 2) Bind and auth guardrails are stricter
 
 ```bash
-opencraft devices list
-opencraft pairing list --channel <channel> [--account <id>]
-opencraft logs --follow
-opencraft doctor
+openclaw config get gateway.bind
+openclaw config get gateway.auth.token
+openclaw gateway status
+openclaw logs --follow
 ```
 
-O que verificar:
+What to check:
 
-- Aprovações de dispositivo pendentes para dashboard/nodes.
-- Aprovações de pareamento de DM pendentes após mudanças de política ou identidade.
+- Non-loopback binds (`lan`, `tailnet`, `custom`) need auth configured.
+- Old keys like `gateway.token` do not replace `gateway.auth.token`.
 
-Assinaturas comuns:
+Common signatures:
 
-- `device identity required` → auth de dispositivo não satisfeita.
-- `pairing required` → remetente/dispositivo deve ser aprovado.
+- `refusing to bind gateway ... without auth` → bind+auth mismatch.
+- `RPC probe: failed` while runtime is running → gateway alive but inaccessible with current auth/url.
 
-Se a config do serviço e o runtime ainda discordarem após verificações, reinstale os metadados do serviço do mesmo perfil/diretório de state:
+### 3) Pairing and device identity state changed
 
 ```bash
-opencraft gateway install --force
-opencraft gateway restart
+openclaw devices list
+openclaw pairing list --channel <channel> [--account <id>]
+openclaw logs --follow
+openclaw doctor
 ```
 
-Relacionado:
+What to check:
+
+- Pending device approvals for dashboard/nodes.
+- Pending DM pairing approvals after policy or identity changes.
+
+Common signatures:
+
+- `device identity required` → device auth not satisfied.
+- `pairing required` → sender/device must be approved.
+
+If the service config and runtime still disagree after checks, reinstall service metadata from the same profile/state directory:
+
+```bash
+openclaw gateway install --force
+openclaw gateway restart
+```
+
+Related:
 
 - [/gateway/pairing](/gateway/pairing)
 - [/gateway/authentication](/gateway/authentication)

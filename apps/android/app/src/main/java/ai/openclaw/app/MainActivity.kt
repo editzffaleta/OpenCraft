@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,21 +11,20 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import ai.opencraft.app.ui.RootScreen
-import ai.opencraft.app.ui.OpenCraftTheme
+import ai.openclaw.app.ui.RootScreen
+import ai.openclaw.app.ui.OpenClawTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
   private val viewModel: MainViewModel by viewModels()
   private lateinit var permissionRequester: PermissionRequester
+  private var didAttachRuntimeUi = false
+  private var didStartNodeService = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     WindowCompat.setDecorFitsSystemWindows(window, false)
     permissionRequester = PermissionRequester(this)
-    viewModel.camera.attachLifecycleOwner(this)
-    viewModel.camera.attachPermissionRequester(permissionRequester)
-    viewModel.sms.attachPermissionRequester(permissionRequester)
 
     lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -39,16 +38,27 @@ class MainActivity : ComponentActivity() {
       }
     }
 
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.runtimeInitialized.collect { ready ->
+          if (!ready || didAttachRuntimeUi) return@collect
+          viewModel.attachRuntimeUi(owner = this@MainActivity, permissionRequester = permissionRequester)
+          didAttachRuntimeUi = true
+          if (!didStartNodeService) {
+            NodeForegroundService.start(this@MainActivity)
+            didStartNodeService = true
+          }
+        }
+      }
+    }
+
     setContent {
-      OpenCraftTheme {
+      OpenClawTheme {
         Surface(modifier = Modifier) {
           RootScreen(viewModel = viewModel)
         }
       }
     }
-
-    // Keep startup path lean: start foreground service after first frame.
-    window.decorView.post { NodeForegroundService.start(this) }
   }
 
   override fun onStart() {

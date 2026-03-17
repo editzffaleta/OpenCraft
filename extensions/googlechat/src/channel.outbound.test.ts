@@ -1,4 +1,4 @@
-import type { OpenCraftConfig, PluginRuntime } from "opencraft/plugin-sdk/googlechat";
+import type { OpenClawConfig, PluginRuntime } from "openclaw/plugin-sdk/googlechat";
 import { describe, expect, it, vi } from "vitest";
 
 const uploadGoogleChatAttachmentMock = vi.hoisted(() => vi.fn());
@@ -12,7 +12,7 @@ vi.mock("./api.js", () => ({
 import { googlechatPlugin } from "./channel.js";
 import { setGoogleChatRuntime } from "./runtime.js";
 
-function createGoogleChatCfg(): OpenCraftConfig {
+function createGoogleChatCfg(): OpenClawConfig {
   return {
     channels: {
       googlechat: {

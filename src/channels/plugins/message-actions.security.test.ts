@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { jsonResult } from "../../agents/tools/common.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import {
   createChannelTestPluginBase,
@@ -25,6 +25,8 @@ const discordPlugin: ChannelPlugin = {
   actions: {
     listActions: () => ["kick"],
     supportsAction: ({ action }) => action === "kick",
+    requiresTrustedRequesterSender: ({ action, toolContext }) =>
+      Boolean(action === "kick" && toolContext),
     handleAction,
   },
 };
@@ -46,7 +48,7 @@ describe("dispatchChannelMessageAction trusted sender guard", () => {
       dispatchChannelMessageAction({
         channel: "discord",
         action: "kick",
-        cfg: {} as OpenCraftConfig,
+        cfg: {} as OpenClawConfig,
         params: { guildId: "g1", userId: "u1" },
         toolContext: { currentChannelProvider: "discord" },
       }),
@@ -58,7 +60,7 @@ describe("dispatchChannelMessageAction trusted sender guard", () => {
     await dispatchChannelMessageAction({
       channel: "discord",
       action: "kick",
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       params: { guildId: "g1", userId: "u1" },
       requesterSenderId: "trusted-user",
       toolContext: { currentChannelProvider: "discord" },
@@ -71,7 +73,7 @@ describe("dispatchChannelMessageAction trusted sender guard", () => {
     await dispatchChannelMessageAction({
       channel: "discord",
       action: "kick",
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       params: { guildId: "g1", userId: "u1" },
     });
 

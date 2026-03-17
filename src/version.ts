@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 
-declare const __OPENCRAFT_VERSION__: string | undefined;
-const CORE_PACKAGE_NAME = "opencraft";
+declare const __OPENCLAW_VERSION__: string | undefined;
+const CORE_PACKAGE_NAME = "openclaw";
 
 const PACKAGE_JSON_CANDIDATES = [
   "../package.json",
@@ -110,19 +110,19 @@ export function resolveRuntimeServiceVersion(
 
   return (
     firstNonEmpty(
-      env["OPENCRAFT_VERSION"],
+      env["OPENCLAW_VERSION"],
       runtimeVersion,
-      env["OPENCRAFT_SERVICE_VERSION"],
+      env["OPENCLAW_SERVICE_VERSION"],
       env["npm_package_version"],
     ) ?? fallback
   );
 }
 
-// Single source of truth for the current OpenCraft version.
+// Single source of truth for the current OpenClaw version.
 // - Embedded/bundled builds: injected define or env var.
 // - Dev/npm builds: package.json.
 export const VERSION = resolveBinaryVersion({
   moduleUrl: import.meta.url,
-  injectedVersion: typeof __OPENCRAFT_VERSION__ === "string" ? __OPENCRAFT_VERSION__ : undefined,
-  bundledVersion: process.env.OPENCRAFT_BUNDLED_VERSION,
+  injectedVersion: typeof __OPENCLAW_VERSION__ === "string" ? __OPENCLAW_VERSION__ : undefined,
+  bundledVersion: process.env.OPENCLAW_BUNDLED_VERSION,
 });

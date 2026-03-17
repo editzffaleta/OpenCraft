@@ -1,24 +1,24 @@
 ---
-summary: "Flags de diagnóstico para logs de depuração direcionados"
+summary: "Diagnostics flags for targeted debug logs"
 read_when:
-  - Você precisa de logs de depuração direcionados sem elevar os níveis globais de logging
-  - Você precisa capturar logs específicos de subsistema para suporte
-title: "Flags de Diagnóstico"
+  - You need targeted debug logs without raising global logging levels
+  - You need to capture subsystem-specific logs for support
+title: "Diagnostics Flags"
 ---
 
-# Flags de Diagnóstico
+# Diagnostics Flags
 
-As flags de diagnóstico permitem habilitar logs de depuração direcionados sem ativar o logging verboso em toda parte. As flags são opcionais e não têm efeito a menos que um subsistema as verifique.
+Diagnostics flags let you enable targeted debug logs without turning on verbose logging everywhere. Flags are opt-in and have no effect unless a subsystem checks them.
 
-## Como funciona
+## How it works
 
-- As flags são strings (insensíveis a maiúsculas/minúsculas).
-- Você pode habilitar flags via configuração ou por meio de uma variável de ambiente.
-- Curingas são suportados:
-  - `telegram.*` corresponde a `telegram.http`
-  - `*` habilita todas as flags
+- Flags are strings (case-insensitive).
+- You can enable flags in config or via an env override.
+- Wildcards are supported:
+  - `telegram.*` matches `telegram.http`
+  - `*` enables all flags
 
-## Habilitar via configuração
+## Enable via config
 
 ```json
 {
@@ -28,7 +28,7 @@ As flags de diagnóstico permitem habilitar logs de depuração direcionados sem
 }
 ```
 
-Múltiplas flags:
+Multiple flags:
 
 ```json
 {
@@ -38,54 +38,54 @@ Múltiplas flags:
 }
 ```
 
-Reinicie o gateway após alterar as flags.
+Restart the gateway after changing flags.
 
-## Substituição por variável de ambiente (uso pontual)
+## Env override (one-off)
 
 ```bash
 OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
-Desativar todas as flags:
+Disable all flags:
 
 ```bash
 OPENCLAW_DIAGNOSTICS=0
 ```
 
-## Para onde vão os logs
+## Where logs go
 
-As flags emitem logs no arquivo de log de diagnóstico padrão. Por padrão:
+Flags emit logs into the standard diagnostics log file. By default:
 
 ```
-/tmp/opencraft/opencraft-YYYY-MM-DD.log
+/tmp/openclaw/openclaw-YYYY-MM-DD.log
 ```
 
-Se você definiu `logging.file`, use esse caminho. Os logs estão em formato JSONL (um objeto JSON por linha). A redação ainda se aplica com base em `logging.redactSensitive`.
+If you set `logging.file`, use that path instead. Logs are JSONL (one JSON object per line). Redaction still applies based on `logging.redactSensitive`.
 
-## Extrair logs
+## Extract logs
 
-Obter o arquivo de log mais recente:
+Pick the latest log file:
 
 ```bash
-ls -t /tmp/opencraft/opencraft-*.log | head -n 1
+ls -t /tmp/openclaw/openclaw-*.log | head -n 1
 ```
 
-Filtrar por diagnósticos HTTP do Telegram:
+Filter for Telegram HTTP diagnostics:
 
 ```bash
-rg "telegram http error" /tmp/opencraft/opencraft-*.log
+rg "telegram http error" /tmp/openclaw/openclaw-*.log
 ```
 
-Ou monitorar em tempo real enquanto reproduz o problema:
+Or tail while reproducing:
 
 ```bash
-tail -f /tmp/opencraft/opencraft-$(date +%F).log | rg "telegram http error"
+tail -f /tmp/openclaw/openclaw-$(date +%F).log | rg "telegram http error"
 ```
 
-Para gateways remotos, você também pode usar `opencraft logs --follow` (veja [/cli/logs](/cli/logs)).
+For remote gateways, you can also use `openclaw logs --follow` (see [/cli/logs](/cli/logs)).
 
-## Notas
+## Notes
 
-- Se `logging.level` estiver definido acima de `warn`, esses logs podem ser suprimidos. O padrão `info` funciona bem.
-- As flags podem ser deixadas habilitadas sem problemas; elas afetam apenas o volume de logs do subsistema específico.
-- Use [/logging](/logging) para alterar destinos de log, níveis e configurações de redação.
+- If `logging.level` is set higher than `warn`, these logs may be suppressed. Default `info` is fine.
+- Flags are safe to leave enabled; they only affect log volume for the specific subsystem.
+- Use [/logging](/logging) to change log destinations, levels, and redaction.

@@ -1,43 +1,43 @@
 ---
-summary: "Como o app mac incorpora o WebChat do gateway e como depurá-lo"
+summary: "How the mac app embeds the gateway WebChat and how to debug it"
 read_when:
-  - Depurando a view WebChat do mac ou porta loopback
+  - Debugging mac WebChat view or loopback port
 title: "WebChat"
 ---
 
-# WebChat (app macOS)
+# WebChat (macOS app)
 
-O app de barra de menu macOS incorpora a UI do WebChat como uma view SwiftUI nativa. Ele
-se conecta ao Gateway e usa como padrão a **sessão main** para o agente selecionado
-(com um seletor de sessão para outras sessões).
+The macOS menu bar app embeds the WebChat UI as a native SwiftUI view. It
+connects to the Gateway and defaults to the **main session** for the selected
+agent (with a session switcher for other sessions).
 
-- **Modo local**: conecta diretamente ao WebSocket do Gateway local.
-- **Modo remoto**: encaminha a porta de controle do Gateway via SSH e usa esse
-  túnel como plano de dados.
+- **Local mode**: connects directly to the local Gateway WebSocket.
+- **Remote mode**: forwards the Gateway control port over SSH and uses that
+  tunnel as the data plane.
 
-## Lançamento e depuração
+## Launch & debugging
 
-- Manual: menu Lobster → "Open Chat".
-- Abertura automática para testes:
+- Manual: Lobster menu → “Open Chat”.
+- Auto‑open for testing:
 
   ```bash
-  dist/OpenCraft.app/Contents/MacOS/OpenCraft --webchat
+  dist/OpenClaw.app/Contents/MacOS/OpenClaw --webchat
   ```
 
-- Logs: `./scripts/clawlog.sh` (subsystem `ai.openclaw`, categoria `WebChatSwiftUI`).
+- Logs: `./scripts/clawlog.sh` (subsystem `ai.openclaw`, category `WebChatSwiftUI`).
 
-## Como está conectado
+## How it’s wired
 
-- Plano de dados: métodos WS do Gateway `chat.history`, `chat.send`, `chat.abort`,
-  `chat.inject` e eventos `chat`, `agent`, `presence`, `tick`, `health`.
-- Sessão: usa como padrão a sessão primária (`main`, ou `global` quando o escopo é
-  global). A UI pode alternar entre sessões.
-- O onboarding usa uma sessão dedicada para manter a configuração inicial separada.
+- Data plane: Gateway WS methods `chat.history`, `chat.send`, `chat.abort`,
+  `chat.inject` and events `chat`, `agent`, `presence`, `tick`, `health`.
+- Session: defaults to the primary session (`main`, or `global` when scope is
+  global). The UI can switch between sessions.
+- Onboarding uses a dedicated session to keep first‑run setup separate.
 
-## Superfície de segurança
+## Security surface
 
-- O modo remoto encaminha apenas a porta de controle do WebSocket do Gateway via SSH.
+- Remote mode forwards only the Gateway WebSocket control port over SSH.
 
-## Limitações conhecidas
+## Known limitations
 
-- A UI é otimizada para sessões de chat (não é um sandbox completo de navegador).
+- The UI is optimized for chat sessions (not a full browser sandbox).

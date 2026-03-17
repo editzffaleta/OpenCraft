@@ -1,10 +1,10 @@
 import type {
   ChannelAccountSnapshot,
   ChatType,
-  OpenCraftConfig,
+  OpenClawConfig,
   ReplyPayload,
   RuntimeEnv,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import {
   buildAgentMediaPayload,
   buildModelsProviderData,
@@ -30,7 +30,7 @@ import {
   warnMissingProviderGroupPolicyFallbackOnce,
   listSkillCommandsForAgents,
   type HistoryEntry,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import { getMattermostRuntime } from "../runtime.js";
 import { resolveMattermostAccount, resolveMattermostReplyToMode } from "./accounts.js";
 import {
@@ -100,7 +100,7 @@ export type MonitorMattermostOpts = {
   botToken?: string;
   baseUrl?: string;
   accountId?: string;
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   statusSink?: (patch: Partial<ChannelAccountSnapshot>) => void;
@@ -182,7 +182,7 @@ function channelChatType(kind: ChatType): "direct" | "group" | "channel" {
 }
 
 export type MattermostRequireMentionResolverInput = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   channel: "mattermost";
   accountId: string;
   groupId: string;
@@ -191,7 +191,7 @@ export type MattermostRequireMentionResolverInput = {
 
 export type MattermostMentionGateInput = {
   kind: ChatType;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   channelId: string;
   threadRootId?: string;
@@ -394,10 +394,10 @@ export async function monitorMattermostProvider(opts: MonitorMattermostOpts = {}
     try {
       const teams = await fetchMattermostUserTeams(client, botUserId);
 
-      // Use the *runtime* listener port when available (e.g. `opencraft gateway run --port <port>`).
-      // The gateway sets OPENCRAFT_GATEWAY_PORT when it boots, but the config file may still contain
+      // Use the *runtime* listener port when available (e.g. `openclaw gateway run --port <port>`).
+      // The gateway sets OPENCLAW_GATEWAY_PORT when it boots, but the config file may still contain
       // a different port.
-      const envPortRaw = process.env.OPENCRAFT_GATEWAY_PORT?.trim();
+      const envPortRaw = process.env.OPENCLAW_GATEWAY_PORT?.trim();
       const envPort = parseStrictPositiveInteger(envPortRaw);
       const slashGatewayPort = envPort ?? cfg.gateway?.port ?? 18789;
 
@@ -602,7 +602,7 @@ export async function monitorMattermostProvider(opts: MonitorMattermostOpts = {}
               message: post.message ?? "",
               props: post.props as Record<string, unknown> | undefined,
             },
-            ephemeral_text: `OpenCraft ignored this action for ${decision.roomLabel}.`,
+            ephemeral_text: `OpenClaw ignored this action for ${decision.roomLabel}.`,
           },
         };
       },

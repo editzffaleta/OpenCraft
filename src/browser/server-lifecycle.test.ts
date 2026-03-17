@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { resolveProfileMock, ensureChromeExtensionRelayServerMock } = vi.hoisted(() => ({
-  resolveProfileMock: vi.fn(),
-  ensureChromeExtensionRelayServerMock: vi.fn(),
-}));
-
-const { stopOpenCraftChromeMock, stopChromeExtensionRelayServerMock } = vi.hoisted(() => ({
-  stopOpenCraftChromeMock: vi.fn(async () => {}),
-  stopChromeExtensionRelayServerMock: vi.fn(async () => true),
+const { stopOpenClawChromeMock } = vi.hoisted(() => ({
+  stopOpenClawChromeMock: vi.fn(async () => {}),
 }));
 
 const { createBrowserRouteContextMock, listKnownProfileNamesMock } = vi.hoisted(() => ({
@@ -16,16 +10,7 @@ const { createBrowserRouteContextMock, listKnownProfileNamesMock } = vi.hoisted(
 }));
 
 vi.mock("./chrome.js", () => ({
-  stopOpenCraftChrome: stopOpenCraftChromeMock,
-}));
-
-vi.mock("./config.js", () => ({
-  resolveProfile: resolveProfileMock,
-}));
-
-vi.mock("./extension-relay.js", () => ({
-  ensureChromeExtensionRelayServer: ensureChromeExtensionRelayServerMock,
-  stopChromeExtensionRelayServer: stopChromeExtensionRelayServerMock,
+  stopOpenClawChrome: stopOpenClawChromeMock,
 }));
 
 vi.mock("./server-context.js", () => ({
@@ -36,49 +21,13 @@ vi.mock("./server-context.js", () => ({
 import { ensureExtensionRelayForProfiles, stopKnownBrowserProfiles } from "./server-lifecycle.js";
 
 describe("ensureExtensionRelayForProfiles", () => {
-  beforeEach(() => {
-    resolveProfileMock.mockClear();
-    ensureChromeExtensionRelayServerMock.mockClear();
-  });
-
-  it("starts relay only for extension profiles", async () => {
-    resolveProfileMock.mockImplementation((_resolved: unknown, name: string) => {
-      if (name === "chrome-relay") {
-        return { driver: "extension", cdpUrl: "http://127.0.0.1:18888" };
-      }
-      return { driver: "opencraft", cdpUrl: "http://127.0.0.1:18889" };
-    });
-    ensureChromeExtensionRelayServerMock.mockResolvedValue(undefined);
-
-    await ensureExtensionRelayForProfiles({
-      resolved: {
-        profiles: {
-          "chrome-relay": {},
-          opencraft: {},
-        },
-      } as never,
-      onWarn: vi.fn(),
-    });
-
-    expect(ensureChromeExtensionRelayServerMock).toHaveBeenCalledTimes(1);
-    expect(ensureChromeExtensionRelayServerMock).toHaveBeenCalledWith({
-      cdpUrl: "http://127.0.0.1:18888",
-    });
-  });
-
-  it("reports relay startup errors", async () => {
-    resolveProfileMock.mockReturnValue({ driver: "extension", cdpUrl: "http://127.0.0.1:18888" });
-    ensureChromeExtensionRelayServerMock.mockRejectedValue(new Error("boom"));
-    const onWarn = vi.fn();
-
-    await ensureExtensionRelayForProfiles({
-      resolved: { profiles: { "chrome-relay": {} } } as never,
-      onWarn,
-    });
-
-    expect(onWarn).toHaveBeenCalledWith(
-      'Chrome extension relay init failed for profile "chrome-relay": Error: boom',
-    );
+  it("is a no-op after removing the Chrome extension relay path", async () => {
+    await expect(
+      ensureExtensionRelayForProfiles({
+        resolved: { profiles: {} } as never,
+        onWarn: vi.fn(),
+      }),
+    ).resolves.toBeUndefined();
   });
 });
 
@@ -86,15 +35,14 @@ describe("stopKnownBrowserProfiles", () => {
   beforeEach(() => {
     createBrowserRouteContextMock.mockClear();
     listKnownProfileNamesMock.mockClear();
-    stopOpenCraftChromeMock.mockClear();
-    stopChromeExtensionRelayServerMock.mockClear();
+    stopOpenClawChromeMock.mockClear();
   });
 
   it("stops all known profiles and ignores per-profile failures", async () => {
-    listKnownProfileNamesMock.mockReturnValue(["opencraft", "chrome-relay"]);
+    listKnownProfileNamesMock.mockReturnValue(["openclaw", "user"]);
     const stopMap: Record<string, ReturnType<typeof vi.fn>> = {
-      opencraft: vi.fn(async () => {}),
-      "chrome-relay": vi.fn(async () => {
+      openclaw: vi.fn(async () => {}),
+      user: vi.fn(async () => {
         throw new Error("profile stop failed");
       }),
     };
@@ -111,13 +59,13 @@ describe("stopKnownBrowserProfiles", () => {
       onWarn,
     });
 
-    expect(stopMap.opencraft).toHaveBeenCalledTimes(1);
-    expect(stopMap["chrome-relay"]).toHaveBeenCalledTimes(1);
+    expect(stopMap.openclaw).toHaveBeenCalledTimes(1);
+    expect(stopMap.user).toHaveBeenCalledTimes(1);
     expect(onWarn).not.toHaveBeenCalled();
   });
 
   it("stops tracked runtime browsers even when the profile no longer resolves", async () => {
-    listKnownProfileNamesMock.mockReturnValue(["deleted-local", "deleted-extension"]);
+    listKnownProfileNamesMock.mockReturnValue(["deleted-local"]);
     createBrowserRouteContextMock.mockReturnValue({
       forProfile: vi.fn(() => {
         throw new Error("profile not found");
@@ -126,7 +74,7 @@ describe("stopKnownBrowserProfiles", () => {
     const localRuntime = {
       profile: {
         name: "deleted-local",
-        driver: "opencraft",
+        driver: "openclaw",
       },
       running: {
         pid: 42,
@@ -134,18 +82,7 @@ describe("stopKnownBrowserProfiles", () => {
       },
     };
     const launchedBrowser = localRuntime.running;
-    const extensionRuntime = {
-      profile: {
-        name: "deleted-extension",
-        driver: "extension",
-        cdpUrl: "http://127.0.0.1:19999",
-      },
-      running: null,
-    };
-    const profiles = new Map<string, unknown>([
-      ["deleted-local", localRuntime],
-      ["deleted-extension", extensionRuntime],
-    ]);
+    const profiles = new Map<string, unknown>([["deleted-local", localRuntime]]);
     const state = {
       resolved: { profiles: {} },
       profiles,
@@ -156,11 +93,8 @@ describe("stopKnownBrowserProfiles", () => {
       onWarn: vi.fn(),
     });
 
-    expect(stopOpenCraftChromeMock).toHaveBeenCalledWith(launchedBrowser);
+    expect(stopOpenClawChromeMock).toHaveBeenCalledWith(launchedBrowser);
     expect(localRuntime.running).toBeNull();
-    expect(stopChromeExtensionRelayServerMock).toHaveBeenCalledWith({
-      cdpUrl: "http://127.0.0.1:19999",
-    });
   });
 
   it("warns when profile enumeration fails", async () => {
@@ -177,6 +111,6 @@ describe("stopKnownBrowserProfiles", () => {
       onWarn,
     });
 
-    expect(onWarn).toHaveBeenCalledWith("opencraft browser stop failed: Error: oops");
+    expect(onWarn).toHaveBeenCalledWith("openclaw browser stop failed: Error: oops");
   });
 });

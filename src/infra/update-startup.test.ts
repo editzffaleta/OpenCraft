@@ -5,8 +5,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { captureEnv } from "../test-utils/env.js";
 import type { UpdateCheckResult } from "./update-check.js";
 
-vi.mock("./opencraft-root.js", () => ({
-  resolveOpenCraftPackageRoot: vi.fn(),
+vi.mock("./openclaw-root.js", () => ({
+  resolveOpenClawPackageRoot: vi.fn(),
 }));
 
 vi.mock("./update-check.js", async () => {
@@ -45,7 +45,7 @@ describe("update-startup", () => {
   let tempDir: string;
   let envSnapshot: ReturnType<typeof captureEnv>;
 
-  let resolveOpenCraftPackageRoot: (typeof import("./opencraft-root.js"))["resolveOpenCraftPackageRoot"];
+  let resolveOpenClawPackageRoot: (typeof import("./openclaw-root.js"))["resolveOpenClawPackageRoot"];
   let checkUpdateStatus: (typeof import("./update-check.js"))["checkUpdateStatus"];
   let resolveNpmChannelTag: (typeof import("./update-check.js"))["resolveNpmChannelTag"];
   let runCommandWithTimeout: (typeof import("../process/exec.js"))["runCommandWithTimeout"];
@@ -56,7 +56,7 @@ describe("update-startup", () => {
   let loaded = false;
 
   beforeAll(async () => {
-    suiteRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-update-check-suite-"));
+    suiteRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-update-check-suite-"));
   });
 
   beforeEach(async () => {
@@ -64,8 +64,8 @@ describe("update-startup", () => {
     vi.setSystemTime(new Date("2026-01-17T10:00:00Z"));
     tempDir = path.join(suiteRoot, `case-${++suiteCase}`);
     await fs.mkdir(tempDir);
-    envSnapshot = captureEnv(["OPENCRAFT_STATE_DIR", "NODE_ENV", "VITEST"]);
-    process.env.OPENCRAFT_STATE_DIR = tempDir;
+    envSnapshot = captureEnv(["OPENCLAW_STATE_DIR", "NODE_ENV", "VITEST"]);
+    process.env.OPENCLAW_STATE_DIR = tempDir;
 
     process.env.NODE_ENV = "test";
 
@@ -74,7 +74,7 @@ describe("update-startup", () => {
 
     // Perf: load mocked modules once (after timers/env are set up).
     if (!loaded) {
-      ({ resolveOpenCraftPackageRoot } = await import("./opencraft-root.js"));
+      ({ resolveOpenClawPackageRoot } = await import("./openclaw-root.js"));
       ({ checkUpdateStatus, resolveNpmChannelTag } = await import("./update-check.js"));
       ({ runCommandWithTimeout } = await import("../process/exec.js"));
       ({
@@ -85,7 +85,7 @@ describe("update-startup", () => {
       } = await import("./update-startup.js"));
       loaded = true;
     }
-    vi.mocked(resolveOpenCraftPackageRoot).mockClear();
+    vi.mocked(resolveOpenClawPackageRoot).mockClear();
     vi.mocked(checkUpdateStatus).mockClear();
     vi.mocked(resolveNpmChannelTag).mockClear();
     vi.mocked(runCommandWithTimeout).mockClear();
@@ -112,9 +112,9 @@ describe("update-startup", () => {
   }
 
   function mockPackageInstallStatus() {
-    vi.mocked(resolveOpenCraftPackageRoot).mockResolvedValue("/opt/opencraft");
+    vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue("/opt/openclaw");
     vi.mocked(checkUpdateStatus).mockResolvedValue({
-      root: "/opt/opencraft",
+      root: "/opt/openclaw",
       installKind: "package",
       packageManager: "npm",
     } satisfies UpdateCheckResult);
@@ -335,7 +335,7 @@ describe("update-startup", () => {
     expect(runAutoUpdate).toHaveBeenCalledWith({
       channel: "stable",
       timeoutMs: 45 * 60 * 1000,
-      root: "/opt/opencraft",
+      root: "/opt/openclaw",
     });
   });
 
@@ -352,7 +352,7 @@ describe("update-startup", () => {
     expect(runAutoUpdate).toHaveBeenCalledWith({
       channel: "beta",
       timeoutMs: 45 * 60 * 1000,
-      root: "/opt/opencraft",
+      root: "/opt/openclaw",
     });
   });
 
@@ -381,7 +381,7 @@ describe("update-startup", () => {
     });
 
     const originalArgv = process.argv.slice();
-    process.argv = [process.execPath, "/opt/opencraft/dist/entry.js"];
+    process.argv = [process.execPath, "/opt/openclaw/dist/entry.js"];
     try {
       await runAutoUpdateCheckWithDefaults({
         cfg: createBetaAutoUpdateConfig(),
@@ -393,7 +393,7 @@ describe("update-startup", () => {
     expect(runCommandWithTimeout).toHaveBeenCalledWith(
       [
         process.execPath,
-        "/opt/opencraft/dist/entry.js",
+        "/opt/openclaw/dist/entry.js",
         "update",
         "--yes",
         "--channel",
@@ -403,7 +403,7 @@ describe("update-startup", () => {
       expect.objectContaining({
         timeoutMs: 45 * 60 * 1000,
         env: expect.objectContaining({
-          OPENCRAFT_AUTO_UPDATE: "1",
+          OPENCLAW_AUTO_UPDATE: "1",
         }),
       }),
     );

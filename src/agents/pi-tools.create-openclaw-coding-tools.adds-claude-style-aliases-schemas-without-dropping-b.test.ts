@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import "./test-helpers/fast-coding-tools.js";
-import { createOpenCraftCodingTools } from "./pi-tools.js";
+import { createOpenClawCodingTools } from "./pi-tools.js";
 
-const defaultTools = createOpenCraftCodingTools({ senderIsOwner: true });
+const defaultTools = createOpenClawCodingTools({ senderIsOwner: true });
 
-describe("createOpenCraftCodingTools", () => {
+describe("createOpenClawCodingTools", () => {
   it("preserves action enums in normalized schemas", () => {
     const toolNames = ["browser", "canvas", "nodes", "cron", "gateway", "message"];
 
@@ -56,49 +56,49 @@ describe("createOpenCraftCodingTools", () => {
     expect(defaultTools.some((tool) => tool.name === "process")).toBe(true);
     expect(defaultTools.some((tool) => tool.name === "apply_patch")).toBe(false);
 
-    const enabledConfig: OpenCraftConfig = {
+    const enabledConfig: OpenClawConfig = {
       tools: {
         exec: {
           applyPatch: { enabled: true },
         },
       },
     };
-    const openAiTools = createOpenCraftCodingTools({
+    const openAiTools = createOpenClawCodingTools({
       config: enabledConfig,
       modelProvider: "openai",
       modelId: "gpt-5.2",
     });
     expect(openAiTools.some((tool) => tool.name === "apply_patch")).toBe(true);
 
-    const anthropicTools = createOpenCraftCodingTools({
+    const anthropicTools = createOpenClawCodingTools({
       config: enabledConfig,
       modelProvider: "anthropic",
       modelId: "claude-opus-4-5",
     });
     expect(anthropicTools.some((tool) => tool.name === "apply_patch")).toBe(false);
 
-    const allowModelsConfig: OpenCraftConfig = {
+    const allowModelsConfig: OpenClawConfig = {
       tools: {
         exec: {
           applyPatch: { enabled: true, allowModels: ["gpt-5.2"] },
         },
       },
     };
-    const allowed = createOpenCraftCodingTools({
+    const allowed = createOpenClawCodingTools({
       config: allowModelsConfig,
       modelProvider: "openai",
       modelId: "gpt-5.2",
     });
     expect(allowed.some((tool) => tool.name === "apply_patch")).toBe(true);
 
-    const denied = createOpenCraftCodingTools({
+    const denied = createOpenClawCodingTools({
       config: allowModelsConfig,
       modelProvider: "openai",
       modelId: "gpt-5-mini",
     });
     expect(denied.some((tool) => tool.name === "apply_patch")).toBe(false);
 
-    const oauthTools = createOpenCraftCodingTools({
+    const oauthTools = createOpenClawCodingTools({
       modelProvider: "anthropic",
       modelAuthMode: "oauth",
     });
@@ -110,7 +110,7 @@ describe("createOpenCraftCodingTools", () => {
     expect(names.has("apply_patch")).toBe(false);
   });
   it("provides top-level object schemas for all tools", () => {
-    const tools = createOpenCraftCodingTools();
+    const tools = createOpenClawCodingTools();
     const offenders = tools
       .map((tool) => {
         const schema =

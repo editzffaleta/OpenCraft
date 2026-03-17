@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/types.js";
+import type { OpenClawConfig } from "../config/types.js";
 import {
   resolveConfiguredSecretInputWithFallback,
   resolveRequiredConfiguredSecretRefInputString,
 } from "./resolve-configured-secret-input-string.js";
 
-function createConfig(value: unknown): OpenCraftConfig {
+function createConfig(value: unknown): OpenClawConfig {
   return {
     gateway: {
       auth: {
@@ -17,7 +17,7 @@ function createConfig(value: unknown): OpenCraftConfig {
         default: { source: "env" },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 describe("resolveConfiguredSecretInputWithFallback", () => {

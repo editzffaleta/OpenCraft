@@ -1,37 +1,37 @@
 ---
-summary: "Referência do CLI para `opencraft node` (host de node headless)"
+summary: "CLI reference for `openclaw node` (headless node host)"
 read_when:
-  - Rodando o host de node headless
-  - Pareando um node não-macOS para system.run
+  - Running the headless node host
+  - Pairing a non-macOS node for system.run
 title: "node"
 ---
 
-# `opencraft node`
+# `openclaw node`
 
-Rodar um **host de node headless** que conecta ao WebSocket do Gateway e expõe
-`system.run` / `system.which` nesta máquina.
+Run a **headless node host** that connects to the Gateway WebSocket and exposes
+`system.run` / `system.which` on this machine.
 
-## Por que usar um host de node?
+## Why use a node host?
 
-Use um host de node quando quiser que agentes **rodem comandos em outras máquinas** da sua
-rede sem instalar um app companion completo do macOS.
+Use a node host when you want agents to **run commands on other machines** in your
+network without installing a full macOS companion app there.
 
-Casos de uso comuns:
+Common use cases:
 
-- Rodar comandos em boxes Linux/Windows remotas (servidores de build, máquinas de lab, NAS).
-- Manter exec **sandboxado** no gateway, mas delegar execuções aprovadas para outros hosts.
-- Fornecer um alvo de execução headless leve para nodes de automação ou CI.
+- Run commands on remote Linux/Windows boxes (build servers, lab machines, NAS).
+- Keep exec **sandboxed** on the gateway, but delegate approved runs to other hosts.
+- Provide a lightweight, headless execution target for automation or CI nodes.
 
-A execução ainda é protegida por **aprovações de exec** e allowlists por agente no
-host de node, então você pode manter o acesso a comandos com escopo e explícito.
+Execution is still guarded by **exec approvals** and per‑agent allowlists on the
+node host, so you can keep command access scoped and explicit.
 
-## Proxy de browser (zero-config)
+## Browser proxy (zero-config)
 
-Hosts de node anunciam automaticamente um proxy de browser se `browser.enabled` não estiver
-desabilitado no node. Isso permite que o agente use automação de browser naquele node
-sem configuração extra.
+Node hosts automatically advertise a browser proxy if `browser.enabled` is not
+disabled on the node. This lets the agent use browser automation on that node
+without extra configuration.
 
-Desabilite no node se necessário:
+Disable it on the node if needed:
 
 ```json5
 {
@@ -43,81 +43,81 @@ Desabilite no node se necessário:
 }
 ```
 
-## Rodar (foreground)
+## Run (foreground)
 
 ```bash
-opencraft node run --host <gateway-host> --port 18789
+openclaw node run --host <gateway-host> --port 18789
 ```
 
-Opções:
+Options:
 
-- `--host <host>`: host WebSocket do Gateway (padrão: `127.0.0.1`)
-- `--port <port>`: porta WebSocket do Gateway (padrão: `18789`)
-- `--tls`: usar TLS para a conexão do gateway
-- `--tls-fingerprint <sha256>`: fingerprint esperado do certificado TLS (sha256)
-- `--node-id <id>`: sobrescrever id do node (limpa token de pareamento)
-- `--display-name <name>`: sobrescrever o nome de exibição do node
+- `--host <host>`: Gateway WebSocket host (default: `127.0.0.1`)
+- `--port <port>`: Gateway WebSocket port (default: `18789`)
+- `--tls`: Use TLS for the gateway connection
+- `--tls-fingerprint <sha256>`: Expected TLS certificate fingerprint (sha256)
+- `--node-id <id>`: Override node id (clears pairing token)
+- `--display-name <name>`: Override the node display name
 
-## Auth do gateway para host de node
+## Gateway auth for node host
 
-`opencraft node run` e `opencraft node install` resolvem auth do gateway de config/env (sem flags `--token`/`--password` em comandos de node):
+`openclaw node run` and `openclaw node install` resolve gateway auth from config/env (no `--token`/`--password` flags on node commands):
 
-- `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` são verificados primeiro.
-- Depois fallback de config local: `gateway.auth.token` / `gateway.auth.password`.
-- Em modo local, o host de node intencionalmente não herda `gateway.remote.token` / `gateway.remote.password`.
-- Se `gateway.auth.token` / `gateway.auth.password` estiver explicitamente configurado via SecretRef e não resolvido, a resolução de auth do node falha fechada (sem mascaramento de fallback remoto).
-- Em `gateway.mode=remote`, campos de cliente remoto (`gateway.remote.token` / `gateway.remote.password`) também são elegíveis de acordo com regras de precedência remota.
-- Vars de env `CLAWDBOT_GATEWAY_*` legadas são ignoradas para resolução de auth do host de node.
+- `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` are checked first.
+- Then local config fallback: `gateway.auth.token` / `gateway.auth.password`.
+- In local mode, node host intentionally does not inherit `gateway.remote.token` / `gateway.remote.password`.
+- If `gateway.auth.token` / `gateway.auth.password` is explicitly configured via SecretRef and unresolved, node auth resolution fails closed (no remote fallback masking).
+- In `gateway.mode=remote`, remote client fields (`gateway.remote.token` / `gateway.remote.password`) are also eligible per remote precedence rules.
+- Legacy `CLAWDBOT_GATEWAY_*` env vars are ignored for node host auth resolution.
 
-## Serviço (background)
+## Service (background)
 
-Instalar um host de node headless como serviço de usuário.
+Install a headless node host as a user service.
 
 ```bash
-opencraft node install --host <gateway-host> --port 18789
+openclaw node install --host <gateway-host> --port 18789
 ```
 
-Opções:
+Options:
 
-- `--host <host>`: host WebSocket do Gateway (padrão: `127.0.0.1`)
-- `--port <port>`: porta WebSocket do Gateway (padrão: `18789`)
-- `--tls`: usar TLS para a conexão do gateway
-- `--tls-fingerprint <sha256>`: fingerprint esperado do certificado TLS (sha256)
-- `--node-id <id>`: sobrescrever id do node (limpa token de pareamento)
-- `--display-name <name>`: sobrescrever o nome de exibição do node
-- `--runtime <runtime>`: runtime do serviço (`node` ou `bun`)
-- `--force`: reinstalar/sobrescrever se já instalado
+- `--host <host>`: Gateway WebSocket host (default: `127.0.0.1`)
+- `--port <port>`: Gateway WebSocket port (default: `18789`)
+- `--tls`: Use TLS for the gateway connection
+- `--tls-fingerprint <sha256>`: Expected TLS certificate fingerprint (sha256)
+- `--node-id <id>`: Override node id (clears pairing token)
+- `--display-name <name>`: Override the node display name
+- `--runtime <runtime>`: Service runtime (`node` or `bun`)
+- `--force`: Reinstall/overwrite if already installed
 
-Gerenciar o serviço:
+Manage the service:
 
 ```bash
-opencraft node status
-opencraft node stop
-opencraft node restart
-opencraft node uninstall
+openclaw node status
+openclaw node stop
+openclaw node restart
+openclaw node uninstall
 ```
 
-Use `opencraft node run` para um host de node em foreground (sem serviço).
+Use `openclaw node run` for a foreground node host (no service).
 
-Comandos de serviço aceitam `--json` para saída legível por máquina.
+Service commands accept `--json` for machine-readable output.
 
-## Pareamento
+## Pairing
 
-A primeira conexão cria uma solicitação de pareamento de dispositivo pendente (`role: node`) no Gateway.
-Aprove via:
+The first connection creates a pending device pairing request (`role: node`) on the Gateway.
+Approve it via:
 
 ```bash
-opencraft devices list
-opencraft devices approve <requestId>
+openclaw devices list
+openclaw devices approve <requestId>
 ```
 
-O host de node armazena seu id de node, token, nome de exibição e info de conexão do gateway em
-`~/.opencraft/node.json`.
+The node host stores its node id, token, display name, and gateway connection info in
+`~/.openclaw/node.json`.
 
-## Aprovações de exec
+## Exec approvals
 
-`system.run` é protegido por aprovações de exec locais:
+`system.run` is gated by local exec approvals:
 
-- `~/.opencraft/exec-approvals.json`
+- `~/.openclaw/exec-approvals.json`
 - [Exec approvals](/tools/exec-approvals)
-- `opencraft approvals --node <id|name|ip>` (editar do Gateway)
+- `openclaw approvals --node <id|name|ip>` (edit from the Gateway)

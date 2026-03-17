@@ -1,54 +1,54 @@
 ---
 title: Fly.io
-description: Implante o OpenCraft no Fly.io
-summary: "Implantação passo a passo no Fly.io para OpenCraft com armazenamento persistente e HTTPS"
+description: Deploy OpenClaw on Fly.io
+summary: "Step-by-step Fly.io deployment for OpenClaw with persistent storage and HTTPS"
 read_when:
-  - Implantando o OpenCraft no Fly.io
-  - Configurando volumes, secrets e config inicial no Fly
+  - Deploying OpenClaw on Fly.io
+  - Setting up Fly volumes, secrets, and first-run config
 ---
 
-# Implantação no Fly.io
+# Fly.io Deployment
 
-**Objetivo:** Gateway OpenCraft rodando em uma máquina [Fly.io](https://fly.io) com armazenamento persistente, HTTPS automático e acesso ao Discord/canais.
+**Goal:** OpenClaw Gateway running on a [Fly.io](https://fly.io) machine with persistent storage, automatic HTTPS, and Discord/channel access.
 
-## O que você precisa
+## What you need
 
-- [CLI flyctl](https://fly.io/docs/hands-on/install-flyctl/) instalada
-- Conta Fly.io (plano gratuito funciona)
-- Auth de modelo: chave de API para o provedor de modelo escolhido
-- Credenciais de canal: token de bot Discord, token Telegram, etc.
+- [flyctl CLI](https://fly.io/docs/hands-on/install-flyctl/) installed
+- Fly.io account (free tier works)
+- Model auth: API key for your chosen model provider
+- Channel credentials: Discord bot token, Telegram token, etc.
 
-## Caminho rápido para iniciantes
+## Beginner quick path
 
-1. Clone o repositório → personalize `fly.toml`
-2. Crie o app + volume → defina secrets
-3. Implante com `fly deploy`
-4. Acesse via SSH para criar a config ou use a UI de Controle
+1. Clone repo → customize `fly.toml`
+2. Create app + volume → set secrets
+3. Deploy with `fly deploy`
+4. SSH in to create config or use Control UI
 
-## 1) Criar o app Fly
+## 1) Create the Fly app
 
 ```bash
-# Clonar o repositório
+# Clone the repo
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 
-# Criar um novo app Fly (escolha seu próprio nome)
-fly apps create meu-opencraft
+# Create a new Fly app (pick your own name)
+fly apps create my-openclaw
 
-# Criar um volume persistente (1GB geralmente é suficiente)
+# Create a persistent volume (1GB is usually enough)
 fly volumes create openclaw_data --size 1 --region iad
 ```
 
-**Dica:** Escolha uma região próxima a você. Opções comuns: `gru` (São Paulo), `lhr` (Londres), `iad` (Virgínia), `sjc` (San Jose).
+**Tip:** Choose a region close to you. Common options: `lhr` (London), `iad` (Virginia), `sjc` (San Jose).
 
-## 2) Configurar fly.toml
+## 2) Configure fly.toml
 
-Edite `fly.toml` para corresponder ao nome do seu app e requisitos.
+Edit `fly.toml` to match your app name and requirements.
 
-**Nota de segurança:** A configuração padrão expõe uma URL pública. Para uma implantação reforçada sem IP público, veja [Implantação privada](#implantacao-privada-reforçada) ou use `fly.private.toml`.
+**Security note:** The default config exposes a public URL. For a hardened deployment with no public IP, see [Private Deployment](#private-deployment-hardened) or use `fly.private.toml`.
 
 ```toml
-app = "meu-opencraft"  # Nome do seu app
+app = "my-openclaw"  # Your app name
 primary_region = "iad"
 
 [build]
@@ -80,74 +80,74 @@ primary_region = "iad"
   destination = "/data"
 ```
 
-**Configurações principais:**
+**Key settings:**
 
-| Configuração                   | Por quê                                                                           |
-| ------------------------------ | --------------------------------------------------------------------------------- |
-| `--bind lan`                   | Faz bind para `0.0.0.0` para que o proxy do Fly possa alcançar o gateway          |
-| `--allow-unconfigured`         | Inicia sem um arquivo de config (você criará um depois)                           |
-| `internal_port = 3000`         | Deve corresponder a `--port 3000` (ou `OPENCLAW_GATEWAY_PORT`) para health checks |
-| `memory = "2048mb"`            | 512MB é muito pouco; 2GB recomendado                                              |
-| `OPENCLAW_STATE_DIR = "/data"` | Persiste estado no volume                                                         |
+| Setting                        | Why                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| `--bind lan`                   | Binds to `0.0.0.0` so Fly's proxy can reach the gateway                     |
+| `--allow-unconfigured`         | Starts without a config file (you'll create one after)                      |
+| `internal_port = 3000`         | Must match `--port 3000` (or `OPENCLAW_GATEWAY_PORT`) for Fly health checks |
+| `memory = "2048mb"`            | 512MB is too small; 2GB recommended                                         |
+| `OPENCLAW_STATE_DIR = "/data"` | Persists state on the volume                                                |
 
-## 3) Definir secrets
+## 3) Set secrets
 
 ```bash
-# Obrigatório: token do Gateway (para bind não-loopback)
+# Required: Gateway token (for non-loopback binding)
 fly secrets set OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
 
-# Chaves de API do provedor de modelo
+# Model provider API keys
 fly secrets set ANTHROPIC_API_KEY=sk-ant-...
 
-# Opcional: outros provedores
+# Optional: Other providers
 fly secrets set OPENAI_API_KEY=sk-...
 fly secrets set GOOGLE_API_KEY=...
 
-# Tokens de canal
+# Channel tokens
 fly secrets set DISCORD_BOT_TOKEN=MTQ...
 ```
 
-**Notas:**
+**Notes:**
 
-- Binds não-loopback (`--bind lan`) requerem `OPENCLAW_GATEWAY_TOKEN` por segurança.
-- Trate esses tokens como senhas.
-- **Prefira variáveis de ambiente ao invés do arquivo de config** para todas as chaves de API e tokens. Isso mantém os secrets fora do `opencraft.json` onde poderiam ser acidentalmente expostos ou registrados em log.
+- Non-loopback binds (`--bind lan`) require `OPENCLAW_GATEWAY_TOKEN` for security.
+- Treat these tokens like passwords.
+- **Prefer env vars over config file** for all API keys and tokens. This keeps secrets out of `openclaw.json` where they could be accidentally exposed or logged.
 
-## 4) Implantar
+## 4) Deploy
 
 ```bash
 fly deploy
 ```
 
-O primeiro deploy constrói a imagem Docker (~2-3 minutos). Deploys subsequentes são mais rápidos.
+First deploy builds the Docker image (~2-3 minutes). Subsequent deploys are faster.
 
-Após a implantação, verifique:
+After deployment, verify:
 
 ```bash
 fly status
 fly logs
 ```
 
-Você deve ver:
+You should see:
 
 ```
 [gateway] listening on ws://0.0.0.0:3000 (PID xxx)
 [discord] logged in to discord as xxx
 ```
 
-## 5) Criar arquivo de config
+## 5) Create config file
 
-Acesse a máquina via SSH para criar uma config adequada:
+SSH into the machine to create a proper config:
 
 ```bash
 fly ssh console
 ```
 
-Crie o diretório de config e o arquivo:
+Create the config directory and file:
 
 ```bash
 mkdir -p /data
-cat > /data/opencraft.json << 'EOF'
+cat > /data/openclaw.json << 'EOF'
 {
   "agents": {
     "defaults": {
@@ -181,7 +181,7 @@ cat > /data/opencraft.json << 'EOF'
       "enabled": true,
       "groupPolicy": "allowlist",
       "guilds": {
-        "SEU_GUILD_ID": {
+        "YOUR_GUILD_ID": {
           "channels": { "general": { "allow": true } },
           "requireMention": false
         }
@@ -199,248 +199,248 @@ cat > /data/opencraft.json << 'EOF'
 EOF
 ```
 
-**Nota:** Com `OPENCLAW_STATE_DIR=/data`, o caminho da config é `/data/opencraft.json`.
+**Note:** With `OPENCLAW_STATE_DIR=/data`, the config path is `/data/openclaw.json`.
 
-**Nota:** O token do Discord pode vir de:
+**Note:** The Discord token can come from either:
 
-- Variável de ambiente: `DISCORD_BOT_TOKEN` (recomendado para secrets)
-- Arquivo de config: `channels.discord.token`
+- Environment variable: `DISCORD_BOT_TOKEN` (recommended for secrets)
+- Config file: `channels.discord.token`
 
-Se usar variável de ambiente, não é necessário adicionar o token à config. O gateway lê `DISCORD_BOT_TOKEN` automaticamente.
+If using env var, no need to add token to config. The gateway reads `DISCORD_BOT_TOKEN` automatically.
 
-Reinicie para aplicar:
+Restart to apply:
 
 ```bash
 exit
 fly machine restart <machine-id>
 ```
 
-## 6) Acessar o Gateway
+## 6) Access the Gateway
 
-### UI de Controle
+### Control UI
 
-Abra no navegador:
+Open in browser:
 
 ```bash
 fly open
 ```
 
-Ou acesse `https://meu-opencraft.fly.dev/`
+Or visit `https://my-openclaw.fly.dev/`
 
-Cole seu token do gateway (o de `OPENCLAW_GATEWAY_TOKEN`) para autenticar.
+Paste your gateway token (the one from `OPENCLAW_GATEWAY_TOKEN`) to authenticate.
 
 ### Logs
 
 ```bash
-fly logs              # Logs em tempo real
-fly logs --no-tail    # Logs recentes
+fly logs              # Live logs
+fly logs --no-tail    # Recent logs
 ```
 
-### Console SSH
+### SSH Console
 
 ```bash
 fly ssh console
 ```
 
-## Solução de problemas
+## Troubleshooting
 
 ### "App is not listening on expected address"
 
-O gateway está fazendo bind para `127.0.0.1` em vez de `0.0.0.0`.
+The gateway is binding to `127.0.0.1` instead of `0.0.0.0`.
 
-**Solução:** Adicione `--bind lan` ao comando do processo em `fly.toml`.
+**Fix:** Add `--bind lan` to your process command in `fly.toml`.
 
-### Health checks falhando / conexão recusada
+### Health checks failing / connection refused
 
-O Fly não consegue alcançar o gateway na porta configurada.
+Fly can't reach the gateway on the configured port.
 
-**Solução:** Certifique-se de que `internal_port` corresponde à porta do gateway (defina `--port 3000` ou `OPENCLAW_GATEWAY_PORT=3000`).
+**Fix:** Ensure `internal_port` matches the gateway port (set `--port 3000` or `OPENCLAW_GATEWAY_PORT=3000`).
 
-### OOM / Problemas de memória
+### OOM / Memory Issues
 
-O container fica reiniciando ou sendo encerrado. Sinais: `SIGABRT`, `v8::internal::Runtime_AllocateInYoungGeneration`, ou reinicializações silenciosas.
+Container keeps restarting or getting killed. Signs: `SIGABRT`, `v8::internal::Runtime_AllocateInYoungGeneration`, or silent restarts.
 
-**Solução:** Aumente a memória em `fly.toml`:
+**Fix:** Increase memory in `fly.toml`:
 
 ```toml
 [[vm]]
   memory = "2048mb"
 ```
 
-Ou atualize uma máquina existente:
+Or update an existing machine:
 
 ```bash
 fly machine update <machine-id> --vm-memory 2048 -y
 ```
 
-**Nota:** 512MB é muito pouco. 1GB pode funcionar mas pode ter OOM sob carga ou com logging verboso. **2GB é recomendado.**
+**Note:** 512MB is too small. 1GB may work but can OOM under load or with verbose logging. **2GB is recommended.**
 
-### Problemas de Lock do Gateway
+### Gateway Lock Issues
 
-O gateway se recusa a iniciar com erros de "already running".
+Gateway refuses to start with "already running" errors.
 
-Isso acontece quando o container reinicia mas o arquivo de lock do PID persiste no volume.
+This happens when the container restarts but the PID lock file persists on the volume.
 
-**Solução:** Delete o arquivo de lock:
+**Fix:** Delete the lock file:
 
 ```bash
 fly ssh console --command "rm -f /data/gateway.*.lock"
 fly machine restart <machine-id>
 ```
 
-O arquivo de lock fica em `/data/gateway.*.lock` (não em um subdiretório).
+The lock file is at `/data/gateway.*.lock` (not in a subdirectory).
 
-### Config não sendo lida
+### Config Not Being Read
 
-Se usar `--allow-unconfigured`, o gateway cria uma config mínima. Sua config personalizada em `/data/opencraft.json` deve ser lida ao reiniciar.
+If using `--allow-unconfigured`, the gateway creates a minimal config. Your custom config at `/data/openclaw.json` should be read on restart.
 
-Verifique se a config existe:
+Verify the config exists:
 
 ```bash
-fly ssh console --command "cat /data/opencraft.json"
+fly ssh console --command "cat /data/openclaw.json"
 ```
 
-### Escrevendo config via SSH
+### Writing Config via SSH
 
-O comando `fly ssh console -C` não suporta redirecionamento de shell. Para escrever um arquivo de config:
+The `fly ssh console -C` command doesn't support shell redirection. To write a config file:
 
 ```bash
-# Usar echo + tee (pipe do local para remoto)
-echo '{"sua":"config"}' | fly ssh console -C "tee /data/opencraft.json"
+# Use echo + tee (pipe from local to remote)
+echo '{"your":"config"}' | fly ssh console -C "tee /data/openclaw.json"
 
-# Ou usar sftp
+# Or use sftp
 fly sftp shell
-> put /caminho/local/config.json /data/opencraft.json
+> put /local/path/config.json /data/openclaw.json
 ```
 
-**Nota:** `fly sftp` pode falhar se o arquivo já existir. Delete primeiro:
+**Note:** `fly sftp` may fail if the file already exists. Delete first:
 
 ```bash
-fly ssh console --command "rm /data/opencraft.json"
+fly ssh console --command "rm /data/openclaw.json"
 ```
 
-### Estado não persistindo
+### State Not Persisting
 
-Se você perder credenciais ou sessões após reinicialização, o diretório de estado está escrevendo no sistema de arquivos do container.
+If you lose credentials or sessions after a restart, the state dir is writing to the container filesystem.
 
-**Solução:** Certifique-se de que `OPENCLAW_STATE_DIR=/data` está definido em `fly.toml` e reimplante.
+**Fix:** Ensure `OPENCLAW_STATE_DIR=/data` is set in `fly.toml` and redeploy.
 
-## Atualizações
+## Updates
 
 ```bash
-# Obter últimas mudanças
+# Pull latest changes
 git pull
 
-# Reimplantar
+# Redeploy
 fly deploy
 
-# Verificar saúde
+# Check health
 fly status
 fly logs
 ```
 
-### Atualizando o comando da máquina
+### Updating Machine Command
 
-Se você precisar mudar o comando de inicialização sem um redeploy completo:
+If you need to change the startup command without a full redeploy:
 
 ```bash
-# Obter ID da máquina
+# Get machine ID
 fly machines list
 
-# Atualizar comando
+# Update command
 fly machine update <machine-id> --command "node dist/index.js gateway --port 3000 --bind lan" -y
 
-# Ou com aumento de memória
+# Or with memory increase
 fly machine update <machine-id> --vm-memory 2048 --command "node dist/index.js gateway --port 3000 --bind lan" -y
 ```
 
-**Nota:** Após `fly deploy`, o comando da máquina pode ser redefinido para o que está em `fly.toml`. Se você fez mudanças manuais, reaplicá-las após o deploy.
+**Note:** After `fly deploy`, the machine command may reset to what's in `fly.toml`. If you made manual changes, re-apply them after deploy.
 
-## Implantação privada (reforçada) {#implantacao-privada-reforçada}
+## Private Deployment (Hardened)
 
-Por padrão, o Fly aloca IPs públicos, tornando seu gateway acessível em `https://seu-app.fly.dev`. Isso é conveniente mas significa que sua implantação é descobrível por scanners de internet (Shodan, Censys, etc.).
+By default, Fly allocates public IPs, making your gateway accessible at `https://your-app.fly.dev`. This is convenient but means your deployment is discoverable by internet scanners (Shodan, Censys, etc.).
 
-Para uma implantação reforçada **sem exposição pública**, use o template privado.
+For a hardened deployment with **no public exposure**, use the private template.
 
-### Quando usar implantação privada
+### When to use private deployment
 
-- Você faz apenas chamadas/mensagens **de saída** (sem webhooks de entrada)
-- Você usa túneis **ngrok ou Tailscale** para qualquer callback de webhook
-- Você acessa o gateway via **SSH, proxy ou WireGuard** em vez do navegador
-- Você quer a implantação **oculta de scanners de internet**
+- You only make **outbound** calls/messages (no inbound webhooks)
+- You use **ngrok or Tailscale** tunnels for any webhook callbacks
+- You access the gateway via **SSH, proxy, or WireGuard** instead of browser
+- You want the deployment **hidden from internet scanners**
 
-### Configuração
+### Setup
 
-Use `fly.private.toml` em vez da config padrão:
+Use `fly.private.toml` instead of the standard config:
 
 ```bash
-# Implantar com config privada
+# Deploy with private config
 fly deploy -c fly.private.toml
 ```
 
-Ou converta uma implantação existente:
+Or convert an existing deployment:
 
 ```bash
-# Listar IPs atuais
-fly ips list -a meu-opencraft
+# List current IPs
+fly ips list -a my-openclaw
 
-# Liberar IPs públicos
-fly ips release <public-ipv4> -a meu-opencraft
-fly ips release <public-ipv6> -a meu-opencraft
+# Release public IPs
+fly ips release <public-ipv4> -a my-openclaw
+fly ips release <public-ipv6> -a my-openclaw
 
-# Mudar para config privada para que deploys futuros não realocem IPs públicos
-# (remova [http_service] ou implante com o template privado)
+# Switch to private config so future deploys don't re-allocate public IPs
+# (remove [http_service] or deploy with the private template)
 fly deploy -c fly.private.toml
 
-# Alocar IPv6 apenas privado
-fly ips allocate-v6 --private -a meu-opencraft
+# Allocate private-only IPv6
+fly ips allocate-v6 --private -a my-openclaw
 ```
 
-Após isso, `fly ips list` deve mostrar apenas um IP do tipo `private`:
+After this, `fly ips list` should show only a `private` type IP:
 
 ```
 VERSION  IP                   TYPE             REGION
 v6       fdaa:x:x:x:x::x      private          global
 ```
 
-### Acessando uma implantação privada
+### Accessing a private deployment
 
-Como não há URL pública, use um destes métodos:
+Since there's no public URL, use one of these methods:
 
-**Opção 1: Proxy local (mais simples)**
+**Option 1: Local proxy (simplest)**
 
 ```bash
-# Redirecionar porta local 3000 para o app
-fly proxy 3000:3000 -a meu-opencraft
+# Forward local port 3000 to the app
+fly proxy 3000:3000 -a my-openclaw
 
-# Depois abra http://localhost:3000 no navegador
+# Then open http://localhost:3000 in browser
 ```
 
-**Opção 2: VPN WireGuard**
+**Option 2: WireGuard VPN**
 
 ```bash
-# Criar config WireGuard (uma vez)
+# Create WireGuard config (one-time)
 fly wireguard create
 
-# Importe para o cliente WireGuard, depois acesse via IPv6 interno
-# Exemplo: http://[fdaa:x:x:x:x::x]:3000
+# Import to WireGuard client, then access via internal IPv6
+# Example: http://[fdaa:x:x:x:x::x]:3000
 ```
 
-**Opção 3: Apenas SSH**
+**Option 3: SSH only**
 
 ```bash
-fly ssh console -a meu-opencraft
+fly ssh console -a my-openclaw
 ```
 
-### Webhooks com implantação privada
+### Webhooks with private deployment
 
-Se você precisar de callbacks de webhook (Twilio, Telnyx, etc.) sem exposição pública:
+If you need webhook callbacks (Twilio, Telnyx, etc.) without public exposure:
 
-1. **Túnel ngrok** - Execute o ngrok dentro do container ou como sidecar
-2. **Tailscale Funnel** - Exponha caminhos específicos via Tailscale
-3. **Apenas saída** - Alguns provedores (Twilio) funcionam bem para chamadas de saída sem webhooks
+1. **ngrok tunnel** - Run ngrok inside the container or as a sidecar
+2. **Tailscale Funnel** - Expose specific paths via Tailscale
+3. **Outbound-only** - Some providers (Twilio) work fine for outbound calls without webhooks
 
-Exemplo de config de chamada de voz com ngrok:
+Example voice-call config with ngrok:
 
 ```json
 {
@@ -461,30 +461,30 @@ Exemplo de config de chamada de voz com ngrok:
 }
 ```
 
-O túnel ngrok roda dentro do container e fornece uma URL pública de webhook sem expor o app Fly em si. Defina `webhookSecurity.allowedHosts` com o hostname do túnel público para que os headers de host redirecionados sejam aceitos.
+The ngrok tunnel runs inside the container and provides a public webhook URL without exposing the Fly app itself. Set `webhookSecurity.allowedHosts` to the public tunnel hostname so forwarded host headers are accepted.
 
-### Benefícios de segurança
+### Security benefits
 
-| Aspecto             | Pública      | Privada      |
-| ------------------- | ------------ | ------------ |
-| Scanners de internet | Descobrível  | Oculta       |
-| Ataques diretos     | Possível     | Bloqueado    |
-| Acesso à UI         | Navegador    | Proxy/VPN    |
-| Entrega de webhooks | Direta       | Via túnel    |
+| Aspect            | Public       | Private    |
+| ----------------- | ------------ | ---------- |
+| Internet scanners | Discoverable | Hidden     |
+| Direct attacks    | Possible     | Blocked    |
+| Control UI access | Browser      | Proxy/VPN  |
+| Webhook delivery  | Direct       | Via tunnel |
 
-## Notas
+## Notes
 
-- O Fly.io usa arquitetura **x86** (não ARM)
-- O Dockerfile é compatível com ambas as arquiteturas
-- Para onboarding de WhatsApp/Telegram, use `fly ssh console`
-- Dados persistentes ficam no volume em `/data`
-- Signal requer Java + signal-cli; use uma imagem personalizada e mantenha a memória em 2GB+.
+- Fly.io uses **x86 architecture** (not ARM)
+- The Dockerfile is compatible with both architectures
+- For WhatsApp/Telegram onboarding, use `fly ssh console`
+- Persistent data lives on the volume at `/data`
+- Signal requires Java + signal-cli; use a custom image and keep memory at 2GB+.
 
-## Custo
+## Cost
 
-Com a config recomendada (`shared-cpu-2x`, 2GB RAM):
+With the recommended config (`shared-cpu-2x`, 2GB RAM):
 
-- ~$10-15/mês dependendo do uso
-- O plano gratuito inclui alguma cota
+- ~$10-15/month depending on usage
+- Free tier includes some allowance
 
-Veja [preços do Fly.io](https://fly.io/docs/about/pricing/) para detalhes.
+See [Fly.io pricing](https://fly.io/docs/about/pricing/) for details.

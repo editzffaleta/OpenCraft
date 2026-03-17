@@ -31,12 +31,12 @@ export function resolveUserPathWithHome(input: string, home?: string): string {
 }
 
 export function resolveGatewayStateDir(env: Record<string, string | undefined>): string {
-  const override = env.OPENCRAFT_STATE_DIR?.trim();
+  const override = env.OPENCLAW_STATE_DIR?.trim();
   if (override) {
     const home = override.startsWith("~") ? resolveHomeDir(env) : undefined;
     return resolveUserPathWithHome(override, home);
   }
   const home = resolveHomeDir(env);
-  const suffix = resolveGatewayProfileSuffix(env.OPENCRAFT_PROFILE);
-  return path.join(home, `.opencraft${suffix}`);
+  const suffix = resolveGatewayProfileSuffix(env.OPENCLAW_PROFILE);
+  return path.join(home, `.openclaw${suffix}`);
 }

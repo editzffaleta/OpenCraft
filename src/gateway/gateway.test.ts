@@ -7,12 +7,13 @@ import { startGatewayServer } from "./server.js";
 import { extractPayloadText } from "./test-helpers.agent-results.js";
 import {
   connectDeviceAuthReq,
+  disconnectGatewayClient,
   connectGatewayClient,
   getFreeGatewayPort,
   startGatewayWithClient,
 } from "./test-helpers.e2e.js";
 import { installOpenAiResponsesMock } from "./test-helpers.openai-mock.js";
-import { buildOpenAiResponsesProviderConfig } from "./test-openai-responses-model.js";
+import { buildMockOpenAiResponsesProvider } from "./test-openai-responses-model.js";
 
 let writeConfigFile: typeof import("../config/config.js").writeConfigFile;
 let resolveConfigPath: typeof import("../config/config.js").resolveConfigPath;
@@ -34,46 +35,47 @@ describe("gateway e2e", () => {
     async () => {
       const envSnapshot = captureEnv([
         "HOME",
-        "OPENCRAFT_CONFIG_PATH",
-        "OPENCRAFT_GATEWAY_TOKEN",
-        "OPENCRAFT_SKIP_CHANNELS",
-        "OPENCRAFT_SKIP_GMAIL_WATCHER",
-        "OPENCRAFT_SKIP_CRON",
-        "OPENCRAFT_SKIP_CANVAS_HOST",
-        "OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER",
+        "OPENCLAW_CONFIG_PATH",
+        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCLAW_SKIP_CHANNELS",
+        "OPENCLAW_SKIP_GMAIL_WATCHER",
+        "OPENCLAW_SKIP_CRON",
+        "OPENCLAW_SKIP_CANVAS_HOST",
+        "OPENCLAW_SKIP_BROWSER_CONTROL_SERVER",
       ]);
 
       const { baseUrl: openaiBaseUrl, restore } = installOpenAiResponsesMock();
 
-      const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-gw-mock-home-"));
+      const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-mock-home-"));
       process.env.HOME = tempHome;
-      process.env.OPENCRAFT_SKIP_CHANNELS = "1";
-      process.env.OPENCRAFT_SKIP_GMAIL_WATCHER = "1";
-      process.env.OPENCRAFT_SKIP_CRON = "1";
-      process.env.OPENCRAFT_SKIP_CANVAS_HOST = "1";
-      process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
+      process.env.OPENCLAW_SKIP_CHANNELS = "1";
+      process.env.OPENCLAW_SKIP_GMAIL_WATCHER = "1";
+      process.env.OPENCLAW_SKIP_CRON = "1";
+      process.env.OPENCLAW_SKIP_CANVAS_HOST = "1";
+      process.env.OPENCLAW_SKIP_BROWSER_CONTROL_SERVER = "1";
 
       const token = nextGatewayId("test-token");
-      process.env.OPENCRAFT_GATEWAY_TOKEN = token;
+      process.env.OPENCLAW_GATEWAY_TOKEN = token;
 
-      const workspaceDir = path.join(tempHome, "opencraft");
+      const workspaceDir = path.join(tempHome, "openclaw");
       await fs.mkdir(workspaceDir, { recursive: true });
 
       const nonceA = nextGatewayId("nonce-a");
       const nonceB = nextGatewayId("nonce-b");
-      const toolProbePath = path.join(workspaceDir, `.opencraft-tool-probe.${nonceA}.txt`);
+      const toolProbePath = path.join(workspaceDir, `.openclaw-tool-probe.${nonceA}.txt`);
       await fs.writeFile(toolProbePath, `nonceA=${nonceA}\nnonceB=${nonceB}\n`);
 
-      const configDir = path.join(tempHome, ".opencraft");
+      const configDir = path.join(tempHome, ".openclaw");
       await fs.mkdir(configDir, { recursive: true });
-      const configPath = path.join(configDir, "opencraft.json");
+      const configPath = path.join(configDir, "openclaw.json");
+      const mockProvider = buildMockOpenAiResponsesProvider(openaiBaseUrl);
 
       const cfg = {
         agents: { defaults: { workspace: workspaceDir } },
         models: {
           mode: "replace",
           providers: {
-            openai: buildOpenAiResponsesProviderConfig(openaiBaseUrl),
+            [mockProvider.providerId]: mockProvider.config,
           },
         },
         gateway: { auth: { token } },
@@ -91,7 +93,7 @@ describe("gateway e2e", () => {
 
         await client.request("sessions.patch", {
           key: sessionKey,
-          model: "openai/gpt-5.2",
+          model: mockProvider.modelRef,
         });
 
         const runId = nextGatewayId("run");
@@ -116,7 +118,7 @@ describe("gateway e2e", () => {
         expect(text).toContain(nonceA);
         expect(text).toContain(nonceB);
       } finally {
-        client.stop();
+        await disconnectGatewayClient(client);
         await server.close({ reason: "mock openai test complete" });
         await fs.rm(tempHome, { recursive: true, force: true });
         restore();
@@ -131,27 +133,27 @@ describe("gateway e2e", () => {
     async () => {
       const envSnapshot = captureEnv([
         "HOME",
-        "OPENCRAFT_STATE_DIR",
-        "OPENCRAFT_CONFIG_PATH",
-        "OPENCRAFT_GATEWAY_TOKEN",
-        "OPENCRAFT_SKIP_CHANNELS",
-        "OPENCRAFT_SKIP_GMAIL_WATCHER",
-        "OPENCRAFT_SKIP_CRON",
-        "OPENCRAFT_SKIP_CANVAS_HOST",
-        "OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER",
+        "OPENCLAW_STATE_DIR",
+        "OPENCLAW_CONFIG_PATH",
+        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCLAW_SKIP_CHANNELS",
+        "OPENCLAW_SKIP_GMAIL_WATCHER",
+        "OPENCLAW_SKIP_CRON",
+        "OPENCLAW_SKIP_CANVAS_HOST",
+        "OPENCLAW_SKIP_BROWSER_CONTROL_SERVER",
       ]);
 
-      process.env.OPENCRAFT_SKIP_CHANNELS = "1";
-      process.env.OPENCRAFT_SKIP_GMAIL_WATCHER = "1";
-      process.env.OPENCRAFT_SKIP_CRON = "1";
-      process.env.OPENCRAFT_SKIP_CANVAS_HOST = "1";
-      process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
-      delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+      process.env.OPENCLAW_SKIP_CHANNELS = "1";
+      process.env.OPENCLAW_SKIP_GMAIL_WATCHER = "1";
+      process.env.OPENCLAW_SKIP_CRON = "1";
+      process.env.OPENCLAW_SKIP_CANVAS_HOST = "1";
+      process.env.OPENCLAW_SKIP_BROWSER_CONTROL_SERVER = "1";
+      delete process.env.OPENCLAW_GATEWAY_TOKEN;
 
-      const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-wizard-home-"));
+      const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-wizard-home-"));
       process.env.HOME = tempHome;
-      delete process.env.OPENCRAFT_STATE_DIR;
-      delete process.env.OPENCRAFT_CONFIG_PATH;
+      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.OPENCLAW_CONFIG_PATH;
 
       const wizardToken = nextGatewayId("wiz-token");
       const port = await getFreeGatewayPort();
@@ -216,7 +218,7 @@ describe("gateway e2e", () => {
           | undefined;
         expect((token?.auth as { token?: string } | undefined)?.token).toBe(wizardToken);
       } finally {
-        client.stop();
+        await disconnectGatewayClient(client);
         await server.close({ reason: "wizard e2e complete" });
       }
 

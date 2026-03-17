@@ -2,7 +2,7 @@ import {
   buildCloudflareAiGatewayModelDefinition,
   resolveCloudflareAiGatewayBaseUrl,
 } from "../agents/cloudflare-ai-gateway.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   applyAgentDefaultModelPrimary,
   applyProviderConfigWithDefaultModel,
@@ -12,7 +12,7 @@ import {
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
 } from "./onboard-auth.credentials.js";
 
-export function applyVercelAiGatewayProviderConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyVercelAiGatewayProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF] = {
     ...models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF],
@@ -32,9 +32,9 @@ export function applyVercelAiGatewayProviderConfig(cfg: OpenCraftConfig): OpenCr
 }
 
 export function applyCloudflareAiGatewayProviderConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   params?: { accountId?: string; gatewayId?: string },
-): OpenCraftConfig {
+): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF] = {
     ...models[CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF],
@@ -77,15 +77,15 @@ export function applyCloudflareAiGatewayProviderConfig(
   });
 }
 
-export function applyVercelAiGatewayConfig(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyVercelAiGatewayConfig(cfg: OpenClawConfig): OpenClawConfig {
   const next = applyVercelAiGatewayProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF);
 }
 
 export function applyCloudflareAiGatewayConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   params?: { accountId?: string; gatewayId?: string },
-): OpenCraftConfig {
+): OpenClawConfig {
   const next = applyCloudflareAiGatewayProviderConfig(cfg, params);
   return applyAgentDefaultModelPrimary(next, CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF);
 }

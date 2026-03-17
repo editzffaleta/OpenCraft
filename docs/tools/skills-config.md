@@ -1,14 +1,14 @@
 ---
-summary: "Schema e exemplos de configuração de skills"
+summary: "Skills config schema and examples"
 read_when:
-  - Adicionando ou modificando configuração de skills
-  - Ajustando allowlist embutida ou comportamento de instalação
-title: "Config de Skills"
+  - Adding or modifying skills config
+  - Adjusting bundled allowlist or install behavior
+title: "Skills Config"
 ---
 
-# Config de Skills
+# Skills Config
 
-Toda configuração relacionada a skills fica em `skills` em `~/.opencraft/opencraft.json`.
+All skills-related configuration lives under `skills` in `~/.openclaw/openclaw.json`.
 
 ```json5
 {
@@ -21,14 +21,14 @@ Toda configuração relacionada a skills fica em `skills` em `~/.opencraft/openc
     },
     install: {
       preferBrew: true,
-      nodeManager: "npm", // npm | pnpm | yarn | bun (runtime do Gateway ainda é Node; bun não recomendado)
+      nodeManager: "npm", // npm | pnpm | yarn | bun (Gateway runtime still Node; bun not recommended)
     },
     entries: {
       "nano-banana-pro": {
         enabled: true,
-        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // ou string texto simples
+        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // or plaintext string
         env: {
-          GEMINI_API_KEY: "GEMINI_KEY_AQUI",
+          GEMINI_API_KEY: "GEMINI_KEY_HERE",
         },
       },
       peekaboo: { enabled: true },
@@ -38,40 +38,40 @@ Toda configuração relacionada a skills fica em `skills` em `~/.opencraft/openc
 }
 ```
 
-## Campos
+## Fields
 
-- `allowBundled`: allowlist opcional apenas para skills **embutidas**. Quando definido, apenas
-  skills embutidas na lista são elegíveis (skills gerenciadas/workspace não afetadas).
-- `load.extraDirs`: diretórios adicionais de skill para escanear (menor precedência).
-- `load.watch`: monitorar pastas de skill e atualizar o snapshot de skills (padrão: true).
-- `load.watchDebounceMs`: debounce para eventos do watcher de skills em milissegundos (padrão: 250).
-- `install.preferBrew`: preferir instaladores brew quando disponíveis (padrão: true).
-- `install.nodeManager`: preferência de instalador node (`npm` | `pnpm` | `yarn` | `bun`, padrão: npm).
-  Isso afeta apenas **instalações de skill**; o runtime do Gateway ainda deve ser Node
-  (Bun não recomendado para WhatsApp/Telegram).
-- `entries.<skillKey>`: overrides por skill.
+- `allowBundled`: optional allowlist for **bundled** skills only. When set, only
+  bundled skills in the list are eligible (managed/workspace skills unaffected).
+- `load.extraDirs`: additional skill directories to scan (lowest precedence).
+- `load.watch`: watch skill folders and refresh the skills snapshot (default: true).
+- `load.watchDebounceMs`: debounce for skill watcher events in milliseconds (default: 250).
+- `install.preferBrew`: prefer brew installers when available (default: true).
+- `install.nodeManager`: node installer preference (`npm` | `pnpm` | `yarn` | `bun`, default: npm).
+  This only affects **skill installs**; the Gateway runtime should still be Node
+  (Bun not recommended for WhatsApp/Telegram).
+- `entries.<skillKey>`: per-skill overrides.
 
-Campos por skill:
+Per-skill fields:
 
-- `enabled`: defina `false` para desabilitar uma skill mesmo se for embutida/instalada.
-- `env`: variáveis de ambiente injetadas para a execução do agente (apenas se ainda não estiver definida).
-- `apiKey`: conveniência opcional para skills que declaram uma var de env primária.
-  Suporta string texto simples ou objeto SecretRef (`{ source, provider, id }`).
+- `enabled`: set `false` to disable a skill even if it’s bundled/installed.
+- `env`: environment variables injected for the agent run (only if not already set).
+- `apiKey`: optional convenience for skills that declare a primary env var.
+  Supports plaintext string or SecretRef object (`{ source, provider, id }`).
 
-## Notas
+## Notes
 
-- Chaves em `entries` mapeiam para o nome da skill por padrão. Se uma skill define
-  `metadata.openclaw.skillKey`, use essa chave.
-- Mudanças em skills são capturadas no próximo turno do agente quando o watcher está habilitado.
+- Keys under `entries` map to the skill name by default. If a skill defines
+  `metadata.openclaw.skillKey`, use that key instead.
+- Changes to skills are picked up on the next agent turn when the watcher is enabled.
 
-### Skills em sandbox + vars de env
+### Sandboxed skills + env vars
 
-Quando uma sessão está **em sandbox**, processos de skill rodam dentro do Docker. O sandbox
-**não** herda o `process.env` do host.
+When a session is **sandboxed**, skill processes run inside Docker. The sandbox
+does **not** inherit the host `process.env`.
 
-Use um dos seguintes:
+Use one of:
 
-- `agents.defaults.sandbox.docker.env` (ou por agente `agents.list[].sandbox.docker.env`)
-- incorpore o env na sua imagem de sandbox personalizada
+- `agents.defaults.sandbox.docker.env` (or per-agent `agents.list[].sandbox.docker.env`)
+- bake the env into your custom sandbox image
 
-`env` global e `skills.entries.<skill>.env/apiKey` se aplicam apenas a execuções no **host**.
+Global `env` and `skills.entries.<skill>.env/apiKey` apply to **host** runs only.

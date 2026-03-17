@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const installPluginFromNpmSpecMock = vi.fn();
+const installPluginFromMarketplaceMock = vi.fn();
 const resolveBundledPluginSourcesMock = vi.fn();
 
 vi.mock("./install.js", () => ({
@@ -11,6 +12,10 @@ vi.mock("./install.js", () => ({
   },
 }));
 
+vi.mock("./marketplace.js", () => ({
+  installPluginFromMarketplace: (...args: unknown[]) => installPluginFromMarketplaceMock(...args),
+}));
+
 vi.mock("./bundled-sources.js", () => ({
   resolveBundledPluginSources: (...args: unknown[]) => resolveBundledPluginSourcesMock(...args),
 }));
@@ -18,14 +23,15 @@ vi.mock("./bundled-sources.js", () => ({
 describe("updateNpmInstalledPlugins", () => {
   beforeEach(() => {
     installPluginFromNpmSpecMock.mockReset();
+    installPluginFromMarketplaceMock.mockReset();
     resolveBundledPluginSourcesMock.mockReset();
   });
 
   it("skips integrity drift checks for unpinned npm specs during dry-run updates", async () => {
     installPluginFromNpmSpecMock.mockResolvedValue({
       ok: true,
-      pluginId: "opik-opencraft",
-      targetDir: "/tmp/opik-opencraft",
+      pluginId: "opik-openclaw",
+      targetDir: "/tmp/opik-openclaw",
       version: "0.2.6",
       extensions: ["index.ts"],
     });
@@ -35,22 +41,22 @@ describe("updateNpmInstalledPlugins", () => {
       config: {
         plugins: {
           installs: {
-            "opik-opencraft": {
+            "opik-openclaw": {
               source: "npm",
-              spec: "@opik/opik-opencraft",
+              spec: "@opik/opik-openclaw",
               integrity: "sha512-old",
-              installPath: "/tmp/opik-opencraft",
+              installPath: "/tmp/opik-openclaw",
             },
           },
         },
       },
-      pluginIds: ["opik-opencraft"],
+      pluginIds: ["opik-openclaw"],
       dryRun: true,
     });
 
     expect(installPluginFromNpmSpecMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        spec: "@opik/opik-opencraft",
+        spec: "@opik/opik-openclaw",
         expectedIntegrity: undefined,
       }),
     );
@@ -59,8 +65,8 @@ describe("updateNpmInstalledPlugins", () => {
   it("keeps integrity drift checks for exact-version npm specs during dry-run updates", async () => {
     installPluginFromNpmSpecMock.mockResolvedValue({
       ok: true,
-      pluginId: "opik-opencraft",
-      targetDir: "/tmp/opik-opencraft",
+      pluginId: "opik-openclaw",
+      targetDir: "/tmp/opik-openclaw",
       version: "0.2.6",
       extensions: ["index.ts"],
     });
@@ -70,22 +76,22 @@ describe("updateNpmInstalledPlugins", () => {
       config: {
         plugins: {
           installs: {
-            "opik-opencraft": {
+            "opik-openclaw": {
               source: "npm",
-              spec: "@opik/opik-opencraft@0.2.5",
+              spec: "@opik/opik-openclaw@0.2.5",
               integrity: "sha512-old",
-              installPath: "/tmp/opik-opencraft",
+              installPath: "/tmp/opik-openclaw",
             },
           },
         },
       },
-      pluginIds: ["opik-opencraft"],
+      pluginIds: ["opik-openclaw"],
       dryRun: true,
     });
 
     expect(installPluginFromNpmSpecMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        spec: "@opik/opik-opencraft@0.2.5",
+        spec: "@opik/opik-openclaw@0.2.5",
         expectedIntegrity: "sha512-old",
       }),
     );
@@ -95,7 +101,7 @@ describe("updateNpmInstalledPlugins", () => {
     installPluginFromNpmSpecMock.mockResolvedValue({
       ok: false,
       code: "npm_package_not_found",
-      error: "Package not found on npm: @opencraft/missing.",
+      error: "Package not found on npm: @openclaw/missing.",
     });
 
     const { updateNpmInstalledPlugins } = await import("./update.js");
@@ -105,7 +111,7 @@ describe("updateNpmInstalledPlugins", () => {
           installs: {
             missing: {
               source: "npm",
-              spec: "@opencraft/missing",
+              spec: "@openclaw/missing",
               installPath: "/tmp/missing",
             },
           },
@@ -119,7 +125,7 @@ describe("updateNpmInstalledPlugins", () => {
       {
         pluginId: "missing",
         status: "error",
-        message: "Failed to check missing: npm package not found for @opencraft/missing.",
+        message: "Failed to check missing: npm package not found for @openclaw/missing.",
       },
     ]);
   });
@@ -160,8 +166,8 @@ describe("updateNpmInstalledPlugins", () => {
   it("migrates legacy unscoped install keys when a scoped npm package updates", async () => {
     installPluginFromNpmSpecMock.mockResolvedValue({
       ok: true,
-      pluginId: "@opencraft/voice-call",
-      targetDir: "/tmp/opencraft-voice-call",
+      pluginId: "@openclaw/voice-call",
+      targetDir: "/tmp/openclaw-voice-call",
       version: "0.0.2",
       extensions: ["index.ts"],
     });
@@ -182,7 +188,7 @@ describe("updateNpmInstalledPlugins", () => {
           installs: {
             "voice-call": {
               source: "npm",
-              spec: "@opencraft/voice-call",
+              spec: "@openclaw/voice-call",
               installPath: "/tmp/voice-call",
             },
           },
@@ -193,25 +199,114 @@ describe("updateNpmInstalledPlugins", () => {
 
     expect(installPluginFromNpmSpecMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        spec: "@opencraft/voice-call",
+        spec: "@openclaw/voice-call",
         expectedPluginId: "voice-call",
       }),
     );
-    expect(result.config.plugins?.allow).toEqual(["@opencraft/voice-call"]);
-    expect(result.config.plugins?.deny).toEqual(["@opencraft/voice-call"]);
-    expect(result.config.plugins?.slots?.memory).toBe("@opencraft/voice-call");
-    expect(result.config.plugins?.entries?.["@opencraft/voice-call"]).toEqual({
+    expect(result.config.plugins?.allow).toEqual(["@openclaw/voice-call"]);
+    expect(result.config.plugins?.deny).toEqual(["@openclaw/voice-call"]);
+    expect(result.config.plugins?.slots?.memory).toBe("@openclaw/voice-call");
+    expect(result.config.plugins?.entries?.["@openclaw/voice-call"]).toEqual({
       enabled: false,
       hooks: { allowPromptInjection: false },
     });
     expect(result.config.plugins?.entries?.["voice-call"]).toBeUndefined();
-    expect(result.config.plugins?.installs?.["@opencraft/voice-call"]).toMatchObject({
+    expect(result.config.plugins?.installs?.["@openclaw/voice-call"]).toMatchObject({
       source: "npm",
-      spec: "@opencraft/voice-call",
-      installPath: "/tmp/opencraft-voice-call",
+      spec: "@openclaw/voice-call",
+      installPath: "/tmp/openclaw-voice-call",
       version: "0.0.2",
     });
     expect(result.config.plugins?.installs?.["voice-call"]).toBeUndefined();
+  });
+
+  it("checks marketplace installs during dry-run updates", async () => {
+    installPluginFromMarketplaceMock.mockResolvedValue({
+      ok: true,
+      pluginId: "claude-bundle",
+      targetDir: "/tmp/claude-bundle",
+      version: "1.2.0",
+      extensions: ["index.ts"],
+      marketplaceSource: "vincentkoc/claude-marketplace",
+      marketplacePlugin: "claude-bundle",
+    });
+
+    const { updateNpmInstalledPlugins } = await import("./update.js");
+    const result = await updateNpmInstalledPlugins({
+      config: {
+        plugins: {
+          installs: {
+            "claude-bundle": {
+              source: "marketplace",
+              marketplaceSource: "vincentkoc/claude-marketplace",
+              marketplacePlugin: "claude-bundle",
+              installPath: "/tmp/claude-bundle",
+            },
+          },
+        },
+      },
+      pluginIds: ["claude-bundle"],
+      dryRun: true,
+    });
+
+    expect(installPluginFromMarketplaceMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        marketplace: "vincentkoc/claude-marketplace",
+        plugin: "claude-bundle",
+        expectedPluginId: "claude-bundle",
+        dryRun: true,
+      }),
+    );
+    expect(result.outcomes).toEqual([
+      {
+        pluginId: "claude-bundle",
+        status: "updated",
+        currentVersion: undefined,
+        nextVersion: "1.2.0",
+        message: "Would update claude-bundle: unknown -> 1.2.0.",
+      },
+    ]);
+  });
+
+  it("updates marketplace installs and preserves source metadata", async () => {
+    installPluginFromMarketplaceMock.mockResolvedValue({
+      ok: true,
+      pluginId: "claude-bundle",
+      targetDir: "/tmp/claude-bundle",
+      version: "1.3.0",
+      extensions: ["index.ts"],
+      marketplaceName: "Vincent's Claude Plugins",
+      marketplaceSource: "vincentkoc/claude-marketplace",
+      marketplacePlugin: "claude-bundle",
+    });
+
+    const { updateNpmInstalledPlugins } = await import("./update.js");
+    const result = await updateNpmInstalledPlugins({
+      config: {
+        plugins: {
+          installs: {
+            "claude-bundle": {
+              source: "marketplace",
+              marketplaceName: "Vincent's Claude Plugins",
+              marketplaceSource: "vincentkoc/claude-marketplace",
+              marketplacePlugin: "claude-bundle",
+              installPath: "/tmp/claude-bundle",
+            },
+          },
+        },
+      },
+      pluginIds: ["claude-bundle"],
+    });
+
+    expect(result.changed).toBe(true);
+    expect(result.config.plugins?.installs?.["claude-bundle"]).toMatchObject({
+      source: "marketplace",
+      installPath: "/tmp/claude-bundle",
+      version: "1.3.0",
+      marketplaceName: "Vincent's Claude Plugins",
+      marketplaceSource: "vincentkoc/claude-marketplace",
+      marketplacePlugin: "claude-bundle",
+    });
   });
 });
 
@@ -229,7 +324,7 @@ describe("syncPluginsForUpdateChannel", () => {
           {
             pluginId: "feishu",
             localPath: "/app/extensions/feishu",
-            npmSpec: "@opencraft/feishu",
+            npmSpec: "@openclaw/feishu",
           },
         ],
       ]),
@@ -246,7 +341,7 @@ describe("syncPluginsForUpdateChannel", () => {
               source: "path",
               sourcePath: "/app/extensions/feishu",
               installPath: "/app/extensions/feishu",
-              spec: "@opencraft/feishu",
+              spec: "@openclaw/feishu",
             },
           },
         },
@@ -268,7 +363,7 @@ describe("syncPluginsForUpdateChannel", () => {
           {
             pluginId: "feishu",
             localPath: "/app/extensions/feishu",
-            npmSpec: "@opencraft/feishu",
+            npmSpec: "@openclaw/feishu",
           },
         ],
       ]),
@@ -285,7 +380,7 @@ describe("syncPluginsForUpdateChannel", () => {
               source: "path",
               sourcePath: "/app/extensions/feishu",
               installPath: "/tmp/old-feishu",
-              spec: "@opencraft/feishu",
+              spec: "@openclaw/feishu",
             },
           },
         },
@@ -298,14 +393,14 @@ describe("syncPluginsForUpdateChannel", () => {
       source: "path",
       sourcePath: "/app/extensions/feishu",
       installPath: "/app/extensions/feishu",
-      spec: "@opencraft/feishu",
+      spec: "@openclaw/feishu",
     });
     expect(installPluginFromNpmSpecMock).not.toHaveBeenCalled();
   });
 
   it("forwards an explicit env to bundled plugin source resolution", async () => {
     resolveBundledPluginSourcesMock.mockReturnValue(new Map());
-    const env = { OPENCRAFT_HOME: "/srv/opencraft-home" } as NodeJS.ProcessEnv;
+    const env = { OPENCLAW_HOME: "/srv/openclaw-home" } as NodeJS.ProcessEnv;
 
     const { syncPluginsForUpdateChannel } = await import("./update.js");
     await syncPluginsForUpdateChannel({
@@ -322,7 +417,7 @@ describe("syncPluginsForUpdateChannel", () => {
   });
 
   it("uses the provided env when matching bundled load and install paths", async () => {
-    const bundledHome = "/tmp/opencraft-home";
+    const bundledHome = "/tmp/openclaw-home";
     resolveBundledPluginSourcesMock.mockReturnValue(
       new Map([
         [
@@ -330,7 +425,7 @@ describe("syncPluginsForUpdateChannel", () => {
           {
             pluginId: "feishu",
             localPath: `${bundledHome}/plugins/feishu`,
-            npmSpec: "@opencraft/feishu",
+            npmSpec: "@openclaw/feishu",
           },
         ],
       ]),
@@ -344,7 +439,7 @@ describe("syncPluginsForUpdateChannel", () => {
         channel: "beta",
         env: {
           ...process.env,
-          OPENCRAFT_HOME: bundledHome,
+          OPENCLAW_HOME: bundledHome,
           HOME: "/tmp/ignored-home",
         },
         config: {
@@ -355,7 +450,7 @@ describe("syncPluginsForUpdateChannel", () => {
                 source: "path",
                 sourcePath: "~/plugins/feishu",
                 installPath: "~/plugins/feishu",
-                spec: "@opencraft/feishu",
+                spec: "@openclaw/feishu",
               },
             },
           },

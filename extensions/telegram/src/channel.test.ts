@@ -1,16 +1,19 @@
 import type {
   ChannelAccountSnapshot,
   ChannelGatewayContext,
-  OpenCraftConfig,
+  OpenClawConfig,
   PluginRuntime,
-  ResolvedTelegramAccount,
-} from "opencraft/plugin-sdk/telegram";
-import { describe, expect, it, vi } from "vitest";
+} from "openclaw/plugin-sdk/telegram";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
+import type { ResolvedTelegramAccount } from "./accounts.js";
+import * as auditModule from "./audit.js";
 import { telegramPlugin } from "./channel.js";
+import * as monitorModule from "./monitor.js";
+import * as probeModule from "./probe.js";
 import { setTelegramRuntime } from "./runtime.js";
 
-function createCfg(): OpenCraftConfig {
+function createCfg(): OpenClawConfig {
   return {
     channels: {
       telegram: {
@@ -22,11 +25,11 @@ function createCfg(): OpenCraftConfig {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 function createStartAccountCtx(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   runtime: ReturnType<typeof createRuntimeEnv>;
 }): ChannelGatewayContext<ResolvedTelegramAccount> {
@@ -53,32 +56,34 @@ function createStartAccountCtx(params: {
 }
 
 function installGatewayRuntime(params?: { probeOk?: boolean; botUsername?: string }) {
-  const monitorTelegramProvider = vi.fn(async () => undefined);
-  const probeTelegram = vi.fn(async () =>
-    params?.probeOk ? { ok: true, bot: { username: params.botUsername ?? "bot" } } : { ok: false },
-  );
-  const collectUnmentionedGroupIds = vi.fn(() => ({
-    groupIds: [] as string[],
-    unresolvedGroups: 0,
-    hasWildcardUnmentionedGroups: false,
-  }));
-  const auditGroupMembership = vi.fn(async () => ({
-    ok: true,
-    checkedGroups: 0,
-    unresolvedGroups: 0,
-    hasWildcardUnmentionedGroups: false,
-    groups: [],
-    elapsedMs: 0,
-  }));
+  const monitorTelegramProvider = vi
+    .spyOn(monitorModule, "monitorTelegramProvider")
+    .mockImplementation(async () => undefined);
+  const probeTelegram = vi
+    .spyOn(probeModule, "probeTelegram")
+    .mockImplementation(async () =>
+      params?.probeOk
+        ? { ok: true, bot: { username: params.botUsername ?? "bot" }, elapsedMs: 0 }
+        : { ok: false, elapsedMs: 0 },
+    );
+  const collectUnmentionedGroupIds = vi
+    .spyOn(auditModule, "collectTelegramUnmentionedGroupIds")
+    .mockImplementation(() => ({
+      groupIds: [] as string[],
+      unresolvedGroups: 0,
+      hasWildcardUnmentionedGroups: false,
+    }));
+  const auditGroupMembership = vi
+    .spyOn(auditModule, "auditTelegramGroupMembership")
+    .mockImplementation(async () => ({
+      ok: true,
+      checkedGroups: 0,
+      unresolvedGroups: 0,
+      hasWildcardUnmentionedGroups: false,
+      groups: [],
+      elapsedMs: 0,
+    }));
   setTelegramRuntime({
-    channel: {
-      telegram: {
-        monitorTelegramProvider,
-        probeTelegram,
-        collectUnmentionedGroupIds,
-        auditGroupMembership,
-      },
-    },
     logging: {
       shouldLogVerbose: () => false,
     },
@@ -91,7 +96,7 @@ function installGatewayRuntime(params?: { probeOk?: boolean; botUsername?: strin
   };
 }
 
-function configureOpsProxyNetwork(cfg: OpenCraftConfig) {
+function configureOpsProxyNetwork(cfg: OpenClawConfig) {
   cfg.channels!.telegram!.accounts!.ops = {
     ...cfg.channels!.telegram!.accounts!.ops,
     proxy: "http://127.0.0.1:8888",
@@ -114,6 +119,10 @@ function installSendMessageRuntime(
   } as unknown as PluginRuntime);
   return sendMessageTelegram;
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("telegramPlugin duplicate token guard", () => {
   it("marks secondary account as not configured when token is shared", async () => {

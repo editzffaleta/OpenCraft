@@ -18,7 +18,7 @@ type HarnessState = {
       cdpPort?: number;
       cdpUrl?: string;
       color: string;
-      driver?: "opencraft" | "extension" | "existing-session";
+      driver?: "openclaw" | "existing-session";
       attachOnly?: boolean;
     }
   >;
@@ -34,7 +34,7 @@ const state: HarnessState = {
   reachable: false,
   cfgAttachOnly: false,
   cfgEvaluateEnabled: true,
-  cfgDefaultProfile: "opencraft",
+  cfgDefaultProfile: "openclaw",
   cfgProfiles: {},
   createTargetId: null,
   prevGatewayPort: undefined,
@@ -52,10 +52,10 @@ export function getBrowserControlServerBaseUrl(): string {
 
 export function restoreGatewayPortEnv(prevGatewayPort: string | undefined): void {
   if (prevGatewayPort === undefined) {
-    delete process.env.OPENCRAFT_GATEWAY_PORT;
+    delete process.env.OPENCLAW_GATEWAY_PORT;
     return;
   }
-  process.env.OPENCRAFT_GATEWAY_PORT = prevGatewayPort;
+  process.env.OPENCLAW_GATEWAY_PORT = prevGatewayPort;
 }
 
 export function setBrowserControlServerCreateTargetId(targetId: string | null): void {
@@ -76,7 +76,7 @@ export function setBrowserControlServerReachable(reachable: boolean): void {
 
 export function setBrowserControlServerProfiles(
   profiles: HarnessState["cfgProfiles"],
-  defaultProfile = Object.keys(profiles)[0] ?? "opencraft",
+  defaultProfile = Object.keys(profiles)[0] ?? "openclaw",
 ): void {
   state.cfgProfiles = profiles;
   state.cfgDefaultProfile = defaultProfile;
@@ -181,7 +181,7 @@ export function getChromeMcpMocks(): Record<string, MockFn> {
   return chromeMcpMocks as unknown as Record<string, MockFn>;
 }
 
-const chromeUserDataDir = vi.hoisted(() => ({ dir: "/tmp/opencraft" }));
+const chromeUserDataDir = vi.hoisted(() => ({ dir: "/tmp/openclaw" }));
 installChromeUserDataDirHooks(chromeUserDataDir);
 
 function makeProc(pid = 123) {
@@ -209,7 +209,7 @@ const proc = makeProc();
 
 function defaultProfilesForState(testPort: number): HarnessState["cfgProfiles"] {
   return {
-    opencraft: { cdpPort: testPort + 9, color: "#FF4500" },
+    openclaw: { cdpPort: testPort + 9, color: "#FF4500" },
   };
 }
 
@@ -253,7 +253,7 @@ export function getLaunchCalls() {
 vi.mock("./chrome.js", () => ({
   isChromeCdpReady: vi.fn(async () => state.reachable),
   isChromeReachable: vi.fn(async () => state.reachable),
-  launchOpenCraftChrome: vi.fn(async (_resolved: unknown, profile: { cdpPort: number }) => {
+  launchOpenClawChrome: vi.fn(async (_resolved: unknown, profile: { cdpPort: number }) => {
     launchCalls.push({ port: profile.cdpPort });
     state.reachable = true;
     return {
@@ -265,8 +265,8 @@ vi.mock("./chrome.js", () => ({
       proc,
     };
   }),
-  resolveOpenCraftUserDataDir: vi.fn(() => chromeUserDataDir.dir),
-  stopOpenCraftChrome: vi.fn(async () => {
+  resolveOpenClawUserDataDir: vi.fn(() => chromeUserDataDir.dir),
+  stopOpenClawChrome: vi.fn(async () => {
     state.reachable = false;
   }),
 }));
@@ -332,7 +332,7 @@ export async function resetBrowserControlServerTestContext(): Promise<void> {
   state.reachable = false;
   state.cfgAttachOnly = false;
   state.cfgEvaluateEnabled = true;
-  state.cfgDefaultProfile = "opencraft";
+  state.cfgDefaultProfile = "openclaw";
   state.cfgProfiles = defaultProfilesForState(state.testPort);
   state.createTargetId = null;
 
@@ -343,14 +343,14 @@ export async function resetBrowserControlServerTestContext(): Promise<void> {
   state.testPort = await getFreePort();
   state.cdpBaseUrl = `http://127.0.0.1:${state.testPort + 9}`;
   state.cfgProfiles = defaultProfilesForState(state.testPort);
-  state.prevGatewayPort = process.env.OPENCRAFT_GATEWAY_PORT;
-  process.env.OPENCRAFT_GATEWAY_PORT = String(state.testPort - 2);
+  state.prevGatewayPort = process.env.OPENCLAW_GATEWAY_PORT;
+  process.env.OPENCLAW_GATEWAY_PORT = String(state.testPort - 2);
   // Avoid flaky auth coupling: some suites temporarily set gateway env auth
   // which would make the browser control server require auth.
-  state.prevGatewayToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
-  state.prevGatewayPassword = process.env.OPENCRAFT_GATEWAY_PASSWORD;
-  delete process.env.OPENCRAFT_GATEWAY_TOKEN;
-  delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
+  state.prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+  state.prevGatewayPassword = process.env.OPENCLAW_GATEWAY_PASSWORD;
+  delete process.env.OPENCLAW_GATEWAY_TOKEN;
+  delete process.env.OPENCLAW_GATEWAY_PASSWORD;
 }
 
 export function restoreGatewayAuthEnv(
@@ -358,14 +358,14 @@ export function restoreGatewayAuthEnv(
   prevGatewayPassword: string | undefined,
 ): void {
   if (prevGatewayToken === undefined) {
-    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCLAW_GATEWAY_TOKEN;
   } else {
-    process.env.OPENCRAFT_GATEWAY_TOKEN = prevGatewayToken;
+    process.env.OPENCLAW_GATEWAY_TOKEN = prevGatewayToken;
   }
   if (prevGatewayPassword === undefined) {
-    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
   } else {
-    process.env.OPENCRAFT_GATEWAY_PASSWORD = prevGatewayPassword;
+    process.env.OPENCLAW_GATEWAY_PASSWORD = prevGatewayPassword;
   }
 }
 

@@ -6,7 +6,7 @@ import {
   readJsonBodyWithLimit,
   type RuntimeEnv,
   installRequestBodyLimitGuard,
-} from "opencraft/plugin-sdk/feishu";
+} from "openclaw/plugin-sdk/feishu";
 import { createFeishuWSClient } from "./client.js";
 import {
   botNames,

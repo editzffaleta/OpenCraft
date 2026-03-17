@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { MsgContext } from "../templating.js";
 import type { ElevatedLevel } from "../thinking.js";
@@ -16,7 +16,7 @@ import { clearInlineDirectives } from "./get-reply-directives-utils.js";
 import type { createModelSelectionState } from "./model-selection.js";
 import type { TypingController } from "./typing.js";
 
-type AgentDefaults = NonNullable<OpenCraftConfig["agents"]>["defaults"];
+type AgentDefaults = NonNullable<OpenClawConfig["agents"]>["defaults"];
 
 export type ApplyDirectiveResult =
   | { kind: "reply"; reply: ReplyPayload | ReplyPayload[] | undefined }
@@ -37,7 +37,7 @@ export type ApplyDirectiveResult =
 
 export async function applyInlineDirectiveOverrides(params: {
   ctx: MsgContext;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   agentDir: string;
   agentCfg: AgentDefaults;

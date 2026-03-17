@@ -47,7 +47,7 @@ export async function connectGatewayClient(params: {
 }) {
   const role = params.role ?? "operator";
   const platform = params.platform ?? process.platform;
-  const identityRoot = process.env.OPENCRAFT_STATE_DIR ?? process.env.HOME ?? os.tmpdir();
+  const identityRoot = process.env.OPENCLAW_STATE_DIR ?? process.env.HOME ?? os.tmpdir();
   const deviceIdentity =
     params.deviceIdentity ??
     loadOrCreateDeviceIdentity(
@@ -102,6 +102,10 @@ export async function connectGatewayClient(params: {
     timer.unref();
     client.start();
   });
+}
+
+export async function disconnectGatewayClient(client: GatewayClient): Promise<void> {
+  await client.stopAndWait();
 }
 
 export async function connectDeviceAuthReq(params: { url: string; token?: string }) {
@@ -228,7 +232,7 @@ export async function startGatewayWithClient(params: {
   clientDisplayName?: string;
 }) {
   await writeFile(params.configPath, `${JSON.stringify(params.cfg, null, 2)}\n`);
-  process.env.OPENCRAFT_CONFIG_PATH = params.configPath;
+  process.env.OPENCLAW_CONFIG_PATH = params.configPath;
 
   const port = await getFreeGatewayPort();
   const server = await startGatewayServer(port, {

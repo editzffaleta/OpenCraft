@@ -1,6 +1,11 @@
-import { upsertAuthProfileWithLock } from "../agents/auth-profiles.js";
 import type { ApiKeyCredential, AuthProfileCredential } from "../agents/auth-profiles/types.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import { upsertAuthProfileWithLock } from "../agents/auth-profiles/upsert-with-lock.js";
+import {
+  SELF_HOSTED_DEFAULT_CONTEXT_WINDOW,
+  SELF_HOSTED_DEFAULT_COST,
+  SELF_HOSTED_DEFAULT_MAX_TOKENS,
+} from "../agents/self-hosted-provider-defaults.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type {
   ProviderDiscoveryContext,
   ProviderAuthResult,
@@ -8,18 +13,15 @@ import type {
   ProviderNonInteractiveApiKeyResult,
 } from "../plugins/types.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
-import { applyAuthProfileConfig } from "./onboard-auth.js";
+import { applyAuthProfileConfig } from "./auth-profile-config.js";
 
-export const SELF_HOSTED_DEFAULT_CONTEXT_WINDOW = 128000;
-export const SELF_HOSTED_DEFAULT_MAX_TOKENS = 8192;
-export const SELF_HOSTED_DEFAULT_COST = {
-  input: 0,
-  output: 0,
-  cacheRead: 0,
-  cacheWrite: 0,
-};
+export {
+  SELF_HOSTED_DEFAULT_CONTEXT_WINDOW,
+  SELF_HOSTED_DEFAULT_COST,
+  SELF_HOSTED_DEFAULT_MAX_TOKENS,
+} from "../agents/self-hosted-provider-defaults.js";
 
-export function applyProviderDefaultModel(cfg: OpenCraftConfig, modelRef: string): OpenCraftConfig {
+export function applyProviderDefaultModel(cfg: OpenClawConfig, modelRef: string): OpenClawConfig {
   const existingModel = cfg.agents?.defaults?.model;
   const fallbacks =
     existingModel && typeof existingModel === "object" && "fallbacks" in existingModel
@@ -42,7 +44,7 @@ export function applyProviderDefaultModel(cfg: OpenCraftConfig, modelRef: string
 }
 
 function buildOpenAICompatibleSelfHostedProviderConfig(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   providerId: string;
   baseUrl: string;
   providerApiKey: string;
@@ -51,7 +53,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): { config: OpenCraftConfig; modelId: string; modelRef: string; profileId: string } {
+}): { config: OpenClawConfig; modelId: string; modelRef: string; profileId: string } {
   const modelRef = `${params.providerId}/${params.modelId}`;
   const profileId = `${params.providerId}:default`;
   return {
@@ -88,7 +90,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
 }
 
 type OpenAICompatibleSelfHostedProviderSetupParams = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   prompter: WizardPrompter;
   providerId: string;
   providerLabel: string;
@@ -102,7 +104,7 @@ type OpenAICompatibleSelfHostedProviderSetupParams = {
 };
 
 type OpenAICompatibleSelfHostedProviderPromptResult = {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   credential: AuthProfileCredential;
   modelId: string;
   modelRef: string;
@@ -237,7 +239,7 @@ export async function configureOpenAICompatibleSelfHostedProviderNonInteractive(
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): Promise<OpenCraftConfig | null> {
+}): Promise<OpenClawConfig | null> {
   const baseUrl = (params.ctx.opts.customBaseUrl?.trim() || params.defaultBaseUrl).replace(
     /\/+$/,
     "",

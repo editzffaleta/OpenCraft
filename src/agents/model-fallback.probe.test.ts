@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { registerLogTransport, resetLogger, setLoggerOverride } from "../logging/logger.js";
 import type { AuthProfileStore } from "./auth-profiles.js";
 import { makeModelFallbackCfg } from "./test-helpers/model-fallback-config-fixture.js";
@@ -91,7 +91,7 @@ async function expectProbeFailureFallsBack({
         },
       },
     },
-  } as Partial<OpenCraftConfig>);
+  } as Partial<OpenClawConfig>);
 
   mockedIsProfileInCooldown.mockReturnValue(true);
   mockedGetSoonestCooldownExpiry.mockReturnValue(1_700_000_000_000 + 30 * 1000);
@@ -121,7 +121,7 @@ describe("runWithModelFallback – probe logic", () => {
   const NOW = 1_700_000_000_000;
 
   const runPrimaryCandidate = (
-    cfg: OpenCraftConfig,
+    cfg: OpenClawConfig,
     run: (provider: string, model: string) => Promise<unknown>,
   ) =>
     runWithModelFallback({
@@ -219,7 +219,7 @@ describe("runWithModelFallback – probe logic", () => {
     setLoggerOverride({
       level: "trace",
       consoleLevel: "silent",
-      file: path.join(os.tmpdir(), `opencraft-model-fallback-probe-${Date.now()}.log`),
+      file: path.join(os.tmpdir(), `openclaw-model-fallback-probe-${Date.now()}.log`),
     });
     unregisterLogTransport = registerLogTransport((record) => {
       records.push(record);
@@ -242,7 +242,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<OpenCraftConfig>);
+    } as Partial<OpenClawConfig>);
     mockedGetSoonestCooldownExpiry.mockReturnValue(NOW + 60 * 1000);
     const fallbackRun = vi
       .fn()
@@ -341,7 +341,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<OpenCraftConfig>);
+    } as Partial<OpenClawConfig>);
 
     mockedResolveAuthProfileOrder.mockImplementation(({ provider }: { provider: string }) => {
       if (provider === "google") {
@@ -507,7 +507,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<OpenCraftConfig>);
+    } as Partial<OpenClawConfig>);
 
     const almostExpired = NOW + 30 * 1000;
     mockedGetSoonestCooldownExpiry.mockReturnValue(almostExpired);
@@ -568,7 +568,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<OpenCraftConfig>);
+    } as Partial<OpenClawConfig>);
 
     // Single-provider setups need periodic probes even when the billing
     // cooldown is far from expiry, otherwise topping up credits never recovers

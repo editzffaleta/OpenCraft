@@ -1,10 +1,10 @@
 import { collectTextContentBlocks } from "../../agents/content-blocks.js";
-import { createOpenCraftTools } from "../../agents/opencraft-tools.js";
+import { createOpenClawTools } from "../../agents/openclaw-tools.js";
 import type { BlockReplyChunking } from "../../agents/pi-embedded-block-chunker.js";
 import type { SkillCommandSpec } from "../../agents/skills.js";
 import { applyOwnerOnlyToolPolicy } from "../../agents/tool-policy.js";
-import { getChannelDock } from "../../channels/dock.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import { getChannelPlugin } from "../../channels/plugins/index.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
 import { generateSecureToken } from "../../infra/secure-random.js";
@@ -88,7 +88,7 @@ function extractTextFromToolResult(result: any): string | null {
 export async function handleInlineActions(params: {
   ctx: MsgContext;
   sessionCtx: TemplateContext;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   agentDir?: string;
   sessionEntry?: SessionEntry;
@@ -211,7 +211,7 @@ export async function handleInlineActions(params: {
         resolveGatewayMessageChannel(ctx.Provider) ??
         undefined;
 
-      const tools = createOpenCraftTools({
+      const tools = createOpenClawTools({
         agentSessionKey: sessionKey,
         agentChannel: channel,
         agentAccountId: (ctx as { AccountId?: string }).AccountId,
@@ -220,6 +220,7 @@ export async function handleInlineActions(params: {
         agentDir,
         workspaceDir,
         config: cfg,
+        allowGatewaySubagentBinding: true,
       });
       const authorizedTools = applyOwnerOnlyToolPolicy(tools, command.senderIsOwner);
 
@@ -402,7 +403,7 @@ export async function handleInlineActions(params: {
 
   const isEmptyConfig = Object.keys(cfg).length === 0;
   const skipWhenConfigEmpty = command.channelId
-    ? Boolean(getChannelDock(command.channelId)?.commands?.skipWhenConfigEmpty)
+    ? Boolean(getChannelPlugin(command.channelId)?.commands?.skipWhenConfigEmpty)
     : false;
   if (
     skipWhenConfigEmpty &&

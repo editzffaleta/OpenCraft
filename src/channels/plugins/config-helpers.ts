@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
 
 type ChannelSection = {
@@ -14,12 +14,12 @@ function isConfiguredSecretValue(value: unknown): boolean {
 }
 
 export function setAccountEnabledInConfigSection(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   sectionKey: string;
   accountId: string;
   enabled: boolean;
   allowTopLevel?: boolean;
-}): OpenCraftConfig {
+}): OpenClawConfig {
   const accountKey = params.accountId || DEFAULT_ACCOUNT_ID;
   const channels = params.cfg.channels as Record<string, unknown> | undefined;
   const base = channels?.[params.sectionKey] as ChannelSection | undefined;
@@ -34,7 +34,7 @@ export function setAccountEnabledInConfigSection(params: {
           enabled: params.enabled,
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
   const baseAccounts = base?.accounts ?? {};
@@ -54,15 +54,15 @@ export function setAccountEnabledInConfigSection(params: {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 export function deleteAccountFromConfigSection(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   sectionKey: string;
   accountId: string;
   clearBaseFields?: string[];
-}): OpenCraftConfig {
+}): OpenClawConfig {
   const accountKey = params.accountId || DEFAULT_ACCOUNT_ID;
   const channels = params.cfg.channels as Record<string, unknown> | undefined;
   const base = channels?.[params.sectionKey] as ChannelSection | undefined;
@@ -85,7 +85,7 @@ export function deleteAccountFromConfigSection(params: {
           accounts: Object.keys(accounts).length ? accounts : undefined,
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
   if (baseAccounts && Object.keys(baseAccounts).length > 0) {
@@ -105,14 +105,14 @@ export function deleteAccountFromConfigSection(params: {
           accounts: Object.keys(baseAccounts).length ? baseAccounts : undefined,
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
   }
 
   const nextChannels = { ...params.cfg.channels } as Record<string, unknown>;
   delete nextChannels[params.sectionKey];
-  const nextCfg = { ...params.cfg } as OpenCraftConfig;
+  const nextCfg = { ...params.cfg } as OpenClawConfig;
   if (Object.keys(nextChannels).length > 0) {
-    nextCfg.channels = nextChannels as OpenCraftConfig["channels"];
+    nextCfg.channels = nextChannels as OpenClawConfig["channels"];
   } else {
     delete nextCfg.channels;
   }

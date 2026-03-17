@@ -1,29 +1,29 @@
 ---
-summary: "Slash commands: texto vs nativo, configuração e comandos suportados"
+summary: "Slash commands: text vs native, config, and supported commands"
 read_when:
-  - Usando ou configurando comandos de chat
-  - Depurando roteamento de comandos ou permissões
+  - Using or configuring chat commands
+  - Debugging command routing or permissions
 title: "Slash Commands"
 ---
 
 # Slash commands
 
-Comandos são tratados pelo Gateway. A maioria dos comandos deve ser enviada como uma mensagem **independente** que começa com `/`.
-O comando de chat bash somente no host usa `! <cmd>` (com `/bash <cmd>` como alias).
+Commands are handled by the Gateway. Most commands must be sent as a **standalone** message that starts with `/`.
+The host-only bash chat command uses `! <cmd>` (with `/bash <cmd>` as an alias).
 
-Existem dois sistemas relacionados:
+There are two related systems:
 
-- **Comandos**: mensagens independentes `/...`.
-- **Diretivas**: `/think`, `/fast`, `/verbose`, `/reasoning`, `/elevated`, `/exec`, `/model`, `/queue`.
-  - Diretivas são removidas da mensagem antes que o modelo a veja.
-  - Em mensagens de chat normais (não somente diretivas), são tratadas como "dicas inline" e **não** persistem configurações de sessão.
-  - Em mensagens somente de diretivas (a mensagem contém apenas diretivas), persistem na sessão e respondem com um reconhecimento.
-  - Diretivas só são aplicadas para **remetentes autorizados**. Se `commands.allowFrom` estiver definido, é a única
-    allowlist usada; caso contrário, a autorização vem de allowlists/emparelhamento de canal mais `commands.useAccessGroups`.
-    Remetentes não autorizados veem diretivas tratadas como texto simples.
+- **Commands**: standalone `/...` messages.
+- **Directives**: `/think`, `/fast`, `/verbose`, `/reasoning`, `/elevated`, `/exec`, `/model`, `/queue`.
+  - Directives are stripped from the message before the model sees it.
+  - In normal chat messages (not directive-only), they are treated as “inline hints” and do **not** persist session settings.
+  - In directive-only messages (the message contains only directives), they persist to the session and reply with an acknowledgement.
+  - Directives are only applied for **authorized senders**. If `commands.allowFrom` is set, it is the only
+    allowlist used; otherwise authorization comes from channel allowlists/pairing plus `commands.useAccessGroups`.
+    Unauthorized senders see directives treated as plain text.
 
-Também existem alguns **atalhos inline** (somente remetentes na allowlist/autorizados): `/help`, `/commands`, `/status`, `/whoami` (`/id`).
-Eles são executados imediatamente, removidos antes que o modelo veja a mensagem, e o texto restante continua pelo fluxo normal.
+There are also a few **inline shortcuts** (allowlisted/authorized senders only): `/help`, `/commands`, `/status`, `/whoami` (`/id`).
+They run immediately, are stripped before the model sees the message, and the remaining text continues through the normal flow.
 
 ## Config
 
@@ -39,7 +39,7 @@ Eles são executados imediatamente, removidos antes que o modelo veja a mensagem
     debug: false,
     restart: false,
     allowFrom: {
-      "*": ["usuario1"],
+      "*": ["user1"],
       discord: ["user:123"],
     },
     useAccessGroups: true,
@@ -47,118 +47,118 @@ Eles são executados imediatamente, removidos antes que o modelo veja a mensagem
 }
 ```
 
-- `commands.text` (padrão `true`) habilita análise de `/...` em mensagens de chat.
-  - Em superfícies sem comandos nativos (WhatsApp/WebChat/Signal/iMessage/Google Chat/MS Teams), comandos de texto ainda funcionam mesmo se você definir isso como `false`.
-- `commands.native` (padrão `"auto"`) registra comandos nativos.
-  - Auto: ativado para Discord/Telegram; desativado para Slack (até você adicionar slash commands); ignorado para provedores sem suporte nativo.
-  - Defina `channels.discord.commands.native`, `channels.telegram.commands.native` ou `channels.slack.commands.native` para sobrescrever por provedor (bool ou `"auto"`).
-  - `false` limpa comandos previamente registrados no Discord/Telegram na inicialização. Comandos do Slack são gerenciados no app Slack e não são removidos automaticamente.
-- `commands.nativeSkills` (padrão `"auto"`) registra comandos de **skill** nativamente quando suportado.
-  - Auto: ativado para Discord/Telegram; desativado para Slack (Slack requer criar um slash command por skill).
-  - Defina `channels.discord.commands.nativeSkills`, `channels.telegram.commands.nativeSkills` ou `channels.slack.commands.nativeSkills` para sobrescrever por provedor (bool ou `"auto"`).
-- `commands.bash` (padrão `false`) habilita `! <cmd>` para rodar comandos de shell do host (`/bash <cmd>` é um alias; requer allowlists `tools.elevated`).
-- `commands.bashForegroundMs` (padrão `2000`) controla quanto tempo o bash aguarda antes de mudar para modo background (`0` vai para background imediatamente).
-- `commands.config` (padrão `false`) habilita `/config` (lê/escreve `opencraft.json`).
-- `commands.debug` (padrão `false`) habilita `/debug` (overrides somente em runtime).
-- `commands.allowFrom` (opcional) define uma allowlist por provedor para autorização de comandos. Quando configurado, é a
-  única fonte de autorização para comandos e diretivas (allowlists/emparelhamento de canal e `commands.useAccessGroups`
-  são ignorados). Use `"*"` para um padrão global; chaves específicas de provedor sobrescrevem.
-- `commands.useAccessGroups` (padrão `true`) aplica allowlists/políticas para comandos quando `commands.allowFrom` não está definido.
+- `commands.text` (default `true`) enables parsing `/...` in chat messages.
+  - On surfaces without native commands (WhatsApp/WebChat/Signal/iMessage/Google Chat/MS Teams), text commands still work even if you set this to `false`.
+- `commands.native` (default `"auto"`) registers native commands.
+  - Auto: on for Discord/Telegram; off for Slack (until you add slash commands); ignored for providers without native support.
+  - Set `channels.discord.commands.native`, `channels.telegram.commands.native`, or `channels.slack.commands.native` to override per provider (bool or `"auto"`).
+  - `false` clears previously registered commands on Discord/Telegram at startup. Slack commands are managed in the Slack app and are not removed automatically.
+- `commands.nativeSkills` (default `"auto"`) registers **skill** commands natively when supported.
+  - Auto: on for Discord/Telegram; off for Slack (Slack requires creating a slash command per skill).
+  - Set `channels.discord.commands.nativeSkills`, `channels.telegram.commands.nativeSkills`, or `channels.slack.commands.nativeSkills` to override per provider (bool or `"auto"`).
+- `commands.bash` (default `false`) enables `! <cmd>` to run host shell commands (`/bash <cmd>` is an alias; requires `tools.elevated` allowlists).
+- `commands.bashForegroundMs` (default `2000`) controls how long bash waits before switching to background mode (`0` backgrounds immediately).
+- `commands.config` (default `false`) enables `/config` (reads/writes `openclaw.json`).
+- `commands.debug` (default `false`) enables `/debug` (runtime-only overrides).
+- `commands.allowFrom` (optional) sets a per-provider allowlist for command authorization. When configured, it is the
+  only authorization source for commands and directives (channel allowlists/pairing and `commands.useAccessGroups`
+  are ignored). Use `"*"` for a global default; provider-specific keys override it.
+- `commands.useAccessGroups` (default `true`) enforces allowlists/policies for commands when `commands.allowFrom` is not set.
 
-## Lista de comandos
+## Command list
 
-Texto + nativo (quando habilitado):
+Text + native (when enabled):
 
 - `/help`
 - `/commands`
-- `/skill <nome> [entrada]` (executar uma skill pelo nome)
-- `/status` (mostrar status atual; inclui uso/quota do provedor para o provedor de modelo atual quando disponível)
-- `/allowlist` (listar/adicionar/remover entradas de allowlist)
-- `/approve <id> allow-once|allow-always|deny` (resolver prompts de aprovação exec)
-- `/context [list|detail|json]` (explicar "contexto"; `detail` mostra tamanho por arquivo + por tool + por skill + prompt do sistema)
-- `/btw <pergunta>` (fazer uma pergunta lateral efêmera sobre a sessão atual sem alterar o contexto futuro; veja [/tools/btw](/tools/btw))
-- `/export-session [caminho]` (alias: `/export`) (exportar sessão atual para HTML com prompt do sistema completo)
-- `/whoami` (mostrar seu id de remetente; alias: `/id`)
-- `/session idle <duração|off>` (gerenciar auto-unfocus por inatividade para bindings de thread focados)
-- `/session max-age <duração|off>` (gerenciar auto-unfocus de max-age fixo para bindings de thread focados)
-- `/subagents list|kill|log|info|send|steer|spawn` (inspecionar, controlar ou criar execuções de sub-agente para a sessão atual)
-- `/acp spawn|cancel|steer|close|status|set-mode|set|cwd|permissions|timeout|model|reset-options|doctor|install|sessions` (inspecionar e controlar sessões de runtime ACP)
-- `/agents` (listar agentes vinculados a thread para esta sessão)
-- `/focus <alvo>` (Discord: vincular esta thread, ou uma nova thread, a um alvo de sessão/subagente)
-- `/unfocus` (Discord: remover o vínculo de thread atual)
-- `/kill <id|#|all>` (abortar imediatamente um ou todos os sub-agentes em execução para esta sessão; sem mensagem de confirmação)
-- `/steer <id|#> <mensagem>` (direcionar um sub-agente em execução imediatamente: em-execução quando possível, caso contrário abortar trabalho atual e reiniciar na mensagem de direcionamento)
-- `/tell <id|#> <mensagem>` (alias para `/steer`)
-- `/config show|get|set|unset` (persistir config em disco, somente owner; requer `commands.config: true`)
-- `/debug show|set|unset|reset` (overrides de runtime, somente owner; requer `commands.debug: true`)
-- `/usage off|tokens|full|cost` (rodapé de uso por resposta ou resumo de custo local)
-- `/tts off|always|inbound|tagged|status|provider|limit|summary|audio` (controlar TTS; veja [/tts](/tts))
-  - Discord: comando nativo é `/voice` (Discord reserva `/tts`); texto `/tts` ainda funciona.
+- `/skill <name> [input]` (run a skill by name)
+- `/status` (show current status; includes provider usage/quota for the current model provider when available)
+- `/allowlist` (list/add/remove allowlist entries)
+- `/approve <id> allow-once|allow-always|deny` (resolve exec approval prompts)
+- `/context [list|detail|json]` (explain “context”; `detail` shows per-file + per-tool + per-skill + system prompt size)
+- `/btw <question>` (ask an ephemeral side question about the current session without changing future session context; see [/tools/btw](/tools/btw))
+- `/export-session [path]` (alias: `/export`) (export current session to HTML with full system prompt)
+- `/whoami` (show your sender id; alias: `/id`)
+- `/session idle <duration|off>` (manage inactivity auto-unfocus for focused thread bindings)
+- `/session max-age <duration|off>` (manage hard max-age auto-unfocus for focused thread bindings)
+- `/subagents list|kill|log|info|send|steer|spawn` (inspect, control, or spawn sub-agent runs for the current session)
+- `/acp spawn|cancel|steer|close|status|set-mode|set|cwd|permissions|timeout|model|reset-options|doctor|install|sessions` (inspect and control ACP runtime sessions)
+- `/agents` (list thread-bound agents for this session)
+- `/focus <target>` (Discord: bind this thread, or a new thread, to a session/subagent target)
+- `/unfocus` (Discord: remove the current thread binding)
+- `/kill <id|#|all>` (immediately abort one or all running sub-agents for this session; no confirmation message)
+- `/steer <id|#> <message>` (steer a running sub-agent immediately: in-run when possible, otherwise abort current work and restart on the steer message)
+- `/tell <id|#> <message>` (alias for `/steer`)
+- `/config show|get|set|unset` (persist config to disk, owner-only; requires `commands.config: true`)
+- `/debug show|set|unset|reset` (runtime overrides, owner-only; requires `commands.debug: true`)
+- `/usage off|tokens|full|cost` (per-response usage footer or local cost summary)
+- `/tts off|always|inbound|tagged|status|provider|limit|summary|audio` (control TTS; see [/tts](/tts))
+  - Discord: native command is `/voice` (Discord reserves `/tts`); text `/tts` still works.
 - `/stop`
 - `/restart`
-- `/dock-telegram` (alias: `/dock_telegram`) (mudar respostas para Telegram)
-- `/dock-discord` (alias: `/dock_discord`) (mudar respostas para Discord)
-- `/dock-slack` (alias: `/dock_slack`) (mudar respostas para Slack)
-- `/activation mention|always` (somente grupos)
-- `/send on|off|inherit` (somente owner)
-- `/reset` ou `/new [modelo]` (dica de modelo opcional; o restante é passado adiante)
-- `/think <off|minimal|low|medium|high|xhigh>` (opções dinâmicas por modelo/provedor; aliases: `/thinking`, `/t`)
-- `/fast status|on|off` (omitir o argumento mostra o estado efetivo atual do modo rápido)
+- `/dock-telegram` (alias: `/dock_telegram`) (switch replies to Telegram)
+- `/dock-discord` (alias: `/dock_discord`) (switch replies to Discord)
+- `/dock-slack` (alias: `/dock_slack`) (switch replies to Slack)
+- `/activation mention|always` (groups only)
+- `/send on|off|inherit` (owner-only)
+- `/reset` or `/new [model]` (optional model hint; remainder is passed through)
+- `/think <off|minimal|low|medium|high|xhigh>` (dynamic choices by model/provider; aliases: `/thinking`, `/t`)
+- `/fast status|on|off` (omitting the arg shows the current effective fast-mode state)
 - `/verbose on|full|off` (alias: `/v`)
-- `/reasoning on|off|stream` (alias: `/reason`; quando on, envia uma mensagem separada prefixada com `Reasoning:`; `stream` = somente rascunho Telegram)
-- `/elevated on|off|ask|full` (alias: `/elev`; `full` pula aprovações de exec)
-- `/exec host=<sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>` (enviar `/exec` para mostrar os valores atuais)
-- `/model <nome>` (alias: `/models`; ou `/<alias>` de `agents.defaults.models.*.alias`)
-- `/queue <modo>` (mais opções como `debounce:2s cap:25 drop:summarize`; enviar `/queue` para ver configurações atuais)
-- `/bash <comando>` (somente host; alias para `! <comando>`; requer `commands.bash: true` + allowlists `tools.elevated`)
+- `/reasoning on|off|stream` (alias: `/reason`; when on, sends a separate message prefixed `Reasoning:`; `stream` = Telegram draft only)
+- `/elevated on|off|ask|full` (alias: `/elev`; `full` skips exec approvals)
+- `/exec host=<sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>` (send `/exec` to show current)
+- `/model <name>` (alias: `/models`; or `/<alias>` from `agents.defaults.models.*.alias`)
+- `/queue <mode>` (plus options like `debounce:2s cap:25 drop:summarize`; send `/queue` to see current settings)
+- `/bash <command>` (host-only; alias for `! <command>`; requires `commands.bash: true` + `tools.elevated` allowlists)
 
-Somente texto:
+Text-only:
 
-- `/compact [instruções]` (veja [/concepts/compaction](/concepts/compaction))
-- `! <comando>` (somente host; um de cada vez; use `!poll` + `!stop` para jobs de longa duração)
-- `!poll` (verificar saída / status; aceita `sessionId` opcional; `/bash poll` também funciona)
-- `!stop` (parar o job bash em execução; aceita `sessionId` opcional; `/bash stop` também funciona)
+- `/compact [instructions]` (see [/concepts/compaction](/concepts/compaction))
+- `! <command>` (host-only; one at a time; use `!poll` + `!stop` for long-running jobs)
+- `!poll` (check output / status; accepts optional `sessionId`; `/bash poll` also works)
+- `!stop` (stop the running bash job; accepts optional `sessionId`; `/bash stop` also works)
 
-Notas:
+Notes:
 
-- Comandos aceitam um `:` opcional entre o comando e os args (ex.: `/think: high`, `/send: on`, `/help:`).
-- `/new <modelo>` aceita um alias de modelo, `provedor/modelo` ou um nome de provedor (correspondência fuzzy); se não houver correspondência, o texto é tratado como corpo da mensagem.
-- Para breakdown completo de uso do provedor, use `opencraft status --usage`.
-- `/allowlist add|remove` requer `commands.config=true` e honra `configWrites` do canal.
-- Em canais multi-conta, `/allowlist --account <id>` e `/config set channels.<provedor>.accounts.<id>...` direcionados à config também honram o `configWrites` da conta alvo.
-- `/usage` controla o rodapé de uso por resposta; `/usage cost` imprime um resumo de custo local dos logs de sessão do OpenCraft.
-- `/restart` está habilitado por padrão; defina `commands.restart: false` para desabilitá-lo.
-- Comando nativo somente Discord: `/vc join|leave|status` controla canais de voz (requer `channels.discord.voice` e comandos nativos; não disponível como texto).
-- Comandos de vinculação de thread do Discord (`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`) requerem que bindings de thread efetivos estejam habilitados (`session.threadBindings.enabled` e/ou `channels.discord.threadBindings.enabled`).
-- Referência de comandos ACP e comportamento de runtime: [ACP Agents](/tools/acp-agents).
-- `/verbose` é destinado para depuração e visibilidade extra; mantenha **desativado** no uso normal.
-- `/fast on|off` persiste um override de sessão. Use a opção `inherit` na UI de Sessões para limpá-lo e voltar aos padrões de config.
-- Resumos de falha de tool ainda são mostrados quando relevantes, mas texto de falha detalhado só é incluído quando `/verbose` é `on` ou `full`.
-- `/reasoning` (e `/verbose`) são arriscados em configurações de grupo: podem revelar raciocínio interno ou saída de tool que você não pretendia expor. Prefira deixá-los desativados, especialmente em chats em grupo.
-- **Caminho rápido:** mensagens somente de comando de remetentes na allowlist são tratadas imediatamente (bypass de fila + modelo).
-- **Gate de menção em grupo:** mensagens somente de comando de remetentes na allowlist contornam requisitos de menção.
-- **Atalhos inline (somente remetentes na allowlist):** certos comandos também funcionam quando incorporados em uma mensagem normal e são removidos antes que o modelo veja o texto restante.
-  - Exemplo: `ei /status` aciona uma resposta de status, e o texto restante continua pelo fluxo normal.
-- Atualmente: `/help`, `/commands`, `/status`, `/whoami` (`/id`).
-- Mensagens somente de comando não autorizadas são silenciosamente ignoradas, e tokens `/...` inline são tratados como texto simples.
-- **Comandos de skill:** skills `user-invocable` são expostas como slash commands. Nomes são sanitizados para `a-z0-9_` (máx 32 chars); colisões recebem sufixos numéricos (ex.: `_2`).
-  - `/skill <nome> [entrada]` executa uma skill pelo nome (útil quando limites de comando nativo impedem comandos por skill).
-  - Por padrão, comandos de skill são encaminhados ao modelo como uma requisição normal.
-  - Skills podem opcionalmente declarar `command-dispatch: tool` para rotear o comando diretamente para uma tool (determinístico, sem modelo).
-  - Exemplo: `/prose` (plugin OpenProse) — veja [OpenProse](/prose).
-- **Argumentos de comando nativo:** Discord usa autocomplete para opções dinâmicas (e menus de botão quando você omite args obrigatórios). Telegram e Slack mostram um menu de botão quando um comando suporta opções e você omite o arg.
+- Commands accept an optional `:` between the command and args (e.g. `/think: high`, `/send: on`, `/help:`).
+- `/new <model>` accepts a model alias, `provider/model`, or a provider name (fuzzy match); if no match, the text is treated as the message body.
+- For full provider usage breakdown, use `openclaw status --usage`.
+- `/allowlist add|remove` requires `commands.config=true` and honors channel `configWrites`.
+- In multi-account channels, config-targeted `/allowlist --account <id>` and `/config set channels.<provider>.accounts.<id>...` also honor the target account's `configWrites`.
+- `/usage` controls the per-response usage footer; `/usage cost` prints a local cost summary from OpenClaw session logs.
+- `/restart` is enabled by default; set `commands.restart: false` to disable it.
+- Discord-only native command: `/vc join|leave|status` controls voice channels (requires `channels.discord.voice` and native commands; not available as text).
+- Discord thread-binding commands (`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`) require effective thread bindings to be enabled (`session.threadBindings.enabled` and/or `channels.discord.threadBindings.enabled`).
+- ACP command reference and runtime behavior: [ACP Agents](/tools/acp-agents).
+- `/verbose` is meant for debugging and extra visibility; keep it **off** in normal use.
+- `/fast on|off` persists a session override. Use the Sessions UI `inherit` option to clear it and fall back to config defaults.
+- Tool failure summaries are still shown when relevant, but detailed failure text is only included when `/verbose` is `on` or `full`.
+- `/reasoning` (and `/verbose`) are risky in group settings: they may reveal internal reasoning or tool output you did not intend to expose. Prefer leaving them off, especially in group chats.
+- **Fast path:** command-only messages from allowlisted senders are handled immediately (bypass queue + model).
+- **Group mention gating:** command-only messages from allowlisted senders bypass mention requirements.
+- **Inline shortcuts (allowlisted senders only):** certain commands also work when embedded in a normal message and are stripped before the model sees the remaining text.
+  - Example: `hey /status` triggers a status reply, and the remaining text continues through the normal flow.
+- Currently: `/help`, `/commands`, `/status`, `/whoami` (`/id`).
+- Unauthorized command-only messages are silently ignored, and inline `/...` tokens are treated as plain text.
+- **Skill commands:** `user-invocable` skills are exposed as slash commands. Names are sanitized to `a-z0-9_` (max 32 chars); collisions get numeric suffixes (e.g. `_2`).
+  - `/skill <name> [input]` runs a skill by name (useful when native command limits prevent per-skill commands).
+  - By default, skill commands are forwarded to the model as a normal request.
+  - Skills may optionally declare `command-dispatch: tool` to route the command directly to a tool (deterministic, no model).
+  - Example: `/prose` (OpenProse plugin) — see [OpenProse](/prose).
+- **Native command arguments:** Discord uses autocomplete for dynamic options (and button menus when you omit required args). Telegram and Slack show a button menu when a command supports choices and you omit the arg.
 
-## Superfícies de uso (o que aparece onde)
+## Usage surfaces (what shows where)
 
-- **Uso/quota do provedor** (exemplo: "Claude 80% restante") aparece em `/status` para o provedor de modelo atual quando o rastreamento de uso está habilitado.
-- **Tokens/custo por resposta** é controlado por `/usage off|tokens|full` (anexado às respostas normais).
-- `/model status` é sobre **modelos/autenticação/endpoints**, não sobre uso.
+- **Provider usage/quota** (example: “Claude 80% left”) shows up in `/status` for the current model provider when usage tracking is enabled.
+- **Per-response tokens/cost** is controlled by `/usage off|tokens|full` (appended to normal replies).
+- `/model status` is about **models/auth/endpoints**, not usage.
 
-## Seleção de modelo (`/model`)
+## Model selection (`/model`)
 
-`/model` é implementado como uma diretiva.
+`/model` is implemented as a directive.
 
-Exemplos:
+Examples:
 
 ```
 /model
@@ -169,80 +169,82 @@ Exemplos:
 /model status
 ```
 
-Notas:
+Notes:
 
-- `/model` e `/model list` mostram um seletor compacto e numerado (família de modelo + provedores disponíveis).
-- No Discord, `/model` e `/models` abrem um seletor interativo com dropdowns de provedor e modelo mais uma etapa de Submit.
-- `/model <#>` seleciona daquele seletor (e prefere o provedor atual quando possível).
-- `/model status` mostra a visualização detalhada, incluindo endpoint do provedor configurado (`baseUrl`) e modo de API (`api`) quando disponível.
+- `/model` and `/model list` show a compact, numbered picker (model family + available providers).
+- On Discord, `/model` and `/models` open an interactive picker with provider and model dropdowns plus a Submit step.
+- `/model <#>` selects from that picker (and prefers the current provider when possible).
+- `/model status` shows the detailed view, including configured provider endpoint (`baseUrl`) and API mode (`api`) when available.
 
-## Overrides de debug
+## Debug overrides
 
-`/debug` permite definir overrides de config **somente em runtime** (memória, não disco). Somente owner. Desabilitado por padrão; habilite com `commands.debug: true`.
+`/debug` lets you set **runtime-only** config overrides (memory, not disk). Owner-only. Disabled by default; enable with `commands.debug: true`.
 
-Exemplos:
+Examples:
 
 ```
 /debug show
-/debug set messages.responsePrefix="[opencraft]"
-/debug set channels.whatsapp.allowFrom=["+55111","+55222"]
+/debug set messages.responsePrefix="[openclaw]"
+/debug set channels.whatsapp.allowFrom=["+1555","+4477"]
 /debug unset messages.responsePrefix
 /debug reset
 ```
 
-Notas:
+Notes:
 
-- Overrides se aplicam imediatamente a novas leituras de config, mas **não** escrevem em `opencraft.json`.
-- Use `/debug reset` para limpar todos os overrides e retornar à config em disco.
+- Overrides apply immediately to new config reads, but do **not** write to `openclaw.json`.
+- Use `/debug reset` to clear all overrides and return to the on-disk config.
 
-## Atualizações de config
+## Config updates
 
-`/config` escreve na sua config em disco (`opencraft.json`). Somente owner. Desabilitado por padrão; habilite com `commands.config: true`.
+`/config` writes to your on-disk config (`openclaw.json`). Owner-only. Disabled by default; enable with `commands.config: true`.
 
-Exemplos:
+Examples:
 
 ```
 /config show
 /config show messages.responsePrefix
 /config get messages.responsePrefix
-/config set messages.responsePrefix="[opencraft]"
+/config set messages.responsePrefix="[openclaw]"
 /config unset messages.responsePrefix
 ```
 
-Notas:
+Notes:
 
-- A config é validada antes de escrever; mudanças inválidas são rejeitadas.
-- Atualizações de `/config` persistem entre reinicializações.
+- Config is validated before write; invalid changes are rejected.
+- `/config` updates persist across restarts.
 
-## Notas de superfície
+## Surface notes
 
-- **Comandos de texto** rodam na sessão de chat normal (DMs compartilham `main`, grupos têm sua própria sessão).
-- **Comandos nativos** usam sessões isoladas:
+- **Text commands** run in the normal chat session (DMs share `main`, groups have their own session).
+- **Native commands** use isolated sessions:
   - Discord: `agent:<agentId>:discord:slash:<userId>`
-  - Slack: `agent:<agentId>:slack:slash:<userId>` (prefixo configurável via `channels.slack.slashCommand.sessionPrefix`)
-  - Telegram: `telegram:slash:<userId>` (targets a sessão de chat via `CommandTargetSessionKey`)
-- **`/stop`** targets a sessão de chat ativa para que possa abortar a execução atual.
-- **Slack:** `channels.slack.slashCommand` ainda é suportado para um único comando no estilo `/opencraft`. Se você habilitar `commands.native`, deve criar um slash command Slack por comando embutido (mesmos nomes que `/help`). Menus de argumentos de comando para Slack são entregues como botões Block Kit efêmeros.
-  - Exceção nativa Slack: registre `/agentstatus` (não `/status`) porque o Slack reserva `/status`. Texto `/status` ainda funciona em mensagens do Slack.
+  - Slack: `agent:<agentId>:slack:slash:<userId>` (prefix configurable via `channels.slack.slashCommand.sessionPrefix`)
+  - Telegram: `telegram:slash:<userId>` (targets the chat session via `CommandTargetSessionKey`)
+- **`/stop`** targets the active chat session so it can abort the current run.
+- **Slack:** `channels.slack.slashCommand` is still supported for a single `/openclaw`-style command. If you enable `commands.native`, you must create one Slack slash command per built-in command (same names as `/help`). Command argument menus for Slack are delivered as ephemeral Block Kit buttons.
+  - Slack native exception: register `/agentstatus` (not `/status`) because Slack reserves `/status`. Text `/status` still works in Slack messages.
 
-## Perguntas laterais BTW
+## BTW side questions
 
-`/btw` é uma **pergunta lateral** rápida sobre a sessão atual.
+`/btw` is a quick **side question** about the current session.
 
-Diferente do chat normal:
+Unlike normal chat:
 
-- usa a sessão atual como contexto de fundo,
-- roda como uma chamada one-shot separada **sem ferramentas**,
-- não altera o contexto futuro da sessão,
-- não é escrito no histórico de transcript,
-- é entregue como um resultado lateral ao vivo em vez de uma mensagem normal do assistente.
+- it uses the current session as background context,
+- it runs as a separate **tool-less** one-shot call,
+- it does not change future session context,
+- it is not written to transcript history,
+- it is delivered as a live side result instead of a normal assistant message.
 
-Isso torna o `/btw` útil quando você quer uma clarificação temporária enquanto a tarefa principal continua.
+That makes `/btw` useful when you want a temporary clarification while the main
+task keeps going.
 
-Exemplo:
+Example:
 
 ```text
-/btw o que estamos fazendo agora?
+/btw what are we doing right now?
 ```
 
-Veja [Perguntas Laterais BTW](/tools/btw) para o comportamento completo e detalhes de UX do cliente.
+See [BTW Side Questions](/tools/btw) for the full behavior and client UX
+details.

@@ -1,115 +1,115 @@
 ---
-summary: "Delegue autenticação do gateway a um reverse proxy confiável (Pomerium, Caddy, nginx + OAuth)"
+summary: "Delegate gateway authentication to a trusted reverse proxy (Pomerium, Caddy, nginx + OAuth)"
 read_when:
-  - Rodando o OpenCraft atrás de um proxy com reconhecimento de identidade
-  - Configurando Pomerium, Caddy ou nginx com OAuth na frente do OpenCraft
-  - Corrigindo erros WebSocket 1008 unauthorized com configurações de reverse proxy
-  - Decidindo onde definir HSTS e outros headers de endurecimento HTTP
+  - Running OpenClaw behind an identity-aware proxy
+  - Setting up Pomerium, Caddy, or nginx with OAuth in front of OpenClaw
+  - Fixing WebSocket 1008 unauthorized errors with reverse proxy setups
+  - Deciding where to set HSTS and other HTTP hardening headers
 ---
 
-# Auth de Proxy Confiável
+# Trusted Proxy Auth
 
-> ⚠️ **Recurso sensível à segurança.** Este modo delega autenticação completamente ao seu reverse proxy. Má configuração pode expor seu Gateway a acesso não autorizado. Leia esta página cuidadosamente antes de habilitar.
+> ⚠️ **Security-sensitive feature.** This mode delegates authentication entirely to your reverse proxy. Misconfiguration can expose your Gateway to unauthorized access. Read this page carefully before enabling.
 
-## Quando usar
+## When to Use
 
-Use o modo de auth `trusted-proxy` quando:
+Use `trusted-proxy` auth mode when:
 
-- Você roda o OpenCraft atrás de um **proxy com reconhecimento de identidade** (Pomerium, Caddy + OAuth, nginx + oauth2-proxy, Traefik + forward auth)
-- Seu proxy lida com toda a autenticação e passa a identidade do usuário via headers
-- Você está em um ambiente Kubernetes ou container onde o proxy é o único caminho para o Gateway
-- Você está encontrando erros WebSocket `1008 unauthorized` porque browsers não conseguem passar tokens em payloads WS
+- You run OpenClaw behind an **identity-aware proxy** (Pomerium, Caddy + OAuth, nginx + oauth2-proxy, Traefik + forward auth)
+- Your proxy handles all authentication and passes user identity via headers
+- You're in a Kubernetes or container environment where the proxy is the only path to the Gateway
+- You're hitting WebSocket `1008 unauthorized` errors because browsers can't pass tokens in WS payloads
 
-## Quando NÃO usar
+## When NOT to Use
 
-- Se seu proxy não autentica usuários (apenas terminador TLS ou balanceador de carga)
-- Se há algum caminho para o Gateway que bypass o proxy (buracos de firewall, acesso a rede interna)
-- Se você não tem certeza se seu proxy corretamente remove/sobrescreve headers encaminhados
-- Se você só precisa de acesso pessoal de usuário único (considere Tailscale Serve + loopback para configuração mais simples)
+- If your proxy doesn't authenticate users (just a TLS terminator or load balancer)
+- If there's any path to the Gateway that bypasses the proxy (firewall holes, internal network access)
+- If you're unsure whether your proxy correctly strips/overwrites forwarded headers
+- If you only need personal single-user access (consider Tailscale Serve + loopback for simpler setup)
 
-## Como funciona
+## How It Works
 
-1. Seu reverse proxy autentica usuários (OAuth, OIDC, SAML, etc.)
-2. O proxy adiciona um header com a identidade do usuário autenticado (ex. `x-forwarded-user: nick@example.com`)
-3. O OpenCraft verifica que a requisição veio de um **IP de proxy confiável** (configurado em `gateway.trustedProxies`)
-4. O OpenCraft extrai a identidade do usuário do header configurado
-5. Se tudo estiver correto, a requisição é autorizada
+1. Your reverse proxy authenticates users (OAuth, OIDC, SAML, etc.)
+2. Proxy adds a header with the authenticated user identity (e.g., `x-forwarded-user: nick@example.com`)
+3. OpenClaw checks that the request came from a **trusted proxy IP** (configured in `gateway.trustedProxies`)
+4. OpenClaw extracts the user identity from the configured header
+5. If everything checks out, the request is authorized
 
-## Comportamento de pareamento da Control UI
+## Control UI Pairing Behavior
 
-Quando `gateway.auth.mode = "trusted-proxy"` está ativo e a requisição passa as
-verificações de proxy confiável, sessões WebSocket da Control UI podem conectar sem identidade de
-pareamento de dispositivo.
+When `gateway.auth.mode = "trusted-proxy"` is active and the request passes
+trusted-proxy checks, Control UI WebSocket sessions can connect without device
+pairing identity.
 
-Implicações:
+Implications:
 
-- O pareamento não é mais o portão principal para acesso à Control UI neste modo.
-- Sua política de auth do reverse proxy e `allowUsers` tornam-se o controle de acesso efetivo.
-- Mantenha o ingress do gateway bloqueado a IPs de proxy confiáveis apenas (`gateway.trustedProxies` + firewall).
+- Pairing is no longer the primary gate for Control UI access in this mode.
+- Your reverse proxy auth policy and `allowUsers` become the effective access control.
+- Keep gateway ingress locked to trusted proxy IPs only (`gateway.trustedProxies` + firewall).
 
-## Configuração
+## Configuration
 
 ```json5
 {
   gateway: {
-    // Use loopback para configurações de proxy no mesmo host; use lan/custom para hosts de proxy remotos
+    // Use loopback for same-host proxy setups; use lan/custom for remote proxy hosts
     bind: "loopback",
 
-    // CRÍTICO: Adicione apenas os IPs do seu proxy aqui
+    // CRITICAL: Only add your proxy's IP(s) here
     trustedProxies: ["10.0.0.1", "172.17.0.1"],
 
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
-        // Header contendo identidade de usuário autenticado (obrigatório)
+        // Header containing authenticated user identity (required)
         userHeader: "x-forwarded-user",
 
-        // Opcional: headers que DEVEM estar presentes (verificação do proxy)
+        // Optional: headers that MUST be present (proxy verification)
         requiredHeaders: ["x-forwarded-proto", "x-forwarded-host"],
 
-        // Opcional: restringir a usuários específicos (vazio = permitir todos)
-        allowUsers: ["nick@example.com", "admin@empresa.com.br"],
+        // Optional: restrict to specific users (empty = allow all)
+        allowUsers: ["nick@example.com", "admin@company.org"],
       },
     },
   },
 }
 ```
 
-Se `gateway.bind` é `loopback`, inclua um endereço de proxy loopback em
-`gateway.trustedProxies` (`127.0.0.1`, `::1` ou um CIDR loopback equivalente).
+If `gateway.bind` is `loopback`, include a loopback proxy address in
+`gateway.trustedProxies` (`127.0.0.1`, `::1`, or an equivalent loopback CIDR).
 
-### Referência de configuração
+### Configuration Reference
 
-| Campo                                       | Obrigatório | Descrição                                                                         |
-| ------------------------------------------- | ----------- | --------------------------------------------------------------------------------- |
-| `gateway.trustedProxies`                    | Sim         | Array de endereços IP de proxy a confiar. Requisições de outros IPs são rejeitadas. |
-| `gateway.auth.mode`                         | Sim         | Deve ser `"trusted-proxy"`                                                        |
-| `gateway.auth.trustedProxy.userHeader`      | Sim         | Nome do header contendo a identidade do usuário autenticado                       |
-| `gateway.auth.trustedProxy.requiredHeaders` | Não         | Headers adicionais que devem estar presentes para a requisição ser confiável      |
-| `gateway.auth.trustedProxy.allowUsers`      | Não         | Allowlist de identidades de usuário. Vazio significa permitir todos os usuários autenticados. |
+| Field                                       | Required | Description                                                                 |
+| ------------------------------------------- | -------- | --------------------------------------------------------------------------- |
+| `gateway.trustedProxies`                    | Yes      | Array of proxy IP addresses to trust. Requests from other IPs are rejected. |
+| `gateway.auth.mode`                         | Yes      | Must be `"trusted-proxy"`                                                   |
+| `gateway.auth.trustedProxy.userHeader`      | Yes      | Header name containing the authenticated user identity                      |
+| `gateway.auth.trustedProxy.requiredHeaders` | No       | Additional headers that must be present for the request to be trusted       |
+| `gateway.auth.trustedProxy.allowUsers`      | No       | Allowlist of user identities. Empty means allow all authenticated users.    |
 
-## Terminação TLS e HSTS
+## TLS termination and HSTS
 
-Use um único ponto de terminação TLS e aplique HSTS lá.
+Use one TLS termination point and apply HSTS there.
 
-### Padrão recomendado: terminação TLS no proxy
+### Recommended pattern: proxy TLS termination
 
-Quando seu reverse proxy lida com HTTPS para `https://control.example.com`, defina
-`Strict-Transport-Security` no proxy para esse domínio.
+When your reverse proxy handles HTTPS for `https://control.example.com`, set
+`Strict-Transport-Security` at the proxy for that domain.
 
-- Boa opção para deployments voltados para a internet.
-- Mantém certificado + política de endurecimento HTTP em um único lugar.
-- O OpenCraft pode permanecer em HTTP loopback atrás do proxy.
+- Good fit for internet-facing deployments.
+- Keeps certificate + HTTP hardening policy in one place.
+- OpenClaw can stay on loopback HTTP behind the proxy.
 
-Valor de header de exemplo:
+Example header value:
 
 ```text
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 ```
 
-### Terminação TLS no Gateway
+### Gateway TLS termination
 
-Se o próprio OpenCraft serve HTTPS diretamente (sem proxy de terminação TLS), defina:
+If OpenClaw itself serves HTTPS directly (no TLS-terminating proxy), set:
 
 ```json5
 {
@@ -124,27 +124,27 @@ Se o próprio OpenCraft serve HTTPS diretamente (sem proxy de terminação TLS),
 }
 ```
 
-`strictTransportSecurity` aceita um valor de header string, ou `false` para desabilitar explicitamente.
+`strictTransportSecurity` accepts a string header value, or `false` to disable explicitly.
 
-### Orientação de rollout
+### Rollout guidance
 
-- Comece com um max age curto (por exemplo `max-age=300`) enquanto valida o tráfego.
-- Aumente para valores de longa duração (por exemplo `max-age=31536000`) apenas após alta confiança.
-- Adicione `includeSubDomains` apenas se cada subdomínio estiver pronto para HTTPS.
-- Use preload apenas se você intencionalmente atende aos requisitos de preload para todo o seu conjunto de domínios.
-- Desenvolvimento local somente loopback não se beneficia de HSTS.
+- Start with a short max age first (for example `max-age=300`) while validating traffic.
+- Increase to long-lived values (for example `max-age=31536000`) only after confidence is high.
+- Add `includeSubDomains` only if every subdomain is HTTPS-ready.
+- Use preload only if you intentionally meet preload requirements for your full domain set.
+- Loopback-only local development does not benefit from HSTS.
 
-## Exemplos de configuração de proxy
+## Proxy Setup Examples
 
 ### Pomerium
 
-O Pomerium passa identidade em `x-pomerium-claim-email` (ou outros headers de claim) e um JWT em `x-pomerium-jwt-assertion`.
+Pomerium passes identity in `x-pomerium-claim-email` (or other claim headers) and a JWT in `x-pomerium-jwt-assertion`.
 
 ```json5
 {
   gateway: {
     bind: "lan",
-    trustedProxies: ["10.0.0.1"], // IP do Pomerium
+    trustedProxies: ["10.0.0.1"], // Pomerium's IP
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
@@ -156,12 +156,12 @@ O Pomerium passa identidade em `x-pomerium-claim-email` (ou outros headers de cl
 }
 ```
 
-Trecho de config do Pomerium:
+Pomerium config snippet:
 
 ```yaml
 routes:
-  - from: https://opencraft.example.com
-    to: http://opencraft-gateway:18789
+  - from: https://openclaw.example.com
+    to: http://openclaw-gateway:18789
     policy:
       - allow:
           or:
@@ -170,15 +170,15 @@ routes:
     pass_identity_headers: true
 ```
 
-### Caddy com OAuth
+### Caddy with OAuth
 
-O Caddy com o plugin `caddy-security` pode autenticar usuários e passar headers de identidade.
+Caddy with the `caddy-security` plugin can authenticate users and pass identity headers.
 
 ```json5
 {
   gateway: {
     bind: "lan",
-    trustedProxies: ["127.0.0.1"], // IP do Caddy (se no mesmo host)
+    trustedProxies: ["127.0.0.1"], // Caddy's IP (if on same host)
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
@@ -189,14 +189,14 @@ O Caddy com o plugin `caddy-security` pode autenticar usuários e passar headers
 }
 ```
 
-Trecho de Caddyfile:
+Caddyfile snippet:
 
 ```
-opencraft.example.com {
+openclaw.example.com {
     authenticate with oauth2_provider
     authorize with policy1
 
-    reverse_proxy opencraft:18789 {
+    reverse_proxy openclaw:18789 {
         header_up X-Forwarded-User {http.auth.user.email}
     }
 }
@@ -204,13 +204,13 @@ opencraft.example.com {
 
 ### nginx + oauth2-proxy
 
-O oauth2-proxy autentica usuários e passa identidade em `x-auth-request-email`.
+oauth2-proxy authenticates users and passes identity in `x-auth-request-email`.
 
 ```json5
 {
   gateway: {
     bind: "lan",
-    trustedProxies: ["10.0.0.1"], // IP do nginx/oauth2-proxy
+    trustedProxies: ["10.0.0.1"], // nginx/oauth2-proxy IP
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
@@ -221,14 +221,14 @@ O oauth2-proxy autentica usuários e passa identidade em `x-auth-request-email`.
 }
 ```
 
-Trecho de config do nginx:
+nginx config snippet:
 
 ```nginx
 location / {
     auth_request /oauth2/auth;
     auth_request_set $user $upstream_http_x_auth_request_email;
 
-    proxy_pass http://opencraft:18789;
+    proxy_pass http://openclaw:18789;
     proxy_set_header X-Auth-Request-Email $user;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
@@ -236,13 +236,13 @@ location / {
 }
 ```
 
-### Traefik com Forward Auth
+### Traefik with Forward Auth
 
 ```json5
 {
   gateway: {
     bind: "lan",
-    trustedProxies: ["172.17.0.1"], // IP do container Traefik
+    trustedProxies: ["172.17.0.1"], // Traefik container IP
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
@@ -253,77 +253,77 @@ location / {
 }
 ```
 
-## Checklist de segurança
+## Security Checklist
 
-Antes de habilitar auth de proxy confiável, verifique:
+Before enabling trusted-proxy auth, verify:
 
-- [ ] **O proxy é o único caminho**: A porta do Gateway está firewallada de tudo exceto seu proxy
-- [ ] **trustedProxies é mínimo**: Apenas seus IPs reais de proxy, não sub-redes inteiras
-- [ ] **O proxy remove headers**: Seu proxy sobrescreve (não adiciona) headers `x-forwarded-*` de clientes
-- [ ] **Terminação TLS**: Seu proxy lida com TLS; usuários conectam via HTTPS
-- [ ] **allowUsers está definido** (recomendado): Restrinja a usuários conhecidos em vez de permitir qualquer um autenticado
+- [ ] **Proxy is the only path**: The Gateway port is firewalled from everything except your proxy
+- [ ] **trustedProxies is minimal**: Only your actual proxy IPs, not entire subnets
+- [ ] **Proxy strips headers**: Your proxy overwrites (not appends) `x-forwarded-*` headers from clients
+- [ ] **TLS termination**: Your proxy handles TLS; users connect via HTTPS
+- [ ] **allowUsers is set** (recommended): Restrict to known users rather than allowing anyone authenticated
 
-## Auditoria de segurança
+## Security Audit
 
-`opencraft security audit` sinalizará auth de proxy confiável com um achado de severidade **crítica**. Isso é intencional — é um lembrete de que você está delegando segurança à sua configuração de proxy.
+`openclaw security audit` will flag trusted-proxy auth with a **critical** severity finding. This is intentional — it's a reminder that you're delegating security to your proxy setup.
 
-A auditoria verifica:
+The audit checks for:
 
-- Configuração `trustedProxies` ausente
-- Configuração `userHeader` ausente
-- `allowUsers` vazio (permite qualquer usuário autenticado)
+- Missing `trustedProxies` configuration
+- Missing `userHeader` configuration
+- Empty `allowUsers` (allows any authenticated user)
 
-## Resolução de problemas
+## Troubleshooting
 
 ### "trusted_proxy_untrusted_source"
 
-A requisição não veio de um IP em `gateway.trustedProxies`. Verifique:
+The request didn't come from an IP in `gateway.trustedProxies`. Check:
 
-- O IP do proxy está correto? (IPs de containers Docker podem mudar)
-- Há um balanceador de carga na frente do seu proxy?
-- Use `docker inspect` ou `kubectl get pods -o wide` para encontrar IPs reais
+- Is the proxy IP correct? (Docker container IPs can change)
+- Is there a load balancer in front of your proxy?
+- Use `docker inspect` or `kubectl get pods -o wide` to find actual IPs
 
 ### "trusted_proxy_user_missing"
 
-O header do usuário estava vazio ou ausente. Verifique:
+The user header was empty or missing. Check:
 
-- Seu proxy está configurado para passar headers de identidade?
-- O nome do header está correto? (case-insensitive, mas ortografia importa)
-- O usuário está realmente autenticado no proxy?
+- Is your proxy configured to pass identity headers?
+- Is the header name correct? (case-insensitive, but spelling matters)
+- Is the user actually authenticated at the proxy?
 
-### "trusted_proxy_missing_header_\*"
+### "trusted*proxy_missing_header*\*"
 
-Um header obrigatório não estava presente. Verifique:
+A required header wasn't present. Check:
 
-- Sua configuração de proxy para esses headers específicos
-- Se os headers estão sendo removidos em algum lugar da cadeia
+- Your proxy configuration for those specific headers
+- Whether headers are being stripped somewhere in the chain
 
 ### "trusted_proxy_user_not_allowed"
 
-O usuário está autenticado mas não está em `allowUsers`. Adicione-o ou remova a allowlist.
+The user is authenticated but not in `allowUsers`. Either add them or remove the allowlist.
 
-### WebSocket Ainda Falhando
+### WebSocket Still Failing
 
-Certifique-se de que seu proxy:
+Make sure your proxy:
 
-- Suporta upgrades WebSocket (`Upgrade: websocket`, `Connection: upgrade`)
-- Passa os headers de identidade em requisições de upgrade WebSocket (não apenas HTTP)
-- Não tem um caminho de auth separado para conexões WebSocket
+- Supports WebSocket upgrades (`Upgrade: websocket`, `Connection: upgrade`)
+- Passes the identity headers on WebSocket upgrade requests (not just HTTP)
+- Doesn't have a separate auth path for WebSocket connections
 
-## Migração de auth por token
+## Migration from Token Auth
 
-Se você está migrando de auth por token para proxy confiável:
+If you're moving from token auth to trusted-proxy:
 
-1. Configure seu proxy para autenticar usuários e passar headers
-2. Teste a configuração do proxy independentemente (curl com headers)
-3. Atualize a config do OpenCraft com auth de proxy confiável
-4. Reinicie o Gateway
-5. Teste conexões WebSocket da Control UI
-6. Execute `opencraft security audit` e revise os achados
+1. Configure your proxy to authenticate users and pass headers
+2. Test the proxy setup independently (curl with headers)
+3. Update OpenClaw config with trusted-proxy auth
+4. Restart the Gateway
+5. Test WebSocket connections from the Control UI
+6. Run `openclaw security audit` and review findings
 
-## Relacionado
+## Related
 
-- [Segurança](/gateway/security) — guia completo de segurança
-- [Configuração](/gateway/configuration) — referência de config
-- [Acesso Remoto](/gateway/remote) — outros padrões de acesso remoto
-- [Tailscale](/gateway/tailscale) — alternativa mais simples para acesso somente tailnet
+- [Security](/gateway/security) — full security guide
+- [Configuration](/gateway/configuration) — config reference
+- [Remote Access](/gateway/remote) — other remote access patterns
+- [Tailscale](/gateway/tailscale) — simpler alternative for tailnet-only access

@@ -31,17 +31,11 @@ export {
 } from "../channels/plugins/group-mentions.js";
 export { formatPairingApproveHint } from "../channels/plugins/helpers.js";
 export { resolveChannelMediaMaxBytes } from "../channels/plugins/media-limits.js";
-export type {
-  ChannelOnboardingAdapter,
-  ChannelOnboardingDmPolicy,
-} from "../channels/plugins/onboarding-types.js";
 export {
   addWildcardAllowFrom,
   mergeAllowFromEntries,
-  promptAccountId,
-  resolveAccountIdForConfigure,
   setTopLevelChannelDmPolicyWithAllowFrom,
-} from "../channels/plugins/onboarding/helpers.js";
+} from "../channels/plugins/setup-wizard-helpers.js";
 export { PAIRING_APPROVED_MESSAGE } from "../channels/plugins/pairing-message.js";
 export {
   applyAccountNameToChannelSection,
@@ -58,7 +52,7 @@ export type {
 } from "../channels/plugins/types.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
-export type { OpenCraftConfig } from "../config/config.js";
+export type { OpenClawConfig } from "../config/config.js";
 export type { DmPolicy, GroupPolicy } from "../config/types.js";
 export {
   hasConfiguredSecretInput,
@@ -79,7 +73,7 @@ export { stripMarkdown } from "../line/markdown-to-line.js";
 export { parseFiniteNumber } from "../infra/parse-finite-number.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 export {
   DM_GROUP_ACCESS_REASON,

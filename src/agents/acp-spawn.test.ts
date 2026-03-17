@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { SessionBindingRecord } from "../infra/outbound/session-binding-service.js";
 
-function createDefaultSpawnConfig(): OpenCraftConfig {
+function createDefaultSpawnConfig(): OpenClawConfig {
   return {
     acp: {
       enabled: true,

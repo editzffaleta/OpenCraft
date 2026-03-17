@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 
 const readConfigFileSnapshotForWrite = vi.fn();
 const writeConfigFile = vi.fn();
@@ -40,7 +40,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
 
   it("skips writeback when target is already numeric", async () => {
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       rawTarget: "-100123",
       resolvedChatId: "-100123",
     });
@@ -65,7 +65,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
           },
         },
       },
-      writeOptions: { expectedConfigPath: "/tmp/opencraft.json" },
+      writeOptions: { expectedConfigPath: "/tmp/openclaw.json" },
     });
     loadCronStore.mockResolvedValue({
       version: 1,
@@ -78,7 +78,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     await maybePersistResolvedTelegramTarget({
       cfg: {
         cron: { store: "/tmp/cron/jobs.json" },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       rawTarget: "t.me/mychannel",
       resolvedChatId: "-100123",
     });
@@ -97,7 +97,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
           },
         },
       }),
-      expect.objectContaining({ expectedConfigPath: "/tmp/opencraft.json" }),
+      expect.objectContaining({ expectedConfigPath: "/tmp/openclaw.json" }),
     );
     expect(saveCronStore).toHaveBeenCalledTimes(1);
     expect(saveCronStore).toHaveBeenCalledWith(
@@ -127,7 +127,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     loadCronStore.mockResolvedValue({ version: 1, jobs: [] });
 
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       rawTarget: "t.me/mychannel:topic:9",
       resolvedChatId: "-100123",
     });
@@ -163,7 +163,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     });
 
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       rawTarget: "@MyChannel",
       resolvedChatId: "-100123",
     });

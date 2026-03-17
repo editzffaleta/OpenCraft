@@ -3,18 +3,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RuntimeEnv } from "../runtime.js";
 
 const mocks = vi.hoisted(() => ({
-  runInteractiveOnboarding: vi.fn(async () => {}),
-  runNonInteractiveOnboarding: vi.fn(async () => {}),
+  runInteractiveSetup: vi.fn(async () => {}),
+  runNonInteractiveSetup: vi.fn(async () => {}),
   readConfigFileSnapshot: vi.fn(async () => ({ exists: false, valid: false, config: {} })),
   handleReset: vi.fn(async () => {}),
 }));
 
 vi.mock("./onboard-interactive.js", () => ({
-  runInteractiveOnboarding: mocks.runInteractiveOnboarding,
+  runInteractiveSetup: mocks.runInteractiveSetup,
 }));
 
 vi.mock("./onboard-non-interactive.js", () => ({
-  runNonInteractiveOnboarding: mocks.runNonInteractiveOnboarding,
+  runNonInteractiveSetup: mocks.runNonInteractiveSetup,
 }));
 
 vi.mock("../config/config.js", () => ({
@@ -22,11 +22,11 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("./onboard-helpers.js", () => ({
-  DEFAULT_WORKSPACE: "~/.opencraft/workspace",
+  DEFAULT_WORKSPACE: "~/.openclaw/workspace",
   handleReset: mocks.handleReset,
 }));
 
-const { onboardCommand } = await import("./onboard.js");
+const { onboardCommand, setupWizardCommand } = await import("./onboard.js");
 
 function makeRuntime(): RuntimeEnv {
   return {
@@ -36,16 +36,16 @@ function makeRuntime(): RuntimeEnv {
   };
 }
 
-describe("onboardCommand", () => {
+describe("setupWizardCommand", () => {
   afterEach(() => {
     vi.clearAllMocks();
     mocks.readConfigFileSnapshot.mockResolvedValue({ exists: false, valid: false, config: {} });
   });
 
-  it("fails fast for invalid secret-input-mode before onboarding starts", async () => {
+  it("fails fast for invalid secret-input-mode before setup starts", async () => {
     const runtime = makeRuntime();
 
-    await onboardCommand(
+    await setupWizardCommand(
       {
         secretInputMode: "invalid" as never, // pragma: allowlist secret
       },
@@ -56,23 +56,23 @@ describe("onboardCommand", () => {
       'Invalid --secret-input-mode. Use "plaintext" or "ref".',
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
-    expect(mocks.runInteractiveOnboarding).not.toHaveBeenCalled();
-    expect(mocks.runNonInteractiveOnboarding).not.toHaveBeenCalled();
+    expect(mocks.runInteractiveSetup).not.toHaveBeenCalled();
+    expect(mocks.runNonInteractiveSetup).not.toHaveBeenCalled();
   });
 
-  it("logs ASCII-safe Windows guidance before onboarding", async () => {
+  it("logs ASCII-safe Windows guidance before setup", async () => {
     const runtime = makeRuntime();
     const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("win32");
 
     try {
-      await onboardCommand({}, runtime);
+      await setupWizardCommand({}, runtime);
 
       expect(runtime.log).toHaveBeenCalledWith(
         [
-          "Windows detected - OpenCraft runs great on WSL2!",
+          "Windows detected - OpenClaw runs great on WSL2!",
           "Native Windows might be trickier.",
           "Quick setup: wsl --install (one command, one reboot)",
-          "Guide: https://docs.opencraft.ai/windows",
+          "Guide: https://docs.openclaw.ai/windows",
         ].join("\n"),
       );
     } finally {
@@ -83,7 +83,7 @@ describe("onboardCommand", () => {
   it("defaults --reset to config+creds+sessions scope", async () => {
     const runtime = makeRuntime();
 
-    await onboardCommand(
+    await setupWizardCommand(
       {
         reset: true,
       },
@@ -105,13 +105,13 @@ describe("onboardCommand", () => {
       config: {
         agents: {
           defaults: {
-            workspace: "/tmp/opencraft-custom-workspace",
+            workspace: "/tmp/openclaw-custom-workspace",
           },
         },
       },
     });
 
-    await onboardCommand(
+    await setupWizardCommand(
       {
         reset: true,
       },
@@ -120,7 +120,7 @@ describe("onboardCommand", () => {
 
     expect(mocks.handleReset).toHaveBeenCalledWith(
       "config+creds+sessions",
-      path.resolve("/tmp/opencraft-custom-workspace"),
+      path.resolve("/tmp/openclaw-custom-workspace"),
       runtime,
     );
   });
@@ -128,7 +128,7 @@ describe("onboardCommand", () => {
   it("accepts explicit --reset-scope full", async () => {
     const runtime = makeRuntime();
 
-    await onboardCommand(
+    await setupWizardCommand(
       {
         reset: true,
         resetScope: "full",
@@ -142,7 +142,7 @@ describe("onboardCommand", () => {
   it("fails fast for invalid --reset-scope", async () => {
     const runtime = makeRuntime();
 
-    await onboardCommand(
+    await setupWizardCommand(
       {
         reset: true,
         resetScope: "invalid" as never,
@@ -155,7 +155,11 @@ describe("onboardCommand", () => {
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(mocks.handleReset).not.toHaveBeenCalled();
-    expect(mocks.runInteractiveOnboarding).not.toHaveBeenCalled();
-    expect(mocks.runNonInteractiveOnboarding).not.toHaveBeenCalled();
+    expect(mocks.runInteractiveSetup).not.toHaveBeenCalled();
+    expect(mocks.runNonInteractiveSetup).not.toHaveBeenCalled();
+  });
+
+  it("keeps onboardCommand as an alias for setupWizardCommand", () => {
+    expect(onboardCommand).toBe(setupWizardCommand);
   });
 });

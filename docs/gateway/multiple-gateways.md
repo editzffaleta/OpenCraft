@@ -1,112 +1,112 @@
 ---
-summary: "Rode múltiplos Gateways OpenCraft em um host (isolamento, portas e perfis)"
+summary: "Run multiple OpenClaw Gateways on one host (isolation, ports, and profiles)"
 read_when:
-  - Rodando mais de um Gateway na mesma máquina
-  - Você precisa de config/state/portas isoladas por Gateway
-title: "Múltiplos Gateways"
+  - Running more than one Gateway on the same machine
+  - You need isolated config/state/ports per Gateway
+title: "Multiple Gateways"
 ---
 
-# Múltiplos Gateways (mesmo host)
+# Multiple Gateways (same host)
 
-A maioria dos setups deve usar um Gateway porque um único Gateway pode gerenciar múltiplas conexões de mensagens e agentes. Se você precisar de maior isolamento ou redundância (ex. um bot de resgate), rode Gateways separados com perfis/portas isolados.
+Most setups should use one Gateway because a single Gateway can handle multiple messaging connections and agents. If you need stronger isolation or redundancy (e.g., a rescue bot), run separate Gateways with isolated profiles/ports.
 
-## Checklist de isolamento (obrigatório)
+## Isolation checklist (required)
 
-- `OPENCLAW_CONFIG_PATH` — arquivo de config por instância
-- `OPENCLAW_STATE_DIR` — sessões, credenciais e caches por instância
-- `agents.defaults.workspace` — raiz de workspace por instância
-- `gateway.port` (ou `--port`) — único por instância
-- Portas derivadas (browser/canvas) não devem sobrepor
+- `OPENCLAW_CONFIG_PATH` — per-instance config file
+- `OPENCLAW_STATE_DIR` — per-instance sessions, creds, caches
+- `agents.defaults.workspace` — per-instance workspace root
+- `gateway.port` (or `--port`) — unique per instance
+- Derived ports (browser/canvas) must not overlap
 
-Se esses forem compartilhados, você terá conflitos de config e conflitos de porta.
+If these are shared, you will hit config races and port conflicts.
 
-## Recomendado: perfis (`--profile`)
+## Recommended: profiles (`--profile`)
 
-Perfis auto-escopam `OPENCLAW_STATE_DIR` + `OPENCLAW_CONFIG_PATH` e adicionam sufixo aos nomes de serviço.
-
-```bash
-# principal
-opencraft --profile main setup
-opencraft --profile main gateway --port 18789
-
-# resgate
-opencraft --profile rescue setup
-opencraft --profile rescue gateway --port 19001
-```
-
-Serviços por perfil:
+Profiles auto-scope `OPENCLAW_STATE_DIR` + `OPENCLAW_CONFIG_PATH` and suffix service names.
 
 ```bash
-opencraft --profile main gateway install
-opencraft --profile rescue gateway install
+# main
+openclaw --profile main setup
+openclaw --profile main gateway --port 18789
+
+# rescue
+openclaw --profile rescue setup
+openclaw --profile rescue gateway --port 19001
 ```
 
-## Guia de bot de resgate
+Per-profile services:
 
-Rode um segundo Gateway no mesmo host com seu próprio:
+```bash
+openclaw --profile main gateway install
+openclaw --profile rescue gateway install
+```
 
-- perfil/config
-- diretório de state
+## Rescue-bot guide
+
+Run a second Gateway on the same host with its own:
+
+- profile/config
+- state dir
 - workspace
-- porta base (mais portas derivadas)
+- base port (plus derived ports)
 
-Isso mantém o bot de resgate isolado do bot principal para que ele possa depurar ou aplicar mudanças de config se o bot primário estiver fora.
+This keeps the rescue bot isolated from the main bot so it can debug or apply config changes if the primary bot is down.
 
-Espaçamento de portas: deixe pelo menos 20 portas entre portas base para que as portas derivadas de browser/canvas/CDP nunca colidam.
+Port spacing: leave at least 20 ports between base ports so the derived browser/canvas/CDP ports never collide.
 
-### Como instalar (bot de resgate)
+### How to install (rescue bot)
 
 ```bash
-# Bot principal (existente ou novo, sem parâmetro --profile)
-# Roda na porta 18789 + Portas Chrome CDC/Canvas/...
-opencraft onboard
-opencraft gateway install
+# Main bot (existing or fresh, without --profile param)
+# Runs on port 18789 + Chrome CDC/Canvas/... Ports
+openclaw onboard
+openclaw gateway install
 
-# Bot de resgate (perfil + portas isolados)
-opencraft --profile rescue onboard
-# Notas:
-# - o nome do workspace será pós-fixado com -rescue por padrão
-# - A porta deve ser pelo menos 18789 + 20 Portas,
-#   melhor escolher uma porta base completamente diferente, como 19789,
-# - o resto do onboarding é igual ao normal
+# Rescue bot (isolated profile + ports)
+openclaw --profile rescue onboard
+# Notes:
+# - workspace name will be postfixed with -rescue per default
+# - Port should be at least 18789 + 20 Ports,
+#   better choose completely different base port, like 19789,
+# - rest of the onboarding is the same as normal
 
-# Para instalar o serviço (se não aconteceu automaticamente durante o onboarding)
-opencraft --profile rescue gateway install
+# To install the service (if not happened automatically during setup)
+openclaw --profile rescue gateway install
 ```
 
-## Mapeamento de portas (derivadas)
+## Port mapping (derived)
 
-Porta base = `gateway.port` (ou `OPENCLAW_GATEWAY_PORT` / `--port`).
+Base port = `gateway.port` (or `OPENCLAW_GATEWAY_PORT` / `--port`).
 
-- porta do serviço de controle de browser = base + 2 (somente loopback)
-- host canvas é servido no servidor HTTP do Gateway (mesma porta que `gateway.port`)
-- Portas CDP de perfil de browser são alocadas automaticamente de `browser.controlPort + 9 .. + 108`
+- browser control service port = base + 2 (loopback only)
+- canvas host is served on the Gateway HTTP server (same port as `gateway.port`)
+- Browser profile CDP ports auto-allocate from `browser.controlPort + 9 .. + 108`
 
-Se você sobrescrever qualquer uma delas em config ou env, deve mantê-las únicas por instância.
+If you override any of these in config or env, you must keep them unique per instance.
 
-## Notas de browser/CDP (footgun comum)
+## Browser/CDP notes (common footgun)
 
-- **Não** fixe `browser.cdpUrl` nos mesmos valores em múltiplas instâncias.
-- Cada instância precisa de sua própria porta de controle de browser e intervalo CDP (derivados da sua porta de gateway).
-- Se você precisar de portas CDP explícitas, defina `browser.profiles.<name>.cdpPort` por instância.
-- Chrome remoto: use `browser.profiles.<name>.cdpUrl` (por perfil, por instância).
+- Do **not** pin `browser.cdpUrl` to the same values on multiple instances.
+- Each instance needs its own browser control port and CDP range (derived from its gateway port).
+- If you need explicit CDP ports, set `browser.profiles.<name>.cdpPort` per instance.
+- Remote Chrome: use `browser.profiles.<name>.cdpUrl` (per profile, per instance).
 
-## Exemplo de env manual
+## Manual env example
 
 ```bash
-OPENCLAW_CONFIG_PATH=~/.opencraft/main.json \
-OPENCLAW_STATE_DIR=~/.opencraft-main \
-opencraft gateway --port 18789
+OPENCLAW_CONFIG_PATH=~/.openclaw/main.json \
+OPENCLAW_STATE_DIR=~/.openclaw-main \
+openclaw gateway --port 18789
 
-OPENCLAW_CONFIG_PATH=~/.opencraft/rescue.json \
-OPENCLAW_STATE_DIR=~/.opencraft-rescue \
-opencraft gateway --port 19001
+OPENCLAW_CONFIG_PATH=~/.openclaw/rescue.json \
+OPENCLAW_STATE_DIR=~/.openclaw-rescue \
+openclaw gateway --port 19001
 ```
 
-## Verificações rápidas
+## Quick checks
 
 ```bash
-opencraft --profile main status
-opencraft --profile rescue status
-opencraft --profile rescue browser status
+openclaw --profile main status
+openclaw --profile rescue status
+openclaw --profile rescue browser status
 ```

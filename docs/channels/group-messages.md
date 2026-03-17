@@ -1,29 +1,29 @@
 ---
-summary: "Comportamento e config para tratamento de mensagens de grupo no WhatsApp (mentionPatterns são compartilhados entre superfícies)"
+summary: "Behavior and config for WhatsApp group message handling (mentionPatterns are shared across surfaces)"
 read_when:
-  - Alterando regras de mensagem de grupo ou menções
-title: "Mensagens de Grupo"
+  - Changing group message rules or mentions
+title: "Group Messages"
 ---
 
-# Mensagens de grupo (canal WhatsApp web)
+# Group messages (WhatsApp web channel)
 
-Objetivo: deixar o OpenCraft em grupos do WhatsApp, acordar apenas quando mencionado e manter aquela thread separada da sessão pessoal de DM.
+Goal: let Clawd sit in WhatsApp groups, wake up only when pinged, and keep that thread separate from the personal DM session.
 
-Nota: `agents.list[].groupChat.mentionPatterns` agora é usado pelo Telegram/Discord/Slack/iMessage também; este doc foca no comportamento específico do WhatsApp. Para configurações multi-agente, defina `agents.list[].groupChat.mentionPatterns` por agente (ou use `messages.groupChat.mentionPatterns` como fallback global).
+Note: `agents.list[].groupChat.mentionPatterns` is now used by Telegram/Discord/Slack/iMessage as well; this doc focuses on WhatsApp-specific behavior. For multi-agent setups, set `agents.list[].groupChat.mentionPatterns` per agent (or use `messages.groupChat.mentionPatterns` as a global fallback).
 
-## O que está implementado (2025-12-03)
+## What’s implemented (2025-12-03)
 
-- Modos de ativação: `mention` (padrão) ou `always`. `mention` requer um ping (real @menções do WhatsApp via `mentionedJids`, padrões regex seguros ou o E.164 do bot em qualquer lugar no texto). `always` acorda o agente em cada mensagem mas ele deve responder apenas quando puder agregar valor significativo; caso contrário retorna o token silencioso `NO_REPLY`. Os padrões podem ser definidos na config (`channels.whatsapp.groups`) e substituídos por grupo via `/activation`. Quando `channels.whatsapp.groups` está definido, também age como uma allowlist de grupo (inclua `"*"` para permitir todos).
-- Política de grupo: `channels.whatsapp.groupPolicy` controla se as mensagens de grupo são aceitas (`open|disabled|allowlist`). `allowlist` usa `channels.whatsapp.groupAllowFrom` (fallback: `channels.whatsapp.allowFrom` explícito). O padrão é `allowlist` (bloqueado até adicionar remetentes).
-- Sessões por grupo: chaves de sessão parecem com `agent:<agentId>:whatsapp:group:<jid>` para que comandos como `/verbose on` ou `/think high` (enviados como mensagens independentes) sejam escopados para aquele grupo; o estado do DM pessoal não é afetado. Heartbeats são ignorados para threads de grupo.
-- Injeção de contexto: mensagens de grupo **somente pendentes** (padrão 50) que _não_ acionaram uma execução são prefixadas em `[Chat messages since your last reply - for context]`, com a linha acionadora em `[Current message - respond to this]`. Mensagens já na sessão não são reinjetadas.
-- Exposição do remetente: cada lote de grupo termina com `[from: Nome do Remetente (+E164)]` para que o agente saiba quem está falando.
-- Efêmero/view-once: fazemos unwrap deles antes de extrair texto/menções, então pings dentro deles ainda acionam.
-- System prompt de grupo: no primeiro turno de uma sessão de grupo (e sempre que `/activation` muda o modo) injetamos um blurb curto no system prompt como `You are replying inside the WhatsApp group "<subject>". Group members: Alice (+55...), Bob (+55...), … Activation: trigger-only … Address the specific sender noted in the message context.` Se os metadados não estiverem disponíveis, ainda informamos ao agente que é um chat em grupo.
+- Activation modes: `mention` (default) or `always`. `mention` requires a ping (real WhatsApp @-mentions via `mentionedJids`, safe regex patterns, or the bot’s E.164 anywhere in the text). `always` wakes the agent on every message but it should reply only when it can add meaningful value; otherwise it returns the silent token `NO_REPLY`. Defaults can be set in config (`channels.whatsapp.groups`) and overridden per group via `/activation`. When `channels.whatsapp.groups` is set, it also acts as a group allowlist (include `"*"` to allow all).
+- Group policy: `channels.whatsapp.groupPolicy` controls whether group messages are accepted (`open|disabled|allowlist`). `allowlist` uses `channels.whatsapp.groupAllowFrom` (fallback: explicit `channels.whatsapp.allowFrom`). Default is `allowlist` (blocked until you add senders).
+- Per-group sessions: session keys look like `agent:<agentId>:whatsapp:group:<jid>` so commands such as `/verbose on` or `/think high` (sent as standalone messages) are scoped to that group; personal DM state is untouched. Heartbeats are skipped for group threads.
+- Context injection: **pending-only** group messages (default 50) that _did not_ trigger a run are prefixed under `[Chat messages since your last reply - for context]`, with the triggering line under `[Current message - respond to this]`. Messages already in the session are not re-injected.
+- Sender surfacing: every group batch now ends with `[from: Sender Name (+E164)]` so Pi knows who is speaking.
+- Ephemeral/view-once: we unwrap those before extracting text/mentions, so pings inside them still trigger.
+- Group system prompt: on the first turn of a group session (and whenever `/activation` changes the mode) we inject a short blurb into the system prompt like `You are replying inside the WhatsApp group "<subject>". Group members: Alice (+44...), Bob (+43...), … Activation: trigger-only … Address the specific sender noted in the message context.` If metadata isn’t available we still tell the agent it’s a group chat.
 
-## Exemplo de config (WhatsApp)
+## Config example (WhatsApp)
 
-Adicione um bloco `groupChat` ao `~/.opencraft/opencraft.json` para que pings de nome de exibição funcionem mesmo quando o WhatsApp remove o `@` visual no corpo do texto:
+Add a `groupChat` block to `~/.openclaw/openclaw.json` so display-name pings work even when WhatsApp strips the visual `@` in the text body:
 
 ```json5
 {
@@ -40,7 +40,7 @@ Adicione um bloco `groupChat` ao `~/.opencraft/opencraft.json` para que pings de
         id: "main",
         groupChat: {
           historyLimit: 50,
-          mentionPatterns: ["@?opencraft", "\\+?5511999999999"],
+          mentionPatterns: ["@?openclaw", "\\+?15555550123"],
         },
       },
     ],
@@ -48,37 +48,37 @@ Adicione um bloco `groupChat` ao `~/.opencraft/opencraft.json` para que pings de
 }
 ```
 
-Notas:
+Notes:
 
-- Os regexes são case-insensitive e usam os mesmos guardrails de regex seguro que outras superfícies de regex de config; padrões inválidos e repetição aninhada insegura são ignorados.
-- O WhatsApp ainda envia menções canônicas via `mentionedJids` quando alguém toca o contato, então o fallback de número raramente é necessário mas é uma rede de segurança útil.
+- The regexes are case-insensitive and use the same safe-regex guardrails as other config regex surfaces; invalid patterns and unsafe nested repetition are ignored.
+- WhatsApp still sends canonical mentions via `mentionedJids` when someone taps the contact, so the number fallback is rarely needed but is a useful safety net.
 
-### Comando de ativação (somente proprietário)
+### Activation command (owner-only)
 
-Use o comando de chat em grupo:
+Use the group chat command:
 
 - `/activation mention`
 - `/activation always`
 
-Apenas o número do proprietário (de `channels.whatsapp.allowFrom`, ou o próprio E.164 do bot quando não definido) pode mudar isso. Envie `/status` como mensagem independente no grupo para ver o modo de ativação atual.
+Only the owner number (from `channels.whatsapp.allowFrom`, or the bot’s own E.164 when unset) can change this. Send `/status` as a standalone message in the group to see the current activation mode.
 
-## Como usar
+## How to use
 
-1. Adicione sua conta do WhatsApp (a que está executando o OpenCraft) ao grupo.
-2. Diga `@opencraft …` (ou inclua o número). Apenas remetentes na allowlist podem acioná-lo, a menos que você defina `groupPolicy: "open"`.
-3. O prompt do agente incluirá o contexto recente do grupo mais o marcador final `[from: …]` para que ele possa endereçar a pessoa certa.
-4. Diretivas de nível de sessão (`/verbose on`, `/think high`, `/new` ou `/reset`, `/compact`) se aplicam apenas à sessão daquele grupo; envie-as como mensagens independentes para que sejam registradas. Sua sessão de DM pessoal permanece independente.
+1. Add your WhatsApp account (the one running OpenClaw) to the group.
+2. Say `@openclaw …` (or include the number). Only allowlisted senders can trigger it unless you set `groupPolicy: "open"`.
+3. The agent prompt will include recent group context plus the trailing `[from: …]` marker so it can address the right person.
+4. Session-level directives (`/verbose on`, `/think high`, `/new` or `/reset`, `/compact`) apply only to that group’s session; send them as standalone messages so they register. Your personal DM session remains independent.
 
-## Teste / verificação
+## Testing / verification
 
-- Smoke manual:
-  - Envie um ping `@opencraft` no grupo e confirme uma resposta que referencia o nome do remetente.
-  - Envie um segundo ping e verifique se o bloco de histórico está incluído e limpo no próximo turno.
-- Verifique os logs do gateway (execute com `--verbose`) para ver entradas `inbound web message` mostrando `from: <groupJid>` e o sufixo `[from: …]`.
+- Manual smoke:
+  - Send an `@openclaw` ping in the group and confirm a reply that references the sender name.
+  - Send a second ping and verify the history block is included then cleared on the next turn.
+- Check gateway logs (run with `--verbose`) to see `inbound web message` entries showing `from: <groupJid>` and the `[from: …]` suffix.
 
-## Considerações conhecidas
+## Known considerations
 
-- Heartbeats são intencionalmente ignorados para grupos para evitar transmissões ruidosas.
-- A supressão de eco usa a string combinada do lote; se você enviar texto idêntico duas vezes sem menções, apenas o primeiro receberá resposta.
-- As entradas do store de sessão aparecerão como `agent:<agentId>:whatsapp:group:<jid>` no store de sessão (`~/.opencraft/agents/<agentId>/sessions/sessions.json` por padrão); uma entrada ausente apenas significa que o grupo ainda não acionou uma execução.
-- Indicadores de digitação em grupos seguem `agents.defaults.typingMode` (padrão: `message` quando não mencionado).
+- Heartbeats are intentionally skipped for groups to avoid noisy broadcasts.
+- Echo suppression uses the combined batch string; if you send identical text twice without mentions, only the first will get a response.
+- Session store entries will appear as `agent:<agentId>:whatsapp:group:<jid>` in the session store (`~/.openclaw/agents/<agentId>/sessions/sessions.json` by default); a missing entry just means the group hasn’t triggered a run yet.
+- Typing indicators in groups follow `agents.defaults.typingMode` (default: `message` when unmentioned).

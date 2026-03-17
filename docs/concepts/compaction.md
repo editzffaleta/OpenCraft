@@ -1,30 +1,30 @@
 ---
-summary: "Janela de contexto + compactação: como o OpenCraft mantém sessões dentro dos limites do modelo"
+summary: "Context window + compaction: how OpenClaw keeps sessions under model limits"
 read_when:
-  - Você quer entender a auto-compactação e /compact
-  - Você está depurando sessões longas que atingem limites de contexto
-title: "Compactação"
+  - You want to understand auto-compaction and /compact
+  - You are debugging long sessions hitting context limits
+title: "Compaction"
 ---
 
-# Janela de Contexto & Compactação
+# Context Window & Compaction
 
-Todo modelo tem uma **janela de contexto** (máximo de tokens que pode ver). Chats de longa duração acumulam mensagens e resultados de ferramentas; uma vez que a janela esteja apertada, o OpenCraft **compacta** o histórico mais antigo para ficar dentro dos limites.
+Every model has a **context window** (max tokens it can see). Long-running chats accumulate messages and tool results; once the window is tight, OpenClaw **compacts** older history to stay within limits.
 
-## O que é compactação
+## What compaction is
 
-A compactação **resume a conversa mais antiga** em uma entrada de resumo compacto e mantém as mensagens recentes intactas. O resumo é armazenado no histórico da sessão, então requisições futuras usam:
+Compaction **summarizes older conversation** into a compact summary entry and keeps recent messages intact. The summary is stored in the session history, so future requests use:
 
-- O resumo de compactação
-- Mensagens recentes após o ponto de compactação
+- The compaction summary
+- Recent messages after the compaction point
 
-A compactação **persiste** no histórico JSONL da sessão.
+Compaction **persists** in the session’s JSONL history.
 
-## Configuração
+## Configuration
 
-Use a configuração `agents.defaults.compaction` em seu `opencraft.json` para configurar o comportamento de compactação (modo, tokens alvo, etc.).
-A sumarização de compactação preserva identificadores opacos por padrão (`identifierPolicy: "strict"`). Você pode sobrescrever isso com `identifierPolicy: "off"` ou fornecer texto personalizado com `identifierPolicy: "custom"` e `identifierInstructions`.
+Use the `agents.defaults.compaction` setting in your `openclaw.json` to configure compaction behavior (mode, target tokens, etc.).
+Compaction summarization preserves opaque identifiers by default (`identifierPolicy: "strict"`). You can override this with `identifierPolicy: "off"` or provide custom text with `identifierPolicy: "custom"` and `identifierInstructions`.
 
-Você pode opcionalmente especificar um modelo diferente para sumarização de compactação via `agents.defaults.compaction.model`. Isso é útil quando seu modelo primário é local ou pequeno e você quer que os resumos de compactação sejam produzidos por um modelo mais capaz. O override aceita qualquer string `provider/model-id`:
+You can optionally specify a different model for compaction summarization via `agents.defaults.compaction.model`. This is useful when your primary model is a local or small model and you want compaction summaries produced by a more capable model. The override accepts any `provider/model-id` string:
 
 ```json
 {
@@ -38,7 +38,7 @@ Você pode opcionalmente especificar um modelo diferente para sumarização de c
 }
 ```
 
-Isso também funciona com modelos locais, por exemplo um segundo modelo Ollama dedicado à sumarização ou um especialista de compactação fine-tuned:
+This also works with local models, for example a second Ollama model dedicated to summarization or a fine-tuned compaction specialist:
 
 ```json
 {
@@ -52,52 +52,53 @@ Isso também funciona com modelos locais, por exemplo um segundo modelo Ollama d
 }
 ```
 
-Quando não definido, a compactação usa o modelo primário do agente.
+When unset, compaction uses the agent's primary model.
 
-## Auto-compactação (ativada por padrão)
+## Auto-compaction (default on)
 
-Quando uma sessão se aproxima ou excede a janela de contexto do modelo, o OpenCraft aciona a auto-compactação e pode tentar novamente a requisição original usando o contexto compactado.
+When a session nears or exceeds the model’s context window, OpenClaw triggers auto-compaction and may retry the original request using the compacted context.
 
-Você verá:
+You’ll see:
 
-- `🧹 Auto-compaction complete` no modo verbose
-- `/status` mostrando `🧹 Compactions: <contagem>`
+- `🧹 Auto-compaction complete` in verbose mode
+- `/status` showing `🧹 Compactions: <count>`
 
-Antes da compactação, o OpenCraft pode executar uma **rodada silenciosa de flush de memória** para armazenar notas duráveis em disco. Veja [Memória](/concepts/memory) para detalhes e configuração.
+Before compaction, OpenClaw can run a **silent memory flush** turn to store
+durable notes to disk. See [Memory](/concepts/memory) for details and config.
 
-## Compactação manual
+## Manual compaction
 
-Use `/compact` (opcionalmente com instruções) para forçar uma passagem de compactação:
+Use `/compact` (optionally with instructions) to force a compaction pass:
 
 ```
-/compact Foque em decisões e questões abertas
+/compact Focus on decisions and open questions
 ```
 
-## Fonte da janela de contexto
+## Context window source
 
-A janela de contexto é específica por modelo. O OpenCraft usa a definição do modelo do catálogo do provedor configurado para determinar os limites.
+Context window is model-specific. OpenClaw uses the model definition from the configured provider catalog to determine limits.
 
-## Compactação vs poda
+## Compaction vs pruning
 
-- **Compactação**: resume e **persiste** no JSONL.
-- **Poda de sessão**: apara resultados de ferramentas antigos apenas **em memória**, por requisição.
+- **Compaction**: summarises and **persists** in JSONL.
+- **Session pruning**: trims old **tool results** only, **in-memory**, per request.
 
-Veja [/concepts/session-pruning](/concepts/session-pruning) para detalhes de poda.
+See [/concepts/session-pruning](/concepts/session-pruning) for pruning details.
 
-## Compactação server-side do OpenAI
+## OpenAI server-side compaction
 
-O OpenCraft também suporta hints de compactação server-side do OpenAI Responses para
-modelos OpenAI diretos compatíveis. Isso é separado da compactação local do OpenCraft
-e pode funcionar junto com ela.
+OpenClaw also supports OpenAI Responses server-side compaction hints for
+compatible direct OpenAI models. This is separate from local OpenClaw
+compaction and can run alongside it.
 
-- Compactação local: o OpenCraft resume e persiste no JSONL da sessão.
-- Compactação server-side: o OpenAI compacta o contexto no lado do provedor quando
-  `store` + `context_management` estão habilitados.
+- Local compaction: OpenClaw summarizes and persists into session JSONL.
+- Server-side compaction: OpenAI compacts context on the provider side when
+  `store` + `context_management` are enabled.
 
-Veja [provedor OpenAI](/providers/openai) para parâmetros de modelo e overrides.
+See [OpenAI provider](/providers/openai) for model params and overrides.
 
-## Dicas
+## Tips
 
-- Use `/compact` quando as sessões parecerem obsoletas ou o contexto estiver saturado.
-- Outputs grandes de ferramentas já são truncados; a poda pode reduzir ainda mais o acúmulo de resultados de ferramentas.
-- Se você precisar de uma lousa em branco, `/new` ou `/reset` inicia um novo ID de sessão.
+- Use `/compact` when sessions feel stale or context is bloated.
+- Large tool outputs are already truncated; pruning can further reduce tool-result buildup.
+- If you need a fresh slate, `/new` or `/reset` starts a new session id.

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 
 const handleDiscordAction = vi.fn(async (..._args: unknown[]) => ({ details: { ok: true } }));
 const handleTelegramAction = vi.fn(async (..._args: unknown[]) => ({ ok: true }));
@@ -30,8 +30,8 @@ const { telegramMessageActions } = await import("./telegram.js");
 const { signalMessageActions } = await import("./signal.js");
 const { createSlackActions } = await import("../slack.actions.js");
 
-function telegramCfg(): OpenCraftConfig {
-  return { channels: { telegram: { botToken: "tok" } } } as OpenCraftConfig;
+function telegramCfg(): OpenClawConfig {
+  return { channels: { telegram: { botToken: "tok" } } } as OpenClawConfig;
 }
 
 type TelegramActionInput = Parameters<NonNullable<typeof telegramMessageActions.handleAction>>[0];
@@ -39,7 +39,7 @@ type TelegramActionInput = Parameters<NonNullable<typeof telegramMessageActions.
 async function runTelegramAction(
   action: TelegramActionInput["action"],
   params: TelegramActionInput["params"],
-  options?: { cfg?: OpenCraftConfig; accountId?: string },
+  options?: { cfg?: OpenClawConfig; accountId?: string },
 ) {
   const cfg = options?.cfg ?? telegramCfg();
   const handleAction = telegramMessageActions.handleAction;
@@ -62,13 +62,13 @@ async function runSignalAction(
   action: SignalActionInput["action"],
   params: SignalActionInput["params"],
   options?: {
-    cfg?: OpenCraftConfig;
+    cfg?: OpenClawConfig;
     accountId?: string;
     toolContext?: SignalActionInput["toolContext"];
   },
 ) {
   const cfg =
-    options?.cfg ?? ({ channels: { signal: { account: "+15550001111" } } } as OpenCraftConfig);
+    options?.cfg ?? ({ channels: { signal: { account: "+15550001111" } } } as OpenClawConfig);
   const handleAction = signalMessageActions.handleAction;
   if (!handleAction) {
     throw new Error("signal handleAction unavailable");
@@ -85,7 +85,7 @@ async function runSignalAction(
 }
 
 function slackHarness() {
-  const cfg = { channels: { slack: { botToken: "tok" } } } as OpenCraftConfig;
+  const cfg = { channels: { slack: { botToken: "tok" } } } as OpenClawConfig;
   const actions = createSlackActions("slack");
   return { cfg, actions };
 }
@@ -127,7 +127,7 @@ function expectChannelCreateAction(actions: string[], expected: boolean) {
   expect(actions).not.toContain("channel-create");
 }
 
-function createSignalAccountOverrideCfg(): OpenCraftConfig {
+function createSignalAccountOverrideCfg(): OpenClawConfig {
   return {
     channels: {
       signal: {
@@ -137,12 +137,12 @@ function createSignalAccountOverrideCfg(): OpenCraftConfig {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 function createDiscordModerationOverrideCfg(params?: {
   channelsEnabled?: boolean;
-}): OpenCraftConfig {
+}): OpenClawConfig {
   const accountActions = params?.channelsEnabled
     ? { moderation: true, channels: true }
     : { moderation: true };
@@ -155,13 +155,13 @@ function createDiscordModerationOverrideCfg(params?: {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 async function expectSignalActionRejected(
   params: Record<string, unknown>,
   error: RegExp,
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
 ) {
   const handleAction = signalMessageActions.handleAction;
   if (!handleAction) {
@@ -197,7 +197,7 @@ beforeEach(() => {
 
 describe("discord message actions", () => {
   it("lists channel and upload actions by default", async () => {
-    const cfg = { channels: { discord: { token: "d0" } } } as OpenCraftConfig;
+    const cfg = { channels: { discord: { token: "d0" } } } as OpenClawConfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).toContain("emoji-upload");
@@ -208,7 +208,7 @@ describe("discord message actions", () => {
   it("respects disabled channel actions", async () => {
     const cfg = {
       channels: { discord: { token: "d0", actions: { channels: false } } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).not.toContain("channel-create");
@@ -238,7 +238,7 @@ describe("discord message actions", () => {
     ] as const;
 
     for (const channelConfig of cases) {
-      const cfg = channelConfig as unknown as OpenCraftConfig;
+      const cfg = channelConfig as unknown as OpenClawConfig;
       const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
       expectModerationActions(actions);
     }
@@ -254,7 +254,7 @@ describe("discord message actions", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     // moderation defaults to false, so without explicit true it stays hidden
@@ -441,7 +441,7 @@ describe("handleDiscordMessageAction", () => {
     it(testCase.name, async () => {
       await handleDiscordMessageAction({
         ...testCase.input,
-        cfg: {} as OpenCraftConfig,
+        cfg: {} as OpenClawConfig,
       });
 
       const call = handleDiscordAction.mock.calls.at(-1);
@@ -459,7 +459,7 @@ describe("handleDiscordMessageAction", () => {
         durationMin: 5,
         senderUserId: "spoofed-admin-id",
       },
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       requesterSenderId: "trusted-sender-id",
       toolContext: { currentChannelProvider: "discord" },
     });
@@ -481,7 +481,7 @@ describe("handleDiscordMessageAction", () => {
     await handleDiscordMessageAction({
       action: "send",
       params: { to: "channel:123", message: "hi", media: "/tmp/file.png" },
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       mediaLocalRoots: ["/tmp/agent-root"],
     });
 
@@ -502,7 +502,7 @@ describe("handleDiscordMessageAction", () => {
         channelId: "123",
         emoji: "ok",
       },
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       toolContext: { currentMessageId: "9001" },
     });
 
@@ -525,7 +525,7 @@ describe("handleDiscordMessageAction", () => {
           channelId: "123",
           emoji: "ok",
         },
-        cfg: {} as OpenCraftConfig,
+        cfg: {} as OpenClawConfig,
       }),
     ).rejects.toThrow(/messageId required/i);
 
@@ -540,6 +540,21 @@ describe("telegramMessageActions", () => {
     expect(actions).toContain("poll");
   });
 
+  it("lists topic-edit when telegram topic edits are enabled", () => {
+    const cfg = {
+      channels: {
+        telegram: {
+          botToken: "tok",
+          actions: { editForumTopic: true },
+        },
+      },
+    } as OpenClawConfig;
+
+    const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
+
+    expect(actions).toContain("topic-edit");
+  });
+
   it("omits poll when sendMessage is disabled", () => {
     const cfg = {
       channels: {
@@ -548,7 +563,7 @@ describe("telegramMessageActions", () => {
           actions: { sendMessage: false },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -563,7 +578,7 @@ describe("telegramMessageActions", () => {
           actions: { poll: false },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -592,7 +607,7 @@ describe("telegramMessageActions", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -616,7 +631,7 @@ describe("telegramMessageActions", () => {
               },
             },
           },
-        } as OpenCraftConfig,
+        } as OpenClawConfig,
         expectSticker: true,
       },
       {
@@ -630,7 +645,7 @@ describe("telegramMessageActions", () => {
               },
             },
           },
-        } as OpenCraftConfig,
+        } as OpenClawConfig,
         expectSticker: false,
       },
     ] as const;
@@ -793,6 +808,24 @@ describe("telegramMessageActions", () => {
           accountId: undefined,
         },
       },
+      {
+        name: "topic-edit maps to editForumTopic",
+        action: "topic-edit" as const,
+        params: {
+          to: "telegram:group:-1001234567890:topic:271",
+          threadId: 271,
+          name: "Build Updates",
+          iconCustomEmojiId: "emoji-123",
+        },
+        expectedPayload: {
+          action: "editForumTopic",
+          chatId: "telegram:group:-1001234567890:topic:271",
+          messageThreadId: 271,
+          name: "Build Updates",
+          iconCustomEmojiId: "emoji-123",
+          accountId: undefined,
+        },
+      },
     ] as const;
 
     for (const testCase of cases) {
@@ -863,7 +896,7 @@ describe("telegramMessageActions", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).toContain("sticker");
@@ -981,14 +1014,14 @@ describe("signalMessageActions", () => {
     const cases = [
       {
         name: "no configured accounts",
-        cfg: {} as OpenCraftConfig,
+        cfg: {} as OpenClawConfig,
         expected: [],
       },
       {
         name: "reactions disabled",
         cfg: {
           channels: { signal: { account: "+15550001111", actions: { reactions: false } } },
-        } as OpenCraftConfig,
+        } as OpenClawConfig,
         expected: ["send"],
       },
       {
@@ -1014,7 +1047,7 @@ describe("signalMessageActions", () => {
   it("blocks reactions when action gate is disabled", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111", actions: { reactions: false } } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expectSignalActionRejected(
       { to: "+15550001111", messageId: "123", emoji: "✅" },
       /actions\.reactions/,
@@ -1036,7 +1069,7 @@ describe("signalMessageActions", () => {
       },
       {
         name: "normalizes uuid recipients",
-        cfg: { channels: { signal: { account: "+15550001111" } } } as OpenCraftConfig,
+        cfg: { channels: { signal: { account: "+15550001111" } } } as OpenClawConfig,
         accountId: undefined,
         params: {
           recipient: "uuid:123e4567-e89b-12d3-a456-426614174000",
@@ -1050,7 +1083,7 @@ describe("signalMessageActions", () => {
       },
       {
         name: "passes groupId and targetAuthor for group reactions",
-        cfg: { channels: { signal: { account: "+15550001111" } } } as OpenCraftConfig,
+        cfg: { channels: { signal: { account: "+15550001111" } } } as OpenClawConfig,
         accountId: undefined,
         params: {
           to: "signal:group:group-id",
@@ -1105,7 +1138,7 @@ describe("signalMessageActions", () => {
   it("rejects reaction when neither messageId nor toolContext.currentMessageId is provided", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expectSignalActionRejected(
       { to: "+15559999999", emoji: "✅" },
       /messageId.*required/,
@@ -1116,7 +1149,7 @@ describe("signalMessageActions", () => {
   it("requires targetAuthor for group reactions", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     await expectSignalActionRejected(
       { to: "signal:group:group-id", messageId: "123", emoji: "✅" },
       /targetAuthor/,
@@ -1257,6 +1290,25 @@ describe("slack actions adapter", () => {
       handleSlackAction.mockClear();
       await expectSlackSendRejected(testCase.params, testCase.error);
     }
+  });
+
+  it("does not attach empty blocks to plain media sends", async () => {
+    handleSlackAction.mockClear();
+
+    await runSlackAction("send", {
+      to: "channel:C1",
+      message: "",
+      media: "https://example.com/image.png",
+    });
+
+    const [params] = handleSlackAction.mock.calls[0] ?? [];
+    expect(params).toMatchObject({
+      action: "sendMessage",
+      to: "channel:C1",
+      content: "",
+      mediaUrl: "https://example.com/image.png",
+    });
+    expect(params).not.toHaveProperty("blocks");
   });
 
   it("rejects edit when both message and blocks are missing", async () => {

@@ -10,11 +10,11 @@ import { formatHelpExamples } from "../help-format.js";
 export function registerBackupCommand(program: Command) {
   const backup = program
     .command("backup")
-    .description("Create and verify local backup archives for OpenCraft state")
+    .description("Create and verify local backup archives for OpenClaw state")
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/backup", "docs.opencraft.ai/cli/backup")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/backup", "docs.openclaw.ai/cli/backup")}\n`,
     );
 
   backup
@@ -30,24 +30,24 @@ export function registerBackupCommand(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["opencraft backup create", "Create a timestamped backup in the current directory."],
+          ["openclaw backup create", "Create a timestamped backup in the current directory."],
           [
-            "opencraft backup create --output ~/Backups",
+            "openclaw backup create --output ~/Backups",
             "Write the archive into an existing backup directory.",
           ],
           [
-            "opencraft backup create --dry-run --json",
+            "openclaw backup create --dry-run --json",
             "Preview the archive plan without writing any files.",
           ],
           [
-            "opencraft backup create --verify",
+            "openclaw backup create --verify",
             "Create the archive and immediately validate its manifest and payload layout.",
           ],
           [
-            "opencraft backup create --no-include-workspace",
+            "openclaw backup create --no-include-workspace",
             "Back up state/config without agent workspace files.",
           ],
-          ["opencraft backup create --only-config", "Back up only the active JSON config file."],
+          ["openclaw backup create --only-config", "Back up only the active JSON config file."],
         ])}`,
     )
     .action(async (opts) => {
@@ -72,11 +72,11 @@ export function registerBackupCommand(program: Command) {
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
           [
-            "opencraft backup verify ./2026-03-09T00-00-00.000Z-opencraft-backup.tar.gz",
+            "openclaw backup verify ./2026-03-09T00-00-00.000Z-openclaw-backup.tar.gz",
             "Check that the archive structure and manifest are intact.",
           ],
           [
-            "opencraft backup verify ~/Backups/latest.tar.gz --json",
+            "openclaw backup verify ~/Backups/latest.tar.gz --json",
             "Emit machine-readable verification output.",
           ],
         ])}`,

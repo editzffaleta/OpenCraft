@@ -2,11 +2,11 @@ import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   normalizeOptionalAccountId,
-} from "opencraft/plugin-sdk/account-id";
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/nostr";
+} from "openclaw/plugin-sdk/account-id";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/nostr";
 import type { NostrProfile } from "./config-schema.js";
+import { DEFAULT_RELAYS } from "./default-relays.js";
 import { getPublicKeyFromPrivate } from "./nostr-bus.js";
-import { DEFAULT_RELAYS } from "./nostr-bus.js";
 
 export interface NostrAccountConfig {
   enabled?: boolean;
@@ -31,7 +31,7 @@ export interface ResolvedNostrAccount {
   config: NostrAccountConfig;
 }
 
-function resolveConfiguredDefaultNostrAccountId(cfg: OpenCraftConfig): string | undefined {
+function resolveConfiguredDefaultNostrAccountId(cfg: OpenClawConfig): string | undefined {
   const nostrCfg = (cfg.channels as Record<string, unknown> | undefined)?.nostr as
     | NostrAccountConfig
     | undefined;
@@ -41,7 +41,7 @@ function resolveConfiguredDefaultNostrAccountId(cfg: OpenCraftConfig): string | 
 /**
  * List all configured Nostr account IDs
  */
-export function listNostrAccountIds(cfg: OpenCraftConfig): string[] {
+export function listNostrAccountIds(cfg: OpenClawConfig): string[] {
   const nostrCfg = (cfg.channels as Record<string, unknown> | undefined)?.nostr as
     | NostrAccountConfig
     | undefined;
@@ -57,7 +57,7 @@ export function listNostrAccountIds(cfg: OpenCraftConfig): string[] {
 /**
  * Get the default account ID
  */
-export function resolveDefaultNostrAccountId(cfg: OpenCraftConfig): string {
+export function resolveDefaultNostrAccountId(cfg: OpenClawConfig): string {
   const preferred = resolveConfiguredDefaultNostrAccountId(cfg);
   if (preferred) {
     return preferred;
@@ -73,7 +73,7 @@ export function resolveDefaultNostrAccountId(cfg: OpenCraftConfig): string {
  * Resolve a Nostr account from config
  */
 export function resolveNostrAccount(opts: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedNostrAccount {
   const accountId = normalizeAccountId(opts.accountId ?? resolveDefaultNostrAccountId(opts.cfg));

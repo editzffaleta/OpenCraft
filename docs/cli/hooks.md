@@ -1,35 +1,35 @@
 ---
-summary: "Referência do CLI para `opencraft hooks` (hooks de agente)"
+summary: "CLI reference for `openclaw hooks` (agent hooks)"
 read_when:
-  - Você quer gerenciar hooks de agente
-  - Você quer instalar ou atualizar hooks
+  - You want to manage agent hooks
+  - You want to install or update hooks
 title: "hooks"
 ---
 
-# `opencraft hooks`
+# `openclaw hooks`
 
-Gerenciar hooks de agente (automações orientadas a eventos para comandos como `/new`, `/reset` e inicialização do gateway).
+Manage agent hooks (event-driven automations for commands like `/new`, `/reset`, and gateway startup).
 
-Relacionado:
+Related:
 
 - Hooks: [Hooks](/automation/hooks)
-- Hooks de plugin: [Plugins](/tools/plugin#plugin-hooks)
+- Plugin hooks: [Plugins](/tools/plugin#plugin-hooks)
 
-## Listar Todos os Hooks
+## List All Hooks
 
 ```bash
-opencraft hooks list
+openclaw hooks list
 ```
 
-Listar todos os hooks descobertos de diretórios workspace, managed e bundled.
+List all discovered hooks from workspace, managed, and bundled directories.
 
-**Opções:**
+**Options:**
 
-- `--eligible`: Mostrar apenas hooks elegíveis (requisitos atendidos)
-- `--json`: Saída como JSON
-- `-v, --verbose`: Mostrar informações detalhadas incluindo requisitos ausentes
+- `--eligible`: Show only eligible hooks (requirements met)
+- `--json`: Output as JSON
+- `-v, --verbose`: Show detailed information including missing requirements
 
-**Exemplo de saída:**
+**Example output:**
 
 ```
 Hooks (4/4 ready)
@@ -41,45 +41,45 @@ Ready:
   💾 session-memory ✓ - Save session context to memory when /new command is issued
 ```
 
-**Exemplo (verbose):**
+**Example (verbose):**
 
 ```bash
-opencraft hooks list --verbose
+openclaw hooks list --verbose
 ```
 
-Mostra requisitos ausentes para hooks não elegíveis.
+Shows missing requirements for ineligible hooks.
 
-**Exemplo (JSON):**
+**Example (JSON):**
 
 ```bash
-opencraft hooks list --json
+openclaw hooks list --json
 ```
 
-Retorna JSON estruturado para uso programático.
+Returns structured JSON for programmatic use.
 
-## Obter Informações de um Hook
+## Get Hook Information
 
 ```bash
-opencraft hooks info <name>
+openclaw hooks info <name>
 ```
 
-Mostrar informações detalhadas sobre um hook específico.
+Show detailed information about a specific hook.
 
-**Argumentos:**
+**Arguments:**
 
-- `<name>`: Nome do hook (ex. `session-memory`)
+- `<name>`: Hook name (e.g., `session-memory`)
 
-**Opções:**
+**Options:**
 
-- `--json`: Saída como JSON
+- `--json`: Output as JSON
 
-**Exemplo:**
+**Example:**
 
 ```bash
-opencraft hooks info session-memory
+openclaw hooks info session-memory
 ```
 
-**Saída:**
+**Output:**
 
 ```
 💾 session-memory ✓ Ready
@@ -97,19 +97,19 @@ Requirements:
   Config: ✓ workspace.dir
 ```
 
-## Verificar Elegibilidade dos Hooks
+## Check Hooks Eligibility
 
 ```bash
-opencraft hooks check
+openclaw hooks check
 ```
 
-Mostrar resumo do status de elegibilidade dos hooks (quantos estão prontos vs. não prontos).
+Show summary of hook eligibility status (how many are ready vs. not ready).
 
-**Opções:**
+**Options:**
 
-- `--json`: Saída como JSON
+- `--json`: Output as JSON
 
-**Exemplo de saída:**
+**Example output:**
 
 ```
 Hooks Status
@@ -119,200 +119,200 @@ Ready: 4
 Not ready: 0
 ```
 
-## Habilitar um Hook
+## Enable a Hook
 
 ```bash
-opencraft hooks enable <name>
+openclaw hooks enable <name>
 ```
 
-Habilitar um hook específico adicionando-o à sua config (`~/.opencraft/config.json`).
+Enable a specific hook by adding it to your config (`~/.openclaw/config.json`).
 
-**Nota:** Hooks gerenciados por plugins mostram `plugin:<id>` em `opencraft hooks list` e
-não podem ser habilitados/desabilitados aqui. Habilite/desabilite o plugin.
+**Note:** Hooks managed by plugins show `plugin:<id>` in `openclaw hooks list` and
+can’t be enabled/disabled here. Enable/disable the plugin instead.
 
-**Argumentos:**
+**Arguments:**
 
-- `<name>`: Nome do hook (ex. `session-memory`)
+- `<name>`: Hook name (e.g., `session-memory`)
 
-**Exemplo:**
+**Example:**
 
 ```bash
-opencraft hooks enable session-memory
+openclaw hooks enable session-memory
 ```
 
-**Saída:**
+**Output:**
 
 ```
 ✓ Enabled hook: 💾 session-memory
 ```
 
-**O que faz:**
+**What it does:**
 
-- Verifica se o hook existe e é elegível
-- Atualiza `hooks.internal.entries.<name>.enabled = true` na sua config
-- Salva a config no disco
+- Checks if hook exists and is eligible
+- Updates `hooks.internal.entries.<name>.enabled = true` in your config
+- Saves config to disk
 
-**Após habilitar:**
+**After enabling:**
 
-- Reinicie o gateway para que os hooks recarreguem (reiniciar o app da barra de menus no macOS, ou reiniciar seu processo do gateway em dev).
+- Restart the gateway so hooks reload (menu bar app restart on macOS, or restart your gateway process in dev).
 
-## Desabilitar um Hook
-
-```bash
-opencraft hooks disable <name>
-```
-
-Desabilitar um hook específico atualizando sua config.
-
-**Argumentos:**
-
-- `<name>`: Nome do hook (ex. `command-logger`)
-
-**Exemplo:**
+## Disable a Hook
 
 ```bash
-opencraft hooks disable command-logger
+openclaw hooks disable <name>
 ```
 
-**Saída:**
+Disable a specific hook by updating your config.
+
+**Arguments:**
+
+- `<name>`: Hook name (e.g., `command-logger`)
+
+**Example:**
+
+```bash
+openclaw hooks disable command-logger
+```
+
+**Output:**
 
 ```
 ⏸ Disabled hook: 📝 command-logger
 ```
 
-**Após desabilitar:**
+**After disabling:**
 
-- Reinicie o gateway para que os hooks recarreguem
+- Restart the gateway so hooks reload
 
-## Instalar Hooks
-
-```bash
-opencraft hooks install <path-or-spec>
-opencraft hooks install <npm-spec> --pin
-```
-
-Instalar um pack de hooks de uma pasta/arquivo local ou npm.
-
-Specs npm são **apenas de registry** (nome do pacote + **versão exata** opcional ou
-**dist-tag**). Specs Git/URL/file e ranges semver são rejeitados. Instalações de dependências
-rodam com `--ignore-scripts` por segurança.
-
-Specs bare e `@latest` ficam na faixa estável. Se o npm resolver qualquer um desses
-para um prerelease, OpenCraft para e pede que você opte explicitamente com uma
-tag de prerelease como `@beta`/`@rc` ou uma versão de prerelease exata.
-
-**O que faz:**
-
-- Copia o pack de hooks em `~/.opencraft/hooks/<id>`
-- Habilita os hooks instalados em `hooks.internal.entries.*`
-- Registra a instalação em `hooks.internal.installs`
-
-**Opções:**
-
-- `-l, --link`: Vincular um diretório local em vez de copiar (adiciona a `hooks.internal.load.extraDirs`)
-- `--pin`: Registrar instalações npm como `name@version` exato resolvido em `hooks.internal.installs`
-
-**Arquivos suportados:** `.zip`, `.tgz`, `.tar.gz`, `.tar`
-
-**Exemplos:**
+## Install Hooks
 
 ```bash
-# Diretório local
-opencraft hooks install ./my-hook-pack
-
-# Arquivo local
-opencraft hooks install ./my-hook-pack.zip
-
-# Pacote NPM
-opencraft hooks install @openclaw/my-hook-pack
-
-# Vincular um diretório local sem copiar
-opencraft hooks install -l ./my-hook-pack
+openclaw hooks install <path-or-spec>
+openclaw hooks install <npm-spec> --pin
 ```
 
-## Atualizar Hooks
+Install a hook pack from a local folder/archive or npm.
+
+Npm specs are **registry-only** (package name + optional **exact version** or
+**dist-tag**). Git/URL/file specs and semver ranges are rejected. Dependency
+installs run with `--ignore-scripts` for safety.
+
+Bare specs and `@latest` stay on the stable track. If npm resolves either of
+those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
+prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
+
+**What it does:**
+
+- Copies the hook pack into `~/.openclaw/hooks/<id>`
+- Enables the installed hooks in `hooks.internal.entries.*`
+- Records the install under `hooks.internal.installs`
+
+**Options:**
+
+- `-l, --link`: Link a local directory instead of copying (adds it to `hooks.internal.load.extraDirs`)
+- `--pin`: Record npm installs as exact resolved `name@version` in `hooks.internal.installs`
+
+**Supported archives:** `.zip`, `.tgz`, `.tar.gz`, `.tar`
+
+**Examples:**
 
 ```bash
-opencraft hooks update <id>
-opencraft hooks update --all
+# Local directory
+openclaw hooks install ./my-hook-pack
+
+# Local archive
+openclaw hooks install ./my-hook-pack.zip
+
+# NPM package
+openclaw hooks install @openclaw/my-hook-pack
+
+# Link a local directory without copying
+openclaw hooks install -l ./my-hook-pack
 ```
 
-Atualizar packs de hooks instalados (apenas instalações npm).
+## Update Hooks
 
-**Opções:**
+```bash
+openclaw hooks update <id>
+openclaw hooks update --all
+```
 
-- `--all`: Atualizar todos os packs de hooks rastreados
-- `--dry-run`: Mostrar o que mudaria sem escrever
+Update installed hook packs (npm installs only).
 
-Quando um hash de integridade armazenado existe e o hash do artefato buscado muda,
-OpenCraft imprime um aviso e pede confirmação antes de prosseguir. Use
-`--yes` global para ignorar prompts em execuções CI/não interativas.
+**Options:**
 
-## Hooks Bundled
+- `--all`: Update all tracked hook packs
+- `--dry-run`: Show what would change without writing
+
+When a stored integrity hash exists and the fetched artifact hash changes,
+OpenClaw prints a warning and asks for confirmation before proceeding. Use
+global `--yes` to bypass prompts in CI/non-interactive runs.
+
+## Bundled Hooks
 
 ### session-memory
 
-Salva contexto de sessão na memória quando você emite `/new`.
+Saves session context to memory when you issue `/new`.
 
-**Habilitar:**
+**Enable:**
 
 ```bash
-opencraft hooks enable session-memory
+openclaw hooks enable session-memory
 ```
 
-**Saída:** `~/.opencraft/workspace/memory/YYYY-MM-DD-slug.md`
+**Output:** `~/.openclaw/workspace/memory/YYYY-MM-DD-slug.md`
 
-**Veja:** [documentação de session-memory](/automation/hooks#session-memory)
+**See:** [session-memory documentation](/automation/hooks#session-memory)
 
 ### bootstrap-extra-files
 
-Injeta arquivos de bootstrap adicionais (por exemplo `AGENTS.md` / `TOOLS.md` locais de monorepo) durante `agent:bootstrap`.
+Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TOOLS.md`) during `agent:bootstrap`.
 
-**Habilitar:**
+**Enable:**
 
 ```bash
-opencraft hooks enable bootstrap-extra-files
+openclaw hooks enable bootstrap-extra-files
 ```
 
-**Veja:** [documentação de bootstrap-extra-files](/automation/hooks#bootstrap-extra-files)
+**See:** [bootstrap-extra-files documentation](/automation/hooks#bootstrap-extra-files)
 
 ### command-logger
 
-Registra todos os eventos de comando em um arquivo de auditoria centralizado.
+Logs all command events to a centralized audit file.
 
-**Habilitar:**
+**Enable:**
 
 ```bash
-opencraft hooks enable command-logger
+openclaw hooks enable command-logger
 ```
 
-**Saída:** `~/.opencraft/logs/commands.log`
+**Output:** `~/.openclaw/logs/commands.log`
 
-**Ver logs:**
+**View logs:**
 
 ```bash
-# Comandos recentes
-tail -n 20 ~/.opencraft/logs/commands.log
+# Recent commands
+tail -n 20 ~/.openclaw/logs/commands.log
 
 # Pretty-print
-cat ~/.opencraft/logs/commands.log | jq .
+cat ~/.openclaw/logs/commands.log | jq .
 
-# Filtrar por ação
-grep '"action":"new"' ~/.opencraft/logs/commands.log | jq .
+# Filter by action
+grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
 ```
 
-**Veja:** [documentação de command-logger](/automation/hooks#command-logger)
+**See:** [command-logger documentation](/automation/hooks#command-logger)
 
 ### boot-md
 
-Roda `BOOT.md` quando o gateway inicia (após os canais iniciarem).
+Runs `BOOT.md` when the gateway starts (after channels start).
 
-**Eventos**: `gateway:startup`
+**Events**: `gateway:startup`
 
-**Habilitar**:
+**Enable**:
 
 ```bash
-opencraft hooks enable boot-md
+openclaw hooks enable boot-md
 ```
 
-**Veja:** [documentação de boot-md](/automation/hooks#boot-md)
+**See:** [boot-md documentation](/automation/hooks#boot-md)

@@ -1,10 +1,10 @@
-import { resolveWhatsAppAccount } from "../../../extensions/whatsapp/src/accounts.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
+import { resolveWhatsAppAccount } from "../../plugin-sdk-internal/whatsapp.js";
 import { resolveWhatsAppOutboundTarget } from "../../whatsapp/resolve-outbound-target.js";
 import { ToolAuthorizationError } from "./common.js";
 
 export function resolveAuthorizedWhatsAppOutboundTarget(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   chatJid: string;
   accountId?: string;
   actionLabel: string;

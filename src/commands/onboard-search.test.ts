@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { SEARCH_PROVIDER_OPTIONS, setupSearch } from "./onboard-search.js";
@@ -34,7 +34,7 @@ function createPrompter(params: { selectValue?: string; textValue?: string }): {
   return { prompter, notes };
 }
 
-function createPerplexityConfig(apiKey: string, enabled?: boolean): OpenCraftConfig {
+function createPerplexityConfig(apiKey: string, enabled?: boolean): OpenClawConfig {
   return {
     tools: {
       web: {
@@ -51,7 +51,7 @@ function createPerplexityConfig(apiKey: string, enabled?: boolean): OpenCraftCon
 async function runBlankPerplexityKeyEntry(
   apiKey: string,
   enabled?: boolean,
-): Promise<OpenCraftConfig> {
+): Promise<OpenClawConfig> {
   const cfg = createPerplexityConfig(apiKey, enabled);
   const { prompter } = createPrompter({
     selectValue: "perplexity",
@@ -63,7 +63,7 @@ async function runBlankPerplexityKeyEntry(
 async function runQuickstartPerplexitySetup(
   apiKey: string,
   enabled?: boolean,
-): Promise<{ result: OpenCraftConfig; prompter: WizardPrompter }> {
+): Promise<{ result: OpenClawConfig; prompter: WizardPrompter }> {
   const cfg = createPerplexityConfig(apiKey, enabled);
   const { prompter } = createPrompter({ selectValue: "perplexity" });
   const result = await setupSearch(cfg, runtime, prompter, {
@@ -74,14 +74,14 @@ async function runQuickstartPerplexitySetup(
 
 describe("setupSearch", () => {
   it("returns config unchanged when user skips", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({ selectValue: "__skip__" });
     const result = await setupSearch(cfg, runtime, prompter);
     expect(result).toBe(cfg);
   });
 
   it("sets provider and key for perplexity", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "perplexity",
       textValue: "pplx-test-key",
@@ -93,7 +93,7 @@ describe("setupSearch", () => {
   });
 
   it("sets provider and key for brave", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "brave",
       textValue: "BSA-test-key",
@@ -105,7 +105,7 @@ describe("setupSearch", () => {
   });
 
   it("sets provider and key for gemini", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "gemini",
       textValue: "AIza-test",
@@ -116,8 +116,21 @@ describe("setupSearch", () => {
     expect(result.tools?.web?.search?.gemini?.apiKey).toBe("AIza-test");
   });
 
+  it("sets provider and key for firecrawl and enables the plugin", async () => {
+    const cfg: OpenClawConfig = {};
+    const { prompter } = createPrompter({
+      selectValue: "firecrawl",
+      textValue: "fc-test-key",
+    });
+    const result = await setupSearch(cfg, runtime, prompter);
+    expect(result.tools?.web?.search?.provider).toBe("firecrawl");
+    expect(result.tools?.web?.search?.enabled).toBe(true);
+    expect(result.tools?.web?.search?.firecrawl?.apiKey).toBe("fc-test-key");
+    expect(result.plugins?.entries?.firecrawl?.enabled).toBe(true);
+  });
+
   it("sets provider and key for grok", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "grok",
       textValue: "xai-test",
@@ -129,7 +142,7 @@ describe("setupSearch", () => {
   });
 
   it("sets provider and key for kimi", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "kimi",
       textValue: "sk-moonshot",
@@ -144,7 +157,7 @@ describe("setupSearch", () => {
     const original = process.env.BRAVE_API_KEY;
     delete process.env.BRAVE_API_KEY;
     try {
-      const cfg: OpenCraftConfig = {};
+      const cfg: OpenClawConfig = {};
       const { prompter, notes } = createPrompter({
         selectValue: "brave",
         textValue: "",
@@ -205,7 +218,7 @@ describe("setupSearch", () => {
     const original = process.env.XAI_API_KEY;
     delete process.env.XAI_API_KEY;
     try {
-      const cfg: OpenCraftConfig = {};
+      const cfg: OpenClawConfig = {};
       const { prompter } = createPrompter({ selectValue: "grok", textValue: "" });
       const result = await setupSearch(cfg, runtime, prompter, {
         quickstartDefaults: true,
@@ -226,7 +239,7 @@ describe("setupSearch", () => {
     const orig = process.env.BRAVE_API_KEY;
     process.env.BRAVE_API_KEY = "env-brave-key"; // pragma: allowlist secret
     try {
-      const cfg: OpenCraftConfig = {};
+      const cfg: OpenClawConfig = {};
       const { prompter } = createPrompter({ selectValue: "brave" });
       const result = await setupSearch(cfg, runtime, prompter, {
         quickstartDefaults: true,
@@ -244,22 +257,70 @@ describe("setupSearch", () => {
   });
 
   it("stores env-backed SecretRef when secretInputMode=ref for perplexity", async () => {
-    const cfg: OpenCraftConfig = {};
-    const { prompter } = createPrompter({ selectValue: "perplexity" });
-    const result = await setupSearch(cfg, runtime, prompter, {
-      secretInputMode: "ref", // pragma: allowlist secret
-    });
-    expect(result.tools?.web?.search?.provider).toBe("perplexity");
-    expect(result.tools?.web?.search?.perplexity?.apiKey).toEqual({
-      source: "env",
-      provider: "default",
-      id: "PERPLEXITY_API_KEY", // pragma: allowlist secret
-    });
-    expect(prompter.text).not.toHaveBeenCalled();
+    const originalPerplexity = process.env.PERPLEXITY_API_KEY;
+    const originalOpenRouter = process.env.OPENROUTER_API_KEY;
+    delete process.env.PERPLEXITY_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    const cfg: OpenClawConfig = {};
+    try {
+      const { prompter } = createPrompter({ selectValue: "perplexity" });
+      const result = await setupSearch(cfg, runtime, prompter, {
+        secretInputMode: "ref", // pragma: allowlist secret
+      });
+      expect(result.tools?.web?.search?.provider).toBe("perplexity");
+      expect(result.tools?.web?.search?.perplexity?.apiKey).toEqual({
+        source: "env",
+        provider: "default",
+        id: "PERPLEXITY_API_KEY", // pragma: allowlist secret
+      });
+      expect(prompter.text).not.toHaveBeenCalled();
+    } finally {
+      if (originalPerplexity === undefined) {
+        delete process.env.PERPLEXITY_API_KEY;
+      } else {
+        process.env.PERPLEXITY_API_KEY = originalPerplexity;
+      }
+      if (originalOpenRouter === undefined) {
+        delete process.env.OPENROUTER_API_KEY;
+      } else {
+        process.env.OPENROUTER_API_KEY = originalOpenRouter;
+      }
+    }
+  });
+
+  it("prefers detected OPENROUTER_API_KEY SecretRef for perplexity ref mode", async () => {
+    const originalPerplexity = process.env.PERPLEXITY_API_KEY;
+    const originalOpenRouter = process.env.OPENROUTER_API_KEY;
+    delete process.env.PERPLEXITY_API_KEY;
+    process.env.OPENROUTER_API_KEY = "sk-or-test";
+    const cfg: OpenClawConfig = {};
+    try {
+      const { prompter } = createPrompter({ selectValue: "perplexity" });
+      const result = await setupSearch(cfg, runtime, prompter, {
+        secretInputMode: "ref", // pragma: allowlist secret
+      });
+      expect(result.tools?.web?.search?.perplexity?.apiKey).toEqual({
+        source: "env",
+        provider: "default",
+        id: "OPENROUTER_API_KEY", // pragma: allowlist secret
+      });
+      expect(prompter.text).not.toHaveBeenCalled();
+    } finally {
+      if (originalPerplexity === undefined) {
+        delete process.env.PERPLEXITY_API_KEY;
+      } else {
+        process.env.PERPLEXITY_API_KEY = originalPerplexity;
+      }
+      if (originalOpenRouter === undefined) {
+        delete process.env.OPENROUTER_API_KEY;
+      } else {
+        process.env.OPENROUTER_API_KEY = originalOpenRouter;
+      }
+    }
   });
 
   it("stores env-backed SecretRef when secretInputMode=ref for brave", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({ selectValue: "brave" });
     const result = await setupSearch(cfg, runtime, prompter, {
       secretInputMode: "ref", // pragma: allowlist secret
@@ -274,7 +335,7 @@ describe("setupSearch", () => {
   });
 
   it("stores plaintext key when secretInputMode is unset", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { prompter } = createPrompter({
       selectValue: "brave",
       textValue: "BSA-plain",
@@ -283,9 +344,9 @@ describe("setupSearch", () => {
     expect(result.tools?.web?.search?.apiKey).toBe("BSA-plain");
   });
 
-  it("exports all 5 providers in SEARCH_PROVIDER_OPTIONS", () => {
-    expect(SEARCH_PROVIDER_OPTIONS).toHaveLength(5);
+  it("exports all 6 providers in SEARCH_PROVIDER_OPTIONS", () => {
+    expect(SEARCH_PROVIDER_OPTIONS).toHaveLength(6);
     const values = SEARCH_PROVIDER_OPTIONS.map((e) => e.value);
-    expect(values).toEqual(["brave", "gemini", "grok", "kimi", "perplexity"]);
+    expect(values).toEqual(["brave", "gemini", "grok", "kimi", "perplexity", "firecrawl"]);
   });
 });

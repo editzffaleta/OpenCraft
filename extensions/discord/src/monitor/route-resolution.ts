@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import {
   deriveLastRoutePolicy,
   resolveAgentRoute,
@@ -22,7 +22,7 @@ export function buildDiscordRoutePeer(params: {
 }
 
 export function resolveDiscordConversationRoute(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   guildId?: string | null;
   memberRoleIds?: string[];
@@ -43,7 +43,7 @@ export function resolveDiscordConversationRoute(params: {
 }
 
 export function resolveDiscordBoundConversationRoute(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   guildId?: string | null;
   memberRoleIds?: string[];

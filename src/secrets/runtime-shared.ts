@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { coerceSecretRef, type SecretRef } from "../config/types.secrets.js";
 import { secretRefKey } from "./ref-contract.js";
 import type { SecretRefResolveCache } from "./resolve.js";
@@ -28,7 +28,7 @@ export type SecretAssignment = {
 };
 
 export type ResolverContext = {
-  sourceConfig: OpenCraftConfig;
+  sourceConfig: OpenClawConfig;
   env: NodeJS.ProcessEnv;
   cache: SecretRefResolveCache;
   warnings: SecretResolverWarning[];
@@ -36,10 +36,10 @@ export type ResolverContext = {
   assignments: SecretAssignment[];
 };
 
-export type SecretDefaults = NonNullable<OpenCraftConfig["secrets"]>["defaults"];
+export type SecretDefaults = NonNullable<OpenClawConfig["secrets"]>["defaults"];
 
 export function createResolverContext(params: {
-  sourceConfig: OpenCraftConfig;
+  sourceConfig: OpenClawConfig;
   env: NodeJS.ProcessEnv;
 }): ResolverContext {
   return {

@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { projectSafeChannelAccountSnapshotFields } from "../account-snapshot-fields.js";
 import { inspectReadOnlyChannelAccount } from "../read-only-account-inspect.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "./types.js";
@@ -6,7 +6,7 @@ import type { ChannelAccountSnapshot, ChannelPlugin } from "./types.js";
 // Channel docking: status snapshots flow through plugin.status hooks here.
 async function buildSnapshotFromAccount<ResolvedAccount>(params: {
   plugin: ChannelPlugin<ResolvedAccount>;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   account: ResolvedAccount;
   runtime?: ChannelAccountSnapshot;
@@ -41,28 +41,28 @@ async function buildSnapshotFromAccount<ResolvedAccount>(params: {
   };
 }
 
-function inspectChannelAccount<ResolvedAccount>(params: {
+async function inspectChannelAccount<ResolvedAccount>(params: {
   plugin: ChannelPlugin<ResolvedAccount>;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
-}): ResolvedAccount | null {
+}): Promise<ResolvedAccount | null> {
   return (params.plugin.config.inspectAccount?.(params.cfg, params.accountId) ??
-    inspectReadOnlyChannelAccount({
+    (await inspectReadOnlyChannelAccount({
       channelId: params.plugin.id,
       cfg: params.cfg,
       accountId: params.accountId,
-    })) as ResolvedAccount | null;
+    }))) as ResolvedAccount | null;
 }
 
 export async function buildReadOnlySourceChannelAccountSnapshot<ResolvedAccount>(params: {
   plugin: ChannelPlugin<ResolvedAccount>;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   runtime?: ChannelAccountSnapshot;
   probe?: unknown;
   audit?: unknown;
 }): Promise<ChannelAccountSnapshot | null> {
-  const inspectedAccount = inspectChannelAccount(params);
+  const inspectedAccount = await inspectChannelAccount(params);
   if (!inspectedAccount) {
     return null;
   }
@@ -74,13 +74,13 @@ export async function buildReadOnlySourceChannelAccountSnapshot<ResolvedAccount>
 
 export async function buildChannelAccountSnapshot<ResolvedAccount>(params: {
   plugin: ChannelPlugin<ResolvedAccount>;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   runtime?: ChannelAccountSnapshot;
   probe?: unknown;
   audit?: unknown;
 }): Promise<ChannelAccountSnapshot> {
-  const inspectedAccount = inspectChannelAccount(params);
+  const inspectedAccount = await inspectChannelAccount(params);
   const account =
     inspectedAccount ?? params.plugin.config.resolveAccount(params.cfg, params.accountId);
   return await buildSnapshotFromAccount({

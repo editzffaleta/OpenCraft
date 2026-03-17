@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import {
   registerTelegramNativeCommands,
   type RegisterTelegramHandlerParams,
@@ -123,7 +123,7 @@ function createNativeCommandTestParams(
         },
         command: vi.fn(),
       } as unknown as RegisterTelegramNativeCommandsParams["bot"]),
-    cfg: params.cfg ?? ({} as OpenCraftConfig),
+    cfg: params.cfg ?? ({} as OpenClawConfig),
     runtime:
       params.runtime ?? ({ log } as unknown as RegisterTelegramNativeCommandsParams["runtime"]),
     accountId: params.accountId ?? "default",
@@ -174,7 +174,7 @@ function buildStatusTopicCommandContext() {
       chat: {
         id: -1001234567890,
         type: "supergroup" as const,
-        title: "OpenCraft",
+        title: "OpenClaw",
         is_forum: true,
       },
       message_thread_id: 42,
@@ -184,31 +184,34 @@ function buildStatusTopicCommandContext() {
 }
 
 function registerAndResolveStatusHandler(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
+  telegramCfg?: RegisterTelegramNativeCommandsParams["telegramCfg"];
   resolveTelegramGroupConfig?: RegisterTelegramHandlerParams["resolveTelegramGroupConfig"];
 }): {
   handler: TelegramCommandHandler;
   sendMessage: ReturnType<typeof vi.fn>;
 } {
-  const { cfg, allowFrom, groupAllowFrom, resolveTelegramGroupConfig } = params;
+  const { cfg, allowFrom, groupAllowFrom, telegramCfg, resolveTelegramGroupConfig } = params;
   return registerAndResolveCommandHandlerBase({
     commandName: "status",
     cfg,
     allowFrom: allowFrom ?? ["*"],
     groupAllowFrom: groupAllowFrom ?? [],
     useAccessGroups: true,
+    telegramCfg,
     resolveTelegramGroupConfig,
   });
 }
 
 function registerAndResolveCommandHandlerBase(params: {
   commandName: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   allowFrom: string[];
   groupAllowFrom: string[];
   useAccessGroups: boolean;
+  telegramCfg?: RegisterTelegramNativeCommandsParams["telegramCfg"];
   resolveTelegramGroupConfig?: RegisterTelegramHandlerParams["resolveTelegramGroupConfig"];
 }): {
   handler: TelegramCommandHandler;
@@ -220,6 +223,7 @@ function registerAndResolveCommandHandlerBase(params: {
     allowFrom,
     groupAllowFrom,
     useAccessGroups,
+    telegramCfg,
     resolveTelegramGroupConfig,
   } = params;
   const commandHandlers = new Map<string, TelegramCommandHandler>();
@@ -239,6 +243,7 @@ function registerAndResolveCommandHandlerBase(params: {
       allowFrom,
       groupAllowFrom,
       useAccessGroups,
+      telegramCfg,
       resolveTelegramGroupConfig,
     }),
   });
@@ -250,10 +255,11 @@ function registerAndResolveCommandHandlerBase(params: {
 
 function registerAndResolveCommandHandler(params: {
   commandName: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
   useAccessGroups?: boolean;
+  telegramCfg?: RegisterTelegramNativeCommandsParams["telegramCfg"];
   resolveTelegramGroupConfig?: RegisterTelegramHandlerParams["resolveTelegramGroupConfig"];
 }): {
   handler: TelegramCommandHandler;
@@ -265,6 +271,7 @@ function registerAndResolveCommandHandler(params: {
     allowFrom,
     groupAllowFrom,
     useAccessGroups,
+    telegramCfg,
     resolveTelegramGroupConfig,
   } = params;
   return registerAndResolveCommandHandlerBase({
@@ -273,6 +280,7 @@ function registerAndResolveCommandHandler(params: {
     allowFrom: allowFrom ?? [],
     groupAllowFrom: groupAllowFrom ?? [],
     useAccessGroups: useAccessGroups ?? true,
+    telegramCfg,
     resolveTelegramGroupConfig,
   });
 }
@@ -324,7 +332,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       sessionKey: "agent:codex:acp:binding:telegram:default:seed",
     });
     sessionMocks.recordSessionMetaFromInbound.mockClear().mockResolvedValue(undefined);
-    sessionMocks.resolveStorePath.mockClear().mockReturnValue("/tmp/opencraft-sessions.json");
+    sessionMocks.resolveStorePath.mockClear().mockReturnValue("/tmp/openclaw-sessions.json");
     replyMocks.dispatchReplyWithBufferedBlockDispatcher
       .mockClear()
       .mockResolvedValue(dispatchReplyResult);
@@ -334,7 +342,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
   });
 
   it("calls recordSessionMetaFromInbound after a native slash command", async () => {
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     await handler(buildStatusCommandContext());
 
@@ -353,7 +361,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
     const deferred = createDeferred<void>();
     sessionMocks.recordSessionMetaFromInbound.mockReturnValue(deferred.promise);
 
-    const cfg: OpenCraftConfig = {};
+    const cfg: OpenClawConfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     const runPromise = handler(buildStatusCommandContext());
 
@@ -441,6 +449,31 @@ describe("registerTelegramNativeCommands — session metadata", () => {
     await handler(buildStatusCommandContext());
 
     expect(deliveryMocks.deliverReplies).not.toHaveBeenCalled();
+  });
+
+  it("sends native command error replies silently when silentErrorReplies is enabled", async () => {
+    replyMocks.dispatchReplyWithBufferedBlockDispatcher.mockImplementationOnce(
+      async ({ dispatcherOptions }: DispatchReplyWithBufferedBlockDispatcherParams) => {
+        await dispatcherOptions.deliver({ text: "oops", isError: true }, { kind: "final" });
+        return dispatchReplyResult;
+      },
+    );
+
+    const { handler } = registerAndResolveStatusHandler({
+      cfg: {},
+      telegramCfg: { silentErrorReplies: true },
+    });
+    await handler(buildStatusCommandContext());
+
+    const deliveredCall = deliveryMocks.deliverReplies.mock.calls[0]?.[0] as
+      | DeliverRepliesParams
+      | undefined;
+    expect(deliveredCall).toEqual(
+      expect.objectContaining({
+        silent: true,
+        replies: [expect.objectContaining({ isError: true })],
+      }),
+    );
   });
 
   it("routes Telegram native commands through configured ACP topic bindings", async () => {

@@ -98,9 +98,9 @@ vi.mock("@opentelemetry/semantic-conventions", () => ({
   ATTR_SERVICE_NAME: "service.name",
 }));
 
-vi.mock("opencraft/plugin-sdk/diagnostics-otel", async () => {
-  const actual = await vi.importActual<typeof import("opencraft/plugin-sdk/diagnostics-otel")>(
-    "opencraft/plugin-sdk/diagnostics-otel",
+vi.mock("openclaw/plugin-sdk/diagnostics-otel", async () => {
+  const actual = await vi.importActual<typeof import("openclaw/plugin-sdk/diagnostics-otel")>(
+    "openclaw/plugin-sdk/diagnostics-otel",
   );
   return {
     ...actual,
@@ -108,11 +108,11 @@ vi.mock("opencraft/plugin-sdk/diagnostics-otel", async () => {
   };
 });
 
-import type { OpenCraftPluginServiceContext } from "opencraft/plugin-sdk/diagnostics-otel";
-import { emitDiagnosticEvent } from "opencraft/plugin-sdk/diagnostics-otel";
+import type { OpenClawPluginServiceContext } from "openclaw/plugin-sdk/diagnostics-otel";
+import { emitDiagnosticEvent } from "openclaw/plugin-sdk/diagnostics-otel";
 import { createDiagnosticsOtelService } from "./service.js";
 
-const OTEL_TEST_STATE_DIR = "/tmp/opencraft-diagnostics-otel-test";
+const OTEL_TEST_STATE_DIR = "/tmp/openclaw-diagnostics-otel-test";
 const OTEL_TEST_ENDPOINT = "http://otel-collector:4318";
 const OTEL_TEST_PROTOCOL = "http/protobuf";
 
@@ -133,7 +133,7 @@ type OtelContextFlags = {
 function createOtelContext(
   endpoint: string,
   { traces = false, metrics = false, logs = false }: OtelContextFlags = {},
-): OpenCraftPluginServiceContext {
+): OpenClawPluginServiceContext {
   return {
     config: {
       diagnostics: {
@@ -153,7 +153,7 @@ function createOtelContext(
   };
 }
 
-function createTraceOnlyContext(endpoint: string): OpenCraftPluginServiceContext {
+function createTraceOnlyContext(endpoint: string): OpenClawPluginServiceContext {
   return createOtelContext(endpoint, { traces: true });
 }
 
@@ -243,26 +243,26 @@ describe("diagnostics-otel service", () => {
       attempt: 2,
     });
 
-    expect(telemetryState.counters.get("opencraft.webhook.received")?.add).toHaveBeenCalled();
+    expect(telemetryState.counters.get("openclaw.webhook.received")?.add).toHaveBeenCalled();
     expect(
-      telemetryState.histograms.get("opencraft.webhook.duration_ms")?.record,
+      telemetryState.histograms.get("openclaw.webhook.duration_ms")?.record,
     ).toHaveBeenCalled();
-    expect(telemetryState.counters.get("opencraft.message.queued")?.add).toHaveBeenCalled();
-    expect(telemetryState.counters.get("opencraft.message.processed")?.add).toHaveBeenCalled();
+    expect(telemetryState.counters.get("openclaw.message.queued")?.add).toHaveBeenCalled();
+    expect(telemetryState.counters.get("openclaw.message.processed")?.add).toHaveBeenCalled();
     expect(
-      telemetryState.histograms.get("opencraft.message.duration_ms")?.record,
+      telemetryState.histograms.get("openclaw.message.duration_ms")?.record,
     ).toHaveBeenCalled();
-    expect(telemetryState.histograms.get("opencraft.queue.wait_ms")?.record).toHaveBeenCalled();
-    expect(telemetryState.counters.get("opencraft.session.stuck")?.add).toHaveBeenCalled();
+    expect(telemetryState.histograms.get("openclaw.queue.wait_ms")?.record).toHaveBeenCalled();
+    expect(telemetryState.counters.get("openclaw.session.stuck")?.add).toHaveBeenCalled();
     expect(
-      telemetryState.histograms.get("opencraft.session.stuck_age_ms")?.record,
+      telemetryState.histograms.get("openclaw.session.stuck_age_ms")?.record,
     ).toHaveBeenCalled();
-    expect(telemetryState.counters.get("opencraft.run.attempt")?.add).toHaveBeenCalled();
+    expect(telemetryState.counters.get("openclaw.run.attempt")?.add).toHaveBeenCalled();
 
     const spanNames = telemetryState.tracer.startSpan.mock.calls.map((call) => call[0]);
-    expect(spanNames).toContain("opencraft.webhook.processed");
-    expect(spanNames).toContain("opencraft.message.processed");
-    expect(spanNames).toContain("opencraft.session.stuck");
+    expect(spanNames).toContain("openclaw.webhook.processed");
+    expect(spanNames).toContain("openclaw.message.processed");
+    expect(spanNames).toContain("openclaw.session.stuck");
 
     expect(registerLogTransportMock).toHaveBeenCalledTimes(1);
     expect(registeredTransports).toHaveLength(1);
@@ -334,7 +334,7 @@ describe("diagnostics-otel service", () => {
       _meta: { logLevelName: "DEBUG", date: new Date() },
     });
 
-    const tokenAttr = emitCall?.attributes?.["opencraft.token"];
+    const tokenAttr = emitCall?.attributes?.["openclaw.token"];
     expect(tokenAttr).not.toBe("ghp_abcdefghijklmnopqrstuvwxyz123456"); // pragma: allowlist secret
     if (typeof tokenAttr === "string") {
       expect(tokenAttr).toContain("…");
@@ -352,16 +352,16 @@ describe("diagnostics-otel service", () => {
       reason: "token=ghp_abcdefghijklmnopqrstuvwxyz123456", // pragma: allowlist secret
     });
 
-    const sessionCounter = telemetryState.counters.get("opencraft.session.state");
+    const sessionCounter = telemetryState.counters.get("openclaw.session.state");
     expect(sessionCounter?.add).toHaveBeenCalledWith(
       1,
       expect.objectContaining({
-        "opencraft.reason": expect.stringContaining("…"),
+        "openclaw.reason": expect.stringContaining("…"),
       }),
     );
     const attrs = sessionCounter?.add.mock.calls[0]?.[1] as Record<string, unknown> | undefined;
-    expect(typeof attrs?.["opencraft.reason"]).toBe("string");
-    expect(String(attrs?.["opencraft.reason"])).not.toContain(
+    expect(typeof attrs?.["openclaw.reason"]).toBe("string");
+    expect(String(attrs?.["openclaw.reason"])).not.toContain(
       "ghp_abcdefghijklmnopqrstuvwxyz123456", // pragma: allowlist secret
     );
     await service.stop?.(ctx);

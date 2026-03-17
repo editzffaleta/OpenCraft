@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
-describe("OpenCraftSchema logging levels", () => {
+describe("OpenClawSchema logging levels", () => {
   it("accepts valid logging level values for level and consoleLevel", () => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         logging: {
           level: "debug",
           consoleLevel: "warn",
@@ -15,14 +15,14 @@ describe("OpenCraftSchema logging levels", () => {
 
   it("rejects invalid logging level values", () => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         logging: {
           level: "loud",
         },
       }),
     ).toThrow();
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         logging: {
           consoleLevel: "verbose",
         },

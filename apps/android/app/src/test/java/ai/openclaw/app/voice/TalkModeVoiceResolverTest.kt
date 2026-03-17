@@ -1,4 +1,4 @@
-package ai.opencraft.app.voice
+package ai.openclaw.app.voice
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

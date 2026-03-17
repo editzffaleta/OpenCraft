@@ -1,13 +1,12 @@
-import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../../../agents/agent-scope.js";
+import {
+  resolveAgentDir,
+  resolveDefaultAgentId,
+  resolveAgentWorkspaceDir,
+} from "../../../agents/agent-scope.js";
 import type { ApiKeyCredential } from "../../../agents/auth-profiles/types.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../../agents/workspace.js";
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 import { enablePluginInConfig } from "../../../plugins/enable.js";
-import {
-  PROVIDER_PLUGIN_CHOICE_PREFIX,
-  resolveProviderPluginChoice,
-} from "../../../plugins/provider-wizard.js";
-import { resolvePluginProviders } from "../../../plugins/providers.js";
 import type {
   ProviderNonInteractiveApiKeyCredentialParams,
   ProviderResolveNonInteractiveApiKeyParams,
@@ -16,10 +15,16 @@ import type { RuntimeEnv } from "../../../runtime.js";
 import { resolvePreferredProviderForAuthChoice } from "../../auth-choice.preferred-provider.js";
 import type { OnboardOptions } from "../../onboard-types.js";
 
+const PROVIDER_PLUGIN_CHOICE_PREFIX = "provider-plugin:";
+
+async function loadPluginProviderRuntime() {
+  return import("./auth-choice.plugin-providers.runtime.js");
+}
+
 function buildIsolatedProviderResolutionConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   providerId: string | undefined,
-): OpenCraftConfig {
+): OpenClawConfig {
   if (!providerId) {
     return cfg;
   }
@@ -42,11 +47,11 @@ function buildIsolatedProviderResolutionConfig(
 }
 
 export async function applyNonInteractivePluginProviderChoice(params: {
-  nextConfig: OpenCraftConfig;
+  nextConfig: OpenClawConfig;
   authChoice: string;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: OpenCraftConfig;
+  baseConfig: OpenClawConfig;
   resolveApiKey: (input: ProviderResolveNonInteractiveApiKeyParams) => Promise<{
     key: string;
     source: "profile" | "env" | "flag";
@@ -55,8 +60,9 @@ export async function applyNonInteractivePluginProviderChoice(params: {
   toApiKeyCredential: (
     input: ProviderNonInteractiveApiKeyCredentialParams,
   ) => ApiKeyCredential | null;
-}): Promise<OpenCraftConfig | null | undefined> {
+}): Promise<OpenClawConfig | null | undefined> {
   const agentId = resolveDefaultAgentId(params.nextConfig);
+  const agentDir = resolveAgentDir(params.nextConfig, agentId);
   const workspaceDir =
     resolveAgentWorkspaceDir(params.nextConfig, agentId) ?? resolveDefaultAgentWorkspaceDir();
   const prefixedProviderId = params.authChoice.startsWith(PROVIDER_PLUGIN_CHOICE_PREFIX)
@@ -64,19 +70,31 @@ export async function applyNonInteractivePluginProviderChoice(params: {
     : undefined;
   const preferredProviderId =
     prefixedProviderId ||
-    resolvePreferredProviderForAuthChoice({
+    (await resolvePreferredProviderForAuthChoice({
       choice: params.authChoice,
       config: params.nextConfig,
       workspaceDir,
-    });
+    }));
   const resolutionConfig = buildIsolatedProviderResolutionConfig(
     params.nextConfig,
     preferredProviderId,
   );
+  const { resolveOwningPluginIdsForProvider, resolveProviderPluginChoice, resolvePluginProviders } =
+    await loadPluginProviderRuntime();
+  const owningPluginIds = preferredProviderId
+    ? resolveOwningPluginIdsForProvider({
+        provider: preferredProviderId,
+        config: resolutionConfig,
+        workspaceDir,
+      })
+    : undefined;
   const providerChoice = resolveProviderPluginChoice({
     providers: resolvePluginProviders({
       config: resolutionConfig,
       workspaceDir,
+      onlyPluginIds: owningPluginIds,
+      bundledProviderAllowlistCompat: true,
+      bundledProviderVitestCompat: true,
     }),
     choice: params.authChoice,
   });
@@ -114,6 +132,7 @@ export async function applyNonInteractivePluginProviderChoice(params: {
     baseConfig: params.baseConfig,
     opts: params.opts,
     runtime: params.runtime,
+    agentDir,
     workspaceDir,
     resolveApiKey: params.resolveApiKey,
     toApiKeyCredential: params.toApiKeyCredential,

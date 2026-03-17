@@ -1,28 +1,28 @@
 ---
-summary: "Scripts do repositório: propósito, escopo e notas de segurança"
+summary: "Repository scripts: purpose, scope, and safety notes"
 read_when:
-  - Executando scripts do repositório
-  - Adicionando ou alterando scripts em ./scripts
+  - Running scripts from the repo
+  - Adding or changing scripts under ./scripts
 title: "Scripts"
 ---
 
 # Scripts
 
-O diretório `scripts/` contém scripts auxiliares para fluxos de trabalho locais e tarefas de operações.
-Use-os quando uma tarefa estiver claramente vinculada a um script; caso contrário, prefira o CLI.
+The `scripts/` directory contains helper scripts for local workflows and ops tasks.
+Use these when a task is clearly tied to a script; otherwise prefer the CLI.
 
-## Convenções
+## Conventions
 
-- Scripts são **opcionais** a menos que referenciados em docs ou checklists de release.
-- Prefira interfaces CLI quando existirem (exemplo: monitoramento de auth usa `opencraft models status --check`).
-- Assuma que os scripts são específicos do host; leia-os antes de executar em uma nova máquina.
+- Scripts are **optional** unless referenced in docs or release checklists.
+- Prefer CLI surfaces when they exist (example: auth monitoring uses `openclaw models status --check`).
+- Assume scripts are host‑specific; read them before running on a new machine.
 
-## Scripts de monitoramento de auth
+## Auth monitoring scripts
 
-Scripts de monitoramento de auth estão documentados aqui:
+Auth monitoring scripts are documented here:
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
-## Ao adicionar scripts
+## When adding scripts
 
-- Mantenha os scripts focados e documentados.
-- Adicione uma entrada curta na documentação relevante (ou crie uma se estiver ausente).
+- Keep scripts focused and documented.
+- Add a short entry in the relevant doc (or create one if missing).

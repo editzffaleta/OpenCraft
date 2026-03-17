@@ -30,15 +30,15 @@ describe("resetCommand", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resolveCleanupPlanFromDisk.mockReturnValue({
-      stateDir: "/tmp/.opencraft",
-      configPath: "/tmp/.opencraft/opencraft.json",
-      oauthDir: "/tmp/.opencraft/credentials",
+      stateDir: "/tmp/.openclaw",
+      configPath: "/tmp/.openclaw/openclaw.json",
+      oauthDir: "/tmp/.openclaw/credentials",
       configInsideState: true,
       oauthInsideState: true,
-      workspaceDirs: ["/tmp/.opencraft/workspace"],
+      workspaceDirs: ["/tmp/.openclaw/workspace"],
     });
     removePath.mockResolvedValue({ ok: true });
-    listAgentSessionDirs.mockResolvedValue(["/tmp/.opencraft/agents/main/sessions"]);
+    listAgentSessionDirs.mockResolvedValue(["/tmp/.openclaw/agents/main/sessions"]);
     removeStateAndLinkedPaths.mockResolvedValue(undefined);
     removeWorkspaceDirs.mockResolvedValue(undefined);
     vi.spyOn(runtime, "log").mockImplementation(() => {});
@@ -53,7 +53,7 @@ describe("resetCommand", () => {
       dryRun: true,
     });
 
-    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("opencraft backup create"));
+    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("openclaw backup create"));
   });
 
   it("does not recommend backup for config-only reset", async () => {
@@ -64,6 +64,6 @@ describe("resetCommand", () => {
       dryRun: true,
     });
 
-    expect(runtime.log).not.toHaveBeenCalledWith(expect.stringContaining("opencraft backup create"));
+    expect(runtime.log).not.toHaveBeenCalledWith(expect.stringContaining("openclaw backup create"));
   });
 });

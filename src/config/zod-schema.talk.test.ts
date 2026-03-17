@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
-describe("OpenCraftSchema talk validation", () => {
+describe("OpenClawSchema talk validation", () => {
   it("accepts a positive integer talk.silenceTimeoutMs", () => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         talk: {
           silenceTimeoutMs: 1500,
         },
@@ -18,7 +18,7 @@ describe("OpenCraftSchema talk validation", () => {
     ["float", 1500.5],
   ])("rejects %s talk.silenceTimeoutMs", (_label, value) => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         talk: {
           silenceTimeoutMs: value,
         },
@@ -28,7 +28,7 @@ describe("OpenCraftSchema talk validation", () => {
 
   it("rejects talk.provider when it does not match talk.providers", () => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         talk: {
           provider: "acme",
           providers: {
@@ -43,7 +43,7 @@ describe("OpenCraftSchema talk validation", () => {
 
   it("rejects multi-provider talk config without talk.provider", () => {
     expect(() =>
-      OpenCraftSchema.parse({
+      OpenClawSchema.parse({
         talk: {
           providers: {
             acme: {

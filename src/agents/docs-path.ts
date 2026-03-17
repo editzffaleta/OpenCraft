@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { resolveOpenCraftPackageRoot } from "../infra/opencraft-root.js";
+import { resolveOpenClawPackageRoot } from "../infra/openclaw-root.js";
 
-export async function resolveOpenCraftDocsPath(params: {
+export async function resolveOpenClawDocsPath(params: {
   workspaceDir?: string;
   argv1?: string;
   cwd?: string;
@@ -16,7 +16,7 @@ export async function resolveOpenCraftDocsPath(params: {
     }
   }
 
-  const packageRoot = await resolveOpenCraftPackageRoot({
+  const packageRoot = await resolveOpenClawPackageRoot({
     cwd: params.cwd,
     argv1: params.argv1,
     moduleUrl: params.moduleUrl,

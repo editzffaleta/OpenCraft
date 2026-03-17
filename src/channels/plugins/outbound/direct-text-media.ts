@@ -1,11 +1,11 @@
 import { chunkText } from "../../../auto-reply/chunk.js";
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 import type { OutboundSendDeps } from "../../../infra/outbound/deliver.js";
 import { resolveChannelMediaMaxBytes } from "../media-limits.js";
 import type { ChannelOutboundAdapter } from "../types.js";
 
 type DirectSendOptions = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   replyToId?: string | null;
   mediaUrl?: string;
@@ -91,9 +91,9 @@ export async function sendTextMediaPayload(params: {
 }
 
 export function resolveScopedChannelMediaMaxBytes(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
-  resolveChannelLimitMb: (params: { cfg: OpenCraftConfig; accountId: string }) => number | undefined;
+  resolveChannelLimitMb: (params: { cfg: OpenClawConfig; accountId: string }) => number | undefined;
 }): number | undefined {
   return resolveChannelMediaMaxBytes({
     cfg: params.cfg,
@@ -103,7 +103,7 @@ export function resolveScopedChannelMediaMaxBytes(params: {
 }
 
 export function createScopedChannelMediaMaxBytesResolver(channel: "imessage" | "signal") {
-  return (params: { cfg: OpenCraftConfig; accountId?: string | null }) =>
+  return (params: { cfg: OpenClawConfig; accountId?: string | null }) =>
     resolveScopedChannelMediaMaxBytes({
       cfg: params.cfg,
       accountId: params.accountId,
@@ -120,14 +120,14 @@ export function createDirectTextMediaOutbound<
   channel: "imessage" | "signal";
   resolveSender: (deps: OutboundSendDeps | undefined) => DirectSendFn<TOpts, TResult>;
   resolveMaxBytes: (params: {
-    cfg: OpenCraftConfig;
+    cfg: OpenClawConfig;
     accountId?: string | null;
   }) => number | undefined;
   buildTextOptions: (params: DirectSendOptions) => TOpts;
   buildMediaOptions: (params: DirectSendOptions) => TOpts;
 }): ChannelOutboundAdapter {
   const sendDirect = async (sendParams: {
-    cfg: OpenCraftConfig;
+    cfg: OpenClawConfig;
     to: string;
     text: string;
     accountId?: string | null;

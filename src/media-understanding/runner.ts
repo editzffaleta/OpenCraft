@@ -2,14 +2,14 @@ import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { resolveApiKeyForProvider } from "../agents/model-auth.js";
+import { hasAvailableAuthForProvider } from "../agents/model-auth.js";
 import {
   findModelInCatalog,
   loadModelCatalog,
   modelSupportsVision,
 } from "../agents/model-catalog.js";
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -84,7 +84,7 @@ export function normalizeMediaAttachments(ctx: MsgContext): MediaAttachment[] {
 }
 
 export function resolveMediaAttachmentLocalRoots(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   ctx: MsgContext;
 }): readonly string[] {
   return mergeInboundPathRoots(
@@ -338,7 +338,7 @@ async function resolveGeminiCliEntry(
 }
 
 async function resolveKeyEntry(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -362,12 +362,16 @@ async function resolveKeyEntry(params: {
     if (capability === "video" && !provider.describeVideo) {
       return null;
     }
-    try {
-      await resolveApiKeyForProvider({ provider: providerId, cfg, agentDir });
-      return { type: "provider" as const, provider: providerId, model };
-    } catch {
+    if (
+      !(await hasAvailableAuthForProvider({
+        provider: providerId,
+        cfg,
+        agentDir,
+      }))
+    ) {
       return null;
     }
+    return { type: "provider" as const, provider: providerId, model };
   };
 
   if (capability === "image") {
@@ -421,7 +425,7 @@ async function resolveKeyEntry(params: {
   return null;
 }
 
-function resolveImageModelFromAgentDefaults(cfg: OpenCraftConfig): MediaUnderstandingModelConfig[] {
+function resolveImageModelFromAgentDefaults(cfg: OpenClawConfig): MediaUnderstandingModelConfig[] {
   const refs: string[] = [];
   const primary = resolveAgentModelPrimaryValue(cfg.agents?.defaults?.imageModel);
   if (primary?.trim()) {
@@ -451,7 +455,7 @@ function resolveImageModelFromAgentDefaults(cfg: OpenCraftConfig): MediaUndersta
 }
 
 async function resolveAutoEntries(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -485,7 +489,7 @@ async function resolveAutoEntries(params: {
 }
 
 export async function resolveAutoImageModel(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   activeModel?: ActiveMediaModel;
 }): Promise<ActiveMediaModel | null> {
@@ -526,7 +530,7 @@ export async function resolveAutoImageModel(params: {
 }
 
 async function resolveActiveModelEntry(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir?: string;
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
@@ -553,13 +557,12 @@ async function resolveActiveModelEntry(params: {
   if (params.capability === "video" && !provider.describeVideo) {
     return null;
   }
-  try {
-    await resolveApiKeyForProvider({
-      provider: providerId,
-      cfg: params.cfg,
-      agentDir: params.agentDir,
-    });
-  } catch {
+  const hasAuth = await hasAvailableAuthForProvider({
+    provider: providerId,
+    cfg: params.cfg,
+    agentDir: params.agentDir,
+  });
+  if (!hasAuth) {
     return null;
   }
   return {
@@ -571,7 +574,7 @@ async function resolveActiveModelEntry(params: {
 
 async function runAttachmentEntries(params: {
   capability: MediaUnderstandingCapability;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   ctx: MsgContext;
   attachmentIndex: number;
   agentDir?: string;
@@ -658,7 +661,7 @@ async function runAttachmentEntries(params: {
 
 export async function runCapability(params: {
   capability: MediaUnderstandingCapability;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   ctx: MsgContext;
   attachments: MediaAttachmentCache;
   media: MediaAttachment[];

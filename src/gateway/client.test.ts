@@ -25,6 +25,7 @@ class MockWebSocket {
   readonly sent: string[] = [];
   closeCalls = 0;
   terminateCalls = 0;
+  autoCloseOnClose = true;
 
   constructor(_url: string, _options?: unknown) {
     wsInstances.push(this);
@@ -55,7 +56,9 @@ class MockWebSocket {
 
   close(code?: number, reason?: string): void {
     this.closeCalls += 1;
-    this.emitClose(code ?? 1000, reason ?? "");
+    if (this.autoCloseOnClose) {
+      this.emitClose(code ?? 1000, reason ?? "");
+    }
   }
 
   terminate(): void {
@@ -144,14 +147,14 @@ function expectSecurityConnectError(
     }),
   );
   const error = onConnectError.mock.calls[0]?.[0] as Error;
-  expect(error.message).toContain("opencraft doctor --fix");
+  expect(error.message).toContain("openclaw doctor --fix");
   if (params?.expectTailscaleHint) {
     expect(error.message).toContain("Tailscale Serve/Funnel");
   }
 }
 
 describe("GatewayClient security checks", () => {
-  const envSnapshot = captureEnv(["OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS"]);
+  const envSnapshot = captureEnv(["OPENCLAW_ALLOW_INSECURE_PRIVATE_WS"]);
 
   beforeEach(() => {
     envSnapshot.restore();
@@ -215,8 +218,8 @@ describe("GatewayClient security checks", () => {
     client.stop();
   });
 
-  it("allows ws:// to private addresses only with OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1", () => {
-    process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS = "1";
+  it("allows ws:// to private addresses only with OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1", () => {
+    process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS = "1";
     const onConnectError = vi.fn();
     const client = new GatewayClient({
       url: "ws://192.168.1.100:18789",
@@ -230,11 +233,11 @@ describe("GatewayClient security checks", () => {
     client.stop();
   });
 
-  it("allows ws:// hostnames with OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1", () => {
-    process.env.OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS = "1";
+  it("allows ws:// hostnames with OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1", () => {
+    process.env.OPENCLAW_ALLOW_INSECURE_PRIVATE_WS = "1";
     const onConnectError = vi.fn();
     const client = new GatewayClient({
-      url: "ws://opencraft-gateway.ai:18789",
+      url: "ws://openclaw-gateway.ai:18789",
       onConnectError,
     });
 
@@ -322,6 +325,39 @@ describe("GatewayClient close handling", () => {
       await vi.advanceTimersByTimeAsync(250);
 
       expect(ws.terminateCalls).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("waits for a lingering socket to terminate in stopAndWait", async () => {
+    vi.useFakeTimers();
+    try {
+      const client = new GatewayClient({
+        url: "ws://127.0.0.1:18789",
+      });
+
+      client.start();
+      const ws = getLatestWs();
+      ws.autoCloseOnClose = false;
+
+      let settled = false;
+      const stopPromise = client.stopAndWait().then(() => {
+        settled = true;
+      });
+
+      expect(ws.closeCalls).toBe(1);
+      expect(settled).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(249);
+      expect(ws.terminateCalls).toBe(0);
+      expect(settled).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+      await stopPromise;
+
+      expect(ws.terminateCalls).toBe(1);
+      expect(settled).toBe(true);
     } finally {
       vi.useRealTimers();
     }

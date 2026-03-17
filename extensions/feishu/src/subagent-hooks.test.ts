@@ -1,4 +1,4 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/feishu";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/feishu";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { registerFeishuSubagentHooks } from "./subagent-hooks.js";
 import {
@@ -18,7 +18,7 @@ function registerHandlersForTest(config: Record<string, unknown> = baseConfig) {
     on: (hookName: string, handler: (event: unknown, ctx: unknown) => unknown) => {
       handlers.set(hookName, handler);
     },
-  } as unknown as OpenCraftPluginApi;
+  } as unknown as OpenClawPluginApi;
   registerFeishuSubagentHooks(api);
   return handlers;
 }

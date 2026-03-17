@@ -1,56 +1,56 @@
 ---
-summary: "Parsing de localização de canal de entrada (Telegram + WhatsApp) e campos de contexto"
+summary: "Inbound channel location parsing (Telegram + WhatsApp) and context fields"
 read_when:
-  - Adicionando ou modificando parsing de localização de canal
-  - Usando campos de contexto de localização em prompts ou ferramentas do agente
-title: "Parsing de Localização de Canal"
+  - Adding or modifying channel location parsing
+  - Using location context fields in agent prompts or tools
+title: "Channel Location Parsing"
 ---
 
-# Parsing de localização de canal
+# Channel location parsing
 
-O OpenCraft normaliza localizações compartilhadas de canais de chat em:
+OpenClaw normalizes shared locations from chat channels into:
 
-- texto legível por humanos adicionado ao corpo de entrada, e
-- campos estruturados no payload de contexto de auto-resposta.
+- human-readable text appended to the inbound body, and
+- structured fields in the auto-reply context payload.
 
-Atualmente suportado:
+Currently supported:
 
-- **Telegram** (pins de localização + venues + localizações ao vivo)
+- **Telegram** (location pins + venues + live locations)
 - **WhatsApp** (locationMessage + liveLocationMessage)
-- **Matrix** (`m.location` com `geo_uri`)
+- **Matrix** (`m.location` with `geo_uri`)
 
-## Formatação de texto
+## Text formatting
 
-As localizações são renderizadas como linhas amigáveis sem colchetes:
+Locations are rendered as friendly lines without brackets:
 
 - Pin:
   - `📍 48.858844, 2.294351 ±12m`
-- Local nomeado:
-  - `📍 Torre Eiffel — Champ de Mars, Paris (48.858844, 2.294351 ±12m)`
-- Compartilhamento ao vivo:
+- Named place:
+  - `📍 Eiffel Tower — Champ de Mars, Paris (48.858844, 2.294351 ±12m)`
+- Live share:
   - `🛰 Live location: 48.858844, 2.294351 ±12m`
 
-Se o canal incluir uma legenda/comentário, ele é adicionado na linha seguinte:
+If the channel includes a caption/comment, it is appended on the next line:
 
 ```
 📍 48.858844, 2.294351 ±12m
-Encontre-me aqui
+Meet here
 ```
 
-## Campos de contexto
+## Context fields
 
-Quando uma localização está presente, esses campos são adicionados ao `ctx`:
+When a location is present, these fields are added to `ctx`:
 
-- `LocationLat` (número)
-- `LocationLon` (número)
-- `LocationAccuracy` (número, metros; opcional)
-- `LocationName` (string; opcional)
-- `LocationAddress` (string; opcional)
+- `LocationLat` (number)
+- `LocationLon` (number)
+- `LocationAccuracy` (number, meters; optional)
+- `LocationName` (string; optional)
+- `LocationAddress` (string; optional)
 - `LocationSource` (`pin | place | live`)
-- `LocationIsLive` (booleano)
+- `LocationIsLive` (boolean)
 
-## Notas por canal
+## Channel notes
 
-- **Telegram**: venues mapeiam para `LocationName/LocationAddress`; localizações ao vivo usam `live_period`.
-- **WhatsApp**: `locationMessage.comment` e `liveLocationMessage.caption` são adicionados como a linha de legenda.
-- **Matrix**: `geo_uri` é parsado como uma localização de pin; altitude é ignorada e `LocationIsLive` é sempre false.
+- **Telegram**: venues map to `LocationName/LocationAddress`; live locations use `live_period`.
+- **WhatsApp**: `locationMessage.comment` and `liveLocationMessage.caption` are appended as the caption line.
+- **Matrix**: `geo_uri` is parsed as a pin location; altitude is ignored and `LocationIsLive` is always false.

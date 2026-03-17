@@ -1,5 +1,5 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { formatSandboxToolPolicyBlockedMessage } from "../sandbox.js";
 import { stableStringify } from "../stable-stringify.js";
@@ -97,6 +97,7 @@ export function isContextOverflowError(errorMessage?: string): boolean {
     lower.includes("context length exceeded") ||
     lower.includes("maximum context length") ||
     lower.includes("prompt is too long") ||
+    lower.includes("prompt too long") ||
     lower.includes("exceeds model context window") ||
     lower.includes("model token limit") ||
     (hasRequestSizeExceeds && hasContextWindow) ||
@@ -211,11 +212,12 @@ export function extractObservedOverflowTokenCount(errorMessage?: string): number
   return undefined;
 }
 
+// Allow provider-wrapped API payloads such as "Ollama API error 400: {...}".
 const ERROR_PAYLOAD_PREFIX_RE =
-  /^(?:error|api\s*error|apierror|openai\s*error|anthropic\s*error|gateway\s*error)[:\s-]+/i;
+  /^(?:error|(?:[a-z][\w-]*\s+)?api\s*error|apierror|openai\s*error|anthropic\s*error|gateway\s*error)(?:\s+\d{3})?[:\s-]+/i;
 const FINAL_TAG_RE = /<\s*\/?\s*final\s*>/gi;
 const ERROR_PREFIX_RE =
-  /^(?:error|api\s*error|openai\s*error|anthropic\s*error|gateway\s*error|request failed|failed|exception)[:\s-]+/i;
+  /^(?:error|(?:[a-z][\w-]*\s+)?api\s*error|openai\s*error|anthropic\s*error|gateway\s*error|request failed|failed|exception)(?:\s+\d{3})?[:\s-]+/i;
 const CONTEXT_OVERFLOW_ERROR_HEAD_RE =
   /^(?:context overflow:|request_too_large\b|request size exceeds\b|request exceeds the maximum size\b|context length exceeded\b|maximum context length\b|prompt is too long\b|exceeds model context window\b)/i;
 const HTTP_STATUS_PREFIX_RE = /^(?:http\s*)?(\d{3})\s+(.+)$/i;
@@ -673,7 +675,7 @@ export function formatRawAssistantErrorForUi(raw?: string): string {
 
 export function formatAssistantErrorText(
   msg: AssistantMessage,
-  opts?: { cfg?: OpenCraftConfig; sessionKey?: string; provider?: string; model?: string },
+  opts?: { cfg?: OpenClawConfig; sessionKey?: string; provider?: string; model?: string },
 ): string | undefined {
   // Also format errors if errorMessage is present, even if stopReason isn't "error"
   const raw = (msg.errorMessage ?? "").trim();
@@ -925,7 +927,7 @@ export function isModelNotFoundErrorMessage(raw: string): boolean {
   }
   const lower = raw.toLowerCase();
 
-  // Direct pattern matches from OpenCraft internals and common providers.
+  // Direct pattern matches from OpenClaw internals and common providers.
   if (
     lower.includes("unknown model") ||
     lower.includes("model not found") ||

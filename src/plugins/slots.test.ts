@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { applyExclusiveSlotSelection } from "./slots.js";
 
 describe("applyExclusiveSlotSelection", () => {
-  const createMemoryConfig = (plugins?: OpenCraftConfig["plugins"]): OpenCraftConfig => ({
+  const createMemoryConfig = (plugins?: OpenClawConfig["plugins"]): OpenClawConfig => ({
     plugins: {
       ...plugins,
       entries: {
@@ -16,7 +16,7 @@ describe("applyExclusiveSlotSelection", () => {
     },
   });
 
-  const runMemorySelection = (config: OpenCraftConfig, selectedId = "memory") =>
+  const runMemorySelection = (config: OpenClawConfig, selectedId = "memory") =>
     applyExclusiveSlotSelection({
       config,
       selectedId,
@@ -93,7 +93,7 @@ describe("applyExclusiveSlotSelection", () => {
   });
 
   it("skips changes when no exclusive slot applies", () => {
-    const config: OpenCraftConfig = {};
+    const config: OpenClawConfig = {};
     const result = applyExclusiveSlotSelection({
       config,
       selectedId: "custom",

@@ -1,9 +1,9 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
 import { getChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { applyPluginAutoEnable } from "../../config/plugin-auto-enable.js";
-import { loadOpenCraftPlugins } from "../../plugins/loader.js";
+import { loadOpenClawPlugins } from "../../plugins/loader.js";
 import { getActivePluginRegistry, getActivePluginRegistryKey } from "../../plugins/runtime.js";
 import {
   isDeliverableMessageChannel,
@@ -25,7 +25,7 @@ export function normalizeDeliverableOutboundChannel(
 
 function maybeBootstrapChannelPlugin(params: {
   channel: DeliverableMessageChannel;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
 }): void {
   const cfg = params.cfg;
   if (!cfg) {
@@ -33,7 +33,10 @@ function maybeBootstrapChannelPlugin(params: {
   }
 
   const activeRegistry = getActivePluginRegistry();
-  if ((activeRegistry?.channels?.length ?? 0) > 0) {
+  const activeHasRequestedChannel = activeRegistry?.channels?.some(
+    (entry) => entry?.plugin?.id === params.channel,
+  );
+  if (activeHasRequestedChannel) {
     return;
   }
 
@@ -48,9 +51,12 @@ function maybeBootstrapChannelPlugin(params: {
   const defaultAgentId = resolveDefaultAgentId(autoEnabled);
   const workspaceDir = resolveAgentWorkspaceDir(autoEnabled, defaultAgentId);
   try {
-    loadOpenCraftPlugins({
+    loadOpenClawPlugins({
       config: autoEnabled,
       workspaceDir,
+      runtimeOptions: {
+        allowGatewaySubagentBinding: true,
+      },
     });
   } catch {
     // Allow a follow-up resolution attempt if bootstrap failed transiently.
@@ -76,7 +82,7 @@ function resolveDirectFromActiveRegistry(
 
 export function resolveOutboundChannelPlugin(params: {
   channel: string;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
 }): ChannelPlugin | undefined {
   const normalized = normalizeDeliverableOutboundChannel(params.channel);
   if (!normalized) {

@@ -3,22 +3,22 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import "./test-helpers/fast-coding-tools.js";
-import { createOpenCraftCodingTools } from "./pi-tools.js";
+import { createOpenClawCodingTools } from "./pi-tools.js";
 import { createHostSandboxFsBridge } from "./test-helpers/host-sandbox-fs-bridge.js";
 import { createPiToolsSandboxContext } from "./test-helpers/pi-tools-sandbox-context.js";
 
-const defaultTools = createOpenCraftCodingTools();
+const defaultTools = createOpenClawCodingTools();
 const tinyPngBuffer = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2f7z8AAAAASUVORK5CYII=",
   "base64",
 );
 
-describe("createOpenCraftCodingTools", () => {
+describe("createOpenClawCodingTools", () => {
   it("returns image metadata for images and text-only blocks for text files", async () => {
     const readTool = defaultTools.find((tool) => tool.name === "read");
     expect(readTool).toBeDefined();
 
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-read-"));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-read-"));
     try {
       const imagePath = path.join(tmpDir, "sample.png");
       await fs.writeFile(imagePath, tinyPngBuffer);
@@ -38,7 +38,7 @@ describe("createOpenCraftCodingTools", () => {
       expect(image?.mimeType).toBe("image/png");
 
       const textPath = path.join(tmpDir, "sample.txt");
-      const contents = "Hello from opencraft read tool.";
+      const contents = "Hello from openclaw read tool.";
       await fs.writeFile(textPath, contents, "utf8");
 
       const textResult = await readTool?.execute("tool-2", {
@@ -68,7 +68,7 @@ describe("createOpenCraftCodingTools", () => {
         deny: ["browser"],
       },
     });
-    const tools = createOpenCraftCodingTools({ sandbox });
+    const tools = createOpenClawCodingTools({ sandbox });
     expect(tools.some((tool) => tool.name === "exec")).toBe(true);
     expect(tools.some((tool) => tool.name === "read")).toBe(false);
     expect(tools.some((tool) => tool.name === "browser")).toBe(false);
@@ -85,7 +85,7 @@ describe("createOpenCraftCodingTools", () => {
         deny: [],
       },
     });
-    const tools = createOpenCraftCodingTools({ sandbox });
+    const tools = createOpenClawCodingTools({ sandbox });
     expect(tools.some((tool) => tool.name === "read")).toBe(true);
     expect(tools.some((tool) => tool.name === "write")).toBe(false);
     expect(tools.some((tool) => tool.name === "edit")).toBe(false);

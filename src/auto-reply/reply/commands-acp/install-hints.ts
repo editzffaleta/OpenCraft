@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 
-export function resolveConfiguredAcpBackendId(cfg: OpenCraftConfig): string {
+export function resolveConfiguredAcpBackendId(cfg: OpenClawConfig): string {
   return cfg.acp?.backend?.trim() || "acpx";
 }
 
-export function resolveAcpInstallCommandHint(cfg: OpenCraftConfig): string {
+export function resolveAcpInstallCommandHint(cfg: OpenClawConfig): string {
   const configured = cfg.acp?.runtime?.installCommand?.trim();
   if (configured) {
     return configured;
@@ -15,9 +15,9 @@ export function resolveAcpInstallCommandHint(cfg: OpenCraftConfig): string {
   if (backendId === "acpx") {
     const localPath = path.resolve(process.cwd(), "extensions/acpx");
     if (existsSync(localPath)) {
-      return `opencraft plugins install ${localPath}`;
+      return `openclaw plugins install ${localPath}`;
     }
-    return "opencraft plugins install acpx";
+    return "openclaw plugins install acpx";
   }
   return `Install and enable the plugin that provides ACP backend "${backendId}".`;
 }

@@ -1,10 +1,10 @@
 ---
 name: sonoscli
-description: Controle caixas de som Sonos (descoberta/status/reprodução/volume/grupo).
+description: Control Sonos speakers (discover/status/play/volume/group).
 homepage: https://sonoscli.sh
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "🔊",
         "requires": { "bins": ["sonos"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "go",
               "module": "github.com/steipete/sonoscli/cmd/sonos@latest",
               "bins": ["sonos"],
-              "label": "Instalar sonoscli (go)",
+              "label": "Install sonoscli (go)",
             },
           ],
       },
@@ -24,42 +24,42 @@ metadata:
 
 # Sonos CLI
 
-Use `sonos` para controlar caixas de som Sonos na rede local.
+Use `sonos` to control Sonos speakers on the local network.
 
-## Início rápido
+## Quick start
 
 - `sonos discover`
-- `sonos status --name "Cozinha"`
-- `sonos play|pause|stop --name "Cozinha"`
-- `sonos volume set 15 --name "Cozinha"`
+- `sonos status --name "Kitchen"`
+- `sonos play|pause|stop --name "Kitchen"`
+- `sonos volume set 15 --name "Kitchen"`
 
-## Tarefas comuns
+## Common tasks
 
-- Agrupamento: `sonos group status|join|unjoin|party|solo`
-- Favoritos: `sonos favorites list|open`
-- Fila: `sonos queue list|play|clear`
-- Pesquisa no Spotify (via SMAPI): `sonos smapi search --service "Spotify" --category tracks "consulta"`
+- Grouping: `sonos group status|join|unjoin|party|solo`
+- Favorites: `sonos favorites list|open`
+- Queue: `sonos queue list|play|clear`
+- Spotify search (via SMAPI): `sonos smapi search --service "Spotify" --category tracks "query"`
 
-## Notas
+## Notes
 
-- Se SSDP falhar, especifique `--ip <ip-da-caixa>`.
-- Pesquisa na Web API do Spotify é opcional e requer `SPOTIFY_CLIENT_ID/SECRET`.
-- Se houver um erro, verifique a seção de solução de problemas e ofereça orientação se houver correspondência.
+- If SSDP fails, specify `--ip <speaker-ip>`.
+- Spotify Web API search is optional and requires `SPOTIFY_CLIENT_ID/SECRET`.
+- If there is an error, check the troubleshooting section and offer advice if there is a decent match.
 
-## Solução de Problemas
+## Troubleshooting
 
 ### `sonos discover` - `no route to host`
 
-- No erro `Error: write udp4 0.0.0.0:64326->239.255.255.250:1900: sendto: no route to host (Command exited with code 1)`
-  - Note que o número da porta após `0.0.0.0:` é efêmero e mudará, e a máscara de rede pode não corresponder exatamente
-  - O `sendto: no route to host` deve permanecer consistente
-- Oriente o usuário que no modo `direct` (sem sandbox Docker) no Mac OS, Configurações -> Privacidade e Segurança -> Rede Local precisará ser habilitado para o processo pai do Gateway
-  - `node` se executando via `launchd`
-  - `Terminal` se executando o gateway diretamente no terminal
-  - `Visual Studio Code` se executando via terminal no VS Code
-- Uma alternativa é usar `sandbox` (container docker) com acesso à rede permitido para esse sandbox
+- On error `Error: write udp4 0.0.0.0:64326->239.255.255.250:1900: sendto: no route to host (Command exited with code 1)`
+  - Note that the port number after `0.0.0.0:` is ephemeral and will change and the netmask may not match exactly either
+  - The `sendto: no route to host` should stay consistent
+- Advise the user that in `direct` (no Docker sandbox) mode on Mac OS that Settings -> Privacy & Security -> Local Network will need to be enabled for the top-level host parent process of the Gateway
+  - `node` if running via `launchd`
+  - `Terminal` if running the gateway directly in the terminal
+  - `Visual Studio Code` if running via terminal in VS Code
+- An alternative option is to use `sandbox` (docker container) with network access allowed for that sandbox
 
 ### `sonos discover` - `bind: operation not permitted`
 
-- No erro `Error: listen udp4 0.0.0.0:0: bind: operation not permitted`
-- Oriente o usuário que pode estar executando via sandbox do Codex ou outro sandbox que não permite acesso à rede (isso pode ser replicado executando `sonos discover` dentro de uma sessão Codex CLI com sandbox habilitado e não aprovando a solicitação de escalação)
+- On error `Error: listen udp4 0.0.0.0:0: bind: operation not permitted`
+- Advise the user that they may be running via a Codex or other sandbox that does not permit network access (this can be replicated by running `sonos discover` within a Codex CLI session with sandbox enabled and not approving the escalation request)

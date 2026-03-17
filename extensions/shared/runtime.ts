@@ -1,4 +1,4 @@
-import { createLoggerBackedRuntime } from "opencraft/plugin-sdk";
+import { createLoggerBackedRuntime } from "openclaw/plugin-sdk/core";
 
 export function resolveLoggerBackedRuntime<TRuntime>(
   runtime: TRuntime | undefined,

@@ -1,27 +1,27 @@
 ---
-summary: "Configuração de túnel SSH para OpenCraft.app conectando a um gateway remoto"
-read_when: "Conectando o app macOS a um gateway remoto via SSH"
-title: "Configuração de Gateway Remoto"
+summary: "SSH tunnel setup for OpenClaw.app connecting to a remote gateway"
+read_when: "Connecting the macOS app to a remote gateway over SSH"
+title: "Remote Gateway Setup"
 ---
 
-# Rodando o OpenCraft.app com um Gateway Remoto
+# Running OpenClaw.app with a Remote Gateway
 
-O OpenCraft.app usa tunelamento SSH para conectar a um gateway remoto. Este guia mostra como configurá-lo.
+OpenClaw.app uses SSH tunneling to connect to a remote gateway. This guide shows you how to set it up.
 
-## Visão geral
+## Overview
 
 ```mermaid
 flowchart TB
-    subgraph Client["Máquina Cliente"]
+    subgraph Client["Client Machine"]
         direction TB
-        A["OpenCraft.app"]
-        B["ws://127.0.0.1:18789\n(porta local)"]
-        T["Túnel SSH"]
+        A["OpenClaw.app"]
+        B["ws://127.0.0.1:18789\n(local port)"]
+        T["SSH Tunnel"]
 
         A --> B
         B --> T
     end
-    subgraph Remote["Máquina Remota"]
+    subgraph Remote["Remote Machine"]
         direction TB
         C["Gateway WebSocket"]
         D["ws://127.0.0.1:18789"]
@@ -31,60 +31,60 @@ flowchart TB
     T --> C
 ```
 
-## Configuração rápida
+## Quick Setup
 
-### Passo 1: Adicione a configuração SSH
+### Step 1: Add SSH Config
 
-Edite `~/.ssh/config` e adicione:
+Edit `~/.ssh/config` and add:
 
 ```ssh
 Host remote-gateway
-    HostName <REMOTE_IP>          # ex., 172.27.187.184
-    User <REMOTE_USER>            # ex., usuario
+    HostName <REMOTE_IP>          # e.g., 172.27.187.184
+    User <REMOTE_USER>            # e.g., jefferson
     LocalForward 18789 127.0.0.1:18789
     IdentityFile ~/.ssh/id_rsa
 ```
 
-Substitua `<REMOTE_IP>` e `<REMOTE_USER>` pelos seus valores.
+Replace `<REMOTE_IP>` and `<REMOTE_USER>` with your values.
 
-### Passo 2: Copie a chave SSH
+### Step 2: Copy SSH Key
 
-Copie sua chave pública para a máquina remota (insira a senha uma vez):
+Copy your public key to the remote machine (enter password once):
 
 ```bash
 ssh-copy-id -i ~/.ssh/id_rsa <REMOTE_USER>@<REMOTE_IP>
 ```
 
-### Passo 3: Defina o token do Gateway
+### Step 3: Set Gateway Token
 
 ```bash
-launchctl setenv OPENCLAW_GATEWAY_TOKEN "<seu-token>"
+launchctl setenv OPENCLAW_GATEWAY_TOKEN "<your-token>"
 ```
 
-### Passo 4: Inicie o túnel SSH
+### Step 4: Start SSH Tunnel
 
 ```bash
 ssh -N remote-gateway &
 ```
 
-### Passo 5: Reinicie o OpenCraft.app
+### Step 5: Restart OpenClaw.app
 
 ```bash
-# Feche o OpenCraft.app (⌘Q), depois reabra:
-open /path/to/OpenCraft.app
+# Quit OpenClaw.app (⌘Q), then reopen:
+open /path/to/OpenClaw.app
 ```
 
-O app agora conectará ao gateway remoto através do túnel SSH.
+The app will now connect to the remote gateway through the SSH tunnel.
 
 ---
 
-## Iniciar o túnel automaticamente no login
+## Auto-Start Tunnel on Login
 
-Para que o túnel SSH inicie automaticamente quando você fizer login, crie um Launch Agent.
+To have the SSH tunnel start automatically when you log in, create a Launch Agent.
 
-### Crie o arquivo PLIST
+### Create the PLIST file
 
-Salve como `~/Library/LaunchAgents/ai.opencraft.ssh-tunnel.plist`:
+Save this as `~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -92,7 +92,7 @@ Salve como `~/Library/LaunchAgents/ai.opencraft.ssh-tunnel.plist`:
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>ai.opencraft.ssh-tunnel</string>
+    <string>ai.openclaw.ssh-tunnel</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/ssh</string>
@@ -107,52 +107,52 @@ Salve como `~/Library/LaunchAgents/ai.opencraft.ssh-tunnel.plist`:
 </plist>
 ```
 
-### Carregue o Launch Agent
+### Load the Launch Agent
 
 ```bash
-launchctl bootstrap gui/$UID ~/Library/LaunchAgents/ai.opencraft.ssh-tunnel.plist
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist
 ```
 
-O túnel agora irá:
+The tunnel will now:
 
-- Iniciar automaticamente quando você fizer login
-- Reiniciar se cair
-- Continuar rodando em background
+- Start automatically when you log in
+- Restart if it crashes
+- Keep running in the background
 
-Nota legada: remova qualquer LaunchAgent `com.openclaw.ssh-tunnel` restante se presente.
+Legacy note: remove any leftover `com.openclaw.ssh-tunnel` LaunchAgent if present.
 
 ---
 
-## Resolução de problemas
+## Troubleshooting
 
-**Verificar se o túnel está rodando:**
+**Check if tunnel is running:**
 
 ```bash
 ps aux | grep "ssh -N remote-gateway" | grep -v grep
 lsof -i :18789
 ```
 
-**Reiniciar o túnel:**
+**Restart the tunnel:**
 
 ```bash
-launchctl kickstart -k gui/$UID/ai.opencraft.ssh-tunnel
+launchctl kickstart -k gui/$UID/ai.openclaw.ssh-tunnel
 ```
 
-**Parar o túnel:**
+**Stop the tunnel:**
 
 ```bash
-launchctl bootout gui/$UID/ai.opencraft.ssh-tunnel
+launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
 ```
 
 ---
 
-## Como funciona
+## How It Works
 
-| Componente                           | O que faz                                                       |
-| ------------------------------------ | --------------------------------------------------------------- |
-| `LocalForward 18789 127.0.0.1:18789` | Encaminha porta local 18789 para porta remota 18789             |
-| `ssh -N`                             | SSH sem executar comandos remotos (apenas encaminhamento de porta) |
-| `KeepAlive`                          | Reinicia automaticamente o túnel se cair                        |
-| `RunAtLoad`                          | Inicia o túnel quando o agente é carregado                      |
+| Component                            | What It Does                                                 |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `LocalForward 18789 127.0.0.1:18789` | Forwards local port 18789 to remote port 18789               |
+| `ssh -N`                             | SSH without executing remote commands (just port forwarding) |
+| `KeepAlive`                          | Automatically restarts tunnel if it crashes                  |
+| `RunAtLoad`                          | Starts tunnel when the agent loads                           |
 
-O OpenCraft.app conecta a `ws://127.0.0.1:18789` na sua máquina cliente. O túnel SSH encaminha essa conexão para a porta 18789 na máquina remota onde o Gateway está rodando.
+OpenClaw.app connects to `ws://127.0.0.1:18789` on your client machine. The SSH tunnel forwards that connection to port 18789 on the remote machine where the Gateway is running.

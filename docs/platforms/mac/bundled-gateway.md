@@ -1,73 +1,73 @@
 ---
-summary: "Runtime do Gateway no macOS (serviço launchd externo)"
+summary: "Gateway runtime on macOS (external launchd service)"
 read_when:
-  - Empacotando o OpenCraft.app
-  - Depurando o serviço launchd do gateway no macOS
-  - Instalando o CLI do gateway para macOS
-title: "Gateway no macOS"
+  - Packaging OpenClaw.app
+  - Debugging the macOS gateway launchd service
+  - Installing the gateway CLI for macOS
+title: "Gateway on macOS"
 ---
 
-# Gateway no macOS (launchd externo)
+# Gateway on macOS (external launchd)
 
-O OpenCraft.app não mais inclui Node/Bun ou o runtime do Gateway. O app macOS
-espera uma instalação **externa** do CLI `opencraft`, não inicializa o Gateway como
-processo filho, e gerencia um serviço launchd por usuário para manter o Gateway
-em execução (ou se conecta a um Gateway local existente se já estiver rodando).
+OpenClaw.app no longer bundles Node/Bun or the Gateway runtime. The macOS app
+expects an **external** `openclaw` CLI install, does not spawn the Gateway as a
+child process, and manages a per‑user launchd service to keep the Gateway
+running (or attaches to an existing local Gateway if one is already running).
 
-## Instalar o CLI (necessário para o modo local)
+## Install the CLI (required for local mode)
 
-Node 24 é o runtime padrão no Mac. Node 22 LTS, atualmente `22.16+`, ainda funciona para compatibilidade. Em seguida, instale o `opencraft` globalmente:
+Node 24 is the default runtime on the Mac. Node 22 LTS, currently `22.16+`, still works for compatibility. Then install `openclaw` globally:
 
 ```bash
-npm install -g opencraft@<versão>
+npm install -g openclaw@<version>
 ```
 
-O botão **Install CLI** do app macOS executa o mesmo fluxo via npm/pnpm (bun não é recomendado para o runtime do Gateway).
+The macOS app’s **Install CLI** button runs the same flow via npm/pnpm (bun not recommended for Gateway runtime).
 
-## Launchd (Gateway como LaunchAgent)
+## Launchd (Gateway as LaunchAgent)
 
 Label:
 
-- `ai.openclaw.gateway` (ou `ai.openclaw.<profile>`; `com.openclaw.*` legado pode permanecer)
+- `ai.openclaw.gateway` (or `ai.openclaw.<profile>`; legacy `com.openclaw.*` may remain)
 
-Localização do plist (por usuário):
+Plist location (per‑user):
 
 - `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
-  (ou `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`)
+  (or `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`)
 
-Gerenciador:
+Manager:
 
-- O app macOS é responsável pela instalação/atualização do LaunchAgent no modo Local.
-- O CLI também pode instalá-lo: `opencraft gateway install`.
+- The macOS app owns LaunchAgent install/update in Local mode.
+- The CLI can also install it: `openclaw gateway install`.
 
-Comportamento:
+Behavior:
 
-- "OpenCraft Ativo" habilita/desabilita o LaunchAgent.
-- Fechar o app **não** para o gateway (launchd o mantém ativo).
-- Se um Gateway já estiver rodando na porta configurada, o app se conecta a
-  ele em vez de iniciar um novo.
+- “OpenClaw Active” enables/disables the LaunchAgent.
+- App quit does **not** stop the gateway (launchd keeps it alive).
+- If a Gateway is already running on the configured port, the app attaches to
+  it instead of starting a new one.
 
 Logging:
 
-- stdout/err do launchd: `/tmp/openclaw/openclaw-gateway.log`
+- launchd stdout/err: `/tmp/openclaw/openclaw-gateway.log`
 
-## Compatibilidade de versões
+## Version compatibility
 
-O app macOS verifica a versão do gateway em relação à sua própria versão. Se forem
-incompatíveis, atualize o CLI global para corresponder à versão do app.
+The macOS app checks the gateway version against its own version. If they’re
+incompatible, update the global CLI to match the app version.
 
 ## Smoke check
 
 ```bash
-opencraft --version
+openclaw --version
 
 OPENCLAW_SKIP_CHANNELS=1 \
 OPENCLAW_SKIP_CANVAS_HOST=1 \
-opencraft gateway --port 18999 --bind loopback
+openclaw gateway --port 18999 --bind loopback
 ```
 
-Depois:
+Then:
 
 ```bash
-opencraft gateway call health --url ws://127.0.0.1:18999 --timeout 3000
+openclaw gateway call health --url ws://127.0.0.1:18999 --timeout 3000
 ```

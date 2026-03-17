@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { OpenCraftPluginApi, OpenCraftPluginService } from "opencraft/plugin-sdk/phone-control";
+import type { OpenClawPluginApi, OpenClawPluginService } from "openclaw/plugin-sdk/phone-control";
 
 type ArmGroup = "camera" | "screen" | "writes" | "all";
 
@@ -155,18 +155,18 @@ async function writeArmState(statePath: string, state: ArmStateFile | null): Pro
   await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
-function normalizeDenyList(cfg: OpenCraftPluginApi["config"]): string[] {
+function normalizeDenyList(cfg: OpenClawPluginApi["config"]): string[] {
   return uniqSorted([...(cfg.gateway?.nodes?.denyCommands ?? [])]);
 }
 
-function normalizeAllowList(cfg: OpenCraftPluginApi["config"]): string[] {
+function normalizeAllowList(cfg: OpenClawPluginApi["config"]): string[] {
   return uniqSorted([...(cfg.gateway?.nodes?.allowCommands ?? [])]);
 }
 
 function patchConfigNodeLists(
-  cfg: OpenCraftPluginApi["config"],
+  cfg: OpenClawPluginApi["config"],
   next: { allowCommands: string[]; denyCommands: string[] },
-): OpenCraftPluginApi["config"] {
+): OpenClawPluginApi["config"] {
   return {
     ...cfg,
     gateway: {
@@ -181,7 +181,7 @@ function patchConfigNodeLists(
 }
 
 async function disarmNow(params: {
-  api: OpenCraftPluginApi;
+  api: OpenClawPluginApi;
   stateDir: string;
   statePath: string;
   reason: string;
@@ -283,10 +283,10 @@ function formatStatus(state: ArmStateFile | null): string {
   return `Phone control: armed (${until}).\nTemporarily allowed: ${cmdLabel}`;
 }
 
-export default function register(api: OpenCraftPluginApi) {
+export default function register(api: OpenClawPluginApi) {
   let expiryInterval: ReturnType<typeof setInterval> | null = null;
 
-  const timerService: OpenCraftPluginService = {
+  const timerService: OpenClawPluginService = {
     id: "phone-control-expiry",
     start: async (ctx) => {
       const statePath = resolveStatePath(ctx.stateDir);

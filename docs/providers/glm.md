@@ -1,33 +1,33 @@
 ---
-summary: "Visão geral da família de modelos GLM e como usá-la no OpenCraft"
+summary: "GLM model family overview + how to use it in OpenClaw"
 read_when:
-  - Você quer modelos GLM no OpenCraft
-  - Você precisa da convenção de nomenclatura de modelos e configuração
-title: "Modelos GLM"
+  - You want GLM models in OpenClaw
+  - You need the model naming convention and setup
+title: "GLM Models"
 ---
 
-# Modelos GLM
+# GLM models
 
-O GLM é uma **família de modelos** (não uma empresa) disponível pela plataforma Z.AI. No OpenCraft, os
-modelos GLM são acessados via provedor `zai` e IDs de modelo como `zai/glm-5`.
+GLM is a **model family** (not a company) available through the Z.AI platform. In OpenClaw, GLM
+models are accessed via the `zai` provider and model IDs like `zai/glm-5`.
 
-## Configuração CLI
+## CLI setup
 
 ```bash
-# Coding Plan Global, recomendado para usuários do Coding Plan
-opencraft onboard --auth-choice zai-coding-global
+# Coding Plan Global, recommended for Coding Plan users
+openclaw onboard --auth-choice zai-coding-global
 
-# Coding Plan CN (região China), recomendado para usuários do Coding Plan
-opencraft onboard --auth-choice zai-coding-cn
+# Coding Plan CN (China region), recommended for Coding Plan users
+openclaw onboard --auth-choice zai-coding-cn
 
-# API geral
-opencraft onboard --auth-choice zai-global
+# General API
+openclaw onboard --auth-choice zai-global
 
-# API geral CN (região China)
-opencraft onboard --auth-choice zai-cn
+# General API CN (China region)
+openclaw onboard --auth-choice zai-cn
 ```
 
-## Trecho de config
+## Config snippet
 
 ```json5
 {
@@ -36,8 +36,8 @@ opencraft onboard --auth-choice zai-cn
 }
 ```
 
-## Notas
+## Notes
 
-- Versões e disponibilidade do GLM podem mudar; verifique os docs do Z.AI para as mais recentes.
-- Exemplos de IDs de modelo incluem `glm-5`, `glm-4.7` e `glm-4.6`.
-- Para detalhes do provedor, veja [/providers/zai](/providers/zai).
+- GLM versions and availability can change; check Z.AI's docs for the latest.
+- Example model IDs include `glm-5`, `glm-4.7`, and `glm-4.6`.
+- For provider details, see [/providers/zai](/providers/zai).

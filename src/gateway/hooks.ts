@@ -3,11 +3,12 @@ import type { IncomingMessage } from "node:http";
 import { listAgentIds, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import type { ChannelId } from "../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { readJsonBodyWithLimit, requestBodyErrorToText } from "../infra/http-body.js";
 import { normalizeAgentId, parseAgentSessionKey } from "../routing/session-key.js";
 import { normalizeMessageChannel } from "../utils/message-channel.js";
 import { type HookMappingResolved, resolveHookMappings } from "./hooks-mapping.js";
+import { resolveAllowedAgentIds } from "./hooks-policy.js";
 
 const DEFAULT_HOOKS_PATH = "/hooks";
 const DEFAULT_HOOKS_MAX_BODY_BYTES = 256 * 1024;
@@ -34,7 +35,7 @@ export type HookSessionPolicyResolved = {
   allowedSessionKeyPrefixes?: string[];
 };
 
-export function resolveHooksConfig(cfg: OpenCraftConfig): HooksConfigResolved | null {
+export function resolveHooksConfig(cfg: OpenClawConfig): HooksConfigResolved | null {
   if (cfg.hooks?.enabled !== true) {
     return null;
   }
@@ -94,33 +95,10 @@ export function resolveHooksConfig(cfg: OpenCraftConfig): HooksConfigResolved | 
   };
 }
 
-function resolveKnownAgentIds(cfg: OpenCraftConfig, defaultAgentId: string): Set<string> {
+function resolveKnownAgentIds(cfg: OpenClawConfig, defaultAgentId: string): Set<string> {
   const known = new Set(listAgentIds(cfg));
   known.add(defaultAgentId);
   return known;
-}
-
-export function resolveAllowedAgentIds(raw: string[] | undefined): Set<string> | undefined {
-  if (!Array.isArray(raw)) {
-    return undefined;
-  }
-  const allowed = new Set<string>();
-  let hasWildcard = false;
-  for (const entry of raw) {
-    const trimmed = entry.trim();
-    if (!trimmed) {
-      continue;
-    }
-    if (trimmed === "*") {
-      hasWildcard = true;
-      break;
-    }
-    allowed.add(normalizeAgentId(trimmed));
-  }
-  if (hasWildcard) {
-    return undefined;
-  }
-  return allowed;
 }
 
 function resolveSessionKey(raw: string | undefined): string | undefined {
@@ -166,8 +144,8 @@ export function extractHookToken(req: IncomingMessage): string | undefined {
     }
   }
   const headerToken =
-    typeof req.headers["x-opencraft-token"] === "string"
-      ? req.headers["x-opencraft-token"].trim()
+    typeof req.headers["x-openclaw-token"] === "string"
+      ? req.headers["x-openclaw-token"].trim()
       : "";
   if (headerToken) {
     return headerToken;
@@ -282,7 +260,7 @@ export function resolveHookIdempotencyKey(params: {
 }): string | undefined {
   return (
     resolveOptionalHookIdempotencyKey(params.headers?.["idempotency-key"]) ||
-    resolveOptionalHookIdempotencyKey(params.headers?.["x-opencraft-idempotency-key"]) ||
+    resolveOptionalHookIdempotencyKey(params.headers?.["x-openclaw-idempotency-key"]) ||
     resolveOptionalHookIdempotencyKey(params.payload.idempotencyKey)
   );
 }

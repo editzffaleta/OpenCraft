@@ -32,19 +32,14 @@ export {
 export { buildChannelConfigSchema } from "../channels/plugins/config-schema.js";
 export { resolveChannelMediaMaxBytes } from "../channels/plugins/media-limits.js";
 export { buildMediaPayload } from "../channels/plugins/media-payload.js";
-export type {
-  ChannelOnboardingAdapter,
-  ChannelOnboardingDmPolicy,
-} from "../channels/plugins/onboarding-types.js";
-export { promptChannelAccessConfig } from "../channels/plugins/onboarding/channel-access.js";
 export {
   addWildcardAllowFrom,
   mergeAllowFromEntries,
   setTopLevelChannelAllowFrom,
   setTopLevelChannelDmPolicyWithAllowFrom,
   setTopLevelChannelGroupPolicy,
-  splitOnboardingEntries,
-} from "../channels/plugins/onboarding/helpers.js";
+  splitSetupEntries,
+} from "../channels/plugins/setup-wizard-helpers.js";
 export { PAIRING_APPROVED_MESSAGE } from "../channels/plugins/pairing-message.js";
 export type {
   BaseProbeResult,
@@ -56,7 +51,7 @@ export type {
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { createTypingCallbacks } from "../channels/typing.js";
-export type { OpenCraftConfig } from "../config/config.js";
+export type { OpenClawConfig } from "../config/config.js";
 export { isDangerousNameMatchingEnabled } from "../config/dangerous-name-matching.js";
 export { resolveToolsBySender } from "../config/group-policy.js";
 export {
@@ -87,7 +82,7 @@ export { detectMime, extensionForMime, getFileExtension } from "../media/mime.js
 export { extractOriginalFilename } from "../media/store.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 export { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
 export type { RuntimeEnv } from "../runtime.js";
 export {
@@ -101,7 +96,7 @@ export {
 } from "./group-access.js";
 export { formatDocsLink } from "../terminal/links.js";
 export { sleep } from "../utils.js";
-export { loadWebMedia } from "../../extensions/whatsapp/src/media.js";
+export { loadWebMedia } from "./web-media.js";
 export type { WizardPrompter } from "../wizard/prompts.js";
 export { keepHttpServerTaskAlive } from "./channel-lifecycle.js";
 export { withFileLock } from "./file-lock.js";
@@ -122,3 +117,5 @@ export {
   createDefaultChannelRuntimeState,
 } from "./status-helpers.js";
 export { normalizeStringEntries } from "../shared/string-normalization.js";
+export { msteamsSetupWizard } from "../../extensions/msteams/src/setup-surface.js";
+export { msteamsSetupAdapter } from "../../extensions/msteams/src/setup-core.js";

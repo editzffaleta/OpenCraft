@@ -27,7 +27,7 @@ describe("doctor command", () => {
           list: [
             {
               id: "work",
-              workspace: "~/opencraft-work",
+              workspace: "~/openclaw-work",
               sandbox: {
                 mode: "all",
                 scope: "shared",
@@ -62,18 +62,18 @@ describe("doctor command", () => {
   it("does not warn when only the active workspace is present", async () => {
     mockDoctorConfigSnapshot({
       config: {
-        agents: { defaults: { workspace: "/Users/steipete/opencraft" } },
+        agents: { defaults: { workspace: "/Users/steipete/openclaw" } },
       },
     });
 
     note.mockClear();
     const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue("/Users/steipete");
     const realExists = fs.existsSync;
-    const legacyPath = path.join("/Users/steipete", "opencraft");
+    const legacyPath = path.join("/Users/steipete", "openclaw");
     const legacyAgentsPath = path.join(legacyPath, "AGENTS.md");
     const existsSpy = vi.spyOn(fs, "existsSync").mockImplementation((value) => {
       if (
-        value === "/Users/steipete/opencraft" ||
+        value === "/Users/steipete/openclaw" ||
         value === legacyPath ||
         value === legacyAgentsPath
       ) {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { withEnv } from "../test-utils/env.js";
+import { resolveUserPath } from "../utils.js";
 import { resolveBrowserConfig, resolveProfile, shouldStartLocalBrowserServer } from "./config.js";
 import { getBrowserProfileCapabilities } from "./profile-capabilities.js";
 
@@ -13,46 +14,47 @@ describe("browser config", () => {
     expect(resolved.cdpHost).toBe("127.0.0.1");
     expect(resolved.cdpProtocol).toBe("http");
     const profile = resolveProfile(resolved, resolved.defaultProfile);
-    expect(profile?.name).toBe("opencraft");
-    expect(profile?.driver).toBe("opencraft");
+    expect(profile?.name).toBe("openclaw");
+    expect(profile?.driver).toBe("openclaw");
     expect(profile?.cdpPort).toBe(18800);
     expect(profile?.cdpUrl).toBe("http://127.0.0.1:18800");
 
-    const opencraft = resolveProfile(resolved, "opencraft");
-    expect(opencraft?.driver).toBe("opencraft");
-    expect(opencraft?.cdpPort).toBe(18800);
-    expect(opencraft?.cdpUrl).toBe("http://127.0.0.1:18800");
+    const openclaw = resolveProfile(resolved, "openclaw");
+    expect(openclaw?.driver).toBe("openclaw");
+    expect(openclaw?.cdpPort).toBe(18800);
+    expect(openclaw?.cdpUrl).toBe("http://127.0.0.1:18800");
     const user = resolveProfile(resolved, "user");
     expect(user?.driver).toBe("existing-session");
     expect(user?.cdpPort).toBe(0);
     expect(user?.cdpUrl).toBe("");
+    expect(user?.userDataDir).toBeUndefined();
     // chrome-relay is no longer auto-created
     expect(resolveProfile(resolved, "chrome-relay")).toBe(null);
     expect(resolved.remoteCdpTimeoutMs).toBe(1500);
     expect(resolved.remoteCdpHandshakeTimeoutMs).toBe(3000);
   });
 
-  it("derives default ports from OPENCRAFT_GATEWAY_PORT when unset", () => {
-    withEnv({ OPENCRAFT_GATEWAY_PORT: "19001" }, () => {
+  it("derives default ports from OPENCLAW_GATEWAY_PORT when unset", () => {
+    withEnv({ OPENCLAW_GATEWAY_PORT: "19001" }, () => {
       const resolved = resolveBrowserConfig(undefined);
       expect(resolved.controlPort).toBe(19003);
       expect(resolveProfile(resolved, "chrome-relay")).toBe(null);
 
-      const opencraft = resolveProfile(resolved, "opencraft");
-      expect(opencraft?.cdpPort).toBe(19012);
-      expect(opencraft?.cdpUrl).toBe("http://127.0.0.1:19012");
+      const openclaw = resolveProfile(resolved, "openclaw");
+      expect(openclaw?.cdpPort).toBe(19012);
+      expect(openclaw?.cdpUrl).toBe("http://127.0.0.1:19012");
     });
   });
 
   it("derives default ports from gateway.port when env is unset", () => {
-    withEnv({ OPENCRAFT_GATEWAY_PORT: undefined }, () => {
+    withEnv({ OPENCLAW_GATEWAY_PORT: undefined }, () => {
       const resolved = resolveBrowserConfig(undefined, { gateway: { port: 19011 } });
       expect(resolved.controlPort).toBe(19013);
       expect(resolveProfile(resolved, "chrome-relay")).toBe(null);
 
-      const opencraft = resolveProfile(resolved, "opencraft");
-      expect(opencraft?.cdpPort).toBe(19022);
-      expect(opencraft?.cdpUrl).toBe("http://127.0.0.1:19022");
+      const openclaw = resolveProfile(resolved, "openclaw");
+      expect(openclaw?.cdpPort).toBe(19022);
+      expect(openclaw?.cdpUrl).toBe("http://127.0.0.1:19022");
     });
   });
 
@@ -60,10 +62,10 @@ describe("browser config", () => {
     const resolved = resolveBrowserConfig({
       cdpPortRangeStart: 19000,
     });
-    const opencraft = resolveProfile(resolved, "opencraft");
+    const openclaw = resolveProfile(resolved, "openclaw");
     expect(resolved.cdpPortRangeStart).toBe(19000);
-    expect(opencraft?.cdpPort).toBe(19000);
-    expect(opencraft?.cdpUrl).toBe("http://127.0.0.1:19000");
+    expect(openclaw?.cdpPort).toBe(19000);
+    expect(openclaw?.cdpUrl).toBe("http://127.0.0.1:19000");
   });
 
   it("rejects cdpPortRangeStart values that overflow the CDP range window", () => {
@@ -99,7 +101,7 @@ describe("browser config", () => {
     const resolved = resolveBrowserConfig({
       cdpUrl: "http://example.com:9222",
     });
-    const profile = resolveProfile(resolved, "opencraft");
+    const profile = resolveProfile(resolved, "openclaw");
     expect(profile?.cdpIsLoopback).toBe(false);
   });
 
@@ -107,7 +109,7 @@ describe("browser config", () => {
     const resolved = resolveBrowserConfig({
       cdpUrl: "http://example.com:9222",
     });
-    const profile = resolveProfile(resolved, "opencraft");
+    const profile = resolveProfile(resolved, "openclaw");
     expect(profile?.cdpPort).toBe(9222);
     expect(profile?.cdpUrl).toBe("http://example.com:9222");
     expect(profile?.cdpIsLoopback).toBe(false);
@@ -166,7 +168,7 @@ describe("browser config", () => {
     const resolved = resolveBrowserConfig({
       cdpUrl: "wss://connect.browserbase.com?apiKey=test-key",
     });
-    const profile = resolveProfile(resolved, "opencraft");
+    const profile = resolveProfile(resolved, "openclaw");
     expect(profile?.cdpUrl).toBe("wss://connect.browserbase.com/?apiKey=test-key");
     expect(profile?.cdpHost).toBe("connect.browserbase.com");
     expect(profile?.cdpPort).toBe(443);
@@ -186,13 +188,6 @@ describe("browser config", () => {
     expect(profile?.cdpUrl).toBe("ws://127.0.0.1:9222/devtools/browser/ABC?token=test-key");
     expect(profile?.cdpPort).toBe(9222);
     expect(profile?.cdpIsLoopback).toBe(true);
-  });
-
-  it("trims relayBindHost when configured", () => {
-    const resolved = resolveBrowserConfig({
-      relayBindHost: " 0.0.0.0 ",
-    });
-    expect(resolved.relayBindHost).toBe("0.0.0.0");
   });
 
   it("rejects unsupported protocols", () => {
@@ -282,14 +277,33 @@ describe("browser config", () => {
     expect(profile?.cdpPort).toBe(0);
     expect(profile?.cdpUrl).toBe("");
     expect(profile?.cdpIsLoopback).toBe(true);
+    expect(profile?.userDataDir).toBeUndefined();
     expect(profile?.color).toBe("#00AA00");
+  });
+
+  it("expands tilde-prefixed userDataDir for existing-session profiles", () => {
+    const resolved = resolveBrowserConfig({
+      profiles: {
+        brave: {
+          driver: "existing-session",
+          attachOnly: true,
+          userDataDir: "~/Library/Application Support/BraveSoftware/Brave-Browser",
+          color: "#FB542B",
+        },
+      },
+    });
+
+    const profile = resolveProfile(resolved, "brave");
+    expect(profile?.driver).toBe("existing-session");
+    expect(profile?.userDataDir).toBe(
+      resolveUserPath("~/Library/Application Support/BraveSoftware/Brave-Browser"),
+    );
   });
 
   it("sets usesChromeMcp only for existing-session profiles", () => {
     const resolved = resolveBrowserConfig({
       profiles: {
         "chrome-live": { driver: "existing-session", attachOnly: true, color: "#00AA00" },
-        relay: { driver: "extension", cdpUrl: "http://127.0.0.1:18792", color: "#0066CC" },
         work: { cdpPort: 18801, color: "#0066CC" },
       },
     });
@@ -297,45 +311,42 @@ describe("browser config", () => {
     const existingSession = resolveProfile(resolved, "chrome-live")!;
     expect(getBrowserProfileCapabilities(existingSession).usesChromeMcp).toBe(true);
 
-    const managed = resolveProfile(resolved, "opencraft")!;
+    const managed = resolveProfile(resolved, "openclaw")!;
     expect(getBrowserProfileCapabilities(managed).usesChromeMcp).toBe(false);
-
-    const extension = resolveProfile(resolved, "relay")!;
-    expect(getBrowserProfileCapabilities(extension).usesChromeMcp).toBe(false);
 
     const work = resolveProfile(resolved, "work")!;
     expect(getBrowserProfileCapabilities(work).usesChromeMcp).toBe(false);
   });
 
   describe("default profile preference", () => {
-    it("defaults to opencraft profile when defaultProfile is not configured", () => {
+    it("defaults to openclaw profile when defaultProfile is not configured", () => {
       const resolved = resolveBrowserConfig({
         headless: false,
         noSandbox: false,
       });
-      expect(resolved.defaultProfile).toBe("opencraft");
+      expect(resolved.defaultProfile).toBe("openclaw");
     });
 
-    it("keeps opencraft default when headless=true", () => {
+    it("keeps openclaw default when headless=true", () => {
       const resolved = resolveBrowserConfig({
         headless: true,
       });
-      expect(resolved.defaultProfile).toBe("opencraft");
+      expect(resolved.defaultProfile).toBe("openclaw");
     });
 
-    it("keeps opencraft default when noSandbox=true", () => {
+    it("keeps openclaw default when noSandbox=true", () => {
       const resolved = resolveBrowserConfig({
         noSandbox: true,
       });
-      expect(resolved.defaultProfile).toBe("opencraft");
+      expect(resolved.defaultProfile).toBe("openclaw");
     });
 
-    it("keeps opencraft default when both headless and noSandbox are true", () => {
+    it("keeps openclaw default when both headless and noSandbox are true", () => {
       const resolved = resolveBrowserConfig({
         headless: true,
         noSandbox: true,
       });
-      expect(resolved.defaultProfile).toBe("opencraft");
+      expect(resolved.defaultProfile).toBe("openclaw");
     });
 
     it("explicit defaultProfile config overrides defaults in headless mode", () => {

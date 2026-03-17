@@ -1,81 +1,81 @@
 ---
-summary: "Visão geral de configuração: tarefas comuns, setup rápido e links para a referência completa"
+summary: "Configuration overview: common tasks, quick setup, and links to the full reference"
 read_when:
-  - Configurando o OpenCraft pela primeira vez
-  - Procurando padrões de configuração comuns
-  - Navegando para seções específicas de config
+  - Setting up OpenClaw for the first time
+  - Looking for common configuration patterns
+  - Navigating to specific config sections
 title: "Configuration"
 ---
 
-# Configuração
+# Configuration
 
-OpenCraft lê uma config <Tooltip tip="JSON5 suporta comentários e vírgulas finais">**JSON5**</Tooltip> opcional de `~/.opencraft/opencraft.json`.
+OpenClaw reads an optional <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> config from `~/.openclaw/openclaw.json`.
 
-Se o arquivo estiver ausente, OpenCraft usa padrões seguros. Razões comuns para adicionar uma config:
+If the file is missing, OpenClaw uses safe defaults. Common reasons to add a config:
 
-- Conectar canais e controlar quem pode enviar mensagens para o bot
-- Definir modelos, tools, sandboxing ou automação (cron, hooks)
-- Ajustar sessões, mídia, rede ou UI
+- Connect channels and control who can message the bot
+- Set models, tools, sandboxing, or automation (cron, hooks)
+- Tune sessions, media, networking, or UI
 
-Veja a [referência completa](/gateway/configuration-reference) para cada campo disponível.
+See the [full reference](/gateway/configuration-reference) for every available field.
 
 <Tip>
-**Novo em configuração?** Comece com `opencraft onboard` para setup interativo, ou confira o guia de [Configuration Examples](/gateway/configuration-examples) para configs completas de copiar e colar.
+**New to configuration?** Start with `openclaw onboard` for interactive setup, or check out the [Configuration Examples](/gateway/configuration-examples) guide for complete copy-paste configs.
 </Tip>
 
-## Config mínima
+## Minimal config
 
 ```json5
-// ~/.opencraft/opencraft.json
+// ~/.openclaw/openclaw.json
 {
-  agents: { defaults: { workspace: "~/.opencraft/workspace" } },
+  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
   channels: { whatsapp: { allowFrom: ["+15555550123"] } },
 }
 ```
 
-## Editando config
+## Editing config
 
 <Tabs>
-  <Tab title="Wizard interativo">
+  <Tab title="Interactive wizard">
     ```bash
-    opencraft onboard       # wizard de setup completo
-    opencraft configure     # wizard de config
+    openclaw onboard       # full onboarding flow
+    openclaw configure     # config wizard
     ```
   </Tab>
   <Tab title="CLI (one-liners)">
     ```bash
-    opencraft config get agents.defaults.workspace
-    opencraft config set agents.defaults.heartbeat.every "2h"
-    opencraft config unset tools.web.search.apiKey
+    openclaw config get agents.defaults.workspace
+    openclaw config set agents.defaults.heartbeat.every "2h"
+    openclaw config unset tools.web.search.apiKey
     ```
   </Tab>
-  <Tab title="UI de Controle">
-    Abra [http://127.0.0.1:18789](http://127.0.0.1:18789) e use a aba **Config**.
-    A UI de Controle renderiza um formulário a partir do schema de config, com um editor **Raw JSON** como escotilha de saída.
+  <Tab title="Control UI">
+    Open [http://127.0.0.1:18789](http://127.0.0.1:18789) and use the **Config** tab.
+    The Control UI renders a form from the config schema, with a **Raw JSON** editor as an escape hatch.
   </Tab>
-  <Tab title="Edição direta">
-    Edite `~/.opencraft/opencraft.json` diretamente. O Gateway observa o arquivo e aplica mudanças automaticamente (veja [hot reload](#config-hot-reload)).
+  <Tab title="Direct edit">
+    Edit `~/.openclaw/openclaw.json` directly. The Gateway watches the file and applies changes automatically (see [hot reload](#config-hot-reload)).
   </Tab>
 </Tabs>
 
-## Validação estrita
+## Strict validation
 
 <Warning>
-OpenCraft só aceita configurações que correspondem totalmente ao schema. Chaves desconhecidas, tipos malformados ou valores inválidos fazem o Gateway **recusar a iniciar**. A única exceção no nível raiz é `$schema` (string), para que editores possam anexar metadados JSON Schema.
+OpenClaw only accepts configurations that fully match the schema. Unknown keys, malformed types, or invalid values cause the Gateway to **refuse to start**. The only root-level exception is `$schema` (string), so editors can attach JSON Schema metadata.
 </Warning>
 
-Quando a validação falha:
+When validation fails:
 
-- O Gateway não inicia
-- Apenas comandos de diagnóstico funcionam (`opencraft doctor`, `opencraft logs`, `opencraft health`, `opencraft status`)
-- Rode `opencraft doctor` para ver os problemas exatos
-- Rode `opencraft doctor --fix` (ou `--yes`) para aplicar reparos
+- The Gateway does not boot
+- Only diagnostic commands work (`openclaw doctor`, `openclaw logs`, `openclaw health`, `openclaw status`)
+- Run `openclaw doctor` to see exact issues
+- Run `openclaw doctor --fix` (or `--yes`) to apply repairs
 
-## Tarefas comuns
+## Common tasks
 
 <AccordionGroup>
-  <Accordion title="Configurar um canal (WhatsApp, Telegram, Discord, etc.)">
-    Cada canal tem sua própria seção de config em `channels.<provider>`. Veja a página dedicada do canal para os passos de setup:
+  <Accordion title="Set up a channel (WhatsApp, Telegram, Discord, etc.)">
+    Each channel has its own config section under `channels.<provider>`. See the dedicated channel page for setup steps:
 
     - [WhatsApp](/channels/whatsapp) — `channels.whatsapp`
     - [Telegram](/channels/telegram) — `channels.telegram`
@@ -87,7 +87,7 @@ Quando a validação falha:
     - [Mattermost](/channels/mattermost) — `channels.mattermost`
     - [MS Teams](/channels/msteams) — `channels.msteams`
 
-    Todos os canais compartilham o mesmo padrão de política de DM:
+    All channels share the same DM policy pattern:
 
     ```json5
     {
@@ -96,7 +96,7 @@ Quando a validação falha:
           enabled: true,
           botToken: "123:abc",
           dmPolicy: "pairing",   // pairing | allowlist | open | disabled
-          allowFrom: ["tg:123"], // apenas para allowlist/open
+          allowFrom: ["tg:123"], // only for allowlist/open
         },
       },
     }
@@ -104,8 +104,8 @@ Quando a validação falha:
 
   </Accordion>
 
-  <Accordion title="Escolher e configurar modelos">
-    Definir o modelo primário e fallbacks opcionais:
+  <Accordion title="Choose and configure models">
+    Set the primary model and optional fallbacks:
 
     ```json5
     {
@@ -124,30 +124,30 @@ Quando a validação falha:
     }
     ```
 
-    - `agents.defaults.models` define o catálogo de modelos e atua como allowlist para `/model`.
-    - Refs de modelo usam o formato `provider/model` (ex. `anthropic/claude-opus-4-6`).
-    - `agents.defaults.imageMaxDimensionPx` controla o redimensionamento de imagens de transcrição/tool (padrão `1200`); valores menores geralmente reduzem o uso de tokens de visão em execuções com muitos screenshots.
-    - Veja [Models CLI](/concepts/models) para mudar modelos no chat e [Model Failover](/concepts/model-failover) para rotação de auth e comportamento de fallback.
-    - Para provedores personalizados/self-hosted, veja [Custom providers](/gateway/configuration-reference#custom-providers-and-base-urls) na referência.
+    - `agents.defaults.models` defines the model catalog and acts as the allowlist for `/model`.
+    - Model refs use `provider/model` format (e.g. `anthropic/claude-opus-4-6`).
+    - `agents.defaults.imageMaxDimensionPx` controls transcript/tool image downscaling (default `1200`); lower values usually reduce vision-token usage on screenshot-heavy runs.
+    - See [Models CLI](/concepts/models) for switching models in chat and [Model Failover](/concepts/model-failover) for auth rotation and fallback behavior.
+    - For custom/self-hosted providers, see [Custom providers](/gateway/configuration-reference#custom-providers-and-base-urls) in the reference.
 
   </Accordion>
 
-  <Accordion title="Controlar quem pode enviar mensagens para o bot">
-    Acesso a DM é controlado por canal via `dmPolicy`:
+  <Accordion title="Control who can message the bot">
+    DM access is controlled per channel via `dmPolicy`:
 
-    - `"pairing"` (padrão): remetentes desconhecidos recebem um código de pareamento único para aprovar
-    - `"allowlist"`: apenas remetentes em `allowFrom` (ou o store de allow pareado)
-    - `"open"`: permitir todos os DMs de entrada (requer `allowFrom: ["*"]`)
-    - `"disabled"`: ignorar todos os DMs
+    - `"pairing"` (default): unknown senders get a one-time pairing code to approve
+    - `"allowlist"`: only senders in `allowFrom` (or the paired allow store)
+    - `"open"`: allow all inbound DMs (requires `allowFrom: ["*"]`)
+    - `"disabled"`: ignore all DMs
 
-    Para grupos, use `groupPolicy` + `groupAllowFrom` ou allowlists específicas do canal.
+    For groups, use `groupPolicy` + `groupAllowFrom` or channel-specific allowlists.
 
-    Veja a [referência completa](/gateway/configuration-reference#dm-and-group-access) para detalhes por canal.
+    See the [full reference](/gateway/configuration-reference#dm-and-group-access) for per-channel details.
 
   </Accordion>
 
-  <Accordion title="Configurar gating de menção em grupo">
-    Mensagens de grupo padrão **requerem menção**. Configure padrões por agente:
+  <Accordion title="Set up group chat mention gating">
+    Group messages default to **require mention**. Configure patterns per agent:
 
     ```json5
     {
@@ -156,7 +156,7 @@ Quando a validação falha:
           {
             id: "main",
             groupChat: {
-              mentionPatterns: ["@opencraft", "opencraft"],
+              mentionPatterns: ["@openclaw", "openclaw"],
             },
           },
         ],
@@ -169,19 +169,49 @@ Quando a validação falha:
     }
     ```
 
-    - **Menções de metadados**: menções nativas @- (toque-para-mencionar do WhatsApp, @bot do Telegram, etc.)
-    - **Padrões de texto**: padrões regex seguros em `mentionPatterns`
-    - Veja a [referência completa](/gateway/configuration-reference#group-chat-mention-gating) para overrides por canal e modo self-chat.
+    - **Metadata mentions**: native @-mentions (WhatsApp tap-to-mention, Telegram @bot, etc.)
+    - **Text patterns**: safe regex patterns in `mentionPatterns`
+    - See [full reference](/gateway/configuration-reference#group-chat-mention-gating) for per-channel overrides and self-chat mode.
 
   </Accordion>
 
-  <Accordion title="Configurar sessões e resets">
-    Sessões controlam continuidade e isolamento de conversa:
+  <Accordion title="Tune gateway channel health monitoring">
+    Control how aggressively the gateway restarts channels that look stale:
+
+    ```json5
+    {
+      gateway: {
+        channelHealthCheckMinutes: 5,
+        channelStaleEventThresholdMinutes: 30,
+        channelMaxRestartsPerHour: 10,
+      },
+      channels: {
+        telegram: {
+          healthMonitor: { enabled: false },
+          accounts: {
+            alerts: {
+              healthMonitor: { enabled: true },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    - Set `gateway.channelHealthCheckMinutes: 0` to disable health-monitor restarts globally.
+    - `channelStaleEventThresholdMinutes` should be greater than or equal to the check interval.
+    - Use `channels.<provider>.healthMonitor.enabled` or `channels.<provider>.accounts.<id>.healthMonitor.enabled` to disable auto-restarts for one channel or account without disabling the global monitor.
+    - See [Health Checks](/gateway/health) for operational debugging and the [full reference](/gateway/configuration-reference#gateway) for all fields.
+
+  </Accordion>
+
+  <Accordion title="Configure sessions and resets">
+    Sessions control conversation continuity and isolation:
 
     ```json5
     {
       session: {
-        dmScope: "per-channel-peer",  // recomendado para multi-usuário
+        dmScope: "per-channel-peer",  // recommended for multi-user
         threadBindings: {
           enabled: true,
           idleHours: 24,
@@ -196,15 +226,15 @@ Quando a validação falha:
     }
     ```
 
-    - `dmScope`: `main` (compartilhado) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
-    - `threadBindings`: padrões globais para roteamento de sessão vinculada a thread (Discord suporta `/focus`, `/unfocus`, `/agents`, `/session idle` e `/session max-age`).
-    - Veja [Session Management](/concepts/session) para escopo, links de identidade e política de envio.
-    - Veja a [referência completa](/gateway/configuration-reference#session) para todos os campos.
+    - `dmScope`: `main` (shared) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
+    - `threadBindings`: global defaults for thread-bound session routing (Discord supports `/focus`, `/unfocus`, `/agents`, `/session idle`, and `/session max-age`).
+    - See [Session Management](/concepts/session) for scoping, identity links, and send policy.
+    - See [full reference](/gateway/configuration-reference#session) for all fields.
 
   </Accordion>
 
-  <Accordion title="Habilitar sandboxing">
-    Rodar sessões de agente em containers Docker isolados:
+  <Accordion title="Enable sandboxing">
+    Run agent sessions in isolated Docker containers:
 
     ```json5
     {
@@ -219,16 +249,16 @@ Quando a validação falha:
     }
     ```
 
-    Construa a imagem primeiro: `scripts/sandbox-setup.sh`
+    Build the image first: `scripts/sandbox-setup.sh`
 
-    Veja [Sandboxing](/gateway/sandboxing) para o guia completo e a [referência completa](/gateway/configuration-reference#sandbox) para todas as opções.
+    See [Sandboxing](/gateway/sandboxing) for the full guide and [full reference](/gateway/configuration-reference#sandbox) for all options.
 
   </Accordion>
 
-  <Accordion title="Habilitar push relay-backed para builds iOS oficiais">
-    Push relay-backed é configurado em `opencraft.json`.
+  <Accordion title="Enable relay-backed push for official iOS builds">
+    Relay-backed push is configured in `openclaw.json`.
 
-    Defina isso na config do gateway:
+    Set this in gateway config:
 
     ```json5
     {
@@ -237,7 +267,7 @@ Quando a validação falha:
           apns: {
             relay: {
               baseUrl: "https://relay.example.com",
-              // Opcional. Padrão: 10000
+              // Optional. Default: 10000
               timeoutMs: 10000,
             },
           },
@@ -246,43 +276,43 @@ Quando a validação falha:
     }
     ```
 
-    Equivalente CLI:
+    CLI equivalent:
 
     ```bash
-    opencraft config set gateway.push.apns.relay.baseUrl https://relay.example.com
+    openclaw config set gateway.push.apns.relay.baseUrl https://relay.example.com
     ```
 
-    O que isso faz:
+    What this does:
 
-    - Permite que o gateway envie `push.test`, wakeups e reconnect wakes pelo relay externo.
-    - Usa um grant de envio com escopo de registro encaminhado pelo app iOS pareado. O gateway não precisa de um token relay válido para todo o deployment.
-    - Vincula cada registro relay-backed à identidade do gateway com a qual o app iOS pareou, para que outro gateway não possa reutilizar o registro armazenado.
-    - Mantém builds iOS locais/manuais no APNs direto. Envios relay-backed se aplicam apenas a builds oficiais distribuídas que se registraram pelo relay.
-    - Deve corresponder à URL base do relay integrada ao build iOS oficial/TestFlight, para que o tráfego de registro e envio chegue ao mesmo deployment do relay.
+    - Lets the gateway send `push.test`, wake nudges, and reconnect wakes through the external relay.
+    - Uses a registration-scoped send grant forwarded by the paired iOS app. The gateway does not need a deployment-wide relay token.
+    - Binds each relay-backed registration to the gateway identity that the iOS app paired with, so another gateway cannot reuse the stored registration.
+    - Keeps local/manual iOS builds on direct APNs. Relay-backed sends apply only to official distributed builds that registered through the relay.
+    - Must match the relay base URL baked into the official/TestFlight iOS build, so registration and send traffic reach the same relay deployment.
 
-    Fluxo ponta a ponta:
+    End-to-end flow:
 
-    1. Instale um build iOS oficial/TestFlight compilado com a mesma URL base do relay.
-    2. Configure `gateway.push.apns.relay.baseUrl` no gateway.
-    3. Pareie o app iOS ao gateway e deixe as sessões de node e operador se conectarem.
-    4. O app iOS busca a identidade do gateway, registra no relay usando App Attest mais o recibo do app, depois publica o payload `push.apns.register` relay-backed ao gateway pareado.
-    5. O gateway armazena o handle e grant do relay, depois os usa para `push.test`, wake nudges e reconnect wakes.
+    1. Install an official/TestFlight iOS build that was compiled with the same relay base URL.
+    2. Configure `gateway.push.apns.relay.baseUrl` on the gateway.
+    3. Pair the iOS app to the gateway and let both node and operator sessions connect.
+    4. The iOS app fetches the gateway identity, registers with the relay using App Attest plus the app receipt, and then publishes the relay-backed `push.apns.register` payload to the paired gateway.
+    5. The gateway stores the relay handle and send grant, then uses them for `push.test`, wake nudges, and reconnect wakes.
 
-    Notas operacionais:
+    Operational notes:
 
-    - Se você mudar o app iOS para um gateway diferente, reconecte o app para que possa publicar um novo registro relay vinculado a aquele gateway.
-    - Se você publicar um novo build iOS que aponta para um deployment de relay diferente, o app atualiza seu registro relay em cache em vez de reutilizar a origem do relay antigo.
+    - If you switch the iOS app to a different gateway, reconnect the app so it can publish a new relay registration bound to that gateway.
+    - If you ship a new iOS build that points at a different relay deployment, the app refreshes its cached relay registration instead of reusing the old relay origin.
 
-    Nota de compatibilidade:
+    Compatibility note:
 
-    - `OPENCLAW_APNS_RELAY_BASE_URL` e `OPENCLAW_APNS_RELAY_TIMEOUT_MS` ainda funcionam como overrides temporários de env.
-    - `OPENCLAW_APNS_RELAY_ALLOW_HTTP=true` permanece uma escotilha de desenvolvimento apenas para loopback; não persista URLs de relay HTTP na config.
+    - `OPENCLAW_APNS_RELAY_BASE_URL` and `OPENCLAW_APNS_RELAY_TIMEOUT_MS` still work as temporary env overrides.
+    - `OPENCLAW_APNS_RELAY_ALLOW_HTTP=true` remains a loopback-only development escape hatch; do not persist HTTP relay URLs in config.
 
-    Veja [iOS App](/platforms/ios#relay-backed-push-for-official-builds) para o fluxo ponta a ponta e [Authentication and trust flow](/platforms/ios#authentication-and-trust-flow) para o modelo de segurança do relay.
+    See [iOS App](/platforms/ios#relay-backed-push-for-official-builds) for the end-to-end flow and [Authentication and trust flow](/platforms/ios#authentication-and-trust-flow) for the relay security model.
 
   </Accordion>
 
-  <Accordion title="Configurar heartbeat (check-ins periódicos)">
+  <Accordion title="Set up heartbeat (periodic check-ins)">
     ```json5
     {
       agents: {
@@ -296,14 +326,14 @@ Quando a validação falha:
     }
     ```
 
-    - `every`: string de duração (`30m`, `2h`). Defina `0m` para desabilitar.
+    - `every`: duration string (`30m`, `2h`). Set `0m` to disable.
     - `target`: `last` | `whatsapp` | `telegram` | `discord` | `none`
-    - `directPolicy`: `allow` (padrão) ou `block` para alvos heartbeat estilo DM
-    - Veja [Heartbeat](/gateway/heartbeat) para o guia completo.
+    - `directPolicy`: `allow` (default) or `block` for DM-style heartbeat targets
+    - See [Heartbeat](/gateway/heartbeat) for the full guide.
 
   </Accordion>
 
-  <Accordion title="Configurar cron jobs">
+  <Accordion title="Configure cron jobs">
     ```json5
     {
       cron: {
@@ -318,14 +348,14 @@ Quando a validação falha:
     }
     ```
 
-    - `sessionRetention`: remover sessões de run isoladas concluídas de `sessions.json` (padrão `24h`; defina `false` para desabilitar).
-    - `runLog`: remover `cron/runs/<jobId>.jsonl` por tamanho e linhas retidas.
-    - Veja [Cron jobs](/automation/cron-jobs) para visão geral de recursos e exemplos CLI.
+    - `sessionRetention`: prune completed isolated run sessions from `sessions.json` (default `24h`; set `false` to disable).
+    - `runLog`: prune `cron/runs/<jobId>.jsonl` by size and retained lines.
+    - See [Cron jobs](/automation/cron-jobs) for feature overview and CLI examples.
 
   </Accordion>
 
-  <Accordion title="Configurar webhooks (hooks)">
-    Habilitar endpoints webhook HTTP no Gateway:
+  <Accordion title="Set up webhooks (hooks)">
+    Enable HTTP webhook endpoints on the Gateway:
 
     ```json5
     {
@@ -348,24 +378,24 @@ Quando a validação falha:
     }
     ```
 
-    Nota de segurança:
-    - Trate todo o conteúdo do payload de hook/webhook como entrada não confiável.
-    - Mantenha flags de bypass de conteúdo inseguro desabilitadas (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`) a menos que faça debugging com escopo restrito.
-    - Para agentes guiados por hook, prefira camadas de modelo fortes e modernas e política de tools estrita (por exemplo apenas mensagens mais sandboxing quando possível).
+    Security note:
+    - Treat all hook/webhook payload content as untrusted input.
+    - Keep unsafe-content bypass flags disabled (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`) unless doing tightly scoped debugging.
+    - For hook-driven agents, prefer strong modern model tiers and strict tool policy (for example messaging-only plus sandboxing where possible).
 
-    Veja a [referência completa](/gateway/configuration-reference#hooks) para todas as opções de mapeamento e integração Gmail.
+    See [full reference](/gateway/configuration-reference#hooks) for all mapping options and Gmail integration.
 
   </Accordion>
 
-  <Accordion title="Configurar roteamento multi-agente">
-    Rodar múltiplos agentes isolados com workspaces e sessões separados:
+  <Accordion title="Configure multi-agent routing">
+    Run multiple isolated agents with separate workspaces and sessions:
 
     ```json5
     {
       agents: {
         list: [
-          { id: "home", default: true, workspace: "~/.opencraft/workspace-home" },
-          { id: "work", workspace: "~/.opencraft/workspace-work" },
+          { id: "home", default: true, workspace: "~/.openclaw/workspace-home" },
+          { id: "work", workspace: "~/.openclaw/workspace-work" },
         ],
       },
       bindings: [
@@ -375,15 +405,15 @@ Quando a validação falha:
     }
     ```
 
-    Veja [Multi-Agent](/concepts/multi-agent) e a [referência completa](/gateway/configuration-reference#multi-agent-routing) para regras de binding e perfis de acesso por agente.
+    See [Multi-Agent](/concepts/multi-agent) and [full reference](/gateway/configuration-reference#multi-agent-routing) for binding rules and per-agent access profiles.
 
   </Accordion>
 
-  <Accordion title="Dividir config em múltiplos arquivos ($include)">
-    Use `$include` para organizar configs grandes:
+  <Accordion title="Split config into multiple files ($include)">
+    Use `$include` to organize large configs:
 
     ```json5
-    // ~/.opencraft/opencraft.json
+    // ~/.openclaw/openclaw.json
     {
       gateway: { port: 18789 },
       agents: { $include: "./agents.json5" },
@@ -393,28 +423,28 @@ Quando a validação falha:
     }
     ```
 
-    - **Arquivo único**: substitui o objeto contendo
-    - **Array de arquivos**: deep-merged em ordem (último vence)
-    - **Chaves irmãs**: merged após includes (sobrescreve valores incluídos)
-    - **Includes aninhados**: suportados até 10 níveis de profundidade
-    - **Paths relativos**: resolvidos relativos ao arquivo incluindo
-    - **Tratamento de erros**: erros claros para arquivos ausentes, erros de parse e includes circulares
+    - **Single file**: replaces the containing object
+    - **Array of files**: deep-merged in order (later wins)
+    - **Sibling keys**: merged after includes (override included values)
+    - **Nested includes**: supported up to 10 levels deep
+    - **Relative paths**: resolved relative to the including file
+    - **Error handling**: clear errors for missing files, parse errors, and circular includes
 
   </Accordion>
 </AccordionGroup>
 
 ## Config hot reload
 
-O Gateway observa `~/.opencraft/opencraft.json` e aplica mudanças automaticamente — sem necessidade de restart manual para a maioria das configurações.
+The Gateway watches `~/.openclaw/openclaw.json` and applies changes automatically — no manual restart needed for most settings.
 
-### Modos de reload
+### Reload modes
 
-| Modo                   | Comportamento                                                                                |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| **`hybrid`** (padrão) | Aplica mudanças seguras instantaneamente. Reinicia automaticamente para as críticas.          |
-| **`hot`**              | Aplica apenas mudanças seguras. Registra um aviso quando um restart é necessário — você gerencia. |
-| **`restart`**          | Reinicia o Gateway em qualquer mudança de config, segura ou não.                             |
-| **`off`**              | Desabilita observação de arquivo. Mudanças tomam efeito no próximo restart manual.           |
+| Mode                   | Behavior                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| **`hybrid`** (default) | Hot-applies safe changes instantly. Automatically restarts for critical ones.           |
+| **`hot`**              | Hot-applies safe changes only. Logs a warning when a restart is needed — you handle it. |
+| **`restart`**          | Restarts the Gateway on any config change, safe or not.                                 |
+| **`off`**              | Disables file watching. Changes take effect on the next manual restart.                 |
 
 ```json5
 {
@@ -424,53 +454,53 @@ O Gateway observa `~/.opencraft/opencraft.json` e aplica mudanças automaticamen
 }
 ```
 
-### O que aplica em hot vs. o que precisa de restart
+### What hot-applies vs what needs a restart
 
-A maioria dos campos aplica em hot sem downtime. No modo `hybrid`, mudanças que requerem restart são tratadas automaticamente.
+Most fields hot-apply without downtime. In `hybrid` mode, restart-required changes are handled automatically.
 
-| Categoria           | Campos                                                               | Restart necessário? |
-| ------------------- | -------------------------------------------------------------------- | ------------------- |
-| Canais              | `channels.*`, `web` (WhatsApp) — todos os canais built-in e extensão | Não                 |
-| Agente e modelos    | `agent`, `agents`, `models`, `routing`                               | Não                 |
-| Automação           | `hooks`, `cron`, `agent.heartbeat`                                   | Não                 |
-| Sessões e mensagens | `session`, `messages`                                                | Não                 |
-| Tools e mídia       | `tools`, `browser`, `skills`, `audio`, `talk`                        | Não                 |
-| UI e misc           | `ui`, `logging`, `identity`, `bindings`                              | Não                 |
-| Servidor Gateway    | `gateway.*` (porta, bind, auth, tailscale, TLS, HTTP)                | **Sim**             |
-| Infraestrutura      | `discovery`, `canvasHost`, `plugins`                                 | **Sim**             |
+| Category            | Fields                                                               | Restart needed? |
+| ------------------- | -------------------------------------------------------------------- | --------------- |
+| Channels            | `channels.*`, `web` (WhatsApp) — all built-in and extension channels | No              |
+| Agent & models      | `agent`, `agents`, `models`, `routing`                               | No              |
+| Automation          | `hooks`, `cron`, `agent.heartbeat`                                   | No              |
+| Sessions & messages | `session`, `messages`                                                | No              |
+| Tools & media       | `tools`, `browser`, `skills`, `audio`, `talk`                        | No              |
+| UI & misc           | `ui`, `logging`, `identity`, `bindings`                              | No              |
+| Gateway server      | `gateway.*` (port, bind, auth, tailscale, TLS, HTTP)                 | **Yes**         |
+| Infrastructure      | `discovery`, `canvasHost`, `plugins`                                 | **Yes**         |
 
 <Note>
-`gateway.reload` e `gateway.remote` são exceções — mudá-los **não** aciona um restart.
+`gateway.reload` and `gateway.remote` are exceptions — changing them does **not** trigger a restart.
 </Note>
 
-## Config RPC (atualizações programáticas)
+## Config RPC (programmatic updates)
 
 <Note>
-RPCs de escrita no plano de controle (`config.apply`, `config.patch`, `update.run`) são limitadas a **3 requisições por 60 segundos** por `deviceId+clientIp`. Quando limitadas, o RPC retorna `UNAVAILABLE` com `retryAfterMs`.
+Control-plane write RPCs (`config.apply`, `config.patch`, `update.run`) are rate-limited to **3 requests per 60 seconds** per `deviceId+clientIp`. When limited, the RPC returns `UNAVAILABLE` with `retryAfterMs`.
 </Note>
 
 <AccordionGroup>
-  <Accordion title="config.apply (substituição completa)">
-    Valida + escreve a config completa e reinicia o Gateway em um passo.
+  <Accordion title="config.apply (full replace)">
+    Validates + writes the full config and restarts the Gateway in one step.
 
     <Warning>
-    `config.apply` substitui a **config inteira**. Use `config.patch` para atualizações parciais, ou `opencraft config set` para chaves únicas.
+    `config.apply` replaces the **entire config**. Use `config.patch` for partial updates, or `openclaw config set` for single keys.
     </Warning>
 
     Params:
 
-    - `raw` (string) — payload JSON5 para toda a config
-    - `baseHash` (opcional) — hash de config de `config.get` (obrigatório quando config existe)
-    - `sessionKey` (opcional) — chave de sessão para o ping de wakeup pós-restart
-    - `note` (opcional) — nota para o sentinela de restart
-    - `restartDelayMs` (opcional) — atraso antes do restart (padrão 2000)
+    - `raw` (string) — JSON5 payload for the entire config
+    - `baseHash` (optional) — config hash from `config.get` (required when config exists)
+    - `sessionKey` (optional) — session key for the post-restart wake-up ping
+    - `note` (optional) — note for the restart sentinel
+    - `restartDelayMs` (optional) — delay before restart (default 2000)
 
-    Requisições de restart são coalescidas enquanto uma já está pendente/em-voo, e um cooldown de 30 segundos se aplica entre ciclos de restart.
+    Restart requests are coalesced while one is already pending/in-flight, and a 30-second cooldown applies between restart cycles.
 
     ```bash
-    opencraft gateway call config.get --params '{}'  # capturar payload.hash
-    opencraft gateway call config.apply --params '{
-      "raw": "{ agents: { defaults: { workspace: \"~/.opencraft/workspace\" } } }",
+    openclaw gateway call config.get --params '{}'  # capture payload.hash
+    openclaw gateway call config.apply --params '{
+      "raw": "{ agents: { defaults: { workspace: \"~/.openclaw/workspace\" } } }",
       "baseHash": "<hash>",
       "sessionKey": "agent:main:whatsapp:direct:+15555550123"
     }'
@@ -478,23 +508,23 @@ RPCs de escrita no plano de controle (`config.apply`, `config.patch`, `update.ru
 
   </Accordion>
 
-  <Accordion title="config.patch (atualização parcial)">
-    Mescla uma atualização parcial na config existente (semântica de JSON merge patch):
+  <Accordion title="config.patch (partial update)">
+    Merges a partial update into the existing config (JSON merge patch semantics):
 
-    - Objetos mesclam recursivamente
-    - `null` deleta uma chave
-    - Arrays substituem
+    - Objects merge recursively
+    - `null` deletes a key
+    - Arrays replace
 
     Params:
 
-    - `raw` (string) — JSON5 com apenas as chaves a mudar
-    - `baseHash` (obrigatório) — hash de config de `config.get`
-    - `sessionKey`, `note`, `restartDelayMs` — iguais a `config.apply`
+    - `raw` (string) — JSON5 with just the keys to change
+    - `baseHash` (required) — config hash from `config.get`
+    - `sessionKey`, `note`, `restartDelayMs` — same as `config.apply`
 
-    Comportamento de restart corresponde a `config.apply`: restarts pendentes coalescidos mais um cooldown de 30 segundos entre ciclos de restart.
+    Restart behavior matches `config.apply`: coalesced pending restarts plus a 30-second cooldown between restart cycles.
 
     ```bash
-    opencraft gateway call config.patch --params '{
+    openclaw gateway call config.patch --params '{
       "raw": "{ channels: { telegram: { groups: { \"*\": { requireMention: false } } } } }",
       "baseHash": "<hash>"
     }'
@@ -503,14 +533,14 @@ RPCs de escrita no plano de controle (`config.apply`, `config.patch`, `update.ru
   </Accordion>
 </AccordionGroup>
 
-## Variáveis de ambiente
+## Environment variables
 
-OpenCraft lê vars de env do processo pai mais:
+OpenClaw reads env vars from the parent process plus:
 
-- `.env` do diretório de trabalho atual (se presente)
-- `~/.opencraft/.env` (fallback global)
+- `.env` from the current working directory (if present)
+- `~/.openclaw/.env` (global fallback)
 
-Nenhum arquivo sobrescreve vars de env existentes. Você também pode definir vars de env inline na config:
+Neither file overrides existing env vars. You can also set inline env vars in config:
 
 ```json5
 {
@@ -521,8 +551,8 @@ Nenhum arquivo sobrescreve vars de env existentes. Você também pode definir va
 }
 ```
 
-<Accordion title="Importação de env shell (opcional)">
-  Se habilitado e as chaves esperadas não estiverem definidas, OpenCraft roda seu shell de login e importa apenas as chaves ausentes:
+<Accordion title="Shell env import (optional)">
+  If enabled and expected keys aren't set, OpenClaw runs your login shell and imports only the missing keys:
 
 ```json5
 {
@@ -532,11 +562,11 @@ Nenhum arquivo sobrescreve vars de env existentes. Você também pode definir va
 }
 ```
 
-Equivalente de var de env: `OPENCLAW_LOAD_SHELL_ENV=1`
+Env var equivalent: `OPENCLAW_LOAD_SHELL_ENV=1`
 </Accordion>
 
-<Accordion title="Substituição de var de env em valores de config">
-  Referencie vars de env em qualquer valor de string de config com `${VAR_NAME}`:
+<Accordion title="Env var substitution in config values">
+  Reference env vars in any config string value with `${VAR_NAME}`:
 
 ```json5
 {
@@ -545,18 +575,18 @@ Equivalente de var de env: `OPENCLAW_LOAD_SHELL_ENV=1`
 }
 ```
 
-Regras:
+Rules:
 
-- Apenas nomes maiúsculos são correspondidos: `[A-Z_][A-Z0-9_]*`
-- Vars ausentes/vazias lançam um erro no tempo de carregamento
-- Escape com `$${VAR}` para saída literal
-- Funciona dentro de arquivos `$include`
-- Substituição inline: `"${BASE}/v1"` → `"https://api.example.com/v1"`
+- Only uppercase names matched: `[A-Z_][A-Z0-9_]*`
+- Missing/empty vars throw an error at load time
+- Escape with `$${VAR}` for literal output
+- Works inside `$include` files
+- Inline substitution: `"${BASE}/v1"` → `"https://api.example.com/v1"`
 
 </Accordion>
 
-<Accordion title="Refs de segredo (env, file, exec)">
-  Para campos que suportam objetos SecretRef, você pode usar:
+<Accordion title="Secret refs (env, file, exec)">
+  For fields that support SecretRef objects, you can use:
 
 ```json5
 {
@@ -588,16 +618,16 @@ Regras:
 }
 ```
 
-Detalhes de SecretRef (incluindo `secrets.providers` para `env`/`file`/`exec`) estão em [Secrets Management](/gateway/secrets).
-Paths de credencial suportados estão listados em [SecretRef Credential Surface](/reference/secretref-credential-surface).
+SecretRef details (including `secrets.providers` for `env`/`file`/`exec`) are in [Secrets Management](/gateway/secrets).
+Supported credential paths are listed in [SecretRef Credential Surface](/reference/secretref-credential-surface).
 </Accordion>
 
-Veja [Environment](/help/environment) para precedência completa e fontes.
+See [Environment](/help/environment) for full precedence and sources.
 
-## Referência completa
+## Full reference
 
-Para a referência campo a campo completa, veja **[Configuration Reference](/gateway/configuration-reference)**.
+For the complete field-by-field reference, see **[Configuration Reference](/gateway/configuration-reference)**.
 
 ---
 
-_Relacionado: [Configuration Examples](/gateway/configuration-examples) · [Configuration Reference](/gateway/configuration-reference) · [Doctor](/gateway/doctor)_
+_Related: [Configuration Examples](/gateway/configuration-examples) · [Configuration Reference](/gateway/configuration-reference) · [Doctor](/gateway/doctor)_

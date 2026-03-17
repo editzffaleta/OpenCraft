@@ -102,15 +102,21 @@ vi.mock("../plugins/hook-runner-global.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../extensions/discord/src/monitor/thread-bindings.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import("../../extensions/discord/src/monitor/thread-bindings.js")
-    >();
+vi.mock("../plugins/runtime/runtime-discord.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../plugins/runtime/runtime-discord.js")>();
   return {
     ...actual,
-    unbindThreadBindingsBySessionKey: (params: unknown) =>
-      threadBindingMocks.unbindThreadBindingsBySessionKey(params),
+    createRuntimeDiscord: () => {
+      const runtime = actual.createRuntimeDiscord();
+      return {
+        ...runtime,
+        threadBindings: {
+          ...runtime.threadBindings,
+          unbindBySessionKey: (params: unknown) =>
+            threadBindingMocks.unbindThreadBindingsBySessionKey(params),
+        },
+      };
+    },
   };
 });
 
@@ -145,7 +151,7 @@ let sessionStoreCaseSeq = 0;
 
 beforeAll(async () => {
   harness = await startGatewayServerHarness();
-  sharedSessionStoreDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-sessions-"));
+  sharedSessionStoreDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-sessions-"));
 });
 
 afterAll(async () => {
@@ -1376,7 +1382,7 @@ describe("gateway server sessions", () => {
   });
 
   test("control-ui client can delete sessions even in webchat mode", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-sessions-control-ui-delete-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-sessions-control-ui-delete-"));
     const storePath = path.join(dir, "sessions.json");
     testState.sessionStorePath = storePath;
 

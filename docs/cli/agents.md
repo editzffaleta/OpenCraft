@@ -1,108 +1,108 @@
 ---
-summary: "Referência do CLI para `opencraft agents` (list/add/delete/bindings/bind/unbind/set identity)"
+summary: "CLI reference for `openclaw agents` (list/add/delete/bindings/bind/unbind/set identity)"
 read_when:
-  - Você quer múltiplos agentes isolados (workspaces + roteamento + auth)
+  - You want multiple isolated agents (workspaces + routing + auth)
 title: "agents"
 ---
 
-# `opencraft agents`
+# `openclaw agents`
 
-Gerenciar agentes isolados (workspaces + auth + roteamento).
+Manage isolated agents (workspaces + auth + routing).
 
-Relacionado:
+Related:
 
-- Roteamento multi-agente: [Roteamento Multi-Agente](/concepts/multi-agent)
-- Workspace do agente: [Agent workspace](/concepts/agent-workspace)
+- Multi-agent routing: [Multi-Agent Routing](/concepts/multi-agent)
+- Agent workspace: [Agent workspace](/concepts/agent-workspace)
 
-## Exemplos
-
-```bash
-opencraft agents list
-opencraft agents add work --workspace ~/.opencraft/workspace-work
-opencraft agents bindings
-opencraft agents bind --agent work --bind telegram:ops
-opencraft agents unbind --agent work --bind telegram:ops
-opencraft agents set-identity --workspace ~/.opencraft/workspace --from-identity
-opencraft agents set-identity --agent main --avatar avatars/opencraft.png
-opencraft agents delete work
-```
-
-## Bindings de roteamento
-
-Use bindings de roteamento para fixar tráfego de canal de entrada a um agente específico.
-
-Listar bindings:
+## Examples
 
 ```bash
-opencraft agents bindings
-opencraft agents bindings --agent work
-opencraft agents bindings --json
+openclaw agents list
+openclaw agents add work --workspace ~/.openclaw/workspace-work
+openclaw agents bindings
+openclaw agents bind --agent work --bind telegram:ops
+openclaw agents unbind --agent work --bind telegram:ops
+openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
+openclaw agents set-identity --agent main --avatar avatars/openclaw.png
+openclaw agents delete work
 ```
 
-Adicionar bindings:
+## Routing bindings
+
+Use routing bindings to pin inbound channel traffic to a specific agent.
+
+List bindings:
 
 ```bash
-opencraft agents bind --agent work --bind telegram:ops --bind discord:guild-a
+openclaw agents bindings
+openclaw agents bindings --agent work
+openclaw agents bindings --json
 ```
 
-Se você omitir `accountId` (`--bind <channel>`), o OpenCraft o resolve de padrões de canal e hooks de setup de plugin quando disponível.
-
-### Comportamento de escopo de binding
-
-- Um binding sem `accountId` corresponde apenas à conta padrão do canal.
-- `accountId: "*"` é o fallback amplo do canal (todas as contas) e é menos específico que um binding de conta explícita.
-- Se o mesmo agente já tem um binding de canal correspondente sem `accountId`, e você mais tarde vincula com um `accountId` explícito ou resolvido, o OpenCraft atualiza esse binding existente no lugar em vez de adicionar um duplicado.
-
-Exemplo:
+Add bindings:
 
 ```bash
-# binding inicial apenas de canal
-opencraft agents bind --agent work --bind telegram
-
-# mais tarde fazer upgrade para binding com escopo de conta
-opencraft agents bind --agent work --bind telegram:ops
+openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
 ```
 
-Após o upgrade, o roteamento para esse binding tem escopo de `telegram:ops`. Se você também quiser roteamento de conta padrão, adicione-o explicitamente (por exemplo `--bind telegram:default`).
+If you omit `accountId` (`--bind <channel>`), OpenClaw resolves it from channel defaults and plugin setup hooks when available.
 
-Remover bindings:
+### Binding scope behavior
+
+- A binding without `accountId` matches the channel default account only.
+- `accountId: "*"` is the channel-wide fallback (all accounts) and is less specific than an explicit account binding.
+- If the same agent already has a matching channel binding without `accountId`, and you later bind with an explicit or resolved `accountId`, OpenClaw upgrades that existing binding in place instead of adding a duplicate.
+
+Example:
 
 ```bash
-opencraft agents unbind --agent work --bind telegram:ops
-opencraft agents unbind --agent work --all
+# initial channel-only binding
+openclaw agents bind --agent work --bind telegram
+
+# later upgrade to account-scoped binding
+openclaw agents bind --agent work --bind telegram:ops
 ```
 
-## Arquivos de identidade
+After the upgrade, routing for that binding is scoped to `telegram:ops`. If you also want default-account routing, add it explicitly (for example `--bind telegram:default`).
 
-Cada workspace de agente pode incluir um `IDENTITY.md` na raiz do workspace:
+Remove bindings:
 
-- Exemplo de path: `~/.opencraft/workspace/IDENTITY.md`
-- `set-identity --from-identity` lê da raiz do workspace (ou de um `--identity-file` explícito)
+```bash
+openclaw agents unbind --agent work --bind telegram:ops
+openclaw agents unbind --agent work --all
+```
 
-Paths de avatar resolvem relativos à raiz do workspace.
+## Identity files
+
+Each agent workspace can include an `IDENTITY.md` at the workspace root:
+
+- Example path: `~/.openclaw/workspace/IDENTITY.md`
+- `set-identity --from-identity` reads from the workspace root (or an explicit `--identity-file`)
+
+Avatar paths resolve relative to the workspace root.
 
 ## Set identity
 
-`set-identity` escreve campos em `agents.list[].identity`:
+`set-identity` writes fields into `agents.list[].identity`:
 
 - `name`
 - `theme`
 - `emoji`
-- `avatar` (path relativo ao workspace, URL http(s), ou data URI)
+- `avatar` (workspace-relative path, http(s) URL, or data URI)
 
-Carregar de `IDENTITY.md`:
-
-```bash
-opencraft agents set-identity --workspace ~/.opencraft/workspace --from-identity
-```
-
-Sobrescrever campos explicitamente:
+Load from `IDENTITY.md`:
 
 ```bash
-opencraft agents set-identity --agent main --name "OpenCraft" --emoji "🦞" --avatar avatars/opencraft.png
+openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
 ```
 
-Exemplo de config:
+Override fields explicitly:
+
+```bash
+openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞" --avatar avatars/openclaw.png
+```
+
+Config sample:
 
 ```json5
 {
@@ -111,10 +111,10 @@ Exemplo de config:
       {
         id: "main",
         identity: {
-          name: "OpenCraft",
+          name: "OpenClaw",
           theme: "space lobster",
           emoji: "🦞",
-          avatar: "avatars/opencraft.png",
+          avatar: "avatars/openclaw.png",
         },
       },
     ],

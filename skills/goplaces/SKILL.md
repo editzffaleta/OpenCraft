@@ -1,10 +1,10 @@
 ---
 name: goplaces
-description: Consulte a API Google Places (Nova) via CLI goplaces para pesquisa de texto, detalhes de lugar, resolução e avaliações. Use para busca amigável de lugares ou saída JSON para scripts.
+description: Query Google Places API (New) via the goplaces CLI for text search, place details, resolve, and reviews. Use for human-friendly place lookup or JSON output for scripts.
 homepage: https://github.com/steipete/goplaces
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "📍",
         "requires": { "bins": ["goplaces"], "env": ["GOOGLE_PLACES_API_KEY"] },
@@ -16,7 +16,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/goplaces",
               "bins": ["goplaces"],
-              "label": "Instalar goplaces (brew)",
+              "label": "Install goplaces (brew)",
             },
           ],
       },
@@ -25,28 +25,28 @@ metadata:
 
 # goplaces
 
-CLI moderno da API Google Places (Nova). Saída legível por padrão, `--json` para scripts.
+Modern Google Places API (New) CLI. Human output by default, `--json` for scripts.
 
-Instalação
+Install
 
 - Homebrew: `brew install steipete/tap/goplaces`
 
-Configuração
+Config
 
-- `GOOGLE_PLACES_API_KEY` obrigatório.
-- Opcional: `GOOGLE_PLACES_BASE_URL` para testes/proxy.
+- `GOOGLE_PLACES_API_KEY` required.
+- Optional: `GOOGLE_PLACES_BASE_URL` for testing/proxying.
 
-Comandos comuns
+Common commands
 
-- Pesquisar: `goplaces search "café" --open-now --min-rating 4 --limit 5`
-- Bias de localização: `goplaces search "pizza" --lat -23.5 --lng -46.6 --radius-m 3000`
-- Paginação: `goplaces search "pizza" --page-token "NEXT_PAGE_TOKEN"`
-- Resolver: `goplaces resolve "Pinheiros, São Paulo" --limit 5`
-- Detalhes: `goplaces details <place_id> --reviews`
+- Search: `goplaces search "coffee" --open-now --min-rating 4 --limit 5`
+- Bias: `goplaces search "pizza" --lat 40.8 --lng -73.9 --radius-m 3000`
+- Pagination: `goplaces search "pizza" --page-token "NEXT_PAGE_TOKEN"`
+- Resolve: `goplaces resolve "Soho, London" --limit 5`
+- Details: `goplaces details <place_id> --reviews`
 - JSON: `goplaces search "sushi" --json`
 
-Notas
+Notes
 
-- `--no-color` ou `NO_COLOR` desativa cor ANSI.
-- Níveis de preço: 0..4 (gratuito → muito caro).
-- Filtro de tipo envia apenas o primeiro valor `--type` (API aceita um).
+- `--no-color` or `NO_COLOR` disables ANSI color.
+- Price levels: 0..4 (free → very expensive).
+- Type filter sends only the first `--type` value (API accepts one).

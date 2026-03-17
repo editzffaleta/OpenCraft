@@ -1,49 +1,49 @@
 ---
-summary: "Arquitetura de vinculação de sessão agnóstica ao canal e escopo de entrega da iteração 1"
+summary: "Channel agnostic session binding architecture and iteration 1 delivery scope"
 read_when:
-  - Refatorando roteamento de sessão agnóstico ao canal e vinculações
-  - Investigando entrega de sessão duplicada, obsoleta ou ausente entre canais
+  - Refactoring channel-agnostic session routing and bindings
+  - Investigating duplicate, stale, or missing session delivery across channels
 owner: "onutc"
 status: "in-progress"
 last_updated: "2026-02-21"
-title: "Plano de Vinculação de Sessão Agnóstica ao Canal"
+title: "Session Binding Channel Agnostic Plan"
 ---
 
-# Plano de Vinculação de Sessão Agnóstica ao Canal
+# Session Binding Channel Agnostic Plan
 
-## Visão Geral
+## Overview
 
-Este documento define o modelo de vinculação de sessão agnóstica ao canal de longo prazo e o escopo concreto para a próxima iteração de implementação.
+This document defines the long term channel agnostic session binding model and the concrete scope for the next implementation iteration.
 
-Objetivo:
+Goal:
 
-- tornar o roteamento de sessão vinculada a subagente uma capacidade central
-- manter comportamento específico de canal nos adaptadores
-- evitar regressões no comportamento normal do Discord
+- make subagent bound session routing a core capability
+- keep channel specific behavior in adapters
+- avoid regressions in normal Discord behavior
 
-## Por Que Existe
+## Why this exists
 
-O comportamento atual mistura:
+Current behavior mixes:
 
-- política de conteúdo de conclusão
-- política de roteamento de destino
-- detalhes específicos do Discord
+- completion content policy
+- destination routing policy
+- Discord specific details
 
-Isso causou casos extremos como:
+This caused edge cases such as:
 
-- entrega duplicada para canal principal e thread em execuções concorrentes
-- uso de token obsoleto em gerenciadores de vinculação reutilizados
-- contabilidade de atividade ausente para envios via webhook
+- duplicate main and thread delivery under concurrent runs
+- stale token usage on reused binding managers
+- missing activity accounting for webhook sends
 
-## Escopo da Iteração 1
+## Iteration 1 scope
 
-Esta iteração é intencionalmente limitada.
+This iteration is intentionally limited.
 
-### 1. Adicionar interfaces centrais agnósticas ao canal
+### 1. Add channel agnostic core interfaces
 
-Adicionar tipos centrais e interfaces de serviço para vinculações e roteamento.
+Add core types and service interfaces for bindings and routing.
 
-Tipos centrais propostos:
+Proposed core types:
 
 ```ts
 export type BindingTargetKind = "subagent" | "session";
@@ -68,7 +68,7 @@ export type SessionBindingRecord = {
 };
 ```
 
-Contrato de serviço central:
+Core service contract:
 
 ```ts
 export interface SessionBindingService {
@@ -91,11 +91,11 @@ export interface SessionBindingService {
 }
 ```
 
-### 2. Adicionar um roteador central de entrega para conclusões de subagente
+### 2. Add one core delivery router for subagent completions
 
-Adicionar um único caminho de resolução de destino para eventos de conclusão.
+Add a single destination resolution path for completion events.
 
-Contrato do roteador:
+Router contract:
 
 ```ts
 export interface BoundDeliveryRouter {
@@ -112,115 +112,115 @@ export interface BoundDeliveryRouter {
 }
 ```
 
-Para esta iteração:
+For this iteration:
 
-- apenas `task_completion` é roteado por este novo caminho
-- caminhos existentes para outros tipos de evento permanecem como estão
+- only `task_completion` is routed through this new path
+- existing paths for other event kinds remain as-is
 
-### 3. Manter Discord como adaptador
+### 3. Keep Discord as adapter
 
-O Discord permanece como primeira implementação de adaptador.
+Discord remains the first adapter implementation.
 
-Responsabilidades do adaptador:
+Adapter responsibilities:
 
-- criar/reutilizar conversas de thread
-- enviar mensagens vinculadas via webhook ou envio de canal
-- validar estado de thread (arquivado/excluído)
-- mapear metadados do adaptador (identidade de webhook, IDs de thread)
+- create/reuse thread conversations
+- send bound messages via webhook or channel send
+- validate thread state (archived/deleted)
+- map adapter metadata (webhook identity, thread ids)
 
-### 4. Corrigir problemas de corretude conhecidos atualmente
+### 4. Fix currently known correctness issues
 
-Necessário nesta iteração:
+Required in this iteration:
 
-- atualizar uso de token ao reutilizar gerenciador de vinculação de thread existente
-- registrar atividade de saída para envios Discord baseados em webhook
-- parar fallback implícito para canal principal quando um destino de thread vinculado é selecionado para conclusão em modo sessão
+- refresh token usage when reusing existing thread binding manager
+- record outbound activity for webhook based Discord sends
+- stop implicit main channel fallback when a bound thread destination is selected for session mode completion
 
-### 5. Preservar padrões de segurança de runtime atuais
+### 5. Preserve current runtime safety defaults
 
-Sem mudança de comportamento para usuários com spawn vinculado a thread desabilitado.
+No behavior change for users with thread bound spawn disabled.
 
-Padrões permanecem:
+Defaults stay:
 
 - `channels.discord.threadBindings.spawnSubagentSessions = false`
 
-Resultado:
+Result:
 
-- usuários normais do Discord ficam no comportamento atual
-- novo caminho central afeta apenas roteamento de conclusão de sessão vinculada onde habilitado
+- normal Discord users stay on current behavior
+- new core path affects only bound session completion routing where enabled
 
-## Não Incluído na Iteração 1
+## Not in iteration 1
 
-Explicitamente adiado:
+Explicitly deferred:
 
-- alvos de vinculação ACP (`targetKind: "acp"`)
-- novos adaptadores de canal além do Discord
-- substituição global de todos os caminhos de entrega (`spawn_ack`, futuro `subagent_message`)
-- mudanças de nível de protocolo
-- redesenho de migração/versionamento de armazenamento para toda a persistência de vinculação
+- ACP binding targets (`targetKind: "acp"`)
+- new channel adapters beyond Discord
+- global replacement of all delivery paths (`spawn_ack`, future `subagent_message`)
+- protocol level changes
+- store migration/versioning redesign for all binding persistence
 
-Notas sobre ACP:
+Notes on ACP:
 
-- o design de interface mantém espaço para ACP
-- a implementação ACP não é iniciada nesta iteração
+- interface design keeps room for ACP
+- ACP implementation is not started in this iteration
 
-## Invariantes de Roteamento
+## Routing invariants
 
-Estes invariantes são obrigatórios para a iteração 1.
+These invariants are mandatory for iteration 1.
 
-- seleção de destino e geração de conteúdo são etapas separadas
-- se a conclusão em modo sessão resolver para um destino vinculado ativo, a entrega deve ter como alvo esse destino
-- nenhum redirecionamento oculto de destino vinculado para o canal principal
-- comportamento de fallback deve ser explícito e observável
+- destination selection and content generation are separate steps
+- if session mode completion resolves to an active bound destination, delivery must target that destination
+- no hidden reroute from bound destination to main channel
+- fallback behavior must be explicit and observable
 
-## Compatibilidade e Implantação
+## Compatibility and rollout
 
-Alvo de compatibilidade:
+Compatibility target:
 
-- sem regressão para usuários com spawn vinculado a thread desativado
-- sem mudança para canais não Discord nesta iteração
+- no regression for users with thread bound spawning off
+- no change to non-Discord channels in this iteration
 
-Implantação:
+Rollout:
 
-1. Disponibilizar interfaces e roteador atrás dos portões de recurso atuais.
-2. Rotear entregas de modo vinculado de conclusão Discord pelo roteador.
-3. Manter caminho legado para fluxos não vinculados.
-4. Verificar com testes direcionados e logs de runtime canário.
+1. Land interfaces and router behind current feature gates.
+2. Route Discord completion mode bound deliveries through router.
+3. Keep legacy path for non-bound flows.
+4. Verify with targeted tests and canary runtime logs.
 
-## Testes Necessários na Iteração 1
+## Tests required in iteration 1
 
-Cobertura de unidade e integração necessária:
+Unit and integration coverage required:
 
-- rotação de token do gerenciador usa token mais recente após reutilização do gerenciador
-- envios de webhook atualizam timestamps de atividade do canal
-- duas sessões vinculadas ativas no mesmo canal de solicitante não duplicam para o canal principal
-- conclusão para execução em modo sessão vinculada resolve apenas para destino de thread
-- flag de spawn desabilitado mantém comportamento legado inalterado
+- manager token rotation uses latest token after manager reuse
+- webhook sends update channel activity timestamps
+- two active bound sessions in same requester channel do not duplicate to main channel
+- completion for bound session mode run resolves to thread destination only
+- disabled spawn flag keeps legacy behavior unchanged
 
-## Arquivos de Implementação Propostos
+## Proposed implementation files
 
-Central:
+Core:
 
-- `src/infra/outbound/session-binding-service.ts` (novo)
-- `src/infra/outbound/bound-delivery-router.ts` (novo)
-- `src/agents/subagent-announce.ts` (integração de resolução de destino de conclusão)
+- `src/infra/outbound/session-binding-service.ts` (new)
+- `src/infra/outbound/bound-delivery-router.ts` (new)
+- `src/agents/subagent-announce.ts` (completion destination resolution integration)
 
-Adaptador e runtime Discord:
+Discord adapter and runtime:
 
 - `src/discord/monitor/thread-bindings.manager.ts`
 - `src/discord/monitor/reply-delivery.ts`
 - `src/discord/send.outbound.ts`
 
-Testes:
+Tests:
 
 - `src/discord/monitor/provider*.test.ts`
 - `src/discord/monitor/reply-delivery.test.ts`
 - `src/agents/subagent-announce.format.test.ts`
 
-## Critérios de Conclusão para a Iteração 1
+## Done criteria for iteration 1
 
-- interfaces centrais existem e estão conectadas para roteamento de conclusão
-- correções de corretude acima foram integradas com testes
-- sem entrega de conclusão duplicada para canal principal e thread em execuções em modo sessão vinculada
-- sem mudança de comportamento para implantações com spawn vinculado desabilitado
-- ACP permanece explicitamente adiado
+- core interfaces exist and are wired for completion routing
+- correctness fixes above are merged with tests
+- no main and thread duplicate completion delivery in session mode bound runs
+- no behavior change for disabled bound spawn deployments
+- ACP remains explicitly deferred

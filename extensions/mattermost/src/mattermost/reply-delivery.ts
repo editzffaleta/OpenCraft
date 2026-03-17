@@ -1,5 +1,5 @@
-import type { OpenCraftConfig, PluginRuntime, ReplyPayload } from "opencraft/plugin-sdk/mattermost";
-import { getAgentScopedMediaLocalRoots } from "opencraft/plugin-sdk/mattermost";
+import type { OpenClawConfig, PluginRuntime, ReplyPayload } from "openclaw/plugin-sdk/mattermost";
+import { getAgentScopedMediaLocalRoots } from "openclaw/plugin-sdk/mattermost";
 
 type MarkdownTableMode = Parameters<PluginRuntime["channel"]["text"]["convertMarkdownTables"]>[1];
 
@@ -16,7 +16,7 @@ type SendMattermostMessage = (
 
 export async function deliverMattermostReplyPayload(params: {
   core: PluginRuntime;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   payload: ReplyPayload;
   to: string;
   accountId: string;

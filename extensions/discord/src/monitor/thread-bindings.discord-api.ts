@@ -1,5 +1,5 @@
 import { ChannelType, Routes } from "discord-api-types/v10";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import { logVerbose } from "../../../../src/globals.js";
 import { createDiscordRestClient } from "../client.js";
 import { sendMessageDiscord, sendWebhookMessageDiscord } from "../send.js";
@@ -17,7 +17,7 @@ import {
 } from "./thread-bindings.types.js";
 
 function buildThreadTarget(threadId: string): string {
-  return `channel:${threadId}`;
+  return /^(channel:|user:)/i.test(threadId) ? threadId : `channel:${threadId}`;
 }
 
 export function isThreadArchived(raw: unknown): boolean {
@@ -123,7 +123,7 @@ export function isDiscordThreadGoneError(err: unknown): boolean {
 }
 
 export async function maybeSendBindingMessage(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   record: ThreadBindingRecord;
   text: string;
   preferWebhook?: boolean;
@@ -159,7 +159,7 @@ export async function maybeSendBindingMessage(params: {
 }
 
 export async function createWebhookForChannel(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   accountId: string;
   token?: string;
   channelId: string;
@@ -174,7 +174,7 @@ export async function createWebhookForChannel(params: {
     ).rest;
     const created = (await rest.post(Routes.channelWebhooks(params.channelId), {
       body: {
-        name: "OpenCraft Agents",
+        name: "OpenClaw Agents",
       },
     })) as { id?: string; token?: string };
     const webhookId = typeof created?.id === "string" ? created.id.trim() : "";
@@ -226,7 +226,7 @@ export function findReusableWebhook(params: { accountId: string; channelId: stri
 }
 
 export async function resolveChannelIdForBinding(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   accountId: string;
   token?: string;
   threadId: string;
@@ -273,7 +273,7 @@ export async function resolveChannelIdForBinding(params: {
 }
 
 export async function createThreadForBinding(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   accountId: string;
   token?: string;
   channelId: string;

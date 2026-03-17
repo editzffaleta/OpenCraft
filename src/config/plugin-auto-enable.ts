@@ -1,5 +1,5 @@
-import { hasAnyWhatsAppAuth } from "../../extensions/whatsapp/src/accounts.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
+import { hasMeaningfulChannelConfig } from "../channels/config-presence.js";
 import {
   getChannelPluginCatalogEntry,
   listChannelPluginCatalogEntries,
@@ -9,12 +9,13 @@ import {
   listChatChannels,
   normalizeChatChannelId,
 } from "../channels/registry.js";
+import { hasAnyWhatsAppAuth } from "../plugin-sdk-internal/whatsapp.js";
 import {
   loadPluginManifestRegistry,
   type PluginManifestRegistry,
 } from "../plugins/manifest-registry.js";
 import { isRecord } from "../utils.js";
-import type { OpenCraftConfig } from "./config.js";
+import type { OpenClawConfig } from "./config.js";
 import { ensurePluginAllowlisted } from "./plugins-allowlist.js";
 
 type PluginEnableChange = {
@@ -23,23 +24,19 @@ type PluginEnableChange = {
 };
 
 export type PluginAutoEnableResult = {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   changes: string[];
 };
 
 const PROVIDER_PLUGIN_IDS: Array<{ pluginId: string; providerId: string }> = [
-  { pluginId: "google-gemini-cli-auth", providerId: "google-gemini-cli" },
+  { pluginId: "google", providerId: "google-gemini-cli" },
   { pluginId: "qwen-portal-auth", providerId: "qwen-portal" },
   { pluginId: "copilot-proxy", providerId: "copilot-proxy" },
-  { pluginId: "minimax-portal-auth", providerId: "minimax-portal" },
+  { pluginId: "minimax", providerId: "minimax-portal" },
 ];
 
 function hasNonEmptyString(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function recordHasKeys(value: unknown): boolean {
-  return isRecord(value) && Object.keys(value).length > 0;
 }
 
 function accountsHaveKeys(value: unknown, keys: readonly string[]): boolean {
@@ -60,7 +57,7 @@ function accountsHaveKeys(value: unknown, keys: readonly string[]): boolean {
 }
 
 function resolveChannelConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   channelId: string,
 ): Record<string, unknown> | null {
   const channels = cfg.channels as Record<string, unknown> | undefined;
@@ -135,7 +132,7 @@ function hasAnyNumberKeys(entry: Record<string, unknown>, keys: readonly string[
 }
 
 function isStructuredChannelConfigured(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   channelId: string,
   env: NodeJS.ProcessEnv,
   spec: StructuredChannelConfigSpec,
@@ -159,10 +156,10 @@ function isStructuredChannelConfigured(
   if (spec.accountStringKeys && accountsHaveKeys(entry.accounts, spec.accountStringKeys)) {
     return true;
   }
-  return recordHasKeys(entry);
+  return hasMeaningfulChannelConfig(entry);
 }
 
-function isWhatsAppConfigured(cfg: OpenCraftConfig): boolean {
+function isWhatsAppConfigured(cfg: OpenClawConfig): boolean {
   if (hasAnyWhatsAppAuth(cfg)) {
     return true;
   }
@@ -170,16 +167,16 @@ function isWhatsAppConfigured(cfg: OpenCraftConfig): boolean {
   if (!entry) {
     return false;
   }
-  return recordHasKeys(entry);
+  return hasMeaningfulChannelConfig(entry);
 }
 
-function isGenericChannelConfigured(cfg: OpenCraftConfig, channelId: string): boolean {
+function isGenericChannelConfigured(cfg: OpenClawConfig, channelId: string): boolean {
   const entry = resolveChannelConfig(cfg, channelId);
-  return recordHasKeys(entry);
+  return hasMeaningfulChannelConfig(entry);
 }
 
 export function isChannelConfigured(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   channelId: string,
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
@@ -193,7 +190,7 @@ export function isChannelConfigured(
   return isGenericChannelConfigured(cfg, channelId);
 }
 
-function collectModelRefs(cfg: OpenCraftConfig): string[] {
+function collectModelRefs(cfg: OpenClawConfig): string[] {
   const refs: string[] = [];
   const pushModelRef = (value: unknown) => {
     if (typeof value === "string" && value.trim()) {
@@ -247,7 +244,7 @@ function extractProviderFromModelRef(value: string): string | null {
   return normalizeProviderId(trimmed.slice(0, slash));
 }
 
-function isProviderConfigured(cfg: OpenCraftConfig, providerId: string): boolean {
+function isProviderConfigured(cfg: OpenClawConfig, providerId: string): boolean {
   const normalized = normalizeProviderId(providerId);
 
   const profiles = cfg.auth?.profiles;
@@ -317,7 +314,7 @@ function listKnownChannelPluginIds(env: NodeJS.ProcessEnv): string[] {
   );
 }
 
-function collectCandidateChannelIds(cfg: OpenCraftConfig, env: NodeJS.ProcessEnv): string[] {
+function collectCandidateChannelIds(cfg: OpenClawConfig, env: NodeJS.ProcessEnv): string[] {
   const channelIds = new Set<string>(listKnownChannelPluginIds(env));
   const configuredChannels = cfg.channels as Record<string, unknown> | undefined;
   if (!configuredChannels || typeof configuredChannels !== "object") {
@@ -334,7 +331,7 @@ function collectCandidateChannelIds(cfg: OpenCraftConfig, env: NodeJS.ProcessEnv
 }
 
 function resolveConfiguredPlugins(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   env: NodeJS.ProcessEnv,
   registry: PluginManifestRegistry,
 ): PluginEnableChange[] {
@@ -369,7 +366,7 @@ function resolveConfiguredPlugins(
   return changes;
 }
 
-function isPluginExplicitlyDisabled(cfg: OpenCraftConfig, pluginId: string): boolean {
+function isPluginExplicitlyDisabled(cfg: OpenClawConfig, pluginId: string): boolean {
   const builtInChannelId = normalizeChatChannelId(pluginId);
   if (builtInChannelId) {
     const channels = cfg.channels as Record<string, unknown> | undefined;
@@ -387,7 +384,7 @@ function isPluginExplicitlyDisabled(cfg: OpenCraftConfig, pluginId: string): boo
   return entry?.enabled === false;
 }
 
-function isPluginDenied(cfg: OpenCraftConfig, pluginId: string): boolean {
+function isPluginDenied(cfg: OpenClawConfig, pluginId: string): boolean {
   const deny = cfg.plugins?.deny;
   return Array.isArray(deny) && deny.includes(pluginId);
 }
@@ -402,7 +399,7 @@ function resolvePreferredOverIds(pluginId: string, env: NodeJS.ProcessEnv): stri
 }
 
 function shouldSkipPreferredPluginAutoEnable(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   entry: PluginEnableChange,
   configured: PluginEnableChange[],
   env: NodeJS.ProcessEnv,
@@ -425,7 +422,7 @@ function shouldSkipPreferredPluginAutoEnable(
   return false;
 }
 
-function registerPluginEntry(cfg: OpenCraftConfig, pluginId: string): OpenCraftConfig {
+function registerPluginEntry(cfg: OpenClawConfig, pluginId: string): OpenClawConfig {
   const builtInChannelId = normalizeChatChannelId(pluginId);
   if (builtInChannelId) {
     const channels = cfg.channels as Record<string, unknown> | undefined;
@@ -472,7 +469,7 @@ function formatAutoEnableChange(entry: PluginEnableChange): string {
 }
 
 export function applyPluginAutoEnable(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   env?: NodeJS.ProcessEnv;
   /** Pre-loaded manifest registry. When omitted, the registry is loaded from
    *  the installed plugins on disk. Pass an explicit registry in tests to

@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createOpenCraftTools } from "../agents/opencraft-tools.js";
+import { createOpenClawTools } from "../agents/openclaw-tools.js";
 import { runBeforeToolCallHook } from "../agents/pi-tools.before-tool-call.js";
 import { resolveToolLoopDetectionConfig } from "../agents/pi-tools.js";
 import {
@@ -212,11 +212,11 @@ export async function handleToolsInvokeHttpRequest(
 
   // Resolve message channel/account hints (optional headers) for policy inheritance.
   const messageChannel = normalizeMessageChannel(
-    getHeader(req, "x-opencraft-message-channel") ?? "",
+    getHeader(req, "x-openclaw-message-channel") ?? "",
   );
-  const accountId = getHeader(req, "x-opencraft-account-id")?.trim() || undefined;
-  const agentTo = getHeader(req, "x-opencraft-message-to")?.trim() || undefined;
-  const agentThreadId = getHeader(req, "x-opencraft-thread-id")?.trim() || undefined;
+  const accountId = getHeader(req, "x-openclaw-account-id")?.trim() || undefined;
+  const agentTo = getHeader(req, "x-openclaw-message-to")?.trim() || undefined;
+  const agentThreadId = getHeader(req, "x-openclaw-thread-id")?.trim() || undefined;
 
   const {
     agentId,
@@ -248,12 +248,13 @@ export async function handleToolsInvokeHttpRequest(
     : undefined;
 
   // Build tool list (core + plugin tools).
-  const allTools = createOpenCraftTools({
+  const allTools = createOpenClawTools({
     agentSessionKey: sessionKey,
     agentChannel: messageChannel ?? undefined,
     agentAccountId: accountId,
     agentTo,
     agentThreadId,
+    allowGatewaySubagentBinding: true,
     // HTTP callers consume tool output directly; preserve raw media invoke payloads.
     allowMediaInvokeCommands: true,
     config: cfg,

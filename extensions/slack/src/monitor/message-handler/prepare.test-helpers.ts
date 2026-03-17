@@ -1,11 +1,11 @@
 import type { App } from "@slack/bolt";
-import type { OpenCraftConfig } from "../../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../../src/config/config.js";
 import type { RuntimeEnv } from "../../../../../src/runtime.js";
 import type { ResolvedSlackAccount } from "../../accounts.js";
 import { createSlackMonitorContext } from "../context.js";
 
 export function createInboundSlackTestContext(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   appClient?: App["client"];
   defaultRequireMention?: boolean;
   replyToMode?: "off" | "all" | "first";
@@ -40,7 +40,7 @@ export function createInboundSlackTestContext(params: {
     threadInheritParent: false,
     slashCommand: {
       enabled: false,
-      name: "opencraft",
+      name: "openclaw",
       sessionPrefix: "slack:slash",
       ephemeral: true,
     },

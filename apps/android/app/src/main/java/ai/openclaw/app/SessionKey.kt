@@ -1,4 +1,4 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 internal fun normalizeMainKey(raw: String?): String {
   val trimmed = raw?.trim()

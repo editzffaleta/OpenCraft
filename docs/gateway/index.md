@@ -1,154 +1,154 @@
 ---
-summary: "Runbook para o serviço do Gateway, ciclo de vida e operações"
+summary: "Runbook for the Gateway service, lifecycle, and operations"
 read_when:
-  - Rodando ou depurando o processo do gateway
+  - Running or debugging the gateway process
 title: "Gateway Runbook"
 ---
 
-# Runbook do Gateway
+# Gateway runbook
 
-Use esta página para operações de dia 1 (startup) e dia 2 do serviço Gateway.
+Use this page for day-1 startup and day-2 operations of the Gateway service.
 
 <CardGroup cols={2}>
-  <Card title="Resolução de problemas aprofundada" icon="siren" href="/gateway/troubleshooting">
-    Diagnósticos orientados por sintoma com ladders exatos de comandos e assinaturas de log.
+  <Card title="Deep troubleshooting" icon="siren" href="/gateway/troubleshooting">
+    Symptom-first diagnostics with exact command ladders and log signatures.
   </Card>
-  <Card title="Configuração" icon="sliders" href="/gateway/configuration">
-    Guia de setup orientado a tarefas + referência completa de configuração.
+  <Card title="Configuration" icon="sliders" href="/gateway/configuration">
+    Task-oriented setup guide + full configuration reference.
   </Card>
-  <Card title="Gerenciamento de segredos" icon="key-round" href="/gateway/secrets">
-    Contrato SecretRef, comportamento do snapshot de runtime e operações de migrate/reload.
+  <Card title="Secrets management" icon="key-round" href="/gateway/secrets">
+    SecretRef contract, runtime snapshot behavior, and migrate/reload operations.
   </Card>
-  <Card title="Contrato do plano de segredos" icon="shield-check" href="/gateway/secrets-plan-contract">
-    Regras exatas de alvo/path de `secrets apply` e comportamento de auth-profile somente ref.
+  <Card title="Secrets plan contract" icon="shield-check" href="/gateway/secrets-plan-contract">
+    Exact `secrets apply` target/path rules and ref-only auth-profile behavior.
   </Card>
 </CardGroup>
 
-## Startup local em 5 minutos
+## 5-minute local startup
 
 <Steps>
-  <Step title="Iniciar o Gateway">
+  <Step title="Start the Gateway">
 
 ```bash
-opencraft gateway --port 18789
-# debug/trace espelhado para stdio
-opencraft gateway --port 18789 --verbose
-# forçar kill do listener na porta selecionada, depois iniciar
-opencraft gateway --force
+openclaw gateway --port 18789
+# debug/trace mirrored to stdio
+openclaw gateway --port 18789 --verbose
+# force-kill listener on selected port, then start
+openclaw gateway --force
 ```
 
   </Step>
 
-  <Step title="Verificar saúde do serviço">
+  <Step title="Verify service health">
 
 ```bash
-opencraft gateway status
-opencraft status
-opencraft logs --follow
+openclaw gateway status
+openclaw status
+openclaw logs --follow
 ```
 
-Baseline saudável: `Runtime: running` e `RPC probe: ok`.
+Healthy baseline: `Runtime: running` and `RPC probe: ok`.
 
   </Step>
 
-  <Step title="Validar prontidão dos canais">
+  <Step title="Validate channel readiness">
 
 ```bash
-opencraft channels status --probe
+openclaw channels status --probe
 ```
 
   </Step>
 </Steps>
 
 <Note>
-O reload de config do Gateway observa o path do arquivo de config ativo (resolvido de padrões de perfil/estado, ou `OPENCLAW_CONFIG_PATH` quando definido).
-O modo padrão é `gateway.reload.mode="hybrid"`.
+Gateway config reload watches the active config file path (resolved from profile/state defaults, or `OPENCLAW_CONFIG_PATH` when set).
+Default mode is `gateway.reload.mode="hybrid"`.
 </Note>
 
-## Modelo de runtime
+## Runtime model
 
-- Um processo always-on para roteamento, plano de controle e conexões de canal.
-- Porta única multiplexada para:
-  - WebSocket controle/RPC
-  - APIs HTTP (compatível com OpenAI, Responses, tools invoke)
-  - UI de Controle e hooks
-- Modo de bind padrão: `loopback`.
-- Auth é obrigatória por padrão (`gateway.auth.token` / `gateway.auth.password`, ou `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
+- One always-on process for routing, control plane, and channel connections.
+- Single multiplexed port for:
+  - WebSocket control/RPC
+  - HTTP APIs (OpenAI-compatible, Responses, tools invoke)
+  - Control UI and hooks
+- Default bind mode: `loopback`.
+- Auth is required by default (`gateway.auth.token` / `gateway.auth.password`, or `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
 
-### Precedência de porta e bind
+### Port and bind precedence
 
-| Configuração  | Ordem de resolução                                                |
-| ------------- | ----------------------------------------------------------------- |
-| Porta Gateway | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789`    |
-| Modo bind     | CLI/override → `gateway.bind` → `loopback`                        |
+| Setting      | Resolution order                                              |
+| ------------ | ------------------------------------------------------------- |
+| Gateway port | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789` |
+| Bind mode    | CLI/override → `gateway.bind` → `loopback`                    |
 
-### Modos de hot reload
+### Hot reload modes
 
-| `gateway.reload.mode` | Comportamento                                   |
-| --------------------- | ----------------------------------------------- |
-| `off`                 | Sem reload de config                            |
-| `hot`                 | Aplicar apenas mudanças hot-safe                |
-| `restart`             | Reiniciar em mudanças que requerem reload        |
-| `hybrid` (padrão)     | Hot-apply quando seguro, reiniciar quando necessário |
+| `gateway.reload.mode` | Behavior                                   |
+| --------------------- | ------------------------------------------ |
+| `off`                 | No config reload                           |
+| `hot`                 | Apply only hot-safe changes                |
+| `restart`             | Restart on reload-required changes         |
+| `hybrid` (default)    | Hot-apply when safe, restart when required |
 
-## Conjunto de comandos do operador
+## Operator command set
 
 ```bash
-opencraft gateway status
-opencraft gateway status --deep
-opencraft gateway status --json
-opencraft gateway install
-opencraft gateway restart
-opencraft gateway stop
-opencraft secrets reload
-opencraft logs --follow
-opencraft doctor
+openclaw gateway status
+openclaw gateway status --deep
+openclaw gateway status --json
+openclaw gateway install
+openclaw gateway restart
+openclaw gateway stop
+openclaw secrets reload
+openclaw logs --follow
+openclaw doctor
 ```
 
-## Acesso remoto
+## Remote access
 
-Preferido: Tailscale/VPN.
-Fallback: túnel SSH.
+Preferred: Tailscale/VPN.
+Fallback: SSH tunnel.
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 user@host
 ```
 
-Depois conecte clientes a `ws://127.0.0.1:18789` localmente.
+Then connect clients to `ws://127.0.0.1:18789` locally.
 
 <Warning>
-Se auth do gateway estiver configurada, clientes ainda devem enviar auth (`token`/`password`) mesmo por túneis SSH.
+If gateway auth is configured, clients still must send auth (`token`/`password`) even over SSH tunnels.
 </Warning>
 
-Veja: [Remote Gateway](/gateway/remote), [Authentication](/gateway/authentication), [Tailscale](/gateway/tailscale).
+See: [Remote Gateway](/gateway/remote), [Authentication](/gateway/authentication), [Tailscale](/gateway/tailscale).
 
-## Supervisão e ciclo de vida do serviço
+## Supervision and service lifecycle
 
-Use execuções supervisionadas para confiabilidade parecida com produção.
+Use supervised runs for production-like reliability.
 
 <Tabs>
   <Tab title="macOS (launchd)">
 
 ```bash
-opencraft gateway install
-opencraft gateway status
-opencraft gateway restart
-opencraft gateway stop
+openclaw gateway install
+openclaw gateway status
+openclaw gateway restart
+openclaw gateway stop
 ```
 
-Labels do LaunchAgent são `ai.opencraft.gateway` (padrão) ou `ai.opencraft.<profile>` (perfil nomeado). `opencraft doctor` audita e repara deriva de config do serviço.
+LaunchAgent labels are `ai.openclaw.gateway` (default) or `ai.openclaw.<profile>` (named profile). `openclaw doctor` audits and repairs service config drift.
 
   </Tab>
 
   <Tab title="Linux (systemd user)">
 
 ```bash
-opencraft gateway install
+openclaw gateway install
 systemctl --user enable --now openclaw-gateway[-<profile>].service
-opencraft gateway status
+openclaw gateway status
 ```
 
-Para persistência após logout, habilite linger:
+For persistence after logout, enable lingering:
 
 ```bash
 sudo loginctl enable-linger <user>
@@ -156,9 +156,9 @@ sudo loginctl enable-linger <user>
 
   </Tab>
 
-  <Tab title="Linux (serviço de sistema)">
+  <Tab title="Linux (system service)">
 
-Use uma unit de sistema para hosts multi-usuário/always-on.
+Use a system unit for multi-user/always-on hosts.
 
 ```bash
 sudo systemctl daemon-reload
@@ -168,90 +168,90 @@ sudo systemctl enable --now openclaw-gateway[-<profile>].service
   </Tab>
 </Tabs>
 
-## Múltiplos gateways em um host
+## Multiple gateways on one host
 
-A maioria dos setups deve rodar **um** Gateway.
-Use múltiplos apenas para isolamento/redundância estrito (por exemplo um perfil de rescue).
+Most setups should run **one** Gateway.
+Use multiple only for strict isolation/redundancy (for example a rescue profile).
 
-Checklist por instância:
+Checklist per instance:
 
-- `gateway.port` único
-- `OPENCLAW_CONFIG_PATH` único
-- `OPENCLAW_STATE_DIR` único
-- `agents.defaults.workspace` único
+- Unique `gateway.port`
+- Unique `OPENCLAW_CONFIG_PATH`
+- Unique `OPENCLAW_STATE_DIR`
+- Unique `agents.defaults.workspace`
 
-Exemplo:
-
-```bash
-OPENCLAW_CONFIG_PATH=~/.opencraft/a.json OPENCLAW_STATE_DIR=~/.opencraft-a opencraft gateway --port 19001
-OPENCLAW_CONFIG_PATH=~/.opencraft/b.json OPENCLAW_STATE_DIR=~/.opencraft-b opencraft gateway --port 19002
-```
-
-Veja: [Multiple gateways](/gateway/multiple-gateways).
-
-### Path rápido de perfil dev
+Example:
 
 ```bash
-opencraft --dev setup
-opencraft --dev gateway --allow-unconfigured
-opencraft --dev status
+OPENCLAW_CONFIG_PATH=~/.openclaw/a.json OPENCLAW_STATE_DIR=~/.openclaw-a openclaw gateway --port 19001
+OPENCLAW_CONFIG_PATH=~/.openclaw/b.json OPENCLAW_STATE_DIR=~/.openclaw-b openclaw gateway --port 19002
 ```
 
-Os padrões incluem estado/config isolados e porta base do gateway `19001`.
+See: [Multiple gateways](/gateway/multiple-gateways).
 
-## Referência rápida do protocolo (visão do operador)
+### Dev profile quick path
 
-- Primeiro frame do cliente deve ser `connect`.
-- Gateway retorna snapshot `hello-ok` (`presence`, `health`, `stateVersion`, `uptimeMs`, limites/política).
-- Requisições: `req(method, params)` → `res(ok/payload|error)`.
-- Eventos comuns: `connect.challenge`, `agent`, `chat`, `presence`, `tick`, `health`, `heartbeat`, `shutdown`.
+```bash
+openclaw --dev setup
+openclaw --dev gateway --allow-unconfigured
+openclaw --dev status
+```
 
-Execuções de agente são em dois estágios:
+Defaults include isolated state/config and base gateway port `19001`.
 
-1. Ack de aceito imediato (`status:"accepted"`)
-2. Resposta de conclusão final (`status:"ok"|"error"`), com eventos `agent` em streaming entre eles.
+## Protocol quick reference (operator view)
 
-Veja docs completos do protocolo: [Gateway Protocol](/gateway/protocol).
+- First client frame must be `connect`.
+- Gateway returns `hello-ok` snapshot (`presence`, `health`, `stateVersion`, `uptimeMs`, limits/policy).
+- Requests: `req(method, params)` → `res(ok/payload|error)`.
+- Common events: `connect.challenge`, `agent`, `chat`, `presence`, `tick`, `health`, `heartbeat`, `shutdown`.
 
-## Verificações operacionais
+Agent runs are two-stage:
+
+1. Immediate accepted ack (`status:"accepted"`)
+2. Final completion response (`status:"ok"|"error"`), with streamed `agent` events in between.
+
+See full protocol docs: [Gateway Protocol](/gateway/protocol).
+
+## Operational checks
 
 ### Liveness
 
-- Abrir WS e enviar `connect`.
-- Esperar resposta `hello-ok` com snapshot.
+- Open WS and send `connect`.
+- Expect `hello-ok` response with snapshot.
 
 ### Readiness
 
 ```bash
-opencraft gateway status
-opencraft channels status --probe
-opencraft health
+openclaw gateway status
+openclaw channels status --probe
+openclaw health
 ```
 
-### Recuperação de gap
+### Gap recovery
 
-Eventos não são repetidos. Em gaps de sequência, atualize o estado (`health`, `system-presence`) antes de continuar.
+Events are not replayed. On sequence gaps, refresh state (`health`, `system-presence`) before continuing.
 
-## Assinaturas de falha comuns
+## Common failure signatures
 
-| Assinatura                                                     | Problema provável                          |
-| -------------------------------------------------------------- | ------------------------------------------ |
-| `refusing to bind gateway ... without auth`                    | Bind não-loopback sem token/senha          |
-| `another gateway instance is already listening` / `EADDRINUSE` | Conflito de porta                          |
-| `Gateway start blocked: set gateway.mode=local`                | Config definida para modo remoto           |
-| `unauthorized` durante connect                                  | Incompatibilidade de auth entre cliente e gateway |
+| Signature                                                      | Likely issue                             |
+| -------------------------------------------------------------- | ---------------------------------------- |
+| `refusing to bind gateway ... without auth`                    | Non-loopback bind without token/password |
+| `another gateway instance is already listening` / `EADDRINUSE` | Port conflict                            |
+| `Gateway start blocked: set gateway.mode=local`                | Config set to remote mode                |
+| `unauthorized` during connect                                  | Auth mismatch between client and gateway |
 
-Para ladders completos de diagnóstico, use [Gateway Troubleshooting](/gateway/troubleshooting).
+For full diagnosis ladders, use [Gateway Troubleshooting](/gateway/troubleshooting).
 
-## Garantias de segurança
+## Safety guarantees
 
-- Clientes do protocolo Gateway falham rapidamente quando o Gateway não está disponível (sem fallback implícito de canal direto).
-- Primeiros frames inválidos/não-connect são rejeitados e fechados.
-- Shutdown gracioso emite evento `shutdown` antes do fechamento do socket.
+- Gateway protocol clients fail fast when Gateway is unavailable (no implicit direct-channel fallback).
+- Invalid/non-connect first frames are rejected and closed.
+- Graceful shutdown emits `shutdown` event before socket close.
 
 ---
 
-Relacionado:
+Related:
 
 - [Troubleshooting](/gateway/troubleshooting)
 - [Background Process](/gateway/background-process)

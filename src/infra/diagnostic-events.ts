@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 
 export type DiagnosticSessionState = "idle" | "processing" | "waiting";
 
@@ -176,19 +176,19 @@ type DiagnosticEventsGlobalState = {
 
 function getDiagnosticEventsState(): DiagnosticEventsGlobalState {
   const globalStore = globalThis as typeof globalThis & {
-    __opencraftDiagnosticEventsState?: DiagnosticEventsGlobalState;
+    __openclawDiagnosticEventsState?: DiagnosticEventsGlobalState;
   };
-  if (!globalStore.__opencraftDiagnosticEventsState) {
-    globalStore.__opencraftDiagnosticEventsState = {
+  if (!globalStore.__openclawDiagnosticEventsState) {
+    globalStore.__openclawDiagnosticEventsState = {
       seq: 0,
       listeners: new Set<(evt: DiagnosticEventPayload) => void>(),
       dispatchDepth: 0,
     };
   }
-  return globalStore.__opencraftDiagnosticEventsState;
+  return globalStore.__openclawDiagnosticEventsState;
 }
 
-export function isDiagnosticsEnabled(config?: OpenCraftConfig): boolean {
+export function isDiagnosticsEnabled(config?: OpenClawConfig): boolean {
   return config?.diagnostics?.enabled === true;
 }
 

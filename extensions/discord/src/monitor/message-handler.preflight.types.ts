@@ -19,7 +19,7 @@ export type DiscordMessageEvent = import("./listeners.js").DiscordMessageEvent;
 type DiscordMessagePreflightSharedFields = {
   cfg: LoadedConfig;
   discordConfig: NonNullable<
-    import("../../../../src/config/config.js").OpenCraftConfig["channels"]
+    import("../../../../src/config/config.js").OpenClawConfig["channels"]
   >["discord"];
   accountId: string;
   token: string;

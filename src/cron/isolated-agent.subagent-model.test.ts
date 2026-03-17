@@ -6,16 +6,16 @@ import { withTempHome as withTempHomeHelper } from "../../test/helpers/temp-home
 import { loadModelCatalog } from "../agents/model-catalog.js";
 import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import type { CliDeps } from "../cli/deps.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import type { CronJob } from "./types.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeHelper(fn, { prefix: "opencraft-cron-submodel-" });
+  return withTempHomeHelper(fn, { prefix: "openclaw-cron-submodel-" });
 }
 
 async function writeSessionStore(home: string) {
-  const dir = path.join(home, ".opencraft", "sessions");
+  const dir = path.join(home, ".openclaw", "sessions");
   await fs.mkdir(dir, { recursive: true });
   const storePath = path.join(dir, "sessions.json");
   await fs.writeFile(
@@ -40,17 +40,17 @@ async function writeSessionStore(home: string) {
 function makeCfg(
   home: string,
   storePath: string,
-  overrides: Partial<OpenCraftConfig> = {},
-): OpenCraftConfig {
-  const base: OpenCraftConfig = {
+  overrides: Partial<OpenClawConfig> = {},
+): OpenClawConfig {
+  const base: OpenClawConfig = {
     agents: {
       defaults: {
         model: "anthropic/claude-sonnet-4-5",
-        workspace: path.join(home, "opencraft"),
+        workspace: path.join(home, "openclaw"),
       },
     },
     session: { store: storePath, mainKey: "main" },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
   return { ...base, ...overrides };
 }
 
@@ -93,7 +93,7 @@ function mockEmbeddedAgent() {
 
 async function runSubagentModelCase(params: {
   home: string;
-  cfgOverrides?: Partial<OpenCraftConfig>;
+  cfgOverrides?: Partial<OpenClawConfig>;
   jobModelOverride?: string;
 }) {
   const storePath = await writeSessionStore(params.home);
@@ -131,7 +131,7 @@ describe("runCronIsolatedAgentTurn: subagent model resolution (#11461)", () => {
             subagents: { model: "ollama/llama3.2:3b" },
           },
         },
-      } satisfies Partial<OpenCraftConfig>,
+      } satisfies Partial<OpenClawConfig>,
       expectedProvider: "ollama",
       expectedModel: "llama3.2:3b",
     },
@@ -150,7 +150,7 @@ describe("runCronIsolatedAgentTurn: subagent model resolution (#11461)", () => {
             subagents: { model: { primary: "google/gemini-2.5-flash" } },
           },
         },
-      } satisfies Partial<OpenCraftConfig>,
+      } satisfies Partial<OpenClawConfig>,
       expectedProvider: "google",
       expectedModel: "gemini-2.5-flash",
     },
@@ -163,10 +163,10 @@ describe("runCronIsolatedAgentTurn: subagent model resolution (#11461)", () => {
               agents: {
                 defaults: {
                   ...cfgOverrides.agents?.defaults,
-                  workspace: path.join(home, "opencraft"),
+                  workspace: path.join(home, "openclaw"),
                 },
               },
-            } satisfies Partial<OpenCraftConfig>);
+            } satisfies Partial<OpenClawConfig>);
       const call = await runSubagentModelCase({ home, cfgOverrides: resolvedCfg });
       expect(call?.provider).toBe(expectedProvider);
       expect(call?.model).toBe(expectedModel);
@@ -181,7 +181,7 @@ describe("runCronIsolatedAgentTurn: subagent model resolution (#11461)", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-sonnet-4-5",
-              workspace: path.join(home, "opencraft"),
+              workspace: path.join(home, "openclaw"),
               subagents: { model: "ollama/llama3.2:3b" },
             },
           },

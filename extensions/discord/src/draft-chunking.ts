@@ -1,23 +1,22 @@
 import { resolveTextChunkLimit } from "../../../src/auto-reply/chunk.js";
-import { getChannelDock } from "../../../src/channels/dock.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import { type OpenClawConfig } from "../../../src/config/config.js";
 import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
 import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import { DISCORD_TEXT_CHUNK_LIMIT } from "./outbound-adapter.js";
 
 const DEFAULT_DISCORD_DRAFT_STREAM_MIN = 200;
 const DEFAULT_DISCORD_DRAFT_STREAM_MAX = 800;
 
 export function resolveDiscordDraftStreamingChunking(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   accountId?: string | null,
 ): {
   minChars: number;
   maxChars: number;
   breakPreference: "paragraph" | "newline" | "sentence";
 } {
-  const providerChunkLimit = getChannelDock("discord")?.outbound?.textChunkLimit;
   const textLimit = resolveTextChunkLimit(cfg, "discord", accountId, {
-    fallbackLimit: providerChunkLimit,
+    fallbackLimit: DISCORD_TEXT_CHUNK_LIMIT,
   });
   const normalizedAccountId = normalizeAccountId(accountId);
   const accountCfg = resolveAccountEntry(cfg?.channels?.discord?.accounts, normalizedAccountId);

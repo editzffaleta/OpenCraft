@@ -4,14 +4,14 @@ import type {
   WindowsSpawnProgram,
   WindowsSpawnProgramCandidate,
   WindowsSpawnResolution,
-} from "opencraft/plugin-sdk/acpx";
+} from "openclaw/plugin-sdk/acpx";
 import {
   applyWindowsSpawnProgramPolicy,
   listKnownProviderAuthEnvVarNames,
   materializeWindowsSpawnProgram,
   omitEnvKeysCaseInsensitive,
   resolveWindowsSpawnProgramCandidate,
-} from "opencraft/plugin-sdk/acpx";
+} from "openclaw/plugin-sdk/acpx";
 
 export type SpawnExit = {
   code: number | null;
@@ -143,7 +143,7 @@ export function spawnWithResolvedCommand(
     process.env,
     params.stripProviderAuthEnvVars ? listKnownProviderAuthEnvVarNames() : [],
   );
-  childEnv.OPENCRAFT_SHELL = "acp";
+  childEnv.OPENCLAW_SHELL = "acp";
 
   return spawn(resolved.command, resolved.args, {
     cwd: params.cwd,

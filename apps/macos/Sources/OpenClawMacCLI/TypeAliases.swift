@@ -1,5 +1,5 @@
-import OpenCraftKit
-import OpenCraftProtocol
+import OpenClawKit
+import OpenClawProtocol
 
-typealias ProtoAnyCodable = OpenCraftProtocol.AnyCodable
-typealias KitAnyCodable = OpenCraftKit.AnyCodable
+typealias ProtoAnyCodable = OpenClawProtocol.AnyCodable
+typealias KitAnyCodable = OpenClawKit.AnyCodable

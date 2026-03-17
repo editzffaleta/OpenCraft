@@ -1,98 +1,98 @@
 ---
-summary: "Instalar o OpenCraft declarativamente com Nix"
+summary: "Install OpenClaw declaratively with Nix"
 read_when:
-  - Você quer instalações reproduzíveis e com rollback
-  - Você já usa Nix/NixOS/Home Manager
-  - Você quer tudo fixado e gerenciado declarativamente
+  - You want reproducible, rollback-able installs
+  - You're already using Nix/NixOS/Home Manager
+  - You want everything pinned and managed declaratively
 title: "Nix"
 ---
 
-# Instalação via Nix
+# Nix Installation
 
-A forma recomendada de executar o OpenCraft com Nix é via **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** — um módulo Home Manager completo.
+The recommended way to run OpenClaw with Nix is via **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** — a batteries-included Home Manager module.
 
-## Início rápido
+## Quick Start
 
-Cole isto para o seu agente de IA (Claude, Cursor, etc.):
+Paste this to your AI agent (Claude, Cursor, etc.):
 
 ```text
-Quero configurar o nix-openclaw no meu Mac.
-Repositório: github:openclaw/nix-openclaw
+I want to set up nix-openclaw on my Mac.
+Repository: github:openclaw/nix-openclaw
 
-O que preciso que você faça:
-1. Verificar se o Determinate Nix está instalado (se não, instalar)
-2. Criar um flake local em ~/code/openclaw-local usando templates/agent-first/flake.nix
-3. Me ajudar a criar um bot do Telegram (@BotFather) e obter meu chat ID (@userinfobot)
-4. Configurar segredos (token do bot, chave de API do provedor de modelo) - arquivos simples em ~/.secrets/ está bom
-5. Preencher os placeholders do template e executar home-manager switch
-6. Verificar: launchd em execução, bot responde às mensagens
+What I need you to do:
+1. Check if Determinate Nix is installed (if not, install it)
+2. Create a local flake at ~/code/openclaw-local using templates/agent-first/flake.nix
+3. Help me create a Telegram bot (@BotFather) and get my chat ID (@userinfobot)
+4. Set up secrets (bot token, model provider API key) - plain files at ~/.secrets/ is fine
+5. Fill in the template placeholders and run home-manager switch
+6. Verify: launchd running, bot responds to messages
 
-Consulte o README do nix-openclaw para opções de módulo.
+Reference the nix-openclaw README for module options.
 ```
 
-> **📦 Guia completo: [github.com/openclaw/nix-openclaw](https://github.com/openclaw/nix-openclaw)**
+> **📦 Full guide: [github.com/openclaw/nix-openclaw](https://github.com/openclaw/nix-openclaw)**
 >
-> O repositório nix-openclaw é a fonte da verdade para instalação via Nix. Esta página é apenas uma visão geral rápida.
+> The nix-openclaw repo is the source of truth for Nix installation. This page is just a quick overview.
 
-## O que você obtém
+## What you get
 
-- Gateway + app macOS + ferramentas (whisper, spotify, câmeras) — tudo fixado
-- Serviço Launchd que sobrevive a reinicializações
-- Sistema de plugins com config declarativa
-- Rollback instantâneo: `home-manager switch --rollback`
+- Gateway + macOS app + tools (whisper, spotify, cameras) — all pinned
+- Launchd service that survives reboots
+- Plugin system with declarative config
+- Instant rollback: `home-manager switch --rollback`
 
 ---
 
-## Comportamento de runtime do Modo Nix
+## Nix Mode Runtime Behavior
 
-Quando `OPENCLAW_NIX_MODE=1` está definido (automático com nix-openclaw):
+When `OPENCLAW_NIX_MODE=1` is set (automatic with nix-openclaw):
 
-O OpenCraft suporta um **modo Nix** que torna a configuração determinística e desabilita fluxos de instalação automática.
-Habilite exportando:
+OpenClaw supports a **Nix mode** that makes configuration deterministic and disables auto-install flows.
+Enable it by exporting:
 
 ```bash
 OPENCLAW_NIX_MODE=1
 ```
 
-No macOS, o app GUI não herda automaticamente variáveis de ambiente do shell. Você também pode
-habilitar o modo Nix via defaults:
+On macOS, the GUI app does not automatically inherit shell env vars. You can
+also enable Nix mode via defaults:
 
 ```bash
-defaults write ai.opencraft.mac opencraft.nixMode -bool true
+defaults write ai.openclaw.mac openclaw.nixMode -bool true
 ```
 
-### Caminhos de config + estado
+### Config + state paths
 
-O OpenCraft lê config JSON5 de `OPENCLAW_CONFIG_PATH` e armazena dados mutáveis em `OPENCLAW_STATE_DIR`.
-Quando necessário, você também pode definir `OPENCLAW_HOME` para controlar o diretório base home usado para resolução de caminho interno.
+OpenClaw reads JSON5 config from `OPENCLAW_CONFIG_PATH` and stores mutable data in `OPENCLAW_STATE_DIR`.
+When needed, you can also set `OPENCLAW_HOME` to control the base home directory used for internal path resolution.
 
-- `OPENCLAW_HOME` (precedência padrão: `HOME` / `USERPROFILE` / `os.homedir()`)
-- `OPENCLAW_STATE_DIR` (padrão: `~/.opencraft`)
-- `OPENCLAW_CONFIG_PATH` (padrão: `$OPENCLAW_STATE_DIR/opencraft.json`)
+- `OPENCLAW_HOME` (default precedence: `HOME` / `USERPROFILE` / `os.homedir()`)
+- `OPENCLAW_STATE_DIR` (default: `~/.openclaw`)
+- `OPENCLAW_CONFIG_PATH` (default: `$OPENCLAW_STATE_DIR/openclaw.json`)
 
-Ao executar sob Nix, defina esses explicitamente para locais gerenciados pelo Nix para que o estado de runtime e a config
-fiquem fora do armazenamento imutável.
+When running under Nix, set these explicitly to Nix-managed locations so runtime state and config
+stay out of the immutable store.
 
-### Comportamento de runtime no modo Nix
+### Runtime behavior in Nix mode
 
-- Fluxos de instalação automática e auto-mutação são desabilitados
-- Dependências ausentes exibem mensagens de remediação específicas para Nix
-- Superfícies de UI mostram um banner de modo Nix somente leitura quando presente
+- Auto-install and self-mutation flows are disabled
+- Missing dependencies surface Nix-specific remediation messages
+- UI surfaces a read-only Nix mode banner when present
 
-## Nota de empacotamento (macOS)
+## Packaging note (macOS)
 
-O fluxo de empacotamento para macOS espera um template estável de Info.plist em:
+The macOS packaging flow expects a stable Info.plist template at:
 
 ```
 apps/macos/Sources/OpenClaw/Resources/Info.plist
 ```
 
-[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) copia este template para o bundle do app e corrige campos dinâmicos
-(bundle ID, versão/build, SHA do Git, chaves Sparkle). Isso mantém o plist determinístico para
-empacotamento SwiftPM e builds Nix (que não dependem de um toolchain Xcode completo).
+[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) copies this template into the app bundle and patches dynamic fields
+(bundle ID, version/build, Git SHA, Sparkle keys). This keeps the plist deterministic for SwiftPM
+packaging and Nix builds (which do not rely on a full Xcode toolchain).
 
-## Relacionados
+## Related
 
-- [nix-openclaw](https://github.com/openclaw/nix-openclaw) — guia completo de configuração
-- [Wizard](/start/wizard) — configuração via CLI (sem Nix)
-- [Docker](/install/docker) — configuração em contêiner
+- [nix-openclaw](https://github.com/openclaw/nix-openclaw) — full setup guide
+- [Wizard](/start/wizard) — non-Nix CLI setup
+- [Docker](/install/docker) — containerized setup

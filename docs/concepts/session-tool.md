@@ -1,119 +1,119 @@
 ---
-summary: "Ferramentas de sessão do agente para listar sessões, buscar histórico e enviar mensagens entre sessões"
+summary: "Agent session tools for listing sessions, fetching history, and sending cross-session messages"
 read_when:
-  - Adicionando ou modificando ferramentas de sessão
-title: "Ferramentas de Sessão"
+  - Adding or modifying session tools
+title: "Session Tools"
 ---
 
-# Ferramentas de Sessão
+# Session Tools
 
-Objetivo: conjunto de ferramentas pequeno e difícil de usar incorretamente para que agentes possam listar sessões, buscar histórico e enviar para outra sessão.
+Goal: small, hard-to-misuse tool set so agents can list sessions, fetch history, and send to another session.
 
-## Nomes das Ferramentas
+## Tool Names
 
 - `sessions_list`
 - `sessions_history`
 - `sessions_send`
 - `sessions_spawn`
 
-## Modelo de Chave
+## Key Model
 
-- O bucket de chat direto principal é sempre a chave literal `"main"` (resolvida para a chave principal do agente atual).
-- Chats em grupo usam `agent:<agentId>:<channel>:group:<id>` ou `agent:<agentId>:<channel>:channel:<id>` (passe a chave completa).
-- Jobs cron usam `cron:<job.id>`.
-- Hooks usam `hook:<uuid>` a não ser que seja explicitamente definido.
-- Sessões de node usam `node-<nodeId>` a não ser que seja explicitamente definido.
+- Main direct chat bucket is always the literal key `"main"` (resolved to the current agent’s main key).
+- Group chats use `agent:<agentId>:<channel>:group:<id>` or `agent:<agentId>:<channel>:channel:<id>` (pass the full key).
+- Cron jobs use `cron:<job.id>`.
+- Hooks use `hook:<uuid>` unless explicitly set.
+- Node sessions use `node-<nodeId>` unless explicitly set.
 
-`global` e `unknown` são valores reservados e nunca são listados. Se `session.scope = "global"`, é alias para `main` em todas as ferramentas para que chamadores nunca vejam `global`.
+`global` and `unknown` are reserved values and are never listed. If `session.scope = "global"`, we alias it to `main` for all tools so callers never see `global`.
 
 ## sessions_list
 
-Lista sessões como um array de linhas.
+List sessions as an array of rows.
 
-Parâmetros:
+Parameters:
 
-- `kinds?: string[]` filtro: qualquer de `"main" | "group" | "cron" | "hook" | "node" | "other"`
-- `limit?: number` max de linhas (padrão: padrão do servidor, limite ex.: 200)
-- `activeMinutes?: number` apenas sessões atualizadas dentro de N minutos
-- `messageLimit?: number` 0 = sem mensagens (padrão 0); >0 = incluir últimas N mensagens
+- `kinds?: string[]` filter: any of `"main" | "group" | "cron" | "hook" | "node" | "other"`
+- `limit?: number` max rows (default: server default, clamp e.g. 200)
+- `activeMinutes?: number` only sessions updated within N minutes
+- `messageLimit?: number` 0 = no messages (default 0); >0 = include last N messages
 
-Comportamento:
+Behavior:
 
-- `messageLimit > 0` busca `chat.history` por sessão e inclui as últimas N mensagens.
-- Resultados de ferramentas são filtrados na saída de lista; use `sessions_history` para mensagens de ferramentas.
-- Quando rodando em uma sessão de agente **em sandbox**, ferramentas de sessão padrão para **visibilidade somente de spawn** (veja abaixo).
+- `messageLimit > 0` fetches `chat.history` per session and includes the last N messages.
+- Tool results are filtered out in list output; use `sessions_history` for tool messages.
+- When running in a **sandboxed** agent session, session tools default to **spawned-only visibility** (see below).
 
-Formato de linha (JSON):
+Row shape (JSON):
 
-- `key`: chave de sessão (string)
+- `key`: session key (string)
 - `kind`: `main | group | cron | hook | node | other`
 - `channel`: `whatsapp | telegram | discord | signal | imessage | webchat | internal | unknown`
-- `displayName` (rótulo de exibição do grupo se disponível)
+- `displayName` (group display label if available)
 - `updatedAt` (ms)
 - `sessionId`
 - `model`, `contextTokens`, `totalTokens`
 - `thinkingLevel`, `verboseLevel`, `systemSent`, `abortedLastRun`
-- `sendPolicy` (override de sessão se definido)
+- `sendPolicy` (session override if set)
 - `lastChannel`, `lastTo`
-- `deliveryContext` (normalizado `{ channel, to, accountId }` quando disponível)
-- `transcriptPath` (caminho de melhor esforço derivado do diretório da store + sessionId)
-- `messages?` (apenas quando `messageLimit > 0`)
+- `deliveryContext` (normalized `{ channel, to, accountId }` when available)
+- `transcriptPath` (best-effort path derived from store dir + sessionId)
+- `messages?` (only when `messageLimit > 0`)
 
 ## sessions_history
 
-Busca transcrição de uma sessão.
+Fetch transcript for one session.
 
-Parâmetros:
+Parameters:
 
-- `sessionKey` (obrigatório; aceita chave de sessão ou `sessionId` de `sessions_list`)
-- `limit?: number` max de mensagens (servidor limita)
-- `includeTools?: boolean` (padrão false)
+- `sessionKey` (required; accepts session key or `sessionId` from `sessions_list`)
+- `limit?: number` max messages (server clamps)
+- `includeTools?: boolean` (default false)
 
-Comportamento:
+Behavior:
 
-- `includeTools=false` filtra mensagens `role: "toolResult"`.
-- Retorna array de mensagens no formato bruto de transcrição.
-- Quando dado um `sessionId`, o OpenCraft o resolve para a chave de sessão correspondente (ids ausentes resultam em erro).
+- `includeTools=false` filters `role: "toolResult"` messages.
+- Returns messages array in the raw transcript format.
+- When given a `sessionId`, OpenClaw resolves it to the corresponding session key (missing ids error).
 
 ## sessions_send
 
-Envia uma mensagem para outra sessão.
+Send a message into another session.
 
-Parâmetros:
+Parameters:
 
-- `sessionKey` (obrigatório; aceita chave de sessão ou `sessionId` de `sessions_list`)
-- `message` (obrigatório)
-- `timeoutSeconds?: number` (padrão >0; 0 = fire-and-forget)
+- `sessionKey` (required; accepts session key or `sessionId` from `sessions_list`)
+- `message` (required)
+- `timeoutSeconds?: number` (default >0; 0 = fire-and-forget)
 
-Comportamento:
+Behavior:
 
-- `timeoutSeconds = 0`: enfileirar e retornar `{ runId, status: "accepted" }`.
-- `timeoutSeconds > 0`: aguardar até N segundos pela conclusão, depois retornar `{ runId, status: "ok", reply }`.
-- Se a espera expirar: `{ runId, status: "timeout", error }`. A execução continua; chame `sessions_history` depois.
-- Se a execução falhar: `{ runId, status: "error", error }`.
-- A execução de announce de entrega roda após a execução primária ser concluída e é de melhor esforço; `status: "ok"` não garante que o announce foi entregue.
-- Aguarda via gateway `agent.wait` (server-side) para que reconexões não percam a espera.
-- O contexto de mensagem agente-para-agente é injetado para a execução primária.
-- Mensagens entre sessões são persistidas com `message.provenance.kind = "inter_session"` para que leitores de transcrição possam distinguir instruções de agente roteadas de entrada de usuário externo.
-- Após a conclusão da execução primária, o OpenCraft roda um **loop de reply-back**:
-  - Rodada 2+ alterna entre agentes solicitante e alvo.
-  - Responda exatamente `REPLY_SKIP` para parar o ping-pong.
-  - O max de turnos é `session.agentToAgent.maxPingPongTurns` (0-5, padrão 5).
-- Uma vez que o loop termina, o OpenCraft roda o **passo de announce agente-para-agente** (apenas agente alvo):
-  - Responda exatamente `ANNOUNCE_SKIP` para ficar silencioso.
-  - Qualquer outra resposta é enviada para o canal alvo.
-  - O passo de announce inclui a requisição original + resposta da rodada 1 + última resposta de ping-pong.
+- `timeoutSeconds = 0`: enqueue and return `{ runId, status: "accepted" }`.
+- `timeoutSeconds > 0`: wait up to N seconds for completion, then return `{ runId, status: "ok", reply }`.
+- If wait times out: `{ runId, status: "timeout", error }`. Run continues; call `sessions_history` later.
+- If the run fails: `{ runId, status: "error", error }`.
+- Announce delivery runs after the primary run completes and is best-effort; `status: "ok"` does not guarantee the announce was delivered.
+- Waits via gateway `agent.wait` (server-side) so reconnects don't drop the wait.
+- Agent-to-agent message context is injected for the primary run.
+- Inter-session messages are persisted with `message.provenance.kind = "inter_session"` so transcript readers can distinguish routed agent instructions from external user input.
+- After the primary run completes, OpenClaw runs a **reply-back loop**:
+  - Round 2+ alternates between requester and target agents.
+  - Reply exactly `REPLY_SKIP` to stop the ping‑pong.
+  - Max turns is `session.agentToAgent.maxPingPongTurns` (0–5, default 5).
+- Once the loop ends, OpenClaw runs the **agent‑to‑agent announce step** (target agent only):
+  - Reply exactly `ANNOUNCE_SKIP` to stay silent.
+  - Any other reply is sent to the target channel.
+  - Announce step includes the original request + round‑1 reply + latest ping‑pong reply.
 
-## Campo Channel
+## Channel Field
 
-- Para grupos, `channel` é o canal registrado na entrada de sessão.
-- Para chats diretos, `channel` mapeia de `lastChannel`.
-- Para cron/hook/node, `channel` é `internal`.
-- Se ausente, `channel` é `unknown`.
+- For groups, `channel` is the channel recorded on the session entry.
+- For direct chats, `channel` maps from `lastChannel`.
+- For cron/hook/node, `channel` is `internal`.
+- If missing, `channel` is `unknown`.
 
-## Segurança / Política de Envio
+## Security / Send Policy
 
-Bloqueio baseado em política por canal/tipo de chat (não por id de sessão).
+Policy-based blocking by channel/chat type (not per session id).
 
 ```json
 {
@@ -131,66 +131,66 @@ Bloqueio baseado em política por canal/tipo de chat (não por id de sessão).
 }
 ```
 
-Override de runtime (por entrada de sessão):
+Runtime override (per session entry):
 
-- `sendPolicy: "allow" | "deny"` (não definido = herdar config)
-- Configurável via `sessions.patch` ou `/send on|off|inherit` apenas do proprietário (mensagem standalone).
+- `sendPolicy: "allow" | "deny"` (unset = inherit config)
+- Settable via `sessions.patch` or owner-only `/send on|off|inherit` (standalone message).
 
-Pontos de aplicação:
+Enforcement points:
 
 - `chat.send` / `agent` (gateway)
-- lógica de entrega de auto-resposta
+- auto-reply delivery logic
 
 ## sessions_spawn
 
-Spawna uma execução de sub-agente em uma sessão isolada e anuncia o resultado de volta para o canal de chat solicitante.
+Spawn a sub-agent run in an isolated session and announce the result back to the requester chat channel.
 
-Parâmetros:
+Parameters:
 
-- `task` (obrigatório)
-- `label?` (opcional; usado para logs/UI)
-- `agentId?` (opcional; spawnar sob outro id de agente se permitido)
-- `model?` (opcional; sobrescreve o modelo do sub-agente; valores inválidos resultam em erro)
-- `thinking?` (opcional; sobrescreve o nível de thinking para a execução do sub-agente)
-- `runTimeoutSeconds?` (padrão para `agents.defaults.subagents.runTimeoutSeconds` quando definido, caso contrário `0`; quando definido, aborta a execução do sub-agente após N segundos)
-- `thread?` (padrão false; solicitar roteamento vinculado a thread para este spawn quando suportado pelo canal/plugin)
-- `mode?` (`run|session`; padrão `run`, mas padrão `session` quando `thread=true`; `mode="session"` requer `thread=true`)
-- `cleanup?` (`delete|keep`, padrão `keep`)
-- `sandbox?` (`inherit|require`, padrão `inherit`; `require` rejeita spawn a não ser que o runtime filho alvo esteja em sandbox)
-- `attachments?` (array opcional de arquivos inline; apenas runtime subagente, ACP rejeita). Cada entrada: `{ name, content, encoding?: "utf8" | "base64", mimeType? }`. Arquivos são materializados no workspace filho em `.openclaw/attachments/<uuid>/`. Retorna um recibo com sha256 por arquivo.
-- `attachAs?` (opcional; hint `{ mountPath? }` reservado para implementações de mount futuras)
+- `task` (required)
+- `label?` (optional; used for logs/UI)
+- `agentId?` (optional; spawn under another agent id if allowed)
+- `model?` (optional; overrides the sub-agent model; invalid values error)
+- `thinking?` (optional; overrides thinking level for the sub-agent run)
+- `runTimeoutSeconds?` (defaults to `agents.defaults.subagents.runTimeoutSeconds` when set, otherwise `0`; when set, aborts the sub-agent run after N seconds)
+- `thread?` (default false; request thread-bound routing for this spawn when supported by the channel/plugin)
+- `mode?` (`run|session`; defaults to `run`, but defaults to `session` when `thread=true`; `mode="session"` requires `thread=true`)
+- `cleanup?` (`delete|keep`, default `keep`)
+- `sandbox?` (`inherit|require`, default `inherit`; `require` rejects spawn unless the target child runtime is sandboxed)
+- `attachments?` (optional array of inline files; subagent runtime only, ACP rejects). Each entry: `{ name, content, encoding?: "utf8" | "base64", mimeType? }`. Files are materialized into the child workspace at `.openclaw/attachments/<uuid>/`. Returns a receipt with sha256 per file.
+- `attachAs?` (optional; `{ mountPath? }` hint reserved for future mount implementations)
 
 Allowlist:
 
-- `agents.list[].subagents.allowAgents`: lista de ids de agente permitidos via `agentId` (`["*"]` para permitir qualquer). Padrão: apenas o agente solicitante.
-- Guarda de herança de sandbox: se a sessão solicitante estiver em sandbox, `sessions_spawn` rejeita alvos que rodariam sem sandbox.
+- `agents.list[].subagents.allowAgents`: list of agent ids allowed via `agentId` (`["*"]` to allow any). Default: only the requester agent.
+- Sandbox inheritance guard: if the requester session is sandboxed, `sessions_spawn` rejects targets that would run unsandboxed.
 
-Descoberta:
+Discovery:
 
-- Use `agents_list` para descobrir quais ids de agente são permitidos para `sessions_spawn`.
+- Use `agents_list` to discover which agent ids are allowed for `sessions_spawn`.
 
-Comportamento:
+Behavior:
 
-- Inicia uma nova sessão `agent:<agentId>:subagent:<uuid>` com `deliver: false`.
-- Sub-agentes padrão para o conjunto completo de ferramentas **menos ferramentas de sessão** (configurável via `tools.subagents.tools`).
-- Sub-agentes não têm permissão de chamar `sessions_spawn` (sem spawning sub-agente → sub-agente).
-- Sempre não-bloqueante: retorna `{ status: "accepted", runId, childSessionKey }` imediatamente.
-- Com `thread=true`, plugins de canal podem vincular entrega/roteamento a um alvo de thread (o suporte Discord é controlado por `session.threadBindings.*` e `channels.discord.threadBindings.*`).
-- Após a conclusão, o OpenCraft roda um **passo de announce** do sub-agente e posta o resultado no canal de chat solicitante.
-  - Se a resposta final do assistente estiver vazia, o `toolResult` mais recente do histórico do sub-agente é incluído como `Result`.
-- Responda exatamente `ANNOUNCE_SKIP` durante o passo de announce para ficar silencioso.
-- Respostas de announce são normalizadas para `Status`/`Result`/`Notes`; `Status` vem do resultado de runtime (não texto do modelo).
-- Sessões de sub-agente são auto-arquivadas após `agents.defaults.subagents.archiveAfterMinutes` (padrão: 60).
-- Respostas de announce incluem uma linha de stats (runtime, tokens, sessionKey/sessionId, caminho de transcrição e custo opcional).
+- Starts a new `agent:<agentId>:subagent:<uuid>` session with `deliver: false`.
+- Sub-agents default to the full tool set **minus session tools** (configurable via `tools.subagents.tools`).
+- Sub-agents are not allowed to call `sessions_spawn` (no sub-agent → sub-agent spawning).
+- Always non-blocking: returns `{ status: "accepted", runId, childSessionKey }` immediately.
+- With `thread=true`, channel plugins can bind delivery/routing to a thread target (Discord support is controlled by `session.threadBindings.*` and `channels.discord.threadBindings.*`).
+- After completion, OpenClaw runs a sub-agent **announce step** and posts the result to the requester chat channel.
+  - If the assistant final reply is empty, the latest `toolResult` from sub-agent history is included as `Result`.
+- Reply exactly `ANNOUNCE_SKIP` during the announce step to stay silent.
+- Announce replies are normalized to `Status`/`Result`/`Notes`; `Status` comes from runtime outcome (not model text).
+- Sub-agent sessions are auto-archived after `agents.defaults.subagents.archiveAfterMinutes` (default: 60).
+- Announce replies include a stats line (runtime, tokens, sessionKey/sessionId, transcript path, and optional cost).
 
-## Visibilidade de Sessão em Sandbox
+## Sandbox Session Visibility
 
-Ferramentas de sessão podem ser escopadas para reduzir acesso entre sessões.
+Session tools can be scoped to reduce cross-session access.
 
-Comportamento padrão:
+Default behavior:
 
-- `tools.sessions.visibility` padrão é `tree` (sessão atual + sessões de sub-agente spawnadas).
-- Para sessões em sandbox, `agents.defaults.sandbox.sessionToolsVisibility` pode limitar a visibilidade.
+- `tools.sessions.visibility` defaults to `tree` (current session + spawned subagent sessions).
+- For sandboxed sessions, `agents.defaults.sandbox.sessionToolsVisibility` can hard-clamp visibility.
 
 Config:
 
@@ -199,25 +199,25 @@ Config:
   tools: {
     sessions: {
       // "self" | "tree" | "agent" | "all"
-      // padrão: "tree"
+      // default: "tree"
       visibility: "tree",
     },
   },
   agents: {
     defaults: {
       sandbox: {
-        // padrão: "spawned"
-        sessionToolsVisibility: "spawned", // ou "all"
+        // default: "spawned"
+        sessionToolsVisibility: "spawned", // or "all"
       },
     },
   },
 }
 ```
 
-Notas:
+Notes:
 
-- `self`: apenas a chave de sessão atual.
-- `tree`: sessão atual + sessões spawnadas pela sessão atual.
-- `agent`: qualquer sessão pertencente ao id de agente atual.
-- `all`: qualquer sessão (acesso entre agentes ainda requer `tools.agentToAgent`).
-- Quando uma sessão está em sandbox e `sessionToolsVisibility="spawned"`, o OpenCraft limita a visibilidade a `tree` mesmo que você defina `tools.sessions.visibility="all"`.
+- `self`: only the current session key.
+- `tree`: current session + sessions spawned by the current session.
+- `agent`: any session belonging to the current agent id.
+- `all`: any session (cross-agent access still requires `tools.agentToAgent`).
+- When a session is sandboxed and `sessionToolsVisibility="spawned"`, OpenClaw clamps visibility to `tree` even if you set `tools.sessions.visibility="all"`.

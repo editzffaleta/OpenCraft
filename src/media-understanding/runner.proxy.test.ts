@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { buildProviderRegistry, runCapability } from "./runner.js";
 import { withAudioFixture, withVideoFixture } from "./runner.test-utils.js";
 import type { AudioTranscriptionRequest, VideoDescriptionRequest } from "./types.js";
@@ -38,7 +38,7 @@ async function runAudioCapabilityWithFetchCapture(params: {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = await runCapability({
       capability: "audio",
@@ -61,7 +61,7 @@ describe("runCapability proxy fetch passthrough", () => {
   it("passes fetchFn to audio provider when HTTPS_PROXY is set", async () => {
     vi.stubEnv("HTTPS_PROXY", "http://proxy.test:8080");
     const seenFetchFn = await runAudioCapabilityWithFetchCapture({
-      fixturePrefix: "opencraft-audio-proxy",
+      fixturePrefix: "openclaw-audio-proxy",
       outputText: "transcribed",
     });
     expect(seenFetchFn).toBeDefined();
@@ -71,7 +71,7 @@ describe("runCapability proxy fetch passthrough", () => {
   it("passes fetchFn to video provider when HTTPS_PROXY is set", async () => {
     vi.stubEnv("HTTPS_PROXY", "http://proxy.test:8080");
 
-    await withVideoFixture("opencraft-video-proxy", async ({ ctx, media, cache }) => {
+    await withVideoFixture("openclaw-video-proxy", async ({ ctx, media, cache }) => {
       let seenFetchFn: typeof fetch | undefined;
 
       const result = await runCapability({
@@ -93,7 +93,7 @@ describe("runCapability proxy fetch passthrough", () => {
               },
             },
           },
-        } as unknown as OpenCraftConfig,
+        } as unknown as OpenClawConfig,
         ctx,
         attachments: cache,
         media,
@@ -125,7 +125,7 @@ describe("runCapability proxy fetch passthrough", () => {
     vi.stubEnv("http_proxy", "");
 
     const seenFetchFn = await runAudioCapabilityWithFetchCapture({
-      fixturePrefix: "opencraft-audio-no-proxy",
+      fixturePrefix: "openclaw-audio-no-proxy",
       outputText: "ok",
     });
     expect(seenFetchFn).toBeUndefined();

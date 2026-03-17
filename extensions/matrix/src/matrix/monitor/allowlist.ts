@@ -3,7 +3,7 @@ import {
   normalizeStringEntries,
   resolveCompiledAllowlistMatch,
   type AllowlistMatch,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 
 function normalizeAllowList(list?: Array<string | number>) {
   return normalizeStringEntries(list);

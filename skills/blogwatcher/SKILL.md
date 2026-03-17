@@ -1,10 +1,10 @@
 ---
 name: blogwatcher
-description: Monitore blogs e feeds RSS/Atom para atualizações usando o CLI blogwatcher.
+description: Monitor blogs and RSS/Atom feeds for updates using the blogwatcher CLI.
 homepage: https://github.com/Hyaxia/blogwatcher
 metadata:
   {
-    "opencraft":
+    "openclaw":
       {
         "emoji": "📰",
         "requires": { "bins": ["blogwatcher"] },
@@ -15,7 +15,7 @@ metadata:
               "kind": "go",
               "module": "github.com/Hyaxia/blogwatcher/cmd/blogwatcher@latest",
               "bins": ["blogwatcher"],
-              "label": "Instalar blogwatcher (go)",
+              "label": "Install blogwatcher (go)",
             },
           ],
       },
@@ -24,31 +24,31 @@ metadata:
 
 # blogwatcher
 
-Acompanhe atualizações de blogs e feeds RSS/Atom com o CLI `blogwatcher`.
+Track blog and RSS/Atom feed updates with the `blogwatcher` CLI.
 
-Instalação
+Install
 
 - Go: `go install github.com/Hyaxia/blogwatcher/cmd/blogwatcher@latest`
 
-Início rápido
+Quick start
 
 - `blogwatcher --help`
 
-Comandos comuns
+Common commands
 
-- Adicionar um blog: `blogwatcher add "Meu Blog" https://exemplo.com`
-- Listar blogs: `blogwatcher blogs`
-- Verificar atualizações: `blogwatcher scan`
-- Listar artigos: `blogwatcher articles`
-- Marcar artigo como lido: `blogwatcher read 1`
-- Marcar todos como lidos: `blogwatcher read-all`
-- Remover um blog: `blogwatcher remove "Meu Blog"`
+- Add a blog: `blogwatcher add "My Blog" https://example.com`
+- List blogs: `blogwatcher blogs`
+- Scan for updates: `blogwatcher scan`
+- List articles: `blogwatcher articles`
+- Mark an article read: `blogwatcher read 1`
+- Mark all articles read: `blogwatcher read-all`
+- Remove a blog: `blogwatcher remove "My Blog"`
 
-Exemplo de saída
+Example output
 
 ```
 $ blogwatcher blogs
-Blogs monitorados (1):
+Tracked blogs (1):
 
   xkcd
     URL: https://xkcd.com
@@ -56,14 +56,14 @@ Blogs monitorados (1):
 
 ```
 $ blogwatcher scan
-Verificando 1 blog(s)...
+Scanning 1 blog(s)...
 
   xkcd
-    Fonte: RSS | Encontrados: 4 | Novos: 4
+    Source: RSS | Found: 4 | New: 4
 
-4 novo(s) artigo(s) encontrado(s) no total!
+Found 4 new article(s) total!
 ```
 
-Notas
+Notes
 
-- Use `blogwatcher <comando> --help` para descobrir flags e opções.
+- Use `blogwatcher <command> --help` to discover flags and options.

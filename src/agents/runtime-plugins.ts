@@ -1,18 +1,24 @@
-import type { OpenCraftConfig } from "../config/config.js";
-import { loadOpenCraftPlugins } from "../plugins/loader.js";
+import type { OpenClawConfig } from "../config/config.js";
+import { loadOpenClawPlugins } from "../plugins/loader.js";
 import { resolveUserPath } from "../utils.js";
 
 export function ensureRuntimePluginsLoaded(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   workspaceDir?: string | null;
+  allowGatewaySubagentBinding?: boolean;
 }): void {
   const workspaceDir =
     typeof params.workspaceDir === "string" && params.workspaceDir.trim()
       ? resolveUserPath(params.workspaceDir)
       : undefined;
 
-  loadOpenCraftPlugins({
+  loadOpenClawPlugins({
     config: params.config,
     workspaceDir,
+    runtimeOptions: params.allowGatewaySubagentBinding
+      ? {
+          allowGatewaySubagentBinding: true,
+        }
+      : undefined,
   });
 }

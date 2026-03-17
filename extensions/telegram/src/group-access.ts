@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { ChannelGroupPolicy } from "../../../src/config/group-policy.js";
 import { resolveOpenProviderRuntimeGroupPolicy } from "../../../src/config/runtime-group-policy.js";
 import type {
@@ -120,7 +120,7 @@ export const resolveTelegramRuntimeGroupPolicy = (params: {
 export const evaluateTelegramGroupPolicyAccess = (params: {
   isGroup: boolean;
   chatId: string | number;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   telegramCfg: TelegramAccountConfig;
   topicConfig?: TelegramTopicConfig;
   groupConfig?: TelegramGroupConfig;

@@ -1,60 +1,60 @@
 ---
-summary: "Ciclo de vida do overlay de voz quando wake-word e push-to-talk se sobrepõem"
+summary: "Voice overlay lifecycle when wake-word and push-to-talk overlap"
 read_when:
-  - Ajustando o comportamento do overlay de voz
+  - Adjusting voice overlay behavior
 title: "Voice Overlay"
 ---
 
-# Ciclo de Vida do Voice Overlay (macOS)
+# Voice Overlay Lifecycle (macOS)
 
-Público: contribuidores do app macOS. Objetivo: manter o voice overlay previsível quando wake-word e push-to-talk se sobrepõem.
+Audience: macOS app contributors. Goal: keep the voice overlay predictable when wake-word and push-to-talk overlap.
 
-## Intenção atual
+## Current intent
 
-- Se o overlay já estiver visível pelo wake-word e o usuário pressionar o atalho, a sessão do atalho _adota_ o texto existente em vez de reiniciá-lo. O overlay permanece ativo enquanto o atalho é mantido pressionado. Quando o usuário soltar: envia se houver texto trimado, caso contrário descarta.
-- Wake-word sozinho ainda faz auto-envio no silêncio; push-to-talk envia imediatamente ao soltar.
+- If the overlay is already visible from wake-word and the user presses the hotkey, the hotkey session _adopts_ the existing text instead of resetting it. The overlay stays up while the hotkey is held. When the user releases: send if there is trimmed text, otherwise dismiss.
+- Wake-word alone still auto-sends on silence; push-to-talk sends immediately on release.
 
-## Implementado (9 de dez de 2025)
+## Implemented (Dec 9, 2025)
 
-- As sessões de overlay agora carregam um token por captura (wake-word ou push-to-talk). Atualizações de parcial/final/envio/descarte/nível são descartadas quando o token não corresponde, evitando callbacks obsoletos.
-- Push-to-talk adota qualquer texto de overlay visível como prefixo (ao pressionar o atalho enquanto o overlay de wake está ativo, o texto é mantido e nova fala é adicionada). Aguarda até 1,5s por um transcript final antes de fazer fallback para o texto atual.
-- O logging de chime/overlay é emitido em `info` nas categorias `voicewake.overlay`, `voicewake.ptt` e `voicewake.chime` (início de sessão, parcial, final, envio, descarte, motivo do chime).
+- Overlay sessions now carry a token per capture (wake-word or push-to-talk). Partial/final/send/dismiss/level updates are dropped when the token doesn’t match, avoiding stale callbacks.
+- Push-to-talk adopts any visible overlay text as a prefix (so pressing the hotkey while the wake overlay is up keeps the text and appends new speech). It waits up to 1.5s for a final transcript before falling back to the current text.
+- Chime/overlay logging is emitted at `info` in categories `voicewake.overlay`, `voicewake.ptt`, and `voicewake.chime` (session start, partial, final, send, dismiss, chime reason).
 
-## Próximos passos
+## Next steps
 
 1. **VoiceSessionCoordinator (actor)**
-   - Possui exatamente uma `VoiceSession` por vez.
-   - API (baseada em token): `beginWakeCapture`, `beginPushToTalk`, `updatePartial`, `endCapture`, `cancel`, `applyCooldown`.
-   - Descarta callbacks com tokens obsoletos (evita que reconhecedores antigos reabram o overlay).
+   - Owns exactly one `VoiceSession` at a time.
+   - API (token-based): `beginWakeCapture`, `beginPushToTalk`, `updatePartial`, `endCapture`, `cancel`, `applyCooldown`.
+   - Drops callbacks that carry stale tokens (prevents old recognizers from reopening the overlay).
 2. **VoiceSession (model)**
-   - Campos: `token`, `source` (wakeWord|pushToTalk), texto committed/volatile, flags de chime, timers (auto-envio, idle), `overlayMode` (display|editing|sending), deadline de cooldown.
-3. **Vinculação do overlay**
-   - `VoiceSessionPublisher` (`ObservableObject`) espelha a sessão ativa no SwiftUI.
-   - `VoiceWakeOverlayView` renderiza apenas via o publisher; nunca muta singletons globais diretamente.
-   - Ações do usuário no overlay (`sendNow`, `dismiss`, `edit`) fazem callback para o coordinator com o token de sessão.
-4. **Caminho de envio unificado**
-   - Em `endCapture`: se o texto trimado estiver vazio → descarta; caso contrário `performSend(session:)` (toca chime de envio uma vez, encaminha, descarta).
-   - Push-to-talk: sem delay; wake-word: delay opcional para auto-envio.
-   - Aplica um curto cooldown ao runtime de wake após o push-to-talk terminar para que wake-word não seja reativado imediatamente.
+   - Fields: `token`, `source` (wakeWord|pushToTalk), committed/volatile text, chime flags, timers (auto-send, idle), `overlayMode` (display|editing|sending), cooldown deadline.
+3. **Overlay binding**
+   - `VoiceSessionPublisher` (`ObservableObject`) mirrors the active session into SwiftUI.
+   - `VoiceWakeOverlayView` renders only via the publisher; it never mutates global singletons directly.
+   - Overlay user actions (`sendNow`, `dismiss`, `edit`) call back into the coordinator with the session token.
+4. **Unified send path**
+   - On `endCapture`: if trimmed text is empty → dismiss; else `performSend(session:)` (plays send chime once, forwards, dismisses).
+   - Push-to-talk: no delay; wake-word: optional delay for auto-send.
+   - Apply a short cooldown to the wake runtime after push-to-talk finishes so wake-word doesn’t immediately retrigger.
 5. **Logging**
-   - O coordinator emite logs `.info` no subsystem `ai.openclaw`, categorias `voicewake.overlay` e `voicewake.chime`.
-   - Eventos-chave: `session_started`, `adopted_by_push_to_talk`, `partial`, `finalized`, `send`, `dismiss`, `cancel`, `cooldown`.
+   - Coordinator emits `.info` logs in subsystem `ai.openclaw`, categories `voicewake.overlay` and `voicewake.chime`.
+   - Key events: `session_started`, `adopted_by_push_to_talk`, `partial`, `finalized`, `send`, `dismiss`, `cancel`, `cooldown`.
 
-## Checklist de depuração
+## Debugging checklist
 
-- Transmitir logs enquanto reproduz um overlay preso:
+- Stream logs while reproducing a sticky overlay:
 
   ```bash
   sudo log stream --predicate 'subsystem == "ai.openclaw" AND category CONTAINS "voicewake"' --level info --style compact
   ```
 
-- Verificar se há apenas um token de sessão ativo; callbacks obsoletos devem ser descartados pelo coordinator.
-- Garantir que o release do push-to-talk sempre chame `endCapture` com o token ativo; se o texto estiver vazio, esperar `dismiss` sem chime ou envio.
+- Verify only one active session token; stale callbacks should be dropped by the coordinator.
+- Ensure push-to-talk release always calls `endCapture` with the active token; if text is empty, expect `dismiss` without chime or send.
 
-## Passos de migração (sugerido)
+## Migration steps (suggested)
 
-1. Adicionar `VoiceSessionCoordinator`, `VoiceSession` e `VoiceSessionPublisher`.
-2. Refatorar `VoiceWakeRuntime` para criar/atualizar/encerrar sessões em vez de tocar `VoiceWakeOverlayController` diretamente.
-3. Refatorar `VoicePushToTalk` para adotar sessões existentes e chamar `endCapture` ao soltar; aplicar cooldown ao runtime.
-4. Conectar `VoiceWakeOverlayController` ao publisher; remover chamadas diretas do runtime/PTT.
-5. Adicionar testes de integração para adoção de sessão, cooldown e descarte de texto vazio.
+1. Add `VoiceSessionCoordinator`, `VoiceSession`, and `VoiceSessionPublisher`.
+2. Refactor `VoiceWakeRuntime` to create/update/end sessions instead of touching `VoiceWakeOverlayController` directly.
+3. Refactor `VoicePushToTalk` to adopt existing sessions and call `endCapture` on release; apply runtime cooldown.
+4. Wire `VoiceWakeOverlayController` to the publisher; remove direct calls from runtime/PTT.
+5. Add integration tests for session adoption, cooldown, and empty-text dismissal.

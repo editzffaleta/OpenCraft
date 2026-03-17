@@ -1,4 +1,4 @@
-import type { ClawdbotConfig } from "opencraft/plugin-sdk/feishu";
+import type { ClawdbotConfig } from "openclaw/plugin-sdk/feishu";
 import { describe, expect, it } from "vitest";
 import {
   resolveReactionSyntheticEvent,

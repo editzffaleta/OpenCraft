@@ -1,4 +1,4 @@
-package ai.opencraft.app.ui
+package ai.openclaw.app.ui
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode

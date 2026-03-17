@@ -11,7 +11,7 @@ import {
 } from "../agents/model-selection.js";
 import { createConfiguredOllamaStreamFn } from "../agents/ollama-stream.js";
 import { resolveModelAsync } from "../agents/pi-embedded-runner/model.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type {
   ResolvedTtsConfig,
   ResolvedTtsModelOverrides,
@@ -156,10 +156,13 @@ export function parseTtsDirectives(
             if (!policy.allowProvider) {
               break;
             }
-            if (rawValue === "openai" || rawValue === "elevenlabs" || rawValue === "edge") {
-              overrides.provider = rawValue;
-            } else {
-              warnings.push(`unsupported provider "${rawValue}"`);
+            {
+              const providerId = rawValue.trim().toLowerCase();
+              if (providerId) {
+                overrides.provider = providerId;
+              } else {
+                warnings.push("invalid provider id");
+              }
             }
             break;
           case "voice":
@@ -417,7 +420,7 @@ type SummaryModelSelection = {
 };
 
 function resolveSummaryModelRef(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   config: ResolvedTtsConfig,
 ): SummaryModelSelection {
   const defaultRef = resolveDefaultModelForAgent({ cfg });
@@ -445,7 +448,7 @@ function isTextContentBlock(block: { type: string }): block is TextContent {
 export async function summarizeText(params: {
   text: string;
   targetLength: number;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   config: ResolvedTtsConfig;
   timeoutMs: number;
 }): Promise<SummarizeResult> {

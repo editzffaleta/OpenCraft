@@ -1,16 +1,16 @@
 ---
-summary: "Ingress de webhook para wake e execuções isoladas do agente"
+summary: "Webhook ingress for wake and isolated agent runs"
 read_when:
-  - Adicionando ou alterando endpoints de webhook
-  - Conectando sistemas externos ao OpenCraft
+  - Adding or changing webhook endpoints
+  - Wiring external systems into OpenClaw
 title: "Webhooks"
 ---
 
 # Webhooks
 
-O Gateway pode expor um pequeno endpoint HTTP de webhook para triggers externos.
+Gateway can expose a small HTTP webhook endpoint for external triggers.
 
-## Habilitar
+## Enable
 
 ```json5
 {
@@ -18,26 +18,26 @@ O Gateway pode expor um pequeno endpoint HTTP de webhook para triggers externos.
     enabled: true,
     token: "shared-secret",
     path: "/hooks",
-    // Opcional: restringir roteamento explícito de `agentId` a esta allowlist.
-    // Omita ou inclua "*" para permitir qualquer agente.
-    // Defina [] para negar todo roteamento explícito de `agentId`.
+    // Optional: restrict explicit `agentId` routing to this allowlist.
+    // Omit or include "*" to allow any agent.
+    // Set [] to deny all explicit `agentId` routing.
     allowedAgentIds: ["hooks", "main"],
   },
 }
 ```
 
-Notas:
+Notes:
 
-- `hooks.token` é obrigatório quando `hooks.enabled=true`.
-- `hooks.path` padrão para `/hooks`.
+- `hooks.token` is required when `hooks.enabled=true`.
+- `hooks.path` defaults to `/hooks`.
 
 ## Auth
 
-Cada requisição deve incluir o token de hook. Prefira headers:
+Every request must include the hook token. Prefer headers:
 
-- `Authorization: Bearer <token>` (recomendado)
+- `Authorization: Bearer <token>` (recommended)
 - `x-openclaw-token: <token>`
-- Tokens em query-string são rejeitados (`?token=...` retorna `400`).
+- Query-string tokens are rejected (`?token=...` returns `400`).
 
 ## Endpoints
 
@@ -46,16 +46,16 @@ Cada requisição deve incluir o token de hook. Prefira headers:
 Payload:
 
 ```json
-{ "text": "Linha de sistema", "mode": "now" }
+{ "text": "System line", "mode": "now" }
 ```
 
-- `text` **obrigatório** (string): A descrição do evento (ex.: "Novo email recebido").
-- `mode` opcional (`now` | `next-heartbeat`): Se deve acionar um heartbeat imediato (padrão `now`) ou aguardar a próxima verificação periódica.
+- `text` **required** (string): The description of the event (e.g., "New email received").
+- `mode` optional (`now` | `next-heartbeat`): Whether to trigger an immediate heartbeat (default `now`) or wait for the next periodic check.
 
-Efeito:
+Effect:
 
-- Enfileira um system event para a sessão **principal**
-- Se `mode=now`, aciona um heartbeat imediato
+- Enqueues a system event for the **main** session
+- If `mode=now`, triggers an immediate heartbeat
 
 ### `POST /hooks/agent`
 
@@ -63,7 +63,7 @@ Payload:
 
 ```json
 {
-  "message": "Rodar isso",
+  "message": "Run this",
   "name": "Email",
   "agentId": "hooks",
   "sessionKey": "hook:email:msg-123",
@@ -77,32 +77,32 @@ Payload:
 }
 ```
 
-- `message` **obrigatório** (string): O prompt ou mensagem para o agente processar.
-- `name` opcional (string): Nome legível para o hook (ex.: "GitHub"), usado como prefixo em resumos de sessão.
-- `agentId` opcional (string): Roteie este hook para um agente específico. IDs desconhecidos fazem fallback para o agente padrão. Quando definido, o hook roda usando o workspace e configuração do agente resolvido.
-- `sessionKey` opcional (string): A chave usada para identificar a sessão do agente. Por padrão este campo é rejeitado a menos que `hooks.allowRequestSessionKey=true`.
-- `wakeMode` opcional (`now` | `next-heartbeat`): Se deve acionar um heartbeat imediato (padrão `now`) ou aguardar a próxima verificação periódica.
-- `deliver` opcional (boolean): Se `true`, a resposta do agente será enviada para o canal de mensagens. Padrão `true`. Respostas que são apenas reconhecimentos de heartbeat são automaticamente puladas.
-- `channel` opcional (string): O canal de mensagens para entrega. Um de: `last`, `whatsapp`, `telegram`, `discord`, `slack`, `mattermost` (plugin), `signal`, `imessage`, `msteams`. Padrão `last`.
-- `to` opcional (string): O identificador do destinatário para o canal (ex.: número de telefone para WhatsApp/Signal, chat ID para Telegram, channel ID para Discord/Slack/Mattermost (plugin), conversation ID para MS Teams). Padrão para o último destinatário na sessão principal.
-- `model` opcional (string): Override de modelo (ex.: `anthropic/claude-3-5-sonnet` ou um alias). Deve estar na lista de modelos permitidos se restrita.
-- `thinking` opcional (string): Override de nível de thinking (ex.: `low`, `medium`, `high`).
-- `timeoutSeconds` opcional (number): Duração máxima para a execução do agente em segundos.
+- `message` **required** (string): The prompt or message for the agent to process.
+- `name` optional (string): Human-readable name for the hook (e.g., "GitHub"), used as a prefix in session summaries.
+- `agentId` optional (string): Route this hook to a specific agent. Unknown IDs fall back to the default agent. When set, the hook runs using the resolved agent's workspace and configuration.
+- `sessionKey` optional (string): The key used to identify the agent's session. By default this field is rejected unless `hooks.allowRequestSessionKey=true`.
+- `wakeMode` optional (`now` | `next-heartbeat`): Whether to trigger an immediate heartbeat (default `now`) or wait for the next periodic check.
+- `deliver` optional (boolean): If `true`, the agent's response will be sent to the messaging channel. Defaults to `true`. Responses that are only heartbeat acknowledgments are automatically skipped.
+- `channel` optional (string): The messaging channel for delivery. One of: `last`, `whatsapp`, `telegram`, `discord`, `slack`, `mattermost` (plugin), `signal`, `imessage`, `msteams`. Defaults to `last`.
+- `to` optional (string): The recipient identifier for the channel (e.g., phone number for WhatsApp/Signal, chat ID for Telegram, channel ID for Discord/Slack/Mattermost (plugin), conversation ID for MS Teams). Defaults to the last recipient in the main session.
+- `model` optional (string): Model override (e.g., `anthropic/claude-3-5-sonnet` or an alias). Must be in the allowed model list if restricted.
+- `thinking` optional (string): Thinking level override (e.g., `low`, `medium`, `high`).
+- `timeoutSeconds` optional (number): Maximum duration for the agent run in seconds.
 
-Efeito:
+Effect:
 
-- Roda um turno do agente **isolado** (própria session key)
-- Sempre posta um resumo na sessão **principal**
-- Se `wakeMode=now`, aciona um heartbeat imediato
+- Runs an **isolated** agent turn (own session key)
+- Always posts a summary into the **main** session
+- If `wakeMode=now`, triggers an immediate heartbeat
 
-## Política de session key (mudança de comportamento)
+## Session key policy (breaking change)
 
-Overrides de `sessionKey` no payload de `/hooks/agent` são desabilitados por padrão.
+`/hooks/agent` payload `sessionKey` overrides are disabled by default.
 
-- Recomendado: defina um `hooks.defaultSessionKey` fixo e mantenha overrides de requisição desabilitados.
-- Opcional: permita overrides de requisição apenas quando necessário, e restrinja prefixos.
+- Recommended: set a fixed `hooks.defaultSessionKey` and keep request overrides off.
+- Optional: allow request overrides only when needed, and restrict prefixes.
 
-Config recomendada:
+Recommended config:
 
 ```json5
 {
@@ -116,7 +116,7 @@ Config recomendada:
 }
 ```
 
-Config de compatibilidade (comportamento legado):
+Compatibility config (legacy behavior):
 
 ```json5
 {
@@ -124,92 +124,92 @@ Config de compatibilidade (comportamento legado):
     enabled: true,
     token: "${OPENCLAW_HOOKS_TOKEN}",
     allowRequestSessionKey: true,
-    allowedSessionKeyPrefixes: ["hook:"], // fortemente recomendado
+    allowedSessionKeyPrefixes: ["hook:"], // strongly recommended
   },
 }
 ```
 
-### `POST /hooks/<name>` (mapeado)
+### `POST /hooks/<name>` (mapped)
 
-Nomes de hook customizados são resolvidos via `hooks.mappings` (veja configuração). Um mapeamento pode
-transformar payloads arbitrários em ações `wake` ou `agent`, com templates ou
-transforms de código opcionais.
+Custom hook names are resolved via `hooks.mappings` (see configuration). A mapping can
+turn arbitrary payloads into `wake` or `agent` actions, with optional templates or
+code transforms.
 
-Opções de mapeamento (resumo):
+Mapping options (summary):
 
-- `hooks.presets: ["gmail"]` habilita o mapeamento Gmail embutido.
-- `hooks.mappings` permite definir `match`, `action` e templates na config.
-- `hooks.transformsDir` + `transform.module` carrega um módulo JS/TS para lógica customizada.
-  - `hooks.transformsDir` (se definido) deve permanecer dentro da raiz de transforms no seu diretório de config do OpenCraft (tipicamente `~/.opencraft/hooks/transforms`).
-  - `transform.module` deve resolver dentro do diretório de transforms efetivo (paths de travessia/escape são rejeitados).
-- Use `match.source` para manter um endpoint de ingest genérico (roteamento orientado a payload).
-- Transforms TS requerem um carregador TS (ex.: `bun` ou `tsx`) ou `.js` pré-compilado em runtime.
-- Defina `deliver: true` + `channel`/`to` em mapeamentos para rotear respostas para uma superfície de chat
-  (`channel` padrão para `last` e faz fallback para WhatsApp).
-- `agentId` roteia o hook para um agente específico; IDs desconhecidos fazem fallback para o agente padrão.
-- `hooks.allowedAgentIds` restringe roteamento explícito de `agentId`. Omita (ou inclua `*`) para permitir qualquer agente. Defina `[]` para negar roteamento explícito de `agentId`.
-- `hooks.defaultSessionKey` define a sessão padrão para execuções de agente de hook quando nenhuma chave explícita é fornecida.
-- `hooks.allowRequestSessionKey` controla se payloads de `/hooks/agent` podem definir `sessionKey` (padrão: `false`).
-- `hooks.allowedSessionKeyPrefixes` opcionalmente restringe valores explícitos de `sessionKey` de payloads de requisição e mapeamentos.
-- `allowUnsafeExternalContent: true` desabilita o wrapper de segurança de conteúdo externo para esse hook
-  (perigoso; apenas para fontes internas confiáveis).
-- `opencraft webhooks gmail setup` escreve config `hooks.gmail` para `opencraft webhooks gmail run`.
-  Veja [Gmail Pub/Sub](/automation/gmail-pubsub) para o fluxo completo do Gmail watch.
+- `hooks.presets: ["gmail"]` enables the built-in Gmail mapping.
+- `hooks.mappings` lets you define `match`, `action`, and templates in config.
+- `hooks.transformsDir` + `transform.module` loads a JS/TS module for custom logic.
+  - `hooks.transformsDir` (if set) must stay within the transforms root under your OpenClaw config directory (typically `~/.openclaw/hooks/transforms`).
+  - `transform.module` must resolve within the effective transforms directory (traversal/escape paths are rejected).
+- Use `match.source` to keep a generic ingest endpoint (payload-driven routing).
+- TS transforms require a TS loader (e.g. `bun` or `tsx`) or precompiled `.js` at runtime.
+- Set `deliver: true` + `channel`/`to` on mappings to route replies to a chat surface
+  (`channel` defaults to `last` and falls back to WhatsApp).
+- `agentId` routes the hook to a specific agent; unknown IDs fall back to the default agent.
+- `hooks.allowedAgentIds` restricts explicit `agentId` routing. Omit it (or include `*`) to allow any agent. Set `[]` to deny explicit `agentId` routing.
+- `hooks.defaultSessionKey` sets the default session for hook agent runs when no explicit key is provided.
+- `hooks.allowRequestSessionKey` controls whether `/hooks/agent` payloads may set `sessionKey` (default: `false`).
+- `hooks.allowedSessionKeyPrefixes` optionally restricts explicit `sessionKey` values from request payloads and mappings.
+- `allowUnsafeExternalContent: true` disables the external content safety wrapper for that hook
+  (dangerous; only for trusted internal sources).
+- `openclaw webhooks gmail setup` writes `hooks.gmail` config for `openclaw webhooks gmail run`.
+  See [Gmail Pub/Sub](/automation/gmail-pubsub) for the full Gmail watch flow.
 
-## Respostas
+## Responses
 
-- `200` para `/hooks/wake`
-- `200` para `/hooks/agent` (execução assíncrona aceita)
-- `401` em falha de auth
-- `429` após falhas de auth repetidas do mesmo cliente (verifique `Retry-After`)
-- `400` em payload inválido
-- `413` em payloads muito grandes
+- `200` for `/hooks/wake`
+- `200` for `/hooks/agent` (async run accepted)
+- `401` on auth failure
+- `429` after repeated auth failures from the same client (check `Retry-After`)
+- `400` on invalid payload
+- `413` on oversized payloads
 
-## Exemplos
+## Examples
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/wake \
   -H 'Authorization: Bearer SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"text":"Novo email recebido","mode":"now"}'
+  -d '{"text":"New email received","mode":"now"}'
 ```
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
   -H 'x-openclaw-token: SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Resumir caixa de entrada","name":"Email","wakeMode":"next-heartbeat"}'
+  -d '{"message":"Summarize inbox","name":"Email","wakeMode":"next-heartbeat"}'
 ```
 
-### Usar um modelo diferente
+### Use a different model
 
-Adicione `model` ao payload do agente (ou mapeamento) para sobrescrever o modelo para essa execução:
+Add `model` to the agent payload (or mapping) to override the model for that run:
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
   -H 'x-openclaw-token: SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Resumir caixa de entrada","name":"Email","model":"openai/gpt-5.2-mini"}'
+  -d '{"message":"Summarize inbox","name":"Email","model":"openai/gpt-5.2-mini"}'
 ```
 
-Se você aplica `agents.defaults.models`, certifique-se de que o modelo de override está incluído lá.
+If you enforce `agents.defaults.models`, make sure the override model is included there.
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/gmail \
   -H 'Authorization: Bearer SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"source":"gmail","messages":[{"from":"Ada","subject":"Olá","snippet":"Oi"}]}'
+  -d '{"source":"gmail","messages":[{"from":"Ada","subject":"Hello","snippet":"Hi"}]}'
 ```
 
-## Segurança
+## Security
 
-- Mantenha endpoints de hook atrás de loopback, tailnet, ou proxy reverso confiável.
-- Use um token de hook dedicado; não reutilize tokens de auth do gateway.
-- Falhas de auth repetidas são limitadas por taxa por endereço de cliente para desacelerar tentativas de força bruta.
-- Se você usa roteamento multi-agente, defina `hooks.allowedAgentIds` para limitar seleção explícita de `agentId`.
-- Mantenha `hooks.allowRequestSessionKey=false` a menos que você requeira sessões selecionadas pelo chamador.
-- Se você habilitar `sessionKey` de requisição, restrinja `hooks.allowedSessionKeyPrefixes` (por exemplo, `["hook:"]`).
-- Evite incluir payloads brutos sensíveis em logs de webhook.
-- Payloads de hook são tratados como não confiáveis e envolvidos com limites de segurança por padrão.
-  Se você precisar desabilitar isso para um hook específico, defina `allowUnsafeExternalContent: true`
-  no mapeamento desse hook (perigoso).
+- Keep hook endpoints behind loopback, tailnet, or trusted reverse proxy.
+- Use a dedicated hook token; do not reuse gateway auth tokens.
+- Repeated auth failures are rate-limited per client address to slow brute-force attempts.
+- If you use multi-agent routing, set `hooks.allowedAgentIds` to limit explicit `agentId` selection.
+- Keep `hooks.allowRequestSessionKey=false` unless you require caller-selected sessions.
+- If you enable request `sessionKey`, restrict `hooks.allowedSessionKeyPrefixes` (for example, `["hook:"]`).
+- Avoid including sensitive raw payloads in webhook logs.
+- Hook payloads are treated as untrusted and wrapped with safety boundaries by default.
+  If you must disable this for a specific hook, set `allowUnsafeExternalContent: true`
+  in that hook's mapping (dangerous).

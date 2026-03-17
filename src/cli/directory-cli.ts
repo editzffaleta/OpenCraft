@@ -70,19 +70,19 @@ export function registerDirectoryCli(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["opencraft directory self --channel slack", "Show the connected account identity."],
+          ["openclaw directory self --channel slack", "Show the connected account identity."],
           [
-            'opencraft directory peers list --channel slack --query "alice"',
+            'openclaw directory peers list --channel slack --query "alice"',
             "Search contact/user IDs by name.",
           ],
-          ["opencraft directory groups list --channel discord", "List available groups/channels."],
+          ["openclaw directory groups list --channel discord", "List available groups/channels."],
           [
-            "opencraft directory groups members --channel discord --group-id <id>",
+            "openclaw directory groups members --channel discord --group-id <id>",
             "List members for a specific group.",
           ],
         ])}\n\n${theme.muted("Docs:")} ${formatDocsLink(
           "/cli/directory",
-          "docs.opencraft.ai/cli/directory",
+          "docs.openclaw.ai/cli/directory",
         )}\n`,
     )
     .action(() => {

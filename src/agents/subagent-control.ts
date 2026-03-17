@@ -6,7 +6,7 @@ import {
   sortSubagentRuns,
   type SubagentTargetResolution,
 } from "../auto-reply/reply/subagents-utils.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { loadSessionStore, resolveStorePath, updateSessionStore } from "../config/sessions.js";
 import { callGateway } from "../gateway/call.js";
@@ -87,7 +87,7 @@ export type BuiltSubagentList = {
 };
 
 function resolveStorePathForKey(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   key: string,
   parsed?: ParsedAgentSessionKey | null,
 ) {
@@ -97,7 +97,7 @@ function resolveStorePathForKey(
 }
 
 export function resolveSessionEntryForKey(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   key: string;
   cache: Map<string, Record<string, SessionEntry>>;
 }): SessionEntryResolution {
@@ -115,7 +115,7 @@ export function resolveSessionEntryForKey(params: {
 }
 
 export function resolveSubagentController(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentSessionKey?: string;
 }): ResolvedSubagentController {
   const { mainKey, alias } = resolveMainSessionAlias(params.cfg);
@@ -251,7 +251,7 @@ function buildListText(params: {
 }
 
 export function buildSubagentList(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   runs: SubagentRunRecord[];
   recentMinutes: number;
   taskMaxChars?: number;
@@ -329,7 +329,7 @@ function ensureControllerOwnsRun(params: {
 }
 
 async function killSubagentRun(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   entry: SubagentRunRecord;
   cache: Map<string, Record<string, SessionEntry>>;
 }): Promise<{ killed: boolean; sessionId?: string }> {
@@ -371,7 +371,7 @@ async function killSubagentRun(params: {
 }
 
 async function cascadeKillChildren(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   parentChildSessionKey: string;
   cache: Map<string, Record<string, SessionEntry>>;
   seenChildSessionKeys?: Set<string>;
@@ -414,7 +414,7 @@ async function cascadeKillChildren(params: {
 }
 
 export async function killAllControlledSubagentRuns(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   controller: ResolvedSubagentController;
   runs: SubagentRunRecord[];
 }) {
@@ -458,7 +458,7 @@ export async function killAllControlledSubagentRuns(params: {
 }
 
 export async function killControlledSubagentRun(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   controller: ResolvedSubagentController;
   entry: SubagentRunRecord;
 }) {
@@ -524,7 +524,7 @@ export async function killControlledSubagentRun(params: {
 }
 
 export async function steerControlledSubagentRun(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   controller: ResolvedSubagentController;
   entry: SubagentRunRecord;
   message: string;
@@ -685,10 +685,25 @@ export async function steerControlledSubagentRun(params: {
 }
 
 export async function sendControlledSubagentMessage(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
+  controller: ResolvedSubagentController;
   entry: SubagentRunRecord;
   message: string;
 }) {
+  const ownershipError = ensureControllerOwnsRun({
+    controller: params.controller,
+    entry: params.entry,
+  });
+  if (ownershipError) {
+    return { status: "forbidden" as const, error: ownershipError };
+  }
+  if (params.controller.controlScope !== "children") {
+    return {
+      status: "forbidden" as const,
+      error: "Leaf subagents cannot control other sessions.",
+    };
+  }
+
   const targetSessionKey = params.entry.childSessionKey;
   const parsed = parseAgentSessionKey(targetSessionKey);
   const storePath = resolveStorePath(params.cfg.session?.store, { agentId: parsed?.agentId });

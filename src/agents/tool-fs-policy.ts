@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveAgentConfig } from "./agent-scope.js";
 
 export type ToolFsPolicy = {
@@ -11,7 +11,7 @@ export function createToolFsPolicy(params: { workspaceOnly?: boolean }): ToolFsP
   };
 }
 
-export function resolveToolFsConfig(params: { cfg?: OpenCraftConfig; agentId?: string }): {
+export function resolveToolFsConfig(params: { cfg?: OpenClawConfig; agentId?: string }): {
   workspaceOnly?: boolean;
 } {
   const cfg = params.cfg;
@@ -24,7 +24,7 @@ export function resolveToolFsConfig(params: { cfg?: OpenCraftConfig; agentId?: s
 }
 
 export function resolveEffectiveToolFsWorkspaceOnly(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   agentId?: string;
 }): boolean {
   return resolveToolFsConfig(params).workspaceOnly === true;

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CONTEXT_WINDOW_HARD_MIN_TOKENS } from "../agents/context-window-guard.js";
-import { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-models.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-defaults.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
 import {
   applyCustomApiConfig,
@@ -80,7 +80,7 @@ function expectOpenAiCompatResult(params: {
 
 function buildCustomProviderConfig(contextWindow?: number) {
   if (contextWindow === undefined) {
-    return {} as OpenCraftConfig;
+    return {} as OpenClawConfig;
   }
   return {
     models: {
@@ -102,7 +102,7 @@ function buildCustomProviderConfig(contextWindow?: number) {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 function applyCustomModelConfigWithContextWindow(contextWindow?: number) {
@@ -134,7 +134,7 @@ describe("promptCustomApiConfig", () => {
     expect(result.config.agents?.defaults?.models?.["custom/llama3"]?.alias).toBe("local");
   });
 
-  it("defaults custom onboarding to the native Ollama base URL", async () => {
+  it("defaults custom setup to the native Ollama base URL", async () => {
     const prompter = createTestPrompter({
       text: ["http://localhost:11434", "", "llama3", "custom", ""],
       select: ["plaintext", "openai"],
@@ -363,7 +363,7 @@ describe("promptCustomApiConfig", () => {
         providers: {
           filemain: {
             source: "file",
-            path: "/tmp/opencraft-missing-provider.json",
+            path: "/tmp/openclaw-missing-provider.json",
             mode: "json",
           },
         },

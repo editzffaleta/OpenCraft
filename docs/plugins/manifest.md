@@ -1,21 +1,39 @@
 ---
-summary: "Manifesto de plugin + requisitos de schema JSON (validação estrita de config)"
+summary: "Plugin manifest + JSON schema requirements (strict config validation)"
 read_when:
-  - Você está construindo um plugin OpenCraft
-  - Você precisa incluir um schema de config de plugin ou depurar erros de validação de plugin
-title: "Manifesto de Plugin"
+  - You are building a OpenClaw plugin
+  - You need to ship a plugin config schema or debug plugin validation errors
+title: "Plugin Manifest"
 ---
 
-# Manifesto de plugin (openclaw.plugin.json)
+# Plugin manifest (openclaw.plugin.json)
 
-Todo plugin **deve** incluir um arquivo `openclaw.plugin.json` na **raiz do plugin**.
-O OpenCraft usa este manifesto para validar a configuração **sem executar o
-código do plugin**. Manifestos ausentes ou inválidos são tratados como erros de plugin e bloqueiam
-a validação de config.
+This page is for the **native OpenClaw plugin manifest** only.
 
-Veja o guia completo do sistema de plugins: [Plugins](/tools/plugin).
+For compatible bundle layouts, see [Plugin bundles](/plugins/bundles).
 
-## Campos obrigatórios
+Compatible bundle formats use different manifest files:
+
+- Codex bundle: `.codex-plugin/plugin.json`
+- Claude bundle: `.claude-plugin/plugin.json` or the default Claude component
+  layout without a manifest
+- Cursor bundle: `.cursor-plugin/plugin.json`
+
+OpenClaw auto-detects those bundle layouts too, but they are not validated
+against the `openclaw.plugin.json` schema described here.
+
+For compatible bundles, OpenClaw currently reads bundle metadata plus declared
+skill roots, Claude command roots, Claude bundle `settings.json` defaults, and
+supported hook packs when the layout matches OpenClaw runtime expectations.
+
+Every native OpenClaw plugin **must** ship a `openclaw.plugin.json` file in the
+**plugin root**. OpenClaw uses this manifest to validate configuration
+**without executing plugin code**. Missing or invalid manifests are treated as
+plugin errors and block config validation.
+
+See the full plugin system guide: [Plugins](/tools/plugin).
+
+## Required fields
 
 ```json
 {
@@ -28,48 +46,94 @@ Veja o guia completo do sistema de plugins: [Plugins](/tools/plugin).
 }
 ```
 
-Chaves obrigatórias:
+Required keys:
 
-- `id` (string): id canônico do plugin.
-- `configSchema` (object): Schema JSON para a config do plugin (inline).
+- `id` (string): canonical plugin id.
+- `configSchema` (object): JSON Schema for plugin config (inline).
 
-Chaves opcionais:
+Optional keys:
 
-- `kind` (string): tipo do plugin (exemplos: `"memory"`, `"context-engine"`).
-- `channels` (array): ids de canal registrados por este plugin (exemplo: `["matrix"]`).
-- `providers` (array): ids de provedor registrados por este plugin.
-- `skills` (array): diretórios de skill a carregar (relativos à raiz do plugin).
-- `name` (string): nome de exibição do plugin.
-- `description` (string): resumo curto do plugin.
-- `uiHints` (object): labels/placeholders/flags de sensibilidade de campo de config para renderização de UI.
-- `version` (string): versão do plugin (informacional).
+- `kind` (string): plugin kind (examples: `"memory"`, `"context-engine"`).
+- `channels` (array): channel ids registered by this plugin (example: `["matrix"]`).
+- `providers` (array): provider ids registered by this plugin.
+- `providerAuthEnvVars` (object): auth env vars keyed by provider id. Use this
+  when OpenClaw should resolve provider credentials from env without loading
+  plugin runtime first.
+- `providerAuthChoices` (array): cheap onboarding/auth-choice metadata keyed by
+  provider + auth method. Use this when OpenClaw should show a provider in
+  auth-choice pickers, preferred-provider resolution, and CLI help without
+  loading plugin runtime first.
+- `skills` (array): skill directories to load (relative to the plugin root).
+- `name` (string): display name for the plugin.
+- `description` (string): short plugin summary.
+- `uiHints` (object): config field labels/placeholders/sensitive flags for UI rendering.
+- `version` (string): plugin version (informational).
 
-## Requisitos de Schema JSON
+### `providerAuthChoices` shape
 
-- **Todo plugin deve incluir um Schema JSON**, mesmo que não aceite config.
-- Um schema vazio é aceitável (por exemplo, `{ "type": "object", "additionalProperties": false }`).
-- Schemas são validados no momento de leitura/escrita de config, não em runtime.
+Each entry can declare:
 
-## Comportamento de validação
+- `provider`: provider id
+- `method`: auth method id
+- `choiceId`: stable onboarding/auth-choice id
+- `choiceLabel` / `choiceHint`: picker label + short hint
+- `groupId` / `groupLabel` / `groupHint`: grouped onboarding bucket metadata
+- `optionKey` / `cliFlag` / `cliOption` / `cliDescription`: optional one-flag
+  CLI wiring for simple auth flows such as API keys
 
-- Chaves desconhecidas de `channels.*` são **erros**, a menos que o id de canal seja declarado por
-  um manifesto de plugin.
-- `plugins.entries.<id>`, `plugins.allow`, `plugins.deny` e `plugins.slots.*`
-  devem referenciar ids de plugin **descobríveis**. Ids desconhecidos são **erros**.
-- Se um plugin está instalado mas tem manifesto ou schema quebrado ou ausente,
-  a validação falha e o Doctor reporta o erro do plugin.
-- Se a config do plugin existe mas o plugin está **desabilitado**, a config é mantida e
-  um **aviso** é exibido no Doctor + logs.
+Example:
 
-## Notas
+```json
+{
+  "providerAuthChoices": [
+    {
+      "provider": "openrouter",
+      "method": "api-key",
+      "choiceId": "openrouter-api-key",
+      "choiceLabel": "OpenRouter API key",
+      "groupId": "openrouter",
+      "groupLabel": "OpenRouter",
+      "optionKey": "openrouterApiKey",
+      "cliFlag": "--openrouter-api-key",
+      "cliOption": "--openrouter-api-key <key>",
+      "cliDescription": "OpenRouter API key"
+    }
+  ]
+}
+```
 
-- O manifesto é **obrigatório para todos os plugins**, incluindo carregamentos do sistema de arquivos local.
-- O runtime ainda carrega o módulo do plugin separadamente; o manifesto é apenas para
-  descoberta + validação.
-- Tipos exclusivos de plugin são selecionados através de `plugins.slots.*`.
-  - `kind: "memory"` é selecionado por `plugins.slots.memory`.
-  - `kind: "context-engine"` é selecionado por `plugins.slots.contextEngine`
-    (padrão: `legacy` embutido).
-- Se seu plugin depende de módulos nativos, documente as etapas de build e quaisquer
-  requisitos de allowlist do gerenciador de pacotes (por exemplo, `allow-build-scripts` do pnpm -
-  `pnpm rebuild <pacote>`).
+## JSON Schema requirements
+
+- **Every plugin must ship a JSON Schema**, even if it accepts no config.
+- An empty schema is acceptable (for example, `{ "type": "object", "additionalProperties": false }`).
+- Schemas are validated at config read/write time, not at runtime.
+
+## Validation behavior
+
+- Unknown `channels.*` keys are **errors**, unless the channel id is declared by
+  a plugin manifest.
+- `plugins.entries.<id>`, `plugins.allow`, `plugins.deny`, and `plugins.slots.*`
+  must reference **discoverable** plugin ids. Unknown ids are **errors**.
+- If a plugin is installed but has a broken or missing manifest or schema,
+  validation fails and Doctor reports the plugin error.
+- If plugin config exists but the plugin is **disabled**, the config is kept and
+  a **warning** is surfaced in Doctor + logs.
+
+## Notes
+
+- The manifest is **required for native OpenClaw plugins**, including local filesystem loads.
+- Runtime still loads the plugin module separately; the manifest is only for
+  discovery + validation.
+- `providerAuthEnvVars` is the cheap metadata path for auth probes, env-marker
+  validation, and similar provider-auth surfaces that should not boot plugin
+  runtime just to inspect env names.
+- `providerAuthChoices` is the cheap metadata path for auth-choice pickers,
+  `--auth-choice` resolution, preferred-provider mapping, and simple onboarding
+  CLI flag registration before provider runtime loads.
+- Exclusive plugin kinds are selected through `plugins.slots.*`.
+  - `kind: "memory"` is selected by `plugins.slots.memory`.
+  - `kind: "context-engine"` is selected by `plugins.slots.contextEngine`
+    (default: built-in `legacy`).
+- If your plugin depends on native modules, document the build steps and any
+  package-manager allowlist requirements (for example, pnpm `allow-build-scripts`
+  - `pnpm rebuild <package>`).

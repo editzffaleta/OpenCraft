@@ -1,18 +1,18 @@
 {
-  "name": "@opencraft/memory-core",
+  "name": "@openclaw/memory-core",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft core memory search plugin",
+  "description": "OpenClaw core memory search plugin",
   "type": "module",
   "peerDependencies": {
-    "opencraft": ">=2026.3.11"
+    "openclaw": ">=2026.3.11"
   },
   "peerDependenciesMeta": {
-    "opencraft": {
+    "openclaw": {
       "optional": true
     }
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenCraft
+@testable import OpenClaw
 
 @Suite struct SettingsNetworkingHelpersTests {
     @Test func parseHostPortParsesIPv4() {

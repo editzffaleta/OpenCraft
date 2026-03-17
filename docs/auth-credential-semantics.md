@@ -1,15 +1,15 @@
-# Semântica de Credenciais de Auth
+# Auth Credential Semantics
 
-Este documento define a elegibilidade canônica de credenciais e a semântica de resolução usadas em:
+This document defines the canonical credential eligibility and resolution semantics used across:
 
 - `resolveAuthProfileOrder`
 - `resolveApiKeyForProfile`
 - `models status --probe`
 - `doctor-auth`
 
-O objetivo é manter o comportamento de seleção e o comportamento em runtime alinhados.
+The goal is to keep selection-time and runtime behavior aligned.
 
-## Códigos de Motivo Estáveis
+## Stable Reason Codes
 
 - `ok`
 - `missing_credential`
@@ -17,29 +17,29 @@ O objetivo é manter o comportamento de seleção e o comportamento em runtime a
 - `expired`
 - `unresolved_ref`
 
-## Credenciais de Token
+## Token Credentials
 
-Credenciais de token (`type: "token"`) suportam `token` inline e/ou `tokenRef`.
+Token credentials (`type: "token"`) support inline `token` and/or `tokenRef`.
 
-### Regras de elegibilidade
+### Eligibility rules
 
-1. Um perfil de token é inelegível quando tanto `token` quanto `tokenRef` estão ausentes.
-2. `expires` é opcional.
-3. Se `expires` estiver presente, deve ser um número finito maior que `0`.
-4. Se `expires` for inválido (`NaN`, `0`, negativo, não-finito ou tipo errado), o perfil é inelegível com `invalid_expires`.
-5. Se `expires` estiver no passado, o perfil é inelegível com `expired`.
-6. `tokenRef` não ignora a validação de `expires`.
+1. A token profile is ineligible when both `token` and `tokenRef` are absent.
+2. `expires` is optional.
+3. If `expires` is present, it must be a finite number greater than `0`.
+4. If `expires` is invalid (`NaN`, `0`, negative, non-finite, or wrong type), the profile is ineligible with `invalid_expires`.
+5. If `expires` is in the past, the profile is ineligible with `expired`.
+6. `tokenRef` does not bypass `expires` validation.
 
-### Regras de resolução
+### Resolution rules
 
-1. A semântica do resolvedor corresponde à semântica de elegibilidade para `expires`.
-2. Para perfis elegíveis, o material do token pode ser resolvido a partir do valor inline ou de `tokenRef`.
-3. Refs não resolvíveis produzem `unresolved_ref` na saída de `models status --probe`.
+1. Resolver semantics match eligibility semantics for `expires`.
+2. For eligible profiles, token material may be resolved from inline value or `tokenRef`.
+3. Unresolvable refs produce `unresolved_ref` in `models status --probe` output.
 
-## Mensagens Compatíveis com Legacy
+## Legacy-Compatible Messaging
 
-Para compatibilidade com scripts, erros de probe mantêm esta primeira linha inalterada:
+For script compatibility, probe errors keep this first line unchanged:
 
 `Auth profile credentials are missing or expired.`
 
-Detalhes amigáveis e códigos de motivo estáveis podem ser adicionados nas linhas seguintes.
+Human-friendly detail and stable reason codes may be added on subsequent lines.

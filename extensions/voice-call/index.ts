@@ -1,8 +1,8 @@
 import { Type } from "@sinclair/typebox";
 import type {
   GatewayRequestHandlerOptions,
-  OpenCraftPluginApi,
-} from "opencraft/plugin-sdk/voice-call";
+  OpenClawPluginApi,
+} from "openclaw/plugin-sdk/voice-call";
 import { registerVoiceCallCli } from "./src/cli.js";
 import {
   VoiceCallConfigSchema,
@@ -80,7 +80,7 @@ const voiceCallConfigSchema = {
     "streaming.streamPath": { label: "Media Stream Path", advanced: true },
     "tts.provider": {
       label: "TTS Provider Override",
-      help: "Deep-merges with messages.tts (Edge is ignored for calls).",
+      help: "Deep-merges with messages.tts (Microsoft is ignored for calls).",
       advanced: true,
     },
     "tts.openai.model": { label: "OpenAI TTS Model", advanced: true },
@@ -148,7 +148,7 @@ const voiceCallPlugin = {
   name: "Voice Call",
   description: "Voice-call plugin with Telnyx/Twilio/Plivo providers",
   configSchema: voiceCallConfigSchema,
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     const config = resolveVoiceCallConfig(voiceCallConfigSchema.parse(api.pluginConfig));
     const validation = validateProviderConfig(config);
 
@@ -180,6 +180,7 @@ const voiceCallPlugin = {
         runtimePromise = createVoiceCallRuntime({
           config,
           coreConfig: api.config as CoreConfig,
+          agentRuntime: api.runtime.agent,
           ttsRuntime: api.runtime.tts,
           logger: api.logger,
         });

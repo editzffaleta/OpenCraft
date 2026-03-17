@@ -1,6 +1,5 @@
 import type { Command } from "commander";
 import {
-  githubCopilotLoginCommand,
   modelsAliasesAddCommand,
   modelsAliasesListCommand,
   modelsAliasesRemoveCommand,
@@ -42,12 +41,12 @@ export function registerModelsCli(program: Command) {
     .option("--status-plain", "Plain output (alias for `models status --plain`)", false)
     .option(
       "--agent <id>",
-      "Agent id to inspect (overrides OPENCRAFT_AGENT_DIR/PI_CODING_AGENT_DIR)",
+      "Agent id to inspect (overrides OPENCLAW_AGENT_DIR/PI_CODING_AGENT_DIR)",
     )
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/models", "docs.opencraft.ai/cli/models")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/models", "docs.openclaw.ai/cli/models")}\n`,
     );
 
   models
@@ -90,7 +89,7 @@ export function registerModelsCli(program: Command) {
     .option("--probe-max-tokens <n>", "Probe max tokens (best-effort)")
     .option(
       "--agent <id>",
-      "Agent id to inspect (overrides OPENCRAFT_AGENT_DIR/PI_CODING_AGENT_DIR)",
+      "Agent id to inspect (overrides OPENCLAW_AGENT_DIR/PI_CODING_AGENT_DIR)",
     )
     .action(async (opts, command) => {
       const agent =
@@ -364,13 +363,13 @@ export function registerModelsCli(program: Command) {
   auth
     .command("login-github-copilot")
     .description("Login to GitHub Copilot via GitHub device flow (TTY required)")
-    .option("--profile-id <id>", "Auth profile id (default: github-copilot:github)")
     .option("--yes", "Overwrite existing profile without prompting", false)
     .action(async (opts) => {
       await runModelsCommand(async () => {
-        await githubCopilotLoginCommand(
+        await modelsAuthLoginCommand(
           {
-            profileId: opts.profileId as string | undefined,
+            provider: "github-copilot",
+            method: "device",
             yes: Boolean(opts.yes),
           },
           defaultRuntime,

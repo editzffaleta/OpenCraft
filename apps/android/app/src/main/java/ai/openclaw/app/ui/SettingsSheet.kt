@@ -1,4 +1,4 @@
-package ai.opencraft.app.ui
+package ai.openclaw.app.ui
 
 import android.Manifest
 import android.content.Context
@@ -65,10 +65,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import ai.opencraft.app.BuildConfig
-import ai.opencraft.app.LocationMode
-import ai.opencraft.app.MainViewModel
-import ai.opencraft.app.node.DeviceNotificationListenerService
+import ai.openclaw.app.BuildConfig
+import ai.openclaw.app.LocationMode
+import ai.openclaw.app.MainViewModel
+import ai.openclaw.app.node.DeviceNotificationListenerService
 
 @Composable
 fun SettingsSheet(viewModel: MainViewModel) {
@@ -701,7 +701,7 @@ fun SettingsSheet(viewModel: MainViewModel) {
             modifier = Modifier.fillMaxWidth(),
             colors = listItemColors,
             headlineContent = { Text("While Using", style = mobileHeadline) },
-            supportingContent = { Text("Only while OpenCraft is open.", style = mobileCallout) },
+            supportingContent = { Text("Only while OpenClaw is open.", style = mobileCallout) },
             trailingContent = {
               RadioButton(
                 selected = locationMode == LocationMode.WhileUsing,

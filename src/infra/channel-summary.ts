@@ -11,7 +11,7 @@ import {
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "../channels/plugins/types.js";
 import { inspectReadOnlyChannelAccount } from "../channels/read-only-account-inspect.js";
-import { type OpenCraftConfig, loadConfig } from "../config/config.js";
+import { type OpenClawConfig, loadConfig } from "../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
 import { theme } from "../terminal/theme.js";
 import { formatTimeAgo } from "./format-time/format-relative.ts";
@@ -19,7 +19,7 @@ import { formatTimeAgo } from "./format-time/format-relative.ts";
 export type ChannelSummaryOptions = {
   colorize?: boolean;
   includeAllowFrom?: boolean;
-  sourceConfig?: OpenCraftConfig;
+  sourceConfig?: OpenClawConfig;
 };
 
 const DEFAULT_OPTIONS: Omit<Required<ChannelSummaryOptions>, "sourceConfig"> = {
@@ -49,7 +49,7 @@ const accountLine = (label: string, details: string[]) =>
 const buildAccountDetails = (params: {
   entry: ChannelAccountEntry;
   plugin: ChannelPlugin;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   includeAllowFrom: boolean;
 }): string[] => {
   const details: string[] = [];
@@ -105,19 +105,23 @@ const buildAccountDetails = (params: {
   return details;
 };
 
-function inspectChannelAccount(plugin: ChannelPlugin, cfg: OpenCraftConfig, accountId: string) {
+async function inspectChannelAccount(
+  plugin: ChannelPlugin,
+  cfg: OpenClawConfig,
+  accountId: string,
+) {
   return (
     plugin.config.inspectAccount?.(cfg, accountId) ??
-    inspectReadOnlyChannelAccount({
+    (await inspectReadOnlyChannelAccount({
       channelId: plugin.id,
       cfg,
       accountId,
-    })
+    }))
   );
 }
 
 export async function buildChannelSummary(
-  cfg?: OpenCraftConfig,
+  cfg?: OpenClawConfig,
   options?: ChannelSummaryOptions,
 ): Promise<string[]> {
   const effective = cfg ?? loadConfig();
@@ -135,8 +139,8 @@ export async function buildChannelSummary(
     const entries: ChannelAccountEntry[] = [];
 
     for (const accountId of resolvedAccountIds) {
-      const sourceInspectedAccount = inspectChannelAccount(plugin, sourceConfig, accountId);
-      const resolvedInspectedAccount = inspectChannelAccount(plugin, effective, accountId);
+      const sourceInspectedAccount = await inspectChannelAccount(plugin, sourceConfig, accountId);
+      const resolvedInspectedAccount = await inspectChannelAccount(plugin, effective, accountId);
       const resolvedInspection = resolvedInspectedAccount as {
         enabled?: boolean;
         configured?: boolean;

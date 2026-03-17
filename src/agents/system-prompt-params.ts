@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { findGitRoot } from "../infra/git-root.js";
 import {
   formatUserTime,
@@ -33,7 +33,7 @@ export type SystemPromptRuntimeParams = {
 };
 
 export function buildSystemPromptParams(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   agentId?: string;
   runtime: Omit<RuntimeInfoInput, "agentId">;
   workspaceDir?: string;
@@ -60,7 +60,7 @@ export function buildSystemPromptParams(params: {
 }
 
 function resolveRepoRoot(params: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   workspaceDir?: string;
   cwd?: string;
 }): string | undefined {

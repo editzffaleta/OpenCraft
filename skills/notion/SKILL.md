@@ -1,34 +1,34 @@
 ---
 name: notion
-description: API do Notion para criar e gerenciar páginas, bancos de dados e blocos.
+description: Notion API for creating and managing pages, databases, and blocks.
 homepage: https://developers.notion.com
 metadata:
   {
-    "opencraft":
+    "openclaw":
       { "emoji": "📝", "requires": { "env": ["NOTION_API_KEY"] }, "primaryEnv": "NOTION_API_KEY" },
   }
 ---
 
 # notion
 
-Use a API do Notion para criar/ler/atualizar páginas, fontes de dados (bancos de dados) e blocos.
+Use the Notion API to create/read/update pages, data sources (databases), and blocks.
 
-## Configuração
+## Setup
 
-1. Crie uma integração em https://notion.so/my-integrations
-2. Copie a chave de API (começa com `ntn_` ou `secret_`)
-3. Armazene-a:
+1. Create an integration at https://notion.so/my-integrations
+2. Copy the API key (starts with `ntn_` or `secret_`)
+3. Store it:
 
 ```bash
 mkdir -p ~/.config/notion
-echo "ntn_sua_chave_aqui" > ~/.config/notion/api_key
+echo "ntn_your_key_here" > ~/.config/notion/api_key
 ```
 
-4. Compartilhe as páginas/bancos de dados alvo com sua integração (clique em "..." → "Conectar a" → nome da sua integração)
+4. Share target pages/databases with your integration (click "..." → "Connect to" → your integration name)
 
-## Fundamentos da API
+## API Basics
 
-Todas as requisições precisam de:
+All requests need:
 
 ```bash
 NOTION_KEY=$(cat ~/.config/notion/api_key)
@@ -38,21 +38,21 @@ curl -X GET "https://api.notion.com/v1/..." \
   -H "Content-Type: application/json"
 ```
 
-> **Nota:** O header `Notion-Version` é obrigatório. Esta habilidade usa `2025-09-03` (mais recente). Nesta versão, bancos de dados são chamados de "fontes de dados" na API.
+> **Note:** The `Notion-Version` header is required. This skill uses `2025-09-03` (latest). In this version, databases are called "data sources" in the API.
 
-## Operações Comuns
+## Common Operations
 
-**Pesquisar páginas e fontes de dados:**
+**Search for pages and data sources:**
 
 ```bash
 curl -X POST "https://api.notion.com/v1/search" \
   -H "Authorization: Bearer $NOTION_KEY" \
   -H "Notion-Version: 2025-09-03" \
   -H "Content-Type: application/json" \
-  -d '{"query": "título da página"}'
+  -d '{"query": "page title"}'
 ```
 
-**Obter página:**
+**Get page:**
 
 ```bash
 curl "https://api.notion.com/v1/pages/{page_id}" \
@@ -60,7 +60,7 @@ curl "https://api.notion.com/v1/pages/{page_id}" \
   -H "Notion-Version: 2025-09-03"
 ```
 
-**Obter conteúdo da página (blocos):**
+**Get page content (blocks):**
 
 ```bash
 curl "https://api.notion.com/v1/blocks/{page_id}/children" \
@@ -68,7 +68,7 @@ curl "https://api.notion.com/v1/blocks/{page_id}/children" \
   -H "Notion-Version: 2025-09-03"
 ```
 
-**Criar página em uma fonte de dados:**
+**Create page in a data source:**
 
 ```bash
 curl -X POST "https://api.notion.com/v1/pages" \
@@ -78,13 +78,13 @@ curl -X POST "https://api.notion.com/v1/pages" \
   -d '{
     "parent": {"database_id": "xxx"},
     "properties": {
-      "Name": {"title": [{"text": {"content": "Novo Item"}}]},
-      "Status": {"select": {"name": "A fazer"}}
+      "Name": {"title": [{"text": {"content": "New Item"}}]},
+      "Status": {"select": {"name": "Todo"}}
     }
   }'
 ```
 
-**Consultar uma fonte de dados (banco de dados):**
+**Query a data source (database):**
 
 ```bash
 curl -X POST "https://api.notion.com/v1/data_sources/{data_source_id}/query" \
@@ -92,12 +92,12 @@ curl -X POST "https://api.notion.com/v1/data_sources/{data_source_id}/query" \
   -H "Notion-Version: 2025-09-03" \
   -H "Content-Type: application/json" \
   -d '{
-    "filter": {"property": "Status", "select": {"equals": "Ativo"}},
-    "sorts": [{"property": "Data", "direction": "descending"}]
+    "filter": {"property": "Status", "select": {"equals": "Active"}},
+    "sorts": [{"property": "Date", "direction": "descending"}]
   }'
 ```
 
-**Criar uma fonte de dados (banco de dados):**
+**Create a data source (database):**
 
 ```bash
 curl -X POST "https://api.notion.com/v1/data_sources" \
@@ -106,26 +106,26 @@ curl -X POST "https://api.notion.com/v1/data_sources" \
   -H "Content-Type: application/json" \
   -d '{
     "parent": {"page_id": "xxx"},
-    "title": [{"text": {"content": "Meu Banco de Dados"}}],
+    "title": [{"text": {"content": "My Database"}}],
     "properties": {
       "Name": {"title": {}},
-      "Status": {"select": {"options": [{"name": "A fazer"}, {"name": "Concluído"}]}},
+      "Status": {"select": {"options": [{"name": "Todo"}, {"name": "Done"}]}},
       "Date": {"date": {}}
     }
   }'
 ```
 
-**Atualizar propriedades da página:**
+**Update page properties:**
 
 ```bash
 curl -X PATCH "https://api.notion.com/v1/pages/{page_id}" \
   -H "Authorization: Bearer $NOTION_KEY" \
   -H "Notion-Version: 2025-09-03" \
   -H "Content-Type: application/json" \
-  -d '{"properties": {"Status": {"select": {"name": "Concluído"}}}}'
+  -d '{"properties": {"Status": {"select": {"name": "Done"}}}}'
 ```
 
-**Adicionar blocos à página:**
+**Add blocks to page:**
 
 ```bash
 curl -X PATCH "https://api.notion.com/v1/blocks/{page_id}/children" \
@@ -134,41 +134,41 @@ curl -X PATCH "https://api.notion.com/v1/blocks/{page_id}/children" \
   -H "Content-Type: application/json" \
   -d '{
     "children": [
-      {"object": "block", "type": "paragraph", "paragraph": {"rich_text": [{"text": {"content": "Olá"}}]}}
+      {"object": "block", "type": "paragraph", "paragraph": {"rich_text": [{"text": {"content": "Hello"}}]}}
     ]
   }'
 ```
 
-## Tipos de Propriedade
+## Property Types
 
-Formatos comuns de propriedade para itens de banco de dados:
+Common property formats for database items:
 
-- **Título:** `{"title": [{"text": {"content": "..."}}]}`
-- **Texto rico:** `{"rich_text": [{"text": {"content": "..."}}]}`
-- **Seleção:** `{"select": {"name": "Opção"}}`
-- **Multi-seleção:** `{"multi_select": [{"name": "A"}, {"name": "B"}]}`
-- **Data:** `{"date": {"start": "2024-01-15", "end": "2024-01-16"}}`
+- **Title:** `{"title": [{"text": {"content": "..."}}]}`
+- **Rich text:** `{"rich_text": [{"text": {"content": "..."}}]}`
+- **Select:** `{"select": {"name": "Option"}}`
+- **Multi-select:** `{"multi_select": [{"name": "A"}, {"name": "B"}]}`
+- **Date:** `{"date": {"start": "2024-01-15", "end": "2024-01-16"}}`
 - **Checkbox:** `{"checkbox": true}`
-- **Número:** `{"number": 42}`
+- **Number:** `{"number": 42}`
 - **URL:** `{"url": "https://..."}`
 - **Email:** `{"email": "a@b.com"}`
-- **Relação:** `{"relation": [{"id": "page_id"}]}`
+- **Relation:** `{"relation": [{"id": "page_id"}]}`
 
-## Diferenças Principais na versão 2025-09-03
+## Key Differences in 2025-09-03
 
-- **Bancos de dados → Fontes de dados:** Use endpoints `/data_sources/` para consultas e recuperação
-- **Dois IDs:** Cada banco de dados agora tem tanto `database_id` quanto `data_source_id`
-  - Use `database_id` ao criar páginas (`parent: {"database_id": "..."}`)
-  - Use `data_source_id` ao consultar (`POST /v1/data_sources/{id}/query`)
-- **Resultados de pesquisa:** Bancos de dados retornam como `"object": "data_source"` com seu `data_source_id`
-- **Pai nas respostas:** Páginas mostram `parent.data_source_id` junto com `parent.database_id`
-- **Encontrar o data_source_id:** Pesquise o banco de dados, ou chame `GET /v1/data_sources/{data_source_id}`
+- **Databases → Data Sources:** Use `/data_sources/` endpoints for queries and retrieval
+- **Two IDs:** Each database now has both a `database_id` and a `data_source_id`
+  - Use `database_id` when creating pages (`parent: {"database_id": "..."}`)
+  - Use `data_source_id` when querying (`POST /v1/data_sources/{id}/query`)
+- **Search results:** Databases return as `"object": "data_source"` with their `data_source_id`
+- **Parent in responses:** Pages show `parent.data_source_id` alongside `parent.database_id`
+- **Finding the data_source_id:** Search for the database, or call `GET /v1/data_sources/{data_source_id}`
 
-## Notas
+## Notes
 
-- IDs de página/banco de dados são UUIDs (com ou sem traços)
-- A API não pode definir filtros de visualização de banco de dados — isso é apenas pela UI
-- Limite de taxa: ~3 requisições/segundo em média, com respostas `429 rate_limited` usando `Retry-After`
-- Filhos de bloco em append: até 100 filhos por requisição, até dois níveis de aninhamento num único append
-- Limites de tamanho de payload: até 1000 elementos de bloco e 500KB no total
-- Use `is_inline: true` ao criar fontes de dados para incorporá-las em páginas
+- Page/database IDs are UUIDs (with or without dashes)
+- The API cannot set database view filters — that's UI-only
+- Rate limit: ~3 requests/second average, with `429 rate_limited` responses using `Retry-After`
+- Append block children: up to 100 children per request, up to two levels of nesting in a single append request
+- Payload size limits: up to 1000 block elements and 500KB overall
+- Use `is_inline: true` when creating data sources to embed them in pages

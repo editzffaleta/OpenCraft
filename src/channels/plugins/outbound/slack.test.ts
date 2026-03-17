@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../../config/config.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 
 vi.mock("../../../../extensions/slack/src/send.js", () => ({
   sendMessageSlack: vi.fn().mockResolvedValue({ messageId: "1234.5678", channelId: "C123" }),
@@ -10,8 +10,8 @@ vi.mock("../../../plugins/hook-runner-global.js", () => ({
 }));
 
 import { sendMessageSlack } from "../../../../extensions/slack/src/send.js";
+import { slackOutbound } from "../../../../test/channel-outbounds.js";
 import { getGlobalHookRunner } from "../../../plugins/hook-runner-global.js";
-import { slackOutbound } from "./slack.js";
 
 type SlackSendTextCtx = {
   to: string;
@@ -34,7 +34,7 @@ const BASE_SLACK_SEND_CTX = {
 const sendSlackText = async (ctx: SlackSendTextCtx) => {
   const sendText = slackOutbound.sendText as NonNullable<typeof slackOutbound.sendText>;
   return await sendText({
-    cfg: {} as OpenCraftConfig,
+    cfg: {} as OpenClawConfig,
     ...ctx,
   });
 };

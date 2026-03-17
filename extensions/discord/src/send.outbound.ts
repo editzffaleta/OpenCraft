@@ -4,11 +4,11 @@ import path from "node:path";
 import { serializePayload, type MessagePayloadObject, type RequestClient } from "@buape/carbon";
 import { ChannelType, Routes } from "discord-api-types/v10";
 import { resolveChunkMode } from "../../../src/auto-reply/chunk.js";
-import { loadConfig, type OpenCraftConfig } from "../../../src/config/config.js";
+import { loadConfig, type OpenClawConfig } from "../../../src/config/config.js";
 import { resolveMarkdownTableMode } from "../../../src/config/markdown-tables.js";
 import { recordChannelActivity } from "../../../src/infra/channel-activity.js";
 import type { RetryConfig } from "../../../src/infra/retry.js";
-import { resolvePreferredOpenCraftTmpDir } from "../../../src/infra/tmp-opencraft-dir.js";
+import { resolvePreferredOpenClawTmpDir } from "../../../src/infra/tmp-openclaw-dir.js";
 import { convertMarkdownTables } from "../../../src/markdown/tables.js";
 import { maxBytesForKind } from "../../../src/media/constants.js";
 import { extensionForMime } from "../../../src/media/mime.js";
@@ -44,7 +44,7 @@ import {
 } from "./voice-message.js";
 
 type DiscordSendOpts = {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   token?: string;
   accountId?: string;
   mediaUrl?: string;
@@ -317,7 +317,7 @@ export async function sendMessageDiscord(
 }
 
 type DiscordWebhookSendOpts = {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   webhookId: string;
   webhookToken: string;
   accountId?: string;
@@ -472,7 +472,7 @@ export async function sendPollDiscord(
 }
 
 type VoiceMessageOpts = {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   token?: string;
   accountId?: string;
   verbose?: boolean;
@@ -489,7 +489,7 @@ async function materializeVoiceMessageInput(mediaUrl: string): Promise<{ filePat
   const extFromName = media.fileName ? path.extname(media.fileName) : "";
   const extFromMime = media.contentType ? extensionForMime(media.contentType) : "";
   const ext = extFromName || extFromMime || ".bin";
-  const tempDir = resolvePreferredOpenCraftTmpDir();
+  const tempDir = resolvePreferredOpenClawTmpDir();
   const filePath = path.join(tempDir, `voice-src-${crypto.randomUUID()}${ext}`);
   await fs.writeFile(filePath, media.buffer, { mode: 0o600 });
   return { filePath };

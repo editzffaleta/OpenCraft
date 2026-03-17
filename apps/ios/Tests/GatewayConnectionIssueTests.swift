@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenCraft
+@testable import OpenClaw
 
 @Suite(.serialized) struct GatewayConnectionIssueTests {
     @Test func detectsTokenMissing() {

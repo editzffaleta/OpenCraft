@@ -67,16 +67,16 @@ describe("logAcceptedEnvOption", () => {
       {
         VITEST: "",
         NODE_ENV: "development",
-        OPENCRAFT_TEST_ENV: "  line one\nline two  ",
+        OPENCLAW_TEST_ENV: "  line one\nline two  ",
       },
       () => {
         logAcceptedEnvOption({
-          key: "OPENCRAFT_TEST_ENV",
+          key: "OPENCLAW_TEST_ENV",
           description: "test option",
           redact: true,
         });
         logAcceptedEnvOption({
-          key: "OPENCRAFT_TEST_ENV",
+          key: "OPENCLAW_TEST_ENV",
           description: "test option",
           redact: true,
         });
@@ -85,7 +85,7 @@ describe("logAcceptedEnvOption", () => {
 
     expect(loggerMocks.info).toHaveBeenCalledTimes(1);
     expect(loggerMocks.info).toHaveBeenCalledWith(
-      "env: OPENCRAFT_TEST_ENV=<redacted> (test option)",
+      "env: OPENCLAW_TEST_ENV=<redacted> (test option)",
     );
   });
 
@@ -96,11 +96,11 @@ describe("logAcceptedEnvOption", () => {
       {
         VITEST: "1",
         NODE_ENV: "development",
-        OPENCRAFT_BLANK_ENV: "value",
+        OPENCLAW_BLANK_ENV: "value",
       },
       () => {
         logAcceptedEnvOption({
-          key: "OPENCRAFT_BLANK_ENV",
+          key: "OPENCLAW_BLANK_ENV",
           description: "skipped in vitest",
         });
       },
@@ -110,11 +110,11 @@ describe("logAcceptedEnvOption", () => {
       {
         VITEST: "",
         NODE_ENV: "development",
-        OPENCRAFT_BLANK_ENV: "   ",
+        OPENCLAW_BLANK_ENV: "   ",
       },
       () => {
         logAcceptedEnvOption({
-          key: "OPENCRAFT_BLANK_ENV",
+          key: "OPENCLAW_BLANK_ENV",
           description: "blank value",
         });
       },

@@ -1,21 +1,21 @@
 ---
-summary: "Referência do CLI para `opencraft clawbot` (namespace de alias legado)"
+summary: "CLI reference for `openclaw clawbot` (legacy alias namespace)"
 read_when:
-  - Você mantém scripts mais antigos usando `opencraft clawbot ...`
-  - Você precisa de orientação de migração para comandos atuais
+  - You maintain older scripts using `openclaw clawbot ...`
+  - You need migration guidance to current commands
 title: "clawbot"
 ---
 
-# `opencraft clawbot`
+# `openclaw clawbot`
 
-Namespace de alias legado mantido para compatibilidade retroativa.
+Legacy alias namespace kept for backwards compatibility.
 
-Alias suportado atual:
+Current supported alias:
 
-- `opencraft clawbot qr` (mesmo comportamento que [`opencraft qr`](/cli/qr))
+- `openclaw clawbot qr` (same behavior as [`openclaw qr`](/cli/qr))
 
-## Migração
+## Migration
 
-Prefira comandos modernos de nível superior diretamente:
+Prefer modern top-level commands directly:
 
-- `opencraft clawbot qr` -> `opencraft qr`
+- `openclaw clawbot qr` -> `openclaw qr`

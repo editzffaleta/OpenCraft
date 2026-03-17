@@ -1,8 +1,7 @@
-import { type OpenCraftConfig, loadConfig } from "../config/config.js";
+import { type OpenClawConfig, loadConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { resolveOpenCraftAgentDir } from "./agent-paths.js";
-import { shouldSuppressBuiltInModel } from "./model-suppression.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { resolveOpenClawAgentDir } from "./agent-paths.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 
 const log = createSubsystemLogger("model-catalog");
 
@@ -32,69 +31,21 @@ let modelCatalogPromise: Promise<ModelCatalogEntry[]> | null = null;
 let hasLoggedModelCatalogError = false;
 const defaultImportPiSdk = () => import("./pi-model-discovery-runtime.js");
 let importPiSdk = defaultImportPiSdk;
+let providerRuntimePromise:
+  | Promise<typeof import("../plugins/provider-runtime.runtime.js")>
+  | undefined;
+let modelSuppressionPromise: Promise<typeof import("./model-suppression.runtime.js")> | undefined;
 
-const CODEX_PROVIDER = "openai-codex";
-const OPENAI_PROVIDER = "openai";
-const OPENAI_GPT54_MODEL_ID = "gpt-5.4";
-const OPENAI_GPT54_PRO_MODEL_ID = "gpt-5.4-pro";
-const OPENAI_CODEX_GPT53_MODEL_ID = "gpt-5.3-codex";
-const OPENAI_CODEX_GPT53_SPARK_MODEL_ID = "gpt-5.3-codex-spark";
-const OPENAI_CODEX_GPT54_MODEL_ID = "gpt-5.4";
 const NON_PI_NATIVE_MODEL_PROVIDERS = new Set(["kilocode"]);
 
-type SyntheticCatalogFallback = {
-  provider: string;
-  id: string;
-  templateIds: readonly string[];
-};
+function loadProviderRuntime() {
+  providerRuntimePromise ??= import("../plugins/provider-runtime.runtime.js");
+  return providerRuntimePromise;
+}
 
-const SYNTHETIC_CATALOG_FALLBACKS: readonly SyntheticCatalogFallback[] = [
-  {
-    provider: OPENAI_PROVIDER,
-    id: OPENAI_GPT54_MODEL_ID,
-    templateIds: ["gpt-5.2"],
-  },
-  {
-    provider: OPENAI_PROVIDER,
-    id: OPENAI_GPT54_PRO_MODEL_ID,
-    templateIds: ["gpt-5.2-pro", "gpt-5.2"],
-  },
-  {
-    provider: CODEX_PROVIDER,
-    id: OPENAI_CODEX_GPT54_MODEL_ID,
-    templateIds: ["gpt-5.3-codex", "gpt-5.2-codex"],
-  },
-  {
-    provider: CODEX_PROVIDER,
-    id: OPENAI_CODEX_GPT53_SPARK_MODEL_ID,
-    templateIds: [OPENAI_CODEX_GPT53_MODEL_ID],
-  },
-] as const;
-
-function applySyntheticCatalogFallbacks(models: ModelCatalogEntry[]): void {
-  const findCatalogEntry = (provider: string, id: string) =>
-    models.find(
-      (entry) =>
-        entry.provider.toLowerCase() === provider.toLowerCase() &&
-        entry.id.toLowerCase() === id.toLowerCase(),
-    );
-
-  for (const fallback of SYNTHETIC_CATALOG_FALLBACKS) {
-    if (findCatalogEntry(fallback.provider, fallback.id)) {
-      continue;
-    }
-    const template = fallback.templateIds
-      .map((templateId) => findCatalogEntry(fallback.provider, templateId))
-      .find((entry) => entry !== undefined);
-    if (!template) {
-      continue;
-    }
-    models.push({
-      ...template,
-      id: fallback.id,
-      name: fallback.id,
-    });
-  }
+function loadModelSuppression() {
+  modelSuppressionPromise ??= import("./model-suppression.runtime.js");
+  return modelSuppressionPromise;
 }
 
 function normalizeConfiguredModelInput(input: unknown): ModelInputType[] | undefined {
@@ -107,7 +58,7 @@ function normalizeConfiguredModelInput(input: unknown): ModelInputType[] | undef
   return normalized.length > 0 ? normalized : undefined;
 }
 
-function readConfiguredOptInProviderModels(config: OpenCraftConfig): ModelCatalogEntry[] {
+function readConfiguredOptInProviderModels(config: OpenClawConfig): ModelCatalogEntry[] {
   const providers = config.models?.providers;
   if (!providers || typeof providers !== "object") {
     return [];
@@ -156,7 +107,7 @@ function readConfiguredOptInProviderModels(config: OpenCraftConfig): ModelCatalo
 }
 
 function mergeConfiguredOptInProviderModels(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   models: ModelCatalogEntry[];
 }): void {
   const configured = readConfiguredOptInProviderModels(params.config);
@@ -192,7 +143,7 @@ export function __setModelCatalogImportForTest(loader?: () => Promise<PiSdkModul
 }
 
 export async function loadModelCatalog(params?: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   useCache?: boolean;
 }): Promise<ModelCatalogEntry[]> {
   if (params?.useCache === false) {
@@ -214,13 +165,15 @@ export async function loadModelCatalog(params?: {
       });
     try {
       const cfg = params?.config ?? loadConfig();
-      await ensureOpenCraftModelsJson(cfg);
+      await ensureOpenClawModelsJson(cfg);
       // IMPORTANT: keep the dynamic import *inside* the try/catch.
       // If this fails once (e.g. during a pnpm install that temporarily swaps node_modules),
       // we must not poison the cache with a rejected promise (otherwise all channel handlers
       // will keep failing until restart).
       const piSdk = await importPiSdk();
-      const agentDir = resolveOpenCraftAgentDir();
+      const agentDir = resolveOpenClawAgentDir();
+      const [{ shouldSuppressBuiltInModel }, { augmentModelCatalogWithProviderPlugins }] =
+        await Promise.all([loadModelSuppression(), loadProviderRuntime()]);
       const { join } = await import("node:path");
       const authStorage = piSdk.discoverAuthStorage(agentDir);
       const registry = new (piSdk.ModelRegistry as unknown as {
@@ -256,7 +209,31 @@ export async function loadModelCatalog(params?: {
         models.push({ id, name, provider, contextWindow, reasoning, input });
       }
       mergeConfiguredOptInProviderModels({ config: cfg, models });
-      applySyntheticCatalogFallbacks(models);
+      const supplemental = await augmentModelCatalogWithProviderPlugins({
+        config: cfg,
+        env: process.env,
+        context: {
+          config: cfg,
+          agentDir,
+          env: process.env,
+          entries: [...models],
+        },
+      });
+      if (supplemental.length > 0) {
+        const seen = new Set(
+          models.map(
+            (entry) => `${entry.provider.toLowerCase().trim()}::${entry.id.toLowerCase().trim()}`,
+          ),
+        );
+        for (const entry of supplemental) {
+          const key = `${entry.provider.toLowerCase().trim()}::${entry.id.toLowerCase().trim()}`;
+          if (seen.has(key)) {
+            continue;
+          }
+          models.push(entry);
+          seen.add(key);
+        }
+      }
 
       if (models.length === 0) {
         // If we found nothing, don't cache this result so we can try again.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import {
   buildIMessageInboundContext,
   resolveIMessageInboundDecision,
@@ -7,7 +7,7 @@ import {
 import { parseIMessageNotification } from "./monitor/parse-notification.js";
 import type { IMessagePayload } from "./monitor/types.js";
 
-function baseCfg(): OpenCraftConfig {
+function baseCfg(): OpenClawConfig {
   return {
     channels: {
       imessage: {
@@ -19,13 +19,13 @@ function baseCfg(): OpenCraftConfig {
     },
     session: { mainKey: "main" },
     messages: {
-      groupChat: { mentionPatterns: ["@opencraft"] },
+      groupChat: { mentionPatterns: ["@openclaw"] },
     },
-  } as unknown as OpenCraftConfig;
+  } as unknown as OpenClawConfig;
 }
 
 function resolve(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   message: IMessagePayload;
   storeAllowFrom?: string[];
 }) {
@@ -49,7 +49,7 @@ function resolve(params: {
 }
 
 function resolveDispatchDecision(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   message: IMessagePayload;
   groupHistories?: Parameters<typeof resolveIMessageInboundDecision>[0]["groupHistories"];
 }) {
@@ -76,7 +76,7 @@ function resolveDispatchDecision(params: {
   return { decision, groupHistories };
 }
 
-function buildDispatchContextPayload(params: { cfg: OpenCraftConfig; message: IMessagePayload }) {
+function buildDispatchContextPayload(params: { cfg: OpenClawConfig; message: IMessagePayload }) {
   const { cfg, message } = params;
   const { decision, groupHistories } = resolveDispatchDecision({ cfg, message });
 
@@ -125,7 +125,7 @@ describe("imessage monitor gating + envelope builders", () => {
       chat_id: 42,
       sender: "+15550002222",
       is_from_me: false,
-      text: "@opencraft ping",
+      text: "@openclaw ping",
       is_group: true,
       chat_name: "Lobster Squad",
       participants: ["+1555", "+1556"],
@@ -228,12 +228,12 @@ describe("imessage monitor gating + envelope builders", () => {
         chat_id: 123,
         sender: "+15550001111",
         is_from_me: false,
-        text: "@opencraft hello",
+        text: "@openclaw hello",
         is_group: true,
       },
       opts: {},
-      messageText: "@opencraft hello",
-      bodyText: "@opencraft hello",
+      messageText: "@openclaw hello",
+      bodyText: "@openclaw hello",
       allowFrom: ["*"],
       groupAllowFrom: [],
       groupPolicy: "open",
@@ -260,12 +260,12 @@ describe("imessage monitor gating + envelope builders", () => {
         chat_id: 202,
         sender: "+15550003333",
         is_from_me: false,
-        text: "@opencraft hi",
+        text: "@openclaw hi",
         is_group: true,
       },
       opts: {},
-      messageText: "@opencraft hi",
-      bodyText: "@opencraft hi",
+      messageText: "@openclaw hi",
+      bodyText: "@openclaw hi",
       allowFrom: ["*"],
       groupAllowFrom: ["chat_id:101"],
       groupPolicy: "allowlist",
@@ -284,12 +284,12 @@ describe("imessage monitor gating + envelope builders", () => {
         chat_id: 101,
         sender: "+15550003333",
         is_from_me: false,
-        text: "@opencraft ok",
+        text: "@openclaw ok",
         is_group: true,
       },
       opts: {},
-      messageText: "@opencraft ok",
-      bodyText: "@opencraft ok",
+      messageText: "@openclaw ok",
+      bodyText: "@openclaw ok",
       allowFrom: ["*"],
       groupAllowFrom: ["chat_id:101"],
       groupPolicy: "allowlist",
@@ -316,12 +316,12 @@ describe("imessage monitor gating + envelope builders", () => {
         chat_id: 303,
         sender: "+15550003333",
         is_from_me: false,
-        text: "@opencraft hi",
+        text: "@openclaw hi",
         is_group: true,
       },
       opts: {},
-      messageText: "@opencraft hi",
-      bodyText: "@opencraft hi",
+      messageText: "@openclaw hi",
+      bodyText: "@openclaw hi",
       allowFrom: ["*"],
       groupAllowFrom: [],
       groupPolicy: "disabled",

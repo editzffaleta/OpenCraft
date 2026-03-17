@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { GatewayClient } from "../../../src/gateway/client.js";
 import { createOperatorApprovalsGatewayClient } from "../../../src/gateway/operator-approvals-client.js";
 import type { EventFrame } from "../../../src/gateway/protocol/index.js";
@@ -44,7 +44,7 @@ type TelegramApprovalTarget = {
 export type TelegramExecApprovalHandlerOpts = {
   token: string;
   accountId: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   gatewayUrl?: string;
   runtime?: RuntimeEnv;
 };
@@ -57,7 +57,7 @@ export type TelegramExecApprovalHandlerDeps = {
 };
 
 function matchesFilters(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   request: ExecApprovalRequest;
 }): boolean {
@@ -102,7 +102,7 @@ function matchesFilters(params: {
   return true;
 }
 
-function isHandlerConfigured(params: { cfg: OpenCraftConfig; accountId: string }): boolean {
+function isHandlerConfigured(params: { cfg: OpenClawConfig; accountId: string }): boolean {
   const config = resolveTelegramExecApprovalConfig({
     cfg: params.cfg,
     accountId: params.accountId,
@@ -119,7 +119,7 @@ function isHandlerConfigured(params: { cfg: OpenCraftConfig; accountId: string }
 }
 
 function resolveRequestSessionTarget(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   request: ExecApprovalRequest;
 }): { to: string; accountId?: string; threadId?: number; channel?: string } | null {
   return resolveExecApprovalSessionTarget({
@@ -133,7 +133,7 @@ function resolveRequestSessionTarget(params: {
 }
 
 function resolveTelegramSourceTarget(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   request: ExecApprovalRequest;
 }): TelegramApprovalTarget | null {

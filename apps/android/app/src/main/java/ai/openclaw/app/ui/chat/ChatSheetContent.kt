@@ -1,8 +1,5 @@
-package ai.opencraft.app.ui.chat
+package ai.openclaw.app.ui.chat
 
-import android.content.ContentResolver
-import android.net.Uri
-import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -32,22 +29,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ai.opencraft.app.MainViewModel
-import ai.opencraft.app.chat.ChatSessionEntry
-import ai.opencraft.app.chat.OutgoingAttachment
-import ai.opencraft.app.ui.mobileAccent
-import ai.opencraft.app.ui.mobileAccentBorderStrong
-import ai.opencraft.app.ui.mobileBorder
-import ai.opencraft.app.ui.mobileBorderStrong
-import ai.opencraft.app.ui.mobileCallout
-import ai.opencraft.app.ui.mobileCardSurface
-import ai.opencraft.app.ui.mobileCaption1
-import ai.opencraft.app.ui.mobileCaption2
-import ai.opencraft.app.ui.mobileDanger
-import ai.opencraft.app.ui.mobileDangerSoft
-import ai.opencraft.app.ui.mobileText
-import ai.opencraft.app.ui.mobileTextSecondary
-import java.io.ByteArrayOutputStream
+import ai.openclaw.app.MainViewModel
+import ai.openclaw.app.chat.ChatSessionEntry
+import ai.openclaw.app.chat.OutgoingAttachment
+import ai.openclaw.app.ui.mobileAccent
+import ai.openclaw.app.ui.mobileAccentBorderStrong
+import ai.openclaw.app.ui.mobileBorder
+import ai.openclaw.app.ui.mobileBorderStrong
+import ai.openclaw.app.ui.mobileCallout
+import ai.openclaw.app.ui.mobileCardSurface
+import ai.openclaw.app.ui.mobileCaption1
+import ai.openclaw.app.ui.mobileCaption2
+import ai.openclaw.app.ui.mobileDanger
+import ai.openclaw.app.ui.mobileDangerSoft
+import ai.openclaw.app.ui.mobileText
+import ai.openclaw.app.ui.mobileTextSecondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,7 +79,7 @@ fun ChatSheetContent(viewModel: MainViewModel) {
         val next =
           uris.take(8).mapNotNull { uri ->
             try {
-              loadImageAttachment(resolver, uri)
+              loadSizedImageAttachment(resolver, uri)
             } catch (_: Throwable) {
               null
             }
@@ -160,7 +156,10 @@ private fun ChatThreadSelector(
   mainSessionKey: String,
   onSelectSession: (String) -> Unit,
 ) {
-  val sessionOptions = resolveSessionChoices(sessionKey, sessions, mainSessionKey = mainSessionKey)
+  val sessionOptions =
+    remember(sessionKey, sessions, mainSessionKey) {
+      resolveSessionChoices(sessionKey, sessions, mainSessionKey = mainSessionKey)
+    }
 
   Row(
     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -214,24 +213,3 @@ data class PendingImageAttachment(
   val mimeType: String,
   val base64: String,
 )
-
-private suspend fun loadImageAttachment(resolver: ContentResolver, uri: Uri): PendingImageAttachment {
-  val mimeType = resolver.getType(uri) ?: "image/*"
-  val fileName = (uri.lastPathSegment ?: "image").substringAfterLast('/')
-  val bytes =
-    withContext(Dispatchers.IO) {
-      resolver.openInputStream(uri)?.use { input ->
-        val out = ByteArrayOutputStream()
-        input.copyTo(out)
-        out.toByteArray()
-      } ?: ByteArray(0)
-    }
-  if (bytes.isEmpty()) throw IllegalStateException("empty attachment")
-  val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
-  return PendingImageAttachment(
-    id = uri.toString() + "#" + System.currentTimeMillis().toString(),
-    fileName = fileName,
-    mimeType = mimeType,
-    base64 = base64,
-  )
-}

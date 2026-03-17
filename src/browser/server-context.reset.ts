@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import type { ResolvedBrowserProfile } from "./config.js";
 import { BrowserResetUnsupportedError } from "./errors.js";
-import { stopChromeExtensionRelayServer } from "./extension-relay.js";
 import { getBrowserProfileCapabilities } from "./profile-capabilities.js";
 import type { ProfileRuntimeState } from "./server-context.types.js";
 import { movePathToTrash } from "./trash.js";
@@ -11,7 +10,7 @@ type ResetDeps = {
   getProfileState: () => ProfileRuntimeState;
   stopRunningBrowser: () => Promise<{ stopped: boolean }>;
   isHttpReachable: (timeoutMs?: number) => Promise<boolean>;
-  resolveOpenCraftUserDataDir: (profileName: string) => string;
+  resolveOpenClawUserDataDir: (profileName: string) => string;
 };
 
 type ResetOps = {
@@ -32,21 +31,17 @@ export function createProfileResetOps({
   getProfileState,
   stopRunningBrowser,
   isHttpReachable,
-  resolveOpenCraftUserDataDir,
+  resolveOpenClawUserDataDir,
 }: ResetDeps): ResetOps {
   const capabilities = getBrowserProfileCapabilities(profile);
   const resetProfile = async () => {
-    if (capabilities.requiresRelay) {
-      await stopChromeExtensionRelayServer({ cdpUrl: profile.cdpUrl }).catch(() => {});
-      return { moved: false, from: profile.cdpUrl };
-    }
     if (!capabilities.supportsReset) {
       throw new BrowserResetUnsupportedError(
         `reset-profile is only supported for local profiles (profile "${profile.name}" is remote).`,
       );
     }
 
-    const userDataDir = resolveOpenCraftUserDataDir(profile.name);
+    const userDataDir = resolveOpenClawUserDataDir(profile.name);
     const profileState = getProfileState();
     const httpReachable = await isHttpReachable(300);
     if (httpReachable && !profileState.running) {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { isWithinActiveHours } from "./heartbeat-active-hours.js";
 
-function cfgWithUserTimezone(userTimezone = "UTC"): OpenCraftConfig {
+function cfgWithUserTimezone(userTimezone = "UTC"): OpenClawConfig {
   return {
     agents: {
       defaults: {

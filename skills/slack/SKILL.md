@@ -1,36 +1,36 @@
 ---
 name: slack
-description: Use quando precisar controlar o Slack pelo OpenCraft via ferramenta slack, incluindo reagir a mensagens ou fixar/desafixar itens em canais ou DMs do Slack.
-metadata: { "opencraft": { "emoji": "💬", "requires": { "config": ["channels.slack"] } } }
+description: Use when you need to control Slack from OpenClaw via the slack tool, including reacting to messages or pinning/unpinning items in Slack channels or DMs.
+metadata: { "openclaw": { "emoji": "💬", "requires": { "config": ["channels.slack"] } } }
 ---
 
-# Ações no Slack
+# Slack Actions
 
-## Visão Geral
+## Overview
 
-Use `slack` para reagir, gerenciar fixações, enviar/editar/deletar mensagens e buscar informações de membros. A ferramenta usa o bot token configurado para o OpenCraft.
+Use `slack` to react, manage pins, send/edit/delete messages, and fetch member info. The tool uses the bot token configured for OpenClaw.
 
-## Entradas a coletar
+## Inputs to collect
 
-- `channelId` e `messageId` (timestamp de mensagem do Slack, ex: `1712023032.1234`).
-- Para reações, um `emoji` (Unicode ou `:nome:`).
-- Para envios de mensagem, um alvo `to` (`channel:<id>` ou `user:<id>`) e `content`.
+- `channelId` and `messageId` (Slack message timestamp, e.g. `1712023032.1234`).
+- For reactions, an `emoji` (Unicode or `:name:`).
+- For message sends, a `to` target (`channel:<id>` or `user:<id>`) and `content`.
 
-As linhas de contexto de mensagem incluem campos `slack message id` e `channel` que você pode reutilizar diretamente.
+Message context lines include `slack message id` and `channel` fields you can reuse directly.
 
-## Ações
+## Actions
 
-### Grupos de ação
+### Action groups
 
-| Grupo de ação | Padrão   | Notas                         |
-| ------------- | -------- | ----------------------------- |
-| reactions     | habilitado | Reagir + listar reações     |
-| messages      | habilitado | Ler/enviar/editar/deletar   |
-| pins          | habilitado | Fixar/desafixar/listar      |
-| memberInfo    | habilitado | Informações de membro       |
-| emojiList     | habilitado | Lista de emoji personalizado|
+| Action group | Default | Notes                  |
+| ------------ | ------- | ---------------------- |
+| reactions    | enabled | React + list reactions |
+| messages     | enabled | Read/send/edit/delete  |
+| pins         | enabled | Pin/unpin/list         |
+| memberInfo   | enabled | Member info            |
+| emojiList    | enabled | Custom emoji list      |
 
-### Reagir a uma mensagem
+### React to a message
 
 ```json
 {
@@ -41,7 +41,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Listar reações
+### List reactions
 
 ```json
 {
@@ -51,28 +51,28 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Enviar uma mensagem
+### Send a message
 
 ```json
 {
   "action": "sendMessage",
   "to": "channel:C123",
-  "content": "Olá do OpenCraft"
+  "content": "Hello from OpenClaw"
 }
 ```
 
-### Editar uma mensagem
+### Edit a message
 
 ```json
 {
   "action": "editMessage",
   "channelId": "C123",
   "messageId": "1712023032.1234",
-  "content": "Texto atualizado"
+  "content": "Updated text"
 }
 ```
 
-### Deletar uma mensagem
+### Delete a message
 
 ```json
 {
@@ -82,7 +82,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Ler mensagens recentes
+### Read recent messages
 
 ```json
 {
@@ -92,7 +92,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Fixar uma mensagem
+### Pin a message
 
 ```json
 {
@@ -102,7 +102,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Desafixar uma mensagem
+### Unpin a message
 
 ```json
 {
@@ -112,7 +112,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Listar itens fixados
+### List pinned items
 
 ```json
 {
@@ -121,7 +121,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Informações de membro
+### Member info
 
 ```json
 {
@@ -130,7 +130,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-### Lista de emoji
+### Emoji list
 
 ```json
 {
@@ -138,7 +138,7 @@ As linhas de contexto de mensagem incluem campos `slack message id` e `channel` 
 }
 ```
 
-## Ideias para experimentar
+## Ideas to try
 
-- Reagir com ✅ para marcar tarefas concluídas.
-- Fixar decisões importantes ou atualizações de status semanal.
+- React with ✅ to mark completed tasks.
+- Pin key decisions or weekly status updates.

@@ -31,7 +31,7 @@ function mkdirSafe(dir: string) {
 }
 
 function makeTempDir() {
-  const dir = mkdtempSafe(path.join(os.tmpdir(), "opencraft-plugin-auto-enable-"));
+  const dir = mkdtempSafe(path.join(os.tmpdir(), "openclaw-plugin-auto-enable-"));
   tempDirs.push(dir);
   return dir;
 }
@@ -39,7 +39,7 @@ function makeTempDir() {
 function writePluginManifestFixture(params: { rootDir: string; id: string; channels: string[] }) {
   mkdirSafe(params.rootDir);
   fs.writeFileSync(
-    path.join(params.rootDir, "opencraft.plugin.json"),
+    path.join(params.rootDir, "openclaw.plugin.json"),
     JSON.stringify(
       {
         id: params.id,
@@ -62,10 +62,11 @@ function makeRegistry(plugins: Array<{ id: string; channels: string[] }>): Plugi
       channels: p.channels,
       providers: [],
       skills: [],
+      hooks: [],
       origin: "config" as const,
       rootDir: `/fake/${p.id}`,
       source: `/fake/${p.id}/index.js`,
-      manifestPath: `/fake/${p.id}/opencraft.plugin.json`,
+      manifestPath: `/fake/${p.id}/openclaw.plugin.json`,
     })),
     diagnostics: [],
   };
@@ -204,12 +205,25 @@ describe("applyPluginAutoEnable", () => {
     expect(result.changes).toEqual([]);
   });
 
+  it("does not auto-enable plugin channels when only enabled=false is set", () => {
+    const result = applyPluginAutoEnable({
+      config: {
+        channels: { matrix: { enabled: false } },
+      },
+      env: {},
+      manifestRegistry: makeRegistry([{ id: "matrix", channels: ["matrix"] }]),
+    });
+
+    expect(result.config.plugins?.entries?.matrix).toBeUndefined();
+    expect(result.changes).toEqual([]);
+  });
+
   it("auto-enables irc when configured via env", () => {
     const result = applyPluginAutoEnable({
       config: {},
       env: {
         IRC_HOST: "irc.libera.chat",
-        IRC_NICK: "opencraft-bot",
+        IRC_NICK: "openclaw-bot",
       },
     });
 
@@ -232,10 +246,10 @@ describe("applyPluginAutoEnable", () => {
       },
       env: {
         ...process.env,
-        OPENCRAFT_HOME: undefined,
-        OPENCRAFT_STATE_DIR: stateDir,
+        OPENCLAW_HOME: undefined,
+        OPENCLAW_STATE_DIR: stateDir,
         CLAWDBOT_STATE_DIR: undefined,
-        OPENCRAFT_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
+        OPENCLAW_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
       },
     });
 
@@ -252,8 +266,8 @@ describe("applyPluginAutoEnable", () => {
       JSON.stringify({
         entries: [
           {
-            name: "@opencraft/env-secondary",
-            opencraft: {
+            name: "@openclaw/env-secondary",
+            openclaw: {
               channel: {
                 id: "env-secondary",
                 label: "Env Secondary",
@@ -263,7 +277,7 @@ describe("applyPluginAutoEnable", () => {
                 preferOver: ["env-primary"],
               },
               install: {
-                npmSpec: "@opencraft/env-secondary",
+                npmSpec: "@openclaw/env-secondary",
               },
             },
           },
@@ -275,13 +289,13 @@ describe("applyPluginAutoEnable", () => {
     const result = applyPluginAutoEnable({
       config: {
         channels: {
-          "env-primary": { enabled: true },
-          "env-secondary": { enabled: true },
+          "env-primary": { token: "primary" },
+          "env-secondary": { token: "secondary" },
         },
       },
       env: {
         ...process.env,
-        OPENCRAFT_STATE_DIR: stateDir,
+        OPENCLAW_STATE_DIR: stateDir,
         CLAWDBOT_STATE_DIR: undefined,
       },
       manifestRegistry: makeRegistry([]),
@@ -306,7 +320,26 @@ describe("applyPluginAutoEnable", () => {
       env: {},
     });
 
-    expect(result.config.plugins?.entries?.["google-gemini-cli-auth"]?.enabled).toBe(true);
+    expect(result.config.plugins?.entries?.google?.enabled).toBe(true);
+  });
+
+  it("auto-enables minimax when minimax-portal profiles exist", () => {
+    const result = applyPluginAutoEnable({
+      config: {
+        auth: {
+          profiles: {
+            "minimax-portal:default": {
+              provider: "minimax-portal",
+              mode: "oauth",
+            },
+          },
+        },
+      },
+      env: {},
+    });
+
+    expect(result.config.plugins?.entries?.minimax?.enabled).toBe(true);
+    expect(result.config.plugins?.entries?.["minimax-portal-auth"]).toBeUndefined();
   });
 
   it("auto-enables acpx plugin when ACP is configured", () => {
@@ -352,7 +385,7 @@ describe("applyPluginAutoEnable", () => {
 
   describe("third-party channel plugins (pluginId ≠ channelId)", () => {
     it("uses the plugin manifest id, not the channel id, for plugins.entries", () => {
-      // Reproduces: https://github.com/editzffaleta/OpenCraft/issues/25261
+      // Reproduces: https://github.com/openclaw/openclaw/issues/25261
       // Plugin "apn-channel" declares channels: ["apn"]. Doctor must write
       // plugins.entries["apn-channel"], not plugins.entries["apn"].
       const result = applyWithApnChannelConfig();
@@ -458,10 +491,10 @@ describe("applyPluginAutoEnable", () => {
         config: makeApnChannelConfig(),
         env: {
           ...process.env,
-          OPENCRAFT_HOME: undefined,
-          OPENCRAFT_STATE_DIR: stateDir,
+          OPENCLAW_HOME: undefined,
+          OPENCLAW_STATE_DIR: stateDir,
           CLAWDBOT_STATE_DIR: undefined,
-          OPENCRAFT_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
+          OPENCLAW_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
         },
       });
 

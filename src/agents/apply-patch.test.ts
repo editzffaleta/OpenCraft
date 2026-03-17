@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { applyPatch } from "./apply-patch.js";
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>) {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-patch-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-patch-"));
   try {
     return await fn(dir);
   } finally {
@@ -14,7 +14,7 @@ async function withTempDir<T>(fn: (dir: string) => Promise<T>) {
 }
 
 async function withWorkspaceTempDir<T>(fn: (dir: string) => Promise<T>) {
-  const dir = await fs.mkdtemp(path.join(process.cwd(), "opencraft-patch-workspace-"));
+  const dir = await fs.mkdtemp(path.join(process.cwd(), "openclaw-patch-workspace-"));
   try {
     return await fn(dir);
   } finally {
@@ -119,7 +119,7 @@ describe("applyPatch", () => {
 
   it("rejects absolute paths outside cwd by default", async () => {
     await withTempDir(async (dir) => {
-      const escapedPath = path.join(os.tmpdir(), `opencraft-apply-patch-${Date.now()}.txt`);
+      const escapedPath = path.join(os.tmpdir(), `openclaw-apply-patch-${Date.now()}.txt`);
 
       try {
         await expectOutsideWriteRejected({
@@ -144,6 +144,25 @@ describe("applyPatch", () => {
       await applyPatch(patch, { cwd: dir });
       const contents = await fs.readFile(target, "utf8");
       expect(contents).toBe("inside\n");
+    });
+  });
+
+  it("resolves delete targets before calling fs.rm", async () => {
+    await withTempDir(async (dir) => {
+      const target = path.join(dir, "delete-me.txt");
+      await fs.writeFile(target, "x\n", "utf8");
+      const rmSpy = vi.spyOn(fs, "rm");
+
+      try {
+        const patch = `*** Begin Patch
+*** Delete File: delete-me.txt
+*** End Patch`;
+
+        await applyPatch(patch, { cwd: dir });
+        expect(rmSpy).toHaveBeenCalledWith(target);
+      } finally {
+        rmSpy.mockRestore();
+      }
     });
   });
 
@@ -314,7 +333,7 @@ describe("applyPatch", () => {
 
   it("allows deleting a symlink itself even if it points outside cwd", async () => {
     await withTempDir(async (dir) => {
-      const outsideDir = await fs.mkdtemp(path.join(path.dirname(dir), "opencraft-patch-outside-"));
+      const outsideDir = await fs.mkdtemp(path.join(path.dirname(dir), "openclaw-patch-outside-"));
       try {
         const outsideTarget = path.join(outsideDir, "target.txt");
         await fs.writeFile(outsideTarget, "keep\n", "utf8");
@@ -340,6 +359,48 @@ describe("applyPatch", () => {
       } finally {
         await fs.rm(outsideDir, { recursive: true, force: true });
       }
+    });
+  });
+
+  it("uses container paths when the sandbox bridge has no local host path", async () => {
+    const files = new Map<string, string>([["/sandbox/source.txt", "before\n"]]);
+    const bridge = {
+      resolvePath: ({ filePath }: { filePath: string }) => ({
+        relativePath: filePath,
+        containerPath: `/sandbox/${filePath}`,
+      }),
+      readFile: vi.fn(async ({ filePath }: { filePath: string }) =>
+        Buffer.from(files.get(filePath) ?? "", "utf8"),
+      ),
+      writeFile: vi.fn(async ({ filePath, data }: { filePath: string; data: Buffer | string }) => {
+        files.set(filePath, Buffer.isBuffer(data) ? data.toString("utf8") : data);
+      }),
+      remove: vi.fn(async ({ filePath }: { filePath: string }) => {
+        files.delete(filePath);
+      }),
+      mkdirp: vi.fn(async () => {}),
+    };
+
+    const patch = `*** Begin Patch
+*** Update File: source.txt
+@@
+-before
++after
+*** End Patch`;
+
+    const result = await applyPatch(patch, {
+      cwd: "/local/workspace",
+      sandbox: {
+        root: "/local/workspace",
+        bridge: bridge as never,
+      },
+    });
+
+    expect(files.get("/sandbox/source.txt")).toBe("after\n");
+    expect(result.summary.modified).toEqual(["source.txt"]);
+    expect(bridge.readFile).toHaveBeenCalledWith({
+      filePath: "/sandbox/source.txt",
+      cwd: "/local/workspace",
     });
   });
 });

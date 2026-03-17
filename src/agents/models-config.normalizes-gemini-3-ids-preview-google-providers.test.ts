@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ModelDefinitionConfig } from "../config/types.models.js";
 import { installModelsConfigTestHooks, withModelsTempHome } from "./models-config.e2e-harness.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
-function createGoogleModelsConfig(models: ModelDefinitionConfig[]): OpenCraftConfig {
+function createGoogleModelsConfig(models: ModelDefinitionConfig[]): OpenClawConfig {
   return {
     models: {
       providers: {
@@ -55,7 +55,7 @@ describe("models-config", () => {
         },
       ]);
 
-      await ensureOpenCraftModelsJson(cfg);
+      await ensureOpenClawModelsJson(cfg);
       await expectGeneratedGoogleModelIds(["gemini-3-pro-preview", "gemini-3-flash-preview"]);
     });
   });
@@ -75,7 +75,7 @@ describe("models-config", () => {
         },
       ]);
 
-      await ensureOpenCraftModelsJson(cfg);
+      await ensureOpenClawModelsJson(cfg);
       await expectGeneratedGoogleModelIds(["gemini-3-flash-preview"]);
     });
   });

@@ -1,15 +1,15 @@
 ---
-summary: "Referência do CLI para `opencraft docs` (pesquisar o índice de docs ao vivo)"
+summary: "CLI reference for `openclaw docs` (search the live docs index)"
 read_when:
-  - Você quer pesquisar os docs ao vivo do OpenCraft pelo terminal
+  - You want to search the live OpenClaw docs from the terminal
 title: "docs"
 ---
 
-# `opencraft docs`
+# `openclaw docs`
 
-Pesquisar o índice de docs ao vivo.
+Search the live docs index.
 
 ```bash
-opencraft docs browser extension
-opencraft docs sandbox allowHostControl
+openclaw docs browser existing-session
+openclaw docs sandbox allowHostControl
 ```

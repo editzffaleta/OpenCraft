@@ -1,4 +1,4 @@
-export type OpenCraftVersion = {
+export type OpenClawVersion = {
   major: number;
   minor: number;
   patch: number;
@@ -7,7 +7,7 @@ export type OpenCraftVersion = {
 
 const VERSION_RE = /^v?(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/;
 
-export function parseOpenCraftVersion(raw: string | null | undefined): OpenCraftVersion | null {
+export function parseOpenClawVersion(raw: string | null | undefined): OpenClawVersion | null {
   if (!raw) {
     return null;
   }
@@ -24,12 +24,12 @@ export function parseOpenCraftVersion(raw: string | null | undefined): OpenCraft
   };
 }
 
-export function compareOpenCraftVersions(
+export function compareOpenClawVersions(
   a: string | null | undefined,
   b: string | null | undefined,
 ): number | null {
-  const parsedA = parseOpenCraftVersion(a);
-  const parsedB = parseOpenCraftVersion(b);
+  const parsedA = parseOpenClawVersion(a);
+  const parsedB = parseOpenClawVersion(b);
   if (!parsedA || !parsedB) {
     return null;
   }

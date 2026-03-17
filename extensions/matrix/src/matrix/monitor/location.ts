@@ -3,7 +3,7 @@ import {
   formatLocationText,
   toLocationContext,
   type NormalizedLocation,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 import { EventType } from "./types.js";
 
 export type MatrixLocationPayload = {

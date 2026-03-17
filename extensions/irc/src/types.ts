@@ -1,4 +1,4 @@
-import type { BaseProbeResult } from "opencraft/plugin-sdk/irc";
+import type { BaseProbeResult } from "openclaw/plugin-sdk/irc";
 import type {
   BlockStreamingCoalesceConfig,
   DmConfig,
@@ -7,8 +7,8 @@ import type {
   GroupToolPolicyBySenderConfig,
   GroupToolPolicyConfig,
   MarkdownConfig,
-  OpenCraftConfig,
-} from "opencraft/plugin-sdk/irc";
+  OpenClawConfig,
+} from "openclaw/plugin-sdk/irc";
 
 export type IrcChannelConfig = {
   requireMention?: boolean;
@@ -71,8 +71,8 @@ export type IrcConfig = IrcAccountConfig & {
   defaultAccount?: string;
 };
 
-export type CoreConfig = OpenCraftConfig & {
-  channels?: OpenCraftConfig["channels"] & {
+export type CoreConfig = OpenClawConfig & {
+  channels?: OpenClawConfig["channels"] & {
     irc?: IrcConfig;
   };
 };

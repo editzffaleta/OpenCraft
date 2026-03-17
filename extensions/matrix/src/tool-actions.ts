@@ -5,7 +5,7 @@ import {
   readNumberParam,
   readReactionParams,
   readStringParam,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 import {
   deleteMatrixMessage,
   editMatrixMessage,

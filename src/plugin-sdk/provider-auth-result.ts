@@ -1,7 +1,8 @@
 import type { AuthProfileCredential } from "../agents/auth-profiles/types.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { ProviderAuthResult } from "../plugins/types.js";
 
+/** Build the standard auth result payload for OAuth-style provider login flows. */
 export function buildOauthProviderAuthResult(params: {
   providerId: string;
   defaultModel: string;
@@ -11,7 +12,7 @@ export function buildOauthProviderAuthResult(params: {
   email?: string | null;
   profilePrefix?: string;
   credentialExtra?: Record<string, unknown>;
-  configPatch?: Partial<OpenCraftConfig>;
+  configPatch?: Partial<OpenClawConfig>;
   notes?: string[];
 }): ProviderAuthResult {
   const email = params.email ?? undefined;
@@ -40,7 +41,7 @@ export function buildOauthProviderAuthResult(params: {
             },
           },
         },
-      } as Partial<OpenCraftConfig>),
+      } as Partial<OpenClawConfig>),
     defaultModel: params.defaultModel,
     notes: params.notes,
   };

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-extract_opencraft_semver() {
+extract_openclaw_semver() {
   local raw="${1:-}"
   local parsed=""
   parsed="$(

@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/signal";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/signal";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/core";
 import { signalPlugin } from "./src/channel.js";
 import { setSignalRuntime } from "./src/runtime.js";
 
@@ -8,7 +8,7 @@ const plugin = {
   name: "Signal",
   description: "Signal channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setSignalRuntime(api.runtime);
     api.registerChannel({ plugin: signalPlugin });
   },

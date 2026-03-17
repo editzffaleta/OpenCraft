@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { setDefaultChannelPluginRegistryForTests } from "../../commands/channel-test-helpers.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { resolveOutboundSessionRoute } from "./outbound-session.js";
 
 describe("resolveOutboundSessionRoute", () => {
-  const baseConfig = {} as OpenCraftConfig;
+  beforeEach(() => {
+    setDefaultChannelPluginRegistryForTests();
+  });
+
+  const baseConfig = {} as OpenClawConfig;
 
   it("resolves provider-specific session routes", async () => {
-    const perChannelPeerCfg = { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig;
+    const perChannelPeerCfg = { session: { dmScope: "per-channel-peer" } } as OpenClawConfig;
     const identityLinksCfg = {
       session: {
         dmScope: "per-peer",
@@ -14,7 +19,7 @@ describe("resolveOutboundSessionRoute", () => {
           alice: ["discord:123"],
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const slackMpimCfg = {
       channels: {
         slack: {
@@ -23,10 +28,10 @@ describe("resolveOutboundSessionRoute", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const cases: Array<{
       name: string;
-      cfg: OpenCraftConfig;
+      cfg: OpenClawConfig;
       channel: string;
       target: string;
       replyToId?: string;
@@ -205,7 +210,7 @@ describe("resolveOutboundSessionRoute", () => {
 
   it("uses resolved Discord user targets to route bare numeric ids as DMs", async () => {
     const route = await resolveOutboundSessionRoute({
-      cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+      cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
       channel: "discord",
       agentId: "main",
       target: "123",
@@ -227,7 +232,7 @@ describe("resolveOutboundSessionRoute", () => {
   it("uses resolved Mattermost user targets to route bare ids as DMs", async () => {
     const userId = "dthcxgoxhifn3pwh65cut3ud3w";
     const route = await resolveOutboundSessionRoute({
-      cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+      cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
       channel: "mattermost",
       agentId: "main",
       target: userId,
@@ -249,7 +254,7 @@ describe("resolveOutboundSessionRoute", () => {
   it("rejects bare numeric Discord targets when the caller has no kind hint", async () => {
     await expect(
       resolveOutboundSessionRoute({
-        cfg: { session: { dmScope: "per-channel-peer" } } as OpenCraftConfig,
+        cfg: { session: { dmScope: "per-channel-peer" } } as OpenClawConfig,
         channel: "discord",
         agentId: "main",
         target: "123",

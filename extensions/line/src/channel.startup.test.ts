@@ -1,10 +1,10 @@
 import type {
   ChannelGatewayContext,
   ChannelAccountSnapshot,
-  OpenCraftConfig,
+  OpenClawConfig,
   PluginRuntime,
   ResolvedLineAccount,
-} from "opencraft/plugin-sdk/line";
+} from "openclaw/plugin-sdk/line";
 import { describe, expect, it, vi } from "vitest";
 import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
 import { linePlugin } from "./channel.js";
@@ -55,7 +55,7 @@ function createStartAccountCtx(params: {
       tokenSource: "config" as const,
       config: {} as ResolvedLineAccount["config"],
     },
-    cfg: {} as OpenCraftConfig,
+    cfg: {} as OpenClawConfig,
     runtime: params.runtime,
     abortSignal: params.abortSignal ?? new AbortController().signal,
     log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },

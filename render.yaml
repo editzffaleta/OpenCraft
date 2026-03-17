@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: opencraft
+    name: openclaw
     runtime: docker
     plan: starter
     healthCheckPath: /health
@@ -10,12 +10,12 @@ services:
       - key: SETUP_PASSWORD
         sync: false
       - key: OPENCLAW_STATE_DIR
-        value: /data/.opencraft
+        value: /data/.openclaw
       - key: OPENCLAW_WORKSPACE_DIR
         value: /data/workspace
       - key: OPENCLAW_GATEWAY_TOKEN
         generateValue: true
     disk:
-      name: opencraft-data
+      name: openclaw-data
       mountPath: /data
       sizeGB: 1

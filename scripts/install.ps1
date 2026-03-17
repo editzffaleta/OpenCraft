@@ -1,11 +1,11 @@
-# OpenCraft Installer for Windows (PowerShell)
-# Usage: iwr -useb https://opencraft.ai/install.ps1 | iex
-# Or: & ([scriptblock]::Create((iwr -useb https://opencraft.ai/install.ps1))) -NoOnboard
+# OpenClaw Installer for Windows (PowerShell)
+# Usage: iwr -useb https://openclaw.ai/install.ps1 | iex
+# Or: & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -NoOnboard
 
 param(
     [string]$InstallMethod = "npm",
     [string]$Tag = "latest",
-    [string]$GitDir = "$env:USERPROFILE\opencraft",
+    [string]$GitDir = "$env:USERPROFILE\openclaw",
     [switch]$NoOnboard,
     [switch]$NoGitUpdate,
     [switch]$DryRun
@@ -34,7 +34,7 @@ function Write-Host {
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "${ACCENT}  🦞 OpenCraft Installer$NC" -Level info
+    Write-Host "${ACCENT}  🦞 OpenClaw Installer$NC" -Level info
     Write-Host "${MUTED}  All your chats, one OpenClaw.$NC" -Level info
     Write-Host ""
 }
@@ -200,14 +200,16 @@ function Ensure-Git {
 }
 
 function Install-OpenClawNpm {
-    param([string]$Version = "latest")
+    param([string]$Target = "latest")
+
+    $installSpec = Resolve-PackageInstallSpec -Target $Target
     
-    Write-Host "Installing OpenCraft (opencraft@$Version)..." -Level info
+    Write-Host "Installing OpenClaw ($installSpec)..." -Level info
     
     try {
         # Use -ExecutionPolicy Bypass to handle restricted execution policy
-        npm install -g opencraft@$Version --no-fund --no-audit 2>&1
-        Write-Host "OpenCraft installed" -Level success
+        npm install -g $installSpec --no-fund --no-audit 2>&1
+        Write-Host "OpenClaw installed" -Level success
         return $true
     } catch {
         Write-Host "npm install failed: $_" -Level error
@@ -218,11 +220,11 @@ function Install-OpenClawNpm {
 function Install-OpenClawGit {
     param([string]$RepoDir, [switch]$Update)
     
-    Write-Host "Installing OpenCraft from git..." -Level info
+    Write-Host "Installing OpenClaw from git..." -Level info
     
     if (!(Test-Path $RepoDir)) {
         Write-Host "  Cloning repository..." -Level info
-        git clone https://github.com/editzffaleta/OpenCraft.git $RepoDir 2>&1
+        git clone https://github.com/openclaw/openclaw.git $RepoDir 2>&1
     } elseif ($Update) {
         Write-Host "  Updating repository..." -Level info
         git -C $RepoDir pull --rebase 2>&1
@@ -250,11 +252,39 @@ function Install-OpenClawGit {
     
     @"
 @echo off
-node "%~dp0..\opencraft\dist\entry.js" %*
-"@ | Out-File -FilePath "$wrapperDir\opencraft.cmd" -Encoding ASCII -Force
+node "%~dp0..\openclaw\dist\entry.js" %*
+"@ | Out-File -FilePath "$wrapperDir\openclaw.cmd" -Encoding ASCII -Force
     
-    Write-Host "OpenCraft installed" -Level success
+    Write-Host "OpenClaw installed" -Level success
     return $true
+}
+
+function Test-ExplicitPackageInstallSpec {
+    param([string]$Target)
+
+    if ([string]::IsNullOrWhiteSpace($Target)) {
+        return $false
+    }
+
+    return $Target.Contains("://") -or
+        $Target.Contains("#") -or
+        $Target -match '^(file|github|git\+ssh|git\+https|git\+http|git\+file|npm):'
+}
+
+function Resolve-PackageInstallSpec {
+    param([string]$Target = "latest")
+
+    $trimmed = $Target.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        return "openclaw@latest"
+    }
+    if ($trimmed.ToLowerInvariant() -eq "main") {
+        return "github:openclaw/openclaw#main"
+    }
+    if (Test-ExplicitPackageInstallSpec -Target $trimmed) {
+        return $trimmed
+    }
+    return "openclaw@$trimmed"
 }
 
 function Add-ToPath {
@@ -290,7 +320,7 @@ function Main {
         }
         
         if ($DryRun) {
-            Write-Host "[DRY RUN] Would install OpenCraft from git to $GitDir" -Level info
+            Write-Host "[DRY RUN] Would install OpenClaw from git to $GitDir" -Level info
         } else {
             Install-OpenClawGit -RepoDir $GitDir -Update:(-not $NoGitUpdate)
         }
@@ -301,9 +331,9 @@ function Main {
         }
         
         if ($DryRun) {
-            Write-Host "[DRY RUN] Would install OpenCraft via npm (tag: $Tag)" -Level info
+            Write-Host "[DRY RUN] Would install OpenClaw via npm ($((Resolve-PackageInstallSpec -Target $Tag)))" -Level info
         } else {
-            if (!(Install-OpenClawNpm -Version $Tag)) {
+            if (!(Install-OpenClawNpm -Target $Tag)) {
                 exit 1
             }
         }
@@ -319,11 +349,11 @@ function Main {
     
     if (!$NoOnboard -and !$DryRun) {
         Write-Host ""
-        Write-Host "Run 'opencraft onboard' to complete setup" -Level info
+        Write-Host "Run 'openclaw onboard' to complete setup" -Level info
     }
     
     Write-Host ""
-    Write-Host "🦞 OpenCraft installed successfully!" -Level success
+    Write-Host "🦞 OpenClaw installed successfully!" -Level success
 }
 
 Main

@@ -1,6 +1,5 @@
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { BlockStreamingCoalesceConfig } from "../../config/types.js";
 import { resolveAccountEntry } from "../../routing/account-lookup.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
@@ -27,14 +26,14 @@ function normalizeChunkProvider(provider?: string): TextChunkProvider | undefine
 }
 
 function resolveProviderChunkContext(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider?: string,
   accountId?: string | null,
 ) {
   const providerKey = normalizeChunkProvider(provider);
   const providerId = providerKey ? normalizeChannelId(providerKey) : null;
   const providerChunkLimit = providerId
-    ? getChannelDock(providerId)?.outbound?.textChunkLimit
+    ? getChannelPlugin(providerId)?.outbound?.textChunkLimit
     : undefined;
   const textLimit = resolveTextChunkLimit(cfg, providerKey, accountId, {
     fallbackLimit: providerChunkLimit,
@@ -48,7 +47,7 @@ type ProviderBlockStreamingConfig = {
 };
 
 function resolveProviderBlockStreamingCoalesce(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   providerKey?: TextChunkProvider;
   accountId?: string | null;
 }): BlockStreamingCoalesceConfig | undefined {
@@ -101,7 +100,7 @@ export function clampPositiveInteger(
 }
 
 export function resolveEffectiveBlockStreamingConfig(params: {
-  cfg: OpenCraftConfig | undefined;
+  cfg: OpenClawConfig | undefined;
   provider?: string;
   accountId?: string | null;
   chunking?: BlockStreamingChunking;
@@ -159,7 +158,7 @@ export function resolveEffectiveBlockStreamingConfig(params: {
 }
 
 export function resolveBlockStreamingChunking(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider?: string,
   accountId?: string | null,
 ): BlockStreamingChunking {
@@ -189,7 +188,7 @@ export function resolveBlockStreamingChunking(
 }
 
 export function resolveBlockStreamingCoalescing(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider?: string,
   accountId?: string | null,
   chunking?: {
@@ -209,7 +208,7 @@ export function resolveBlockStreamingCoalescing(
   // when chunkMode="newline", matching the delivery-time splitting behavior.
   const chunkMode = opts?.chunkMode ?? resolveChunkMode(cfg, providerKey, accountId);
   const providerDefaults = providerId
-    ? getChannelDock(providerId)?.streaming?.blockStreamingCoalesceDefaults
+    ? getChannelPlugin(providerId)?.streaming?.blockStreamingCoalesceDefaults
     : undefined;
   const providerCfg = resolveProviderBlockStreamingCoalesce({
     cfg,

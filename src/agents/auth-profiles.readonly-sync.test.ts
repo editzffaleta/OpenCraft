@@ -30,7 +30,7 @@ describe("auth profiles read-only external CLI sync", () => {
   });
 
   it("syncs external CLI credentials in-memory without writing auth-profiles.json in read-only mode", () => {
-    const agentDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-auth-readonly-sync-"));
+    const agentDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-auth-readonly-sync-"));
     try {
       const authPath = path.join(agentDir, "auth-profiles.json");
       const baseline: AuthProfileStore = {
@@ -47,7 +47,10 @@ describe("auth profiles read-only external CLI sync", () => {
 
       const loaded = loadAuthProfileStoreForRuntime(agentDir, { readOnly: true });
 
-      expect(mocks.syncExternalCliCredentials).toHaveBeenCalled();
+      expect(mocks.syncExternalCliCredentials).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ log: false }),
+      );
       expect(loaded.profiles["qwen-portal:default"]).toMatchObject({
         type: "oauth",
         provider: "qwen-portal",

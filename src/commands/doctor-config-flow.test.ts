@@ -179,6 +179,60 @@ describe("doctor config flow", () => {
     });
   });
 
+  it("migrates legacy browser extension profiles to existing-session on repair", async () => {
+    const result = await runDoctorConfigWithInput({
+      repair: true,
+      config: {
+        browser: {
+          relayBindHost: "0.0.0.0",
+          profiles: {
+            chromeLive: {
+              driver: "extension",
+              color: "#00AA00",
+            },
+          },
+        },
+      },
+      run: loadAndMaybeMigrateDoctorConfig,
+    });
+
+    const browser = (result.cfg as { browser?: Record<string, unknown> }).browser ?? {};
+    expect(browser.relayBindHost).toBeUndefined();
+    expect(
+      ((browser.profiles as Record<string, { driver?: string }>)?.chromeLive ?? {}).driver,
+    ).toBe("existing-session");
+  });
+
+  it("notes legacy browser extension migration changes", async () => {
+    const noteSpy = vi.spyOn(noteModule, "note").mockImplementation(() => {});
+    try {
+      await runDoctorConfigWithInput({
+        config: {
+          browser: {
+            relayBindHost: "127.0.0.1",
+            profiles: {
+              chromeLive: {
+                driver: "extension",
+                color: "#00AA00",
+              },
+            },
+          },
+        },
+        run: loadAndMaybeMigrateDoctorConfig,
+      });
+
+      const messages = noteSpy.mock.calls
+        .filter((call) => call[1] === "Doctor changes")
+        .map((call) => String(call[0]));
+      expect(
+        messages.some((line) => line.includes('browser.profiles.chromeLive.driver "extension"')),
+      ).toBe(true);
+      expect(messages.some((line) => line.includes("browser.relayBindHost"))).toBe(true);
+    } finally {
+      noteSpy.mockRestore();
+    }
+  });
+
   it("preserves discord streaming intent while stripping unsupported keys on repair", async () => {
     const result = await runDoctorConfigWithInput({
       repair: true,
@@ -335,10 +389,10 @@ describe("doctor config flow", () => {
 
   it("converts numeric discord ids to strings on repair", async () => {
     await withTempHome(async (home) => {
-      const configDir = path.join(home, ".opencraft");
+      const configDir = path.join(home, ".openclaw");
       await fs.mkdir(configDir, { recursive: true });
       await fs.writeFile(
-        path.join(configDir, "opencraft.json"),
+        path.join(configDir, "openclaw.json"),
         JSON.stringify(
           {
             channels: {
@@ -579,11 +633,11 @@ describe("doctor config flow", () => {
 
   it('repairs dmPolicy="allowlist" by restoring allowFrom from pairing store on repair', async () => {
     const result = await withTempHome(async (home) => {
-      const configDir = path.join(home, ".opencraft");
+      const configDir = path.join(home, ".openclaw");
       const credentialsDir = path.join(configDir, "credentials");
       await fs.mkdir(credentialsDir, { recursive: true });
       await fs.writeFile(
-        path.join(configDir, "opencraft.json"),
+        path.join(configDir, "openclaw.json"),
         JSON.stringify(
           {
             channels: {

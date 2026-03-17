@@ -1,21 +1,25 @@
 import type { Command } from "commander";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { getPrimaryCommand, hasHelpOrVersion } from "../argv.js";
 import { reparseProgramFromActionArgs } from "./action-reparse.js";
 import { removeCommand, removeCommandByName } from "./command-tree.js";
+import {
+  getSubCliCommandsWithSubcommands,
+  getSubCliEntries as getSubCliEntryDescriptors,
+  type SubCliDescriptor,
+} from "./subcli-descriptors.js";
+
+export { getSubCliCommandsWithSubcommands };
 
 type SubCliRegistrar = (program: Command) => Promise<void> | void;
 
-type SubCliEntry = {
-  name: string;
-  description: string;
-  hasSubcommands: boolean;
+type SubCliEntry = SubCliDescriptor & {
   register: SubCliRegistrar;
 };
 
 const shouldRegisterPrimaryOnly = (argv: string[]) => {
-  if (isTruthyEnvValue(process.env.OPENCRAFT_DISABLE_LAZY_SUBCOMMANDS)) {
+  if (isTruthyEnvValue(process.env.OPENCLAW_DISABLE_LAZY_SUBCOMMANDS)) {
     return false;
   }
   if (hasHelpOrVersion(argv)) {
@@ -25,11 +29,11 @@ const shouldRegisterPrimaryOnly = (argv: string[]) => {
 };
 
 const shouldEagerRegisterSubcommands = (_argv: string[]) => {
-  return isTruthyEnvValue(process.env.OPENCRAFT_DISABLE_LAZY_SUBCOMMANDS);
+  return isTruthyEnvValue(process.env.OPENCLAW_DISABLE_LAZY_SUBCOMMANDS);
 };
 
 export const loadValidatedConfigForPluginRegistration =
-  async (): Promise<OpenCraftConfig | null> => {
+  async (): Promise<OpenClawConfig | null> => {
     const mod = await import("../../config/config.js");
     const snapshot = await mod.readConfigFileSnapshot();
     if (!snapshot.valid) {
@@ -170,7 +174,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "docs",
-    description: "Search the live OpenCraft docs",
+    description: "Search the live OpenClaw docs",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../docs-cli.js");
@@ -232,7 +236,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "plugins",
-    description: "Manage OpenCraft plugins and extensions",
+    description: "Manage OpenClaw plugins and extensions",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../plugins-cli.js");
@@ -291,7 +295,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "update",
-    description: "Update OpenCraft and inspect update channel status",
+    description: "Update OpenClaw and inspect update channel status",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../update-cli.js");
@@ -309,12 +313,8 @@ const entries: SubCliEntry[] = [
   },
 ];
 
-export function getSubCliEntries(): SubCliEntry[] {
-  return entries;
-}
-
-export function getSubCliCommandsWithSubcommands(): string[] {
-  return entries.filter((entry) => entry.hasSubcommands).map((entry) => entry.name);
+export function getSubCliEntries(): ReadonlyArray<SubCliDescriptor> {
+  return getSubCliEntryDescriptors();
 }
 
 export async function registerSubCliByName(program: Command, name: string): Promise<boolean> {

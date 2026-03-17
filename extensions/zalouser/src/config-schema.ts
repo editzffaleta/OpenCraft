@@ -3,8 +3,8 @@ import {
   buildCatchallMultiAccountChannelSchema,
   DmPolicySchema,
   GroupPolicySchema,
-} from "opencraft/plugin-sdk/compat";
-import { MarkdownConfigSchema, ToolPolicySchema } from "opencraft/plugin-sdk/zalouser";
+} from "openclaw/plugin-sdk/compat";
+import { MarkdownConfigSchema, ToolPolicySchema } from "openclaw/plugin-sdk/zalouser";
 import { z } from "zod";
 
 const groupConfigSchema = z.object({

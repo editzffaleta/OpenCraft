@@ -5,11 +5,11 @@ import {
   resolveBundledPluginSources,
 } from "./bundled-sources.js";
 
-const discoverOpenCraftPluginsMock = vi.fn();
+const discoverOpenClawPluginsMock = vi.fn();
 const loadPluginManifestMock = vi.fn();
 
 vi.mock("./discovery.js", () => ({
-  discoverOpenCraftPlugins: (...args: unknown[]) => discoverOpenCraftPluginsMock(...args),
+  discoverOpenClawPlugins: (...args: unknown[]) => discoverOpenClawPluginsMock(...args),
 }));
 
 vi.mock("./manifest.js", () => ({
@@ -18,36 +18,36 @@ vi.mock("./manifest.js", () => ({
 
 describe("bundled plugin sources", () => {
   beforeEach(() => {
-    discoverOpenCraftPluginsMock.mockReset();
+    discoverOpenClawPluginsMock.mockReset();
     loadPluginManifestMock.mockReset();
   });
 
   it("resolves bundled sources keyed by plugin id", () => {
-    discoverOpenCraftPluginsMock.mockReturnValue({
+    discoverOpenClawPluginsMock.mockReturnValue({
       candidates: [
         {
           origin: "global",
           rootDir: "/global/feishu",
-          packageName: "@opencraft/feishu",
-          packageManifest: { install: { npmSpec: "@opencraft/feishu" } },
+          packageName: "@openclaw/feishu",
+          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
         },
         {
           origin: "bundled",
           rootDir: "/app/extensions/feishu",
-          packageName: "@opencraft/feishu",
-          packageManifest: { install: { npmSpec: "@opencraft/feishu" } },
+          packageName: "@openclaw/feishu",
+          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
         },
         {
           origin: "bundled",
           rootDir: "/app/extensions/feishu-dup",
-          packageName: "@opencraft/feishu",
-          packageManifest: { install: { npmSpec: "@opencraft/feishu" } },
+          packageName: "@openclaw/feishu",
+          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
         },
         {
           origin: "bundled",
           rootDir: "/app/extensions/msteams",
-          packageName: "@opencraft/msteams",
-          packageManifest: { install: { npmSpec: "@opencraft/msteams" } },
+          packageName: "@openclaw/msteams",
+          packageManifest: { install: { npmSpec: "@openclaw/msteams" } },
         },
       ],
       diagnostics: [],
@@ -63,7 +63,7 @@ describe("bundled plugin sources", () => {
       return {
         ok: false,
         error: "invalid manifest",
-        manifestPath: `${rootDir}/opencraft.plugin.json`,
+        manifestPath: `${rootDir}/openclaw.plugin.json`,
       };
     });
 
@@ -73,18 +73,18 @@ describe("bundled plugin sources", () => {
     expect(map.get("feishu")).toEqual({
       pluginId: "feishu",
       localPath: "/app/extensions/feishu",
-      npmSpec: "@opencraft/feishu",
+      npmSpec: "@openclaw/feishu",
     });
   });
 
   it("finds bundled source by npm spec", () => {
-    discoverOpenCraftPluginsMock.mockReturnValue({
+    discoverOpenClawPluginsMock.mockReturnValue({
       candidates: [
         {
           origin: "bundled",
           rootDir: "/app/extensions/feishu",
-          packageName: "@opencraft/feishu",
-          packageManifest: { install: { npmSpec: "@opencraft/feishu" } },
+          packageName: "@openclaw/feishu",
+          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
         },
       ],
       diagnostics: [],
@@ -92,10 +92,10 @@ describe("bundled plugin sources", () => {
     loadPluginManifestMock.mockReturnValue({ ok: true, manifest: { id: "feishu" } });
 
     const resolved = findBundledPluginSource({
-      lookup: { kind: "npmSpec", value: "@opencraft/feishu" },
+      lookup: { kind: "npmSpec", value: "@openclaw/feishu" },
     });
     const missing = findBundledPluginSource({
-      lookup: { kind: "npmSpec", value: "@opencraft/not-found" },
+      lookup: { kind: "npmSpec", value: "@openclaw/not-found" },
     });
 
     expect(resolved?.pluginId).toBe("feishu");
@@ -104,12 +104,12 @@ describe("bundled plugin sources", () => {
   });
 
   it("forwards an explicit env to bundled discovery helpers", () => {
-    discoverOpenCraftPluginsMock.mockReturnValue({
+    discoverOpenClawPluginsMock.mockReturnValue({
       candidates: [],
       diagnostics: [],
     });
 
-    const env = { HOME: "/tmp/opencraft-home" } as NodeJS.ProcessEnv;
+    const env = { HOME: "/tmp/openclaw-home" } as NodeJS.ProcessEnv;
 
     resolveBundledPluginSources({
       workspaceDir: "/workspace",
@@ -121,24 +121,24 @@ describe("bundled plugin sources", () => {
       env,
     });
 
-    expect(discoverOpenCraftPluginsMock).toHaveBeenNthCalledWith(1, {
+    expect(discoverOpenClawPluginsMock).toHaveBeenNthCalledWith(1, {
       workspaceDir: "/workspace",
       env,
     });
-    expect(discoverOpenCraftPluginsMock).toHaveBeenNthCalledWith(2, {
+    expect(discoverOpenClawPluginsMock).toHaveBeenNthCalledWith(2, {
       workspaceDir: "/workspace",
       env,
     });
   });
 
   it("finds bundled source by plugin id", () => {
-    discoverOpenCraftPluginsMock.mockReturnValue({
+    discoverOpenClawPluginsMock.mockReturnValue({
       candidates: [
         {
           origin: "bundled",
           rootDir: "/app/extensions/diffs",
-          packageName: "@opencraft/diffs",
-          packageManifest: { install: { npmSpec: "@opencraft/diffs" } },
+          packageName: "@openclaw/diffs",
+          packageManifest: { install: { npmSpec: "@openclaw/diffs" } },
         },
       ],
       diagnostics: [],
@@ -164,7 +164,7 @@ describe("bundled plugin sources", () => {
         {
           pluginId: "feishu",
           localPath: "/app/extensions/feishu",
-          npmSpec: "@opencraft/feishu",
+          npmSpec: "@openclaw/feishu",
         },
       ],
     ]);
@@ -177,12 +177,12 @@ describe("bundled plugin sources", () => {
     ).toEqual({
       pluginId: "feishu",
       localPath: "/app/extensions/feishu",
-      npmSpec: "@opencraft/feishu",
+      npmSpec: "@openclaw/feishu",
     });
     expect(
       findBundledPluginSourceInMap({
         bundled,
-        lookup: { kind: "npmSpec", value: "@opencraft/feishu" },
+        lookup: { kind: "npmSpec", value: "@openclaw/feishu" },
       })?.pluginId,
     ).toBe("feishu");
   });

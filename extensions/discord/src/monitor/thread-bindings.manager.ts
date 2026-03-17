@@ -1,6 +1,6 @@
 import { Routes } from "discord-api-types/v10";
 import { resolveThreadBindingConversationIdFromBindingId } from "../../../../src/channels/thread-binding-id.js";
-import { getRuntimeConfigSnapshot, type OpenCraftConfig } from "../../../../src/config/config.js";
+import { getRuntimeConfigSnapshot, type OpenClawConfig } from "../../../../src/config/config.js";
 import { logVerbose } from "../../../../src/globals.js";
 import {
   registerSessionBindingAdapter,
@@ -117,6 +117,11 @@ function toThreadBindingTargetKind(raw: BindingTargetKind): "subagent" | "acp" {
   return raw === "subagent" ? "subagent" : "acp";
 }
 
+function isDirectConversationBindingId(value?: string | null): boolean {
+  const trimmed = value?.trim();
+  return Boolean(trimmed && /^(user:|channel:)/i.test(trimmed));
+}
+
 function toSessionBindingRecord(
   record: ThreadBindingRecord,
   defaults: { idleTimeoutMs: number; maxAgeMs: number },
@@ -158,6 +163,7 @@ function toSessionBindingRecord(
         record,
         defaultMaxAgeMs: defaults.maxAgeMs,
       }),
+      ...record.metadata,
     },
   };
 }
@@ -166,7 +172,7 @@ export function createThreadBindingManager(
   params: {
     accountId?: string;
     token?: string;
-    cfg?: OpenCraftConfig;
+    cfg?: OpenClawConfig;
     persist?: boolean;
     enableSweeper?: boolean;
     idleTimeoutMs?: number;
@@ -264,6 +270,8 @@ export function createThreadBindingManager(
       const cfg = resolveCurrentCfg();
       let threadId = normalizeThreadId(bindParams.threadId);
       let channelId = bindParams.channelId?.trim() || "";
+      const directConversationBinding =
+        isDirectConversationBindingId(threadId) || isDirectConversationBindingId(channelId);
 
       if (!threadId && bindParams.createThread) {
         if (!channelId) {
@@ -285,6 +293,10 @@ export function createThreadBindingManager(
 
       if (!threadId) {
         return null;
+      }
+
+      if (!channelId && directConversationBinding) {
+        channelId = threadId;
       }
 
       if (!channelId) {
@@ -309,12 +321,12 @@ export function createThreadBindingManager(
       const targetKind = normalizeTargetKind(bindParams.targetKind, targetSessionKey);
       let webhookId = bindParams.webhookId?.trim() || "";
       let webhookToken = bindParams.webhookToken?.trim() || "";
-      if (!webhookId || !webhookToken) {
+      if (!directConversationBinding && (!webhookId || !webhookToken)) {
         const cachedWebhook = findReusableWebhook({ accountId, channelId });
         webhookId = cachedWebhook.webhookId ?? "";
         webhookToken = cachedWebhook.webhookToken ?? "";
       }
-      if (!webhookId || !webhookToken) {
+      if (!directConversationBinding && (!webhookId || !webhookToken)) {
         const createdWebhook = await createWebhookForChannel({
           cfg,
           accountId,
@@ -341,6 +353,10 @@ export function createThreadBindingManager(
         lastActivityAt: now,
         idleTimeoutMs,
         maxAgeMs,
+        metadata:
+          bindParams.metadata && typeof bindParams.metadata === "object"
+            ? { ...bindParams.metadata }
+            : undefined,
       };
 
       setBindingRecord(record);
@@ -508,6 +524,9 @@ export function createThreadBindingManager(
             });
             continue;
           }
+          if (isDirectConversationBindingId(binding.threadId)) {
+            continue;
+          }
           try {
             const channel = await rest.get(Routes.channel(binding.threadId));
             if (!channel || typeof channel !== "object") {
@@ -604,6 +623,7 @@ export function createThreadBindingManager(
         label,
         boundBy,
         introText,
+        metadata,
       });
       return bound
         ? toSessionBindingRecord(bound, {

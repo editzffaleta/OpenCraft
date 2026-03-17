@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import OpenCraft
+@testable import OpenClaw
 
 @MainActor
 @Suite struct TalkModeManagerTests {

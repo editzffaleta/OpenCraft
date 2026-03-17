@@ -2,12 +2,12 @@
 // the agent reports a model id. This includes custom models.json entries.
 
 import { loadConfig } from "../config/config.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { computeBackoff, type BackoffPolicy } from "../infra/backoff.js";
 import { consumeRootOptionToken, FLAG_TERMINATOR } from "../infra/cli-root-options.js";
-import { resolveOpenCraftAgentDir } from "./agent-paths.js";
+import { resolveOpenClawAgentDir } from "./agent-paths.js";
 import { normalizeProviderId } from "./model-selection.js";
-import { ensureOpenCraftModelsJson } from "./models-config.js";
+import { ensureOpenClawModelsJson } from "./models-config.js";
 
 type ModelEntry = { id: string; contextWindow?: number };
 type ModelRegistryLike = {
@@ -80,7 +80,7 @@ export function applyConfiguredContextWindows(params: {
 
 const MODEL_CACHE = new Map<string, number>();
 let loadPromise: Promise<void> | null = null;
-let configuredConfig: OpenCraftConfig | undefined;
+let configuredConfig: OpenClawConfig | undefined;
 let configLoadFailures = 0;
 let nextConfigLoadAttemptAtMs = 0;
 
@@ -114,11 +114,13 @@ const SKIP_EAGER_WARMUP_PRIMARY_COMMANDS = new Set([
   "config",
   "directory",
   "doctor",
+  "gateway",
   "health",
   "hooks",
   "logs",
   "plugins",
   "secrets",
+  "status",
   "update",
   "webhooks",
 ]);
@@ -128,7 +130,7 @@ function shouldSkipEagerContextWindowWarmup(argv: string[] = process.argv): bool
   return primary ? SKIP_EAGER_WARMUP_PRIMARY_COMMANDS.has(primary) : false;
 }
 
-function primeConfiguredContextWindows(): OpenCraftConfig | undefined {
+function primeConfiguredContextWindows(): OpenClawConfig | undefined {
   if (configuredConfig) {
     return configuredConfig;
   }
@@ -166,7 +168,7 @@ function ensureContextWindowCacheLoaded(): Promise<void> {
 
   loadPromise = (async () => {
     try {
-      await ensureOpenCraftModelsJson(cfg);
+      await ensureOpenClawModelsJson(cfg);
     } catch {
       // Continue with best-effort discovery/overrides.
     }
@@ -174,7 +176,7 @@ function ensureContextWindowCacheLoaded(): Promise<void> {
     try {
       const { discoverAuthStorage, discoverModels } =
         await import("./pi-model-discovery-runtime.js");
-      const agentDir = resolveOpenCraftAgentDir();
+      const agentDir = resolveOpenClawAgentDir();
       const authStorage = discoverAuthStorage(agentDir);
       const modelRegistry = discoverModels(authStorage, agentDir) as unknown as ModelRegistryLike;
       const models =
@@ -215,7 +217,7 @@ if (!shouldSkipEagerContextWindowWarmup()) {
 }
 
 function resolveConfiguredModelParams(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
   model: string,
 ): Record<string, unknown> | undefined {
@@ -265,7 +267,7 @@ function resolveProviderModelRef(params: {
 // keys overlap with raw slash-containing model IDs (e.g. OpenRouter's
 // "google/gemini-2.5-pro" stored as a raw catalog entry).
 function resolveConfiguredProviderContextWindow(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
   model: string,
 ): number | undefined {
@@ -323,7 +325,7 @@ function isAnthropic1MModel(provider: string, model: string): boolean {
 }
 
 export function resolveContextTokensForModel(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   provider?: string;
   model?: string;
   contextTokensOverride?: number;

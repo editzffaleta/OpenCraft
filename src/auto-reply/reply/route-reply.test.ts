@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mattermostPlugin } from "../../../extensions/mattermost/src/channel.js";
-import { discordOutbound } from "../../channels/plugins/outbound/discord.js";
-import { imessageOutbound } from "../../channels/plugins/outbound/imessage.js";
-import { signalOutbound } from "../../channels/plugins/outbound/signal.js";
-import { slackOutbound } from "../../channels/plugins/outbound/slack.js";
-import { telegramOutbound } from "../../channels/plugins/outbound/telegram.js";
-import { whatsappOutbound } from "../../channels/plugins/outbound/whatsapp.js";
+import { slackPlugin } from "../../../extensions/slack/src/channel.js";
+import {
+  discordOutbound,
+  imessageOutbound,
+  signalOutbound,
+  slackOutbound,
+  telegramOutbound,
+  whatsappOutbound,
+} from "../../../test/channel-outbounds.js";
 import type { ChannelOutboundAdapter, ChannelPlugin } from "../../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { PluginRegistry } from "../../plugins/registry.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
@@ -81,7 +84,15 @@ const createRegistry = (channels: PluginRegistry["channels"]): PluginRegistry =>
   typedHooks: [],
   commands: [],
   channels,
+  channelSetups: channels.map((entry) => ({
+    pluginId: entry.pluginId,
+    plugin: entry.plugin,
+    source: entry.source,
+    enabled: true,
+  })),
   providers: [],
+  speechProviders: [],
+  webSearchProviders: [],
   gatewayHandlers: {},
   httpRoutes: [],
   cliRegistrars: [],
@@ -192,8 +203,8 @@ describe("routeReply", () => {
   it("applies responsePrefix when routing", async () => {
     mocks.sendMessageSlack.mockClear();
     const cfg = {
-      messages: { responsePrefix: "[opencraft]" },
-    } as unknown as OpenCraftConfig;
+      messages: { responsePrefix: "[openclaw]" },
+    } as unknown as OpenClawConfig;
     await routeReply({
       payload: { text: "hi" },
       channel: "slack",
@@ -202,7 +213,7 @@ describe("routeReply", () => {
     });
     expect(mocks.sendMessageSlack).toHaveBeenCalledWith(
       "channel:C123",
-      "[opencraft] hi",
+      "[openclaw] hi",
       expect.any(Object),
     );
   });
@@ -215,7 +226,7 @@ describe("routeReply", () => {
           capabilities: { interactiveReplies: true },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     await routeReply({
       payload: { text: "[[slack_select: Choose one | Alpha:alpha]]" },
       channel: "slack",
@@ -229,7 +240,7 @@ describe("routeReply", () => {
         blocks: [
           expect.objectContaining({
             type: "actions",
-            block_id: "opencraft_reply_select_1",
+            block_id: "openclaw_reply_select_1",
           }),
         ],
       }),
@@ -259,7 +270,7 @@ describe("routeReply", () => {
         ],
       },
       messages: {},
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     await routeReply({
       payload: { text: "hi" },
       channel: "slack",
@@ -393,7 +404,7 @@ describe("routeReply", () => {
             baseUrl: "https://chat.example.com",
           },
         },
-      } as unknown as OpenCraftConfig,
+      } as unknown as OpenClawConfig,
     });
     expect(mocks.deliverOutboundPayloads).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -463,7 +474,7 @@ describe("routeReply", () => {
           enabled: true,
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
     await routeReply({
       payload: { text: "hi" },
       channel: "msteams",
@@ -533,7 +544,11 @@ const defaultRegistry = createTestRegistry([
   },
   {
     pluginId: "slack",
-    plugin: createOutboundTestPlugin({ id: "slack", outbound: slackOutbound, label: "Slack" }),
+    plugin: {
+      ...createOutboundTestPlugin({ id: "slack", outbound: slackOutbound, label: "Slack" }),
+      messaging: slackPlugin.messaging,
+      threading: slackPlugin.threading,
+    },
     source: "test",
   },
   {

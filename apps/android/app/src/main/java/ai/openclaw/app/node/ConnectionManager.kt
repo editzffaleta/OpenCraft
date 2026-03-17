@@ -1,14 +1,14 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.os.Build
-import ai.opencraft.app.BuildConfig
-import ai.opencraft.app.SecurePrefs
-import ai.opencraft.app.gateway.GatewayClientInfo
-import ai.opencraft.app.gateway.GatewayConnectOptions
-import ai.opencraft.app.gateway.GatewayEndpoint
-import ai.opencraft.app.gateway.GatewayTlsParams
-import ai.opencraft.app.LocationMode
-import ai.opencraft.app.VoiceWakeMode
+import ai.openclaw.app.BuildConfig
+import ai.openclaw.app.SecurePrefs
+import ai.openclaw.app.gateway.GatewayClientInfo
+import ai.openclaw.app.gateway.GatewayConnectOptions
+import ai.openclaw.app.gateway.GatewayEndpoint
+import ai.openclaw.app.gateway.GatewayTlsParams
+import ai.openclaw.app.LocationMode
+import ai.openclaw.app.VoiceWakeMode
 
 class ConnectionManager(
   private val prefs: SecurePrefs,
@@ -109,7 +109,7 @@ class ConnectionManager(
     val version = resolvedVersionName()
     val release = Build.VERSION.RELEASE?.trim().orEmpty()
     val releaseLabel = if (release.isEmpty()) "unknown" else release
-    return "OpenCraftAndroid/$version (Android $releaseLabel; SDK ${Build.VERSION.SDK_INT})"
+    return "OpenClawAndroid/$version (Android $releaseLabel; SDK ${Build.VERSION.SDK_INT})"
   }
 
   fun buildClientInfo(clientId: String, clientMode: String): GatewayClientInfo {
@@ -132,7 +132,7 @@ class ConnectionManager(
       caps = buildCapabilities(),
       commands = buildInvokeCommands(),
       permissions = emptyMap(),
-      client = buildClientInfo(clientId = "opencraft-android", clientMode = "node"),
+      client = buildClientInfo(clientId = "openclaw-android", clientMode = "node"),
       userAgent = buildUserAgent(),
     )
   }
@@ -144,7 +144,7 @@ class ConnectionManager(
       caps = emptyList(),
       commands = emptyList(),
       permissions = emptyMap(),
-      client = buildClientInfo(clientId = "opencraft-android", clientMode = "ui"),
+      client = buildClientInfo(clientId = "openclaw-android", clientMode = "ui"),
       userAgent = buildUserAgent(),
     )
   }

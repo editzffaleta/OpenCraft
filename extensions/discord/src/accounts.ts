@@ -1,9 +1,14 @@
-import { createAccountActionGate } from "../../../src/channels/plugins/account-action-gate.js";
-import { createAccountListHelpers } from "../../../src/channels/plugins/account-helpers.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { DiscordAccountConfig, DiscordActionConfig } from "../../../src/config/types.js";
-import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import type {
+  OpenClawConfig,
+  DiscordAccountConfig,
+  DiscordActionConfig,
+} from "openclaw/plugin-sdk/discord";
+import {
+  createAccountActionGate,
+  createAccountListHelpers,
+  normalizeAccountId,
+  resolveAccountEntry,
+} from "../../../src/plugin-sdk-internal/accounts.js";
 import { resolveDiscordToken } from "./token.js";
 
 export type ResolvedDiscordAccount = {
@@ -20,14 +25,14 @@ export const listDiscordAccountIds = listAccountIds;
 export const resolveDefaultDiscordAccountId = resolveDefaultAccountId;
 
 export function resolveDiscordAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): DiscordAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.discord?.accounts, accountId);
 }
 
 export function mergeDiscordAccountConfig(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): DiscordAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.discord ?? {}) as DiscordAccountConfig & {
@@ -38,7 +43,7 @@ export function mergeDiscordAccountConfig(
 }
 
 export function createDiscordActionGate(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): (key: keyof DiscordActionConfig, defaultValue?: boolean) => boolean {
   const accountId = normalizeAccountId(params.accountId);
@@ -49,7 +54,7 @@ export function createDiscordActionGate(params: {
 }
 
 export function resolveDiscordAccount(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedDiscordAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -69,7 +74,7 @@ export function resolveDiscordAccount(params: {
 }
 
 export function resolveDiscordMaxLinesPerMessage(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   discordConfig?: DiscordAccountConfig | null;
   accountId?: string | null;
 }): number | undefined {
@@ -82,7 +87,7 @@ export function resolveDiscordMaxLinesPerMessage(params: {
   }).config.maxLinesPerMessage;
 }
 
-export function listEnabledDiscordAccounts(cfg: OpenCraftConfig): ResolvedDiscordAccount[] {
+export function listEnabledDiscordAccounts(cfg: OpenClawConfig): ResolvedDiscordAccount[] {
   return listDiscordAccountIds(cfg)
     .map((accountId) => resolveDiscordAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

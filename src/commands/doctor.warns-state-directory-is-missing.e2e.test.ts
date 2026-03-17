@@ -17,9 +17,9 @@ describe("doctor command", () => {
   it("warns when the state directory is missing", async () => {
     mockDoctorConfigSnapshot();
 
-    const missingDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-missing-state-"));
+    const missingDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-missing-state-"));
     fs.rmSync(missingDir, { recursive: true, force: true });
-    process.env.OPENCRAFT_STATE_DIR = missingDir;
+    process.env.OPENCLAW_STATE_DIR = missingDir;
     note.mockClear();
 
     await doctorCommand(createDoctorRuntime(), {
@@ -64,15 +64,15 @@ describe("doctor command", () => {
     expect(warned).toBe(true);
   });
 
-  it("skips gateway auth warning when OPENCRAFT_GATEWAY_TOKEN is set", async () => {
+  it("skips gateway auth warning when OPENCLAW_GATEWAY_TOKEN is set", async () => {
     mockDoctorConfigSnapshot({
       config: {
         gateway: { mode: "local" },
       },
     });
 
-    const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
-    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token-1234567890";
+    const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token-1234567890";
     note.mockClear();
 
     try {
@@ -82,9 +82,9 @@ describe("doctor command", () => {
       });
     } finally {
       if (prevToken === undefined) {
-        delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
+        process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
       }
     }
 
@@ -117,9 +117,57 @@ describe("doctor command", () => {
     const gatewayAuthNote = note.mock.calls.find((call) => call[1] === "Gateway auth");
     expect(gatewayAuthNote).toBeTruthy();
     expect(String(gatewayAuthNote?.[0])).toContain("gateway.auth.mode is unset");
-    expect(String(gatewayAuthNote?.[0])).toContain("opencraft config set gateway.auth.mode token");
+    expect(String(gatewayAuthNote?.[0])).toContain("openclaw config set gateway.auth.mode token");
     expect(String(gatewayAuthNote?.[0])).toContain(
-      "opencraft config set gateway.auth.mode password",
+      "openclaw config set gateway.auth.mode password",
+    );
+  });
+
+  it("keeps doctor read-only when gateway token is SecretRef-managed but unresolved", async () => {
+    mockDoctorConfigSnapshot({
+      config: {
+        gateway: {
+          mode: "local",
+          auth: {
+            mode: "token",
+            token: {
+              source: "env",
+              provider: "default",
+              id: "OPENCLAW_GATEWAY_TOKEN",
+            },
+          },
+        },
+        secrets: {
+          providers: {
+            default: { source: "env" },
+          },
+        },
+      },
+    });
+
+    const previousToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    note.mockClear();
+    try {
+      await doctorCommand(createDoctorRuntime(), {
+        nonInteractive: true,
+        workspaceSuggestions: false,
+      });
+    } finally {
+      if (previousToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousToken;
+      }
+    }
+
+    const gatewayAuthNote = note.mock.calls.find((call) => call[1] === "Gateway auth");
+    expect(gatewayAuthNote).toBeTruthy();
+    expect(String(gatewayAuthNote?.[0])).toContain(
+      "Gateway token is managed via SecretRef and is currently unavailable.",
+    );
+    expect(String(gatewayAuthNote?.[0])).toContain(
+      "Doctor will not overwrite gateway.auth.token with a plaintext value.",
     );
   });
 });

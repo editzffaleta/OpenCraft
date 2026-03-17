@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 
 vi.mock("../../config/sessions.js", () => ({
   loadSessionStore: vi.fn().mockReturnValue({}),
@@ -32,15 +32,15 @@ import { maybeResolveIdLikeTarget } from "../../infra/outbound/target-resolver.j
 import { readChannelAllowFromStoreSync } from "../../pairing/pairing-store.js";
 import { resolveDeliveryTarget } from "./delivery-target.js";
 
-function makeCfg(overrides?: Partial<OpenCraftConfig>): OpenCraftConfig {
+function makeCfg(overrides?: Partial<OpenClawConfig>): OpenClawConfig {
   return {
     bindings: [],
     channels: {},
     ...overrides,
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
-function makeTelegramBoundCfg(accountId = "account-b"): OpenCraftConfig {
+function makeTelegramBoundCfg(accountId = "account-b"): OpenClawConfig {
   return makeCfg({
     bindings: [
       {
@@ -92,7 +92,7 @@ function setStoredWhatsAppAllowFrom(allowFrom: string[]) {
 }
 
 async function resolveForAgent(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   target?: { channel?: "last" | "telegram"; to?: string };
 }) {
   const channel = params.target ? params.target.channel : DEFAULT_TARGET.channel;
@@ -103,7 +103,7 @@ async function resolveForAgent(params: {
   });
 }
 
-async function resolveLastTarget(cfg: OpenCraftConfig) {
+async function resolveLastTarget(cfg: OpenClawConfig) {
   return resolveForAgent({
     cfg,
     target: { channel: "last", to: undefined },

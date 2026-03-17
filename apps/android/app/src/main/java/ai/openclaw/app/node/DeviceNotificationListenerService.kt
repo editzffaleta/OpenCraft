@@ -1,4 +1,4 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.app.Notification
 import android.app.NotificationManager

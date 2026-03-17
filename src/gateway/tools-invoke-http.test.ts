@@ -20,7 +20,7 @@ const hookMocks = vi.hoisted(() => ({
 }));
 
 let cfg: Record<string, unknown> = {};
-let lastCreateOpenCraftToolsContext: Record<string, unknown> | undefined;
+let lastCreateOpenClawToolsContext: Record<string, unknown> | undefined;
 
 // Perf: keep this suite pure unit. Mock heavyweight config/session modules.
 vi.mock("../config/config.js", () => ({
@@ -67,7 +67,7 @@ vi.mock("../plugins/tools.js", () => ({
 
 // Perf: the real tool factory instantiates many tools per request; for these HTTP
 // routing/policy tests we only need a small set of tool names.
-vi.mock("../agents/opencraft-tools.js", () => {
+vi.mock("../agents/openclaw-tools.js", () => {
   const toolInputError = (message: string) => {
     const err = new Error(message);
     err.name = "ToolInputError";
@@ -97,8 +97,8 @@ vi.mock("../agents/opencraft-tools.js", () => {
       execute: async () => ({
         ok: true,
         route: {
-          agentTo: lastCreateOpenCraftToolsContext?.agentTo,
-          agentThreadId: lastCreateOpenCraftToolsContext?.agentThreadId,
+          agentTo: lastCreateOpenClawToolsContext?.agentTo,
+          agentThreadId: lastCreateOpenClawToolsContext?.agentThreadId,
         },
       }),
     },
@@ -160,8 +160,8 @@ vi.mock("../agents/opencraft-tools.js", () => {
   ];
 
   return {
-    createOpenCraftTools: (ctx: Record<string, unknown>) => {
-      lastCreateOpenCraftToolsContext = ctx;
+    createOpenClawTools: (ctx: Record<string, unknown>) => {
+      lastCreateOpenClawToolsContext = ctx;
       return tools;
     },
   };
@@ -224,11 +224,11 @@ afterAll(async () => {
 });
 
 beforeEach(() => {
-  delete process.env.OPENCRAFT_GATEWAY_TOKEN;
-  delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
+  delete process.env.OPENCLAW_GATEWAY_TOKEN;
+  delete process.env.OPENCLAW_GATEWAY_PASSWORD;
   pluginHttpHandlers = [];
   cfg = {};
-  lastCreateOpenCraftToolsContext = undefined;
+  lastCreateOpenClawToolsContext = undefined;
   hookMocks.resolveToolLoopDetectionConfig.mockClear();
   hookMocks.resolveToolLoopDetectionConfig.mockImplementation(() => ({ warnAt: 3 }));
   hookMocks.runBeforeToolCallHook.mockClear();
@@ -367,7 +367,7 @@ describe("POST /tools/invoke", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body).toHaveProperty("result");
-    expect(lastCreateOpenCraftToolsContext?.allowMediaInvokeCommands).toBe(true);
+    expect(lastCreateOpenClawToolsContext?.allowMediaInvokeCommands).toBe(true);
     expect(hookMocks.runBeforeToolCallHook).toHaveBeenCalledWith(
       expect.objectContaining({
         toolName: "agents_list",
@@ -378,6 +378,14 @@ describe("POST /tools/invoke", () => {
         }),
       }),
     );
+  });
+
+  it("opts direct gateway tool invocation into gateway subagent binding", async () => {
+    allowAgentsListForMain();
+    const res = await invokeAgentsListAuthed({ sessionKey: "main" });
+
+    expect(res.status).toBe(200);
+    expect(lastCreateOpenClawToolsContext?.allowGatewaySubagentBinding).toBe(true);
   });
 
   it("blocks tool execution when before_tool_call rejects the invoke", async () => {
@@ -526,8 +534,8 @@ describe("POST /tools/invoke", () => {
       port: sharedPort,
       headers: {
         ...gatewayAuthHeaders(),
-        "x-opencraft-message-to": "channel:24514",
-        "x-opencraft-thread-id": "thread-24514",
+        "x-openclaw-message-to": "channel:24514",
+        "x-openclaw-thread-id": "thread-24514",
       },
       tool: "sessions_spawn",
       sessionKey: "main",

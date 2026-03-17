@@ -1,11 +1,11 @@
-import type { OpenCraftConfig, OpenCraftPluginApi } from "opencraft/plugin-sdk/thread-ownership";
+import type { OpenClawConfig, OpenClawPluginApi } from "openclaw/plugin-sdk/thread-ownership";
 
 type ThreadOwnershipConfig = {
   forwarderUrl?: string;
   abTestChannels?: string[];
 };
 
-type AgentEntry = NonNullable<NonNullable<OpenCraftConfig["agents"]>["list"]>[number];
+type AgentEntry = NonNullable<NonNullable<OpenClawConfig["agents"]>["list"]>[number];
 
 // In-memory set of {channel}:{thread} keys where this agent was @-mentioned.
 // Entries expire after 5 minutes.
@@ -21,7 +21,7 @@ function cleanExpiredMentions(): void {
   }
 }
 
-function resolveOwnershipAgent(config: OpenCraftConfig): { id: string; name: string } {
+function resolveOwnershipAgent(config: OpenClawConfig): { id: string; name: string } {
   const list = Array.isArray(config.agents?.list)
     ? config.agents.list.filter((entry): entry is AgentEntry =>
         Boolean(entry && typeof entry === "object"),
@@ -39,7 +39,7 @@ function resolveOwnershipAgent(config: OpenCraftConfig): { id: string; name: str
   return { id, name };
 }
 
-export default function register(api: OpenCraftPluginApi) {
+export default function register(api: OpenClawPluginApi) {
   const pluginCfg = (api.pluginConfig ?? {}) as ThreadOwnershipConfig;
   const forwarderUrl = (
     pluginCfg.forwarderUrl ??

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import { getSessionBindingService } from "../../../src/infra/outbound/session-binding-service.js";
 import { __testing, createFeishuThreadBindingManager } from "./thread-bindings.js";
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
-} satisfies OpenCraftConfig;
+} satisfies OpenClawConfig;
 
 describe("Feishu thread bindings", () => {
   beforeEach(() => {

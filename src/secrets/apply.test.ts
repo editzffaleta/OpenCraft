@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runSecretsApply } from "./apply.js";
 import type { SecretsApplyPlan } from "./plan.js";
+import { clearSecretsRuntimeSnapshot } from "./runtime.js";
 
 const OPENAI_API_KEY_ENV_REF = {
   source: "env",
@@ -50,11 +51,11 @@ function createOpenAiProviderConfig(apiKey: unknown = "sk-openai-plaintext") {
 }
 
 function buildFixturePaths(rootDir: string) {
-  const stateDir = path.join(rootDir, ".opencraft");
+  const stateDir = path.join(rootDir, ".openclaw");
   return {
     rootDir,
     stateDir,
-    configPath: path.join(stateDir, "opencraft.json"),
+    configPath: path.join(stateDir, "openclaw.json"),
     authStorePath: path.join(stateDir, "agents", "main", "agent", "auth-profiles.json"),
     authJsonPath: path.join(stateDir, "agents", "main", "agent", "auth.json"),
     envPath: path.join(stateDir, ".env"),
@@ -63,15 +64,15 @@ function buildFixturePaths(rootDir: string) {
 
 async function createApplyFixture(): Promise<ApplyFixture> {
   const paths = buildFixturePaths(
-    await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-secrets-apply-")),
+    await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-secrets-apply-")),
   );
   await fs.mkdir(path.dirname(paths.configPath), { recursive: true });
   await fs.mkdir(path.dirname(paths.authStorePath), { recursive: true });
   return {
     ...paths,
     env: {
-      OPENCRAFT_STATE_DIR: paths.stateDir,
-      OPENCRAFT_CONFIG_PATH: paths.configPath,
+      OPENCLAW_STATE_DIR: paths.stateDir,
+      OPENCLAW_CONFIG_PATH: paths.configPath,
       OPENAI_API_KEY: "sk-live-env", // pragma: allowlist secret
     },
   };
@@ -173,11 +174,13 @@ describe("secrets apply", () => {
   let fixture: ApplyFixture;
 
   beforeEach(async () => {
+    clearSecretsRuntimeSnapshot();
     fixture = await createApplyFixture();
     await seedDefaultApplyFixture(fixture);
   });
 
   afterEach(async () => {
+    clearSecretsRuntimeSnapshot();
     await fs.rm(fixture.rootDir, { recursive: true, force: true });
   });
 

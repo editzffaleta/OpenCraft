@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import OpenCraft
+@testable import OpenClaw
 
 @Suite(.serialized) struct OnboardingStateStoreTests {
     @Test @MainActor func shouldPresentWhenFreshAndDisconnected() {

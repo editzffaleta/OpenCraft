@@ -10,10 +10,10 @@ function mockContextDeps(params: {
     loadConfig: params.loadConfig,
   }));
   vi.doMock("./models-config.js", () => ({
-    ensureOpenCraftModelsJson: vi.fn(async () => {}),
+    ensureOpenClawModelsJson: vi.fn(async () => {}),
   }));
   vi.doMock("./agent-paths.js", () => ({
-    resolveOpenCraftAgentDir: () => "/tmp/opencraft-agent",
+    resolveOpenClawAgentDir: () => "/tmp/openclaw-agent",
   }));
   vi.doMock("./pi-model-discovery.js", () => ({
     discoverAuthStorage: vi.fn(() => ({})),
@@ -81,7 +81,7 @@ describe("lookupContextTokens", () => {
     mockContextModuleDeps(loadConfigMock);
 
     const argvSnapshot = process.argv;
-    process.argv = ["node", "opencraft", "--profile", "--", "config", "validate"];
+    process.argv = ["node", "openclaw", "--profile", "--", "config", "validate"];
     try {
       await import("./context.js");
       expect(loadConfigMock).toHaveBeenCalledTimes(1);
@@ -95,7 +95,35 @@ describe("lookupContextTokens", () => {
     mockContextModuleDeps(loadConfigMock);
 
     const argvSnapshot = process.argv;
-    process.argv = ["node", "opencraft", "logs", "--limit", "5"];
+    process.argv = ["node", "openclaw", "logs", "--limit", "5"];
+    try {
+      await import("./context.js");
+      expect(loadConfigMock).not.toHaveBeenCalled();
+    } finally {
+      process.argv = argvSnapshot;
+    }
+  });
+
+  it("skips eager warmup for status commands that only read model metadata opportunistically", async () => {
+    const loadConfigMock = vi.fn(() => ({ models: {} }));
+    mockContextModuleDeps(loadConfigMock);
+
+    const argvSnapshot = process.argv;
+    process.argv = ["node", "openclaw", "status", "--json"];
+    try {
+      await import("./context.js");
+      expect(loadConfigMock).not.toHaveBeenCalled();
+    } finally {
+      process.argv = argvSnapshot;
+    }
+  });
+
+  it("skips eager warmup for gateway commands that do not need model metadata at startup", async () => {
+    const loadConfigMock = vi.fn(() => ({ models: {} }));
+    mockContextModuleDeps(loadConfigMock);
+
+    const argvSnapshot = process.argv;
+    process.argv = ["node", "openclaw", "gateway", "status", "--json"];
     try {
       await import("./context.js");
       expect(loadConfigMock).not.toHaveBeenCalled();
@@ -124,7 +152,7 @@ describe("lookupContextTokens", () => {
     mockContextModuleDeps(loadConfigMock);
 
     const argvSnapshot = process.argv;
-    process.argv = ["node", "opencraft", "config", "validate"];
+    process.argv = ["node", "openclaw", "config", "validate"];
     try {
       const { lookupContextTokens } = await import("./context.js");
       expect(lookupContextTokens("openrouter/claude-sonnet")).toBeUndefined();

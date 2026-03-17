@@ -18,8 +18,8 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("../daemon/constants.js", () => ({
-  resolveGatewayLaunchAgentLabel: vi.fn(() => "ai.opencraft.gateway"),
-  resolveNodeLaunchAgentLabel: vi.fn(() => "ai.opencraft.node"),
+  resolveGatewayLaunchAgentLabel: vi.fn(() => "ai.openclaw.gateway"),
+  resolveNodeLaunchAgentLabel: vi.fn(() => "ai.openclaw.node"),
 }));
 
 vi.mock("../daemon/diagnostics.js", () => ({

@@ -276,7 +276,7 @@ function createWatcherMock() {
 
 function makeSnapshot(partial: Partial<ConfigFileSnapshot> = {}): ConfigFileSnapshot {
   return {
-    path: "/tmp/opencraft.json",
+    path: "/tmp/openclaw.json",
     exists: true,
     raw: "{}",
     parsed: {},
@@ -306,7 +306,7 @@ function createReloaderHarness(readSnapshot: () => Promise<ConfigFileSnapshot>) 
     onHotReload,
     onRestart,
     log,
-    watchPath: "/tmp/opencraft.json",
+    watchPath: "/tmp/openclaw.json",
   });
   return { watcher, onHotReload, onRestart, log, reloader };
 }

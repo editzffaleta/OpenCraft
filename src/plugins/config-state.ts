@@ -1,5 +1,5 @@
 import { normalizeChatChannelId } from "../channels/registry.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { PluginRecord } from "./registry.js";
 import { defaultSlotIdForKey } from "./slots.js";
 
@@ -24,19 +24,59 @@ export type NormalizedPluginsConfig = {
 };
 
 export const BUNDLED_ENABLED_BY_DEFAULT = new Set<string>([
+  "amazon-bedrock",
+  "anthropic",
+  "byteplus",
+  "cloudflare-ai-gateway",
   "device-pair",
+  "github-copilot",
+  "google",
+  "huggingface",
+  "kilocode",
+  "kimi-coding",
+  "minimax",
+  "mistral",
+  "modelstudio",
+  "moonshot",
+  "nvidia",
   "ollama",
+  "openai",
+  "opencode",
+  "opencode-go",
+  "openrouter",
   "phone-control",
+  "qianfan",
+  "qwen-portal-auth",
   "sglang",
+  "synthetic",
   "talk-voice",
+  "together",
+  "venice",
+  "vercel-ai-gateway",
   "vllm",
+  "volcengine",
+  "xai",
+  "xiaomi",
+  "zai",
 ]);
+
+const PLUGIN_ID_ALIASES: Readonly<Record<string, string>> = {
+  "openai-codex": "openai",
+  "minimax-portal-auth": "minimax",
+};
+
+function normalizePluginId(id: string): string {
+  const trimmed = id.trim();
+  return PLUGIN_ID_ALIASES[trimmed] ?? trimmed;
+}
 
 const normalizeList = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.map((entry) => (typeof entry === "string" ? entry.trim() : "")).filter(Boolean);
+  return value
+    .map((entry) => (typeof entry === "string" ? normalizePluginId(entry) : ""))
+    .filter(Boolean);
 };
 
 const normalizeSlotValue = (value: unknown): string | null | undefined => {
@@ -59,11 +99,12 @@ const normalizePluginEntries = (entries: unknown): NormalizedPluginsConfig["entr
   }
   const normalized: NormalizedPluginsConfig["entries"] = {};
   for (const [key, value] of Object.entries(entries)) {
-    if (!key.trim()) {
+    const normalizedKey = normalizePluginId(key);
+    if (!normalizedKey) {
       continue;
     }
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-      normalized[key] = {};
+      normalized[normalizedKey] = {};
       continue;
     }
     const entry = value as Record<string, unknown>;
@@ -81,17 +122,19 @@ const normalizePluginEntries = (entries: unknown): NormalizedPluginsConfig["entr
             allowPromptInjection: hooks.allowPromptInjection,
           }
         : undefined;
-    normalized[key] = {
-      enabled: typeof entry.enabled === "boolean" ? entry.enabled : undefined,
-      hooks: normalizedHooks,
-      config: "config" in entry ? entry.config : undefined,
+    normalized[normalizedKey] = {
+      ...normalized[normalizedKey],
+      enabled:
+        typeof entry.enabled === "boolean" ? entry.enabled : normalized[normalizedKey]?.enabled,
+      hooks: normalizedHooks ?? normalized[normalizedKey]?.hooks,
+      config: "config" in entry ? entry.config : normalized[normalizedKey]?.config,
     };
   }
   return normalized;
 };
 
 export const normalizePluginsConfig = (
-  config?: OpenCraftConfig["plugins"],
+  config?: OpenClawConfig["plugins"],
 ): NormalizedPluginsConfig => {
   const memorySlot = normalizeSlotValue(config?.slots?.memory);
   return {
@@ -106,13 +149,13 @@ export const normalizePluginsConfig = (
   };
 };
 
-const hasExplicitMemorySlot = (plugins?: OpenCraftConfig["plugins"]) =>
+const hasExplicitMemorySlot = (plugins?: OpenClawConfig["plugins"]) =>
   Boolean(plugins?.slots && Object.prototype.hasOwnProperty.call(plugins.slots, "memory"));
 
-const hasExplicitMemoryEntry = (plugins?: OpenCraftConfig["plugins"]) =>
+const hasExplicitMemoryEntry = (plugins?: OpenClawConfig["plugins"]) =>
   Boolean(plugins?.entries && Object.prototype.hasOwnProperty.call(plugins.entries, "memory-core"));
 
-const hasExplicitPluginConfig = (plugins?: OpenCraftConfig["plugins"]) => {
+const hasExplicitPluginConfig = (plugins?: OpenClawConfig["plugins"]) => {
   if (!plugins) {
     return false;
   }
@@ -138,9 +181,9 @@ const hasExplicitPluginConfig = (plugins?: OpenCraftConfig["plugins"]) => {
 };
 
 export function applyTestPluginDefaults(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   env: NodeJS.ProcessEnv = process.env,
-): OpenCraftConfig {
+): OpenClawConfig {
   if (!env.VITEST) {
     return cfg;
   }
@@ -176,7 +219,7 @@ export function applyTestPluginDefaults(
 }
 
 export function isTestDefaultMemorySlotDisabled(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (!env.VITEST) {
@@ -227,7 +270,7 @@ export function resolveEnableState(
 }
 
 export function isBundledChannelEnabledByChannelConfig(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   pluginId: string,
 ): boolean {
   if (!cfg) {
@@ -249,7 +292,7 @@ export function resolveEffectiveEnableState(params: {
   id: string;
   origin: PluginRecord["origin"];
   config: NormalizedPluginsConfig;
-  rootConfig?: OpenCraftConfig;
+  rootConfig?: OpenClawConfig;
 }): { enabled: boolean; reason?: string } {
   const base = resolveEnableState(params.id, params.origin, params.config);
   if (

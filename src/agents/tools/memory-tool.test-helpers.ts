@@ -1,17 +1,17 @@
 import { expect } from "vitest";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { createMemoryGetTool, createMemorySearchTool } from "./memory-tool.js";
 
-export function asOpenCraftConfig(config: Partial<OpenCraftConfig>): OpenCraftConfig {
-  return config as OpenCraftConfig;
+export function asOpenClawConfig(config: Partial<OpenClawConfig>): OpenClawConfig {
+  return config as OpenClawConfig;
 }
 
-export function createDefaultMemoryToolConfig(): OpenCraftConfig {
-  return asOpenCraftConfig({ agents: { list: [{ id: "main", default: true }] } });
+export function createDefaultMemoryToolConfig(): OpenClawConfig {
+  return asOpenClawConfig({ agents: { list: [{ id: "main", default: true }] } });
 }
 
 export function createMemorySearchToolOrThrow(params?: {
-  config?: OpenCraftConfig;
+  config?: OpenClawConfig;
   agentSessionKey?: string;
 }) {
   const tool = createMemorySearchTool({
@@ -25,7 +25,7 @@ export function createMemorySearchToolOrThrow(params?: {
 }
 
 export function createMemoryGetToolOrThrow(
-  config: OpenCraftConfig = createDefaultMemoryToolConfig(),
+  config: OpenClawConfig = createDefaultMemoryToolConfig(),
 ) {
   const tool = createMemoryGetTool({ config });
   if (!tool) {
@@ -36,7 +36,7 @@ export function createMemoryGetToolOrThrow(
 
 export function createAutoCitationsMemorySearchTool(agentSessionKey: string) {
   return createMemorySearchToolOrThrow({
-    config: asOpenCraftConfig({
+    config: asOpenClawConfig({
       memory: { citations: "auto" },
       agents: { list: [{ id: "main", default: true }] },
     }),

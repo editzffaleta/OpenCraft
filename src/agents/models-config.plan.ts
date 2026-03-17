@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { isRecord } from "../utils.js";
 import {
   mergeProviders,
@@ -6,13 +6,14 @@ import {
   type ExistingProviderConfig,
 } from "./models-config.merge.js";
 import {
+  applyNativeStreamingUsageCompat,
   enforceSourceManagedProviderSecrets,
   normalizeProviders,
   resolveImplicitProviders,
   type ProviderConfig,
 } from "./models-config.providers.js";
 
-type ModelsConfig = NonNullable<OpenCraftConfig["models"]>;
+type ModelsConfig = NonNullable<OpenClawConfig["models"]>;
 
 export type ModelsJsonPlan =
   | {
@@ -27,7 +28,7 @@ export type ModelsJsonPlan =
     };
 
 async function resolveProvidersForModelsJson(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
 }): Promise<Record<string, ProviderConfig>> {
@@ -46,7 +47,7 @@ async function resolveProvidersForModelsJson(params: {
 }
 
 function resolveExplicitBaseUrlProviders(
-  providers: OpenCraftConfig["models"] | undefined,
+  providers: OpenClawConfig["models"] | undefined,
 ): ReadonlySet<string> {
   return new Set(
     Object.entries(providers?.providers ?? {})
@@ -85,9 +86,9 @@ async function resolveProvidersForMode(params: {
   });
 }
 
-export async function planOpenCraftModelsJson(params: {
-  cfg: OpenCraftConfig;
-  sourceConfigForSecrets?: OpenCraftConfig;
+export async function planOpenClawModelsJson(params: {
+  cfg: OpenClawConfig;
+  sourceConfigForSecrets?: OpenClawConfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
   existingRaw: string;
@@ -126,7 +127,8 @@ export async function planOpenCraftModelsJson(params: {
       sourceSecretDefaults: params.sourceConfigForSecrets?.secrets?.defaults,
       secretRefManagedProviders,
     }) ?? mergedProviders;
-  const nextContents = `${JSON.stringify({ providers: secretEnforcedProviders }, null, 2)}\n`;
+  const finalProviders = applyNativeStreamingUsageCompat(secretEnforcedProviders);
+  const nextContents = `${JSON.stringify({ providers: finalProviders }, null, 2)}\n`;
 
   if (params.existingRaw === nextContents) {
     return { action: "noop" };

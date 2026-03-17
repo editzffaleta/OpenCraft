@@ -1,4 +1,4 @@
-package ai.opencraft.app.gateway
+package ai.openclaw.app.gateway
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

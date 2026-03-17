@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { jsonResult } from "../../agents/tools/common.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
 import { runMessageAction } from "./message-action-runner.js";
@@ -15,6 +15,105 @@ function createAlwaysConfiguredPluginConfig(account: Record<string, unknown> = {
 }
 
 describe("runMessageAction plugin dispatch", () => {
+  describe("alias-based plugin action dispatch", () => {
+    const handleAction = vi.fn(async ({ params }: { params: Record<string, unknown> }) =>
+      jsonResult({
+        ok: true,
+        params,
+      }),
+    );
+
+    const feishuLikePlugin: ChannelPlugin = {
+      id: "feishu",
+      meta: {
+        id: "feishu",
+        label: "Feishu",
+        selectionLabel: "Feishu",
+        docsPath: "/channels/feishu",
+        blurb: "Feishu action dispatch test plugin.",
+      },
+      capabilities: { chatTypes: ["direct", "channel"] },
+      config: createAlwaysConfiguredPluginConfig(),
+      actions: {
+        listActions: () => ["pin", "list-pins", "member-info"],
+        supportsAction: ({ action }) =>
+          action === "pin" || action === "list-pins" || action === "member-info",
+        handleAction,
+      },
+    };
+
+    beforeEach(() => {
+      setActivePluginRegistry(
+        createTestRegistry([
+          {
+            pluginId: "feishu",
+            source: "test",
+            plugin: feishuLikePlugin,
+          },
+        ]),
+      );
+      handleAction.mockClear();
+    });
+
+    afterEach(() => {
+      setActivePluginRegistry(createTestRegistry([]));
+      vi.clearAllMocks();
+    });
+
+    it("dispatches messageId/chatId-based Feishu actions through the shared runner", async () => {
+      await runMessageAction({
+        cfg: {
+          channels: {
+            feishu: {
+              enabled: true,
+            },
+          },
+        } as OpenClawConfig,
+        action: "pin",
+        params: {
+          channel: "feishu",
+          messageId: "om_123",
+        },
+        dryRun: false,
+      });
+
+      await runMessageAction({
+        cfg: {
+          channels: {
+            feishu: {
+              enabled: true,
+            },
+          },
+        } as OpenClawConfig,
+        action: "list-pins",
+        params: {
+          channel: "feishu",
+          chatId: "oc_123",
+        },
+        dryRun: false,
+      });
+
+      expect(handleAction).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          action: "pin",
+          params: expect.objectContaining({
+            messageId: "om_123",
+          }),
+        }),
+      );
+      expect(handleAction).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          action: "list-pins",
+          params: expect.objectContaining({
+            chatId: "oc_123",
+          }),
+        }),
+      );
+    });
+  });
+
   describe("media caption behavior", () => {
     afterEach(() => {
       setActivePluginRegistry(createTestRegistry([]));
@@ -52,7 +151,7 @@ describe("runMessageAction plugin dispatch", () => {
             enabled: true,
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       const result = await runMessageAction({
         cfg,
@@ -128,7 +227,7 @@ describe("runMessageAction plugin dispatch", () => {
             enabled: true,
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       const card = {
         type: "AdaptiveCard",
@@ -221,7 +320,7 @@ describe("runMessageAction plugin dispatch", () => {
               botToken: "tok",
             },
           },
-        } as OpenCraftConfig,
+        } as OpenClawConfig,
         action: "poll",
         params: {
           channel: "telegram",
@@ -315,7 +414,7 @@ describe("runMessageAction plugin dispatch", () => {
         buttons: [{ label: "A", customId: "a" }],
       };
       const result = await runMessageAction({
-        cfg: {} as OpenCraftConfig,
+        cfg: {} as OpenClawConfig,
         action: "send",
         params: {
           channel: "discord",
@@ -334,7 +433,7 @@ describe("runMessageAction plugin dispatch", () => {
     it("throws on invalid components JSON strings", async () => {
       await expect(
         runMessageAction({
-          cfg: {} as OpenCraftConfig,
+          cfg: {} as OpenClawConfig,
           action: "send",
           params: {
             channel: "discord",
@@ -394,7 +493,7 @@ describe("runMessageAction plugin dispatch", () => {
       {
         name: "uses defaultAccountId override",
         args: {
-          cfg: {} as OpenCraftConfig,
+          cfg: {} as OpenClawConfig,
           defaultAccountId: "ops",
         },
         expectedAccountId: "ops",
@@ -406,7 +505,7 @@ describe("runMessageAction plugin dispatch", () => {
             bindings: [
               { agentId: "agent-b", match: { channel: "discord", accountId: "account-b" } },
             ],
-          } as OpenCraftConfig,
+          } as OpenClawConfig,
           agentId: "agent-b",
         },
         expectedAccountId: "account-b",

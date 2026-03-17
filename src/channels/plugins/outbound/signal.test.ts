@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { OpenCraftConfig } from "../../../config/config.js";
-import { signalOutbound } from "./signal.js";
+import { signalOutbound } from "../../../../test/channel-outbounds.js";
+import type { OpenClawConfig } from "../../../config/config.js";
 
 describe("signalOutbound", () => {
-  const cfg: OpenCraftConfig = {
+  const cfg: OpenClawConfig = {
     channels: {
       signal: {
         mediaMaxMb: 8,

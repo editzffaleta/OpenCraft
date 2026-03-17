@@ -21,7 +21,7 @@ const hoisted = vi.hoisted(() => {
       configured: true,
       accountId: "default",
       host: "irc.example.com",
-      nick: "opencraft",
+      nick: "openclaw",
       port: 6697,
       tls: true,
     })),

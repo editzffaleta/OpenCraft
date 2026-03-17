@@ -1,13 +1,14 @@
 {
-  "name": "@opencraft/line",
+  "name": "@openclaw/line",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft LINE channel plugin",
+  "description": "OpenClaw LINE channel plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],
+    "setupEntry": "./setup-entry.ts",
     "channel": {
       "id": "line",
       "label": "LINE",
@@ -19,7 +20,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@opencraft/line",
+      "npmSpec": "@openclaw/line",
       "localPath": "extensions/line",
       "defaultChoice": "npm"
     }

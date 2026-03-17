@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
 describe("skills entries config schema", () => {
   it("accepts custom fields under config", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       skills: {
         entries: {
           "custom-skill": {
@@ -21,7 +21,7 @@ describe("skills entries config schema", () => {
   });
 
   it("rejects unknown top-level fields", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       skills: {
         entries: {
           "custom-skill": {

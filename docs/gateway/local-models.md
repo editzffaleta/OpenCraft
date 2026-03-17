@@ -1,21 +1,21 @@
 ---
-summary: "Rode o OpenCraft em LLMs locais (LM Studio, vLLM, LiteLLM, endpoints OpenAI customizados)"
+summary: "Run OpenClaw on local LLMs (LM Studio, vLLM, LiteLLM, custom OpenAI endpoints)"
 read_when:
-  - Você quer servir modelos do seu próprio servidor GPU
-  - Você está configurando LM Studio ou um proxy compatível com OpenAI
-  - Você precisa da orientação mais segura para modelos locais
-title: "Modelos Locais"
+  - You want to serve models from your own GPU box
+  - You are wiring LM Studio or an OpenAI-compatible proxy
+  - You need the safest local model guidance
+title: "Local Models"
 ---
 
-# Modelos locais
+# Local models
 
-Local é viável, mas o OpenCraft exige contexto grande + defesas fortes contra prompt injection. Cards pequenos truncam contexto e vazam segurança. Mire alto: **≥2 Mac Studios no máximo ou rig de GPU equivalente (~$30k+)**. Uma GPU única de **24 GB** funciona apenas para prompts mais leves com maior latência. Use a **variante de modelo maior/completa que você conseguir rodar**; checkpoints agressivamente quantizados ou "pequenos" aumentam o risco de prompt injection (veja [Segurança](/gateway/security)).
+Local is doable, but OpenClaw expects large context + strong defenses against prompt injection. Small cards truncate context and leak safety. Aim high: **≥2 maxed-out Mac Studios or equivalent GPU rig (~$30k+)**. A single **24 GB** GPU works only for lighter prompts with higher latency. Use the **largest / full-size model variant you can run**; aggressively quantized or “small” checkpoints raise prompt-injection risk (see [Security](/gateway/security)).
 
-Se você quer a configuração local com menor fricção, comece com [Ollama](/providers/ollama) e `opencraft onboard`. Esta página é o guia opinado para stacks locais mais avançados e servidores locais compatíveis com OpenAI customizados.
+If you want the lowest-friction local setup, start with [Ollama](/providers/ollama) and `openclaw onboard`. This page is the opinionated guide for higher-end local stacks and custom OpenAI-compatible local servers.
 
-## Recomendado: LM Studio + MiniMax M2.5 (Responses API, tamanho completo)
+## Recommended: LM Studio + MiniMax M2.5 (Responses API, full-size)
 
-Melhor stack local atual. Carregue MiniMax M2.5 no LM Studio, habilite o servidor local (padrão `http://127.0.0.1:1234`), e use a Responses API para manter o reasoning separado do texto final.
+Best current local stack. Load MiniMax M2.5 in LM Studio, enable the local server (default `http://127.0.0.1:1234`), and use Responses API to keep reasoning separate from final text.
 
 ```json5
 {
@@ -52,17 +52,17 @@ Melhor stack local atual. Carregue MiniMax M2.5 no LM Studio, habilite o servido
 }
 ```
 
-**Checklist de configuração**
+**Setup checklist**
 
-- Instale o LM Studio: [https://lmstudio.ai](https://lmstudio.ai)
-- No LM Studio, baixe o **maior build MiniMax M2.5 disponível** (evite variantes "small"/fortemente quantizadas), inicie o servidor, confirme que `http://127.0.0.1:1234/v1/models` o lista.
-- Mantenha o modelo carregado; cold-load adiciona latência de inicialização.
-- Ajuste `contextWindow`/`maxTokens` se seu build LM Studio for diferente.
-- Para WhatsApp, use a Responses API para que apenas o texto final seja enviado.
+- Install LM Studio: [https://lmstudio.ai](https://lmstudio.ai)
+- In LM Studio, download the **largest MiniMax M2.5 build available** (avoid “small”/heavily quantized variants), start the server, confirm `http://127.0.0.1:1234/v1/models` lists it.
+- Keep the model loaded; cold-load adds startup latency.
+- Adjust `contextWindow`/`maxTokens` if your LM Studio build differs.
+- For WhatsApp, stick to Responses API so only final text is sent.
 
-Mantenha modelos hospedados configurados mesmo ao rodar localmente; use `models.mode: "merge"` para que fallbacks permaneçam disponíveis.
+Keep hosted models configured even when running local; use `models.mode: "merge"` so fallbacks stay available.
 
-### Config híbrida: primário hospedado, fallback local
+### Hybrid config: hosted primary, local fallback
 
 ```json5
 {
@@ -103,18 +103,18 @@ Mantenha modelos hospedados configurados mesmo ao rodar localmente; use `models.
 }
 ```
 
-### Local-first com rede de segurança hospedada
+### Local-first with hosted safety net
 
-Inverta a ordem do primário e fallback; mantenha o mesmo bloco de providers e `models.mode: "merge"` para poder fazer fallback para Sonnet ou Opus quando o servidor local estiver fora.
+Swap the primary and fallback order; keep the same providers block and `models.mode: "merge"` so you can fall back to Sonnet or Opus when the local box is down.
 
-### Hospedagem regional / roteamento de dados
+### Regional hosting / data routing
 
-- Variantes hospedadas MiniMax/Kimi/GLM também existem no OpenRouter com endpoints fixados por região (ex. hospedagem nos EUA). Escolha a variante regional lá para manter o tráfego na sua jurisdição preferida enquanto ainda usa `models.mode: "merge"` para fallbacks Anthropic/OpenAI.
-- Local-only permanece o caminho mais forte de privacidade; roteamento regional hospedado é o meio-termo quando você precisa de recursos de provedor mas quer controle sobre o fluxo de dados.
+- Hosted MiniMax/Kimi/GLM variants also exist on OpenRouter with region-pinned endpoints (e.g., US-hosted). Pick the regional variant there to keep traffic in your chosen jurisdiction while still using `models.mode: "merge"` for Anthropic/OpenAI fallbacks.
+- Local-only remains the strongest privacy path; hosted regional routing is the middle ground when you need provider features but want control over data flow.
 
-## Outros proxies locais compatíveis com OpenAI
+## Other OpenAI-compatible local proxies
 
-vLLM, LiteLLM, OAI-proxy ou gateways customizados funcionam se expuserem um endpoint `/v1` no estilo OpenAI. Substitua o bloco de provider acima pelo seu endpoint e ID de modelo:
+vLLM, LiteLLM, OAI-proxy, or custom gateways work if they expose an OpenAI-style `/v1` endpoint. Replace the provider block above with your endpoint and model ID:
 
 ```json5
 {
@@ -128,7 +128,7 @@ vLLM, LiteLLM, OAI-proxy ou gateways customizados funcionam se expuserem um endp
         models: [
           {
             id: "my-local-model",
-            name: "Modelo Local",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -142,11 +142,11 @@ vLLM, LiteLLM, OAI-proxy ou gateways customizados funcionam se expuserem um endp
 }
 ```
 
-Mantenha `models.mode: "merge"` para que modelos hospedados permaneçam disponíveis como fallbacks.
+Keep `models.mode: "merge"` so hosted models stay available as fallbacks.
 
-## Resolução de problemas
+## Troubleshooting
 
-- O Gateway consegue alcançar o proxy? `curl http://127.0.0.1:1234/v1/models`.
-- Modelo LM Studio descarregado? Recarregue; cold start é uma causa comum de "travamento".
-- Erros de contexto? Diminua `contextWindow` ou aumente o limite do seu servidor.
-- Segurança: modelos locais pulam filtros do lado do provedor; mantenha agentes restritos e compactação ativada para limitar o raio de explosão de prompt injection.
+- Gateway can reach the proxy? `curl http://127.0.0.1:1234/v1/models`.
+- LM Studio model unloaded? Reload; cold start is a common “hanging” cause.
+- Context errors? Lower `contextWindow` or raise your server limit.
+- Safety: local models skip provider-side filters; keep agents narrow and compaction on to limit prompt injection blast radius.

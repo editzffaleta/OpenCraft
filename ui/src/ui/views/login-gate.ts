@@ -15,8 +15,8 @@ export function renderLoginGate(state: AppViewState) {
       <div class="login-gate__theme">${renderThemeToggle(state)}</div>
       <div class="login-gate__card">
         <div class="login-gate__header">
-          <img class="login-gate__logo" src=${faviconSrc} alt="OpenCraft" />
-          <div class="login-gate__title">OpenCraft</div>
+          <img class="login-gate__logo" src=${faviconSrc} alt="OpenClaw" />
+          <div class="login-gate__title">OpenClaw</div>
           <div class="login-gate__sub">${t("login.subtitle")}</div>
         </div>
         <div class="login-gate__form">
@@ -43,7 +43,7 @@ export function renderLoginGate(state: AppViewState) {
                   const v = (e.target as HTMLInputElement).value;
                   state.applySettings({ ...state.settings, token: v });
                 }}
-                placeholder="OPENCRAFT_GATEWAY_TOKEN (${t("login.passwordPlaceholder")})"
+                placeholder="OPENCLAW_GATEWAY_TOKEN (${t("login.passwordPlaceholder")})"
                 @keydown=${(e: KeyboardEvent) => {
                   if (e.key === "Enter") {
                     state.connect();
@@ -114,14 +114,14 @@ export function renderLoginGate(state: AppViewState) {
         <div class="login-gate__help">
           <div class="login-gate__help-title">${t("overview.connection.title")}</div>
           <ol class="login-gate__steps">
-            <li>${t("overview.connection.step1")}<code>opencraft gateway run</code></li>
-            <li>${t("overview.connection.step2")}<code>opencraft dashboard --no-open</code></li>
+            <li>${t("overview.connection.step1")}<code>openclaw gateway run</code></li>
+            <li>${t("overview.connection.step2")}<code>openclaw dashboard --no-open</code></li>
             <li>${t("overview.connection.step3")}</li>
           </ol>
           <div class="login-gate__docs">
             <a
               class="session-link"
-              href="https://docs.opencraft.ai/web/dashboard"
+              href="https://docs.openclaw.ai/web/dashboard"
               target="_blank"
               rel="noreferrer"
             >${t("overview.connection.docsLink")}</a>

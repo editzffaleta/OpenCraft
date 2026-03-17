@@ -1,5 +1,5 @@
 import { html, nothing } from "lit";
-import { t, i18n, SUPPORTED_LOCALES, type Locale } from "../../i18n/index.ts";
+import { t, i18n, SUPPORTED_LOCALES, type Locale, isSupportedLocale } from "../../i18n/index.ts";
 import type { EventLogEntry } from "../app-events.ts";
 import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
 import { formatRelativeTimestamp, formatDurationHuman } from "../format.ts";
@@ -81,8 +81,8 @@ export function renderOverview(props: OverviewProps) {
       <div class="muted" style="margin-top: 8px">
         ${t("overview.pairing.hint")}
         <div style="margin-top: 6px">
-          <span class="mono">opencraft devices list</span><br />
-          <span class="mono">opencraft devices approve &lt;requestId&gt;</span>
+          <span class="mono">openclaw devices list</span><br />
+          <span class="mono">openclaw devices approve &lt;requestId&gt;</span>
         </div>
         <div style="margin-top: 6px; font-size: 12px;">
           ${t("overview.pairing.mobileHint")}
@@ -90,7 +90,7 @@ export function renderOverview(props: OverviewProps) {
         <div style="margin-top: 6px">
           <a
             class="session-link"
-            href="https://docs.opencraft.ai/web/control-ui#device-pairing-first-connection"
+            href="https://docs.openclaw.ai/web/control-ui#device-pairing-first-connection"
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Device pairing docs (opens in new tab)"
@@ -117,13 +117,13 @@ export function renderOverview(props: OverviewProps) {
         <div class="muted" style="margin-top: 8px">
           ${t("overview.auth.required")}
           <div style="margin-top: 6px">
-            <span class="mono">opencraft dashboard --no-open</span> → tokenized URL<br />
-            <span class="mono">opencraft doctor --generate-gateway-token</span> → set token
+            <span class="mono">openclaw dashboard --no-open</span> → tokenized URL<br />
+            <span class="mono">openclaw doctor --generate-gateway-token</span> → set token
           </div>
           <div style="margin-top: 6px">
             <a
               class="session-link"
-              href="https://docs.opencraft.ai/web/dashboard"
+              href="https://docs.openclaw.ai/web/dashboard"
               target=${EXTERNAL_LINK_TARGET}
               rel=${buildExternalLinkRel()}
               title="Control UI auth docs (opens in new tab)"
@@ -135,11 +135,11 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        ${t("overview.auth.failed", { command: "opencraft dashboard --no-open" })}
+        ${t("overview.auth.failed", { command: "openclaw dashboard --no-open" })}
         <div style="margin-top: 6px">
           <a
             class="session-link"
-            href="https://docs.opencraft.ai/web/dashboard"
+            href="https://docs.openclaw.ai/web/dashboard"
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Control UI auth docs (opens in new tab)"
@@ -170,7 +170,7 @@ export function renderOverview(props: OverviewProps) {
         <div style="margin-top: 6px">
           <a
             class="session-link"
-            href="https://docs.opencraft.ai/gateway/tailscale"
+            href="https://docs.openclaw.ai/gateway/tailscale"
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Tailscale Serve docs (opens in new tab)"
@@ -179,7 +179,7 @@ export function renderOverview(props: OverviewProps) {
           <span class="muted"> · </span>
           <a
             class="session-link"
-            href="https://docs.opencraft.ai/web/control-ui#insecure-http"
+            href="https://docs.openclaw.ai/web/control-ui#insecure-http"
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Insecure HTTP docs (opens in new tab)"
@@ -190,7 +190,9 @@ export function renderOverview(props: OverviewProps) {
     `;
   })();
 
-  const currentLocale = i18n.getLocale();
+  const currentLocale = isSupportedLocale(props.settings.locale)
+    ? props.settings.locale
+    : i18n.getLocale();
 
   return html`
     <section class="grid">
@@ -229,7 +231,7 @@ export function renderOverview(props: OverviewProps) {
                         const v = (e.target as HTMLInputElement).value;
                         props.onSettingsChange({ ...props.settings, token: v });
                       }}
-                      placeholder="OPENCRAFT_GATEWAY_TOKEN"
+                      placeholder="OPENCLAW_GATEWAY_TOKEN"
                     />
                     <button
                       type="button"
@@ -295,7 +297,9 @@ export function renderOverview(props: OverviewProps) {
             >
               ${SUPPORTED_LOCALES.map((loc) => {
                 const key = loc.replace(/-([a-zA-Z])/g, (_, c) => c.toUpperCase());
-                return html`<option value=${loc}>${t(`languages.${key}`)}</option>`;
+                return html`<option value=${loc} ?selected=${currentLocale === loc}>
+                  ${t(`languages.${key}`)}
+                </option>`;
               })}
             </select>
           </label>
@@ -313,16 +317,16 @@ export function renderOverview(props: OverviewProps) {
                 <div class="login-gate__help" style="margin-top: 16px;">
                   <div class="login-gate__help-title">${t("overview.connection.title")}</div>
                   <ol class="login-gate__steps">
-                    <li>${t("overview.connection.step1")}<code>opencraft gateway run</code></li>
-                    <li>${t("overview.connection.step2")}<code>opencraft dashboard --no-open</code></li>
+                    <li>${t("overview.connection.step1")}<code>openclaw gateway run</code></li>
+                    <li>${t("overview.connection.step2")}<code>openclaw dashboard --no-open</code></li>
                     <li>${t("overview.connection.step3")}</li>
-                    <li>${t("overview.connection.step4")}<code>opencraft doctor --generate-gateway-token</code></li>
+                    <li>${t("overview.connection.step4")}<code>openclaw doctor --generate-gateway-token</code></li>
                   </ol>
                   <div class="login-gate__docs">
                     ${t("overview.connection.docsHint")}
                     <a
                       class="session-link"
-                      href="https://docs.opencraft.ai/web/dashboard"
+                      href="https://docs.openclaw.ai/web/dashboard"
                       target="_blank"
                       rel="noreferrer"
                     >${t("overview.connection.docsLink")}</a>

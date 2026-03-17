@@ -2,7 +2,7 @@ import type { RequestClient } from "@buape/carbon";
 import { resolveAgentAvatar } from "../../../../src/agents/identity-avatar.js";
 import type { ChunkMode } from "../../../../src/auto-reply/chunk.js";
 import type { ReplyPayload } from "../../../../src/auto-reply/types.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import type { MarkdownTableMode, ReplyToMode } from "../../../../src/config/types.base.js";
 import { createDiscordRetryRunner, type RetryRunner } from "../../../../src/infra/retry-policy.js";
 import { resolveRetryConfig, retryAsync, type RetryConfig } from "../../../../src/infra/retry.js";
@@ -104,7 +104,7 @@ function resolveBoundThreadBinding(params: {
 }
 
 function resolveBindingPersona(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   binding: DiscordThreadBindingLookupRecord | undefined,
 ): {
   username?: string;
@@ -129,7 +129,7 @@ function resolveBindingPersona(
 }
 
 async function sendDiscordChunkWithFallback(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   target: string;
   text: string;
   token: string;
@@ -206,7 +206,7 @@ async function sendDiscordChunkWithFallback(params: {
 }
 
 async function sendAdditionalDiscordMedia(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   target: string;
   token: string;
   rest?: RequestClient;
@@ -235,7 +235,7 @@ async function sendAdditionalDiscordMedia(params: {
 }
 
 export async function deliverDiscordReply(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   replies: ReplyPayload[];
   target: string;
   token: string;

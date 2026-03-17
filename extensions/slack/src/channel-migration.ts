@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import type { SlackChannelConfig } from "../../../src/config/types.slack.js";
 import { normalizeAccountId } from "../../../src/routing/session-key.js";
 
@@ -13,7 +13,7 @@ export type SlackChannelMigrationResult = {
 };
 
 function resolveAccountChannels(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   accountId?: string | null,
 ): { channels?: SlackChannels } {
   if (!accountId) {
@@ -57,7 +57,7 @@ export function migrateSlackChannelsInPlace(
 }
 
 export function migrateSlackChannelConfig(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   oldChannelId: string;
   newChannelId: string;

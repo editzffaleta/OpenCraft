@@ -3,10 +3,10 @@ import {
   createTypingCallbacks,
   logTypingFailure,
   resolveChannelMediaMaxBytes,
-  type OpenCraftConfig,
+  type OpenClawConfig,
   type MSTeamsReplyStyle,
   type RuntimeEnv,
-} from "opencraft/plugin-sdk/msteams";
+} from "openclaw/plugin-sdk/msteams";
 import type { MSTeamsAccessTokenProvider } from "./attachments/types.js";
 import type { StoredConversationReference } from "./conversation-store.js";
 import {
@@ -26,7 +26,7 @@ import { getMSTeamsRuntime } from "./runtime.js";
 import type { MSTeamsTurnContext } from "./sdk-types.js";
 
 export function createMSTeamsReplyDispatcher(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   accountId?: string;
   runtime: RuntimeEnv;

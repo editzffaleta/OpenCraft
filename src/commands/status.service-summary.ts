@@ -5,7 +5,7 @@ export type ServiceStatusSummary = {
   label: string;
   installed: boolean | null;
   loaded: boolean;
-  managedByOpenCraft: boolean;
+  managedByOpenClaw: boolean;
   externallyManaged: boolean;
   loadedText: string;
   runtime: GatewayServiceRuntime | undefined;
@@ -27,9 +27,9 @@ export async function readServiceStatusSummary(
       service.isLoaded({ env: serviceEnv }).catch(() => false),
       service.readRuntime(serviceEnv).catch(() => undefined),
     ]);
-    const managedByOpenCraft = command != null;
-    const externallyManaged = !managedByOpenCraft && runtime?.status === "running";
-    const installed = managedByOpenCraft || externallyManaged;
+    const managedByOpenClaw = command != null;
+    const externallyManaged = !managedByOpenClaw && runtime?.status === "running";
+    const installed = managedByOpenClaw || externallyManaged;
     const loadedText = externallyManaged
       ? "running (externally managed)"
       : loaded
@@ -39,7 +39,7 @@ export async function readServiceStatusSummary(
       label: service.label,
       installed,
       loaded,
-      managedByOpenCraft,
+      managedByOpenClaw,
       externallyManaged,
       loadedText,
       runtime,
@@ -49,7 +49,7 @@ export async function readServiceStatusSummary(
       label: fallbackLabel,
       installed: null,
       loaded: false,
-      managedByOpenCraft: false,
+      managedByOpenClaw: false,
       externallyManaged: false,
       loadedText: "unknown",
       runtime: undefined,

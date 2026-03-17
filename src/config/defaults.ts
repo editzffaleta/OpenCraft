@@ -8,7 +8,7 @@ import {
   resolveActiveTalkProviderConfig,
   resolveTalkApiKey,
 } from "./talk.js";
-import type { OpenCraftConfig } from "./types.js";
+import type { OpenClawConfig } from "./types.js";
 import type { ModelDefinitionConfig } from "./types.models.js";
 import { hasConfiguredSecretInput } from "./types.secrets.js";
 
@@ -71,7 +71,7 @@ function resolveModelCost(
   };
 }
 
-function resolveAnthropicDefaultAuthMode(cfg: OpenCraftConfig): AnthropicAuthDefaultsMode | null {
+function resolveAnthropicDefaultAuthMode(cfg: OpenClawConfig): AnthropicAuthDefaultsMode | null {
   const profiles = cfg.auth?.profiles ?? {};
   const anthropicProfiles = Object.entries(profiles).filter(
     ([, profile]) => profile?.provider === "anthropic",
@@ -128,7 +128,7 @@ export type SessionDefaultsOptions = {
   warnState?: WarnState;
 };
 
-export function applyMessageDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyMessageDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const messages = cfg.messages;
   const hasAckScope = messages?.ackReactionScope !== undefined;
   if (hasAckScope) {
@@ -144,9 +144,9 @@ export function applyMessageDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
 }
 
 export function applySessionDefaults(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
   options: SessionDefaultsOptions = {},
-): OpenCraftConfig {
+): OpenClawConfig {
   const session = cfg.session;
   if (!session || session.mainKey === undefined) {
     return cfg;
@@ -156,7 +156,7 @@ export function applySessionDefaults(
   const warn = options.warn ?? console.warn;
   const warnState = options.warnState ?? defaultWarnState;
 
-  const next: OpenCraftConfig = {
+  const next: OpenClawConfig = {
     ...cfg,
     session: { ...session, mainKey: "main" },
   };
@@ -169,7 +169,7 @@ export function applySessionDefaults(
   return next;
 }
 
-export function applyTalkApiKey(config: OpenCraftConfig): OpenCraftConfig {
+export function applyTalkApiKey(config: OpenClawConfig): OpenClawConfig {
   const normalized = normalizeTalkConfig(config);
   const resolved = resolveTalkApiKey();
   if (!resolved) {
@@ -206,11 +206,11 @@ export function applyTalkApiKey(config: OpenCraftConfig): OpenCraftConfig {
   };
 }
 
-export function applyTalkConfigNormalization(config: OpenCraftConfig): OpenCraftConfig {
+export function applyTalkConfigNormalization(config: OpenClawConfig): OpenClawConfig {
   return normalizeTalkConfig(config);
 }
 
-export function applyModelDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyModelDefaults(cfg: OpenClawConfig): OpenClawConfig {
   let mutated = false;
   let nextCfg = cfg;
 
@@ -346,7 +346,7 @@ export function applyModelDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
   };
 }
 
-export function applyAgentDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyAgentDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const agents = cfg.agents;
   const defaults = agents?.defaults;
   const hasMax =
@@ -387,7 +387,7 @@ export function applyAgentDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
   };
 }
 
-export function applyLoggingDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyLoggingDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const logging = cfg.logging;
   if (!logging) {
     return cfg;
@@ -404,7 +404,7 @@ export function applyLoggingDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
   };
 }
 
-export function applyContextPruningDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyContextPruningDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const defaults = cfg.agents?.defaults;
   if (!defaults) {
     return cfg;
@@ -506,7 +506,7 @@ export function applyContextPruningDefaults(cfg: OpenCraftConfig): OpenCraftConf
   };
 }
 
-export function applyCompactionDefaults(cfg: OpenCraftConfig): OpenCraftConfig {
+export function applyCompactionDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const defaults = cfg.agents?.defaults;
   if (!defaults) {
     return cfg;

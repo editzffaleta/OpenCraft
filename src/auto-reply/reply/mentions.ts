@@ -1,7 +1,6 @@
 import { resolveAgentConfig } from "../../agents/agent-scope.js";
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { compileConfigRegexes, type ConfigRegexRejectReason } from "../../security/config-regex.js";
 import { escapeRegExp } from "../../utils.js";
@@ -101,7 +100,7 @@ function compileMentionPatternsCached(params: {
   return cacheMentionRegexes(params.cache, cacheKey, compiled.regexes);
 }
 
-function resolveMentionPatterns(cfg: OpenCraftConfig | undefined, agentId?: string): string[] {
+function resolveMentionPatterns(cfg: OpenClawConfig | undefined, agentId?: string): string[] {
   if (!cfg) {
     return [];
   }
@@ -118,7 +117,7 @@ function resolveMentionPatterns(cfg: OpenCraftConfig | undefined, agentId?: stri
   return derived.length > 0 ? derived : [];
 }
 
-export function buildMentionRegexes(cfg: OpenCraftConfig | undefined, agentId?: string): RegExp[] {
+export function buildMentionRegexes(cfg: OpenClawConfig | undefined, agentId?: string): RegExp[] {
   const patterns = normalizeMentionPatterns(resolveMentionPatterns(cfg, agentId));
   return compileMentionPatternsCached({
     patterns,
@@ -194,12 +193,12 @@ export function stripStructuralPrefixes(text: string): string {
 export function stripMentions(
   text: string,
   ctx: MsgContext,
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   agentId?: string,
 ): string {
   let result = text;
   const providerId = ctx.Provider ? normalizeChannelId(ctx.Provider) : null;
-  const providerMentions = providerId ? getChannelDock(providerId)?.mentions : undefined;
+  const providerMentions = providerId ? getChannelPlugin(providerId)?.mentions : undefined;
   const configRegexes = compileMentionPatternsCached({
     patterns: normalizeMentionPatterns(resolveMentionPatterns(cfg, agentId)),
     flags: "gi",

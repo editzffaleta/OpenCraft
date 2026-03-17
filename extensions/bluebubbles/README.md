@@ -1,6 +1,6 @@
 # BlueBubbles extension (developer reference)
 
-This directory contains the **BlueBubbles external channel plugin** for OpenCraft.
+This directory contains the **BlueBubbles external channel plugin** for OpenClaw.
 
 If you’re looking for **how to use BlueBubbles as an agent/tool user**, see:
 
@@ -13,7 +13,7 @@ If you’re looking for **how to use BlueBubbles as an agent/tool user**, see:
 - Webhook handling: `extensions/bluebubbles/src/monitor.ts` (register per-account route via `registerPluginHttpRoute`).
 - REST helpers: `extensions/bluebubbles/src/send.ts` + `extensions/bluebubbles/src/probe.ts`.
 - Runtime bridge: `extensions/bluebubbles/src/runtime.ts` (set via `api.runtime`).
-- Catalog entry for onboarding: `src/channels/plugins/catalog.ts`.
+- Catalog entry for setup selection: `src/channels/plugins/catalog.ts`.
 
 ## Internal helpers (use these, not raw API calls)
 
@@ -30,7 +30,7 @@ If you’re looking for **how to use BlueBubbles as an agent/tool user**, see:
 - BlueBubbles posts JSON to the gateway HTTP server.
 - Normalize sender/chat IDs defensively (payloads vary by version).
 - Skip messages marked as from self.
-- Route into core reply pipeline via the plugin runtime (`api.runtime`) and `opencraft/plugin-sdk` helpers.
+- Route into core reply pipeline via the plugin runtime (`api.runtime`) and `openclaw/plugin-sdk` helpers.
 - For attachments/stickers, use `<media:...>` placeholders when text is empty and attach media paths via `MediaUrl(s)` in the inbound context.
 
 ## Config (core)

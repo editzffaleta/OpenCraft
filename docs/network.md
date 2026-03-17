@@ -1,54 +1,54 @@
 ---
-summary: "Hub de rede: superfícies do gateway, pareamento, descoberta e segurança"
+summary: "Network hub: gateway surfaces, pairing, discovery, and security"
 read_when:
-  - Você precisa da visão geral de arquitetura de rede + segurança
-  - Você está depurando acesso local vs tailnet ou pareamento
-  - Você quer a lista canônica de docs de rede
-title: "Rede"
+  - You need the network architecture + security overview
+  - You are debugging local vs tailnet access or pairing
+  - You want the canonical list of networking docs
+title: "Network"
 ---
 
-# Hub de Rede
+# Network hub
 
-Este hub linka os docs principais sobre como o OpenCraft conecta, pareia e protege
-dispositivos via localhost, LAN e tailnet.
+This hub links the core docs for how OpenClaw connects, pairs, and secures
+devices across localhost, LAN, and tailnet.
 
-## Modelo principal
+## Core model
 
-- [Arquitetura do Gateway](/concepts/architecture)
-- [Protocolo do Gateway](/gateway/protocol)
-- [Runbook do Gateway](/gateway)
-- [Superfícies Web + modos de bind](/web)
+- [Gateway architecture](/concepts/architecture)
+- [Gateway protocol](/gateway/protocol)
+- [Gateway runbook](/gateway)
+- [Web surfaces + bind modes](/web)
 
-## Pareamento + identidade
+## Pairing + identity
 
-- [Visão geral de pareamento (DM + nodes)](/channels/pairing)
-- [Pareamento de node pelo Gateway](/gateway/pairing)
-- [CLI de devices (pareamento + rotação de token)](/cli/devices)
-- [CLI de pareamento (aprovações de DM)](/cli/pairing)
+- [Pairing overview (DM + nodes)](/channels/pairing)
+- [Gateway-owned node pairing](/gateway/pairing)
+- [Devices CLI (pairing + token rotation)](/cli/devices)
+- [Pairing CLI (DM approvals)](/cli/pairing)
 
-Confiança local:
+Local trust:
 
-- Conexões locais (loopback ou o endereço tailnet do próprio host do gateway) podem ser
-  aprovadas automaticamente para pareamento para manter a UX fluida no mesmo host.
-- Clientes tailnet/LAN não-locais ainda requerem aprovação explícita de pareamento.
+- Local connections (loopback or the gateway host’s own tailnet address) can be
+  auto‑approved for pairing to keep same‑host UX smooth.
+- Non‑local tailnet/LAN clients still require explicit pairing approval.
 
-## Descoberta + transportes
+## Discovery + transports
 
-- [Descoberta & transportes](/gateway/discovery)
+- [Discovery & transports](/gateway/discovery)
 - [Bonjour / mDNS](/gateway/bonjour)
-- [Acesso remoto (SSH)](/gateway/remote)
+- [Remote access (SSH)](/gateway/remote)
 - [Tailscale](/gateway/tailscale)
 
-## Nodes + transportes
+## Nodes + transports
 
-- [Visão geral de nodes](/nodes)
-- [Protocolo de bridge (nodes legados)](/gateway/bridge-protocol)
-- [Runbook de node: iOS](/platforms/ios)
-- [Runbook de node: Android](/platforms/android)
+- [Nodes overview](/nodes)
+- [Bridge protocol (legacy nodes)](/gateway/bridge-protocol)
+- [Node runbook: iOS](/platforms/ios)
+- [Node runbook: Android](/platforms/android)
 
-## Segurança
+## Security
 
-- [Visão geral de segurança](/gateway/security)
-- [Referência de config do Gateway](/gateway/configuration)
-- [Resolução de problemas](/gateway/troubleshooting)
+- [Security overview](/gateway/security)
+- [Gateway config reference](/gateway/configuration)
+- [Troubleshooting](/gateway/troubleshooting)
 - [Doctor](/gateway/doctor)

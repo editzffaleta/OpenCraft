@@ -1,4 +1,4 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -9,13 +9,13 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-private const val NOTIFICATION_CHANNEL_BASE_ID = "opencraft.system.notify"
+private const val NOTIFICATION_CHANNEL_BASE_ID = "openclaw.system.notify"
 
 internal data class SystemNotifyRequest(
   val title: String,
@@ -70,9 +70,9 @@ private class AndroidSystemNotificationPoster(
     val normalizedPriority = priority.orEmpty().trim().lowercase()
     val (suffix, importance, name) =
       when (normalizedPriority) {
-        "passive" -> Triple("passive", NotificationManager.IMPORTANCE_LOW, "OpenCraft Passive")
-        "timesensitive" -> Triple("timesensitive", NotificationManager.IMPORTANCE_HIGH, "OpenCraft Time Sensitive")
-        else -> Triple("active", NotificationManager.IMPORTANCE_DEFAULT, "OpenCraft Active")
+        "passive" -> Triple("passive", NotificationManager.IMPORTANCE_LOW, "OpenClaw Passive")
+        "timesensitive" -> Triple("timesensitive", NotificationManager.IMPORTANCE_HIGH, "OpenClaw Time Sensitive")
+        else -> Triple("active", NotificationManager.IMPORTANCE_DEFAULT, "OpenClaw Active")
       }
     val channelId = "$NOTIFICATION_CHANNEL_BASE_ID.$suffix"
     val manager = appContext.getSystemService(NotificationManager::class.java)

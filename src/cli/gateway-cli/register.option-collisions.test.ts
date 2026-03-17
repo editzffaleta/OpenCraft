@@ -77,7 +77,7 @@ vi.mock("../../terminal/health-style.js", () => ({
 }));
 
 vi.mock("../../terminal/links.js", () => ({
-  formatDocsLink: () => "docs.opencraft.ai/cli/gateway",
+  formatDocsLink: () => "docs.openclaw.ai/cli/gateway",
 }));
 
 vi.mock("../../terminal/theme.js", () => ({

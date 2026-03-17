@@ -1,136 +1,136 @@
 ---
 name: tmux
-description: Controle remoto de sessões tmux para CLIs interativos enviando teclas e raspando saída de painéis.
+description: Remote-control tmux sessions for interactive CLIs by sending keystrokes and scraping pane output.
 metadata:
-  { "opencraft": { "emoji": "🧵", "os": ["darwin", "linux"], "requires": { "bins": ["tmux"] } } }
+  { "openclaw": { "emoji": "🧵", "os": ["darwin", "linux"], "requires": { "bins": ["tmux"] } } }
 ---
 
-# Controle de Sessão tmux
+# tmux Session Control
 
-Controle sessões tmux enviando teclas e lendo a saída. Essencial para gerenciar sessões do Claude Code.
+Control tmux sessions by sending keystrokes and reading output. Essential for managing Claude Code sessions.
 
-## Quando Usar
+## When to Use
 
-✅ **USE esta skill quando:**
+✅ **USE this skill when:**
 
-- Monitorando sessões Claude/Codex no tmux
-- Enviando input para aplicativos de terminal interativos
-- Raspando saída de processos de longa duração no tmux
-- Navegando painéis/janelas tmux programaticamente
-- Verificando trabalho em background em sessões existentes
+- Monitoring Claude/Codex sessions in tmux
+- Sending input to interactive terminal applications
+- Scraping output from long-running processes in tmux
+- Navigating tmux panes/windows programmatically
+- Checking on background work in existing sessions
 
-## Quando NÃO Usar
+## When NOT to Use
 
-❌ **NÃO use esta skill quando:**
+❌ **DON'T use this skill when:**
 
-- Executando comandos shell pontuais → use ferramenta `exec` diretamente
-- Iniciando novos processos em background → use `exec` com `background:true`
-- Scripts não interativos → use ferramenta `exec`
-- O processo não está no tmux
-- Você precisa criar uma nova sessão tmux → use `exec` com `tmux new-session`
+- Running one-off shell commands → use `exec` tool directly
+- Starting new background processes → use `exec` with `background:true`
+- Non-interactive scripts → use `exec` tool
+- The process isn't in tmux
+- You need to create a new tmux session → use `exec` with `tmux new-session`
 
-## Sessões de Exemplo
+## Example Sessions
 
-| Sessão                  | Propósito                      |
-| ----------------------- | ------------------------------ |
-| `shared`                | Sessão interativa principal    |
-| `worker-2` - `worker-8` | Sessões de trabalho paralelas  |
+| Session                 | Purpose                     |
+| ----------------------- | --------------------------- |
+| `shared`                | Primary interactive session |
+| `worker-2` - `worker-8` | Parallel worker sessions    |
 
-## Comandos Comuns
+## Common Commands
 
-### Listar Sessões
+### List Sessions
 
 ```bash
 tmux list-sessions
 tmux ls
 ```
 
-### Capturar Saída
+### Capture Output
 
 ```bash
-# Últimas 20 linhas do painel
+# Last 20 lines of pane
 tmux capture-pane -t shared -p | tail -20
 
-# Todo o scrollback
+# Entire scrollback
 tmux capture-pane -t shared -p -S -
 
-# Painel específico na janela
+# Specific pane in window
 tmux capture-pane -t shared:0.0 -p
 ```
 
-### Enviar Teclas
+### Send Keys
 
 ```bash
-# Enviar texto (não pressiona Enter)
-tmux send-keys -t shared "olá"
+# Send text (doesn't press Enter)
+tmux send-keys -t shared "hello"
 
-# Enviar texto + Enter
-tmux send-keys -t shared "s" Enter
+# Send text + Enter
+tmux send-keys -t shared "y" Enter
 
-# Enviar teclas especiais
+# Send special keys
 tmux send-keys -t shared Enter
 tmux send-keys -t shared Escape
 tmux send-keys -t shared C-c          # Ctrl+C
 tmux send-keys -t shared C-d          # Ctrl+D (EOF)
-tmux send-keys -t shared C-z          # Ctrl+Z (suspender)
+tmux send-keys -t shared C-z          # Ctrl+Z (suspend)
 ```
 
-### Navegação de Janela/Painel
+### Window/Pane Navigation
 
 ```bash
-# Selecionar janela
+# Select window
 tmux select-window -t shared:0
 
-# Selecionar painel
+# Select pane
 tmux select-pane -t shared:0.1
 
-# Listar janelas
+# List windows
 tmux list-windows -t shared
 ```
 
-### Gerenciamento de Sessão
+### Session Management
 
 ```bash
-# Criar nova sessão
-tmux new-session -d -s novasessao
+# Create new session
+tmux new-session -d -s newsession
 
-# Encerrar sessão
-tmux kill-session -t nomedassessao
+# Kill session
+tmux kill-session -t sessionname
 
-# Renomear sessão
-tmux rename-session -t antiga nova
+# Rename session
+tmux rename-session -t old new
 ```
 
-## Enviando Input com Segurança
+## Sending Input Safely
 
-Para TUIs interativos (Claude Code, Codex, etc.), divida texto e Enter em envios separados para evitar casos extremos de cola/multilinha:
+For interactive TUIs (Claude Code, Codex, etc.), split text and Enter into separate sends to avoid paste/multiline edge cases:
 
 ```bash
-tmux send-keys -t shared -l -- "Por favor aplique o patch em src/foo.ts"
+tmux send-keys -t shared -l -- "Please apply the patch in src/foo.ts"
 sleep 0.1
 tmux send-keys -t shared Enter
 ```
 
-## Padrões de Sessão Claude Code
+## Claude Code Session Patterns
 
-### Verificar se a Sessão Precisa de Input
+### Check if Session Needs Input
 
 ```bash
-# Procurar prompts
+# Look for prompts
 tmux capture-pane -t worker-3 -p | tail -10 | grep -E "❯|Yes.*No|proceed|permission"
 ```
 
-### Aprovar Prompt do Claude Code
+### Approve Claude Code Prompt
 
 ```bash
-# Enviar 's' e Enter
-tmux send-keys -t worker-3 's' Enter
+# Send 'y' and Enter
+tmux send-keys -t worker-3 'y' Enter
 
-# Ou selecionar opção numerada
+# Or select numbered option
 tmux send-keys -t worker-3 '2' Enter
 ```
 
-### Verificar Status de Todas as Sessões
+### Check All Sessions Status
 
 ```bash
 for s in shared worker-2 worker-3 worker-4 worker-5 worker-6 worker-7 worker-8; do
@@ -139,15 +139,15 @@ for s in shared worker-2 worker-3 worker-4 worker-5 worker-6 worker-7 worker-8; 
 done
 ```
 
-### Enviar Tarefa para Sessão
+### Send Task to Session
 
 ```bash
-tmux send-keys -t worker-4 "Corrija o bug em auth.js" Enter
+tmux send-keys -t worker-4 "Fix the bug in auth.js" Enter
 ```
 
-## Notas
+## Notes
 
-- Use `capture-pane -p` para imprimir no stdout (essencial para scripts)
-- `-S -` captura todo o histórico de scrollback
-- Formato de alvo: `session:window.pane` (ex: `shared:0.0`)
-- Sessões persistem entre desconexões SSH
+- Use `capture-pane -p` to print to stdout (essential for scripting)
+- `-S -` captures entire scrollback history
+- Target format: `session:window.pane` (e.g., `shared:0.0`)
+- Sessions persist across SSH disconnects

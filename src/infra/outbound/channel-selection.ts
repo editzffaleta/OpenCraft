@@ -1,12 +1,13 @@
 import { listChannelPlugins } from "../../channels/plugins/index.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   listDeliverableMessageChannels,
   type DeliverableMessageChannel,
   isDeliverableMessageChannel,
   normalizeMessageChannel,
 } from "../../utils/message-channel.js";
+import { resolveOutboundChannelPlugin } from "./channel-resolution.js";
 
 export type MessageChannelId = DeliverableMessageChannel;
 export type MessageChannelSelectionSource =
@@ -34,6 +35,22 @@ function resolveKnownChannel(value?: string | null): MessageChannelId | undefine
   return normalized as MessageChannelId;
 }
 
+function resolveAvailableKnownChannel(params: {
+  cfg: OpenClawConfig;
+  value?: string | null;
+}): MessageChannelId | undefined {
+  const normalized = resolveKnownChannel(params.value);
+  if (!normalized) {
+    return undefined;
+  }
+  return resolveOutboundChannelPlugin({
+    channel: normalized,
+    cfg: params.cfg,
+  })
+    ? normalized
+    : undefined;
+}
+
 function isAccountEnabled(account: unknown): boolean {
   if (!account || typeof account !== "object") {
     return true;
@@ -42,7 +59,7 @@ function isAccountEnabled(account: unknown): boolean {
   return enabled !== false;
 }
 
-async function isPluginConfigured(plugin: ChannelPlugin, cfg: OpenCraftConfig): Promise<boolean> {
+async function isPluginConfigured(plugin: ChannelPlugin, cfg: OpenClawConfig): Promise<boolean> {
   const accountIds = plugin.config.listAccountIds(cfg);
   if (accountIds.length === 0) {
     return false;
@@ -69,7 +86,7 @@ async function isPluginConfigured(plugin: ChannelPlugin, cfg: OpenCraftConfig): 
 }
 
 export async function listConfiguredMessageChannels(
-  cfg: OpenCraftConfig,
+  cfg: OpenClawConfig,
 ): Promise<MessageChannelId[]> {
   const channels: MessageChannelId[] = [];
   for (const plugin of listChannelPlugins()) {
@@ -84,7 +101,7 @@ export async function listConfiguredMessageChannels(
 }
 
 export async function resolveMessageChannelSelection(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   channel?: string | null;
   fallbackChannel?: string | null;
 }): Promise<{
@@ -94,8 +111,15 @@ export async function resolveMessageChannelSelection(params: {
 }> {
   const normalized = normalizeMessageChannel(params.channel);
   if (normalized) {
-    if (!isKnownChannel(normalized)) {
-      const fallback = resolveKnownChannel(params.fallbackChannel);
+    const availableExplicit = resolveAvailableKnownChannel({
+      cfg: params.cfg,
+      value: normalized,
+    });
+    if (!availableExplicit) {
+      const fallback = resolveAvailableKnownChannel({
+        cfg: params.cfg,
+        value: params.fallbackChannel,
+      });
       if (fallback) {
         return {
           channel: fallback,
@@ -103,16 +127,22 @@ export async function resolveMessageChannelSelection(params: {
           source: "tool-context-fallback",
         };
       }
-      throw new Error(`Unknown channel: ${String(normalized)}`);
+      if (!isKnownChannel(normalized)) {
+        throw new Error(`Unknown channel: ${String(normalized)}`);
+      }
+      throw new Error(`Channel is unavailable: ${String(normalized)}`);
     }
     return {
-      channel: normalized as MessageChannelId,
+      channel: availableExplicit,
       configured: await listConfiguredMessageChannels(params.cfg),
       source: "explicit",
     };
   }
 
-  const fallback = resolveKnownChannel(params.fallbackChannel);
+  const fallback = resolveAvailableKnownChannel({
+    cfg: params.cfg,
+    value: params.fallbackChannel,
+  });
   if (fallback) {
     return {
       channel: fallback,

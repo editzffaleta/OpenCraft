@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import {
   PROFILE_ATTACH_RETRY_TIMEOUT_MS,
   PROFILE_POST_RESTART_WS_TIMEOUT_MS,
@@ -11,15 +12,11 @@ import {
 import {
   isChromeCdpReady,
   isChromeReachable,
-  launchOpenCraftChrome,
-  stopOpenCraftChrome,
+  launchOpenClawChrome,
+  stopOpenClawChrome,
 } from "./chrome.js";
 import type { ResolvedBrowserProfile } from "./config.js";
-import { BrowserConfigurationError, BrowserProfileUnavailableError } from "./errors.js";
-import {
-  ensureChromeExtensionRelayServer,
-  stopChromeExtensionRelayServer,
-} from "./extension-relay.js";
+import { BrowserProfileUnavailableError } from "./errors.js";
 import { getBrowserProfileCapabilities } from "./profile-capabilities.js";
 import {
   CDP_READY_AFTER_LAUNCH_MAX_TIMEOUT_MS,
@@ -67,7 +64,7 @@ export function createProfileAvailability({
   const isReachable = async (timeoutMs?: number) => {
     if (capabilities.usesChromeMcp) {
       // listChromeMcpTabs creates the session if needed — no separate ensureChromeMcpAvailable call required
-      await listChromeMcpTabs(profile.name);
+      await listChromeMcpTabs(profile.name, profile.userDataDir);
       return true;
     }
     const { httpTimeoutMs, wsTimeoutMs } = resolveTimeouts(timeoutMs);
@@ -121,11 +118,8 @@ export function createProfileAvailability({
 
     const previousProfile = reconcile.previousProfile;
     if (profileState.running) {
-      await stopOpenCraftChrome(profileState.running).catch(() => {});
+      await stopOpenClawChrome(profileState.running).catch(() => {});
       setProfileRunning(null);
-    }
-    if (previousProfile.driver === "extension") {
-      await stopChromeExtensionRelayServer({ cdpUrl: previousProfile.cdpUrl }).catch(() => false);
     }
     if (getBrowserProfileCapabilities(previousProfile).usesChromeMcp) {
       await closeChromeMcpSession(previousProfile.name).catch(() => false);
@@ -137,7 +131,7 @@ export function createProfileAvailability({
   };
 
   const waitForCdpReadyAfterLaunch = async (): Promise<void> => {
-    // launchOpenCraftChrome() can return before Chrome is fully ready to serve /json/version + CDP WS.
+    // launchOpenClawChrome() can return before Chrome is fully ready to serve /json/version + CDP WS.
     // If a follow-up call races ahead, we can hit PortInUseError trying to launch again on the same port.
     const deadlineMs = Date.now() + CDP_READY_AFTER_LAUNCH_WINDOW_MS;
     while (Date.now() < deadlineMs) {
@@ -160,38 +154,19 @@ export function createProfileAvailability({
   const ensureBrowserAvailable = async (): Promise<void> => {
     await reconcileProfileRuntime();
     if (capabilities.usesChromeMcp) {
-      await ensureChromeMcpAvailable(profile.name);
+      if (profile.userDataDir && !fs.existsSync(profile.userDataDir)) {
+        throw new BrowserProfileUnavailableError(
+          `Browser user data directory not found for profile "${profile.name}": ${profile.userDataDir}`,
+        );
+      }
+      await ensureChromeMcpAvailable(profile.name, profile.userDataDir);
       return;
     }
     const current = state();
     const remoteCdp = capabilities.isRemote;
     const attachOnly = profile.attachOnly;
-    const isExtension = capabilities.requiresRelay;
     const profileState = getProfileState();
     const httpReachable = await isHttpReachable();
-
-    if (isExtension && remoteCdp) {
-      throw new BrowserConfigurationError(
-        `Profile "${profile.name}" uses driver=extension but cdpUrl is not loopback (${profile.cdpUrl}).`,
-      );
-    }
-
-    if (isExtension) {
-      if (!httpReachable) {
-        await ensureChromeExtensionRelayServer({
-          cdpUrl: profile.cdpUrl,
-          bindHost: current.resolved.relayBindHost,
-        });
-        if (!(await isHttpReachable(PROFILE_ATTACH_RETRY_TIMEOUT_MS))) {
-          throw new BrowserProfileUnavailableError(
-            `Chrome extension relay for profile "${profile.name}" is not reachable at ${profile.cdpUrl}.`,
-          );
-        }
-      }
-      // Browser startup should only ensure relay availability.
-      // Tab attachment is checked when a tab is actually required.
-      return;
-    }
 
     if (!httpReachable) {
       if ((attachOnly || remoteCdp) && opts.onEnsureAttachTarget) {
@@ -207,12 +182,12 @@ export function createProfileAvailability({
             : `Browser attachOnly is enabled and profile "${profile.name}" is not running.`,
         );
       }
-      const launched = await launchOpenCraftChrome(current.resolved, profile);
+      const launched = await launchOpenClawChrome(current.resolved, profile);
       attachRunning(launched);
       try {
         await waitForCdpReadyAfterLaunch();
       } catch (err) {
-        await stopOpenCraftChrome(launched).catch(() => {});
+        await stopOpenClawChrome(launched).catch(() => {});
         setProfileRunning(null);
         throw err;
       }
@@ -243,15 +218,15 @@ export function createProfileAvailability({
     // HTTP responds but WebSocket fails - port in use by something else.
     if (!profileState.running) {
       throw new BrowserProfileUnavailableError(
-        `Port ${profile.cdpPort} is in use for profile "${profile.name}" but not by opencraft. ` +
+        `Port ${profile.cdpPort} is in use for profile "${profile.name}" but not by openclaw. ` +
           `Run action=reset-profile profile=${profile.name} to kill the process.`,
       );
     }
 
-    await stopOpenCraftChrome(profileState.running);
+    await stopOpenClawChrome(profileState.running);
     setProfileRunning(null);
 
-    const relaunched = await launchOpenCraftChrome(current.resolved, profile);
+    const relaunched = await launchOpenClawChrome(current.resolved, profile);
     attachRunning(relaunched);
 
     if (!(await isReachable(PROFILE_POST_RESTART_WS_TIMEOUT_MS))) {
@@ -267,17 +242,11 @@ export function createProfileAvailability({
       const stopped = await closeChromeMcpSession(profile.name);
       return { stopped };
     }
-    if (capabilities.requiresRelay) {
-      const stopped = await stopChromeExtensionRelayServer({
-        cdpUrl: profile.cdpUrl,
-      });
-      return { stopped };
-    }
     const profileState = getProfileState();
     if (!profileState.running) {
       return { stopped: false };
     }
-    await stopOpenCraftChrome(profileState.running);
+    await stopOpenClawChrome(profileState.running);
     setProfileRunning(null);
     return { stopped: true };
   };

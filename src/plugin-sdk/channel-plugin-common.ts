@@ -1,6 +1,10 @@
+// Canonical shared prelude for channel-oriented plugin SDK surfaces.
+// Keep `core` and channel-specific SDK entrypoints derived from this module
+// so bundled channel entrypoints do not drift across overlapping exports.
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
+export type { ChannelMessageActionContext } from "../channels/plugins/types.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 

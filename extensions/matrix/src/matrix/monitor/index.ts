@@ -7,7 +7,7 @@ import {
   summarizeMapping,
   warnMissingProviderGroupPolicyFallbackOnce,
   type RuntimeEnv,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 import { resolveMatrixTargets } from "../../resolve-targets.js";
 import { getMatrixRuntime } from "../../runtime.js";
 import type { CoreConfig, MatrixConfig, MatrixRoomConfig, ReplyToMode } from "../../types.js";

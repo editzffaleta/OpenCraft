@@ -268,12 +268,44 @@ describe("gateway-status command", () => {
     expect(scopeLimitedWarning?.targetIds).toContain("localLoopback");
   });
 
-  it("surfaces unresolved SecretRef auth diagnostics in warnings", async () => {
+  it("suppresses unresolved SecretRef auth warnings when probe is reachable", async () => {
     const { runtime, runtimeLogs, runtimeErrors } = createRuntimeCapture();
     await withEnvAsync({ MISSING_GATEWAY_TOKEN: undefined }, async () => {
       mockLocalTokenEnvRefConfig();
 
       await runGatewayStatus(runtime, { timeout: "1000", json: true });
+    });
+
+    expect(runtimeErrors).toHaveLength(0);
+    const parsed = JSON.parse(runtimeLogs.join("\n")) as {
+      warnings?: Array<{ code?: string; message?: string; targetIds?: string[] }>;
+    };
+    const unresolvedWarning = parsed.warnings?.find(
+      (warning) =>
+        warning.code === "auth_secretref_unresolved" &&
+        warning.message?.includes("gateway.auth.token SecretRef is unresolved"),
+    );
+    expect(unresolvedWarning).toBeUndefined();
+  });
+
+  it("surfaces unresolved SecretRef auth diagnostics when probe fails", async () => {
+    const { runtime, runtimeLogs, runtimeErrors } = createRuntimeCapture();
+    await withEnvAsync({ MISSING_GATEWAY_TOKEN: undefined }, async () => {
+      mockLocalTokenEnvRefConfig();
+      probeGateway.mockResolvedValueOnce({
+        ok: false,
+        url: "ws://127.0.0.1:18789",
+        connectLatencyMs: null,
+        error: "connection refused",
+        close: null,
+        health: null,
+        status: null,
+        presence: null,
+        configSnapshot: null,
+      });
+      await expect(runGatewayStatus(runtime, { timeout: "1000", json: true })).rejects.toThrow(
+        "__exit__:1",
+      );
     });
 
     expect(runtimeErrors).toHaveLength(0);
@@ -291,11 +323,11 @@ describe("gateway-status command", () => {
     expect(unresolvedWarning?.message).not.toContain("missing or empty");
   });
 
-  it("does not resolve local token SecretRef when OPENCRAFT_GATEWAY_TOKEN is set", async () => {
+  it("does not resolve local token SecretRef when OPENCLAW_GATEWAY_TOKEN is set", async () => {
     const { runtime, runtimeLogs, runtimeErrors } = createRuntimeCapture();
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: "env-token",
+        OPENCLAW_GATEWAY_TOKEN: "env-token",
         MISSING_GATEWAY_TOKEN: undefined,
       },
       async () => {
@@ -328,7 +360,7 @@ describe("gateway-status command", () => {
     const { runtime, runtimeLogs, runtimeErrors } = createRuntimeCapture();
     await withEnvAsync(
       {
-        OPENCRAFT_GATEWAY_TOKEN: "env-token",
+        OPENCLAW_GATEWAY_TOKEN: "env-token",
         MISSING_GATEWAY_PASSWORD: undefined,
       },
       async () => {
@@ -369,7 +401,7 @@ describe("gateway-status command", () => {
     await withEnvAsync(
       {
         CUSTOM_GATEWAY_TOKEN: "resolved-gateway-token",
-        OPENCRAFT_GATEWAY_TOKEN: undefined,
+        OPENCLAW_GATEWAY_TOKEN: undefined,
         CLAWDBOT_GATEWAY_TOKEN: undefined,
       },
       async () => {
@@ -452,8 +484,8 @@ describe("gateway-status command", () => {
             mode: "remote",
             auth: {
               mode: "token",
-              token: { source: "env", provider: "default", id: "OPENCRAFT_GATEWAY_TOKEN" },
-              password: { source: "env", provider: "default", id: "OPENCRAFT_GATEWAY_PASSWORD" },
+              token: { source: "env", provider: "default", id: "OPENCLAW_GATEWAY_TOKEN" },
+              password: { source: "env", provider: "default", id: "OPENCLAW_GATEWAY_PASSWORD" },
             },
             remote: {
               url: "wss://remote.example:18789",

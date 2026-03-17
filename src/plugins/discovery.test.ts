@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { clearPluginDiscoveryCache, discoverOpenCraftPlugins } from "./discovery.js";
+import { clearPluginDiscoveryCache, discoverOpenClawPlugins } from "./discovery.js";
 import {
   cleanupTrackedTempDirs,
   makeTrackedTempDir,
@@ -11,25 +11,42 @@ import {
 const tempDirs: string[] = [];
 
 function makeTempDir() {
-  return makeTrackedTempDir("opencraft-plugins", tempDirs);
+  return makeTrackedTempDir("openclaw-plugins", tempDirs);
 }
 
 const mkdirSafe = mkdirSafeDir;
 
+function normalizePathForAssertion(value: string | undefined): string | undefined {
+  if (!value) {
+    return value;
+  }
+  return value.replace(/\\/g, "/");
+}
+
+function hasDiagnosticSourceSuffix(
+  diagnostics: Array<{ source?: string }>,
+  suffix: string,
+): boolean {
+  const normalizedSuffix = normalizePathForAssertion(suffix);
+  return diagnostics.some((entry) =>
+    normalizePathForAssertion(entry.source)?.endsWith(normalizedSuffix ?? suffix),
+  );
+}
+
 function buildDiscoveryEnv(stateDir: string): NodeJS.ProcessEnv {
   return {
-    OPENCRAFT_STATE_DIR: stateDir,
+    OPENCLAW_STATE_DIR: stateDir,
     CLAWDBOT_STATE_DIR: undefined,
-    OPENCRAFT_HOME: undefined,
-    OPENCRAFT_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
+    OPENCLAW_HOME: undefined,
+    OPENCLAW_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
   };
 }
 
 async function discoverWithStateDir(
   stateDir: string,
-  params: Parameters<typeof discoverOpenCraftPlugins>[0],
+  params: Parameters<typeof discoverOpenClawPlugins>[0],
 ) {
-  return discoverOpenCraftPlugins({ ...params, env: buildDiscoveryEnv(stateDir) });
+  return discoverOpenClawPlugins({ ...params, env: buildDiscoveryEnv(stateDir) });
 }
 
 function writePluginPackageManifest(params: {
@@ -41,7 +58,7 @@ function writePluginPackageManifest(params: {
     path.join(params.packageDir, "package.json"),
     JSON.stringify({
       name: params.packageName,
-      opencraft: { extensions: params.extensions },
+      openclaw: { extensions: params.extensions },
     }),
     "utf-8",
   );
@@ -58,7 +75,7 @@ afterEach(() => {
   cleanupTrackedTempDirs(tempDirs);
 });
 
-describe("discoverOpenCraftPlugins", () => {
+describe("discoverOpenClawPlugins", () => {
   it("discovers global and workspace extensions", async () => {
     const stateDir = makeTempDir();
     const workspaceDir = path.join(stateDir, "workspace");
@@ -67,7 +84,7 @@ describe("discoverOpenCraftPlugins", () => {
     mkdirSafe(globalExt);
     fs.writeFileSync(path.join(globalExt, "alpha.ts"), "export default function () {}", "utf-8");
 
-    const workspaceExt = path.join(workspaceDir, ".opencraft", "extensions");
+    const workspaceExt = path.join(workspaceDir, ".openclaw", "extensions");
     mkdirSafe(workspaceExt);
     fs.writeFileSync(path.join(workspaceExt, "beta.ts"), "export default function () {}", "utf-8");
 
@@ -82,11 +99,11 @@ describe("discoverOpenCraftPlugins", () => {
     const stateDir = makeTempDir();
     const homeDir = makeTempDir();
     const workspaceRoot = path.join(homeDir, "workspace");
-    const workspaceExt = path.join(workspaceRoot, ".opencraft", "extensions");
+    const workspaceExt = path.join(workspaceRoot, ".openclaw", "extensions");
     mkdirSafe(workspaceExt);
     fs.writeFileSync(path.join(workspaceExt, "tilde-workspace.ts"), "export default {}", "utf-8");
 
-    const result = discoverOpenCraftPlugins({
+    const result = discoverOpenClawPlugins({
       workspaceDir: "~/workspace",
       env: {
         ...buildDiscoveryEnv(stateDir),
@@ -164,7 +181,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: globalExt,
-      packageName: "@opencraft/voice-call",
+      packageName: "@openclaw/voice-call",
       extensions: ["./src/index.ts"],
     });
     fs.writeFileSync(
@@ -186,7 +203,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: globalExt,
-      packageName: "@opencraft/ollama-provider",
+      packageName: "@openclaw/ollama-provider",
       extensions: ["./src/index.ts"],
     });
     fs.writeFileSync(
@@ -209,7 +226,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: packDir,
-      packageName: "@opencraft/demo-plugin-dir",
+      packageName: "@openclaw/demo-plugin-dir",
       extensions: ["./index.js"],
     });
     fs.writeFileSync(path.join(packDir, "index.js"), "module.exports = {}", "utf-8");
@@ -219,6 +236,107 @@ describe("discoverOpenCraftPlugins", () => {
     const ids = candidates.map((c) => c.idHint);
     expect(ids).toContain("demo-plugin-dir");
   });
+
+  it("auto-detects Codex bundles as bundle candidates", async () => {
+    const stateDir = makeTempDir();
+    const bundleDir = path.join(stateDir, "extensions", "sample-bundle");
+    mkdirSafe(path.join(bundleDir, ".codex-plugin"));
+    mkdirSafe(path.join(bundleDir, "skills"));
+    fs.writeFileSync(
+      path.join(bundleDir, ".codex-plugin", "plugin.json"),
+      JSON.stringify({
+        name: "Sample Bundle",
+        skills: "skills",
+      }),
+      "utf-8",
+    );
+
+    const { candidates } = await discoverWithStateDir(stateDir, {});
+    const bundle = candidates.find((candidate) => candidate.idHint === "sample-bundle");
+
+    expect(bundle).toBeDefined();
+    expect(bundle?.idHint).toBe("sample-bundle");
+    expect(bundle?.format).toBe("bundle");
+    expect(bundle?.bundleFormat).toBe("codex");
+    expect(bundle?.source).toBe(bundleDir);
+    expect(normalizePathForAssertion(bundle?.rootDir)).toBe(
+      normalizePathForAssertion(fs.realpathSync(bundleDir)),
+    );
+  });
+
+  it("auto-detects manifestless Claude bundles from the default layout", async () => {
+    const stateDir = makeTempDir();
+    const bundleDir = path.join(stateDir, "extensions", "claude-bundle");
+    mkdirSafe(path.join(bundleDir, "commands"));
+    fs.writeFileSync(path.join(bundleDir, "settings.json"), '{"hideThinkingBlock":true}', "utf-8");
+
+    const { candidates } = await discoverWithStateDir(stateDir, {});
+    const bundle = candidates.find((candidate) => candidate.idHint === "claude-bundle");
+
+    expect(bundle).toBeDefined();
+    expect(bundle?.format).toBe("bundle");
+    expect(bundle?.bundleFormat).toBe("claude");
+    expect(bundle?.source).toBe(bundleDir);
+  });
+
+  it("auto-detects Cursor bundles as bundle candidates", async () => {
+    const stateDir = makeTempDir();
+    const bundleDir = path.join(stateDir, "extensions", "cursor-bundle");
+    mkdirSafe(path.join(bundleDir, ".cursor-plugin"));
+    mkdirSafe(path.join(bundleDir, ".cursor", "commands"));
+    fs.writeFileSync(
+      path.join(bundleDir, ".cursor-plugin", "plugin.json"),
+      JSON.stringify({
+        name: "Cursor Bundle",
+      }),
+      "utf-8",
+    );
+
+    const { candidates } = await discoverWithStateDir(stateDir, {});
+    const bundle = candidates.find((candidate) => candidate.idHint === "cursor-bundle");
+
+    expect(bundle).toBeDefined();
+    expect(bundle?.format).toBe("bundle");
+    expect(bundle?.bundleFormat).toBe("cursor");
+    expect(bundle?.source).toBe(bundleDir);
+  });
+
+  it("falls back to legacy index discovery when a scanned bundle sidecar is malformed", async () => {
+    const stateDir = makeTempDir();
+    const pluginDir = path.join(stateDir, "extensions", "legacy-with-bad-bundle");
+    mkdirSafe(path.join(pluginDir, ".claude-plugin"));
+    fs.writeFileSync(path.join(pluginDir, "index.ts"), "export default {}", "utf-8");
+    fs.writeFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "{", "utf-8");
+
+    const result = await discoverWithStateDir(stateDir, {});
+    const legacy = result.candidates.find(
+      (candidate) => candidate.idHint === "legacy-with-bad-bundle",
+    );
+
+    expect(legacy).toBeDefined();
+    expect(legacy?.format).toBe("openclaw");
+    expect(hasDiagnosticSourceSuffix(result.diagnostics, ".claude-plugin/plugin.json")).toBe(true);
+  });
+
+  it("falls back to legacy index discovery for configured paths with malformed bundle sidecars", async () => {
+    const stateDir = makeTempDir();
+    const pluginDir = path.join(stateDir, "plugins", "legacy-with-bad-bundle");
+    mkdirSafe(path.join(pluginDir, ".codex-plugin"));
+    fs.writeFileSync(path.join(pluginDir, "index.ts"), "export default {}", "utf-8");
+    fs.writeFileSync(path.join(pluginDir, ".codex-plugin", "plugin.json"), "{", "utf-8");
+
+    const result = await discoverWithStateDir(stateDir, {
+      extraPaths: [pluginDir],
+    });
+    const legacy = result.candidates.find(
+      (candidate) => candidate.idHint === "legacy-with-bad-bundle",
+    );
+
+    expect(legacy).toBeDefined();
+    expect(legacy?.format).toBe("openclaw");
+    expect(hasDiagnosticSourceSuffix(result.diagnostics, ".codex-plugin/plugin.json")).toBe(true);
+  });
+
   it("blocks extension entries that escape package directory", async () => {
     const stateDir = makeTempDir();
     const globalExt = path.join(stateDir, "extensions", "escape-pack");
@@ -227,7 +345,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: globalExt,
-      packageName: "@opencraft/escape-pack",
+      packageName: "@openclaw/escape-pack",
       extensions: ["../../outside.js"],
     });
     fs.writeFileSync(outside, "export default function () {}", "utf-8");
@@ -254,7 +372,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: globalExt,
-      packageName: "@opencraft/pack",
+      packageName: "@openclaw/pack",
       extensions: ["./linked/escape.ts"],
     });
 
@@ -287,7 +405,7 @@ describe("discoverOpenCraftPlugins", () => {
 
     writePluginPackageManifest({
       packageDir: globalExt,
-      packageName: "@opencraft/pack",
+      packageName: "@openclaw/pack",
       extensions: ["./escape.ts"],
     });
 
@@ -312,8 +430,8 @@ describe("discoverOpenCraftPlugins", () => {
     fs.writeFileSync(
       outsideManifest,
       JSON.stringify({
-        name: "@opencraft/pack",
-        opencraft: { extensions: ["./entry.ts"] },
+        name: "@openclaw/pack",
+        openclaw: { extensions: ["./entry.ts"] },
       }),
       "utf-8",
     );
@@ -357,12 +475,12 @@ describe("discoverOpenCraftPlugins", () => {
       fs.writeFileSync(path.join(packDir, "index.ts"), "export default function () {}", "utf-8");
       fs.chmodSync(packDir, 0o777);
 
-      const result = discoverOpenCraftPlugins({
+      const result = discoverOpenClawPlugins({
         env: {
           ...process.env,
-          OPENCRAFT_STATE_DIR: stateDir,
+          OPENCLAW_STATE_DIR: stateDir,
           CLAWDBOT_STATE_DIR: undefined,
-          OPENCRAFT_BUNDLED_PLUGINS_DIR: bundledDir,
+          OPENCLAW_BUNDLED_PLUGINS_DIR: bundledDir,
         },
       });
 
@@ -405,30 +523,30 @@ describe("discoverOpenCraftPlugins", () => {
     const pluginPath = path.join(globalExt, "cached.ts");
     fs.writeFileSync(pluginPath, "export default function () {}", "utf-8");
 
-    const first = discoverOpenCraftPlugins({
+    const first = discoverOpenClawPlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
     expect(first.candidates.some((candidate) => candidate.idHint === "cached")).toBe(true);
 
     fs.rmSync(pluginPath, { force: true });
 
-    const second = discoverOpenCraftPlugins({
+    const second = discoverOpenClawPlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
     expect(second.candidates.some((candidate) => candidate.idHint === "cached")).toBe(true);
 
     clearPluginDiscoveryCache();
 
-    const third = discoverOpenCraftPlugins({
+    const third = discoverOpenClawPlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
     expect(third.candidates.some((candidate) => candidate.idHint === "cached")).toBe(false);
@@ -444,16 +562,16 @@ describe("discoverOpenCraftPlugins", () => {
     fs.writeFileSync(path.join(globalExtA, "alpha.ts"), "export default function () {}", "utf-8");
     fs.writeFileSync(path.join(globalExtB, "beta.ts"), "export default function () {}", "utf-8");
 
-    const first = discoverOpenCraftPlugins({
+    const first = discoverOpenClawPlugins({
       env: {
         ...buildDiscoveryEnv(stateDirA),
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
-    const second = discoverOpenCraftPlugins({
+    const second = discoverOpenClawPlugins({
       env: {
         ...buildDiscoveryEnv(stateDirB),
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
 
@@ -474,20 +592,20 @@ describe("discoverOpenCraftPlugins", () => {
     fs.writeFileSync(pluginA, "export default {}", "utf-8");
     fs.writeFileSync(pluginB, "export default {}", "utf-8");
 
-    const first = discoverOpenCraftPlugins({
+    const first = discoverOpenClawPlugins({
       extraPaths: ["~/plugins/demo.ts"],
       env: {
         ...buildDiscoveryEnv(stateDir),
         HOME: homeA,
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
-    const second = discoverOpenCraftPlugins({
+    const second = discoverOpenClawPlugins({
       extraPaths: ["~/plugins/demo.ts"],
       env: {
         ...buildDiscoveryEnv(stateDir),
         HOME: homeB,
-        OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+        OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
 
@@ -507,14 +625,14 @@ describe("discoverOpenCraftPlugins", () => {
 
     const env = {
       ...buildDiscoveryEnv(stateDir),
-      OPENCRAFT_PLUGIN_DISCOVERY_CACHE_MS: "5000",
+      OPENCLAW_PLUGIN_DISCOVERY_CACHE_MS: "5000",
     };
 
-    const first = discoverOpenCraftPlugins({
+    const first = discoverOpenClawPlugins({
       extraPaths: [pluginA, pluginB],
       env,
     });
-    const second = discoverOpenCraftPlugins({
+    const second = discoverOpenClawPlugins({
       extraPaths: [pluginB, pluginA],
       env,
     });

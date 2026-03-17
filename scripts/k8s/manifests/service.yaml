@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opencraft
+  name: openclaw
   labels:
-    app: opencraft
+    app: openclaw
 spec:
   type: ClusterIP
   selector:
-    app: opencraft
+    app: openclaw
   ports:
     - name: gateway
       port: 18789

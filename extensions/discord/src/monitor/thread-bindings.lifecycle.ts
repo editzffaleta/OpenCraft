@@ -2,7 +2,7 @@ import {
   readAcpSessionEntry,
   type AcpSessionStoreEntry,
 } from "../../../../src/acp/runtime/session-meta.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import { normalizeAccountId } from "../../../../src/routing/session-key.js";
 import { parseDiscordTarget } from "../targets.js";
 import { resolveChannelIdForBinding } from "./thread-bindings.discord-api.js";
@@ -35,7 +35,7 @@ export type AcpThreadBindingReconciliationResult = {
 export type AcpThreadBindingHealthStatus = "healthy" | "stale" | "uncertain";
 
 export type AcpThreadBindingHealthProbe = (params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   sessionKey: string;
   binding: ThreadBindingRecord;
@@ -145,7 +145,7 @@ export function listThreadBindingsBySessionKey(params: {
 }
 
 export async function autoBindSpawnedDiscordSubagent(params: {
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   accountId?: string;
   channel?: string;
   to?: string;
@@ -309,7 +309,7 @@ function resolveStoredAcpBindingHealth(params: {
 }
 
 export async function reconcileAcpThreadBindingsOnStartup(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string;
   sendFarewell?: boolean;
   healthProbe?: AcpThreadBindingHealthProbe;
@@ -323,7 +323,12 @@ export async function reconcileAcpThreadBindingsOnStartup(params: {
     };
   }
 
-  const acpBindings = manager.listBindings().filter((binding) => binding.targetKind === "acp");
+  const acpBindings = manager
+    .listBindings()
+    .filter(
+      (binding) =>
+        binding.targetKind === "acp" && binding.metadata?.pluginBindingOwner !== "plugin",
+    );
   const staleBindings: ThreadBindingRecord[] = [];
   const probeTargets: Array<{
     binding: ThreadBindingRecord;

@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/nostr";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/nostr";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/nostr";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/nostr";
 import { nostrPlugin } from "./src/channel.js";
 import type { NostrProfile } from "./src/config-schema.js";
 import { createNostrProfileHttpHandler } from "./src/nostr-profile-http.js";
@@ -11,9 +11,12 @@ const plugin = {
   name: "Nostr",
   description: "Nostr DM channel plugin via NIP-04",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setNostrRuntime(api.runtime);
     api.registerChannel({ plugin: nostrPlugin });
+    if (api.registrationMode !== "full") {
+      return;
+    }
 
     // Register HTTP handler for profile management
     const httpHandler = createNostrProfileHttpHandler({

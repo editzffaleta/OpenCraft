@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import { resolveStorePath, updateSessionStore } from "../../../../src/config/sessions.js";
 
 /**
@@ -11,7 +11,7 @@ import { resolveStorePath, updateSessionStore } from "../../../../src/config/ses
  * any on-disk transcript history.
  */
 export async function closeDiscordThreadSessions(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   threadId: string;
 }): Promise<number> {
@@ -45,6 +45,9 @@ export async function closeDiscordThreadSessions(params: {
   await updateSessionStore(storePath, (store) => {
     for (const [key, entry] of Object.entries(store)) {
       if (!entry || !sessionKeyContainsThreadId(key)) {
+        continue;
+      }
+      if (entry.updatedAt === 0) {
         continue;
       }
       // Setting updatedAt to 0 signals that this session is stale.

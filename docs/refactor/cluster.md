@@ -1,20 +1,20 @@
 ---
-summary: "Clusters de refatoração com maior potencial de redução de LOC"
+summary: "Refactor clusters with highest LOC reduction potential"
 read_when:
-  - Você quer reduzir o total de LOC sem alterar o comportamento
-  - Você está escolhendo a próxima passagem de deduplicação ou extração
-title: "Backlog de Clusters de Refatoração"
+  - You want to reduce total LOC without changing behavior
+  - You are choosing the next dedupe or extraction pass
+title: "Refactor Cluster Backlog"
 ---
 
-# Backlog de Clusters de Refatoração
+# Refactor Cluster Backlog
 
-Classificado por provável redução de LOC, segurança e abrangência.
+Ranked by likely LOC reduction, safety, and breadth.
 
-## 1. Scaffolding de configuração e segurança de plugins de canal
+## 1. Channel plugin config and security scaffolding
 
-Cluster de maior valor.
+Highest-value cluster.
 
-Formatos repetidos em muitos plugins de canal:
+Repeated shapes across many channel plugins:
 
 - `config.listAccountIds`
 - `config.resolveAccount`
@@ -24,7 +24,7 @@ Formatos repetidos em muitos plugins de canal:
 - `config.describeAccount`
 - `security.resolveDmPolicy`
 
-Exemplos representativos:
+Strong examples:
 
 - `extensions/telegram/src/channel.ts`
 - `extensions/googlechat/src/channel.ts`
@@ -35,31 +35,31 @@ Exemplos representativos:
 - `extensions/signal/src/channel.ts`
 - `extensions/mattermost/src/channel.ts`
 
-Formato de extração provável:
+Likely extraction shape:
 
 - `buildChannelConfigAdapter(...)`
 - `buildMultiAccountConfigAdapter(...)`
 - `buildDmSecurityAdapter(...)`
 
-Economia esperada:
+Expected savings:
 
 - ~250-450 LOC
 
-Risco:
+Risk:
 
-- Médio. Cada canal tem um `isConfigured`, avisos e normalização ligeiramente diferentes.
+- Medium. Each channel has slightly different `isConfigured`, warnings, and normalization.
 
-## 2. Boilerplate de singleton de runtime de extensão
+## 2. Extension runtime singleton boilerplate
 
-Muito seguro.
+Very safe.
 
-Quase toda extensão tem o mesmo holder de runtime:
+Nearly every extension has the same runtime holder:
 
 - `let runtime: PluginRuntime | null = null`
 - `setXRuntime`
 - `getXRuntime`
 
-Exemplos representativos:
+Strong examples:
 
 - `extensions/telegram/src/runtime.ts`
 - `extensions/matrix/src/runtime.ts`
@@ -69,81 +69,81 @@ Exemplos representativos:
 - `extensions/imessage/src/runtime.ts`
 - `extensions/twitch/src/runtime.ts`
 
-Variantes com casos especiais:
+Special-case variants:
 
 - `extensions/bluebubbles/src/runtime.ts`
 - `extensions/line/src/runtime.ts`
 - `extensions/synology-chat/src/runtime.ts`
 
-Formato de extração provável:
+Likely extraction shape:
 
 - `createPluginRuntimeStore<T>(errorMessage)`
 
-Economia esperada:
+Expected savings:
 
 - ~180-260 LOC
 
-Risco:
+Risk:
 
-- Baixo
+- Low
 
-## 3. Passos de prompt de onboarding e patch de configuração
+## 3. Setup prompt and config-patch steps
 
-Grande área de superfície.
+Large surface area.
 
-Muitos arquivos de onboarding repetem:
+Many setup files repeat:
 
-- resolver account id
-- prompt de entradas de allowlist
-- mesclar allowFrom
-- definir política de DM
-- prompt de segredos
-- patch de configuração de nível superior vs com escopo de conta
+- resolve account id
+- prompt allowlist entries
+- merge allowFrom
+- set DM policy
+- prompt secrets
+- patch top-level vs account-scoped config
 
-Exemplos representativos:
+Strong examples:
 
-- `extensions/bluebubbles/src/onboarding.ts`
-- `extensions/googlechat/src/onboarding.ts`
-- `extensions/msteams/src/onboarding.ts`
-- `extensions/zalo/src/onboarding.ts`
-- `extensions/zalouser/src/onboarding.ts`
-- `extensions/nextcloud-talk/src/onboarding.ts`
-- `extensions/matrix/src/onboarding.ts`
-- `extensions/irc/src/onboarding.ts`
+- `extensions/bluebubbles/src/setup-surface.ts`
+- `extensions/googlechat/src/setup-surface.ts`
+- `extensions/msteams/src/setup-surface.ts`
+- `extensions/zalo/src/setup-surface.ts`
+- `extensions/zalouser/src/setup-surface.ts`
+- `extensions/nextcloud-talk/src/setup-surface.ts`
+- `extensions/matrix/src/setup-surface.ts`
+- `extensions/irc/src/setup-surface.ts`
 
-Seam de helper existente:
+Existing helper seam:
 
-- `src/channels/plugins/onboarding/helpers.ts`
+- `src/channels/plugins/setup-wizard-helpers.ts`
 
-Formato de extração provável:
+Likely extraction shape:
 
 - `promptAllowFromList(...)`
 - `buildDmPolicyAdapter(...)`
 - `applyScopedAccountPatch(...)`
 - `promptSecretFields(...)`
 
-Economia esperada:
+Expected savings:
 
 - ~300-600 LOC
 
-Risco:
+Risk:
 
-- Médio. Fácil de super-generalizar; manter helpers estreitos e combináveis.
+- Medium. Easy to over-generalize; keep helpers narrow and composable.
 
-## 4. Fragmentos de config-schema multi-conta
+## 4. Multi-account config-schema fragments
 
-Fragmentos de schema repetidos entre extensões.
+Repeated schema fragments across extensions.
 
-Padrões comuns:
+Common patterns:
 
 - `const allowFromEntry = z.union([z.string(), z.number()])`
-- schema de conta mais:
+- account schema plus:
   - `accounts: z.object({}).catchall(accountSchema).optional()`
   - `defaultAccount: z.string().optional()`
-- campos repetidos de DM/grupo
-- campos repetidos de política de markdown/ferramenta
+- repeated DM/group fields
+- repeated markdown/tool policy fields
 
-Exemplos representativos:
+Strong examples:
 
 - `extensions/bluebubbles/src/config-schema.ts`
 - `extensions/zalo/src/config-schema.ts`
@@ -151,35 +151,35 @@ Exemplos representativos:
 - `extensions/matrix/src/config-schema.ts`
 - `extensions/nostr/src/config-schema.ts`
 
-Formato de extração provável:
+Likely extraction shape:
 
 - `AllowFromEntrySchema`
 - `buildMultiAccountChannelSchema(accountSchema)`
 - `buildCommonDmGroupFields(...)`
 
-Economia esperada:
+Expected savings:
 
 - ~120-220 LOC
 
-Risco:
+Risk:
 
-- Baixo a médio. Alguns schemas são simples, outros são especiais.
+- Low to medium. Some schemas are simple, some are special.
 
-## 5. Ciclo de vida de startup de webhook e monitor
+## 5. Webhook and monitor lifecycle startup
 
-Bom cluster de valor médio.
+Good medium-value cluster.
 
-Padrões repetidos de `startAccount` / configuração de monitor:
+Repeated `startAccount` / monitor setup patterns:
 
-- resolver conta
-- computar caminho de webhook
-- registrar startup
-- iniciar monitor
-- aguardar abort
+- resolve account
+- compute webhook path
+- log startup
+- start monitor
+- wait for abort
 - cleanup
-- atualizações do sink de status
+- status sink updates
 
-Exemplos representativos:
+Strong examples:
 
 - `extensions/googlechat/src/channel.ts`
 - `extensions/bluebubbles/src/channel.ts`
@@ -187,113 +187,113 @@ Exemplos representativos:
 - `extensions/telegram/src/channel.ts`
 - `extensions/nextcloud-talk/src/channel.ts`
 
-Seam de helper existente:
+Existing helper seam:
 
 - `src/plugin-sdk/channel-lifecycle.ts`
 
-Formato de extração provável:
+Likely extraction shape:
 
-- helper para ciclo de vida de monitor de conta
-- helper para startup de conta com webhook
+- helper for account monitor lifecycle
+- helper for webhook-backed account startup
 
-Economia esperada:
+Expected savings:
 
 - ~150-300 LOC
 
-Risco:
+Risk:
 
-- Médio a alto. Detalhes de transporte divergem rapidamente.
+- Medium to high. Transport details diverge quickly.
 
-## 6. Limpeza de clones exatos pequenos
+## 6. Small exact-clone cleanup
 
-Bucket de limpeza de baixo risco.
+Low-risk cleanup bucket.
 
-Exemplos:
+Examples:
 
-- detecção de argv do gateway duplicada:
+- duplicated gateway argv detection:
   - `src/infra/gateway-lock.ts`
   - `src/cli/daemon-cli/lifecycle.ts`
-- renderização de diagnósticos de porta duplicada:
+- duplicated port diagnostics rendering:
   - `src/cli/daemon-cli/restart-health.ts`
-- construção de chave de sessão duplicada:
+- duplicated session-key construction:
   - `src/web/auto-reply/monitor/broadcast.ts`
 
-Economia esperada:
+Expected savings:
 
 - ~30-60 LOC
 
-Risco:
+Risk:
 
-- Baixo
+- Low
 
-## Clusters de testes
+## Test clusters
 
-### Fixtures de eventos de webhook do LINE
+### LINE webhook event fixtures
 
-Exemplos representativos:
+Strong examples:
 
 - `src/line/bot-handlers.test.ts`
 
-Extração provável:
+Likely extraction:
 
 - `makeLineEvent(...)`
 - `runLineEvent(...)`
 - `makeLineAccount(...)`
 
-Economia esperada:
+Expected savings:
 
 - ~120-180 LOC
 
-### Matriz de autenticação de comandos nativos do Telegram
+### Telegram native command auth matrix
 
-Exemplos representativos:
+Strong examples:
 
 - `src/telegram/bot-native-commands.group-auth.test.ts`
 - `src/telegram/bot-native-commands.plugin-auth.test.ts`
 
-Extração provável:
+Likely extraction:
 
-- construtor de contexto de fórum
-- helper de asserção de mensagem negada
-- casos de autenticação orientados por tabela
+- forum context builder
+- denied-message assertion helper
+- table-driven auth cases
 
-Economia esperada:
+Expected savings:
 
 - ~80-140 LOC
 
-### Configuração de ciclo de vida do Zalo
+### Zalo lifecycle setup
 
-Exemplos representativos:
+Strong examples:
 
 - `extensions/zalo/src/monitor.lifecycle.test.ts`
 
-Extração provável:
+Likely extraction:
 
-- harness compartilhado de configuração de monitor
+- shared monitor setup harness
 
-Economia esperada:
+Expected savings:
 
 - ~50-90 LOC
 
-### Testes de opção não suportada de llm-context do Brave
+### Brave llm-context unsupported-option tests
 
-Exemplos representativos:
+Strong examples:
 
 - `src/agents/tools/web-tools.enabled-defaults.test.ts`
 
-Extração provável:
+Likely extraction:
 
-- matriz `it.each(...)`
+- `it.each(...)` matrix
 
-Economia esperada:
+Expected savings:
 
 - ~30-50 LOC
 
-## Ordem sugerida
+## Suggested order
 
-1. Boilerplate de singleton de runtime
-2. Limpeza de clones exatos pequenos
-3. Extração de builders de configuração e segurança
-4. Extração de helpers de teste
-5. Extração de passos de onboarding
-6. Extração de helper de ciclo de vida de monitor
+1. Runtime singleton boilerplate
+2. Small exact-clone cleanup
+3. Config and security builder extraction
+4. Test-helper extraction
+5. Onboarding step extraction
+6. Monitor lifecycle helper extraction

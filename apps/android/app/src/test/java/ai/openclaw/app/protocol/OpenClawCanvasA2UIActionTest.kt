@@ -1,28 +1,28 @@
-package ai.opencraft.app.protocol
+package ai.openclaw.app.protocol
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class OpenCraftCanvasA2UIActionTest {
+class OpenClawCanvasA2UIActionTest {
   @Test
   fun extractActionNameAcceptsNameOrAction() {
     val nameObj = Json.parseToJsonElement("{\"name\":\"Hello\"}").jsonObject
-    assertEquals("Hello", OpenCraftCanvasA2UIAction.extractActionName(nameObj))
+    assertEquals("Hello", OpenClawCanvasA2UIAction.extractActionName(nameObj))
 
     val actionObj = Json.parseToJsonElement("{\"action\":\"Wave\"}").jsonObject
-    assertEquals("Wave", OpenCraftCanvasA2UIAction.extractActionName(actionObj))
+    assertEquals("Wave", OpenClawCanvasA2UIAction.extractActionName(actionObj))
 
     val fallbackObj =
       Json.parseToJsonElement("{\"name\":\"  \",\"action\":\"Fallback\"}").jsonObject
-    assertEquals("Fallback", OpenCraftCanvasA2UIAction.extractActionName(fallbackObj))
+    assertEquals("Fallback", OpenClawCanvasA2UIAction.extractActionName(fallbackObj))
   }
 
   @Test
   fun formatAgentMessageMatchesSharedSpec() {
     val msg =
-      OpenCraftCanvasA2UIAction.formatAgentMessage(
+      OpenClawCanvasA2UIAction.formatAgentMessage(
         actionName = "Get Weather",
         sessionKey = "main",
         surfaceId = "main",
@@ -40,9 +40,9 @@ class OpenCraftCanvasA2UIActionTest {
 
   @Test
   fun jsDispatchA2uiStatusIsStable() {
-    val js = OpenCraftCanvasA2UIAction.jsDispatchA2UIActionStatus(actionId = "a1", ok = true, error = null)
+    val js = OpenClawCanvasA2UIAction.jsDispatchA2UIActionStatus(actionId = "a1", ok = true, error = null)
     assertEquals(
-      "window.dispatchEvent(new CustomEvent('opencraft:a2ui-action-status', { detail: { id: \"a1\", ok: true, error: \"\" } }));",
+      "window.dispatchEvent(new CustomEvent('openclaw:a2ui-action-status', { detail: { id: \"a1\", ok: true, error: \"\" } }));",
       js,
     )
   }

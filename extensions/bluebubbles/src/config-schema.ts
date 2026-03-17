@@ -1,10 +1,10 @@
-import { MarkdownConfigSchema, ToolPolicySchema } from "opencraft/plugin-sdk/bluebubbles";
+import { MarkdownConfigSchema, ToolPolicySchema } from "openclaw/plugin-sdk/bluebubbles";
 import {
   AllowFromListSchema,
   buildCatchallMultiAccountChannelSchema,
   DmPolicySchema,
   GroupPolicySchema,
-} from "opencraft/plugin-sdk/compat";
+} from "openclaw/plugin-sdk/compat";
 import { z } from "zod";
 import { buildSecretInputSchema, hasConfiguredSecretInput } from "./secret-input.js";
 

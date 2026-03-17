@@ -32,18 +32,13 @@ export {
 } from "../channels/plugins/config-helpers.js";
 export { buildChannelConfigSchema } from "../channels/plugins/config-schema.js";
 export { formatPairingApproveHint } from "../channels/plugins/helpers.js";
-export type {
-  ChannelOnboardingAdapter,
-  ChannelOnboardingDmPolicy,
-} from "../channels/plugins/onboarding-types.js";
-export { promptChannelAccessConfig } from "../channels/plugins/onboarding/channel-access.js";
 export {
   buildSingleChannelSecretPromptState,
   addWildcardAllowFrom,
   mergeAllowFromEntries,
   promptSingleChannelSecretInput,
   setTopLevelChannelGroupPolicy,
-} from "../channels/plugins/onboarding/helpers.js";
+} from "../channels/plugins/setup-wizard-helpers.js";
 export { PAIRING_APPROVED_MESSAGE } from "../channels/plugins/pairing-message.js";
 export { applyAccountNameToChannelSection } from "../channels/plugins/setup-helpers.js";
 export { createAccountListHelpers } from "../channels/plugins/account-helpers.js";
@@ -62,7 +57,7 @@ export type {
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { createTypingCallbacks } from "../channels/typing.js";
-export type { OpenCraftConfig } from "../config/config.js";
+export type { OpenClawConfig } from "../config/config.js";
 export {
   GROUP_POLICY_BLOCKED_LABEL,
   resolveAllowlistProviderRuntimeGroupPolicy,
@@ -88,7 +83,7 @@ export { fetchWithSsrFGuard } from "../infra/net/fetch-guard.js";
 export { issuePairingChallenge } from "../pairing/pairing-challenge.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime, RuntimeLogger } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 export type { PollInput } from "../polls.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 export type { RuntimeEnv } from "../runtime.js";
@@ -113,3 +108,5 @@ export {
   buildProbeChannelStatusSummary,
   collectStatusIssuesFromLastError,
 } from "./status-helpers.js";
+export { matrixSetupWizard } from "../../extensions/matrix/src/setup-surface.js";
+export { matrixSetupAdapter } from "../../extensions/matrix/src/setup-core.js";

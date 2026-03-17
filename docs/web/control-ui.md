@@ -1,258 +1,259 @@
 ---
-summary: "Control UI no browser para o Gateway (chat, nodes, config)"
+summary: "Browser-based control UI for the Gateway (chat, nodes, config)"
 read_when:
-  - Você quer operar o Gateway a partir de um browser
-  - Você quer acesso Tailnet sem túneis SSH
+  - You want to operate the Gateway from a browser
+  - You want Tailnet access without SSH tunnels
 title: "Control UI"
 ---
 
 # Control UI (browser)
 
-A Control UI é uma pequena app de página única **Vite + Lit** servida pelo Gateway:
+The Control UI is a small **Vite + Lit** single-page app served by the Gateway:
 
-- padrão: `http://<host>:18789/`
-- prefixo opcional: defina `gateway.controlUi.basePath` (ex.: `/opencraft`)
+- default: `http://<host>:18789/`
+- optional prefix: set `gateway.controlUi.basePath` (e.g. `/openclaw`)
 
-Ela fala **diretamente com o WebSocket do Gateway** na mesma porta.
+It speaks **directly to the Gateway WebSocket** on the same port.
 
-## Abertura rápida (local)
+## Quick open (local)
 
-Se o Gateway estiver rodando no mesmo computador, abra:
+If the Gateway is running on the same computer, open:
 
-- [http://127.0.0.1:18789/](http://127.0.0.1:18789/) (ou [http://localhost:18789/](http://localhost:18789/))
+- [http://127.0.0.1:18789/](http://127.0.0.1:18789/) (or [http://localhost:18789/](http://localhost:18789/))
 
-Se a página não carregar, inicie o Gateway primeiro: `opencraft gateway`.
+If the page fails to load, start the Gateway first: `openclaw gateway`.
 
-A auth é fornecida durante o handshake WebSocket via:
+Auth is supplied during the WebSocket handshake via:
 
 - `connect.params.auth.token`
 - `connect.params.auth.password`
-  O painel de configurações do dashboard mantém um token para a sessão do tab atual do browser e URL do gateway selecionado; senhas não são persistidas.
-  O wizard de onboarding gera um token de gateway por padrão, então cole-o aqui na primeira conexão.
+  The dashboard settings panel keeps a token for the current browser tab session and selected gateway URL; passwords are not persisted.
+  Onboarding generates a gateway token by default, so paste it here on first connect.
 
-## Pareamento de dispositivo (primeira conexão)
+## Device pairing (first connection)
 
-Quando você conecta à Control UI de um novo browser ou dispositivo, o Gateway
-requer uma **aprovação única de pareamento** — mesmo se você estiver na mesma Tailnet
-com `gateway.auth.allowTailscale: true`. Esta é uma medida de segurança para prevenir
-acesso não autorizado.
+When you connect to the Control UI from a new browser or device, the Gateway
+requires a **one-time pairing approval** — even if you're on the same Tailnet
+with `gateway.auth.allowTailscale: true`. This is a security measure to prevent
+unauthorized access.
 
-**O que você verá:** "disconnected (1008): pairing required"
+**What you'll see:** "disconnected (1008): pairing required"
 
-**Para aprovar o dispositivo:**
-
-```bash
-# Listar requisições pendentes
-opencraft devices list
-
-# Aprovar pelo ID da requisição
-opencraft devices approve <requestId>
-```
-
-Uma vez aprovado, o dispositivo é lembrado e não precisará de re-aprovação, a menos que
-você o revogue com `opencraft devices revoke --device <id> --role <role>`. Veja
-[CLI de Devices](/cli/devices) para rotação e revogação de token.
-
-**Notas:**
-
-- Conexões locais (`127.0.0.1`) são aprovadas automaticamente.
-- Conexões remotas (LAN, Tailnet, etc.) requerem aprovação explícita.
-- Cada perfil de browser gera um ID de dispositivo único, então trocar de browser ou
-  limpar os dados do browser exigirá re-pareamento.
-
-## Suporte a idiomas
-
-A Control UI pode se localizar na primeira carga com base no locale do seu browser, e você pode sobrescrevê-lo depois pelo seletor de idioma no card de Acesso.
-
-- Locales suportados: `en`, `zh-CN`, `zh-TW`, `pt-BR`, `de`, `es`
-- Traduções não-inglesas são carregadas preguiçosamente no browser.
-- O locale selecionado é salvo no armazenamento do browser e reutilizado em visitas futuras.
-- Chaves de tradução ausentes caem de volta para o inglês.
-
-## O que pode fazer (hoje)
-
-- Chat com o modelo via Gateway WS (`chat.history`, `chat.send`, `chat.abort`, `chat.inject`)
-- Stream de chamadas de tool + cards de saída ao vivo de tool no Chat (eventos de agente)
-- Canais: status do WhatsApp/Telegram/Discord/Slack + canais por plugin (Mattermost, etc.) + login por QR + config por canal (`channels.status`, `web.login.*`, `config.patch`)
-- Instâncias: lista de presença + atualização (`system-presence`)
-- Sessões: lista + sobrescrições de thinking/fast/verbose/reasoning por sessão (`sessions.list`, `sessions.patch`)
-- Cron jobs: listar/adicionar/editar/rodar/habilitar/desabilitar + histórico de execuções (`cron.*`)
-- Skills: status, habilitar/desabilitar, instalar, atualizações de chave de API (`skills.*`)
-- Nodes: lista + capacidades (`node.list`)
-- Aprovações de exec: editar allowlists do gateway ou node + política de ask para `exec host=gateway/node` (`exec.approvals.*`)
-- Config: visualizar/editar `~/.opencraft/opencraft.json` (`config.get`, `config.set`)
-- Config: aplicar + reiniciar com validação (`config.apply`) e despertar a última sessão ativa
-- Escritas de config incluem um guarda de hash-base para prevenir sobrescrição de edições concorrentes
-- Schema de config + renderização de formulário (`config.schema`, incluindo schemas de plugin + canal); Editor JSON bruto permanece disponível
-- Debug: snapshots de status/health/models + log de eventos + chamadas RPC manuais (`status`, `health`, `models.list`)
-- Logs: tail ao vivo de logs do arquivo do gateway com filtro/exportação (`logs.tail`)
-- Atualização: rodar uma atualização de pacote/git + reiniciar (`update.run`) com relatório de reinicialização
-
-Notas do painel de Cron jobs:
-
-- Para jobs isolados, a entrega padrão é resumo de anúncio. Você pode mudar para nenhum se quiser execuções apenas internas.
-- Campos de canal/alvo aparecem quando anúncio está selecionado.
-- Modo webhook usa `delivery.mode = "webhook"` com `delivery.to` definido para uma URL de webhook HTTP(S) válida.
-- Para jobs de sessão principal, modos de entrega webhook e nenhum estão disponíveis.
-- Controles de edição avançada incluem deletar após execução, limpar override de agente, opções de exato/stagger de cron, sobrescrições de modelo/thinking do agente, e toggles de entrega best-effort.
-- A validação de formulário é inline com erros no nível de campo; valores inválidos desabilitam o botão salvar até serem corrigidos.
-- Defina `cron.webhookToken` para enviar um bearer token dedicado; se omitido, o webhook é enviado sem header de auth.
-- Fallback obsoleto: jobs legados armazenados com `notify: true` ainda podem usar `cron.webhook` até migrarem.
-
-## Comportamento do Chat
-
-- `chat.send` é **não-bloqueante**: faz ack imediatamente com `{ runId, status: "started" }` e a resposta faz stream via eventos `chat`.
-- Reenviar com o mesmo `idempotencyKey` retorna `{ status: "in_flight" }` enquanto rodando, e `{ status: "ok" }` após a conclusão.
-- Respostas de `chat.history` têm tamanho limitado para segurança da UI. Quando entradas do transcript são muito grandes, o Gateway pode truncar campos de texto longos, omitir blocos de metadados pesados e substituir mensagens muito grandes por um placeholder (`[chat.history omitted: message too large]`).
-- `chat.inject` acrescenta uma nota de assistente ao transcript da sessão e transmite um evento `chat` para atualizações apenas na UI (sem execução de agente, sem entrega ao canal).
-- Parar:
-  - Clique em **Stop** (chama `chat.abort`)
-  - Digite `/stop` (ou frases de abort standalone como `stop`, `stop action`, `stop run`, `stop opencraft`, `please stop`) para abortar fora de banda
-  - `chat.abort` suporta `{ sessionKey }` (sem `runId`) para abortar todas as execuções ativas para aquela sessão
-- Retenção de parcial abortado:
-  - Quando uma execução é abortada, texto parcial do assistente ainda pode ser mostrado na UI
-  - O Gateway persiste texto parcial de assistente abortado no histórico do transcript quando há saída em buffer
-  - Entradas persistidas incluem metadados de abort para que consumidores do transcript possam distinguir parciais abortados de saída de conclusão normal
-
-## Acesso via Tailnet (recomendado)
-
-### Tailscale Serve integrado (preferido)
-
-Mantenha o Gateway no loopback e deixe o Tailscale Serve fazer proxy com HTTPS:
+**To approve the device:**
 
 ```bash
-opencraft gateway --tailscale serve
+# List pending requests
+openclaw devices list
+
+# Approve by request ID
+openclaw devices approve <requestId>
 ```
 
-Abra:
+Once approved, the device is remembered and won't require re-approval unless
+you revoke it with `openclaw devices revoke --device <id> --role <role>`. See
+[Devices CLI](/cli/devices) for token rotation and revocation.
 
-- `https://<magicdns>/` (ou seu `gateway.controlUi.basePath` configurado)
+**Notes:**
 
-Por padrão, requisições Control UI/WebSocket via Serve podem autenticar via headers de identidade Tailscale
-(`tailscale-user-login`) quando `gateway.auth.allowTailscale` é `true`. O OpenCraft
-verifica a identidade resolvendo o endereço `x-forwarded-for` com
-`tailscale whois` e correspondendo ao header, e só aceita quando a
-requisição chega no loopback com os headers `x-forwarded-*` do Tailscale. Defina
-`gateway.auth.allowTailscale: false` (ou force `gateway.auth.mode: "password"`)
-se quiser exigir token/senha mesmo para tráfego via Serve.
-Auth via Serve sem token assume que o host do gateway é confiável. Se código local não confiável
-puder rodar nesse host, exija auth por token/senha.
+- Local connections (`127.0.0.1`) are auto-approved.
+- Remote connections (LAN, Tailnet, etc.) require explicit approval.
+- Each browser profile generates a unique device ID, so switching browsers or
+  clearing browser data will require re-pairing.
 
-### Bind ao tailnet + token
+## Language support
+
+The Control UI can localize itself on first load based on your browser locale, and you can override it later from the language picker in the Access card.
+
+- Supported locales: `en`, `zh-CN`, `zh-TW`, `pt-BR`, `de`, `es`
+- Non-English translations are lazy-loaded in the browser.
+- The selected locale is saved in browser storage and reused on future visits.
+- Missing translation keys fall back to English.
+
+## What it can do (today)
+
+- Chat with the model via Gateway WS (`chat.history`, `chat.send`, `chat.abort`, `chat.inject`)
+- Stream tool calls + live tool output cards in Chat (agent events)
+- Channels: WhatsApp/Telegram/Discord/Slack + plugin channels (Mattermost, etc.) status + QR login + per-channel config (`channels.status`, `web.login.*`, `config.patch`)
+- Instances: presence list + refresh (`system-presence`)
+- Sessions: list + per-session thinking/fast/verbose/reasoning overrides (`sessions.list`, `sessions.patch`)
+- Cron jobs: list/add/edit/run/enable/disable + run history (`cron.*`)
+- Skills: status, enable/disable, install, API key updates (`skills.*`)
+- Nodes: list + caps (`node.list`)
+- Exec approvals: edit gateway or node allowlists + ask policy for `exec host=gateway/node` (`exec.approvals.*`)
+- Config: view/edit `~/.openclaw/openclaw.json` (`config.get`, `config.set`)
+- Config: apply + restart with validation (`config.apply`) and wake the last active session
+- Config writes include a base-hash guard to prevent clobbering concurrent edits
+- Config schema + form rendering (`config.schema`, including plugin + channel schemas); Raw JSON editor remains available
+- Debug: status/health/models snapshots + event log + manual RPC calls (`status`, `health`, `models.list`)
+- Logs: live tail of gateway file logs with filter/export (`logs.tail`)
+- Update: run a package/git update + restart (`update.run`) with a restart report
+
+Cron jobs panel notes:
+
+- For isolated jobs, delivery defaults to announce summary. You can switch to none if you want internal-only runs.
+- Channel/target fields appear when announce is selected.
+- Webhook mode uses `delivery.mode = "webhook"` with `delivery.to` set to a valid HTTP(S) webhook URL.
+- For main-session jobs, webhook and none delivery modes are available.
+- Advanced edit controls include delete-after-run, clear agent override, cron exact/stagger options,
+  agent model/thinking overrides, and best-effort delivery toggles.
+- Form validation is inline with field-level errors; invalid values disable the save button until fixed.
+- Set `cron.webhookToken` to send a dedicated bearer token, if omitted the webhook is sent without an auth header.
+- Deprecated fallback: stored legacy jobs with `notify: true` can still use `cron.webhook` until migrated.
+
+## Chat behavior
+
+- `chat.send` is **non-blocking**: it acks immediately with `{ runId, status: "started" }` and the response streams via `chat` events.
+- Re-sending with the same `idempotencyKey` returns `{ status: "in_flight" }` while running, and `{ status: "ok" }` after completion.
+- `chat.history` responses are size-bounded for UI safety. When transcript entries are too large, Gateway may truncate long text fields, omit heavy metadata blocks, and replace oversized messages with a placeholder (`[chat.history omitted: message too large]`).
+- `chat.inject` appends an assistant note to the session transcript and broadcasts a `chat` event for UI-only updates (no agent run, no channel delivery).
+- Stop:
+  - Click **Stop** (calls `chat.abort`)
+  - Type `/stop` (or standalone abort phrases like `stop`, `stop action`, `stop run`, `stop openclaw`, `please stop`) to abort out-of-band
+  - `chat.abort` supports `{ sessionKey }` (no `runId`) to abort all active runs for that session
+- Abort partial retention:
+  - When a run is aborted, partial assistant text can still be shown in the UI
+  - Gateway persists aborted partial assistant text into transcript history when buffered output exists
+  - Persisted entries include abort metadata so transcript consumers can tell abort partials from normal completion output
+
+## Tailnet access (recommended)
+
+### Integrated Tailscale Serve (preferred)
+
+Keep the Gateway on loopback and let Tailscale Serve proxy it with HTTPS:
 
 ```bash
-opencraft gateway --bind tailnet --token "$(openssl rand -hex 32)"
+openclaw gateway --tailscale serve
 ```
 
-Então abra:
+Open:
 
-- `http://<tailscale-ip>:18789/` (ou seu `gateway.controlUi.basePath` configurado)
+- `https://<magicdns>/` (or your configured `gateway.controlUi.basePath`)
 
-Cole o token nas configurações da UI (enviado como `connect.params.auth.token`).
+By default, Control UI/WebSocket Serve requests can authenticate via Tailscale identity headers
+(`tailscale-user-login`) when `gateway.auth.allowTailscale` is `true`. OpenClaw
+verifies the identity by resolving the `x-forwarded-for` address with
+`tailscale whois` and matching it to the header, and only accepts these when the
+request hits loopback with Tailscale’s `x-forwarded-*` headers. Set
+`gateway.auth.allowTailscale: false` (or force `gateway.auth.mode: "password"`)
+if you want to require a token/password even for Serve traffic.
+Tokenless Serve auth assumes the gateway host is trusted. If untrusted local
+code may run on that host, require token/password auth.
 
-## HTTP Inseguro
+### Bind to tailnet + token
 
-Se você abrir o dashboard via HTTP simples (`http://<lan-ip>` ou `http://<tailscale-ip>`),
-o browser roda em um **contexto não-seguro** e bloqueia WebCrypto. Por padrão,
-o OpenCraft **bloqueia** conexões à Control UI sem identidade de dispositivo.
+```bash
+openclaw gateway --bind tailnet --token "$(openssl rand -hex 32)"
+```
 
-**Correção recomendada:** use HTTPS (Tailscale Serve) ou abra a UI localmente:
+Then open:
+
+- `http://<tailscale-ip>:18789/` (or your configured `gateway.controlUi.basePath`)
+
+Paste the token into the UI settings (sent as `connect.params.auth.token`).
+
+## Insecure HTTP
+
+If you open the dashboard over plain HTTP (`http://<lan-ip>` or `http://<tailscale-ip>`),
+the browser runs in a **non-secure context** and blocks WebCrypto. By default,
+OpenClaw **blocks** Control UI connections without device identity.
+
+**Recommended fix:** use HTTPS (Tailscale Serve) or open the UI locally:
 
 - `https://<magicdns>/` (Serve)
-- `http://127.0.0.1:18789/` (no host do gateway)
+- `http://127.0.0.1:18789/` (on the gateway host)
 
-**Comportamento do toggle de auth insegura:**
+**Insecure-auth toggle behavior:**
 
 ```json5
 {
   gateway: {
     controlUi: { allowInsecureAuth: true },
     bind: "tailnet",
-    auth: { mode: "token", token: "substitua-aqui" },
+    auth: { mode: "token", token: "replace-me" },
   },
 }
 ```
 
-`allowInsecureAuth` é apenas um toggle de compatibilidade local:
+`allowInsecureAuth` is a local compatibility toggle only:
 
-- Permite que sessões da Control UI no localhost prossigam sem identidade de dispositivo em
-  contextos HTTP não-seguros.
-- Não ignora verificações de pareamento.
-- Não relaxa requisitos de identidade de dispositivo para conexões remotas (não-localhost).
+- It allows localhost Control UI sessions to proceed without device identity in
+  non-secure HTTP contexts.
+- It does not bypass pairing checks.
+- It does not relax remote (non-localhost) device identity requirements.
 
-**Apenas para emergências:**
+**Break-glass only:**
 
 ```json5
 {
   gateway: {
     controlUi: { dangerouslyDisableDeviceAuth: true },
     bind: "tailnet",
-    auth: { mode: "token", token: "substitua-aqui" },
+    auth: { mode: "token", token: "replace-me" },
   },
 }
 ```
 
-`dangerouslyDisableDeviceAuth` desabilita as verificações de identidade de dispositivo da Control UI e é uma
-degradação severa de segurança. Reverta rapidamente após uso de emergência.
+`dangerouslyDisableDeviceAuth` disables Control UI device identity checks and is a
+severe security downgrade. Revert quickly after emergency use.
 
-Veja [Tailscale](/gateway/tailscale) para orientação de configuração HTTPS.
+See [Tailscale](/gateway/tailscale) for HTTPS setup guidance.
 
-## Compilando a UI
+## Building the UI
 
-O Gateway serve arquivos estáticos de `dist/control-ui`. Compile-os com:
-
-```bash
-pnpm ui:build # auto-instala deps da UI na primeira execução
-```
-
-Base absoluta opcional (quando você quer URLs de assets fixas):
+The Gateway serves static files from `dist/control-ui`. Build them with:
 
 ```bash
-OPENCLAW_CONTROL_UI_BASE_PATH=/opencraft/ pnpm ui:build
+pnpm ui:build # auto-installs UI deps on first run
 ```
 
-Para desenvolvimento local (servidor dev separado):
+Optional absolute base (when you want fixed asset URLs):
 
 ```bash
-pnpm ui:dev # auto-instala deps da UI na primeira execução
+OPENCLAW_CONTROL_UI_BASE_PATH=/openclaw/ pnpm ui:build
 ```
 
-Então aponte a UI para sua URL WS do Gateway (ex.: `ws://127.0.0.1:18789`).
+For local development (separate dev server):
 
-## Debug/teste: servidor dev + Gateway remoto
+```bash
+pnpm ui:dev # auto-installs UI deps on first run
+```
 
-A Control UI são arquivos estáticos; o alvo WebSocket é configurável e pode ser
-diferente da origem HTTP. Isso é útil quando você quer o servidor dev Vite
-localmente mas o Gateway roda em outro lugar.
+Then point the UI at your Gateway WS URL (e.g. `ws://127.0.0.1:18789`).
 
-1. Inicie o servidor dev da UI: `pnpm ui:dev`
-2. Abra uma URL como:
+## Debugging/testing: dev server + remote Gateway
+
+The Control UI is static files; the WebSocket target is configurable and can be
+different from the HTTP origin. This is handy when you want the Vite dev server
+locally but the Gateway runs elsewhere.
+
+1. Start the UI dev server: `pnpm ui:dev`
+2. Open a URL like:
 
 ```text
 http://localhost:5173/?gatewayUrl=ws://<gateway-host>:18789
 ```
 
-Auth única opcional (se necessário):
+Optional one-time auth (if needed):
 
 ```text
 http://localhost:5173/?gatewayUrl=wss://<gateway-host>:18789#token=<gateway-token>
 ```
 
-Notas:
+Notes:
 
-- `gatewayUrl` é armazenado no localStorage após o carregamento e removido da URL.
-- `token` é importado do fragmento da URL, armazenado no sessionStorage para a sessão do tab atual do browser e URL do gateway selecionado, e removido da URL; não é armazenado no localStorage.
-- `password` é mantido apenas em memória.
-- Quando `gatewayUrl` está definido, a UI não cai de volta para credenciais de config ou ambiente.
-  Forneça `token` (ou `password`) explicitamente. Credenciais explícitas ausentes é um erro.
-- Use `wss://` quando o Gateway estiver atrás de TLS (Tailscale Serve, proxy HTTPS, etc.).
-- `gatewayUrl` só é aceito em uma janela de nível superior (não embutida) para prevenir clickjacking.
-- Deployments da Control UI não-loopback devem definir `gateway.controlUi.allowedOrigins`
-  explicitamente (origens completas). Isso inclui setups de dev remoto.
-- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` habilita
-  o modo de fallback de origem por header Host, mas é um modo de segurança perigoso.
+- `gatewayUrl` is stored in localStorage after load and removed from the URL.
+- `token` is imported from the URL fragment, stored in sessionStorage for the current browser tab session and selected gateway URL, and stripped from the URL; it is not stored in localStorage.
+- `password` is kept in memory only.
+- When `gatewayUrl` is set, the UI does not fall back to config or environment credentials.
+  Provide `token` (or `password`) explicitly. Missing explicit credentials is an error.
+- Use `wss://` when the Gateway is behind TLS (Tailscale Serve, HTTPS proxy, etc.).
+- `gatewayUrl` is only accepted in a top-level window (not embedded) to prevent clickjacking.
+- Non-loopback Control UI deployments must set `gateway.controlUi.allowedOrigins`
+  explicitly (full origins). This includes remote dev setups.
+- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` enables
+  Host-header origin fallback mode, but it is a dangerous security mode.
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -264,4 +265,4 @@ Exemplo:
 }
 ```
 
-Detalhes de configuração de acesso remoto: [Acesso remoto](/gateway/remote).
+Remote access setup details: [Remote access](/gateway/remote).

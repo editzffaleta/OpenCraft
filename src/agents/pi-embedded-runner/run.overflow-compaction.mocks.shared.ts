@@ -156,6 +156,19 @@ vi.mock("./model.js", () => ({
     },
     modelRegistry: {},
   })),
+  resolveModelAsync: vi.fn(async () => ({
+    model: {
+      id: "test-model",
+      provider: "anthropic",
+      contextWindow: 200000,
+      api: "messages",
+    },
+    error: null,
+    authStorage: {
+      setRuntimeApiKey: vi.fn(),
+    },
+    modelRegistry: {},
+  })),
 }));
 
 vi.mock("../model-auth.js", () => ({
@@ -169,7 +182,7 @@ vi.mock("../model-auth.js", () => ({
 }));
 
 vi.mock("../models-config.js", () => ({
-  ensureOpenCraftModelsJson: vi.fn(async () => {}),
+  ensureOpenClawModelsJson: vi.fn(async () => {}),
 }));
 
 vi.mock("../context-window-guard.js", () => ({
@@ -200,7 +213,7 @@ vi.mock(import("../../utils/message-channel.js"), async (importOriginal) => {
 });
 
 vi.mock("../agent-paths.js", () => ({
-  resolveOpenCraftAgentDir: vi.fn(() => "/tmp/agent-dir"),
+  resolveOpenClawAgentDir: vi.fn(() => "/tmp/agent-dir"),
 }));
 
 vi.mock("../defaults.js", () => ({

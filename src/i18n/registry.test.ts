@@ -20,8 +20,8 @@ function getNestedTranslation(map: TranslationMap | null, ...path: string[]): st
 
 describe("ui i18n locale registry", () => {
   it("lists supported locales", () => {
-    expect(SUPPORTED_LOCALES).toEqual(["pt-BR", "en", "zh-CN", "zh-TW", "de", "es"]);
-    expect(DEFAULT_LOCALE).toBe("pt-BR");
+    expect(SUPPORTED_LOCALES).toEqual(["en", "zh-CN", "zh-TW", "pt-BR", "de", "es"]);
+    expect(DEFAULT_LOCALE).toBe("en");
   });
 
   it("resolves browser locale fallbacks", () => {
@@ -31,24 +31,19 @@ describe("ui i18n locale registry", () => {
     expect(resolveNavigatorLocale("pt-PT")).toBe("pt-BR");
     expect(resolveNavigatorLocale("zh-HK")).toBe("zh-TW");
     expect(resolveNavigatorLocale("en-US")).toBe("en");
-    // Unknown browser locales fall back to pt-BR (primary language of OpenCraft).
-    expect(resolveNavigatorLocale("fr-FR")).toBe("pt-BR");
-    expect(resolveNavigatorLocale("ja-JP")).toBe("pt-BR");
-    expect(resolveNavigatorLocale("")).toBe("pt-BR");
   });
 
   it("loads lazy locale translations from the registry", async () => {
-    const en = await loadLazyLocaleTranslation("en");
     const de = await loadLazyLocaleTranslation("de");
     const es = await loadLazyLocaleTranslation("es");
+    const ptBR = await loadLazyLocaleTranslation("pt-BR");
     const zhCN = await loadLazyLocaleTranslation("zh-CN");
 
-    expect(getNestedTranslation(en, "common", "health")).toBe("Health");
     expect(getNestedTranslation(de, "common", "health")).toBe("Status");
     expect(getNestedTranslation(es, "common", "health")).toBe("Estado");
     expect(getNestedTranslation(es, "languages", "de")).toBe("Deutsch (Alemán)");
+    expect(getNestedTranslation(ptBR, "languages", "es")).toBe("Español (Espanhol)");
     expect(getNestedTranslation(zhCN, "common", "health")).toBe("\u5065\u5eb7\u72b6\u51b5");
-    // pt-BR is now the default (eagerly loaded), not a lazy locale.
-    expect(await loadLazyLocaleTranslation("pt-BR")).toBeNull();
+    expect(await loadLazyLocaleTranslation("en")).toBeNull();
   });
 });

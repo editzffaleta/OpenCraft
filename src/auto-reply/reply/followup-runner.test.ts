@@ -85,7 +85,7 @@ function createAsyncReplySpy() {
 describe("createFollowupRunner compaction", () => {
   it("adds verbose auto-compaction notice and tracks count", async () => {
     const storePath = path.join(
-      await fs.mkdtemp(path.join(tmpdir(), "opencraft-compaction-")),
+      await fs.mkdtemp(path.join(tmpdir(), "openclaw-compaction-")),
       "sessions.json",
     );
     const sessionEntry: SessionEntry = {
@@ -129,7 +129,7 @@ describe("createFollowupRunner compaction", () => {
 
   it("tracks auto-compaction from embedded result metadata even when no compaction event is emitted", async () => {
     const storePath = path.join(
-      await fs.mkdtemp(path.join(tmpdir(), "opencraft-compaction-meta-")),
+      await fs.mkdtemp(path.join(tmpdir(), "openclaw-compaction-meta-")),
       "sessions.json",
     );
     const sessionEntry: SessionEntry = {
@@ -178,7 +178,7 @@ describe("createFollowupRunner compaction", () => {
 
   it("does not count failed compaction end events in followup runs", async () => {
     const storePath = path.join(
-      await fs.mkdtemp(path.join(tmpdir(), "opencraft-compaction-failed-")),
+      await fs.mkdtemp(path.join(tmpdir(), "openclaw-compaction-failed-")),
       "sessions.json",
     );
     const sessionEntry: SessionEntry = {
@@ -287,10 +287,12 @@ describe("createFollowupRunner bootstrap warning dedupe", () => {
 
     const call = runEmbeddedPiAgentMock.mock.calls.at(-1)?.[0] as
       | {
+          allowGatewaySubagentBinding?: boolean;
           bootstrapPromptWarningSignaturesSeen?: string[];
           bootstrapPromptWarningSignature?: string;
         }
       | undefined;
+    expect(call?.allowGatewaySubagentBinding).toBe(true);
     expect(call?.bootstrapPromptWarningSignaturesSeen).toEqual(["sig-a", "sig-b"]);
     expect(call?.bootstrapPromptWarningSignature).toBe("sig-b");
   });
@@ -444,7 +446,7 @@ describe("createFollowupRunner messaging tool dedupe", () => {
 
   it("persists usage even when replies are suppressed", async () => {
     const storePath = path.join(
-      await fs.mkdtemp(path.join(tmpdir(), "opencraft-followup-usage-")),
+      await fs.mkdtemp(path.join(tmpdir(), "openclaw-followup-usage-")),
       "sessions.json",
     );
     const sessionKey = "main";

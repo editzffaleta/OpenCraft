@@ -3,7 +3,6 @@
 
 export { jsonResult, readStringParam } from "../agents/tools/common.js";
 export type { ReplyPayload } from "../auto-reply/types.js";
-export type { ChannelDock } from "../channels/dock.js";
 export {
   deleteAccountFromConfigSection,
   setAccountEnabledInConfigSection,
@@ -11,20 +10,14 @@ export {
 export { listDirectoryUserEntriesFromAllowFrom } from "../channels/plugins/directory-config-helpers.js";
 export { buildChannelConfigSchema } from "../channels/plugins/config-schema.js";
 export { formatPairingApproveHint } from "../channels/plugins/helpers.js";
-export type {
-  ChannelOnboardingAdapter,
-  ChannelOnboardingDmPolicy,
-} from "../channels/plugins/onboarding-types.js";
 export {
   buildSingleChannelSecretPromptState,
   addWildcardAllowFrom,
   mergeAllowFromEntries,
-  promptAccountId,
   promptSingleChannelSecretInput,
   runSingleChannelSecretStep,
-  resolveAccountIdForConfigure,
   setTopLevelChannelDmPolicyWithAllowFrom,
-} from "../channels/plugins/onboarding/helpers.js";
+} from "../channels/plugins/setup-wizard-helpers.js";
 export { PAIRING_APPROVED_MESSAGE } from "../channels/plugins/pairing-message.js";
 export {
   applyAccountNameToChannelSection,
@@ -44,7 +37,7 @@ export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { logTypingFailure } from "../channels/logging.js";
 export { createTypingCallbacks } from "../channels/typing.js";
-export type { OpenCraftConfig } from "../config/config.js";
+export type { OpenClawConfig } from "../config/config.js";
 export {
   resolveDefaultGroupPolicy,
   resolveOpenProviderRuntimeGroupPolicy,
@@ -64,11 +57,13 @@ export { createDedupeCache } from "../infra/dedupe.js";
 export { resolveClientIp } from "../gateway/net.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { OpenCraftPluginApi } from "../plugins/types.js";
+export type { OpenClawPluginApi } from "../plugins/types.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 export type { RuntimeEnv } from "../runtime.js";
 export type { WizardPrompter } from "../wizard/prompts.js";
 export { formatAllowFromLowercase, isNormalizedSenderAllowed } from "./allow-from.js";
+export { zaloSetupAdapter } from "../../extensions/zalo/src/setup-core.js";
+export { zaloSetupWizard } from "../../extensions/zalo/src/setup-surface.js";
 export {
   resolveDirectDmAuthorizationOutcome,
   resolveSenderCommandAuthorizationWithRuntime,

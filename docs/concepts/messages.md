@@ -1,48 +1,48 @@
 ---
-summary: "Fluxo de mensagens, sessões, enfileiramento e visibilidade do raciocínio"
+summary: "Message flow, sessions, queueing, and reasoning visibility"
 read_when:
-  - Explicando como mensagens de entrada se tornam respostas
-  - Esclarecendo sessões, modos de enfileiramento ou comportamento de streaming
-  - Documentando visibilidade do raciocínio e implicações de uso
-title: "Mensagens"
+  - Explaining how inbound messages become replies
+  - Clarifying sessions, queueing modes, or streaming behavior
+  - Documenting reasoning visibility and usage implications
+title: "Messages"
 ---
 
-# Mensagens
+# Messages
 
-Esta página conecta como o OpenCraft trata mensagens de entrada, sessões, enfileiramento,
-streaming e visibilidade do raciocínio.
+This page ties together how OpenClaw handles inbound messages, sessions, queueing,
+streaming, and reasoning visibility.
 
-## Fluxo de mensagens (alto nível)
+## Message flow (high level)
 
 ```
-Mensagem de entrada
-  -> roteamento/bindings -> chave de sessão
-  -> fila (se uma execução estiver ativa)
-  -> execução do agente (streaming + ferramentas)
-  -> respostas de saída (limites do canal + chunking)
+Inbound message
+  -> routing/bindings -> session key
+  -> queue (if a run is active)
+  -> agent run (streaming + tools)
+  -> outbound replies (channel limits + chunking)
 ```
 
-Principais controles ficam na configuração:
+Key knobs live in configuration:
 
-- `messages.*` para prefixos, enfileiramento e comportamento de grupo.
-- `agents.defaults.*` para streaming de bloco e padrões de chunking.
-- Overrides de canal (`channels.whatsapp.*`, `channels.telegram.*`, etc.) para caps e toggles de streaming.
+- `messages.*` for prefixes, queueing, and group behavior.
+- `agents.defaults.*` for block streaming and chunking defaults.
+- Channel overrides (`channels.whatsapp.*`, `channels.telegram.*`, etc.) for caps and streaming toggles.
 
-Veja [Configuração](/gateway/configuration) para o schema completo.
+See [Configuration](/gateway/configuration) for full schema.
 
-## Deduplicação de entrada
+## Inbound dedupe
 
-Canais podem reentregrar a mesma mensagem após reconexões. O OpenCraft mantém um
-cache de curta duração com chave por canal/conta/peer/sessão/id de mensagem para que entregas duplicadas
-não acionem outra execução do agente.
+Channels can redeliver the same message after reconnects. OpenClaw keeps a
+short-lived cache keyed by channel/account/peer/session/message id so duplicate
+deliveries do not trigger another agent run.
 
-## Debouncing de entrada
+## Inbound debouncing
 
-Mensagens consecutivas rápidas do **mesmo remetente** podem ser agrupadas em um único
-turno do agente via `messages.inbound`. O debouncing é limitado por canal + conversa
-e usa a mensagem mais recente para threading/IDs de resposta.
+Rapid consecutive messages from the **same sender** can be batched into a single
+agent turn via `messages.inbound`. Debouncing is scoped per channel + conversation
+and uses the most recent message for reply threading/IDs.
 
-Config (padrão global + overrides por canal):
+Config (global default + per-channel overrides):
 
 ```json5
 {
@@ -59,96 +59,96 @@ Config (padrão global + overrides por canal):
 }
 ```
 
-Notas:
+Notes:
 
-- Debounce se aplica a mensagens **somente texto**; mídia/anexos são enviados imediatamente.
-- Comandos de controle ignoram o debouncing para permanecerem standalone.
+- Debounce applies to **text-only** messages; media/attachments flush immediately.
+- Control commands bypass debouncing so they remain standalone.
 
-## Sessões e dispositivos
+## Sessions and devices
 
-Sessões são de propriedade do gateway, não dos clientes.
+Sessions are owned by the gateway, not by clients.
 
-- Chats diretos colapsam na chave de sessão principal do agente.
-- Grupos/canais obtêm suas próprias chaves de sessão.
-- O armazenamento de sessão e as transcrições ficam no host do gateway.
+- Direct chats collapse into the agent main session key.
+- Groups/channels get their own session keys.
+- The session store and transcripts live on the gateway host.
 
-Múltiplos dispositivos/canais podem mapear para a mesma sessão, mas o histórico não é totalmente
-sincronizado de volta para cada cliente. Recomendação: use um dispositivo primário para conversas longas
-para evitar contexto divergente. A UI de Controle e o TUI sempre mostram a transcrição da sessão
-respaldada pelo gateway, portanto são a fonte da verdade.
+Multiple devices/channels can map to the same session, but history is not fully
+synced back to every client. Recommendation: use one primary device for long
+conversations to avoid divergent context. The Control UI and TUI always show the
+gateway-backed session transcript, so they are the source of truth.
 
-Detalhes: [Gerenciamento de sessão](/concepts/session).
+Details: [Session management](/concepts/session).
 
-## Corpos de entrada e contexto de histórico
+## Inbound bodies and history context
 
-O OpenCraft separa o **corpo do prompt** do **corpo do comando**:
+OpenClaw separates the **prompt body** from the **command body**:
 
-- `Body`: texto do prompt enviado ao agente. Pode incluir envelopes de canal e
-  wrappers de histórico opcionais.
-- `CommandBody`: texto bruto do usuário para análise de diretiva/comando.
-- `RawBody`: alias legado para `CommandBody` (mantido por compatibilidade).
+- `Body`: prompt text sent to the agent. This may include channel envelopes and
+  optional history wrappers.
+- `CommandBody`: raw user text for directive/command parsing.
+- `RawBody`: legacy alias for `CommandBody` (kept for compatibility).
 
-Quando um canal fornece histórico, usa um wrapper compartilhado:
+When a channel supplies history, it uses a shared wrapper:
 
 - `[Chat messages since your last reply - for context]`
 - `[Current message - respond to this]`
 
-Para **chats não-diretos** (grupos/canais/salas), o **corpo da mensagem atual** é prefixado com o
-rótulo do remetente (mesmo estilo usado para entradas de histórico). Isso mantém mensagens em tempo real e enfileiradas/histórico
-consistentes no prompt do agente.
+For **non-direct chats** (groups/channels/rooms), the **current message body** is prefixed with the
+sender label (same style used for history entries). This keeps real-time and queued/history
+messages consistent in the agent prompt.
 
-Buffers de histórico são **apenas pendentes**: incluem mensagens de grupo que _não_
-acionaram uma execução (por exemplo, mensagens com ativação por menção) e **excluem** mensagens
-já na transcrição da sessão.
+History buffers are **pending-only**: they include group messages that did _not_
+trigger a run (for example, mention-gated messages) and **exclude** messages
+already in the session transcript.
 
-A remoção de diretivas se aplica apenas à seção de **mensagem atual** para que o histórico
-permaneça intacto. Canais que envolvem histórico devem definir `CommandBody` (ou
-`RawBody`) para o texto original da mensagem e manter `Body` como o prompt combinado.
-Buffers de histórico são configuráveis via `messages.groupChat.historyLimit` (padrão
-global) e overrides por canal como `channels.slack.historyLimit` ou
-`channels.telegram.accounts.<id>.historyLimit` (defina `0` para desabilitar).
+Directive stripping only applies to the **current message** section so history
+remains intact. Channels that wrap history should set `CommandBody` (or
+`RawBody`) to the original message text and keep `Body` as the combined prompt.
+History buffers are configurable via `messages.groupChat.historyLimit` (global
+default) and per-channel overrides like `channels.slack.historyLimit` or
+`channels.telegram.accounts.<id>.historyLimit` (set `0` to disable).
 
-## Enfileiramento e followups
+## Queueing and followups
 
-Se uma execução já estiver ativa, mensagens de entrada podem ser enfileiradas, direcionadas para a
-execução atual ou coletadas para um turno de followup.
+If a run is already active, inbound messages can be queued, steered into the
+current run, or collected for a followup turn.
 
-- Configure via `messages.queue` (e `messages.queue.byChannel`).
-- Modos: `interrupt`, `steer`, `followup`, `collect`, mais variantes de backlog.
+- Configure via `messages.queue` (and `messages.queue.byChannel`).
+- Modes: `interrupt`, `steer`, `followup`, `collect`, plus backlog variants.
 
-Detalhes: [Enfileiramento](/concepts/queue).
+Details: [Queueing](/concepts/queue).
 
-## Streaming, chunking e batching
+## Streaming, chunking, and batching
 
-O streaming de bloco envia respostas parciais conforme o modelo produz blocos de texto.
-O chunking respeita os limites de texto do canal e evita dividir código fenced.
+Block streaming sends partial replies as the model produces text blocks.
+Chunking respects channel text limits and avoids splitting fenced code.
 
-Configurações principais:
+Key settings:
 
-- `agents.defaults.blockStreamingDefault` (`on|off`, padrão off)
+- `agents.defaults.blockStreamingDefault` (`on|off`, default off)
 - `agents.defaults.blockStreamingBreak` (`text_end|message_end`)
 - `agents.defaults.blockStreamingChunk` (`minChars|maxChars|breakPreference`)
-- `agents.defaults.blockStreamingCoalesce` (batching baseado em ociosidade)
-- `agents.defaults.humanDelay` (pausa humanizada entre respostas em bloco)
-- Overrides de canal: `*.blockStreaming` e `*.blockStreamingCoalesce` (canais não-Telegram requerem `*.blockStreaming: true` explícito)
+- `agents.defaults.blockStreamingCoalesce` (idle-based batching)
+- `agents.defaults.humanDelay` (human-like pause between block replies)
+- Channel overrides: `*.blockStreaming` and `*.blockStreamingCoalesce` (non-Telegram channels require explicit `*.blockStreaming: true`)
 
-Detalhes: [Streaming + chunking](/concepts/streaming).
+Details: [Streaming + chunking](/concepts/streaming).
 
-## Visibilidade do raciocínio e tokens
+## Reasoning visibility and tokens
 
-O OpenCraft pode expor ou ocultar o raciocínio do modelo:
+OpenClaw can expose or hide model reasoning:
 
-- `/reasoning on|off|stream` controla a visibilidade.
-- Conteúdo de raciocínio ainda conta para uso de tokens quando produzido pelo modelo.
-- Telegram suporta stream de raciocínio no balão de rascunho.
+- `/reasoning on|off|stream` controls visibility.
+- Reasoning content still counts toward token usage when produced by the model.
+- Telegram supports reasoning stream into the draft bubble.
 
-Detalhes: [Diretivas de thinking + raciocínio](/tools/thinking) e [Uso de tokens](/reference/token-use).
+Details: [Thinking + reasoning directives](/tools/thinking) and [Token use](/reference/token-use).
 
-## Prefixos, threading e respostas
+## Prefixes, threading, and replies
 
-A formatação de mensagens de saída é centralizada em `messages`:
+Outbound message formatting is centralized in `messages`:
 
-- `messages.responsePrefix`, `channels.<channel>.responsePrefix` e `channels.<channel>.accounts.<id>.responsePrefix` (cascata de prefixo de saída), mais `channels.whatsapp.messagePrefix` (prefixo de entrada do WhatsApp)
-- Threading de resposta via `replyToMode` e padrões por canal
+- `messages.responsePrefix`, `channels.<channel>.responsePrefix`, and `channels.<channel>.accounts.<id>.responsePrefix` (outbound prefix cascade), plus `channels.whatsapp.messagePrefix` (WhatsApp inbound prefix)
+- Reply threading via `replyToMode` and per-channel defaults
 
-Detalhes: [Configuração](/gateway/configuration#messages) e docs de canal.
+Details: [Configuration](/gateway/configuration#messages) and channel docs.

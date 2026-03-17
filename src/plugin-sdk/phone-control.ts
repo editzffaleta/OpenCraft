@@ -2,8 +2,8 @@
 // Keep this list additive and scoped to symbols used under extensions/phone-control.
 
 export type {
-  OpenCraftPluginApi,
-  OpenCraftPluginCommandDefinition,
-  OpenCraftPluginService,
+  OpenClawPluginApi,
+  OpenClawPluginCommandDefinition,
+  OpenClawPluginService,
   PluginCommandContext,
 } from "../plugins/types.js";

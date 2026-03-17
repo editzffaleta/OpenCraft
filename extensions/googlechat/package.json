@@ -1,24 +1,25 @@
 {
-  "name": "@opencraft/googlechat",
+  "name": "@openclaw/googlechat",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft Google Chat channel plugin",
+  "description": "OpenClaw Google Chat channel plugin",
   "type": "module",
   "dependencies": {
     "google-auth-library": "^10.6.1"
   },
   "peerDependencies": {
-    "opencraft": ">=2026.3.11"
+    "openclaw": ">=2026.3.11"
   },
   "peerDependenciesMeta": {
-    "opencraft": {
+    "openclaw": {
       "optional": true
     }
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],
+    "setupEntry": "./setup-entry.ts",
     "channel": {
       "id": "googlechat",
       "label": "Google Chat",
@@ -34,7 +35,7 @@
       "order": 55
     },
     "install": {
-      "npmSpec": "@opencraft/googlechat",
+      "npmSpec": "@openclaw/googlechat",
       "localPath": "extensions/googlechat",
       "defaultChoice": "npm"
     },

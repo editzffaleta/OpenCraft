@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ensureCustomApiRegistered } from "../agents/custom-api-registry.js";
 import { getApiKeyForModel } from "../agents/model-auth.js";
 import { resolveModelAsync } from "../agents/pi-embedded-runner/model.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { withEnv } from "../test-utils/env.js";
 import * as tts from "./tts.js";
 
@@ -100,7 +100,7 @@ const mockAssistantMessage = (content: AssistantMessage["content"]): AssistantMe
   timestamp: Date.now(),
 });
 
-function createOpenAiTelephonyCfg(model: "tts-1" | "gpt-4o-mini-tts"): OpenCraftConfig {
+function createOpenAiTelephonyCfg(model: "tts-1" | "gpt-4o-mini-tts"): OpenClawConfig {
   return {
     messages: {
       tts: {
@@ -263,7 +263,7 @@ describe("tts", () => {
   });
 
   describe("resolveEdgeOutputFormat", () => {
-    const baseCfg: OpenCraftConfig = {
+    const baseCfg: OpenClawConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
       messages: { tts: {} },
     };
@@ -284,7 +284,7 @@ describe("tts", () => {
                 edge: { outputFormat: "audio-24khz-96kbitrate-mono-mp3" },
               },
             },
-          } as OpenCraftConfig,
+          } as OpenClawConfig,
           expected: "audio-24khz-96kbitrate-mono-mp3",
         },
       ] as const;
@@ -311,7 +311,7 @@ describe("tts", () => {
       expect(result.overrides.elevenlabs?.voiceSettings?.speed).toBe(1.1);
     });
 
-    it("accepts edge as provider override", () => {
+    it("accepts edge as a legacy microsoft provider override", () => {
       const policy = resolveModelOverridePolicy({ enabled: true, allowProvider: true });
       const input = "Hello [[tts:provider=edge]] world";
       const result = parseTtsDirectives(input, policy);
@@ -362,7 +362,7 @@ describe("tts", () => {
   });
 
   describe("summarizeText", () => {
-    const baseCfg: OpenCraftConfig = {
+    const baseCfg: OpenClawConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
       messages: { tts: {} },
     };
@@ -407,7 +407,7 @@ describe("tts", () => {
     });
 
     it("uses summaryModel override when configured", async () => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
         messages: { tts: { summaryModel: "openai/gpt-4.1-mini" } },
       };
@@ -493,7 +493,7 @@ describe("tts", () => {
   });
 
   describe("getTtsProvider", () => {
-    const baseCfg: OpenCraftConfig = {
+    const baseCfg: OpenClawConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
       messages: { tts: {} },
     };
@@ -524,8 +524,8 @@ describe("tts", () => {
             ELEVENLABS_API_KEY: undefined,
             XI_API_KEY: undefined,
           },
-          prefsPath: "/tmp/tts-prefs-edge.json",
-          expected: "edge",
+          prefsPath: "/tmp/tts-prefs-microsoft.json",
+          expected: "microsoft",
         },
       ] as const;
 
@@ -539,8 +539,27 @@ describe("tts", () => {
     });
   });
 
+  describe("resolveTtsConfig provider normalization", () => {
+    it("normalizes legacy edge provider ids to microsoft", () => {
+      const config = resolveTtsConfig({
+        agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
+        messages: {
+          tts: {
+            provider: "edge",
+            edge: {
+              enabled: true,
+            },
+          },
+        },
+      });
+
+      expect(config.provider).toBe("microsoft");
+      expect(getTtsProvider(config, "/tmp/tts-prefs-normalized.json")).toBe("microsoft");
+    });
+  });
+
   describe("resolveTtsConfig – openai.baseUrl", () => {
-    const baseCfg: OpenCraftConfig = {
+    const baseCfg: OpenClawConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
       messages: { tts: {} },
     };
@@ -560,7 +579,7 @@ describe("tts", () => {
     });
 
     it("config baseUrl takes precedence over env var", () => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         ...baseCfg,
         messages: {
           tts: { openai: { baseUrl: "http://my-server:9000/v1" } },
@@ -573,7 +592,7 @@ describe("tts", () => {
     });
 
     it("strips trailing slashes from the resolved baseUrl", () => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         ...baseCfg,
         messages: {
           tts: { openai: { baseUrl: "http://my-server:9000/v1///" } },
@@ -637,7 +656,7 @@ describe("tts", () => {
   });
 
   describe("maybeApplyTtsToPayload", () => {
-    const baseCfg: OpenCraftConfig = {
+    const baseCfg: OpenClawConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-4o-mini" } } },
       messages: {
         tts: {
@@ -651,8 +670,8 @@ describe("tts", () => {
     const withMockedAutoTtsFetch = async (
       run: (fetchMock: ReturnType<typeof vi.fn>) => Promise<void>,
     ) => {
-      const prevPrefs = process.env.OPENCRAFT_TTS_PREFS;
-      process.env.OPENCRAFT_TTS_PREFS = `/tmp/tts-test-${Date.now()}.json`;
+      const prevPrefs = process.env.OPENCLAW_TTS_PREFS;
+      process.env.OPENCLAW_TTS_PREFS = `/tmp/tts-test-${Date.now()}.json`;
       const originalFetch = globalThis.fetch;
       const fetchMock = vi.fn(async () => ({
         ok: true,
@@ -663,11 +682,11 @@ describe("tts", () => {
         await run(fetchMock);
       } finally {
         globalThis.fetch = originalFetch;
-        process.env.OPENCRAFT_TTS_PREFS = prevPrefs;
+        process.env.OPENCLAW_TTS_PREFS = prevPrefs;
       }
     };
 
-    const taggedCfg: OpenCraftConfig = {
+    const taggedCfg: OpenClawConfig = {
       ...baseCfg,
       messages: {
         ...baseCfg.messages!,

@@ -1,131 +1,131 @@
 ---
 name: bluebubbles
-description: Use quando precisar enviar ou gerenciar iMessages via BlueBubbles (integração iMessage recomendada). As chamadas passam pela ferramenta message genérica com channel="bluebubbles".
-metadata: { "opencraft": { "emoji": "🫧", "requires": { "config": ["channels.bluebubbles"] } } }
+description: Use when you need to send or manage iMessages via BlueBubbles (recommended iMessage integration). Calls go through the generic message tool with channel="bluebubbles".
+metadata: { "openclaw": { "emoji": "🫧", "requires": { "config": ["channels.bluebubbles"] } } }
 ---
 
-# Ações BlueBubbles
+# BlueBubbles Actions
 
-## Visão Geral
+## Overview
 
-BlueBubbles é a integração iMessage recomendada do OpenCraft. Use a ferramenta `message` com `channel: "bluebubbles"` para enviar mensagens e gerenciar conversas iMessage: enviar textos e anexos, reagir (tapbacks), editar/desfazer envio, responder em threads e gerenciar participantes/nomes/ícones de grupos.
+BlueBubbles is OpenClaw’s recommended iMessage integration. Use the `message` tool with `channel: "bluebubbles"` to send messages and manage iMessage conversations: send texts and attachments, react (tapbacks), edit/unsend, reply in threads, and manage group participants/names/icons.
 
-## Entradas a coletar
+## Inputs to collect
 
-- `target` (prefira `chat_guid:...`; também `+5511999999999` em E.164 ou `usuario@exemplo.com`)
-- Texto `message` para envio/edição/resposta
-- `messageId` para react/editar/desfazer/responder
-- `path` de anexo para arquivos locais, ou `buffer` + `filename` para base64
+- `target` (prefer `chat_guid:...`; also `+15551234567` in E.164 or `user@example.com`)
+- `message` text for send/edit/reply
+- `messageId` for react/edit/unsend/reply
+- Attachment `path` for local files, or `buffer` + `filename` for base64
 
-Se o usuário for vago ("manda mensagem pra minha mãe"), peça o handle do destinatário ou chat guid e o conteúdo exato da mensagem.
+If the user is vague ("text my mom"), ask for the recipient handle or chat guid and the exact message content.
 
-## Ações
+## Actions
 
-### Enviar uma mensagem
+### Send a message
 
 ```json
 {
   "action": "send",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
-  "message": "olá do OpenCraft"
+  "target": "+15551234567",
+  "message": "hello from OpenClaw"
 }
 ```
 
-### Reagir (tapback)
+### React (tapback)
 
 ```json
 {
   "action": "react",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
+  "target": "+15551234567",
   "messageId": "<message-guid>",
   "emoji": "❤️"
 }
 ```
 
-### Remover uma reação
+### Remove a reaction
 
 ```json
 {
   "action": "react",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
+  "target": "+15551234567",
   "messageId": "<message-guid>",
   "emoji": "❤️",
   "remove": true
 }
 ```
 
-### Editar uma mensagem enviada anteriormente
+### Edit a previously sent message
 
 ```json
 {
   "action": "edit",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
+  "target": "+15551234567",
   "messageId": "<message-guid>",
-  "message": "texto atualizado"
+  "message": "updated text"
 }
 ```
 
-### Desfazer envio de uma mensagem
+### Unsend a message
 
 ```json
 {
   "action": "unsend",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
+  "target": "+15551234567",
   "messageId": "<message-guid>"
 }
 ```
 
-### Responder a uma mensagem específica
+### Reply to a specific message
 
 ```json
 {
   "action": "reply",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
+  "target": "+15551234567",
   "replyTo": "<message-guid>",
-  "message": "respondendo a isso"
+  "message": "replying to that"
 }
 ```
 
-### Enviar um anexo
+### Send an attachment
 
 ```json
 {
   "action": "sendAttachment",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
-  "path": "/tmp/foto.jpg",
-  "caption": "aqui está"
+  "target": "+15551234567",
+  "path": "/tmp/photo.jpg",
+  "caption": "here you go"
 }
 ```
 
-### Enviar com efeito iMessage
+### Send with an iMessage effect
 
 ```json
 {
   "action": "sendWithEffect",
   "channel": "bluebubbles",
-  "target": "+5511999999999",
-  "message": "grande novidade",
+  "target": "+15551234567",
+  "message": "big news",
   "effect": "balloons"
 }
 ```
 
-## Notas
+## Notes
 
-- Requer configuração do gateway `channels.bluebubbles` (serverUrl/password/webhookPath).
-- Prefira targets `chat_guid` quando os tiver (especialmente para chats em grupo).
-- BlueBubbles suporta ações ricas, mas algumas dependem da versão do macOS (por exemplo, editar pode estar quebrado no macOS 26 Tahoe).
-- O gateway pode expor IDs de mensagem curtos e completos; IDs completos são mais duráveis entre reinicializações.
-- Referência de desenvolvedor para o plugin subjacente em `extensions/bluebubbles/README.md`.
+- Requires gateway config `channels.bluebubbles` (serverUrl/password/webhookPath).
+- Prefer `chat_guid` targets when you have them (especially for group chats).
+- BlueBubbles supports rich actions, but some are macOS-version dependent (for example, edit may be broken on macOS 26 Tahoe).
+- The gateway may expose both short and full message ids; full ids are more durable across restarts.
+- Developer reference for the underlying plugin lives in `extensions/bluebubbles/README.md`.
 
-## Ideias para experimentar
+## Ideas to try
 
-- Reagir com tapback para confirmar uma solicitação.
-- Responder em thread quando um usuário referencia uma mensagem específica.
-- Enviar um anexo de arquivo com uma legenda curta.
+- React with a tapback to acknowledge a request.
+- Reply in-thread when a user references a specific message.
+- Send a file attachment with a short caption.

@@ -19,7 +19,7 @@ import {
   resolveEffectiveAllowFromLists,
   resolveDmGroupAccessWithLists,
   type HistoryEntry,
-} from "opencraft/plugin-sdk/msteams";
+} from "openclaw/plugin-sdk/msteams";
 import {
   buildMSTeamsAttachmentPlaceholder,
   buildMSTeamsMediaPayload,

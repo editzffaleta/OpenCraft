@@ -1,12 +1,13 @@
 import JSON5 from "json5";
 import { createSubsystemLogger } from "../logging/subsystem.js";
+import { stripUrlUserInfo } from "../shared/net/url-userinfo.js";
 import {
   replaceSensitiveValuesInRaw,
   shouldFallbackToStructuredRawRedaction,
 } from "./redact-snapshot.raw.js";
 import { isSecretRefShape, redactSecretRefId } from "./redact-snapshot.secret-ref.js";
 import { isSensitiveConfigPath, type ConfigUiHints } from "./schema.hints.js";
-import type { ConfigFileSnapshot } from "./types.opencraft.js";
+import type { ConfigFileSnapshot } from "./types.openclaw.js";
 
 const log = createSubsystemLogger("config/redaction");
 const ENV_VAR_PLACEHOLDER_PATTERN = /^\$\{[^}]*\}$/;
@@ -26,6 +27,10 @@ function isEnvVarPlaceholder(value: string): boolean {
 function isWholeObjectSensitivePath(path: string): boolean {
   const lowered = path.toLowerCase();
   return lowered.endsWith("serviceaccount") || lowered.endsWith("serviceaccountref");
+}
+
+function isUserInfoUrlPath(path: string): boolean {
+  return path.endsWith(".baseUrl") || path.endsWith(".httpUrl");
 }
 
 function collectSensitiveStrings(value: unknown, values: string[]): void {
@@ -70,7 +75,7 @@ function isExplicitlyNonSensitivePath(hints: ConfigUiHints | undefined, paths: s
  * sentinel and restore the original value from the on-disk config, so a
  * round-trip through the Web UI does not corrupt credentials.
  */
-export const REDACTED_SENTINEL = "__OPENCRAFT_REDACTED__";
+export const REDACTED_SENTINEL = "__OPENCLAW_REDACTED__";
 
 // ConfigUiHints' keys look like this:
 // - path.subpath.key (nested objects)
@@ -212,6 +217,14 @@ function redactObjectWithLookup(
           ) {
             // Keep primitives at explicitly-sensitive paths fully redacted.
             result[key] = REDACTED_SENTINEL;
+          } else if (typeof value === "string" && isUserInfoUrlPath(path)) {
+            const scrubbed = stripUrlUserInfo(value);
+            if (scrubbed !== value) {
+              values.push(value);
+              result[key] = REDACTED_SENTINEL;
+            } else {
+              result[key] = value;
+            }
           }
           break;
         }
@@ -229,6 +242,14 @@ function redactObjectWithLookup(
         ) {
           result[key] = REDACTED_SENTINEL;
           values.push(value);
+        } else if (typeof value === "string" && isUserInfoUrlPath(path)) {
+          const scrubbed = stripUrlUserInfo(value);
+          if (scrubbed !== value) {
+            values.push(value);
+            result[key] = REDACTED_SENTINEL;
+          } else {
+            result[key] = value;
+          }
         } else if (typeof value === "object" && value !== null) {
           result[key] = redactObjectGuessing(value, path, values, hints);
         }
@@ -293,6 +314,14 @@ function redactObjectGuessing(
       ) {
         collectSensitiveStrings(value, values);
         result[key] = REDACTED_SENTINEL;
+      } else if (typeof value === "string" && isUserInfoUrlPath(dotPath)) {
+        const scrubbed = stripUrlUserInfo(value);
+        if (scrubbed !== value) {
+          values.push(value);
+          result[key] = REDACTED_SENTINEL;
+        } else {
+          result[key] = value;
+        }
       } else if (typeof value === "object" && value !== null) {
         result[key] = redactObjectGuessing(value, dotPath, values, hints);
       } else {
@@ -624,7 +653,10 @@ function restoreRedactedValuesWithLookup(
     for (const candidate of [path, wildcardPath]) {
       if (lookup.has(candidate)) {
         matched = true;
-        if (value === REDACTED_SENTINEL) {
+        if (
+          value === REDACTED_SENTINEL &&
+          (hints[candidate]?.sensitive === true || isUserInfoUrlPath(path))
+        ) {
           result[key] = restoreOriginalValueOrThrow({ key, path: candidate, original: orig });
         } else if (typeof value === "object" && value !== null) {
           result[key] = restoreRedactedValuesWithLookup(value, orig[key], lookup, candidate, hints);
@@ -634,7 +666,11 @@ function restoreRedactedValuesWithLookup(
     }
     if (!matched) {
       const markedNonSensitive = isExplicitlyNonSensitivePath(hints, [path, wildcardPath]);
-      if (!markedNonSensitive && isSensitivePath(path) && value === REDACTED_SENTINEL) {
+      if (
+        !markedNonSensitive &&
+        value === REDACTED_SENTINEL &&
+        (isSensitivePath(path) || isUserInfoUrlPath(path))
+      ) {
         result[key] = restoreOriginalValueOrThrow({ key, path, original: orig });
       } else if (typeof value === "object" && value !== null) {
         result[key] = restoreRedactedValuesGuessing(value, orig[key], path, hints);
@@ -674,8 +710,8 @@ function restoreRedactedValuesGuessing(
     const wildcardPath = prefix ? `${prefix}.*` : "*";
     if (
       !isExplicitlyNonSensitivePath(hints, [path, wildcardPath]) &&
-      isSensitivePath(path) &&
-      value === REDACTED_SENTINEL
+      value === REDACTED_SENTINEL &&
+      (isSensitivePath(path) || isUserInfoUrlPath(path))
     ) {
       result[key] = restoreOriginalValueOrThrow({ key, path, original: orig });
     } else if (typeof value === "object" && value !== null) {

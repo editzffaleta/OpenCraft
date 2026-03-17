@@ -57,11 +57,11 @@ describe("refreshChatAvatar", () => {
     });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const host = makeHost({ basePath: "/opencraft/", sessionKey: "agent:ops:main" });
+    const host = makeHost({ basePath: "/openclaw/", sessionKey: "agent:ops:main" });
     await refreshChatAvatar(host);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/opencraft/avatar/ops?meta=1",
+      "/openclaw/avatar/ops?meta=1",
       expect.objectContaining({ method: "GET" }),
     );
     expect(host.chatAvatarUrl).toBeNull();
@@ -83,7 +83,14 @@ describe("handleSendChat", () => {
     );
     const request = vi.fn(async (method: string, _params?: unknown) => {
       if (method === "sessions.patch") {
-        return { ok: true, key: "main" };
+        return {
+          ok: true,
+          key: "main",
+          resolved: {
+            modelProvider: "openai",
+            model: "gpt-5-mini",
+          },
+        };
       }
       if (method === "chat.history") {
         return { messages: [], thinkingLevel: null };
@@ -93,7 +100,7 @@ describe("handleSendChat", () => {
           ts: 0,
           path: "",
           count: 0,
-          defaults: { model: "gpt-5", contextTokens: null },
+          defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: null },
           sessions: [],
         };
       }
@@ -116,6 +123,9 @@ describe("handleSendChat", () => {
       key: "main",
       model: "gpt-5-mini",
     });
-    expect(host.chatModelOverrides.main).toBe("gpt-5-mini");
+    expect(host.chatModelOverrides.main).toEqual({
+      kind: "qualified",
+      value: "openai/gpt-5-mini",
+    });
   });
 });

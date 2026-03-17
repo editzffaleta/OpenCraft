@@ -124,17 +124,17 @@ export function createGatewayReloadHandlers(params: {
         cfg: nextConfig,
         log: params.logHooks,
         onSkipped: () =>
-          params.logHooks.info("skipping gmail watcher restart (OPENCRAFT_SKIP_GMAIL_WATCHER=1)"),
+          params.logHooks.info("skipping gmail watcher restart (OPENCLAW_SKIP_GMAIL_WATCHER=1)"),
       });
     }
 
     if (plan.restartChannels.size > 0) {
       if (
-        isTruthyEnvValue(process.env.OPENCRAFT_SKIP_CHANNELS) ||
-        isTruthyEnvValue(process.env.OPENCRAFT_SKIP_PROVIDERS)
+        isTruthyEnvValue(process.env.OPENCLAW_SKIP_CHANNELS) ||
+        isTruthyEnvValue(process.env.OPENCLAW_SKIP_PROVIDERS)
       ) {
         params.logChannels.info(
-          "skipping channel reload (OPENCRAFT_SKIP_CHANNELS=1 or OPENCRAFT_SKIP_PROVIDERS=1)",
+          "skipping channel reload (OPENCLAW_SKIP_CHANNELS=1 or OPENCLAW_SKIP_PROVIDERS=1)",
         );
       } else {
         const restartChannel = async (name: ChannelKind) => {
@@ -219,6 +219,7 @@ export function createGatewayReloadHandlers(params: {
 
       deferGatewayRestartUntilIdle({
         getPendingCount: () => getActiveCounts().totalActive,
+        maxWaitMs: nextConfig.gateway?.reload?.deferralTimeoutMs,
         hooks: {
           onReady: () => {
             restartPending = false;

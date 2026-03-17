@@ -1,4 +1,4 @@
-name: opencraft-codeql-javascript-typescript
+name: openclaw-codeql-javascript-typescript
 
 paths:
   - src

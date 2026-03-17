@@ -5,8 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearRuntimeConfigSnapshot,
   setRuntimeConfigSnapshot,
-  type OpenCraftConfig,
+  type OpenClawConfig,
 } from "../../../../src/config/config.js";
+import { getSessionBindingService } from "../../../../src/infra/outbound/session-binding-service.js";
 
 const hoisted = vi.hoisted(() => {
   const sendMessageDiscord = vi.fn(async (_to: string, _text: string, _opts?: unknown) => ({}));
@@ -464,9 +465,9 @@ describe("thread binding lifecycle", () => {
 
   it("persists touched activity timestamps across restart when persistence is enabled", async () => {
     vi.useFakeTimers();
-    const previousStateDir = process.env.OPENCRAFT_STATE_DIR;
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-thread-bindings-"));
-    process.env.OPENCRAFT_STATE_DIR = stateDir;
+    const previousStateDir = process.env.OPENCLAW_STATE_DIR;
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-thread-bindings-"));
+    process.env.OPENCLAW_STATE_DIR = stateDir;
     try {
       __testing.resetThreadBindingsForTests();
       vi.setSystemTime(new Date("2026-02-20T00:00:00.000Z"));
@@ -513,9 +514,9 @@ describe("thread binding lifecycle", () => {
     } finally {
       __testing.resetThreadBindingsForTests();
       if (previousStateDir === undefined) {
-        delete process.env.OPENCRAFT_STATE_DIR;
+        delete process.env.OPENCLAW_STATE_DIR;
       } else {
-        process.env.OPENCRAFT_STATE_DIR = previousStateDir;
+        process.env.OPENCLAW_STATE_DIR = previousStateDir;
       }
       fs.rmSync(stateDir, { recursive: true, force: true });
       vi.useRealTimers();
@@ -639,7 +640,7 @@ describe("thread binding lifecycle", () => {
   it("passes manager token when resolving parent channels for auto-bind", async () => {
     const cfg = {
       channels: { discord: { token: "tok" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     createThreadBindingManager({
       accountId: "runtime",
       token: "runtime-token",
@@ -692,10 +693,10 @@ describe("thread binding lifecycle", () => {
   it("uses the active runtime snapshot cfg for manager operations", async () => {
     const startupCfg = {
       channels: { discord: { token: "startup-token" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const refreshedCfg = {
       channels: { discord: { token: "refreshed-token" } },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const manager = createThreadBindingManager({
       accountId: "runtime",
       token: "runtime-token",
@@ -786,6 +787,57 @@ describe("thread binding lifecycle", () => {
       (call) => (call?.[0] as { token?: string } | undefined)?.token === "token-new",
     );
     expect(usedTokenNew).toBe(true);
+  });
+
+  it("binds current Discord DMs as direct conversation bindings", async () => {
+    createThreadBindingManager({
+      accountId: "default",
+      persist: false,
+      enableSweeper: false,
+      idleTimeoutMs: 24 * 60 * 60 * 1000,
+      maxAgeMs: 0,
+    });
+
+    hoisted.restGet.mockClear();
+    hoisted.restPost.mockClear();
+
+    const bound = await getSessionBindingService().bind({
+      targetSessionKey: "plugin-binding:openclaw-codex-app-server:dm",
+      targetKind: "session",
+      conversation: {
+        channel: "discord",
+        accountId: "default",
+        conversationId: "user:1177378744822943744",
+      },
+      placement: "current",
+      metadata: {
+        pluginBindingOwner: "plugin",
+        pluginId: "openclaw-codex-app-server",
+        pluginRoot: "/Users/huntharo/github/openclaw-app-server",
+      },
+    });
+
+    expect(bound).toMatchObject({
+      conversation: {
+        channel: "discord",
+        accountId: "default",
+        conversationId: "user:1177378744822943744",
+        parentConversationId: "user:1177378744822943744",
+      },
+    });
+    expect(
+      getSessionBindingService().resolveByConversation({
+        channel: "discord",
+        accountId: "default",
+        conversationId: "user:1177378744822943744",
+      }),
+    ).toMatchObject({
+      conversation: {
+        conversationId: "user:1177378744822943744",
+      },
+    });
+    expect(hoisted.restGet).not.toHaveBeenCalled();
+    expect(hoisted.restPost).not.toHaveBeenCalled();
   });
 
   it("keeps overlapping thread ids isolated per account", async () => {
@@ -894,7 +946,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
     });
 
@@ -930,7 +982,7 @@ describe("thread binding lifecycle", () => {
     hoisted.readAcpSessionEntry.mockReturnValue({
       sessionKey: "agent:codex:acp:uncertain",
       storeSessionKey: "agent:codex:acp:uncertain",
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       storePath: "/tmp/mock-sessions.json",
       storeReadFailed: true,
       entry: undefined,
@@ -938,7 +990,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
     });
 
@@ -946,6 +998,47 @@ describe("thread binding lifecycle", () => {
     expect(result.removed).toBe(0);
     expect(result.staleSessionKeys).toEqual([]);
     expect(manager.getByThreadId("thread-acp-uncertain")).toBeDefined();
+  });
+
+  it("does not reconcile plugin-owned direct bindings as stale ACP sessions", async () => {
+    const manager = createThreadBindingManager({
+      accountId: "default",
+      persist: false,
+      enableSweeper: false,
+      idleTimeoutMs: 24 * 60 * 60 * 1000,
+      maxAgeMs: 0,
+    });
+
+    await manager.bindTarget({
+      threadId: "user:1177378744822943744",
+      channelId: "user:1177378744822943744",
+      targetKind: "acp",
+      targetSessionKey: "plugin-binding:openclaw-codex-app-server:dm",
+      agentId: "codex",
+      metadata: {
+        pluginBindingOwner: "plugin",
+        pluginId: "openclaw-codex-app-server",
+        pluginRoot: "/Users/huntharo/github/openclaw-app-server",
+      },
+    });
+
+    hoisted.readAcpSessionEntry.mockReturnValue(null);
+
+    const result = await reconcileAcpThreadBindingsOnStartup({
+      cfg: {} as OpenClawConfig,
+      accountId: "default",
+    });
+
+    expect(result.checked).toBe(0);
+    expect(result.removed).toBe(0);
+    expect(result.staleSessionKeys).toEqual([]);
+    expect(manager.getByThreadId("user:1177378744822943744")).toMatchObject({
+      threadId: "user:1177378744822943744",
+      metadata: {
+        pluginBindingOwner: "plugin",
+        pluginId: "openclaw-codex-app-server",
+      },
+    });
   });
 
   it("removes ACP bindings when health probe marks running session as stale", async () => {
@@ -981,7 +1074,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
       healthProbe: async () => ({ status: "stale", reason: "status-timeout-running-stale" }),
     });
@@ -1025,7 +1118,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
       healthProbe: async () => ({ status: "uncertain", reason: "status-timeout" }),
     });
@@ -1069,7 +1162,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
     });
 
@@ -1131,7 +1224,7 @@ describe("thread binding lifecycle", () => {
     let secondProbeStartedBeforeFirstResolved = false;
 
     const reconcilePromise = reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
       healthProbe: async () => {
         probeCallCount += 1;
@@ -1203,7 +1296,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const reconcilePromise = reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as OpenCraftConfig,
+      cfg: {} as OpenClawConfig,
       accountId: "default",
       healthProbe: async () => {
         probeCalls += 1;
@@ -1230,9 +1323,9 @@ describe("thread binding lifecycle", () => {
   });
 
   it("migrates legacy expiresAt bindings to idle/max-age semantics", () => {
-    const previousStateDir = process.env.OPENCRAFT_STATE_DIR;
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-thread-bindings-"));
-    process.env.OPENCRAFT_STATE_DIR = stateDir;
+    const previousStateDir = process.env.OPENCLAW_STATE_DIR;
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-thread-bindings-"));
+    process.env.OPENCLAW_STATE_DIR = stateDir;
     try {
       __testing.resetThreadBindingsForTests();
       const bindingsPath = __testing.resolveThreadBindingsPath();
@@ -1319,18 +1412,18 @@ describe("thread binding lifecycle", () => {
     } finally {
       __testing.resetThreadBindingsForTests();
       if (previousStateDir === undefined) {
-        delete process.env.OPENCRAFT_STATE_DIR;
+        delete process.env.OPENCLAW_STATE_DIR;
       } else {
-        process.env.OPENCRAFT_STATE_DIR = previousStateDir;
+        process.env.OPENCLAW_STATE_DIR = previousStateDir;
       }
       fs.rmSync(stateDir, { recursive: true, force: true });
     }
   });
 
   it("persists unbinds even when no manager is active", () => {
-    const previousStateDir = process.env.OPENCRAFT_STATE_DIR;
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "opencraft-thread-bindings-"));
-    process.env.OPENCRAFT_STATE_DIR = stateDir;
+    const previousStateDir = process.env.OPENCLAW_STATE_DIR;
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-thread-bindings-"));
+    process.env.OPENCLAW_STATE_DIR = stateDir;
     try {
       __testing.resetThreadBindingsForTests();
       const bindingsPath = __testing.resolveThreadBindingsPath();
@@ -1375,9 +1468,9 @@ describe("thread binding lifecycle", () => {
     } finally {
       __testing.resetThreadBindingsForTests();
       if (previousStateDir === undefined) {
-        delete process.env.OPENCRAFT_STATE_DIR;
+        delete process.env.OPENCLAW_STATE_DIR;
       } else {
-        process.env.OPENCRAFT_STATE_DIR = previousStateDir;
+        process.env.OPENCLAW_STATE_DIR = previousStateDir;
       }
       fs.rmSync(stateDir, { recursive: true, force: true });
     }

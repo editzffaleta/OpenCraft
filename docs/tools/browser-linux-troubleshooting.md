@@ -1,43 +1,43 @@
 ---
-summary: "Corrigir problemas de inicialização do CDP do Chrome/Brave/Edge/Chromium para controle de browser do OpenCraft no Linux"
-read_when: "Controle de browser falha no Linux, especialmente com Chromium snap"
-title: "Solução de Problemas do Browser"
+summary: "Fix Chrome/Brave/Edge/Chromium CDP startup issues for OpenClaw browser control on Linux"
+read_when: "Browser control fails on Linux, especially with snap Chromium"
+title: "Browser Troubleshooting"
 ---
 
-# Solução de Problemas do Browser (Linux)
+# Browser Troubleshooting (Linux)
 
-## Problema: "Failed to start Chrome CDP on port 18800"
+## Problem: "Failed to start Chrome CDP on port 18800"
 
-O servidor de controle de browser do OpenCraft falha ao iniciar o Chrome/Brave/Edge/Chromium com o erro:
+OpenClaw's browser control server fails to launch Chrome/Brave/Edge/Chromium with the error:
 
 ```
 {"error":"Error: Failed to start Chrome CDP on port 18800 for profile \"openclaw\"."}
 ```
 
-### Causa raiz
+### Root Cause
 
-No Ubuntu (e em muitas distribuições Linux), a instalação padrão do Chromium é um **pacote snap**. O confinamento AppArmor do snap interfere na forma como o OpenCraft inicia e monitora o processo do browser.
+On Ubuntu (and many Linux distros), the default Chromium installation is a **snap package**. Snap's AppArmor confinement interferes with how OpenClaw spawns and monitors the browser process.
 
-O comando `apt install chromium` instala um pacote stub que redireciona para o snap:
+The `apt install chromium` command installs a stub package that redirects to snap:
 
 ```
 Note, selecting 'chromium-browser' instead of 'chromium'
 chromium-browser is already the newest version (2:1snap1-0ubuntu2).
 ```
 
-Isso NÃO é um browser real — é apenas um wrapper.
+This is NOT a real browser - it's just a wrapper.
 
-### Solução 1: Instalar o Google Chrome (Recomendado)
+### Solution 1: Install Google Chrome (Recommended)
 
-Instale o pacote `.deb` oficial do Google Chrome, que não é sandboxado pelo snap:
+Install the official Google Chrome `.deb` package, which is not sandboxed by snap:
 
 ```bash
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome-stable_current_amd64.deb
-sudo apt --fix-broken install -y  # se houver erros de dependência
+sudo apt --fix-broken install -y  # if there are dependency errors
 ```
 
-Então atualize sua configuração do OpenCraft (`~/.opencraft/opencraft.json`):
+Then update your OpenClaw config (`~/.openclaw/openclaw.json`):
 
 ```json
 {
@@ -50,11 +50,11 @@ Então atualize sua configuração do OpenCraft (`~/.opencraft/opencraft.json`):
 }
 ```
 
-### Solução 2: Usar o Chromium snap com modo somente-attach
+### Solution 2: Use Snap Chromium with Attach-Only Mode
 
-Se você deve usar o Chromium snap, configure o OpenCraft para se conectar a um browser iniciado manualmente:
+If you must use snap Chromium, configure OpenClaw to attach to a manually-started browser:
 
-1. Atualize a configuração:
+1. Update config:
 
 ```json
 {
@@ -67,25 +67,25 @@ Se você deve usar o Chromium snap, configure o OpenCraft para se conectar a um 
 }
 ```
 
-2. Inicie o Chromium manualmente:
+2. Start Chromium manually:
 
 ```bash
 chromium-browser --headless --no-sandbox --disable-gpu \
   --remote-debugging-port=18800 \
-  --user-data-dir=$HOME/.opencraft/browser/openclaw/user-data \
+  --user-data-dir=$HOME/.openclaw/browser/openclaw/user-data \
   about:blank &
 ```
 
-3. Opcionalmente crie um serviço systemd de usuário para iniciar o Chrome automaticamente:
+3. Optionally create a systemd user service to auto-start Chrome:
 
 ```ini
-# ~/.config/systemd/user/opencraft-browser.service
+# ~/.config/systemd/user/openclaw-browser.service
 [Unit]
-Description=OpenCraft Browser (Chrome CDP)
+Description=OpenClaw Browser (Chrome CDP)
 After=network.target
 
 [Service]
-ExecStart=/snap/bin/chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=18800 --user-data-dir=%h/.opencraft/browser/openclaw/user-data about:blank
+ExecStart=/snap/bin/chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=18800 --user-data-dir=%h/.openclaw/browser/openclaw/user-data about:blank
 Restart=on-failure
 RestartSec=5
 
@@ -93,46 +93,46 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-Habilite com: `systemctl --user enable --now opencraft-browser.service`
+Enable with: `systemctl --user enable --now openclaw-browser.service`
 
-### Verificando se o Browser Funciona
+### Verifying the Browser Works
 
-Verificar status:
+Check status:
 
 ```bash
 curl -s http://127.0.0.1:18791/ | jq '{running, pid, chosenBrowser}'
 ```
 
-Testar navegação:
+Test browsing:
 
 ```bash
 curl -s -X POST http://127.0.0.1:18791/start
 curl -s http://127.0.0.1:18791/tabs
 ```
 
-### Referência de configuração
+### Config Reference
 
-| Opção                    | Descrição                                                             | Padrão                                                     |
-| ------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `browser.enabled`        | Habilitar controle de browser                                         | `true`                                                     |
-| `browser.executablePath` | Caminho para um binário de browser baseado em Chromium (Chrome/Brave/Edge/Chromium) | detectado automaticamente (prefere browser padrão quando baseado em Chromium) |
-| `browser.headless`       | Executar sem GUI                                                      | `false`                                                    |
-| `browser.noSandbox`      | Adicionar flag `--no-sandbox` (necessário para algumas configurações Linux) | `false`                                                |
-| `browser.attachOnly`     | Não iniciar browser, apenas conectar ao existente                     | `false`                                                    |
-| `browser.cdpPort`        | Porta do Chrome DevTools Protocol                                     | `18800`                                                    |
+| Option                   | Description                                                          | Default                                                     |
+| ------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `browser.enabled`        | Enable browser control                                               | `true`                                                      |
+| `browser.executablePath` | Path to a Chromium-based browser binary (Chrome/Brave/Edge/Chromium) | auto-detected (prefers default browser when Chromium-based) |
+| `browser.headless`       | Run without GUI                                                      | `false`                                                     |
+| `browser.noSandbox`      | Add `--no-sandbox` flag (needed for some Linux setups)               | `false`                                                     |
+| `browser.attachOnly`     | Don't launch browser, only attach to existing                        | `false`                                                     |
+| `browser.cdpPort`        | Chrome DevTools Protocol port                                        | `18800`                                                     |
 
-### Problema: "Chrome extension relay is running, but no tab is connected"
+### Problem: "No Chrome tabs found for profile=\"user\""
 
-Você está usando um perfil de relay de extensão. Ele espera que a extensão de browser do OpenCraft esteja conectada a uma aba ativa.
+You're using an `existing-session` / Chrome MCP profile. OpenClaw can see local Chrome,
+but there are no open tabs available to attach to.
 
-Opções de correção:
+Fix options:
 
-1. **Use o browser gerenciado:** `opencraft browser start --browser-profile openclaw`
-   (ou defina `browser.defaultProfile: "openclaw"`).
-2. **Use o relay de extensão:** instale a extensão, abra uma aba, e clique no
-   ícone da extensão do OpenCraft para conectá-la.
+1. **Use the managed browser:** `openclaw browser start --browser-profile openclaw`
+   (or set `browser.defaultProfile: "openclaw"`).
+2. **Use Chrome MCP:** make sure local Chrome is running with at least one open tab, then retry with `--browser-profile user`.
 
-Notas:
+Notes:
 
-- O perfil `chrome-relay` usa seu **browser Chromium padrão do sistema** quando possível.
-- Perfis locais `openclaw` atribuem automaticamente `cdpPort`/`cdpUrl`; defina esses apenas para CDP remoto.
+- `user` is host-only. For Linux servers, containers, or remote hosts, prefer CDP profiles.
+- Local `openclaw` profiles auto-assign `cdpPort`/`cdpUrl`; only set those for remote CDP.

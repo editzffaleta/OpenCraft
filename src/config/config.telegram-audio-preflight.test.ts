@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { OpenCraftSchema } from "./zod-schema.js";
+import { OpenClawSchema } from "./zod-schema.js";
 
 describe("telegram disableAudioPreflight schema", () => {
   it("accepts disableAudioPreflight for groups and topics", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -32,7 +32,7 @@ describe("telegram disableAudioPreflight schema", () => {
   });
 
   it("rejects non-boolean disableAudioPreflight values", () => {
-    const res = OpenCraftSchema.safeParse({
+    const res = OpenClawSchema.safeParse({
       channels: {
         telegram: {
           groups: {

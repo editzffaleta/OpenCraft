@@ -37,10 +37,39 @@ async function writePluginFixture(params: {
     manifest.channels = params.channels;
   }
   await fs.writeFile(
-    path.join(params.dir, "opencraft.plugin.json"),
+    path.join(params.dir, "openclaw.plugin.json"),
     JSON.stringify(manifest, null, 2),
     "utf-8",
   );
+}
+
+async function writeBundleFixture(params: {
+  dir: string;
+  format: "codex" | "claude";
+  name: string;
+}) {
+  await mkdirSafe(params.dir);
+  const manifestDir = path.join(
+    params.dir,
+    params.format === "codex" ? ".codex-plugin" : ".claude-plugin",
+  );
+  await mkdirSafe(manifestDir);
+  await fs.writeFile(
+    path.join(manifestDir, "plugin.json"),
+    JSON.stringify({ name: params.name }, null, 2),
+    "utf-8",
+  );
+}
+
+async function writeManifestlessClaudeBundleFixture(params: { dir: string }) {
+  await mkdirSafe(params.dir);
+  await mkdirSafe(path.join(params.dir, "commands"));
+  await fs.writeFile(
+    path.join(params.dir, "commands", "review.md"),
+    "---\ndescription: fixture\n---\n",
+    "utf-8",
+  );
+  await fs.writeFile(path.join(params.dir, "settings.json"), '{"hideThinkingBlock":true}', "utf-8");
 }
 
 describe("config plugin validation", () => {
@@ -50,21 +79,23 @@ describe("config plugin validation", () => {
   let enumPluginDir = "";
   let bluebubblesPluginDir = "";
   let voiceCallSchemaPluginDir = "";
+  let bundlePluginDir = "";
+  let manifestlessClaudeBundleDir = "";
   const suiteEnv = () =>
     ({
       ...process.env,
       HOME: suiteHome,
-      OPENCRAFT_HOME: undefined,
-      OPENCRAFT_STATE_DIR: path.join(suiteHome, ".opencraft"),
+      OPENCLAW_HOME: undefined,
+      OPENCLAW_STATE_DIR: path.join(suiteHome, ".openclaw"),
       CLAWDBOT_STATE_DIR: undefined,
-      OPENCRAFT_PLUGIN_MANIFEST_CACHE_MS: "10000",
+      OPENCLAW_PLUGIN_MANIFEST_CACHE_MS: "10000",
     }) satisfies NodeJS.ProcessEnv;
 
   const validateInSuite = (raw: unknown) =>
     validateConfigObjectWithPlugins(raw, { env: suiteEnv() });
 
   beforeAll(async () => {
-    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-config-plugin-validation-"));
+    fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-config-plugin-validation-"));
     await chmodSafeDir(fixtureRoot);
     suiteHome = path.join(fixtureRoot, "home");
     await mkdirSafe(suiteHome);
@@ -103,12 +134,22 @@ describe("config plugin validation", () => {
       channels: ["bluebubbles"],
       schema: { type: "object" },
     });
+    bundlePluginDir = path.join(suiteHome, "bundle-plugin");
+    await writeBundleFixture({
+      dir: bundlePluginDir,
+      format: "codex",
+      name: "Bundle Fixture",
+    });
+    manifestlessClaudeBundleDir = path.join(suiteHome, "manifestless-claude-bundle");
+    await writeManifestlessClaudeBundleFixture({
+      dir: manifestlessClaudeBundleDir,
+    });
     voiceCallSchemaPluginDir = path.join(suiteHome, "voice-call-schema-plugin");
     const voiceCallManifestPath = path.join(
       process.cwd(),
       "extensions",
       "voice-call",
-      "opencraft.plugin.json",
+      "openclaw.plugin.json",
     );
     const voiceCallManifest = JSON.parse(await fs.readFile(voiceCallManifestPath, "utf-8")) as {
       configSchema?: Record<string, unknown>;
@@ -127,7 +168,15 @@ describe("config plugin validation", () => {
     validateInSuite({
       plugins: {
         enabled: false,
-        load: { paths: [badPluginDir, bluebubblesPluginDir, voiceCallSchemaPluginDir] },
+        load: {
+          paths: [
+            badPluginDir,
+            bluebubblesPluginDir,
+            bundlePluginDir,
+            manifestlessClaudeBundleDir,
+            voiceCallSchemaPluginDir,
+          ],
+        },
       },
     });
   });
@@ -173,6 +222,24 @@ describe("config plugin validation", () => {
     }
   });
 
+  it("does not fail validation for the implicit default memory slot when plugins config is explicit", async () => {
+    const res = validateConfigObjectWithPlugins(
+      {
+        agents: { list: [{ id: "pi" }] },
+        plugins: {
+          entries: { acpx: { enabled: true } },
+        },
+      },
+      {
+        env: {
+          ...suiteEnv(),
+          OPENCLAW_BUNDLED_PLUGINS_DIR: path.join(suiteHome, "missing-bundled-plugins"),
+        },
+      },
+    );
+    expect(res.ok).toBe(true);
+  });
+
   it("warns for removed legacy plugin ids instead of failing validation", async () => {
     const removedId = "google-antigravity-auth";
     const res = validateInSuite({
@@ -214,6 +281,47 @@ describe("config plugin validation", () => {
     }
   });
 
+  it("warns for removed google gemini auth plugin ids instead of failing validation", async () => {
+    const removedId = "google-gemini-cli-auth";
+    const res = validateInSuite({
+      agents: { list: [{ id: "pi" }] },
+      plugins: {
+        enabled: false,
+        entries: { [removedId]: { enabled: true } },
+        allow: [removedId],
+        deny: [removedId],
+        slots: { memory: removedId },
+      },
+    });
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.warnings).toEqual(
+        expect.arrayContaining([
+          {
+            path: `plugins.entries.${removedId}`,
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.allow",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.deny",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.slots.memory",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+        ]),
+      );
+    }
+  });
+
   it("surfaces plugin config diagnostics", async () => {
     const res = validateInSuite({
       agents: { list: [{ id: "pi" }] },
@@ -232,6 +340,32 @@ describe("config plugin validation", () => {
       );
       expect(hasIssue).toBe(true);
     }
+  });
+
+  it("does not require native config schemas for enabled bundle plugins", async () => {
+    const res = validateInSuite({
+      agents: { list: [{ id: "pi" }] },
+      plugins: {
+        enabled: true,
+        load: { paths: [bundlePluginDir] },
+        entries: { "bundle-fixture": { enabled: true } },
+      },
+    });
+
+    expect(res.ok).toBe(true);
+  });
+
+  it("accepts enabled manifestless Claude bundles without a native schema", async () => {
+    const res = validateInSuite({
+      agents: { list: [{ id: "pi" }] },
+      plugins: {
+        enabled: true,
+        load: { paths: [manifestlessClaudeBundleDir] },
+        entries: { "manifestless-claude-bundle": { enabled: true } },
+      },
+    });
+
+    expect(res.ok).toBe(true);
   });
 
   it("surfaces allowed enum values for plugin config diagnostics", async () => {

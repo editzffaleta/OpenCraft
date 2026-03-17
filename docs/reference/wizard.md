@@ -1,143 +1,143 @@
 ---
-summary: "Referência completa do wizard de onboarding CLI: cada passo, flag e campo de configuração"
+summary: "Full reference for CLI onboarding: every step, flag, and config field"
 read_when:
-  - Consultando um passo ou flag específico do wizard
-  - Automatizando o onboarding com modo não-interativo
-  - Depurando o comportamento do wizard
-title: "Referência do Wizard de Onboarding"
-sidebarTitle: "Referência do Wizard"
+  - Looking up a specific onboarding step or flag
+  - Automating onboarding with non-interactive mode
+  - Debugging onboarding behavior
+title: "Onboarding Reference"
+sidebarTitle: "Onboarding Reference"
 ---
 
-# Referência do Wizard de Onboarding
+# Onboarding Reference
 
-Esta é a referência completa para o wizard CLI `opencraft onboard`.
-Para uma visão geral de alto nível, veja [Wizard de Onboarding](/start/wizard).
+This is the full reference for `openclaw onboard`.
+For a high-level overview, see [Onboarding (CLI)](/start/wizard).
 
-## Detalhes do fluxo (modo local)
+## Flow details (local mode)
 
 <Steps>
-  <Step title="Detecção de config existente">
-    - Se `~/.opencraft/opencraft.json` existir, escolha **Manter / Modificar / Redefinir**.
-    - Executar o wizard novamente **não** apaga nada, a menos que você escolha explicitamente **Redefinir**
-      (ou passe `--reset`).
-    - `--reset` via CLI usa como padrão `config+creds+sessions`; use `--reset-scope full`
-      para também remover o workspace.
-    - Se o config for inválido ou contiver chaves legadas, o wizard para e pede
-      que você execute `opencraft doctor` antes de continuar.
-    - O reset usa `trash` (nunca `rm`) e oferece escopos:
-      - Somente Config
-      - Config + credenciais + sessões
-      - Reset completo (também remove workspace)
+  <Step title="Existing config detection">
+    - If `~/.openclaw/openclaw.json` exists, choose **Keep / Modify / Reset**.
+    - Re-running onboarding does **not** wipe anything unless you explicitly choose **Reset**
+      (or pass `--reset`).
+    - CLI `--reset` defaults to `config+creds+sessions`; use `--reset-scope full`
+      to also remove workspace.
+    - If the config is invalid or contains legacy keys, the wizard stops and asks
+      you to run `openclaw doctor` before continuing.
+    - Reset uses `trash` (never `rm`) and offers scopes:
+      - Config only
+      - Config + credentials + sessions
+      - Full reset (also removes workspace)
   </Step>
-  <Step title="Modelo/Auth">
-    - **Chave de API Anthropic**: usa `ANTHROPIC_API_KEY` se presente ou solicita uma chave, depois a salva para uso do daemon.
-    - **OAuth Anthropic (Claude Code CLI)**: no macOS o wizard verifica o item Keychain "Claude Code-credentials" (escolha "Permitir Sempre" para que inícios do launchd não bloqueiem); no Linux/Windows reutiliza `~/.claude/.credentials.json` se presente.
-    - **Token Anthropic (colar setup-token)**: execute `claude setup-token` em qualquer máquina, depois cole o token (você pode nomeá-lo; em branco = padrão).
-    - **Assinatura OpenAI Code (Codex) (Codex CLI)**: se `~/.codex/auth.json` existir, o wizard pode reutilizá-lo.
-    - **Assinatura OpenAI Code (Codex) (OAuth)**: fluxo no navegador; cole o `code#state`.
-      - Define `agents.defaults.model` como `openai-codex/gpt-5.2` quando o modelo não estiver definido ou for `openai/*`.
-    - **Chave de API OpenAI**: usa `OPENAI_API_KEY` se presente ou solicita uma chave, depois a armazena em perfis de auth.
-    - **Chave de API xAI (Grok)**: solicita `XAI_API_KEY` e configura xAI como provedor de modelo.
-    - **OpenCode**: solicita `OPENCODE_API_KEY` (ou `OPENCODE_ZEN_API_KEY`, obtenha em https://opencode.ai/auth) e permite escolher o catálogo Zen ou Go.
-    - **Ollama**: solicita a URL base do Ollama, oferece modo **Cloud + Local** ou **Local**, descobre modelos disponíveis, e faz auto-pull do modelo local selecionado quando necessário.
-    - Mais detalhes: [Ollama](/providers/ollama)
-    - **Chave de API**: armazena a chave para você.
-    - **Vercel AI Gateway (proxy multi-modelo)**: solicita `AI_GATEWAY_API_KEY`.
-    - Mais detalhes: [Vercel AI Gateway](/providers/vercel-ai-gateway)
-    - **Cloudflare AI Gateway**: solicita Account ID, Gateway ID e `CLOUDFLARE_AI_GATEWAY_API_KEY`.
-    - Mais detalhes: [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **MiniMax M2.5**: config é escrito automaticamente.
-    - Mais detalhes: [MiniMax](/providers/minimax)
-    - **Synthetic (compatível com Anthropic)**: solicita `SYNTHETIC_API_KEY`.
-    - Mais detalhes: [Synthetic](/providers/synthetic)
-    - **Moonshot (Kimi K2)**: config é escrito automaticamente.
-    - **Kimi Coding**: config é escrito automaticamente.
-    - Mais detalhes: [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
-    - **Pular**: sem auth configurado ainda.
-    - Escolha um modelo padrão das opções detectadas (ou insira provedor/modelo manualmente). Para melhor qualidade e menor risco de injeção de prompt, escolha o modelo mais poderoso da última geração disponível no seu stack de provedor.
-    - O wizard executa uma verificação de modelo e avisa se o modelo configurado for desconhecido ou estiver sem auth.
-    - O modo de armazenamento de chave de API usa como padrão valores de perfil de auth em texto simples. Use `--secret-input-mode ref` para armazenar refs respaldadas por env em vez disso (por exemplo `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`).
-    - Credenciais OAuth ficam em `~/.opencraft/credentials/oauth.json`; perfis de auth ficam em `~/.opencraft/agents/<agentId>/agent/auth-profiles.json` (chaves de API + OAuth).
-    - Mais detalhes: [/concepts/oauth](/concepts/oauth)
+  <Step title="Model/Auth">
+    - **Anthropic API key**: uses `ANTHROPIC_API_KEY` if present or prompts for a key, then saves it for daemon use.
+    - **Anthropic OAuth (Claude Code CLI)**: on macOS onboarding checks Keychain item "Claude Code-credentials" (choose "Always Allow" so launchd starts don't block); on Linux/Windows it reuses `~/.claude/.credentials.json` if present.
+    - **Anthropic token (paste setup-token)**: run `claude setup-token` on any machine, then paste the token (you can name it; blank = default).
+    - **OpenAI Code (Codex) subscription (Codex CLI)**: if `~/.codex/auth.json` exists, onboarding can reuse it.
+    - **OpenAI Code (Codex) subscription (OAuth)**: browser flow; paste the `code#state`.
+      - Sets `agents.defaults.model` to `openai-codex/gpt-5.2` when model is unset or `openai/*`.
+    - **OpenAI API key**: uses `OPENAI_API_KEY` if present or prompts for a key, then stores it in auth profiles.
+    - **xAI (Grok) API key**: prompts for `XAI_API_KEY` and configures xAI as a model provider.
+    - **OpenCode**: prompts for `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`, get it at https://opencode.ai/auth) and lets you pick the Zen or Go catalog.
+    - **Ollama**: prompts for the Ollama base URL, offers **Cloud + Local** or **Local** mode, discovers available models, and auto-pulls the selected local model when needed.
+    - More detail: [Ollama](/providers/ollama)
+    - **API key**: stores the key for you.
+    - **Vercel AI Gateway (multi-model proxy)**: prompts for `AI_GATEWAY_API_KEY`.
+    - More detail: [Vercel AI Gateway](/providers/vercel-ai-gateway)
+    - **Cloudflare AI Gateway**: prompts for Account ID, Gateway ID, and `CLOUDFLARE_AI_GATEWAY_API_KEY`.
+    - More detail: [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
+    - **MiniMax M2.5**: config is auto-written.
+    - More detail: [MiniMax](/providers/minimax)
+    - **Synthetic (Anthropic-compatible)**: prompts for `SYNTHETIC_API_KEY`.
+    - More detail: [Synthetic](/providers/synthetic)
+    - **Moonshot (Kimi K2)**: config is auto-written.
+    - **Kimi Coding**: config is auto-written.
+    - More detail: [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
+    - **Skip**: no auth configured yet.
+    - Pick a default model from detected options (or enter provider/model manually). For best quality and lower prompt-injection risk, choose the strongest latest-generation model available in your provider stack.
+    - Onboarding runs a model check and warns if the configured model is unknown or missing auth.
+    - API key storage mode defaults to plaintext auth-profile values. Use `--secret-input-mode ref` to store env-backed refs instead (for example `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`).
+    - OAuth credentials live in `~/.openclaw/credentials/oauth.json`; auth profiles live in `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` (API keys + OAuth).
+    - More detail: [/concepts/oauth](/concepts/oauth)
     <Note>
-    Dica para headless/servidor: complete o OAuth em uma máquina com navegador, depois copie
-    `~/.opencraft/credentials/oauth.json` (ou `$OPENCLAW_STATE_DIR/credentials/oauth.json`) para o
-    host do gateway.
+    Headless/server tip: complete OAuth on a machine with a browser, then copy
+    `~/.openclaw/credentials/oauth.json` (or `$OPENCLAW_STATE_DIR/credentials/oauth.json`) to the
+    gateway host.
     </Note>
   </Step>
   <Step title="Workspace">
-    - Padrão `~/.opencraft/workspace` (configurável).
-    - Semeia os arquivos de workspace necessários para o ritual de bootstrap do agente.
-    - Layout completo do workspace + guia de backup: [Workspace do Agente](/concepts/agent-workspace)
+    - Default `~/.openclaw/workspace` (configurable).
+    - Seeds the workspace files needed for the agent bootstrap ritual.
+    - Full workspace layout + backup guide: [Agent workspace](/concepts/agent-workspace)
   </Step>
   <Step title="Gateway">
-    - Porta, bind, modo de auth, exposição tailscale.
-    - Recomendação de auth: mantenha **Token** mesmo para loopback para que clientes WS locais precisem se autenticar.
-    - No modo token, o onboarding interativo oferece:
-      - **Gerar/armazenar token em texto simples** (padrão)
-      - **Usar SecretRef** (opt-in)
-      - O Quickstart reutiliza SecretRefs `gateway.auth.token` existentes entre provedores `env`, `file` e `exec` para probe de onboarding/bootstrap do dashboard.
-      - Se esse SecretRef estiver configurado mas não puder ser resolvido, o onboarding falha cedo com uma mensagem de correção clara em vez de degradar silenciosamente o auth do runtime.
-    - No modo senha, o onboarding interativo também suporta armazenamento em texto simples ou SecretRef.
-    - Caminho de SecretRef de token não-interativo: `--gateway-token-ref-env <ENV_VAR>`.
-      - Requer uma variável de ambiente não-vazia no ambiente do processo de onboarding.
-      - Não pode ser combinado com `--gateway-token`.
-    - Desabilite o auth apenas se você confia completamente em todos os processos locais.
-    - Binds não-loopback ainda requerem auth.
+    - Port, bind, auth mode, tailscale exposure.
+    - Auth recommendation: keep **Token** even for loopback so local WS clients must authenticate.
+    - In token mode, interactive setup offers:
+      - **Generate/store plaintext token** (default)
+      - **Use SecretRef** (opt-in)
+      - Quickstart reuses existing `gateway.auth.token` SecretRefs across `env`, `file`, and `exec` providers for onboarding probe/dashboard bootstrap.
+      - If that SecretRef is configured but cannot be resolved, onboarding fails early with a clear fix message instead of silently degrading runtime auth.
+    - In password mode, interactive setup also supports plaintext or SecretRef storage.
+    - Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
+      - Requires a non-empty env var in the onboarding process environment.
+      - Cannot be combined with `--gateway-token`.
+    - Disable auth only if you fully trust every local process.
+    - Non‑loopback binds still require auth.
   </Step>
-  <Step title="Canais">
-    - [WhatsApp](/channels/whatsapp): login QR opcional.
-    - [Telegram](/channels/telegram): token de bot.
-    - [Discord](/channels/discord): token de bot.
-    - [Google Chat](/channels/googlechat): JSON de conta de serviço + audiência de webhook.
-    - [Mattermost](/channels/mattermost) (plugin): token de bot + URL base.
-    - [Signal](/channels/signal): instalação opcional do `signal-cli` + configuração de conta.
-    - [BlueBubbles](/channels/bluebubbles): **recomendado para iMessage**; URL do servidor + senha + webhook.
-    - [iMessage](/channels/imessage): caminho legado do CLI `imsg` + acesso ao BD.
-    - Segurança de DM: o padrão é pareamento. O primeiro DM envia um código; aprove via `opencraft pairing approve <canal> <código>` ou use allowlists.
+  <Step title="Channels">
+    - [WhatsApp](/channels/whatsapp): optional QR login.
+    - [Telegram](/channels/telegram): bot token.
+    - [Discord](/channels/discord): bot token.
+    - [Google Chat](/channels/googlechat): service account JSON + webhook audience.
+    - [Mattermost](/channels/mattermost) (plugin): bot token + base URL.
+    - [Signal](/channels/signal): optional `signal-cli` install + account config.
+    - [BlueBubbles](/channels/bluebubbles): **recommended for iMessage**; server URL + password + webhook.
+    - [iMessage](/channels/imessage): legacy `imsg` CLI path + DB access.
+    - DM security: default is pairing. First DM sends a code; approve via `openclaw pairing approve <channel> <code>` or use allowlists.
   </Step>
-  <Step title="Pesquisa web">
-    - Escolha um provedor: Perplexity, Brave, Gemini, Grok, ou Kimi (ou pule).
-    - Cole sua chave de API (o QuickStart detecta automaticamente chaves de variáveis de ambiente ou config existente).
-    - Pule com `--skip-search`.
-    - Configure depois: `opencraft configure --section web`.
+  <Step title="Web search">
+    - Pick a provider: Perplexity, Brave, Gemini, Grok, or Kimi (or skip).
+    - Paste your API key (QuickStart auto-detects keys from env vars or existing config).
+    - Skip with `--skip-search`.
+    - Configure later: `openclaw configure --section web`.
   </Step>
-  <Step title="Instalação do daemon">
+  <Step title="Daemon install">
     - macOS: LaunchAgent
-      - Requer uma sessão de usuário com login; para headless, use um LaunchDaemon personalizado (não incluído).
-    - Linux (e Windows via WSL2): unit systemd de usuário
-      - O wizard tenta habilitar lingering via `loginctl enable-linger <usuário>` para que o Gateway continue ativo após logout.
-      - Pode solicitar sudo (escreve `/var/lib/systemd/linger`); tenta sem sudo primeiro.
-    - **Seleção de runtime:** Node (recomendado; necessário para WhatsApp/Telegram). Bun **não é recomendado**.
-    - Se o auth por token requer um token e `gateway.auth.token` é gerenciado por SecretRef, a instalação do daemon o valida, mas não persiste valores de token em texto simples resolvidos nos metadados de ambiente do serviço supervisor.
-    - Se o auth por token requer um token e o SecretRef de token configurado não for resolvido, a instalação do daemon é bloqueada com orientação acionável.
-    - Se tanto `gateway.auth.token` quanto `gateway.auth.password` estiverem configurados e `gateway.auth.mode` não estiver definido, a instalação do daemon é bloqueada até que o modo seja definido explicitamente.
+      - Requires a logged-in user session; for headless, use a custom LaunchDaemon (not shipped).
+    - Linux (and Windows via WSL2): systemd user unit
+      - Onboarding attempts to enable lingering via `loginctl enable-linger <user>` so the Gateway stays up after logout.
+      - May prompt for sudo (writes `/var/lib/systemd/linger`); it tries without sudo first.
+    - **Runtime selection:** Node (recommended; required for WhatsApp/Telegram). Bun is **not recommended**.
+    - If token auth requires a token and `gateway.auth.token` is SecretRef-managed, daemon install validates it but does not persist resolved plaintext token values into supervisor service environment metadata.
+    - If token auth requires a token and the configured token SecretRef is unresolved, daemon install is blocked with actionable guidance.
+    - If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, daemon install is blocked until mode is set explicitly.
   </Step>
-  <Step title="Verificação de saúde">
-    - Inicia o Gateway (se necessário) e executa `opencraft health`.
-    - Dica: `opencraft status --deep` adiciona probes de saúde do gateway à saída de status (requer um gateway acessível).
+  <Step title="Health check">
+    - Starts the Gateway (if needed) and runs `openclaw health`.
+    - Tip: `openclaw status --deep` adds gateway health probes to status output (requires a reachable gateway).
   </Step>
-  <Step title="Skills (recomendado)">
-    - Lê as skills disponíveis e verifica os requisitos.
-    - Permite escolher um gerenciador de node: **npm / pnpm** (bun não recomendado).
-    - Instala dependências opcionais (algumas usam Homebrew no macOS).
+  <Step title="Skills (recommended)">
+    - Reads the available skills and checks requirements.
+    - Lets you choose a node manager: **npm / pnpm** (bun not recommended).
+    - Installs optional dependencies (some use Homebrew on macOS).
   </Step>
-  <Step title="Concluir">
-    - Resumo + próximos passos, incluindo apps iOS/Android/macOS para recursos extras.
+  <Step title="Finish">
+    - Summary + next steps, including iOS/Android/macOS apps for extra features.
   </Step>
 </Steps>
 
 <Note>
-Se nenhuma GUI for detectada, o wizard exibe instruções de port-forward SSH para a Control UI em vez de abrir um navegador.
-Se os assets da Control UI estiverem ausentes, o wizard tenta compilá-los; o fallback é `pnpm ui:build` (instala deps de UI automaticamente).
+If no GUI is detected, onboarding prints SSH port-forward instructions for the Control UI instead of opening a browser.
+If the Control UI assets are missing, onboarding attempts to build them; fallback is `pnpm ui:build` (auto-installs UI deps).
 </Note>
 
-## Modo não-interativo
+## Non-interactive mode
 
-Use `--non-interactive` para automatizar ou criar scripts do onboarding:
+Use `--non-interactive` to automate or script onboarding:
 
 ```bash
-opencraft onboard --non-interactive \
+openclaw onboard --non-interactive \
   --mode local \
   --auth-choice apiKey \
   --anthropic-api-key "$ANTHROPIC_API_KEY" \
@@ -148,69 +148,69 @@ opencraft onboard --non-interactive \
   --skip-skills
 ```
 
-Adicione `--json` para um resumo legível por máquina.
+Add `--json` for a machine‑readable summary.
 
-SecretRef de token do gateway no modo não-interativo:
+Gateway token SecretRef in non-interactive mode:
 
 ```bash
-export OPENCLAW_GATEWAY_TOKEN="seu-token"
-opencraft onboard --non-interactive \
+export OPENCLAW_GATEWAY_TOKEN="your-token"
+openclaw onboard --non-interactive \
   --mode local \
   --auth-choice skip \
   --gateway-auth token \
   --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN
 ```
 
-`--gateway-token` e `--gateway-token-ref-env` são mutuamente exclusivos.
+`--gateway-token` and `--gateway-token-ref-env` are mutually exclusive.
 
 <Note>
-`--json` **não** implica modo não-interativo. Use `--non-interactive` (e `--workspace`) para scripts.
+`--json` does **not** imply non-interactive mode. Use `--non-interactive` (and `--workspace`) for scripts.
 </Note>
 
-Exemplos de comandos específicos de provedor ficam em [Automação CLI](/start/wizard-cli-automation#provider-specific-examples).
-Use esta página de referência para semântica de flags e ordem dos passos.
+Provider-specific command examples live in [CLI Automation](/start/wizard-cli-automation#provider-specific-examples).
+Use this reference page for flag semantics and step ordering.
 
-### Adicionar agente (não-interativo)
+### Add agent (non-interactive)
 
 ```bash
-opencraft agents add work \
-  --workspace ~/.opencraft/workspace-work \
+openclaw agents add work \
+  --workspace ~/.openclaw/workspace-work \
   --model openai/gpt-5.2 \
   --bind whatsapp:biz \
   --non-interactive \
   --json
 ```
 
-## RPC do wizard do Gateway
+## Gateway wizard RPC
 
-O Gateway expõe o fluxo do wizard via RPC (`wizard.start`, `wizard.next`, `wizard.cancel`, `wizard.status`).
-Os clientes (app macOS, Control UI) podem renderizar passos sem reimplementar a lógica de onboarding.
+The Gateway exposes the onboarding flow over RPC (`wizard.start`, `wizard.next`, `wizard.cancel`, `wizard.status`).
+Clients (macOS app, Control UI) can render steps without re‑implementing onboarding logic.
 
-## Configuração do Signal (signal-cli)
+## Signal setup (signal-cli)
 
-O wizard pode instalar `signal-cli` a partir de releases do GitHub:
+Onboarding can install `signal-cli` from GitHub releases:
 
-- Baixa o asset de release apropriado.
-- Armazena em `~/.opencraft/tools/signal-cli/<versão>/`.
-- Escreve `channels.signal.cliPath` no seu config.
+- Downloads the appropriate release asset.
+- Stores it under `~/.openclaw/tools/signal-cli/<version>/`.
+- Writes `channels.signal.cliPath` to your config.
 
-Notas:
+Notes:
 
-- Builds JVM requerem **Java 21**.
-- Builds nativos são usados quando disponíveis.
-- Windows usa WSL2; a instalação do signal-cli segue o fluxo Linux dentro do WSL.
+- JVM builds require **Java 21**.
+- Native builds are used when available.
+- Windows uses WSL2; signal-cli install follows the Linux flow inside WSL.
 
-## O que o wizard escreve
+## What the wizard writes
 
-Campos típicos em `~/.opencraft/opencraft.json`:
+Typical fields in `~/.openclaw/openclaw.json`:
 
 - `agents.defaults.workspace`
-- `agents.defaults.model` / `models.providers` (se MiniMax for escolhido)
-- `tools.profile` (o onboarding local usa como padrão `"coding"` quando não definido; valores explícitos existentes são preservados)
-- `gateway.*` (modo, bind, auth, tailscale)
-- `session.dmScope` (detalhes de comportamento: [Referência de Onboarding CLI](/start/wizard-cli-reference#outputs-and-internals))
+- `agents.defaults.model` / `models.providers` (if Minimax chosen)
+- `tools.profile` (local onboarding defaults to `"coding"` when unset; existing explicit values are preserved)
+- `gateway.*` (mode, bind, auth, tailscale)
+- `session.dmScope` (behavior details: [CLI Setup Reference](/start/wizard-cli-reference#outputs-and-internals))
 - `channels.telegram.botToken`, `channels.discord.token`, `channels.signal.*`, `channels.imessage.*`
-- Allowlists de canal (Slack/Discord/Matrix/Microsoft Teams) quando você opta durante os prompts (nomes são resolvidos para IDs quando possível).
+- Channel allowlists (Slack/Discord/Matrix/Microsoft Teams) when you opt in during the prompts (names resolve to IDs when possible).
 - `skills.install.nodeManager`
 - `wizard.lastRunAt`
 - `wizard.lastRunVersion`
@@ -218,18 +218,18 @@ Campos típicos em `~/.opencraft/opencraft.json`:
 - `wizard.lastRunCommand`
 - `wizard.lastRunMode`
 
-`opencraft agents add` escreve `agents.list[]` e `bindings` opcionais.
+`openclaw agents add` writes `agents.list[]` and optional `bindings`.
 
-As credenciais do WhatsApp ficam em `~/.opencraft/credentials/whatsapp/<accountId>/`.
-As sessões são armazenadas em `~/.opencraft/agents/<agentId>/sessions/`.
+WhatsApp credentials go under `~/.openclaw/credentials/whatsapp/<accountId>/`.
+Sessions are stored under `~/.openclaw/agents/<agentId>/sessions/`.
 
-Alguns canais são entregues como plugins. Quando você escolhe um durante o onboarding, o wizard
-vai solicitar a instalação (npm ou um caminho local) antes que possa ser configurado.
+Some channels are delivered as plugins. When you pick one during setup, onboarding
+will prompt to install it (npm or a local path) before it can be configured.
 
-## Docs relacionados
+## Related docs
 
-- Visão geral do wizard: [Wizard de Onboarding](/start/wizard)
-- Onboarding do app macOS: [Onboarding](/start/onboarding)
-- Referência de config: [Configuração do Gateway](/gateway/configuration)
-- Provedores: [WhatsApp](/channels/whatsapp), [Telegram](/channels/telegram), [Discord](/channels/discord), [Google Chat](/channels/googlechat), [Signal](/channels/signal), [BlueBubbles](/channels/bluebubbles) (iMessage), [iMessage](/channels/imessage) (legado)
-- Skills: [Skills](/tools/skills), [Config de Skills](/tools/skills-config)
+- Onboarding overview: [Onboarding (CLI)](/start/wizard)
+- macOS app onboarding: [Onboarding](/start/onboarding)
+- Config reference: [Gateway configuration](/gateway/configuration)
+- Providers: [WhatsApp](/channels/whatsapp), [Telegram](/channels/telegram), [Discord](/channels/discord), [Google Chat](/channels/googlechat), [Signal](/channels/signal), [BlueBubbles](/channels/bluebubbles) (iMessage), [iMessage](/channels/imessage) (legacy)
+- Skills: [Skills](/tools/skills), [Skills config](/tools/skills-config)

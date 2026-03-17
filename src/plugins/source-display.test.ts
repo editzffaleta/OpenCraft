@@ -10,11 +10,11 @@ function createPluginSourceRoots() {
     "homebrew",
     "lib",
     "node_modules",
-    "opencraft",
+    "openclaw",
     "extensions",
   );
-  const globalRoot = path.resolve(path.sep, "Users", "x", ".opencraft", "extensions");
-  const workspaceRoot = path.resolve(path.sep, "Users", "x", "ws", ".opencraft", "extensions");
+  const globalRoot = path.resolve(path.sep, "Users", "x", ".openclaw", "extensions");
+  const workspaceRoot = path.resolve(path.sep, "Users", "x", "ws", ".openclaw", "extensions");
   return {
     stock: stockRoot,
     global: globalRoot,
@@ -64,11 +64,11 @@ describe("formatPluginSourceForTable", () => {
 
   it("resolves source roots from an explicit env override", () => {
     const ignoredHome = path.resolve(path.sep, "tmp", "ignored-home");
-    const homeDir = path.resolve(path.sep, "tmp", "opencraft-home");
+    const homeDir = path.resolve(path.sep, "tmp", "openclaw-home");
     const roots = withEnv(
       {
-        OPENCRAFT_BUNDLED_PLUGINS_DIR: path.join(ignoredHome, "ignored-bundled"),
-        OPENCRAFT_STATE_DIR: path.join(ignoredHome, "ignored-state"),
+        OPENCLAW_BUNDLED_PLUGINS_DIR: path.join(ignoredHome, "ignored-bundled"),
+        OPENCLAW_STATE_DIR: path.join(ignoredHome, "ignored-state"),
         HOME: ignoredHome,
       },
       () =>
@@ -76,8 +76,8 @@ describe("formatPluginSourceForTable", () => {
           env: {
             ...process.env,
             HOME: homeDir,
-            OPENCRAFT_BUNDLED_PLUGINS_DIR: "~/bundled",
-            OPENCRAFT_STATE_DIR: "~/state",
+            OPENCLAW_BUNDLED_PLUGINS_DIR: "~/bundled",
+            OPENCLAW_STATE_DIR: "~/state",
           },
           workspaceDir: "~/ws",
         }),
@@ -86,7 +86,7 @@ describe("formatPluginSourceForTable", () => {
     expect(roots).toEqual({
       stock: path.join(homeDir, "bundled"),
       global: path.join(homeDir, "state", "extensions"),
-      workspace: path.join(homeDir, "ws", ".opencraft", "extensions"),
+      workspace: path.join(homeDir, "ws", ".openclaw", "extensions"),
     });
   });
 });

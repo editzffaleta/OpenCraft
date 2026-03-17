@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/whatsapp";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/whatsapp";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/core";
 import { whatsappPlugin } from "./src/channel.js";
 import { setWhatsAppRuntime } from "./src/runtime.js";
 
@@ -8,7 +8,7 @@ const plugin = {
   name: "WhatsApp",
   description: "WhatsApp channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setWhatsAppRuntime(api.runtime);
     api.registerChannel({ plugin: whatsappPlugin });
   },

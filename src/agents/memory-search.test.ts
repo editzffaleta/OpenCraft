@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveMemorySearchConfig } from "./memory-search.js";
 
-const asConfig = (cfg: OpenCraftConfig): OpenCraftConfig => cfg;
+const asConfig = (cfg: OpenClawConfig): OpenClawConfig => cfg;
 
 describe("memory search config", () => {
   function configWithDefaultProvider(
     provider: "openai" | "local" | "gemini" | "mistral" | "ollama",
-  ): OpenCraftConfig {
+  ): OpenClawConfig {
     return asConfig({
       agents: {
         defaults: {

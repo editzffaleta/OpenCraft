@@ -1,19 +1,19 @@
 import { describe, expect, test } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { applySessionsPatchToStore } from "./sessions-patch.js";
 
 const SUBAGENT_MODEL = "synthetic/hf:moonshotai/Kimi-K2.5";
 const KIMI_SUBAGENT_KEY = "agent:kimi:subagent:child";
 const MAIN_SESSION_KEY = "agent:main:main";
-const EMPTY_CFG = {} as OpenCraftConfig;
+const EMPTY_CFG = {} as OpenClawConfig;
 
 type ApplySessionsPatchArgs = Parameters<typeof applySessionsPatchToStore>[0];
 
 async function runPatch(params: {
   patch: ApplySessionsPatchArgs["patch"];
   store?: Record<string, SessionEntry>;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   storeKey?: string;
   loadGatewayModelCatalog?: ApplySessionsPatchArgs["loadGatewayModelCatalog"];
 }) {
@@ -47,7 +47,7 @@ function expectPatchError(
   expect(result.error.message).toContain(message);
 }
 
-async function applySubagentModelPatch(cfg: OpenCraftConfig) {
+async function applySubagentModelPatch(cfg: OpenClawConfig) {
   return expectPatchOk(
     await runPatch({
       cfg,
@@ -68,7 +68,7 @@ function makeKimiSubagentCfg(params: {
   agentPrimaryModel: string;
   agentSubagentModel?: string;
   defaultsSubagentModel?: string;
-}): OpenCraftConfig {
+}): OpenClawConfig {
   return {
     agents: {
       defaults: {
@@ -88,10 +88,10 @@ function makeKimiSubagentCfg(params: {
         },
       ],
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
-function createAllowlistedAnthropicModelCfg(): OpenCraftConfig {
+function createAllowlistedAnthropicModelCfg(): OpenClawConfig {
   return {
     agents: {
       defaults: {
@@ -101,7 +101,7 @@ function createAllowlistedAnthropicModelCfg(): OpenCraftConfig {
         },
       },
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 describe("gateway sessions patch", () => {

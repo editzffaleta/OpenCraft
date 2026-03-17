@@ -1,6 +1,6 @@
 import type { HistoryEntry } from "../../../../src/auto-reply/reply/history.js";
 import type { ReplyPayload } from "../../../../src/auto-reply/types.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import type {
   DmPolicy,
   GroupPolicy,
@@ -73,7 +73,7 @@ export type SignalReceivePayload = {
 
 export type SignalEventHandlerDeps = {
   runtime: RuntimeEnv;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   baseUrl: string;
   account?: string;
   accountUuid?: string;

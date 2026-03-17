@@ -1,47 +1,47 @@
 ---
-title: "Template TOOLS.md"
-summary: "Template de workspace para TOOLS.md"
+title: "TOOLS.md Template"
+summary: "Workspace template for TOOLS.md"
 read_when:
-  - Inicializando um workspace manualmente
+  - Bootstrapping a workspace manually
 ---
 
-# TOOLS.md - Notas Locais
+# TOOLS.md - Local Notes
 
-As Skills definem _como_ as ferramentas funcionam. Este arquivo é para _suas_ especificidades — as coisas únicas da sua configuração.
+Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
 
-## O Que Vai Aqui
+## What Goes Here
 
-Coisas como:
+Things like:
 
-- Nomes e localizações de câmeras
-- Hosts SSH e aliases
-- Vozes preferidas para TTS
-- Nomes de alto-falantes/cômodos
-- Apelidos de dispositivos
-- Qualquer coisa específica do ambiente
+- Camera names and locations
+- SSH hosts and aliases
+- Preferred voices for TTS
+- Speaker/room names
+- Device nicknames
+- Anything environment-specific
 
-## Exemplos
+## Examples
 
 ```markdown
-### Câmeras
+### Cameras
 
-- sala-de-estar → Área principal, ângulo amplo 180°
-- porta-da-frente → Entrada, com detecção de movimento
+- living-room → Main area, 180° wide angle
+- front-door → Entrance, motion-triggered
 
 ### SSH
 
-- servidor-casa → 192.168.1.100, usuário: admin
+- home-server → 192.168.1.100, user: admin
 
 ### TTS
 
-- Voz preferida: "Nova" (quente, levemente britânica)
-- Alto-falante padrão: HomePod da Cozinha
+- Preferred voice: "Nova" (warm, slightly British)
+- Default speaker: Kitchen HomePod
 ```
 
-## Por Que Separado?
+## Why Separate?
 
-As Skills são compartilhadas. Sua configuração é sua. Mantê-las separadas significa que você pode atualizar Skills sem perder suas notas, e compartilhar Skills sem vazar sua infraestrutura.
+Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
 
 ---
 
-Adicione o que te ajudar a fazer seu trabalho. Este é seu guia de referência rápida.
+Add whatever helps you do your job. This is your cheat sheet.

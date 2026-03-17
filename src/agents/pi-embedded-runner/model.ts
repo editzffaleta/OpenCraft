@@ -1,12 +1,18 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
 import type { AuthStorage, ModelRegistry } from "@mariozechner/pi-coding-agent";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { ModelDefinitionConfig } from "../../config/types.js";
-import { resolveOpenCraftAgentDir } from "../agent-paths.js";
+import {
+  prepareProviderDynamicModel,
+  resolveProviderRuntimePlugin,
+  runProviderDynamicModel,
+  normalizeProviderResolvedModelWithPlugin,
+} from "../../plugins/provider-runtime.js";
+import { resolveOpenClawAgentDir } from "../agent-paths.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../defaults.js";
 import { buildModelAliasLines } from "../model-alias-lines.js";
 import { isSecretRefHeaderValueMarker } from "../model-auth-markers.js";
-import { resolveForwardCompatModel } from "../model-forward-compat.js";
+import { normalizeModelCompat } from "../model-compat.js";
 import { findNormalizedProviderValue, normalizeProviderId } from "../model-selection.js";
 import {
   buildSuppressedBuiltInModelError,
@@ -14,10 +20,6 @@ import {
 } from "../model-suppression.js";
 import { discoverAuthStorage, discoverModels } from "../pi-model-discovery.js";
 import { normalizeResolvedProviderModel } from "./model.provider-normalization.js";
-import {
-  getOpenRouterModelCapabilities,
-  loadOpenRouterModelCapabilities,
-} from "./openrouter-model-capabilities.js";
 
 type InlineModelEntry = ModelDefinitionConfig & {
   provider: string;
@@ -51,14 +53,33 @@ function sanitizeModelHeaders(
   return Object.keys(next).length > 0 ? next : undefined;
 }
 
-function normalizeResolvedModel(params: { provider: string; model: Model<Api> }): Model<Api> {
+function normalizeResolvedModel(params: {
+  provider: string;
+  model: Model<Api>;
+  cfg?: OpenClawConfig;
+  agentDir?: string;
+}): Model<Api> {
+  const pluginNormalized = normalizeProviderResolvedModelWithPlugin({
+    provider: params.provider,
+    config: params.cfg,
+    context: {
+      config: params.cfg,
+      agentDir: params.agentDir,
+      provider: params.provider,
+      modelId: params.model.id,
+      model: params.model,
+    },
+  });
+  if (pluginNormalized) {
+    return normalizeModelCompat(pluginNormalized);
+  }
   return normalizeResolvedProviderModel(params);
 }
 
 export { buildModelAliasLines };
 
 function resolveConfiguredProviderConfig(
-  cfg: OpenCraftConfig | undefined,
+  cfg: OpenClawConfig | undefined,
   provider: string,
 ): InlineProviderConfig | undefined {
   const configuredProviders = cfg?.models?.providers;
@@ -164,9 +185,10 @@ function resolveExplicitModelWithRegistry(params: {
   provider: string;
   modelId: string;
   modelRegistry: ModelRegistry;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
+  agentDir?: string;
 }): { kind: "resolved"; model: Model<Api> } | { kind: "suppressed" } | undefined {
-  const { provider, modelId, modelRegistry, cfg } = params;
+  const { provider, modelId, modelRegistry, cfg, agentDir } = params;
   if (shouldSuppressBuiltInModel({ provider, id: modelId })) {
     return { kind: "suppressed" };
   }
@@ -178,6 +200,8 @@ function resolveExplicitModelWithRegistry(params: {
       kind: "resolved",
       model: normalizeResolvedModel({
         provider,
+        cfg,
+        agentDir,
         model: applyConfiguredProviderOverrides({
           discoveredModel: model,
           providerConfig,
@@ -196,23 +220,11 @@ function resolveExplicitModelWithRegistry(params: {
   if (inlineMatch?.api) {
     return {
       kind: "resolved",
-      model: normalizeResolvedModel({ provider, model: inlineMatch as Model<Api> }),
-    };
-  }
-
-  // Forward-compat fallbacks must be checked BEFORE the generic providerCfg fallback.
-  // Otherwise, configured providers can default to a generic API and break specific transports.
-  const forwardCompat = resolveForwardCompatModel(provider, modelId, modelRegistry);
-  if (forwardCompat) {
-    return {
-      kind: "resolved",
       model: normalizeResolvedModel({
         provider,
-        model: applyConfiguredProviderOverrides({
-          discoveredModel: forwardCompat,
-          providerConfig,
-          modelId,
-        }),
+        cfg,
+        agentDir,
+        model: inlineMatch as Model<Api>,
       }),
     };
   }
@@ -224,7 +236,8 @@ export function resolveModelWithRegistry(params: {
   provider: string;
   modelId: string;
   modelRegistry: ModelRegistry;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
+  agentDir?: string;
 }): Model<Api> | undefined {
   const explicitModel = resolveExplicitModelWithRegistry(params);
   if (explicitModel?.kind === "suppressed") {
@@ -234,31 +247,26 @@ export function resolveModelWithRegistry(params: {
     return explicitModel.model;
   }
 
-  const { provider, modelId, cfg } = params;
-  const normalizedProvider = normalizeProviderId(provider);
+  const { provider, modelId, cfg, modelRegistry, agentDir } = params;
   const providerConfig = resolveConfiguredProviderConfig(cfg, provider);
-
-  // OpenRouter is a pass-through proxy - any model ID available on OpenRouter
-  // should work without being pre-registered in the local catalog.
-  // Try to fetch actual capabilities from the OpenRouter API so that new models
-  // (not yet in the static pi-ai snapshot) get correct image/reasoning support.
-  if (normalizedProvider === "openrouter") {
-    const capabilities = getOpenRouterModelCapabilities(modelId);
+  const pluginDynamicModel = runProviderDynamicModel({
+    provider,
+    config: cfg,
+    context: {
+      config: cfg,
+      agentDir,
+      provider,
+      modelId,
+      modelRegistry,
+      providerConfig,
+    },
+  });
+  if (pluginDynamicModel) {
     return normalizeResolvedModel({
       provider,
-      model: {
-        id: modelId,
-        name: capabilities?.name ?? modelId,
-        api: "openai-completions",
-        provider,
-        baseUrl: "https://openrouter.ai/api/v1",
-        reasoning: capabilities?.reasoning ?? false,
-        input: capabilities?.input ?? ["text"],
-        cost: capabilities?.cost ?? { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        contextWindow: capabilities?.contextWindow ?? DEFAULT_CONTEXT_TOKENS,
-        // Align with OPENROUTER_DEFAULT_MAX_TOKENS in models-config.providers.ts
-        maxTokens: capabilities?.maxTokens ?? 8192,
-      } as Model<Api>,
+      cfg,
+      agentDir,
+      model: pluginDynamicModel,
     });
   }
 
@@ -272,6 +280,8 @@ export function resolveModelWithRegistry(params: {
   if (providerConfig || modelId.startsWith("mock-")) {
     return normalizeResolvedModel({
       provider,
+      cfg,
+      agentDir,
       model: {
         id: modelId,
         name: modelId,
@@ -302,17 +312,23 @@ export function resolveModel(
   provider: string,
   modelId: string,
   agentDir?: string,
-  cfg?: OpenCraftConfig,
+  cfg?: OpenClawConfig,
 ): {
   model?: Model<Api>;
   error?: string;
   authStorage: AuthStorage;
   modelRegistry: ModelRegistry;
 } {
-  const resolvedAgentDir = agentDir ?? resolveOpenCraftAgentDir();
+  const resolvedAgentDir = agentDir ?? resolveOpenClawAgentDir();
   const authStorage = discoverAuthStorage(resolvedAgentDir);
   const modelRegistry = discoverModels(authStorage, resolvedAgentDir);
-  const model = resolveModelWithRegistry({ provider, modelId, modelRegistry, cfg });
+  const model = resolveModelWithRegistry({
+    provider,
+    modelId,
+    modelRegistry,
+    cfg,
+    agentDir: resolvedAgentDir,
+  });
   if (model) {
     return { model, authStorage, modelRegistry };
   }
@@ -328,17 +344,23 @@ export async function resolveModelAsync(
   provider: string,
   modelId: string,
   agentDir?: string,
-  cfg?: OpenCraftConfig,
+  cfg?: OpenClawConfig,
 ): Promise<{
   model?: Model<Api>;
   error?: string;
   authStorage: AuthStorage;
   modelRegistry: ModelRegistry;
 }> {
-  const resolvedAgentDir = agentDir ?? resolveOpenCraftAgentDir();
+  const resolvedAgentDir = agentDir ?? resolveOpenClawAgentDir();
   const authStorage = discoverAuthStorage(resolvedAgentDir);
   const modelRegistry = discoverModels(authStorage, resolvedAgentDir);
-  const explicitModel = resolveExplicitModelWithRegistry({ provider, modelId, modelRegistry, cfg });
+  const explicitModel = resolveExplicitModelWithRegistry({
+    provider,
+    modelId,
+    modelRegistry,
+    cfg,
+    agentDir: resolvedAgentDir,
+  });
   if (explicitModel?.kind === "suppressed") {
     return {
       error: buildUnknownModelError(provider, modelId),
@@ -346,13 +368,36 @@ export async function resolveModelAsync(
       modelRegistry,
     };
   }
-  if (!explicitModel && normalizeProviderId(provider) === "openrouter") {
-    await loadOpenRouterModelCapabilities(modelId);
+  if (!explicitModel) {
+    const providerPlugin = resolveProviderRuntimePlugin({
+      provider,
+      config: cfg,
+    });
+    if (providerPlugin?.prepareDynamicModel) {
+      await prepareProviderDynamicModel({
+        provider,
+        config: cfg,
+        context: {
+          config: cfg,
+          agentDir: resolvedAgentDir,
+          provider,
+          modelId,
+          modelRegistry,
+          providerConfig: resolveConfiguredProviderConfig(cfg, provider),
+        },
+      });
+    }
   }
   const model =
     explicitModel?.kind === "resolved"
       ? explicitModel.model
-      : resolveModelWithRegistry({ provider, modelId, modelRegistry, cfg });
+      : resolveModelWithRegistry({
+          provider,
+          modelId,
+          modelRegistry,
+          cfg,
+          agentDir: resolvedAgentDir,
+        });
   if (model) {
     return { model, authStorage, modelRegistry };
   }
@@ -373,17 +418,17 @@ export async function resolveModelAsync(
  * error.  This detects known providers that require opt-in auth and adds
  * a hint.
  *
- * See: https://github.com/editzffaleta/OpenCraft/issues/17328
+ * See: https://github.com/openclaw/openclaw/issues/17328
  */
 const LOCAL_PROVIDER_HINTS: Record<string, string> = {
   ollama:
     "Ollama requires authentication to be registered as a provider. " +
-    'Set OLLAMA_API_KEY="ollama-local" (any value works) or run "opencraft configure". ' +
-    "See: https://docs.opencraft.ai/providers/ollama",
+    'Set OLLAMA_API_KEY="ollama-local" (any value works) or run "openclaw configure". ' +
+    "See: https://docs.openclaw.ai/providers/ollama",
   vllm:
     "vLLM requires authentication to be registered as a provider. " +
-    'Set VLLM_API_KEY (any value works) or run "opencraft configure". ' +
-    "See: https://docs.opencraft.ai/providers/vllm",
+    'Set VLLM_API_KEY (any value works) or run "openclaw configure". ' +
+    "See: https://docs.openclaw.ai/providers/vllm",
 };
 
 function buildUnknownModelError(provider: string, modelId: string): string {

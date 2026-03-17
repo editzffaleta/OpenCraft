@@ -32,7 +32,7 @@ async function withTempDir<T>(
 
 describe("ensureDir", () => {
   it("creates nested directory", async () => {
-    await withTempDir("opencraft-test-", async (tmp) => {
+    await withTempDir("openclaw-test-", async (tmp) => {
       const target = path.join(tmp, "nested", "dir");
       await ensureDir(target);
       expect(fs.existsSync(target)).toBe(true);
@@ -88,7 +88,7 @@ describe("jidToE164", () => {
   });
 
   it("maps @lid from authDir mapping files", async () => {
-    await withTempDir("opencraft-auth-", (authDir) => {
+    await withTempDir("openclaw-auth-", (authDir) => {
       const mappingPath = path.join(authDir, "lid-mapping-456_reverse.json");
       fs.writeFileSync(mappingPath, JSON.stringify("5559876"));
       expect(jidToE164("456@lid", { authDir })).toBe("+5559876");
@@ -96,7 +96,7 @@ describe("jidToE164", () => {
   });
 
   it("maps @hosted.lid from authDir mapping files", async () => {
-    await withTempDir("opencraft-auth-", (authDir) => {
+    await withTempDir("openclaw-auth-", (authDir) => {
       const mappingPath = path.join(authDir, "lid-mapping-789_reverse.json");
       fs.writeFileSync(mappingPath, JSON.stringify(4440001));
       expect(jidToE164("789@hosted.lid", { authDir })).toBe("+4440001");
@@ -108,8 +108,8 @@ describe("jidToE164", () => {
   });
 
   it("falls back through lidMappingDirs in order", async () => {
-    await withTempDir("opencraft-lid-a-", async (first) => {
-      await withTempDir("opencraft-lid-b-", (second) => {
+    await withTempDir("openclaw-lid-a-", async (first) => {
+      await withTempDir("openclaw-lid-b-", (second) => {
         const mappingPath = path.join(second, "lid-mapping-321_reverse.json");
         fs.writeFileSync(mappingPath, JSON.stringify("123321"));
         expect(jidToE164("321@lid", { lidMappingDirs: [first, second] })).toBe("+123321");
@@ -119,10 +119,10 @@ describe("jidToE164", () => {
 });
 
 describe("resolveConfigDir", () => {
-  it("prefers ~/.opencraft when legacy dir is missing", async () => {
-    const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "opencraft-config-dir-"));
+  it("prefers ~/.openclaw when legacy dir is missing", async () => {
+    const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "openclaw-config-dir-"));
     try {
-      const newDir = path.join(root, ".opencraft");
+      const newDir = path.join(root, ".openclaw");
       await fs.promises.mkdir(newDir, { recursive: true });
       const resolved = resolveConfigDir({} as NodeJS.ProcessEnv, () => root);
       expect(resolved).toBe(newDir);
@@ -131,34 +131,34 @@ describe("resolveConfigDir", () => {
     }
   });
 
-  it("expands OPENCRAFT_STATE_DIR using the provided env", () => {
+  it("expands OPENCLAW_STATE_DIR using the provided env", () => {
     const env = {
-      HOME: "/tmp/opencraft-home",
-      OPENCRAFT_STATE_DIR: "~/state",
+      HOME: "/tmp/openclaw-home",
+      OPENCLAW_STATE_DIR: "~/state",
     } as NodeJS.ProcessEnv;
 
-    expect(resolveConfigDir(env)).toBe(path.resolve("/tmp/opencraft-home", "state"));
+    expect(resolveConfigDir(env)).toBe(path.resolve("/tmp/openclaw-home", "state"));
   });
 });
 
 describe("resolveHomeDir", () => {
-  it("prefers OPENCRAFT_HOME over HOME", () => {
-    vi.stubEnv("OPENCRAFT_HOME", "/srv/opencraft-home");
+  it("prefers OPENCLAW_HOME over HOME", () => {
+    vi.stubEnv("OPENCLAW_HOME", "/srv/openclaw-home");
     vi.stubEnv("HOME", "/home/other");
 
-    expect(resolveHomeDir()).toBe(path.resolve("/srv/opencraft-home"));
+    expect(resolveHomeDir()).toBe(path.resolve("/srv/openclaw-home"));
 
     vi.unstubAllEnvs();
   });
 });
 
 describe("shortenHomePath", () => {
-  it("uses $OPENCRAFT_HOME prefix when OPENCRAFT_HOME is set", () => {
-    vi.stubEnv("OPENCRAFT_HOME", "/srv/opencraft-home");
+  it("uses $OPENCLAW_HOME prefix when OPENCLAW_HOME is set", () => {
+    vi.stubEnv("OPENCLAW_HOME", "/srv/openclaw-home");
     vi.stubEnv("HOME", "/home/other");
 
-    expect(shortenHomePath(`${path.resolve("/srv/opencraft-home")}/.opencraft/opencraft.json`)).toBe(
-      "$OPENCRAFT_HOME/.opencraft/opencraft.json",
+    expect(shortenHomePath(`${path.resolve("/srv/openclaw-home")}/.openclaw/openclaw.json`)).toBe(
+      "$OPENCLAW_HOME/.openclaw/openclaw.json",
     );
 
     vi.unstubAllEnvs();
@@ -166,13 +166,13 @@ describe("shortenHomePath", () => {
 });
 
 describe("shortenHomeInString", () => {
-  it("uses $OPENCRAFT_HOME replacement when OPENCRAFT_HOME is set", () => {
-    vi.stubEnv("OPENCRAFT_HOME", "/srv/opencraft-home");
+  it("uses $OPENCLAW_HOME replacement when OPENCLAW_HOME is set", () => {
+    vi.stubEnv("OPENCLAW_HOME", "/srv/openclaw-home");
     vi.stubEnv("HOME", "/home/other");
 
     expect(
-      shortenHomeInString(`config: ${path.resolve("/srv/opencraft-home")}/.opencraft/opencraft.json`),
-    ).toBe("config: $OPENCRAFT_HOME/.opencraft/opencraft.json");
+      shortenHomeInString(`config: ${path.resolve("/srv/openclaw-home")}/.openclaw/openclaw.json`),
+    ).toBe("config: $OPENCLAW_HOME/.openclaw/openclaw.json");
 
     vi.unstubAllEnvs();
   });
@@ -210,8 +210,8 @@ describe("resolveUserPath", () => {
   });
 
   it("expands ~/ to home dir", () => {
-    expect(resolveUserPath("~/opencraft", {}, () => "/Users/thoffman")).toBe(
-      path.resolve("/Users/thoffman", "opencraft"),
+    expect(resolveUserPath("~/openclaw", {}, () => "/Users/thoffman")).toBe(
+      path.resolve("/Users/thoffman", "openclaw"),
     );
   });
 
@@ -219,22 +219,22 @@ describe("resolveUserPath", () => {
     expect(resolveUserPath("tmp/dir")).toBe(path.resolve("tmp/dir"));
   });
 
-  it("prefers OPENCRAFT_HOME for tilde expansion", () => {
-    vi.stubEnv("OPENCRAFT_HOME", "/srv/opencraft-home");
+  it("prefers OPENCLAW_HOME for tilde expansion", () => {
+    vi.stubEnv("OPENCLAW_HOME", "/srv/openclaw-home");
     vi.stubEnv("HOME", "/home/other");
 
-    expect(resolveUserPath("~/opencraft")).toBe(path.resolve("/srv/opencraft-home", "opencraft"));
+    expect(resolveUserPath("~/openclaw")).toBe(path.resolve("/srv/openclaw-home", "openclaw"));
 
     vi.unstubAllEnvs();
   });
 
   it("uses the provided env for tilde expansion", () => {
     const env = {
-      HOME: "/tmp/opencraft-home",
-      OPENCRAFT_HOME: "/srv/opencraft-home",
+      HOME: "/tmp/openclaw-home",
+      OPENCLAW_HOME: "/srv/openclaw-home",
     } as NodeJS.ProcessEnv;
 
-    expect(resolveUserPath("~/opencraft", env)).toBe(path.resolve("/srv/opencraft-home", "opencraft"));
+    expect(resolveUserPath("~/openclaw", env)).toBe(path.resolve("/srv/openclaw-home", "openclaw"));
   });
 
   it("keeps blank paths blank", () => {

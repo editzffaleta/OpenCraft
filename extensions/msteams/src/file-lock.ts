@@ -1,1 +1,1 @@
-export { withFileLock } from "opencraft/plugin-sdk/msteams";
+export { withFileLock } from "openclaw/plugin-sdk/msteams";

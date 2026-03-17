@@ -1,10 +1,10 @@
-import { tryReadSecretFileSync } from "opencraft/plugin-sdk/core";
+import { tryReadSecretFileSync } from "openclaw/plugin-sdk/core";
 import {
   createAccountListHelpers,
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   resolveAccountWithDefaultFallback,
-} from "opencraft/plugin-sdk/nextcloud-talk";
+} from "openclaw/plugin-sdk/nextcloud-talk";
 import { normalizeResolvedSecretInputString } from "./secret-input.js";
 import type { CoreConfig, NextcloudTalkAccountConfig } from "./types.js";
 
@@ -14,7 +14,7 @@ function isTruthyEnvValue(value?: string): boolean {
 }
 
 const debugAccounts = (...args: unknown[]) => {
-  if (isTruthyEnvValue(process.env.OPENCRAFT_DEBUG_NEXTCLOUD_TALK_ACCOUNTS)) {
+  if (isTruthyEnvValue(process.env.OPENCLAW_DEBUG_NEXTCLOUD_TALK_ACCOUNTS)) {
     console.warn("[nextcloud-talk:accounts]", ...args);
   }
 };

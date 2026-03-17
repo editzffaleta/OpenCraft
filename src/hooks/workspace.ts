@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { MANIFEST_KEY } from "../compat/legacy-names.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { openBoundaryFileSync } from "../infra/boundary-file-read.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { isPathInsideWithRealpath } from "../security/scan-paths.js";
@@ -10,9 +10,10 @@ import { resolveBundledHooksDir } from "./bundled-dir.js";
 import { shouldIncludeHook } from "./config.js";
 import {
   parseFrontmatter,
-  resolveOpenCraftMetadata,
+  resolveOpenClawMetadata,
   resolveHookInvocationPolicy,
 } from "./frontmatter.js";
+import { resolvePluginHookDirs } from "./plugin-hooks.js";
 import type {
   Hook,
   HookEligibilityContext,
@@ -29,7 +30,7 @@ const log = createSubsystemLogger("hooks/workspace");
 
 function filterHookEntries(
   entries: HookEntry[],
-  config?: OpenCraftConfig,
+  config?: OpenClawConfig,
   eligibility?: HookEligibilityContext,
 ): HookEntry[] {
   return entries.filter((entry) => shouldIncludeHook({ entry, config, eligibility }));
@@ -220,7 +221,7 @@ export function loadHookEntriesFromDir(params: {
         pluginId: params.pluginId,
       },
       frontmatter,
-      metadata: resolveOpenCraftMetadata(frontmatter),
+      metadata: resolveOpenClawMetadata(frontmatter),
       invocation: resolveHookInvocationPolicy(frontmatter),
     };
     return entry;
@@ -230,7 +231,7 @@ export function loadHookEntriesFromDir(params: {
 function loadHookEntries(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedHooksDir?: string;
     bundledHooksDir?: string;
   },
@@ -242,35 +243,49 @@ function loadHookEntries(
   const extraDirs = extraDirsRaw
     .map((d) => (typeof d === "string" ? d.trim() : ""))
     .filter(Boolean);
+  const pluginHookDirs = resolvePluginHookDirs({
+    workspaceDir,
+    config: opts?.config,
+  });
 
   const bundledHooks = bundledHooksDir
     ? loadHooksFromDir({
         dir: bundledHooksDir,
-        source: "opencraft-bundled",
+        source: "openclaw-bundled",
       })
     : [];
   const extraHooks = extraDirs.flatMap((dir) => {
     const resolved = resolveUserPath(dir);
     return loadHooksFromDir({
       dir: resolved,
-      source: "opencraft-workspace", // Extra dirs treated as workspace
+      source: "openclaw-workspace", // Extra dirs treated as workspace
     });
   });
+  const pluginHooks = pluginHookDirs.flatMap(({ dir, pluginId }) =>
+    loadHooksFromDir({
+      dir,
+      source: "openclaw-plugin",
+      pluginId,
+    }),
+  );
   const managedHooks = loadHooksFromDir({
     dir: managedHooksDir,
-    source: "opencraft-managed",
+    source: "openclaw-managed",
   });
   const workspaceHooks = loadHooksFromDir({
     dir: workspaceHooksDir,
-    source: "opencraft-workspace",
+    source: "openclaw-workspace",
   });
 
   const merged = new Map<string, Hook>();
-  // Precedence: extra < bundled < managed < workspace (workspace wins)
+  // Precedence: extra < bundled < plugin < managed < workspace (workspace wins)
   for (const hook of extraHooks) {
     merged.set(hook.name, hook);
   }
   for (const hook of bundledHooks) {
+    merged.set(hook.name, hook);
+  }
+  for (const hook of pluginHooks) {
     merged.set(hook.name, hook);
   }
   for (const hook of managedHooks) {
@@ -293,7 +308,7 @@ function loadHookEntries(
     return {
       hook,
       frontmatter,
-      metadata: resolveOpenCraftMetadata(frontmatter),
+      metadata: resolveOpenClawMetadata(frontmatter),
       invocation: resolveHookInvocationPolicy(frontmatter),
     };
   });
@@ -302,7 +317,7 @@ function loadHookEntries(
 export function buildWorkspaceHookSnapshot(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedHooksDir?: string;
     bundledHooksDir?: string;
     entries?: HookEntry[];
@@ -326,7 +341,7 @@ export function buildWorkspaceHookSnapshot(
 export function loadWorkspaceHookEntries(
   workspaceDir: string,
   opts?: {
-    config?: OpenCraftConfig;
+    config?: OpenClawConfig;
     managedHooksDir?: string;
     bundledHooksDir?: string;
   },

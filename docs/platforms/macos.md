@@ -1,87 +1,87 @@
 ---
-summary: "App companion OpenCraft macOS (barra de menu + broker de gateway)"
+summary: "OpenClaw macOS companion app (menu bar + gateway broker)"
 read_when:
-  - Implementando recursos do app macOS
-  - Alterando ciclo de vida do gateway ou bridging de nó no macOS
-title: "App macOS"
+  - Implementing macOS app features
+  - Changing gateway lifecycle or node bridging on macOS
+title: "macOS App"
 ---
 
-# App Companion OpenCraft macOS (barra de menu + broker de gateway)
+# OpenClaw macOS Companion (menu bar + gateway broker)
 
-O app macOS é o **companion de barra de menu** do OpenCraft. Gerencia permissões,
-gerencia/conecta ao Gateway localmente (launchd ou manual), e expõe capacidades macOS
-ao agente como um nó.
+The macOS app is the **menu‑bar companion** for OpenClaw. It owns permissions,
+manages/attaches to the Gateway locally (launchd or manual), and exposes macOS
+capabilities to the agent as a node.
 
-## O que ele faz
+## What it does
 
-- Exibe notificações nativas e status na barra de menu.
-- Gerencia prompts TCC (Notificações, Acessibilidade, Gravação de Tela, Microfone,
-  Reconhecimento de Fala, Automação/AppleScript).
-- Roda ou conecta ao Gateway (local ou remoto).
-- Expõe tools exclusivas do macOS (Canvas, Câmera, Gravação de Tela, `system.run`).
-- Inicia o serviço de host do nó local no modo **remoto** (launchd), e o para no modo **local**.
-- Opcionalmente hospeda o **PeekabooBridge** para automação de UI.
-- Instala o CLI global (`opencraft`) via npm/pnpm sob demanda (bun não é recomendado para o runtime do Gateway).
+- Shows native notifications and status in the menu bar.
+- Owns TCC prompts (Notifications, Accessibility, Screen Recording, Microphone,
+  Speech Recognition, Automation/AppleScript).
+- Runs or connects to the Gateway (local or remote).
+- Exposes macOS‑only tools (Canvas, Camera, Screen Recording, `system.run`).
+- Starts the local node host service in **remote** mode (launchd), and stops it in **local** mode.
+- Optionally hosts **PeekabooBridge** for UI automation.
+- Installs the global CLI (`openclaw`) via npm/pnpm on request (bun not recommended for the Gateway runtime).
 
-## Modo local vs remoto
+## Local vs remote mode
 
-- **Local** (padrão): o app conecta a um Gateway local em execução, se presente;
-  caso contrário, habilita o serviço launchd via `opencraft gateway install`.
-- **Remoto**: o app conecta a um Gateway via SSH/Tailscale e nunca inicia
-  um processo local.
-  O app inicia o **serviço de host do nó** local para que o Gateway remoto possa alcançar este Mac.
-  O app não inicia o Gateway como processo filho.
+- **Local** (default): the app attaches to a running local Gateway if present;
+  otherwise it enables the launchd service via `openclaw gateway install`.
+- **Remote**: the app connects to a Gateway over SSH/Tailscale and never starts
+  a local process.
+  The app starts the local **node host service** so the remote Gateway can reach this Mac.
+  The app does not spawn the Gateway as a child process.
 
-## Controle do Launchd
+## Launchd control
 
-O app gerencia um LaunchAgent por usuário com o rótulo `ai.openclaw.gateway`
-(ou `ai.openclaw.<profile>` ao usar `--profile`/`OPENCLAW_PROFILE`; o legado `com.openclaw.*` ainda é descarregado).
+The app manages a per‑user LaunchAgent labeled `ai.openclaw.gateway`
+(or `ai.openclaw.<profile>` when using `--profile`/`OPENCLAW_PROFILE`; legacy `com.openclaw.*` still unloads).
 
 ```bash
 launchctl kickstart -k gui/$UID/ai.openclaw.gateway
 launchctl bootout gui/$UID/ai.openclaw.gateway
 ```
 
-Substitua o rótulo por `ai.openclaw.<profile>` ao rodar um perfil nomeado.
+Replace the label with `ai.openclaw.<profile>` when running a named profile.
 
-Se o LaunchAgent não estiver instalado, habilite-o no app ou execute
-`opencraft gateway install`.
+If the LaunchAgent isn’t installed, enable it from the app or run
+`openclaw gateway install`.
 
-## Capacidades do nó (mac)
+## Node capabilities (mac)
 
-O app macOS se apresenta como um nó. Comandos comuns:
+The macOS app presents itself as a node. Common commands:
 
 - Canvas: `canvas.present`, `canvas.navigate`, `canvas.eval`, `canvas.snapshot`, `canvas.a2ui.*`
-- Câmera: `camera.snap`, `camera.clip`
-- Tela: `screen.record`
-- Sistema: `system.run`, `system.notify`
+- Camera: `camera.snap`, `camera.clip`
+- Screen: `screen.record`
+- System: `system.run`, `system.notify`
 
-O nó reporta um mapa `permissions` para que os agentes possam decidir o que é permitido.
+The node reports a `permissions` map so agents can decide what’s allowed.
 
-Serviço de nó + IPC do app:
+Node service + app IPC:
 
-- Quando o serviço de host do nó headless está rodando (modo remoto), conecta ao Gateway WS como nó.
-- `system.run` executa no app macOS (contexto UI/TCC) via socket Unix local; prompts + saída ficam no app.
+- When the headless node host service is running (remote mode), it connects to the Gateway WS as a node.
+- `system.run` executes in the macOS app (UI/TCC context) over a local Unix socket; prompts + output stay in-app.
 
-Diagrama (SCI):
+Diagram (SCI):
 
 ```
-Gateway -> Serviço de Nó (WS)
+Gateway -> Node Service (WS)
                  |  IPC (UDS + token + HMAC + TTL)
                  v
-             App Mac (UI + TCC + system.run)
+             Mac App (UI + TCC + system.run)
 ```
 
-## Aprovações de exec (system.run)
+## Exec approvals (system.run)
 
-`system.run` é controlado pelas **aprovações de exec** no app macOS (Configurações → Exec approvals).
-Segurança + perguntar + allowlist são armazenados localmente no Mac em:
+`system.run` is controlled by **Exec approvals** in the macOS app (Settings → Exec approvals).
+Security + ask + allowlist are stored locally on the Mac in:
 
 ```
-~/.opencraft/exec-approvals.json
+~/.openclaw/exec-approvals.json
 ```
 
-Exemplo:
+Example:
 
 ```json
 {
@@ -100,78 +100,78 @@ Exemplo:
 }
 ```
 
-Notas:
+Notes:
 
-- Entradas `allowlist` são padrões glob para caminhos de binários resolvidos.
-- Texto de comando shell bruto que contém sintaxe de controle ou expansão de shell (`&&`, `||`, `;`, `|`, `` ` ``, `$`, `<`, `>`, `(`, `)`) é tratado como miss na allowlist e requer aprovação explícita (ou allowlist do binário shell).
-- Escolher "Sempre Permitir" no prompt adiciona esse comando à allowlist.
-- Sobrescritas de ambiente em `system.run` são filtradas (remove `PATH`, `DYLD_*`, `LD_*`, `NODE_OPTIONS`, `PYTHON*`, `PERL*`, `RUBYOPT`, `SHELLOPTS`, `PS4`) e mescladas com o ambiente do app.
-- Para wrappers de shell (`bash|sh|zsh ... -c/-lc`), sobrescritas de ambiente com escopo de requisição são reduzidas a uma lista explícita pequena (`TERM`, `LANG`, `LC_*`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`).
-- Para decisões de allow-always em modo allowlist, wrappers de despacho conhecidos (`env`, `nice`, `nohup`, `stdbuf`, `timeout`) persistem caminhos de executável interno em vez de caminhos de wrapper. Se o desempacotamento não for seguro, nenhuma entrada de allowlist é persistida automaticamente.
+- `allowlist` entries are glob patterns for resolved binary paths.
+- Raw shell command text that contains shell control or expansion syntax (`&&`, `||`, `;`, `|`, `` ` ``, `$`, `<`, `>`, `(`, `)`) is treated as an allowlist miss and requires explicit approval (or allowlisting the shell binary).
+- Choosing “Always Allow” in the prompt adds that command to the allowlist.
+- `system.run` environment overrides are filtered (drops `PATH`, `DYLD_*`, `LD_*`, `NODE_OPTIONS`, `PYTHON*`, `PERL*`, `RUBYOPT`, `SHELLOPTS`, `PS4`) and then merged with the app’s environment.
+- For shell wrappers (`bash|sh|zsh ... -c/-lc`), request-scoped environment overrides are reduced to a small explicit allowlist (`TERM`, `LANG`, `LC_*`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`).
+- For allow-always decisions in allowlist mode, known dispatch wrappers (`env`, `nice`, `nohup`, `stdbuf`, `timeout`) persist inner executable paths instead of wrapper paths. If unwrapping is not safe, no allowlist entry is persisted automatically.
 
 ## Deep links
 
-O app registra o esquema de URL `openclaw://` para ações locais.
+The app registers the `openclaw://` URL scheme for local actions.
 
 ### `openclaw://agent`
 
-Dispara uma requisição `agent` para o Gateway.
+Triggers a Gateway `agent` request.
 
 ```bash
 open 'openclaw://agent?message=Hello%20from%20deep%20link'
 ```
 
-Parâmetros de query:
+Query parameters:
 
-- `message` (obrigatório)
-- `sessionKey` (opcional)
-- `thinking` (opcional)
-- `deliver` / `to` / `channel` (opcional)
-- `timeoutSeconds` (opcional)
-- `key` (chave opcional de modo não supervisionado)
+- `message` (required)
+- `sessionKey` (optional)
+- `thinking` (optional)
+- `deliver` / `to` / `channel` (optional)
+- `timeoutSeconds` (optional)
+- `key` (optional unattended mode key)
 
-Segurança:
+Safety:
 
-- Sem `key`, o app solicita confirmação.
-- Sem `key`, o app enforça um limite curto de mensagem para o prompt de confirmação e ignora `deliver` / `to` / `channel`.
-- Com uma `key` válida, a execução é não supervisionada (destinada a automações pessoais).
+- Without `key`, the app prompts for confirmation.
+- Without `key`, the app enforces a short message limit for the confirmation prompt and ignores `deliver` / `to` / `channel`.
+- With a valid `key`, the run is unattended (intended for personal automations).
 
-## Fluxo de onboarding (típico)
+## Onboarding flow (typical)
 
-1. Instale e lance o **OpenCraft.app**.
-2. Complete a lista de verificação de permissões (prompts TCC).
-3. Certifique-se de que o modo **Local** está ativo e o Gateway está rodando.
-4. Instale o CLI se quiser acesso pelo terminal.
+1. Install and launch **OpenClaw.app**.
+2. Complete the permissions checklist (TCC prompts).
+3. Ensure **Local** mode is active and the Gateway is running.
+4. Install the CLI if you want terminal access.
 
-## Localização do diretório de estado (macOS)
+## State dir placement (macOS)
 
-Evite colocar seu diretório de estado do OpenCraft no iCloud ou outras pastas sincronizadas na nuvem.
-Caminhos com backup em nuvem podem adicionar latência e ocasionalmente causar disputas de file-lock/sync para
-sessões e credenciais.
+Avoid putting your OpenClaw state dir in iCloud or other cloud-synced folders.
+Sync-backed paths can add latency and occasionally cause file-lock/sync races for
+sessions and credentials.
 
-Prefira um caminho de estado local não sincronizado como:
+Prefer a local non-synced state path such as:
 
 ```bash
-OPENCLAW_STATE_DIR=~/.opencraft
+OPENCLAW_STATE_DIR=~/.openclaw
 ```
 
-Se `opencraft doctor` detectar estado em:
+If `openclaw doctor` detects state under:
 
 - `~/Library/Mobile Documents/com~apple~CloudDocs/...`
 - `~/Library/CloudStorage/...`
 
-ele avisará e recomendará mover de volta para um caminho local.
+it will warn and recommend moving back to a local path.
 
-## Fluxo de build e dev (nativo)
+## Build & dev workflow (native)
 
 - `cd apps/macos && swift build`
-- `swift run OpenCraft` (ou Xcode)
-- Empacotar app: `scripts/package-mac-app.sh`
+- `swift run OpenClaw` (or Xcode)
+- Package app: `scripts/package-mac-app.sh`
 
-## Depurar conectividade do gateway (CLI macOS)
+## Debug gateway connectivity (macOS CLI)
 
-Use o CLI de depuração para exercitar a mesma lógica de handshake WebSocket e descoberta do Gateway
-que o app macOS usa, sem lançar o app.
+Use the debug CLI to exercise the same Gateway WebSocket handshake and discovery
+logic that the macOS app uses, without launching the app.
 
 ```bash
 cd apps/macos
@@ -179,47 +179,48 @@ swift run openclaw-mac connect --json
 swift run openclaw-mac discover --timeout 3000 --json
 ```
 
-Opções de conexão:
+Connect options:
 
-- `--url <ws://host:porta>`: sobrescrever config
-- `--mode <local|remote>`: resolver da config (padrão: config ou local)
-- `--probe`: forçar um probe de saúde novo
-- `--timeout <ms>`: timeout da requisição (padrão: `15000`)
-- `--json`: saída estruturada para comparação
+- `--url <ws://host:port>`: override config
+- `--mode <local|remote>`: resolve from config (default: config or local)
+- `--probe`: force a fresh health probe
+- `--timeout <ms>`: request timeout (default: `15000`)
+- `--json`: structured output for diffing
 
-Opções de descoberta:
+Discovery options:
 
-- `--include-local`: incluir gateways que seriam filtrados como "local"
-- `--timeout <ms>`: janela de descoberta geral (padrão: `2000`)
-- `--json`: saída estruturada para comparação
+- `--include-local`: include gateways that would be filtered as “local”
+- `--timeout <ms>`: overall discovery window (default: `2000`)
+- `--json`: structured output for diffing
 
-Dica: compare com `opencraft gateway discover --json` para verificar se o pipeline de
-descoberta do app macOS (NWBrowser + fallback tailnet DNS-SD) difere do discovery baseado em `dns-sd` do Node CLI.
+Tip: compare against `openclaw gateway discover --json` to see whether the
+macOS app’s discovery pipeline (NWBrowser + tailnet DNS‑SD fallback) differs from
+the Node CLI’s `dns-sd` based discovery.
 
-## Encanamento de conexão remota (túneis SSH)
+## Remote connection plumbing (SSH tunnels)
 
-Quando o app macOS roda no modo **Remoto**, abre um túnel SSH para que componentes locais de UI
-possam falar com um Gateway remoto como se estivesse no localhost.
+When the macOS app runs in **Remote** mode, it opens an SSH tunnel so local UI
+components can talk to a remote Gateway as if it were on localhost.
 
-### Túnel de controle (porta WebSocket do Gateway)
+### Control tunnel (Gateway WebSocket port)
 
-- **Finalidade:** verificações de saúde, status, Web Chat, config e outras chamadas do plano de controle.
-- **Porta local:** a porta do Gateway (padrão `18789`), sempre estável.
-- **Porta remota:** a mesma porta do Gateway no host remoto.
-- **Comportamento:** sem porta local aleatória; o app reutiliza um túnel saudável existente
-  ou o reinicia se necessário.
-- **Forma SSH:** `ssh -N -L <local>:127.0.0.1:<remoto>` com BatchMode +
-  ExitOnForwardFailure + opções de keepalive.
-- **Reporte de IP:** o túnel SSH usa loopback, então o gateway verá o IP do nó
-  como `127.0.0.1`. Use o transporte **Direto (ws/wss)** se quiser que o IP real do cliente
-  apareça (veja [acesso remoto macOS](/platforms/mac/remote)).
+- **Purpose:** health checks, status, Web Chat, config, and other control-plane calls.
+- **Local port:** the Gateway port (default `18789`), always stable.
+- **Remote port:** the same Gateway port on the remote host.
+- **Behavior:** no random local port; the app reuses an existing healthy tunnel
+  or restarts it if needed.
+- **SSH shape:** `ssh -N -L <local>:127.0.0.1:<remote>` with BatchMode +
+  ExitOnForwardFailure + keepalive options.
+- **IP reporting:** the SSH tunnel uses loopback, so the gateway will see the node
+  IP as `127.0.0.1`. Use **Direct (ws/wss)** transport if you want the real client
+  IP to appear (see [macOS remote access](/platforms/mac/remote)).
 
-Para passos de configuração, veja [acesso remoto macOS](/platforms/mac/remote). Para detalhes do
-protocolo, veja [Protocolo do Gateway](/gateway/protocol).
+For setup steps, see [macOS remote access](/platforms/mac/remote). For protocol
+details, see [Gateway protocol](/gateway/protocol).
 
-## Docs relacionados
+## Related docs
 
-- [Runbook do Gateway](/gateway)
+- [Gateway runbook](/gateway)
 - [Gateway (macOS)](/platforms/mac/bundled-gateway)
-- [Permissões macOS](/platforms/mac/permissions)
+- [macOS permissions](/platforms/mac/permissions)
 - [Canvas](/platforms/mac/canvas)

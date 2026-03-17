@@ -1,41 +1,41 @@
 ---
-summary: "Backends CLI: fallback apenas-texto via CLIs de IA locais"
+summary: "CLI backends: text-only fallback via local AI CLIs"
 read_when:
-  - Você quer um fallback confiável quando provedores de API falham
-  - Você está rodando Claude Code CLI ou outros CLIs de IA locais e quer reutilizá-los
-  - Você precisa de um path apenas-texto, sem tools, que ainda suporte sessões e imagens
+  - You want a reliable fallback when API providers fail
+  - You are running Claude Code CLI or other local AI CLIs and want to reuse them
+  - You need a text-only, tool-free path that still supports sessions and images
 title: "CLI Backends"
 ---
 
-# Backends CLI (runtime de fallback)
+# CLI backends (fallback runtime)
 
-OpenCraft pode rodar **CLIs de IA locais** como um **fallback apenas-texto** quando provedores de API estão indisponíveis,
-com rate limit, ou temporariamente com problemas. Isso é intencionalmente conservador:
+OpenClaw can run **local AI CLIs** as a **text-only fallback** when API providers are down,
+rate-limited, or temporarily misbehaving. This is intentionally conservative:
 
-- **Tools são desabilitadas** (sem chamadas de tools).
-- **Texto entra → texto sai** (confiável).
-- **Sessões são suportadas** (para que turnos de acompanhamento permaneçam coerentes).
-- **Imagens podem ser passadas** se o CLI aceitar paths de imagem.
+- **Tools are disabled** (no tool calls).
+- **Text in → text out** (reliable).
+- **Sessions are supported** (so follow-up turns stay coherent).
+- **Images can be passed through** if the CLI accepts image paths.
 
-Isso é projetado como uma **rede de segurança** em vez de um path principal. Use quando quiser
-respostas de texto "sempre funcionam" sem depender de APIs externas.
+This is designed as a **safety net** rather than a primary path. Use it when you
+want “always works” text responses without relying on external APIs.
 
-## Início rápido para iniciantes
+## Beginner-friendly quick start
 
-Você pode usar o Claude Code CLI **sem qualquer config** (OpenCraft vem com um padrão built-in):
-
-```bash
-opencraft agent --message "hi" --model claude-cli/opus-4.6
-```
-
-Codex CLI também funciona imediatamente:
+You can use Claude Code CLI **without any config** (OpenClaw ships a built-in default):
 
 ```bash
-opencraft agent --message "hi" --model codex-cli/gpt-5.4
+openclaw agent --message "hi" --model claude-cli/opus-4.6
 ```
 
-Se seu gateway roda sob launchd/systemd e PATH é mínimo, adicione apenas o
-path do comando:
+Codex CLI also works out of the box:
+
+```bash
+openclaw agent --message "hi" --model codex-cli/gpt-5.4
+```
+
+If your gateway runs under launchd/systemd and PATH is minimal, add just the
+command path:
 
 ```json5
 {
@@ -51,11 +51,11 @@ path do comando:
 }
 ```
 
-É isso. Sem chaves, sem config de auth extra além do próprio CLI.
+That’s it. No keys, no extra auth config needed beyond the CLI itself.
 
-## Usando como fallback
+## Using it as a fallback
 
-Adicione um backend CLI à sua lista de fallback para que rode apenas quando modelos primários falham:
+Add a CLI backend to your fallback list so it only runs when primary models fail:
 
 ```json5
 {
@@ -75,28 +75,28 @@ Adicione um backend CLI à sua lista de fallback para que rode apenas quando mod
 }
 ```
 
-Notas:
+Notes:
 
-- Se você usar `agents.defaults.models` (allowlist), deve incluir `claude-cli/...`.
-- Se o provedor primário falhar (auth, rate limits, timeouts), OpenCraft irá
-  tentar o backend CLI em seguida.
+- If you use `agents.defaults.models` (allowlist), you must include `claude-cli/...`.
+- If the primary provider fails (auth, rate limits, timeouts), OpenClaw will
+  try the CLI backend next.
 
-## Visão geral de configuração
+## Configuration overview
 
-Todos os backends CLI ficam em:
+All CLI backends live under:
 
 ```
 agents.defaults.cliBackends
 ```
 
-Cada entrada é identificada por um **id de provedor** (ex. `claude-cli`, `my-cli`).
-O id do provedor se torna o lado esquerdo da sua ref de modelo:
+Each entry is keyed by a **provider id** (e.g. `claude-cli`, `my-cli`).
+The provider id becomes the left side of your model ref:
 
 ```
 <provider>/<model>
 ```
 
-### Exemplo de configuração
+### Example configuration
 
 ```json5
 {
@@ -132,57 +132,57 @@ O id do provedor se torna o lado esquerdo da sua ref de modelo:
 }
 ```
 
-## Como funciona
+## How it works
 
-1. **Seleciona um backend** com base no prefixo do provedor (`claude-cli/...`).
-2. **Constrói um system prompt** usando o mesmo prompt OpenCraft + contexto de workspace.
-3. **Executa o CLI** com um id de sessão (se suportado) para que o histórico permaneça consistente.
-4. **Analisa a saída** (JSON ou texto simples) e retorna o texto final.
-5. **Persiste ids de sessão** por backend, para que acompanhamentos reutilizem a mesma sessão CLI.
+1. **Selects a backend** based on the provider prefix (`claude-cli/...`).
+2. **Builds a system prompt** using the same OpenClaw prompt + workspace context.
+3. **Executes the CLI** with a session id (if supported) so history stays consistent.
+4. **Parses output** (JSON or plain text) and returns the final text.
+5. **Persists session ids** per backend, so follow-ups reuse the same CLI session.
 
-## Sessões
+## Sessions
 
-- Se o CLI suporta sessões, defina `sessionArg` (ex. `--session-id`) ou
-  `sessionArgs` (placeholder `{sessionId}`) quando o ID precisa ser inserido
-  em múltiplas flags.
-- Se o CLI usa um **subcomando de resume** com flags diferentes, defina
-  `resumeArgs` (substitui `args` ao resumir) e opcionalmente `resumeOutput`
-  (para resumes não-JSON).
+- If the CLI supports sessions, set `sessionArg` (e.g. `--session-id`) or
+  `sessionArgs` (placeholder `{sessionId}`) when the ID needs to be inserted
+  into multiple flags.
+- If the CLI uses a **resume subcommand** with different flags, set
+  `resumeArgs` (replaces `args` when resuming) and optionally `resumeOutput`
+  (for non-JSON resumes).
 - `sessionMode`:
-  - `always`: sempre enviar um id de sessão (novo UUID se nenhum armazenado).
-  - `existing`: apenas enviar um id de sessão se um foi armazenado antes.
-  - `none`: nunca enviar um id de sessão.
+  - `always`: always send a session id (new UUID if none stored).
+  - `existing`: only send a session id if one was stored before.
+  - `none`: never send a session id.
 
-## Imagens (pass-through)
+## Images (pass-through)
 
-Se seu CLI aceita paths de imagem, defina `imageArg`:
+If your CLI accepts image paths, set `imageArg`:
 
 ```json5
 imageArg: "--image",
 imageMode: "repeat"
 ```
 
-OpenCraft escreverá imagens base64 em arquivos temporários. Se `imageArg` estiver definido, esses
-paths são passados como args do CLI. Se `imageArg` estiver ausente, OpenCraft anexa os
-paths de arquivo ao prompt (injeção de path), que é suficiente para CLIs que auto-carregam
-arquivos locais de paths simples (comportamento do Claude Code CLI).
+OpenClaw will write base64 images to temp files. If `imageArg` is set, those
+paths are passed as CLI args. If `imageArg` is missing, OpenClaw appends the
+file paths to the prompt (path injection), which is enough for CLIs that auto-
+load local files from plain paths (Claude Code CLI behavior).
 
-## Entradas / saídas
+## Inputs / outputs
 
-- `output: "json"` (padrão) tenta analisar JSON e extrair texto + id de sessão.
-- `output: "jsonl"` analisa streams JSONL (Codex CLI `--json`) e extrai a
-  última mensagem do agente mais `thread_id` quando presente.
-- `output: "text"` trata stdout como a resposta final.
+- `output: "json"` (default) tries to parse JSON and extract text + session id.
+- `output: "jsonl"` parses JSONL streams (Codex CLI `--json`) and extracts the
+  last agent message plus `thread_id` when present.
+- `output: "text"` treats stdout as the final response.
 
-Modos de entrada:
+Input modes:
 
-- `input: "arg"` (padrão) passa o prompt como o último arg do CLI.
-- `input: "stdin"` envia o prompt via stdin.
-- Se o prompt for muito longo e `maxPromptArgChars` estiver definido, stdin é usado.
+- `input: "arg"` (default) passes the prompt as the last CLI arg.
+- `input: "stdin"` sends the prompt via stdin.
+- If the prompt is very long and `maxPromptArgChars` is set, stdin is used.
 
-## Padrões (built-in)
+## Defaults (built-in)
 
-OpenCraft vem com um padrão para `claude-cli`:
+OpenClaw ships a default for `claude-cli`:
 
 - `command: "claude"`
 - `args: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions"]`
@@ -193,7 +193,7 @@ OpenCraft vem com um padrão para `claude-cli`:
 - `systemPromptWhen: "first"`
 - `sessionMode: "always"`
 
-OpenCraft também vem com um padrão para `codex-cli`:
+OpenClaw also ships a default for `codex-cli`:
 
 - `command: "codex"`
 - `args: ["exec","--json","--color","never","--sandbox","read-only","--skip-git-repo-check"]`
@@ -204,22 +204,22 @@ OpenCraft também vem com um padrão para `codex-cli`:
 - `imageArg: "--image"`
 - `sessionMode: "existing"`
 
-Sobrescreva apenas quando necessário (comum: path `command` absoluto).
+Override only if needed (common: absolute `command` path).
 
-## Limitações
+## Limitations
 
-- **Sem tools OpenCraft** (o backend CLI nunca recebe chamadas de tools). Alguns CLIs
-  podem ainda rodar sua própria tooling de agente.
-- **Sem streaming** (output do CLI é coletado então retornado).
-- **Saídas estruturadas** dependem do formato JSON do CLI.
-- **Sessões Codex CLI** resumem via output de texto (sem JSONL), que é menos
-  estruturado que o run inicial `--json`. Sessões OpenCraft ainda funcionam
-  normalmente.
+- **No OpenClaw tools** (the CLI backend never receives tool calls). Some CLIs
+  may still run their own agent tooling.
+- **No streaming** (CLI output is collected then returned).
+- **Structured outputs** depend on the CLI’s JSON format.
+- **Codex CLI sessions** resume via text output (no JSONL), which is less
+  structured than the initial `--json` run. OpenClaw sessions still work
+  normally.
 
-## Resolução de problemas
+## Troubleshooting
 
-- **CLI não encontrado**: defina `command` para um path completo.
-- **Nome de modelo errado**: use `modelAliases` para mapear `provider/model` → modelo CLI.
-- **Sem continuidade de sessão**: certifique-se de que `sessionArg` está definido e `sessionMode` não é
-  `none` (Codex CLI atualmente não pode resumir com saída JSON).
-- **Imagens ignoradas**: defina `imageArg` (e verifique se o CLI suporta paths de arquivo).
+- **CLI not found**: set `command` to a full path.
+- **Wrong model name**: use `modelAliases` to map `provider/model` → CLI model.
+- **No session continuity**: ensure `sessionArg` is set and `sessionMode` is not
+  `none` (Codex CLI currently cannot resume with JSON output).
+- **Images ignored**: set `imageArg` (and verify CLI supports file paths).

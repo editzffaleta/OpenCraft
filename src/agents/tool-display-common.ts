@@ -925,9 +925,9 @@ function summarizeKnownExec(words: string[]): string {
     return `run ${bin} ${script}`;
   }
 
-  if (bin === "opencraft") {
+  if (bin === "openclaw") {
     const sub = firstPositional(words, 1);
-    return sub ? `run opencraft ${sub}` : "run opencraft";
+    return sub ? `run openclaw ${sub}` : "run openclaw";
   }
 
   const arg = firstPositional(words, 1);
@@ -1008,7 +1008,7 @@ const KNOWN_SUMMARY_PREFIXES = [
   "run build",
   "start app",
   "run lint",
-  "run opencraft",
+  "run openclaw",
   "run node script",
   "run node ",
   "run python",

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const hoisted = vi.hoisted(() => {
   const updateSessionStore = vi.fn();
-  const resolveStorePath = vi.fn(() => "/tmp/opencraft-sessions.json");
+  const resolveStorePath = vi.fn(() => "/tmp/openclaw-sessions.json");
   return { updateSessionStore, resolveStorePath };
 });
 
@@ -29,7 +29,7 @@ describe("closeDiscordThreadSessions", () => {
   beforeEach(() => {
     hoisted.updateSessionStore.mockClear();
     hoisted.resolveStorePath.mockClear();
-    hoisted.resolveStorePath.mockReturnValue("/tmp/opencraft-sessions.json");
+    hoisted.resolveStorePath.mockReturnValue("/tmp/openclaw-sessions.json");
   });
 
   it("resets updatedAt to 0 for sessions whose key contains the threadId", async () => {
@@ -133,6 +133,24 @@ describe("closeDiscordThreadSessions", () => {
 
     expect(count).toBe(0);
     expect(hoisted.updateSessionStore).not.toHaveBeenCalled();
+  });
+
+  it("does not recount sessions that were already reset", async () => {
+    const store = {
+      [MATCHED_KEY]: { updatedAt: 0 },
+      [UNMATCHED_KEY]: { updatedAt: 1_700_000_000_001 },
+    };
+    setupStore(store);
+
+    const count = await closeDiscordThreadSessions({
+      cfg: {},
+      accountId: "default",
+      threadId: THREAD_ID,
+    });
+
+    expect(count).toBe(0);
+    expect(store[MATCHED_KEY].updatedAt).toBe(0);
+    expect(store[UNMATCHED_KEY].updatedAt).toBe(1_700_000_000_001);
   });
 
   it("resolves the store path using cfg.session.store and accountId", async () => {

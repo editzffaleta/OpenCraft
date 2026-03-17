@@ -5,7 +5,6 @@ import { buildGatewayConnectionDetails, callGateway } from "../gateway/call.js";
 import { info } from "../globals.js";
 import { formatTimeAgo } from "../infra/format-time/format-relative.ts";
 import type { HeartbeatEventPayload } from "../infra/heartbeat-events.js";
-import { formatUsageReportLines, loadProviderUsageSummary } from "../infra/provider-usage.js";
 import { normalizeUpdateChannel, resolveUpdateChannelDisplay } from "../infra/update-channels.js";
 import { formatGitInstallLabel } from "../infra/update-check.js";
 import {
@@ -15,7 +14,6 @@ import {
   type Tone,
 } from "../memory/status-format.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { runSecurityAudit } from "../security/audit.js";
 import { getTerminalTableWidth, renderTable } from "../terminal/table.js";
 import { theme } from "../terminal/theme.js";
 import { formatHealthChannelLines, type HealthSummary } from "./health.js";
@@ -36,6 +34,19 @@ import {
   formatUpdateOneLiner,
   resolveUpdateAvailability,
 } from "./status.update.js";
+
+let providerUsagePromise: Promise<typeof import("../infra/provider-usage.js")> | undefined;
+let securityAuditModulePromise: Promise<typeof import("../security/audit.runtime.js")> | undefined;
+
+function loadProviderUsage() {
+  providerUsagePromise ??= import("../infra/provider-usage.js");
+  return providerUsagePromise;
+}
+
+function loadSecurityAuditModule() {
+  securityAuditModulePromise ??= import("../security/audit.runtime.js");
+  return securityAuditModulePromise;
+}
 
 function resolvePairingRecoveryContext(params: {
   error?: string | null;
@@ -84,28 +95,25 @@ export async function statusCommand(
     { json: opts.json, timeoutMs: opts.timeoutMs, all: opts.all },
     runtime,
   );
-  const securityAudit = opts.json
-    ? await runSecurityAudit({
+  const runSecurityAudit = async () =>
+    await loadSecurityAuditModule().then(({ runSecurityAudit }) =>
+      runSecurityAudit({
         config: scan.cfg,
         sourceConfig: scan.sourceConfig,
         deep: false,
         includeFilesystem: true,
         includeChannelSecurity: true,
-      })
+      }),
+    );
+  const securityAudit = opts.json
+    ? await runSecurityAudit()
     : await withProgress(
         {
           label: "Running security audit…",
           indeterminate: true,
           enabled: true,
         },
-        async () =>
-          await runSecurityAudit({
-            config: scan.cfg,
-            sourceConfig: scan.sourceConfig,
-            deep: false,
-            includeFilesystem: true,
-            includeChannelSecurity: true,
-          }),
+        async () => await runSecurityAudit(),
       );
   const {
     cfg,
@@ -138,7 +146,10 @@ export async function statusCommand(
           indeterminate: true,
           enabled: opts.json !== true,
         },
-        async () => await loadProviderUsageSummary({ timeoutMs: opts.timeoutMs }),
+        async () => {
+          const { loadProviderUsageSummary } = await loadProviderUsage();
+          return await loadProviderUsageSummary({ timeoutMs: opts.timeoutMs });
+        },
       )
     : undefined;
   const health: HealthSummary | undefined = opts.deep
@@ -304,14 +315,14 @@ export async function statusCommand(
     if (daemon.installed === false) {
       return `${daemon.label} not installed`;
     }
-    const installedPrefix = daemon.managedByOpenCraft ? "installed · " : "";
+    const installedPrefix = daemon.managedByOpenClaw ? "installed · " : "";
     return `${daemon.label} ${installedPrefix}${daemon.loadedText}${daemon.runtimeShort ? ` · ${daemon.runtimeShort}` : ""}`;
   })();
   const nodeDaemonValue = (() => {
     if (nodeDaemon.installed === false) {
       return `${nodeDaemon.label} not installed`;
     }
-    const installedPrefix = nodeDaemon.managedByOpenCraft ? "installed · " : "";
+    const installedPrefix = nodeDaemon.managedByOpenClaw ? "installed · " : "";
     return `${nodeDaemon.label} ${installedPrefix}${nodeDaemon.loadedText}${nodeDaemon.runtimeShort ? ` · ${nodeDaemon.runtimeShort}` : ""}`;
   })();
 
@@ -442,7 +453,7 @@ export async function statusCommand(
     },
   ];
 
-  runtime.log(theme.heading("OpenCraft status"));
+  runtime.log(theme.heading("OpenClaw status"));
   runtime.log("");
   runtime.log(theme.heading("Overview"));
   runtime.log(
@@ -462,12 +473,12 @@ export async function statusCommand(
     if (pairingRecovery.requestId) {
       runtime.log(
         theme.muted(
-          `Recovery: ${formatCliCommand(`opencraft devices approve ${pairingRecovery.requestId}`)}`,
+          `Recovery: ${formatCliCommand(`openclaw devices approve ${pairingRecovery.requestId}`)}`,
         ),
       );
     }
-    runtime.log(theme.muted(`Fallback: ${formatCliCommand("opencraft devices approve --latest")}`));
-    runtime.log(theme.muted(`Inspect: ${formatCliCommand("opencraft devices list")}`));
+    runtime.log(theme.muted(`Fallback: ${formatCliCommand("openclaw devices approve --latest")}`));
+    runtime.log(theme.muted(`Inspect: ${formatCliCommand("openclaw devices list")}`));
   }
 
   runtime.log("");
@@ -513,8 +524,8 @@ export async function statusCommand(
       runtime.log(theme.muted(`… +${sorted.length - shown.length} more`));
     }
   }
-  runtime.log(theme.muted(`Full report: ${formatCliCommand("opencraft security audit")}`));
-  runtime.log(theme.muted(`Deep probe: ${formatCliCommand("opencraft security audit --deep")}`));
+  runtime.log(theme.muted(`Full report: ${formatCliCommand("openclaw security audit")}`));
+  runtime.log(theme.muted(`Deep probe: ${formatCliCommand("openclaw security audit --deep")}`));
 
   runtime.log("");
   runtime.log(theme.heading("Channels"));
@@ -658,6 +669,7 @@ export async function statusCommand(
   }
 
   if (usage) {
+    const { formatUsageReportLines } = await loadProviderUsage();
     runtime.log("");
     runtime.log(theme.heading("Usage"));
     for (const line of formatUsageReportLines(usage)) {
@@ -666,8 +678,8 @@ export async function statusCommand(
   }
 
   runtime.log("");
-  runtime.log("FAQ: https://docs.opencraft.ai/faq");
-  runtime.log("Troubleshooting: https://docs.opencraft.ai/troubleshooting");
+  runtime.log("FAQ: https://docs.openclaw.ai/faq");
+  runtime.log("Troubleshooting: https://docs.openclaw.ai/troubleshooting");
   runtime.log("");
   const updateHint = formatUpdateAvailableHint(update);
   if (updateHint) {
@@ -675,11 +687,11 @@ export async function statusCommand(
     runtime.log("");
   }
   runtime.log("Next steps:");
-  runtime.log(`  Need to share?      ${formatCliCommand("opencraft status --all")}`);
-  runtime.log(`  Need to debug live? ${formatCliCommand("opencraft logs --follow")}`);
+  runtime.log(`  Need to share?      ${formatCliCommand("openclaw status --all")}`);
+  runtime.log(`  Need to debug live? ${formatCliCommand("openclaw logs --follow")}`);
   if (gatewayReachable) {
-    runtime.log(`  Need to test channels? ${formatCliCommand("opencraft status --deep")}`);
+    runtime.log(`  Need to test channels? ${formatCliCommand("openclaw status --deep")}`);
   } else {
-    runtime.log(`  Fix reachability first: ${formatCliCommand("opencraft gateway probe")}`);
+    runtime.log(`  Fix reachability first: ${formatCliCommand("openclaw gateway probe")}`);
   }
 }

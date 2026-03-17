@@ -18,7 +18,7 @@ function makeSnapshot() {
     valid: true,
     issues: [],
     legacyIssues: [],
-    path: "/tmp/opencraft.json",
+    path: "/tmp/openclaw.json",
   };
 }
 

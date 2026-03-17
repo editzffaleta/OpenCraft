@@ -1,67 +1,67 @@
 ---
-summary: "Uso da tool exec, modos stdin e suporte a TTY"
+summary: "Exec tool usage, stdin modes, and TTY support"
 read_when:
-  - Usando ou modificando a tool exec
-  - Depurando comportamento de stdin ou TTY
-title: "Tool Exec"
+  - Using or modifying the exec tool
+  - Debugging stdin or TTY behavior
+title: "Exec Tool"
 ---
 
-# Tool exec
+# Exec tool
 
-Rodar comandos shell no workspace. Suporta execução em foreground + background via `process`.
-Se `process` não é permitido, `exec` roda sincronamente e ignora `yieldMs`/`background`.
-Sessões em background têm escopo por agente; `process` só vê sessões do mesmo agente.
+Run shell commands in the workspace. Supports foreground + background execution via `process`.
+If `process` is disallowed, `exec` runs synchronously and ignores `yieldMs`/`background`.
+Background sessions are scoped per agent; `process` only sees sessions from the same agent.
 
-## Parâmetros
+## Parameters
 
-- `command` (obrigatório)
-- `workdir` (padrão é cwd)
-- `env` (overrides chave/valor)
-- `yieldMs` (padrão 10000): auto-background após delay
-- `background` (bool): background imediato
-- `timeout` (segundos, padrão 1800): matar ao expirar
-- `pty` (bool): rodar em pseudo-terminal quando disponível (CLIs somente TTY, agentes de coding, UIs de terminal)
-- `host` (`sandbox | gateway | node`): onde executar
-- `security` (`deny | allowlist | full`): modo de aplicação para `gateway`/`node`
-- `ask` (`off | on-miss | always`): prompts de aprovação para `gateway`/`node`
-- `node` (string): id/nome do node para `host=node`
-- `elevated` (bool): solicitar modo elevado (host gateway); `security=full` é forçado apenas quando elevated resolve para `full`
+- `command` (required)
+- `workdir` (defaults to cwd)
+- `env` (key/value overrides)
+- `yieldMs` (default 10000): auto-background after delay
+- `background` (bool): background immediately
+- `timeout` (seconds, default 1800): kill on expiry
+- `pty` (bool): run in a pseudo-terminal when available (TTY-only CLIs, coding agents, terminal UIs)
+- `host` (`sandbox | gateway | node`): where to execute
+- `security` (`deny | allowlist | full`): enforcement mode for `gateway`/`node`
+- `ask` (`off | on-miss | always`): approval prompts for `gateway`/`node`
+- `node` (string): node id/name for `host=node`
+- `elevated` (bool): request elevated mode (gateway host); `security=full` is only forced when elevated resolves to `full`
 
-Notas:
+Notes:
 
-- `host` padrão é `sandbox`.
-- `elevated` é ignorado quando sandboxing está desligado (exec já roda no host).
-- Aprovações `gateway`/`node` são controladas por `~/.opencraft/exec-approvals.json`.
-- `node` requer um node emparelhado (app companheiro ou host de node headless).
-- Se múltiplos nodes estiverem disponíveis, defina `exec.node` ou `tools.exec.node` para selecionar um.
-- Em hosts não-Windows, exec usa `SHELL` quando definido; se `SHELL` é `fish`, prefere `bash` (ou `sh`)
-  do `PATH` para evitar scripts incompatíveis com fish, depois volta para `SHELL` se nenhum existe.
-- Em hosts Windows, exec prefere descoberta do PowerShell 7 (`pwsh`) (Program Files, ProgramW6432, depois PATH),
-  depois volta para Windows PowerShell 5.1.
-- Execução no host (`gateway`/`node`) rejeita `env.PATH` e overrides de loader (`LD_*`/`DYLD_*`) para
-  prevenir hijacking de binários ou código injetado.
-- O OpenCraft define `OPENCLAW_SHELL=exec` no ambiente de comando criado (incluindo execução PTY e sandbox) para que regras de shell/perfil possam detectar contexto de tool exec.
-- Importante: sandboxing está **desligado por padrão**. Se sandboxing está desligado e `host=sandbox` está explicitamente
-  configurado/solicitado, exec agora falha de forma segura em vez de rodar silenciosamente no host gateway.
-  Habilite sandboxing ou use `host=gateway` com aprovações.
-- Verificações de preflight de script (para erros comuns de sintaxe shell Python/Node) só inspecionam arquivos dentro do
-  limite efetivo de `workdir`. Se um caminho de script resolve fora de `workdir`, preflight é pulado para
-  aquele arquivo.
+- `host` defaults to `sandbox`.
+- `elevated` is ignored when sandboxing is off (exec already runs on the host).
+- `gateway`/`node` approvals are controlled by `~/.openclaw/exec-approvals.json`.
+- `node` requires a paired node (companion app or headless node host).
+- If multiple nodes are available, set `exec.node` or `tools.exec.node` to select one.
+- On non-Windows hosts, exec uses `SHELL` when set; if `SHELL` is `fish`, it prefers `bash` (or `sh`)
+  from `PATH` to avoid fish-incompatible scripts, then falls back to `SHELL` if neither exists.
+- On Windows hosts, exec prefers PowerShell 7 (`pwsh`) discovery (Program Files, ProgramW6432, then PATH),
+  then falls back to Windows PowerShell 5.1.
+- Host execution (`gateway`/`node`) rejects `env.PATH` and loader overrides (`LD_*`/`DYLD_*`) to
+  prevent binary hijacking or injected code.
+- OpenClaw sets `OPENCLAW_SHELL=exec` in the spawned command environment (including PTY and sandbox execution) so shell/profile rules can detect exec-tool context.
+- Important: sandboxing is **off by default**. If sandboxing is off and `host=sandbox` is explicitly
+  configured/requested, exec now fails closed instead of silently running on the gateway host.
+  Enable sandboxing or use `host=gateway` with approvals.
+- Script preflight checks (for common Python/Node shell-syntax mistakes) only inspect files inside the
+  effective `workdir` boundary. If a script path resolves outside `workdir`, preflight is skipped for
+  that file.
 
 ## Config
 
-- `tools.exec.notifyOnExit` (padrão: true): quando true, sessões exec em background enfileiram um evento de sistema e solicitam um heartbeat ao sair.
-- `tools.exec.approvalRunningNoticeMs` (padrão: 10000): emitir um único aviso "running" quando um exec controlado por aprovação rodar mais tempo que isso (0 desabilita).
-- `tools.exec.host` (padrão: `sandbox`)
-- `tools.exec.security` (padrão: `deny` para sandbox, `allowlist` para gateway + node quando não definido)
-- `tools.exec.ask` (padrão: `on-miss`)
-- `tools.exec.node` (padrão: não definido)
-- `tools.exec.pathPrepend`: lista de diretórios para antepor ao `PATH` para execuções exec (somente gateway + sandbox).
-- `tools.exec.safeBins`: binários seguros somente stdin que podem rodar sem entradas explícitas de allowlist. Para detalhes de comportamento, veja [Safe bins](/tools/exec-approvals#safe-bins-stdin-only).
-- `tools.exec.safeBinTrustedDirs`: diretórios explícitos adicionais confiáveis para verificações de caminho de `safeBins`. Entradas de `PATH` nunca são auto-confiáveis. Padrões embutidos são `/bin` e `/usr/bin`.
-- `tools.exec.safeBinProfiles`: política argv personalizada opcional por safe bin (`minPositional`, `maxPositional`, `allowedValueFlags`, `deniedFlags`).
+- `tools.exec.notifyOnExit` (default: true): when true, backgrounded exec sessions enqueue a system event and request a heartbeat on exit.
+- `tools.exec.approvalRunningNoticeMs` (default: 10000): emit a single “running” notice when an approval-gated exec runs longer than this (0 disables).
+- `tools.exec.host` (default: `sandbox`)
+- `tools.exec.security` (default: `deny` for sandbox, `allowlist` for gateway + node when unset)
+- `tools.exec.ask` (default: `on-miss`)
+- `tools.exec.node` (default: unset)
+- `tools.exec.pathPrepend`: list of directories to prepend to `PATH` for exec runs (gateway + sandbox only).
+- `tools.exec.safeBins`: stdin-only safe binaries that can run without explicit allowlist entries. For behavior details, see [Safe bins](/tools/exec-approvals#safe-bins-stdin-only).
+- `tools.exec.safeBinTrustedDirs`: additional explicit directories trusted for `safeBins` path checks. `PATH` entries are never auto-trusted. Built-in defaults are `/bin` and `/usr/bin`.
+- `tools.exec.safeBinProfiles`: optional custom argv policy per safe bin (`minPositional`, `maxPositional`, `allowedValueFlags`, `deniedFlags`).
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -73,80 +73,80 @@ Exemplo:
 }
 ```
 
-### Tratamento de PATH
+### PATH handling
 
-- `host=gateway`: mescla seu `PATH` do shell de login no ambiente exec. Overrides de `env.PATH` são
-  rejeitados para execução no host. O daemon em si ainda roda com um `PATH` mínimo:
+- `host=gateway`: merges your login-shell `PATH` into the exec environment. `env.PATH` overrides are
+  rejected for host execution. The daemon itself still runs with a minimal `PATH`:
   - macOS: `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, `/bin`
   - Linux: `/usr/local/bin`, `/usr/bin`, `/bin`
-- `host=sandbox`: roda `sh -lc` (shell de login) dentro do container, então `/etc/profile` pode redefinir `PATH`.
-  O OpenCraft antepõe `env.PATH` após carregamento do perfil via variável de ambiente interna (sem interpolação shell);
-  `tools.exec.pathPrepend` se aplica aqui também.
-- `host=node`: apenas overrides de env não bloqueados que você passa são enviados ao node. Overrides de `env.PATH` são
-  rejeitados para execução no host e ignorados pelos hosts de node. Se você precisa de entradas adicionais de PATH em um node,
-  configure o ambiente do serviço do host de node (systemd/launchd) ou instale ferramentas em locais padrão.
+- `host=sandbox`: runs `sh -lc` (login shell) inside the container, so `/etc/profile` may reset `PATH`.
+  OpenClaw prepends `env.PATH` after profile sourcing via an internal env var (no shell interpolation);
+  `tools.exec.pathPrepend` applies here too.
+- `host=node`: only non-blocked env overrides you pass are sent to the node. `env.PATH` overrides are
+  rejected for host execution and ignored by node hosts. If you need additional PATH entries on a node,
+  configure the node host service environment (systemd/launchd) or install tools in standard locations.
 
-Vinculação de node por agente (use o índice da lista de agentes na config):
+Per-agent node binding (use the agent list index in config):
 
 ```bash
-opencraft config get agents.list
-opencraft config set agents.list[0].tools.exec.node "node-id-or-name"
+openclaw config get agents.list
+openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 ```
 
-Control UI: a aba Nodes inclui um painel pequeno de "Vinculação de exec ao node" para as mesmas configurações.
+Control UI: the Nodes tab includes a small “Exec node binding” panel for the same settings.
 
-## Overrides de sessão (`/exec`)
+## Session overrides (`/exec`)
 
-Use `/exec` para definir padrões **por sessão** para `host`, `security`, `ask` e `node`.
-Envie `/exec` sem argumentos para mostrar os valores atuais.
+Use `/exec` to set **per-session** defaults for `host`, `security`, `ask`, and `node`.
+Send `/exec` with no arguments to show the current values.
 
-Exemplo:
+Example:
 
 ```
 /exec host=gateway security=allowlist ask=on-miss node=mac-1
 ```
 
-## Modelo de autorização
+## Authorization model
 
-`/exec` é honrado apenas para **remetentes autorizados** (allowlists/emparelhamento de canal mais `commands.useAccessGroups`).
-Ele atualiza **apenas o estado da sessão** e não escreve config. Para hard-disable do exec, negue-o via política de tool
-(`tools.deny: ["exec"]` ou por agente). Aprovações do host ainda se aplicam a menos que você defina explicitamente
-`security=full` e `ask=off`.
+`/exec` is only honored for **authorized senders** (channel allowlists/pairing plus `commands.useAccessGroups`).
+It updates **session state only** and does not write config. To hard-disable exec, deny it via tool
+policy (`tools.deny: ["exec"]` or per-agent). Host approvals still apply unless you explicitly set
+`security=full` and `ask=off`.
 
-## Aprovações exec (app companheiro / host de node)
+## Exec approvals (companion app / node host)
 
-Agentes em sandbox podem requerer aprovação por requisição antes que `exec` rode no gateway ou host de node.
-Veja [Aprovações exec](/tools/exec-approvals) para a política, allowlist e fluxo de UI.
+Sandboxed agents can require per-request approval before `exec` runs on the gateway or node host.
+See [Exec approvals](/tools/exec-approvals) for the policy, allowlist, and UI flow.
 
-Quando aprovações são necessárias, a tool exec retorna imediatamente com
-`status: "approval-pending"` e um id de aprovação. Uma vez aprovado (ou negado / timeout),
-o Gateway emite eventos de sistema (`Exec finalizado` / `Exec negado`). Se o comando ainda
-estiver rodando após `tools.exec.approvalRunningNoticeMs`, um único aviso de `Exec rodando` é emitido.
+When approvals are required, the exec tool returns immediately with
+`status: "approval-pending"` and an approval id. Once approved (or denied / timed out),
+the Gateway emits system events (`Exec finished` / `Exec denied`). If the command is still
+running after `tools.exec.approvalRunningNoticeMs`, a single `Exec running` notice is emitted.
 
 ## Allowlist + safe bins
 
-Aplicação manual de allowlist corresponde **apenas caminhos binários resolvidos** (sem correspondências de basename). Quando
-`security=allowlist`, comandos shell são auto-permitidos apenas se cada segmento de pipeline está na
-allowlist ou é um safe bin. Encadeamento (`;`, `&&`, `||`) e redirecionamentos são rejeitados em
-modo allowlist a menos que cada segmento de nível superior satisfaça a allowlist (incluindo safe bins).
-Redirecionamentos permanecem sem suporte.
+Manual allowlist enforcement matches **resolved binary paths only** (no basename matches). When
+`security=allowlist`, shell commands are auto-allowed only if every pipeline segment is
+allowlisted or a safe bin. Chaining (`;`, `&&`, `||`) and redirections are rejected in
+allowlist mode unless every top-level segment satisfies the allowlist (including safe bins).
+Redirections remain unsupported.
 
-`autoAllowSkills` é um caminho de conveniência separado em aprovações exec. Não é o mesmo que
-entradas manuais de allowlist de caminho. Para confiança explícita estrita, mantenha `autoAllowSkills` desabilitado.
+`autoAllowSkills` is a separate convenience path in exec approvals. It is not the same as
+manual path allowlist entries. For strict explicit trust, keep `autoAllowSkills` disabled.
 
-Use os dois controles para trabalhos diferentes:
+Use the two controls for different jobs:
 
-- `tools.exec.safeBins`: pequenos filtros de stream somente stdin.
-- `tools.exec.safeBinTrustedDirs`: diretórios confiáveis explícitos extras para caminhos de executáveis safe-bin.
-- `tools.exec.safeBinProfiles`: política argv explícita para safe bins personalizados.
-- allowlist: confiança explícita para caminhos de executáveis.
+- `tools.exec.safeBins`: small, stdin-only stream filters.
+- `tools.exec.safeBinTrustedDirs`: explicit extra trusted directories for safe-bin executable paths.
+- `tools.exec.safeBinProfiles`: explicit argv policy for custom safe bins.
+- allowlist: explicit trust for executable paths.
 
-Não trate `safeBins` como uma allowlist genérica, e não adicione binários de interpretador/runtime (por exemplo `python3`, `node`, `ruby`, `bash`). Se precisar deles, use entradas explícitas de allowlist e mantenha prompts de aprovação habilitados.
-`opencraft security audit` avisa quando entradas de `safeBins` de interpretador/runtime não têm perfis explícitos, e `opencraft doctor --fix` pode criar entradas ausentes de `safeBinProfiles` personalizados.
+Do not treat `safeBins` as a generic allowlist, and do not add interpreter/runtime binaries (for example `python3`, `node`, `ruby`, `bash`). If you need those, use explicit allowlist entries and keep approval prompts enabled.
+`openclaw security audit` warns when interpreter/runtime `safeBins` entries are missing explicit profiles, and `openclaw doctor --fix` can scaffold missing custom `safeBinProfiles` entries.
 
-Para detalhes completos de política e exemplos, veja [Aprovações exec](/tools/exec-approvals#safe-bins-stdin-only) e [Safe bins versus allowlist](/tools/exec-approvals#safe-bins-versus-allowlist).
+For full policy details and examples, see [Exec approvals](/tools/exec-approvals#safe-bins-stdin-only) and [Safe bins versus allowlist](/tools/exec-approvals#safe-bins-versus-allowlist).
 
-## Exemplos
+## Examples
 
 Foreground:
 
@@ -161,7 +161,7 @@ Background + poll:
 {"tool":"process","action":"poll","sessionId":"<id>"}
 ```
 
-Enviar teclas (estilo tmux):
+Send keys (tmux-style):
 
 ```json
 {"tool":"process","action":"send-keys","sessionId":"<id>","keys":["Enter"]}
@@ -169,22 +169,22 @@ Enviar teclas (estilo tmux):
 {"tool":"process","action":"send-keys","sessionId":"<id>","keys":["Up","Up","Enter"]}
 ```
 
-Submit (enviar apenas CR):
+Submit (send CR only):
 
 ```json
 { "tool": "process", "action": "submit", "sessionId": "<id>" }
 ```
 
-Paste (entre colchetes por padrão):
+Paste (bracketed by default):
 
 ```json
-{ "tool": "process", "action": "paste", "sessionId": "<id>", "text": "linha1\nlinha2\n" }
+{ "tool": "process", "action": "paste", "sessionId": "<id>", "text": "line1\nline2\n" }
 ```
 
 ## apply_patch (experimental)
 
-`apply_patch` é uma subtool de `exec` para edições estruturadas multi-arquivo.
-Habilite explicitamente:
+`apply_patch` is a subtool of `exec` for structured multi-file edits.
+Enable it explicitly:
 
 ```json5
 {
@@ -196,9 +196,9 @@ Habilite explicitamente:
 }
 ```
 
-Notas:
+Notes:
 
-- Disponível apenas para modelos OpenAI/OpenAI Codex.
-- Política de tool ainda se aplica; `allow: ["exec"]` implicitamente permite `apply_patch`.
-- Config fica em `tools.exec.applyPatch`.
-- `tools.exec.applyPatch.workspaceOnly` padrão é `true` (contido no workspace). Defina como `false` apenas se você intencionalmente quer que `apply_patch` escreva/delete fora do diretório workspace.
+- Only available for OpenAI/OpenAI Codex models.
+- Tool policy still applies; `allow: ["exec"]` implicitly allows `apply_patch`.
+- Config lives under `tools.exec.applyPatch`.
+- `tools.exec.applyPatch.workspaceOnly` defaults to `true` (workspace-contained). Set it to `false` only if you intentionally want `apply_patch` to write/delete outside the workspace directory.

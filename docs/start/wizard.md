@@ -1,125 +1,125 @@
 ---
-summary: "Assistente de onboarding CLI: configuração guiada para gateway, workspace, canais e skills"
+summary: "CLI onboarding: guided setup for gateway, workspace, channels, and skills"
 read_when:
-  - Executando ou configurando o assistente de onboarding
-  - Configurando uma nova máquina
-title: "Assistente de Onboarding (CLI)"
+  - Running or configuring CLI onboarding
+  - Setting up a new machine
+title: "Onboarding (CLI)"
 sidebarTitle: "Onboarding: CLI"
 ---
 
-# Assistente de Onboarding (CLI)
+# Onboarding (CLI)
 
-O assistente de onboarding é a forma **recomendada** de configurar o OpenCraft no macOS,
-Linux ou Windows (via WSL2; fortemente recomendado).
-Ele configura um Gateway local ou uma conexão de Gateway remoto, além de canais, skills
-e padrões de workspace em um fluxo guiado.
+CLI onboarding is the **recommended** way to set up OpenClaw on macOS,
+Linux, or Windows (via WSL2; strongly recommended).
+It configures a local Gateway or a remote Gateway connection, plus channels, skills,
+and workspace defaults in one guided flow.
 
 ```bash
-opencraft onboard
+openclaw onboard
 ```
 
 <Info>
-Chat mais rápido: abra a UI de controle (sem precisar configurar canais). Execute
-`opencraft dashboard` e converse no navegador. Docs: [Dashboard](/web/dashboard).
+Fastest first chat: open the Control UI (no channel setup needed). Run
+`openclaw dashboard` and chat in the browser. Docs: [Dashboard](/web/dashboard).
 </Info>
 
-Para reconfigurar depois:
+To reconfigure later:
 
 ```bash
-opencraft configure
-opencraft agents add <nome>
+openclaw configure
+openclaw agents add <name>
 ```
 
 <Note>
-`--json` não implica modo não interativo. Para scripts, use `--non-interactive`.
+`--json` does not imply non-interactive mode. For scripts, use `--non-interactive`.
 </Note>
 
 <Tip>
-O assistente de onboarding inclui uma etapa de busca na web onde você pode escolher um provedor
-(Perplexity, Brave, Gemini, Grok ou Kimi) e colar sua chave de API para que o agente
-possa usar `web_search`. Você também pode configurar isso depois com
-`opencraft configure --section web`. Docs: [Ferramentas web](/tools/web).
+CLI onboarding includes a web search step where you can pick a provider
+(Perplexity, Brave, Gemini, Grok, or Kimi) and paste your API key so the agent
+can use `web_search`. You can also configure this later with
+`openclaw configure --section web`. Docs: [Web tools](/tools/web).
 </Tip>
 
-## Início Rápido vs Avançado
+## QuickStart vs Advanced
 
-O assistente começa com **Início Rápido** (padrões) vs **Avançado** (controle total).
+Onboarding starts with **QuickStart** (defaults) vs **Advanced** (full control).
 
 <Tabs>
-  <Tab title="Início Rápido (padrões)">
-    - Gateway local (loopback)
-    - Workspace padrão (ou workspace existente)
-    - Porta do gateway **18789**
-    - Auth do gateway por **Token** (gerado automaticamente, mesmo no loopback)
-    - Política de ferramentas padrão para novas configurações locais: `tools.profile: "coding"` (perfil explícito existente é preservado)
-    - Padrão de isolamento de DM: o onboarding local grava `session.dmScope: "per-channel-peer"` quando não definido. Detalhes: [Referência CLI de Onboarding](/start/wizard-cli-reference#saídas-e-internos)
-    - Exposição Tailscale **Desativada**
-    - DMs do Telegram + WhatsApp padrão para **lista de permissão** (será solicitado seu número de telefone)
+  <Tab title="QuickStart (defaults)">
+    - Local gateway (loopback)
+    - Workspace default (or existing workspace)
+    - Gateway port **18789**
+    - Gateway auth **Token** (auto‑generated, even on loopback)
+    - Tool policy default for new local setups: `tools.profile: "coding"` (existing explicit profile is preserved)
+    - DM isolation default: local onboarding writes `session.dmScope: "per-channel-peer"` when unset. Details: [CLI Setup Reference](/start/wizard-cli-reference#outputs-and-internals)
+    - Tailscale exposure **Off**
+    - Telegram + WhatsApp DMs default to **allowlist** (you'll be prompted for your phone number)
   </Tab>
-  <Tab title="Avançado (controle total)">
-    - Expõe cada etapa (modo, workspace, gateway, canais, daemon, skills).
+  <Tab title="Advanced (full control)">
+    - Exposes every step (mode, workspace, gateway, channels, daemon, skills).
   </Tab>
 </Tabs>
 
-## O que o assistente configura
+## What onboarding configures
 
-**Modo local (padrão)** guia você pelas seguintes etapas:
+**Local mode (default)** walks you through these steps:
 
-1. **Modelo/Auth** — escolha qualquer provedor/fluxo de auth suportado (chave de API, OAuth ou setup-token), incluindo Provedor Personalizado
-   (compatível com OpenAI, compatível com Anthropic ou Desconhecido com detecção automática). Escolha um modelo padrão.
-   Nota de segurança: se este agente executará ferramentas ou processará conteúdo de webhook/hooks, prefira o modelo mais recente e mais forte disponível e mantenha a política de ferramentas estrita. Versões mais fracas/antigas são mais suscetíveis a injeção de prompt.
-   Para execuções não interativas, `--secret-input-mode ref` armazena refs com backup em env nos perfis de auth em vez de valores de chave de API em texto simples.
-   No modo `ref` não interativo, a variável de env do provedor deve estar definida; passar flags de chave inline sem essa variável de env falha rapidamente.
-   Em execuções interativas, escolher o modo de referência de segredo permite apontar para uma variável de ambiente ou uma ref de provedor configurada (`file` ou `exec`), com validação rápida de preflight antes de salvar.
-2. **Workspace** — Local para os arquivos do agente (padrão `~/.opencraft/workspace`). Cria arquivos de bootstrap.
-3. **Gateway** — Porta, endereço de bind, modo de auth, exposição Tailscale.
-   No modo de token interativo, escolha o armazenamento padrão de token em texto simples ou opte pelo SecretRef.
-   Caminho de SecretRef de token não interativo: `--gateway-token-ref-env <ENV_VAR>`.
-4. **Canais** — WhatsApp, Telegram, Discord, Google Chat, Mattermost, Signal, BlueBubbles ou iMessage.
-5. **Daemon** — Instala um LaunchAgent (macOS) ou unidade de usuário systemd (Linux/WSL2).
-   Se o auth por token requer um token e `gateway.auth.token` é gerenciado por SecretRef, a instalação do daemon o valida mas não persiste o token resolvido nos metadados de ambiente do serviço supervisor.
-   Se o auth por token requer um token e o SecretRef de token configurado está não resolvido, a instalação do daemon é bloqueada com orientação acionável.
-   Se tanto `gateway.auth.token` quanto `gateway.auth.password` estiverem configurados e `gateway.auth.mode` não estiver definido, a instalação do daemon é bloqueada até que o modo seja definido explicitamente.
-6. **Verificação de saúde** — Inicia o Gateway e verifica se está em execução.
-7. **Skills** — Instala skills recomendadas e dependências opcionais.
+1. **Model/Auth** — choose any supported provider/auth flow (API key, OAuth, or setup-token), including Custom Provider
+   (OpenAI-compatible, Anthropic-compatible, or Unknown auto-detect). Pick a default model.
+   Security note: if this agent will run tools or process webhook/hooks content, prefer the strongest latest-generation model available and keep tool policy strict. Weaker/older tiers are easier to prompt-inject.
+   For non-interactive runs, `--secret-input-mode ref` stores env-backed refs in auth profiles instead of plaintext API key values.
+   In non-interactive `ref` mode, the provider env var must be set; passing inline key flags without that env var fails fast.
+   In interactive runs, choosing secret reference mode lets you point at either an environment variable or a configured provider ref (`file` or `exec`), with a fast preflight validation before saving.
+2. **Workspace** — Location for agent files (default `~/.openclaw/workspace`). Seeds bootstrap files.
+3. **Gateway** — Port, bind address, auth mode, Tailscale exposure.
+   In interactive token mode, choose default plaintext token storage or opt into SecretRef.
+   Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
+4. **Channels** — WhatsApp, Telegram, Discord, Google Chat, Mattermost, Signal, BlueBubbles, or iMessage.
+5. **Daemon** — Installs a LaunchAgent (macOS) or systemd user unit (Linux/WSL2).
+   If token auth requires a token and `gateway.auth.token` is SecretRef-managed, daemon install validates it but does not persist the resolved token into supervisor service environment metadata.
+   If token auth requires a token and the configured token SecretRef is unresolved, daemon install is blocked with actionable guidance.
+   If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, daemon install is blocked until mode is set explicitly.
+6. **Health check** — Starts the Gateway and verifies it's running.
+7. **Skills** — Installs recommended skills and optional dependencies.
 
 <Note>
-Reexecutar o assistente **não** apaga nada a menos que você escolha explicitamente **Resetar** (ou passe `--reset`).
-O CLI `--reset` padrão é config, credenciais e sessões; use `--reset-scope full` para incluir o workspace.
-Se a configuração for inválida ou contiver chaves legadas, o assistente pede para executar `opencraft doctor` primeiro.
+Re-running onboarding does **not** wipe anything unless you explicitly choose **Reset** (or pass `--reset`).
+CLI `--reset` defaults to config, credentials, and sessions; use `--reset-scope full` to include workspace.
+If the config is invalid or contains legacy keys, onboarding asks you to run `openclaw doctor` first.
 </Note>
 
-**Modo remoto** configura apenas o cliente local para se conectar a um Gateway em outro lugar.
-**Não** instala nem altera nada no host remoto.
+**Remote mode** only configures the local client to connect to a Gateway elsewhere.
+It does **not** install or change anything on the remote host.
 
-## Adicionar outro agente
+## Add another agent
 
-Use `opencraft agents add <nome>` para criar um agente separado com seu próprio workspace,
-sessões e perfis de auth. Executar sem `--workspace` lança o assistente.
+Use `openclaw agents add <name>` to create a separate agent with its own workspace,
+sessions, and auth profiles. Running without `--workspace` launches onboarding.
 
-O que define:
+What it sets:
 
 - `agents.list[].name`
 - `agents.list[].workspace`
 - `agents.list[].agentDir`
 
-Notas:
+Notes:
 
-- Workspaces padrão seguem `~/.opencraft/workspace-<agentId>`.
-- Adicione `bindings` para rotear mensagens de entrada (o assistente pode fazer isso).
-- Flags não interativas: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
+- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
+- Add `bindings` to route inbound messages (onboarding can do this).
+- Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
 
-## Referência completa
+## Full reference
 
-Para detalhamentos passo a passo e saídas de configuração, veja
-[Referência CLI de Onboarding](/start/wizard-cli-reference).
-Para exemplos não interativos, veja [Automação CLI](/start/wizard-cli-automation).
-Para a referência técnica mais detalhada, incluindo detalhes de RPC, veja
-[Referência do Assistente](/reference/wizard).
+For detailed step-by-step breakdowns and config outputs, see
+[CLI Setup Reference](/start/wizard-cli-reference).
+For non-interactive examples, see [CLI Automation](/start/wizard-cli-automation).
+For the deeper technical reference, including RPC details, see
+[Onboarding Reference](/reference/wizard).
 
-## Documentação relacionada
+## Related docs
 
-- Referência de comando CLI: [`opencraft onboard`](/cli/onboard)
-- Visão geral do onboarding: [Visão Geral do Onboarding](/start/onboarding-overview)
-- Onboarding pelo app macOS: [Onboarding](/start/onboarding)
-- Ritual de primeira execução do agente: [Bootstrapping do Agente](/start/bootstrapping)
+- CLI command reference: [`openclaw onboard`](/cli/onboard)
+- Onboarding overview: [Onboarding Overview](/start/onboarding-overview)
+- macOS app onboarding: [Onboarding](/start/onboarding)
+- Agent first-run ritual: [Agent Bootstrapping](/start/bootstrapping)

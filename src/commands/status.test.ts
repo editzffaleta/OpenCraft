@@ -5,8 +5,8 @@ import { captureEnv } from "../test-utils/env.js";
 let envSnapshot: ReturnType<typeof captureEnv>;
 
 beforeAll(() => {
-  envSnapshot = captureEnv(["OPENCRAFT_PROFILE"]);
-  process.env.OPENCRAFT_PROFILE = "isolated";
+  envSnapshot = captureEnv(["OPENCLAW_PROFILE"]);
+  process.env.OPENCLAW_PROFILE = "isolated";
 });
 
 afterAll(() => {
@@ -168,7 +168,7 @@ const mocks = vi.hoisted(() => ({
     configSnapshot: null,
   }),
   callGateway: vi.fn().mockResolvedValue({}),
-  listAgentsForGateway: vi.fn().mockReturnValue({
+  listGatewayAgentsBasic: vi.fn().mockReturnValue({
     defaultId: "main",
     mainKey: "agent:main:main",
     scope: "per-sender",
@@ -215,7 +215,7 @@ vi.mock("../memory/manager.js", () => ({
         files: 2,
         chunks: 3,
         dirty: false,
-        workspaceDir: "/tmp/opencraft",
+        workspaceDir: "/tmp/openclaw",
         dbPath: "/tmp/memory.sqlite",
         provider: "openai",
         model: "text-embedding-3-small",
@@ -299,15 +299,22 @@ vi.mock("../gateway/call.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../gateway/call.js")>();
   return { ...actual, callGateway: mocks.callGateway };
 });
+vi.mock("../gateway/agent-list.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../gateway/agent-list.js")>();
+  return {
+    ...actual,
+    listGatewayAgentsBasic: mocks.listGatewayAgentsBasic,
+  };
+});
+
 vi.mock("../gateway/session-utils.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../gateway/session-utils.js")>();
   return {
     ...actual,
-    listAgentsForGateway: mocks.listAgentsForGateway,
   };
 });
-vi.mock("../infra/opencraft-root.js", () => ({
-  resolveOpenCraftPackageRoot: vi.fn().mockResolvedValue("/tmp/opencraft"),
+vi.mock("../infra/openclaw-root.js", () => ({
+  resolveOpenClawPackageRoot: vi.fn().mockResolvedValue("/tmp/openclaw"),
 }));
 vi.mock("../infra/os-summary.js", () => ({
   resolveOsSummary: () => ({
@@ -319,11 +326,11 @@ vi.mock("../infra/os-summary.js", () => ({
 }));
 vi.mock("../infra/update-check.js", () => ({
   checkUpdateStatus: vi.fn().mockResolvedValue({
-    root: "/tmp/opencraft",
+    root: "/tmp/openclaw",
     installKind: "git",
     packageManager: "pnpm",
     git: {
-      root: "/tmp/opencraft",
+      root: "/tmp/openclaw",
       branch: "main",
       upstream: "origin/main",
       dirty: false,
@@ -334,8 +341,8 @@ vi.mock("../infra/update-check.js", () => ({
     deps: {
       manager: "pnpm",
       status: "ok",
-      lockfilePath: "/tmp/opencraft/pnpm-lock.yaml",
-      markerPath: "/tmp/opencraft/node_modules/.modules.yaml",
+      lockfilePath: "/tmp/openclaw/pnpm-lock.yaml",
+      markerPath: "/tmp/openclaw/node_modules/.modules.yaml",
     },
     registry: { latestVersion: "0.0.0" },
   }),
@@ -358,7 +365,7 @@ vi.mock("../daemon/service.js", () => ({
     readRuntime: async () => ({ status: "running", pid: 1234 }),
     readCommand: async () => ({
       programArguments: ["node", "dist/entry.js", "gateway"],
-      sourcePath: "/tmp/Library/LaunchAgents/ai.opencraft.gateway.plist",
+      sourcePath: "/tmp/Library/LaunchAgents/ai.openclaw.gateway.plist",
     }),
   }),
 }));
@@ -371,7 +378,7 @@ vi.mock("../daemon/node-service.js", () => ({
     readRuntime: async () => ({ status: "running", pid: 4321 }),
     readCommand: async () => ({
       programArguments: ["node", "dist/entry.js", "node-host"],
-      sourcePath: "/tmp/Library/LaunchAgents/ai.opencraft.node.plist",
+      sourcePath: "/tmp/Library/LaunchAgents/ai.openclaw.node.plist",
     }),
   }),
 }));
@@ -398,7 +405,7 @@ describe("statusCommand", () => {
   it("prints JSON when requested", async () => {
     await statusCommand({ json: true }, runtime as never);
     const payload = JSON.parse(String(runtimeLogMock.mock.calls[0]?.[0]));
-    expect(payload.linkChannel.linked).toBe(true);
+    expect(payload.linkChannel).toBeUndefined();
     expect(payload.memory.agentId).toBe("main");
     expect(payload.memoryPlugin.enabled).toBe(true);
     expect(payload.memoryPlugin.slot).toBe("memory-core");
@@ -447,7 +454,7 @@ describe("statusCommand", () => {
   it("prints formatted lines otherwise", async () => {
     const logs = await runStatusAndGetLogs();
     for (const token of [
-      "OpenCraft status",
+      "OpenClaw status",
       "Overview",
       "Security audit",
       "Summary:",
@@ -472,14 +479,14 @@ describe("statusCommand", () => {
     expect(
       logs.some(
         (line) =>
-          line.includes("opencraft status --all") ||
-          line.includes("opencraft --profile isolated status --all"),
+          line.includes("openclaw status --all") ||
+          line.includes("openclaw --profile isolated status --all"),
       ),
     ).toBe(true);
   });
 
   it("shows gateway auth when reachable", async () => {
-    await withEnvVar("OPENCRAFT_GATEWAY_TOKEN", "abcd1234", async () => {
+    await withEnvVar("OPENCLAW_GATEWAY_TOKEN", "abcd1234", async () => {
       mockProbeGatewayResult({
         ok: true,
         connectLatencyMs: 123,
@@ -512,6 +519,11 @@ describe("statusCommand", () => {
     await statusCommand({ json: true }, runtime as never);
     const payload = JSON.parse(String(runtimeLogMock.mock.calls.at(-1)?.[0]));
     expect(payload.gateway.error ?? payload.gateway.authWarning ?? null).not.toBeNull();
+    if (Array.isArray(payload.secretDiagnostics) && payload.secretDiagnostics.length > 0) {
+      expect(
+        payload.secretDiagnostics.some((entry: string) => entry.includes("gateway.auth.token")),
+      ).toBe(true);
+    }
     expect(runtime.error).not.toHaveBeenCalled();
   });
 
@@ -603,11 +615,11 @@ describe("statusCommand", () => {
   });
 
   it("includes sessions across agents in JSON output", async () => {
-    const originalAgents = mocks.listAgentsForGateway.getMockImplementation();
+    const originalAgents = mocks.listGatewayAgentsBasic.getMockImplementation();
     const originalResolveStorePath = mocks.resolveStorePath.getMockImplementation();
     const originalLoadSessionStore = mocks.loadSessionStore.getMockImplementation();
 
-    mocks.listAgentsForGateway.mockReturnValue({
+    mocks.listGatewayAgentsBasic.mockReturnValue({
       defaultId: "main",
       mainKey: "agent:main:main",
       scope: "per-sender",
@@ -646,7 +658,7 @@ describe("statusCommand", () => {
     ).toBe(true);
 
     if (originalAgents) {
-      mocks.listAgentsForGateway.mockImplementation(originalAgents);
+      mocks.listGatewayAgentsBasic.mockImplementation(originalAgents);
     }
     if (originalResolveStorePath) {
       mocks.resolveStorePath.mockImplementation(originalResolveStorePath);

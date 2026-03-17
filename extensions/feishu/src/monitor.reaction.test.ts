@@ -1,4 +1,4 @@
-import type { ClawdbotConfig, RuntimeEnv } from "opencraft/plugin-sdk/feishu";
+import type { ClawdbotConfig, RuntimeEnv } from "openclaw/plugin-sdk/feishu";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasControlCommand } from "../../../src/auto-reply/command-detection.js";
 import {
@@ -569,7 +569,7 @@ describe("Feishu inbound debounce regressions", () => {
     vi.spyOn(dedup, "tryBeginFeishuMessageProcessing").mockReturnValue(true);
     vi.spyOn(dedup, "recordProcessedFeishuMessage").mockResolvedValue(true);
     vi.spyOn(dedup, "hasProcessedFeishuMessage").mockResolvedValue(false);
-    const onMessage = await setupDebounceMonitor({ botName: "OpenCraft Bot" });
+    const onMessage = await setupDebounceMonitor({ botName: "OpenClaw Bot" });
 
     await onMessage(
       createTextEvent({
@@ -579,7 +579,7 @@ describe("Feishu inbound debounce regressions", () => {
           {
             key: "@_user_1",
             id: { open_id: "ou_bot" },
-            name: "OpenCraft Bot",
+            name: "OpenClaw Bot",
           },
         ],
       }),
@@ -592,7 +592,7 @@ describe("Feishu inbound debounce regressions", () => {
     const firstParams = handleFeishuMessageMock.mock.calls[0]?.[0] as
       | { botName?: string }
       | undefined;
-    expect(firstParams?.botName).toBe("OpenCraft Bot");
+    expect(firstParams?.botName).toBe("OpenClaw Bot");
   });
 
   it("does not synthesize mention-forward intent across separate messages", async () => {

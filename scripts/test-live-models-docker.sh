@@ -2,16 +2,24 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE_NAME="${OPENCLAW_IMAGE:-${CLAWDBOT_IMAGE:-opencraft:local}}"
+IMAGE_NAME="${OPENCLAW_IMAGE:-${CLAWDBOT_IMAGE:-openclaw:local}}"
 LIVE_IMAGE_NAME="${OPENCLAW_LIVE_IMAGE:-${CLAWDBOT_LIVE_IMAGE:-${IMAGE_NAME}-live}}"
-CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${CLAWDBOT_CONFIG_DIR:-$HOME/.opencraft}}"
-WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-${CLAWDBOT_WORKSPACE_DIR:-$HOME/.opencraft/workspace}}"
+CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${CLAWDBOT_CONFIG_DIR:-$HOME/.openclaw}}"
+WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-${CLAWDBOT_WORKSPACE_DIR:-$HOME/.openclaw/workspace}}"
 PROFILE_FILE="${OPENCLAW_PROFILE_FILE:-${CLAWDBOT_PROFILE_FILE:-$HOME/.profile}}"
 
 PROFILE_MOUNT=()
 if [[ -f "$PROFILE_FILE" ]]; then
   PROFILE_MOUNT=(-v "$PROFILE_FILE":/home/node/.profile:ro)
 fi
+
+EXTERNAL_AUTH_MOUNTS=()
+for auth_dir in .claude .codex .minimax .qwen; do
+  host_path="$HOME/$auth_dir"
+  if [[ -d "$host_path" ]]; then
+    EXTERNAL_AUTH_MOUNTS+=(-v "$host_path":/home/node/"$auth_dir":ro)
+  fi
+done
 
 read -r -d '' LIVE_TEST_CMD <<'EOF' || true
 set -euo pipefail
@@ -50,8 +58,9 @@ docker run --rm -t \
   -e OPENCLAW_LIVE_MODEL_TIMEOUT_MS="${OPENCLAW_LIVE_MODEL_TIMEOUT_MS:-${CLAWDBOT_LIVE_MODEL_TIMEOUT_MS:-}}" \
   -e OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS="${OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS:-${CLAWDBOT_LIVE_REQUIRE_PROFILE_KEYS:-}}" \
   -v "$ROOT_DIR":/src:ro \
-  -v "$CONFIG_DIR":/home/node/.opencraft \
-  -v "$WORKSPACE_DIR":/home/node/.opencraft/workspace \
+  -v "$CONFIG_DIR":/home/node/.openclaw \
+  -v "$WORKSPACE_DIR":/home/node/.openclaw/workspace \
+  "${EXTERNAL_AUTH_MOUNTS[@]}" \
   "${PROFILE_MOUNT[@]}" \
   "$LIVE_IMAGE_NAME" \
   -lc "$LIVE_TEST_CMD"

@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { normalizeAgentId, parseAgentSessionKey } from "../routing/session-key.js";
 import { resolveAgentWorkspaceDir } from "./agent-scope.js";
 
@@ -57,7 +57,7 @@ export function mapToolContextToSpawnedRunMetadata(
 }
 
 export function resolveSpawnedWorkspaceInheritance(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   targetAgentId?: string;
   requesterSessionKey?: string;
   explicitWorkspaceDir?: string | null;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as replyModule from "../auto-reply/reply.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
 import {
   seedMainSessionStore,
@@ -38,8 +38,8 @@ describe("Ghost reminder bug (issue #13317)", () => {
     tmpDir: string;
     storePath: string;
     target?: "telegram" | "none";
-  }): Promise<{ cfg: OpenCraftConfig; sessionKey: string }> => {
-    const cfg: OpenCraftConfig = {
+  }): Promise<{ cfg: OpenClawConfig; sessionKey: string }> => {
+    const cfg: OpenClawConfig = {
       agents: {
         defaults: {
           workspace: params.tmpDir,
@@ -138,7 +138,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("does not use CRON_EVENT_PROMPT when only a HEARTBEAT_OK event is present", async () => {
     const { result, sendTelegram, calledCtx, replyCallCount } = await runHeartbeatCase({
-      tmpPrefix: "opencraft-ghost-",
+      tmpPrefix: "openclaw-ghost-",
       replyText: "Heartbeat check-in",
       reason: "cron:test-job",
       enqueue: (sessionKey) => {
@@ -155,7 +155,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("uses CRON_EVENT_PROMPT when an actionable cron event exists", async () => {
     const { result, sendTelegram, calledCtx } = await runCronReminderCase(
-      "opencraft-cron-",
+      "openclaw-cron-",
       (sessionKey) => {
         enqueueSystemEvent("Reminder: Check Base Scout results", { sessionKey });
       },
@@ -167,7 +167,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("uses CRON_EVENT_PROMPT when cron events are mixed with heartbeat noise", async () => {
     const { result, sendTelegram, calledCtx } = await runCronReminderCase(
-      "opencraft-cron-mixed-",
+      "openclaw-cron-mixed-",
       (sessionKey) => {
         enqueueSystemEvent("HEARTBEAT_OK", { sessionKey });
         enqueueSystemEvent("Reminder: Check Base Scout results", { sessionKey });
@@ -180,7 +180,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("uses CRON_EVENT_PROMPT for tagged cron events on interval wake", async () => {
     const { result, sendTelegram, calledCtx, replyCallCount } = await runHeartbeatCase({
-      tmpPrefix: "opencraft-cron-interval-",
+      tmpPrefix: "openclaw-cron-interval-",
       replyText: "Relay this cron update now",
       reason: "interval",
       enqueue: (sessionKey) => {
@@ -201,7 +201,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("uses an internal-only cron prompt when delivery target is none", async () => {
     const { result, sendTelegram, calledCtx } = await runHeartbeatCase({
-      tmpPrefix: "opencraft-cron-internal-",
+      tmpPrefix: "openclaw-cron-internal-",
       replyText: "Handled internally",
       reason: "cron:reminder-job",
       target: "none",
@@ -218,7 +218,7 @@ describe("Ghost reminder bug (issue #13317)", () => {
 
   it("uses an internal-only exec prompt when delivery target is none", async () => {
     const { result, sendTelegram, calledCtx } = await runHeartbeatCase({
-      tmpPrefix: "opencraft-exec-internal-",
+      tmpPrefix: "openclaw-exec-internal-",
       replyText: "Handled internally",
       reason: "exec-event",
       target: "none",

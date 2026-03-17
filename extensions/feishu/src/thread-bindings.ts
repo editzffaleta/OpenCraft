@@ -3,7 +3,7 @@ import {
   resolveThreadBindingIdleTimeoutMsForChannel,
   resolveThreadBindingMaxAgeMsForChannel,
 } from "../../../src/channels/thread-bindings-policy.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import {
   registerSessionBindingAdapter,
   unregisterSessionBindingAdapter,
@@ -55,7 +55,7 @@ type FeishuThreadBindingsState = {
   bindingsByAccountConversation: Map<string, FeishuThreadBindingRecord>;
 };
 
-const FEISHU_THREAD_BINDINGS_STATE_KEY = Symbol.for("opencraft.feishuThreadBindingsState");
+const FEISHU_THREAD_BINDINGS_STATE_KEY = Symbol.for("openclaw.feishuThreadBindingsState");
 const state = resolveGlobalSingleton<FeishuThreadBindingsState>(
   FEISHU_THREAD_BINDINGS_STATE_KEY,
   () => ({
@@ -121,7 +121,7 @@ function toSessionBindingRecord(
 
 export function createFeishuThreadBindingManager(params: {
   accountId?: string;
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
 }): FeishuThreadBindingManager {
   const accountId = normalizeAccountId(params.accountId);
   const existing = MANAGERS_BY_ACCOUNT_ID.get(accountId);

@@ -8,7 +8,7 @@ import {
   ThreadUpdateListener,
   type User,
 } from "@buape/carbon";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenClawConfig } from "../../../../src/config/config.js";
 import { danger, logVerbose } from "../../../../src/globals.js";
 import { formatDurationSeconds } from "../../../../src/infra/format-time/format-duration.ts";
 import { enqueueSystemEvent } from "../../../../src/infra/system-events.js";
@@ -731,7 +731,7 @@ type ThreadUpdateEvent = Parameters<ThreadUpdateListener["handle"]>[0];
 
 export class DiscordThreadUpdateListener extends ThreadUpdateListener {
   constructor(
-    private cfg: OpenCraftConfig,
+    private cfg: OpenClawConfig,
     private accountId: string,
     private logger?: Logger,
   ) {
@@ -755,14 +755,13 @@ export class DiscordThreadUpdateListener extends ThreadUpdateListener {
           return;
         }
         const logger = this.logger ?? discordEventQueueLog;
-        logger.info("Discord thread archived — resetting session", { threadId });
         const count = await closeDiscordThreadSessions({
           cfg: this.cfg,
           accountId: this.accountId,
           threadId,
         });
         if (count > 0) {
-          logger.info("Discord thread sessions reset after archival", { threadId, count });
+          logger.info("Discord thread archived — reset sessions", { threadId, count });
         }
       },
       onError: (err) => {

@@ -1,13 +1,7 @@
-import { parseDiscordTarget } from "../../../extensions/discord/src/targets.js";
-import { parseSlackTarget } from "../../../extensions/slack/src/targets.js";
-import {
-  parseTelegramTarget,
-  resolveTelegramTargetChatType,
-} from "../../../extensions/telegram/src/targets.js";
 import { normalizeChatType, type ChatType } from "../../channels/chat-type.js";
 import type { ChannelOutboundTargetMode } from "../../channels/plugins/types.js";
 import { formatCliCommand } from "../../cli/command-format.js";
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { AgentDefaultsConfig } from "../../config/types.agent-defaults.js";
 import { mapAllowFromEntries } from "../../plugin-sdk/channel-config-helpers.js";
@@ -22,7 +16,6 @@ import {
   isDeliverableMessageChannel,
   normalizeMessageChannel,
 } from "../../utils/message-channel.js";
-import { isWhatsAppGroupJid, normalizeWhatsAppTarget } from "../../whatsapp/normalize.js";
 import {
   normalizeDeliverableOutboundChannel,
   resolveOutboundChannelPlugin,
@@ -65,6 +58,26 @@ export type SessionDeliveryTarget = {
   lastThreadId?: string | number;
 };
 
+function parseExplicitTargetWithPlugin(params: {
+  channel?: DeliverableMessageChannel;
+  fallbackChannel?: DeliverableMessageChannel;
+  raw?: string;
+}) {
+  const raw = params.raw?.trim();
+  if (!raw) {
+    return null;
+  }
+  const provider = params.channel ?? params.fallbackChannel;
+  if (!provider) {
+    return null;
+  }
+  return (
+    resolveOutboundChannelPlugin({ channel: provider })?.messaging?.parseExplicitTarget?.({
+      raw,
+    }) ?? null
+  );
+}
+
 export function resolveSessionDeliveryTarget(params: {
   entry?: SessionEntry;
   requestedChannel?: GatewayMessageChannel | "last";
@@ -83,7 +96,7 @@ export function resolveSessionDeliveryTarget(params: {
    * Callers should set this to the channel that originated the current
    * agent turn so the reply always routes back to the correct channel.
    *
-   * @see https://github.com/editzffaleta/OpenCraft/issues/24152
+   * @see https://github.com/openclaw/openclaw/issues/24152
    */
   turnSourceChannel?: DeliverableMessageChannel;
   /** Turn-source `to` — paired with `turnSourceChannel`. */
@@ -124,22 +137,19 @@ export function resolveSessionDeliveryTarget(params: {
     channel = params.fallbackChannel;
   }
 
-  // Parse :topic:NNN from explicitTo (Telegram topic syntax).
-  // Only applies when we positively know the channel is Telegram.
-  // When channel is unknown, the downstream send path (resolveTelegramSession)
-  // handles :topic: parsing independently.
-  const isTelegramContext = channel === "telegram" || (!channel && lastChannel === "telegram");
   let explicitTo = rawExplicitTo;
-  let parsedThreadId: number | undefined;
-  if (isTelegramContext && rawExplicitTo && rawExplicitTo.includes(":topic:")) {
-    const parsed = parseTelegramTarget(rawExplicitTo);
-    explicitTo = parsed.chatId;
-    parsedThreadId = parsed.messageThreadId;
+  const parsedExplicitTarget = parseExplicitTargetWithPlugin({
+    channel,
+    fallbackChannel: !channel ? lastChannel : undefined,
+    raw: rawExplicitTo,
+  });
+  if (parsedExplicitTarget?.to) {
+    explicitTo = parsedExplicitTarget.to;
   }
   const explicitThreadId =
     params.explicitThreadId != null && params.explicitThreadId !== ""
       ? params.explicitThreadId
-      : parsedThreadId;
+      : parsedExplicitTarget?.threadId;
 
   let to = explicitTo;
   if (!to && lastTo) {
@@ -175,7 +185,7 @@ export function resolveOutboundTarget(params: {
   channel: GatewayMessageChannel;
   to?: string;
   allowFrom?: string[];
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   accountId?: string | null;
   mode?: ChannelOutboundTargetMode;
 }): OutboundTargetResolution {
@@ -183,7 +193,7 @@ export function resolveOutboundTarget(params: {
     return {
       ok: false,
       error: new Error(
-        `Delivering to WebChat is not supported via \`${formatCliCommand("opencraft agent")}\`; use WhatsApp/Telegram or run with --deliver=false.`,
+        `Delivering to WebChat is not supported via \`${formatCliCommand("openclaw agent")}\`; use WhatsApp/Telegram or run with --deliver=false.`,
       ),
     };
   }
@@ -241,7 +251,7 @@ export function resolveOutboundTarget(params: {
 }
 
 export function resolveHeartbeatDeliveryTarget(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   entry?: SessionEntry;
   heartbeat?: AgentDefaultsConfig["heartbeat"];
 }): OutboundTarget {
@@ -387,70 +397,6 @@ function buildNoHeartbeatDeliveryTarget(params: {
   };
 }
 
-function inferDiscordTargetChatType(to: string): ChatType | undefined {
-  try {
-    const target = parseDiscordTarget(to, { defaultKind: "channel" });
-    if (!target) {
-      return undefined;
-    }
-    return target.kind === "user" ? "direct" : "channel";
-  } catch {
-    return undefined;
-  }
-}
-
-function inferSlackTargetChatType(to: string): ChatType | undefined {
-  const target = parseSlackTarget(to, { defaultKind: "channel" });
-  if (!target) {
-    return undefined;
-  }
-  return target.kind === "user" ? "direct" : "channel";
-}
-
-function inferTelegramTargetChatType(to: string): ChatType | undefined {
-  const chatType = resolveTelegramTargetChatType(to);
-  return chatType === "unknown" ? undefined : chatType;
-}
-
-function inferWhatsAppTargetChatType(to: string): ChatType | undefined {
-  const normalized = normalizeWhatsAppTarget(to);
-  if (!normalized) {
-    return undefined;
-  }
-  return isWhatsAppGroupJid(normalized) ? "group" : "direct";
-}
-
-function inferSignalTargetChatType(rawTo: string): ChatType | undefined {
-  let to = rawTo.trim();
-  if (!to) {
-    return undefined;
-  }
-  if (/^signal:/i.test(to)) {
-    to = to.replace(/^signal:/i, "").trim();
-  }
-  if (!to) {
-    return undefined;
-  }
-  const lower = to.toLowerCase();
-  if (lower.startsWith("group:")) {
-    return "group";
-  }
-  if (lower.startsWith("username:") || lower.startsWith("u:")) {
-    return "direct";
-  }
-  return "direct";
-}
-
-const HEARTBEAT_TARGET_CHAT_TYPE_INFERERS: Partial<
-  Record<DeliverableMessageChannel, (to: string) => ChatType | undefined>
-> = {
-  discord: inferDiscordTargetChatType,
-  slack: inferSlackTargetChatType,
-  telegram: inferTelegramTargetChatType,
-  whatsapp: inferWhatsAppTargetChatType,
-  signal: inferSignalTargetChatType,
-};
-
 function inferChatTypeFromTarget(params: {
   channel: DeliverableMessageChannel;
   to: string;
@@ -469,7 +415,11 @@ function inferChatTypeFromTarget(params: {
   if (/^group:/i.test(to)) {
     return "group";
   }
-  return HEARTBEAT_TARGET_CHAT_TYPE_INFERERS[params.channel]?.(to);
+  return (
+    resolveOutboundChannelPlugin({
+      channel: params.channel,
+    })?.messaging?.inferTargetChatType?.({ to }) ?? undefined
+  );
 }
 
 function resolveHeartbeatDeliveryChatType(params: {
@@ -520,7 +470,7 @@ function resolveHeartbeatSenderId(params: {
 }
 
 export function resolveHeartbeatSenderContext(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   entry?: SessionEntry;
   delivery: OutboundTarget;
 }): HeartbeatSenderContext {

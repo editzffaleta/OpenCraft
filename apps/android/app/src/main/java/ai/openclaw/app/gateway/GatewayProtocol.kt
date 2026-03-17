@@ -1,3 +1,3 @@
-package ai.opencraft.app.gateway
+package ai.openclaw.app.gateway
 
 const val GATEWAY_PROTOCOL_VERSION = 3

@@ -1,5 +1,5 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/discord";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/discord";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/core";
 import { discordPlugin } from "./src/channel.js";
 import { setDiscordRuntime } from "./src/runtime.js";
 import { registerDiscordSubagentHooks } from "./src/subagent-hooks.js";
@@ -9,9 +9,12 @@ const plugin = {
   name: "Discord",
   description: "Discord channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api: OpenClawPluginApi) {
     setDiscordRuntime(api.runtime);
     api.registerChannel({ plugin: discordPlugin });
+    if (api.registrationMode !== "full") {
+      return;
+    }
     registerDiscordSubagentHooks(api);
   },
 };

@@ -1,10 +1,10 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { TelegramAccountConfig } from "openclaw/plugin-sdk/telegram";
+import type { OpenClawConfig } from "../../../src/config/config.js";
 import {
   coerceSecretRef,
   hasConfiguredSecretInput,
   normalizeSecretInputString,
 } from "../../../src/config/types.secrets.js";
-import type { TelegramAccountConfig } from "../../../src/config/types.telegram.js";
 import { tryReadSecretFileSync } from "../../../src/infra/secret-file.js";
 import { resolveAccountWithDefaultFallback } from "../../../src/plugin-sdk/account-resolution.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../src/routing/session-key.js";
@@ -48,7 +48,7 @@ function inspectTokenFile(pathValue: unknown): {
 }
 
 function canResolveEnvSecretRefInReadOnlyPath(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   provider: string;
   id: string;
 }): boolean {
@@ -63,7 +63,7 @@ function canResolveEnvSecretRefInReadOnlyPath(params: {
   return !allowlist || allowlist.includes(params.id);
 }
 
-function inspectTokenValue(params: { cfg: OpenCraftConfig; value: unknown }): {
+function inspectTokenValue(params: { cfg: OpenClawConfig; value: unknown }): {
   token: string;
   tokenSource: "config" | "env" | "none";
   tokenStatus: TelegramCredentialStatus;
@@ -117,7 +117,7 @@ function inspectTokenValue(params: { cfg: OpenCraftConfig; value: unknown }): {
 }
 
 function inspectTelegramAccountPrimary(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId: string;
   envToken?: string | null;
 }): InspectedTelegramAccount {
@@ -213,7 +213,7 @@ function inspectTelegramAccountPrimary(params: {
 }
 
 export function inspectTelegramAccount(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
   envToken?: string | null;
 }): InspectedTelegramAccount {

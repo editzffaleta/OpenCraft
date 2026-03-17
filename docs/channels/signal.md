@@ -1,68 +1,68 @@
 ---
-summary: "Suporte ao Signal via signal-cli (JSON-RPC + SSE), caminhos de configuração e modelo de número"
+summary: "Signal support via signal-cli (JSON-RPC + SSE), setup paths, and number model"
 read_when:
-  - Configurando suporte ao Signal
-  - Depurando envio/recebimento do Signal
+  - Setting up Signal support
+  - Debugging Signal send/receive
 title: "Signal"
 ---
 
 # Signal (signal-cli)
 
-Status: integração externa via CLI. O Gateway se comunica com `signal-cli` via HTTP JSON-RPC + SSE.
+Status: external CLI integration. Gateway talks to `signal-cli` over HTTP JSON-RPC + SSE.
 
-## Pré-requisitos
+## Prerequisites
 
-- OpenCraft instalado no seu servidor (fluxo Linux testado no Ubuntu 24).
-- `signal-cli` disponível no host onde o gateway executa.
-- Um número de telefone que pode receber um SMS de verificação (para o caminho de registro por SMS).
-- Acesso ao navegador para o captcha do Signal (`signalcaptchas.org`) durante o registro.
+- OpenClaw installed on your server (Linux flow below tested on Ubuntu 24).
+- `signal-cli` available on the host where the gateway runs.
+- A phone number that can receive one verification SMS (for SMS registration path).
+- Browser access for Signal captcha (`signalcaptchas.org`) during registration.
 
-## Configuração rápida (iniciante)
+## Quick setup (beginner)
 
-1. Use um **número Signal separado** para o bot (recomendado).
-2. Instale o `signal-cli` (Java necessário se usar a build JVM).
-3. Escolha um caminho de configuração:
-   - **Caminho A (vinculação por QR):** `signal-cli link -n "OpenCraft"` e escaneie com o Signal.
-   - **Caminho B (registro por SMS):** registre um número dedicado com captcha + verificação por SMS.
-4. Configure o OpenCraft e reinicie o gateway.
-5. Envie o primeiro DM e aprove o pareamento (`opencraft pairing approve signal <CÓDIGO>`).
+1. Use a **separate Signal number** for the bot (recommended).
+2. Install `signal-cli` (Java required if you use the JVM build).
+3. Choose one setup path:
+   - **Path A (QR link):** `signal-cli link -n "OpenClaw"` and scan with Signal.
+   - **Path B (SMS register):** register a dedicated number with captcha + SMS verification.
+4. Configure OpenClaw and restart the gateway.
+5. Send a first DM and approve pairing (`openclaw pairing approve signal <CODE>`).
 
-Config mínima:
+Minimal config:
 
 ```json5
 {
   channels: {
     signal: {
       enabled: true,
-      account: "+5511999999999",
+      account: "+15551234567",
       cliPath: "signal-cli",
       dmPolicy: "pairing",
-      allowFrom: ["+5511888888888"],
+      allowFrom: ["+15557654321"],
     },
   },
 }
 ```
 
-Referência de campos:
+Field reference:
 
-| Campo       | Descrição                                                |
-| ----------- | -------------------------------------------------------- |
-| `account`   | Número de telefone do bot no formato E.164 (`+5511999999999`) |
-| `cliPath`   | Caminho para `signal-cli` (`signal-cli` se estiver no `PATH`) |
-| `dmPolicy`  | Política de acesso a DM (`pairing` recomendado)          |
-| `allowFrom` | Números de telefone ou valores `uuid:<id>` permitidos para DM |
+| Field       | Description                                       |
+| ----------- | ------------------------------------------------- |
+| `account`   | Bot phone number in E.164 format (`+15551234567`) |
+| `cliPath`   | Path to `signal-cli` (`signal-cli` if on `PATH`)  |
+| `dmPolicy`  | DM access policy (`pairing` recommended)          |
+| `allowFrom` | Phone numbers or `uuid:<id>` values allowed to DM |
 
-## O que é
+## What it is
 
-- Canal Signal via `signal-cli` (não libsignal embarcado).
-- Roteamento determinístico: respostas sempre voltam para o Signal.
-- DMs compartilham a sessão principal do agente; grupos são isolados (`agent:<agentId>:signal:group:<groupId>`).
+- Signal channel via `signal-cli` (not embedded libsignal).
+- Deterministic routing: replies always go back to Signal.
+- DMs share the agent's main session; groups are isolated (`agent:<agentId>:signal:group:<groupId>`).
 
-## Escritas de config
+## Config writes
 
-Por padrão, o Signal tem permissão para escrever atualizações de config acionadas por `/config set|unset` (requer `commands.config: true`).
+By default, Signal is allowed to write config updates triggered by `/config set|unset` (requires `commands.config: true`).
 
-Desabilitar com:
+Disable with:
 
 ```json5
 {
@@ -70,44 +70,44 @@ Desabilitar com:
 }
 ```
 
-## O modelo de número (importante)
+## The number model (important)
 
-- O gateway conecta a um **dispositivo Signal** (a conta `signal-cli`).
-- Se você executar o bot na **sua conta Signal pessoal**, ele ignorará suas próprias mensagens (proteção contra loop).
-- Para "eu envio mensagem para o bot e ele responde," use um **número de bot separado**.
+- The gateway connects to a **Signal device** (the `signal-cli` account).
+- If you run the bot on **your personal Signal account**, it will ignore your own messages (loop protection).
+- For "I text the bot and it replies," use a **separate bot number**.
 
-## Caminho A: vincular conta Signal existente (QR)
+## Setup path A: link existing Signal account (QR)
 
-1. Instale o `signal-cli` (build JVM ou nativa).
-2. Vincule uma conta de bot:
-   - `signal-cli link -n "OpenCraft"` e escaneie o QR no Signal.
-3. Configure o Signal e inicie o gateway.
+1. Install `signal-cli` (JVM or native build).
+2. Link a bot account:
+   - `signal-cli link -n "OpenClaw"` then scan the QR in Signal.
+3. Configure Signal and start the gateway.
 
-Exemplo:
+Example:
 
 ```json5
 {
   channels: {
     signal: {
       enabled: true,
-      account: "+5511999999999",
+      account: "+15551234567",
       cliPath: "signal-cli",
       dmPolicy: "pairing",
-      allowFrom: ["+5511888888888"],
+      allowFrom: ["+15557654321"],
     },
   },
 }
 ```
 
-Suporte a múltiplas contas: use `channels.signal.accounts` com config por conta e `name` opcional. Veja [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) para o padrão compartilhado.
+Multi-account support: use `channels.signal.accounts` with per-account config and optional `name`. See [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) for the shared pattern.
 
-## Caminho B: registrar número de bot dedicado (SMS, Linux)
+## Setup path B: register dedicated bot number (SMS, Linux)
 
-Use quando quiser um número de bot dedicado em vez de vincular uma conta existente do app Signal.
+Use this when you want a dedicated bot number instead of linking an existing Signal app account.
 
-1. Obtenha um número que pode receber SMS (ou verificação por voz para linhas fixas).
-   - Use um número de bot dedicado para evitar conflitos de conta/sessão.
-2. Instale o `signal-cli` no host do gateway:
+1. Get a number that can receive SMS (or voice verification for landlines).
+   - Use a dedicated bot number to avoid account/session conflicts.
+2. Install `signal-cli` on the gateway host:
 
 ```bash
 VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/AsamK/signal-cli/releases/latest | sed -e 's/^.*\/v//')
@@ -117,54 +117,54 @@ sudo ln -sf /opt/signal-cli /usr/local/bin/
 signal-cli --version
 ```
 
-Se você usar a build JVM (`signal-cli-${VERSION}.tar.gz`), instale o JRE 25+ primeiro.
-Mantenha o `signal-cli` atualizado; as notas upstream indicam que versões antigas podem quebrar conforme as APIs do servidor Signal mudam.
+If you use the JVM build (`signal-cli-${VERSION}.tar.gz`), install JRE 25+ first.
+Keep `signal-cli` updated; upstream notes that old releases can break as Signal server APIs change.
 
-3. Registre e verifique o número:
-
-```bash
-signal-cli -a +<NUMERO_DO_BOT> register
-```
-
-Se o captcha for necessário:
-
-1. Abra `https://signalcaptchas.org/registration/generate.html`.
-2. Complete o captcha, copie o alvo do link `signalcaptcha://...` de "Open Signal".
-3. Execute a partir do mesmo IP externo que a sessão do navegador quando possível.
-4. Execute o registro novamente imediatamente (tokens de captcha expiram rapidamente):
+3. Register and verify the number:
 
 ```bash
-signal-cli -a +<NUMERO_DO_BOT> register --captcha '<URL_SIGNALCAPTCHA>'
-signal-cli -a +<NUMERO_DO_BOT> verify <CODIGO_DE_VERIFICACAO>
+signal-cli -a +<BOT_PHONE_NUMBER> register
 ```
 
-4. Configure o OpenCraft, reinicie o gateway, verifique o canal:
+If captcha is required:
+
+1. Open `https://signalcaptchas.org/registration/generate.html`.
+2. Complete captcha, copy the `signalcaptcha://...` link target from "Open Signal".
+3. Run from the same external IP as the browser session when possible.
+4. Run registration again immediately (captcha tokens expire quickly):
 
 ```bash
-# Se você executar o gateway como serviço systemd do usuário:
-systemctl --user restart opencraft-gateway
-
-# Depois verifique:
-opencraft doctor
-opencraft channels status --probe
+signal-cli -a +<BOT_PHONE_NUMBER> register --captcha '<SIGNALCAPTCHA_URL>'
+signal-cli -a +<BOT_PHONE_NUMBER> verify <VERIFICATION_CODE>
 ```
 
-5. Pare o remetente de DM:
-   - Envie qualquer mensagem para o número do bot.
-   - Aprove o código no servidor: `opencraft pairing approve signal <CÓDIGO_DE_PAREAMENTO>`.
-   - Salve o número do bot como contato no seu telefone para evitar "Contato desconhecido".
+4. Configure OpenClaw, restart gateway, verify channel:
 
-Importante: registrar uma conta de número de telefone com `signal-cli` pode desautenticar a sessão do app Signal principal para aquele número. Prefira um número de bot dedicado, ou use o modo de vinculação por QR se precisar manter a configuração do app do telefone existente.
+```bash
+# If you run the gateway as a user systemd service:
+systemctl --user restart openclaw-gateway
 
-Referências upstream:
+# Then verify:
+openclaw doctor
+openclaw channels status --probe
+```
 
-- README do `signal-cli`: `https://github.com/AsamK/signal-cli`
-- Fluxo de captcha: `https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha`
-- Fluxo de vinculação: `https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)`
+5. Pair your DM sender:
+   - Send any message to the bot number.
+   - Approve code on the server: `openclaw pairing approve signal <PAIRING_CODE>`.
+   - Save the bot number as a contact on your phone to avoid "Unknown contact".
 
-## Modo daemon externo (httpUrl)
+Important: registering a phone number account with `signal-cli` can de-authenticate the main Signal app session for that number. Prefer a dedicated bot number, or use QR link mode if you need to keep your existing phone app setup.
 
-Se quiser gerenciar o `signal-cli` você mesmo (inicializações lentas da JVM, init de container ou CPUs compartilhadas), execute o daemon separadamente e aponte o OpenCraft para ele:
+Upstream references:
+
+- `signal-cli` README: `https://github.com/AsamK/signal-cli`
+- Captcha flow: `https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha`
+- Linking flow: `https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)`
+
+## External daemon mode (httpUrl)
+
+If you want to manage `signal-cli` yourself (slow JVM cold starts, container init, or shared CPUs), run the daemon separately and point OpenClaw at it:
 
 ```json5
 {
@@ -177,153 +177,153 @@ Se quiser gerenciar o `signal-cli` você mesmo (inicializações lentas da JVM, 
 }
 ```
 
-Isso pula o auto-spawn e a espera de inicialização dentro do OpenCraft. Para inicializações lentas com auto-spawn, defina `channels.signal.startupTimeoutMs`.
+This skips auto-spawn and the startup wait inside OpenClaw. For slow starts when auto-spawning, set `channels.signal.startupTimeoutMs`.
 
-## Controle de acesso (DMs + grupos)
+## Access control (DMs + groups)
 
 DMs:
 
-- Padrão: `channels.signal.dmPolicy = "pairing"`.
-- Remetentes desconhecidos recebem um código de pareamento; mensagens são ignoradas até aprovação (códigos expiram após 1 hora).
-- Aprovar via:
-  - `opencraft pairing list signal`
-  - `opencraft pairing approve signal <CÓDIGO>`
-- O pareamento é a troca de token padrão para DMs do Signal. Detalhes: [Pareamento](/channels/pairing)
-- Remetentes apenas por UUID (de `sourceUuid`) são armazenados como `uuid:<id>` em `channels.signal.allowFrom`.
+- Default: `channels.signal.dmPolicy = "pairing"`.
+- Unknown senders receive a pairing code; messages are ignored until approved (codes expire after 1 hour).
+- Approve via:
+  - `openclaw pairing list signal`
+  - `openclaw pairing approve signal <CODE>`
+- Pairing is the default token exchange for Signal DMs. Details: [Pairing](/channels/pairing)
+- UUID-only senders (from `sourceUuid`) are stored as `uuid:<id>` in `channels.signal.allowFrom`.
 
-Grupos:
+Groups:
 
 - `channels.signal.groupPolicy = open | allowlist | disabled`.
-- `channels.signal.groupAllowFrom` controla quem pode acionar em grupos quando `allowlist` está definido.
-- `channels.signal.groups["<group-id>" | "*"]` pode substituir o comportamento do grupo com `requireMention`, `tools` e `toolsBySender`.
-- Use `channels.signal.accounts.<id>.groups` para substituições por conta em configurações com múltiplas contas.
-- Nota de runtime: se `channels.signal` estiver completamente ausente, o runtime recorre a `groupPolicy="allowlist"` para verificações de grupo (mesmo se `channels.defaults.groupPolicy` estiver definido).
+- `channels.signal.groupAllowFrom` controls who can trigger in groups when `allowlist` is set.
+- `channels.signal.groups["<group-id>" | "*"]` can override group behavior with `requireMention`, `tools`, and `toolsBySender`.
+- Use `channels.signal.accounts.<id>.groups` for per-account overrides in multi-account setups.
+- Runtime note: if `channels.signal` is completely missing, runtime falls back to `groupPolicy="allowlist"` for group checks (even if `channels.defaults.groupPolicy` is set).
 
-## Como funciona (comportamento)
+## How it works (behavior)
 
-- `signal-cli` executa como daemon; o gateway lê eventos via SSE.
-- Mensagens de entrada são normalizadas no envelope de canal compartilhado.
-- Respostas sempre roteiam de volta para o mesmo número ou grupo.
+- `signal-cli` runs as a daemon; the gateway reads events via SSE.
+- Inbound messages are normalized into the shared channel envelope.
+- Replies always route back to the same number or group.
 
-## Mídia + limites
+## Media + limits
 
-- Texto de saída é dividido em blocos de `channels.signal.textChunkLimit` (padrão 4000).
-- Divisão opcional por nova linha: defina `channels.signal.chunkMode="newline"` para dividir em linhas em branco (limites de parágrafo) antes da divisão por tamanho.
-- Anexos suportados (base64 obtido do `signal-cli`).
-- Cap de mídia padrão: `channels.signal.mediaMaxMb` (padrão 8).
-- Use `channels.signal.ignoreAttachments` para pular o download de mídia.
-- O contexto de histórico de grupo usa `channels.signal.historyLimit` (ou `channels.signal.accounts.*.historyLimit`), com fallback para `messages.groupChat.historyLimit`. Defina `0` para desabilitar (padrão 50).
+- Outbound text is chunked to `channels.signal.textChunkLimit` (default 4000).
+- Optional newline chunking: set `channels.signal.chunkMode="newline"` to split on blank lines (paragraph boundaries) before length chunking.
+- Attachments supported (base64 fetched from `signal-cli`).
+- Default media cap: `channels.signal.mediaMaxMb` (default 8).
+- Use `channels.signal.ignoreAttachments` to skip downloading media.
+- Group history context uses `channels.signal.historyLimit` (or `channels.signal.accounts.*.historyLimit`), falling back to `messages.groupChat.historyLimit`. Set `0` to disable (default 50).
 
-## Indicadores de digitação + confirmações de leitura
+## Typing + read receipts
 
-- **Indicadores de digitação**: o OpenCraft envia sinais de digitação via `signal-cli sendTyping` e os atualiza enquanto uma resposta está sendo gerada.
-- **Confirmações de leitura**: quando `channels.signal.sendReadReceipts` é verdadeiro, o OpenCraft encaminha confirmações de leitura para DMs permitidos.
-- O signal-cli não expõe confirmações de leitura para grupos.
+- **Typing indicators**: OpenClaw sends typing signals via `signal-cli sendTyping` and refreshes them while a reply is running.
+- **Read receipts**: when `channels.signal.sendReadReceipts` is true, OpenClaw forwards read receipts for allowed DMs.
+- Signal-cli does not expose read receipts for groups.
 
-## Reações (ferramenta de mensagem)
+## Reactions (message tool)
 
-- Use `message action=react` com `channel=signal`.
-- Alvos: E.164 do remetente ou UUID (use `uuid:<id>` da saída de pareamento; UUID bare também funciona).
-- `messageId` é o timestamp do Signal para a mensagem à qual você está reagindo.
-- Reações em grupo requerem `targetAuthor` ou `targetAuthorUuid`.
+- Use `message action=react` with `channel=signal`.
+- Targets: sender E.164 or UUID (use `uuid:<id>` from pairing output; bare UUID works too).
+- `messageId` is the Signal timestamp for the message you’re reacting to.
+- Group reactions require `targetAuthor` or `targetAuthorUuid`.
 
-Exemplos:
+Examples:
 
 ```
 message action=react channel=signal target=uuid:123e4567-e89b-12d3-a456-426614174000 messageId=1737630212345 emoji=🔥
-message action=react channel=signal target=+5511999999999 messageId=1737630212345 emoji=🔥 remove=true
+message action=react channel=signal target=+15551234567 messageId=1737630212345 emoji=🔥 remove=true
 message action=react channel=signal target=signal:group:<groupId> targetAuthor=uuid:<sender-uuid> messageId=1737630212345 emoji=✅
 ```
 
 Config:
 
-- `channels.signal.actions.reactions`: habilitar/desabilitar ações de reação (padrão true).
+- `channels.signal.actions.reactions`: enable/disable reaction actions (default true).
 - `channels.signal.reactionLevel`: `off | ack | minimal | extensive`.
-  - `off`/`ack` desabilita reações do agente (a ferramenta de mensagem `react` retornará erro).
-  - `minimal`/`extensive` habilita reações do agente e define o nível de orientação.
-- Substituições por conta: `channels.signal.accounts.<id>.actions.reactions`, `channels.signal.accounts.<id>.reactionLevel`.
+  - `off`/`ack` disables agent reactions (message tool `react` will error).
+  - `minimal`/`extensive` enables agent reactions and sets the guidance level.
+- Per-account overrides: `channels.signal.accounts.<id>.actions.reactions`, `channels.signal.accounts.<id>.reactionLevel`.
 
-## Alvos de entrega (CLI/cron)
+## Delivery targets (CLI/cron)
 
-- DMs: `signal:+5511999999999` (ou E.164 simples).
-- DMs por UUID: `uuid:<id>` (ou UUID bare).
-- Grupos: `signal:group:<groupId>`.
-- Usernames: `username:<nome>` (se suportado pela sua conta Signal).
+- DMs: `signal:+15551234567` (or plain E.164).
+- UUID DMs: `uuid:<id>` (or bare UUID).
+- Groups: `signal:group:<groupId>`.
+- Usernames: `username:<name>` (if supported by your Signal account).
 
-## Solução de problemas
+## Troubleshooting
 
-Execute esta sequência primeiro:
+Run this ladder first:
 
 ```bash
-opencraft status
-opencraft gateway status
-opencraft logs --follow
-opencraft doctor
-opencraft channels status --probe
+openclaw status
+openclaw gateway status
+openclaw logs --follow
+openclaw doctor
+openclaw channels status --probe
 ```
 
-Depois confirme o estado de pareamento de DM se necessário:
+Then confirm DM pairing state if needed:
 
 ```bash
-opencraft pairing list signal
+openclaw pairing list signal
 ```
 
-Falhas comuns:
+Common failures:
 
-- Daemon acessível mas sem respostas: verifique as configurações de conta/daemon (`httpUrl`, `account`) e modo de recebimento.
-- DMs ignorados: remetente está aguardando aprovação de pareamento.
-- Mensagens de grupo ignoradas: controle de remetente/menção do grupo bloqueia a entrega.
-- Erros de validação de config após edições: execute `opencraft doctor --fix`.
-- Signal ausente dos diagnósticos: confirme `channels.signal.enabled: true`.
+- Daemon reachable but no replies: verify account/daemon settings (`httpUrl`, `account`) and receive mode.
+- DMs ignored: sender is pending pairing approval.
+- Group messages ignored: group sender/mention gating blocks delivery.
+- Config validation errors after edits: run `openclaw doctor --fix`.
+- Signal missing from diagnostics: confirm `channels.signal.enabled: true`.
 
-Verificações extras:
+Extra checks:
 
 ```bash
-opencraft pairing list signal
+openclaw pairing list signal
 pgrep -af signal-cli
-grep -i "signal" "/tmp/opencraft/opencraft-$(date +%Y-%m-%d).log" | tail -20
+grep -i "signal" "/tmp/openclaw/openclaw-$(date +%Y-%m-%d).log" | tail -20
 ```
 
-Para o fluxo de triagem: [/channels/troubleshooting](/channels/troubleshooting).
+For triage flow: [/channels/troubleshooting](/channels/troubleshooting).
 
-## Notas de segurança
+## Security notes
 
-- `signal-cli` armazena chaves de conta localmente (tipicamente `~/.local/share/signal-cli/data/`).
-- Faça backup do estado da conta Signal antes de migração ou reconstrução do servidor.
-- Mantenha `channels.signal.dmPolicy: "pairing"` a menos que queira explicitamente acesso de DM mais amplo.
-- A verificação por SMS só é necessária para fluxos de registro ou recuperação, mas perder o controle do número/conta pode complicar o novo registro.
+- `signal-cli` stores account keys locally (typically `~/.local/share/signal-cli/data/`).
+- Back up Signal account state before server migration or rebuild.
+- Keep `channels.signal.dmPolicy: "pairing"` unless you explicitly want broader DM access.
+- SMS verification is only needed for registration or recovery flows, but losing control of the number/account can complicate re-registration.
 
-## Referência de configuração (Signal)
+## Configuration reference (Signal)
 
-Configuração completa: [Configuração](/gateway/configuration)
+Full configuration: [Configuration](/gateway/configuration)
 
-Opções do provedor:
+Provider options:
 
-- `channels.signal.enabled`: habilitar/desabilitar inicialização do canal.
-- `channels.signal.account`: E.164 para a conta do bot.
-- `channels.signal.cliPath`: caminho para `signal-cli`.
-- `channels.signal.httpUrl`: URL completa do daemon (substitui host/porta).
-- `channels.signal.httpHost`, `channels.signal.httpPort`: bind do daemon (padrão 127.0.0.1:8080).
-- `channels.signal.autoStart`: auto-iniciar daemon (padrão true se `httpUrl` não estiver definido).
-- `channels.signal.startupTimeoutMs`: timeout de espera de inicialização em ms (cap 120000).
+- `channels.signal.enabled`: enable/disable channel startup.
+- `channels.signal.account`: E.164 for the bot account.
+- `channels.signal.cliPath`: path to `signal-cli`.
+- `channels.signal.httpUrl`: full daemon URL (overrides host/port).
+- `channels.signal.httpHost`, `channels.signal.httpPort`: daemon bind (default 127.0.0.1:8080).
+- `channels.signal.autoStart`: auto-spawn daemon (default true if `httpUrl` unset).
+- `channels.signal.startupTimeoutMs`: startup wait timeout in ms (cap 120000).
 - `channels.signal.receiveMode`: `on-start | manual`.
-- `channels.signal.ignoreAttachments`: pular downloads de anexos.
-- `channels.signal.ignoreStories`: ignorar stories do daemon.
-- `channels.signal.sendReadReceipts`: encaminhar confirmações de leitura.
-- `channels.signal.dmPolicy`: `pairing | allowlist | open | disabled` (padrão: pairing).
-- `channels.signal.allowFrom`: lista de permissão de DM (E.164 ou `uuid:<id>`). `open` requer `"*"`. O Signal não tem usernames; use ids de telefone/UUID.
-- `channels.signal.groupPolicy`: `open | allowlist | disabled` (padrão: allowlist).
-- `channels.signal.groupAllowFrom`: lista de permissão de remetentes em grupo.
-- `channels.signal.groups`: substituições por grupo com chave por id de grupo Signal (ou `"*"`). Campos suportados: `requireMention`, `tools`, `toolsBySender`.
-- `channels.signal.accounts.<id>.groups`: versão por conta de `channels.signal.groups` para configurações com múltiplas contas.
-- `channels.signal.historyLimit`: máximo de mensagens de grupo para incluir como contexto (0 desabilita).
-- `channels.signal.dmHistoryLimit`: limite de histórico de DM em turnos do usuário. Substituições por usuário: `channels.signal.dms["<telefone_ou_uuid>"].historyLimit`.
-- `channels.signal.textChunkLimit`: tamanho do bloco de saída (caracteres).
-- `channels.signal.chunkMode`: `length` (padrão) ou `newline` para dividir em linhas em branco (limites de parágrafo) antes da divisão por tamanho.
-- `channels.signal.mediaMaxMb`: cap de mídia de entrada/saída (MB).
+- `channels.signal.ignoreAttachments`: skip attachment downloads.
+- `channels.signal.ignoreStories`: ignore stories from the daemon.
+- `channels.signal.sendReadReceipts`: forward read receipts.
+- `channels.signal.dmPolicy`: `pairing | allowlist | open | disabled` (default: pairing).
+- `channels.signal.allowFrom`: DM allowlist (E.164 or `uuid:<id>`). `open` requires `"*"`. Signal has no usernames; use phone/UUID ids.
+- `channels.signal.groupPolicy`: `open | allowlist | disabled` (default: allowlist).
+- `channels.signal.groupAllowFrom`: group sender allowlist.
+- `channels.signal.groups`: per-group overrides keyed by Signal group id (or `"*"`). Supported fields: `requireMention`, `tools`, `toolsBySender`.
+- `channels.signal.accounts.<id>.groups`: per-account version of `channels.signal.groups` for multi-account setups.
+- `channels.signal.historyLimit`: max group messages to include as context (0 disables).
+- `channels.signal.dmHistoryLimit`: DM history limit in user turns. Per-user overrides: `channels.signal.dms["<phone_or_uuid>"].historyLimit`.
+- `channels.signal.textChunkLimit`: outbound chunk size (chars).
+- `channels.signal.chunkMode`: `length` (default) or `newline` to split on blank lines (paragraph boundaries) before length chunking.
+- `channels.signal.mediaMaxMb`: inbound/outbound media cap (MB).
 
-Opções globais relacionadas:
+Related global options:
 
-- `agents.list[].groupChat.mentionPatterns` (o Signal não suporta menções nativas).
-- `messages.groupChat.mentionPatterns` (fallback global).
+- `agents.list[].groupChat.mentionPatterns` (Signal does not support native mentions).
+- `messages.groupChat.mentionPatterns` (global fallback).
 - `messages.responsePrefix`.

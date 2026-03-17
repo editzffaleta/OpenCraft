@@ -1,4 +1,4 @@
-import type { AnyAgentTool, OpenCraftPluginApi } from "opencraft/plugin-sdk/feishu";
+import type { AnyAgentTool, OpenClawPluginApi } from "openclaw/plugin-sdk/feishu";
 
 type ToolContextLike = {
   agentAccountId?: string;
@@ -34,10 +34,10 @@ function asToolLike(tool: AnyAgentTool, fallbackName?: string): ToolLike {
   };
 }
 
-export function createToolFactoryHarness(cfg: OpenCraftPluginApi["config"]) {
+export function createToolFactoryHarness(cfg: OpenClawPluginApi["config"]) {
   const registered: RegisteredTool[] = [];
 
-  const api: Pick<OpenCraftPluginApi, "config" | "logger" | "registerTool"> = {
+  const api: Pick<OpenClawPluginApi, "config" | "logger" | "registerTool"> = {
     config: cfg,
     logger: {
       info: () => {},
@@ -70,7 +70,7 @@ export function createToolFactoryHarness(cfg: OpenCraftPluginApi["config"]) {
   };
 
   return {
-    api: api as OpenCraftPluginApi,
+    api: api as OpenClawPluginApi,
     resolveTool,
   };
 }

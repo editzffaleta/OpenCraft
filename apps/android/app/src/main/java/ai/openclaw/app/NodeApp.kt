@@ -1,10 +1,21 @@
-package ai.opencraft.app
+package ai.openclaw.app
 
 import android.app.Application
 import android.os.StrictMode
 
 class NodeApp : Application() {
-  val runtime: NodeRuntime by lazy { NodeRuntime(this) }
+  val prefs: SecurePrefs by lazy { SecurePrefs(this) }
+
+  @Volatile private var runtimeInstance: NodeRuntime? = null
+
+  fun ensureRuntime(): NodeRuntime {
+    runtimeInstance?.let { return it }
+    return synchronized(this) {
+      runtimeInstance ?: NodeRuntime(this, prefs).also { runtimeInstance = it }
+    }
+  }
+
+  fun peekRuntime(): NodeRuntime? = runtimeInstance
 
   override fun onCreate() {
     super.onCreate()

@@ -1,417 +1,417 @@
 ---
-summary: "Refatoração Clawnet: unificar protocolo de rede, roles, autenticação, aprovações, identidade"
+summary: "Clawnet refactor: unify network protocol, roles, auth, approvals, identity"
 read_when:
-  - Planejando um protocolo de rede unificado para nodes + clientes operadores
-  - Reformulando aprovações, pareamento, TLS e presença entre dispositivos
-title: "Refatoração Clawnet"
+  - Planning a unified network protocol for nodes + operator clients
+  - Reworking approvals, pairing, TLS, and presence across devices
+title: "Clawnet Refactor"
 ---
 
-# Refatoração Clawnet (unificação de protocolo + autenticação)
+# Clawnet refactor (protocol + auth unification)
 
-## Oi
+## Hi
 
-Oi Peter — ótima direção; isso desbloqueia UX mais simples + segurança mais forte.
+Hi Peter — great direction; this unlocks simpler UX + stronger security.
 
-## Propósito
+## Purpose
 
-Documento único e rigoroso para:
+Single, rigorous document for:
 
-- Estado atual: protocolos, fluxos, limites de confiança.
-- Pontos de dor: aprovações, roteamento multi-hop, duplicação de UI.
-- Novo estado proposto: um protocolo, roles com escopo, auth/pareamento unificados, pinning de TLS.
-- Modelo de identidade: IDs estáveis + slugs simpáticos.
-- Plano de migração, riscos, questões em aberto.
+- Current state: protocols, flows, trust boundaries.
+- Pain points: approvals, multi‑hop routing, UI duplication.
+- Proposed new state: one protocol, scoped roles, unified auth/pairing, TLS pinning.
+- Identity model: stable IDs + cute slugs.
+- Migration plan, risks, open questions.
 
-## Objetivos (da discussão)
+## Goals (from discussion)
 
-- Um protocolo para todos os clientes (app macOS, CLI, iOS, Android, node headless).
-- Todo participante de rede autenticado + pareado.
-- Clareza de roles: nodes vs operadores.
-- Aprovações centrais roteadas para onde o usuário está.
-- Criptografia TLS + pinning opcional para todo tráfego remoto.
-- Duplicação mínima de código.
-- Uma única máquina deve aparecer uma vez (sem entrada duplicada de UI/node).
+- One protocol for all clients (mac app, CLI, iOS, Android, headless node).
+- Every network participant authenticated + paired.
+- Role clarity: nodes vs operators.
+- Central approvals routed to where the user is.
+- TLS encryption + optional pinning for all remote traffic.
+- Minimal code duplication.
+- Single machine should appear once (no UI/node duplicate entry).
 
-## Não-objetivos (explícitos)
+## Non‑goals (explicit)
 
-- Remover separação de capacidades (ainda precisamos de menor privilégio).
-- Expor plano de controle completo do gateway sem verificações de escopo.
-- Fazer autenticação depender de rótulos humanos (slugs permanecem não-segurança).
+- Remove capability separation (still need least‑privilege).
+- Expose full gateway control plane without scope checks.
+- Make auth depend on human labels (slugs remain non‑security).
 
 ---
 
-# Estado atual (como está)
+# Current state (as‑is)
 
-## Dois protocolos
+## Two protocols
 
-### 1) WebSocket do Gateway (plano de controle)
+### 1) Gateway WebSocket (control plane)
 
-- Superfície completa de API: config, canais, modelos, sessões, execuções de agente, logs, nodes, etc.
-- Bind padrão: loopback. Acesso remoto via SSH/Tailscale.
-- Autenticação: token/senha via `connect`.
-- Sem pinning TLS (depende de loopback/tunnel).
-- Código:
+- Full API surface: config, channels, models, sessions, agent runs, logs, nodes, etc.
+- Default bind: loopback. Remote access via SSH/Tailscale.
+- Auth: token/password via `connect`.
+- No TLS pinning (relies on loopback/tunnel).
+- Code:
   - `src/gateway/server/ws-connection/message-handler.ts`
   - `src/gateway/client.ts`
   - `docs/gateway/protocol.md`
 
-### 2) Bridge (transporte de node)
+### 2) Bridge (node transport)
 
-- Superfície de allowlist restrita, identidade de node + pareamento.
-- JSONL sobre TCP; TLS opcional + pinning de fingerprint de certificado.
-- TLS anuncia fingerprint no TXT de descoberta.
-- Código:
+- Narrow allowlist surface, node identity + pairing.
+- JSONL over TCP; optional TLS + cert fingerprint pinning.
+- TLS advertises fingerprint in discovery TXT.
+- Code:
   - `src/infra/bridge/server/connection.ts`
   - `src/gateway/server-bridge.ts`
   - `src/node-host/bridge-client.ts`
   - `docs/gateway/bridge-protocol.md`
 
-## Clientes do plano de controle hoje
+## Control plane clients today
 
 - CLI → Gateway WS via `callGateway` (`src/gateway/call.ts`).
-- UI do app macOS → Gateway WS (`GatewayConnection`).
-- UI de Controle Web → Gateway WS.
+- macOS app UI → Gateway WS (`GatewayConnection`).
+- Web Control UI → Gateway WS.
 - ACP → Gateway WS.
-- Controle do browser usa seu próprio servidor de controle HTTP.
+- Browser control uses its own HTTP control server.
 
-## Nodes hoje
+## Nodes today
 
-- App macOS em modo node conecta ao bridge do Gateway (`MacNodeBridgeSession`).
-- Apps iOS/Android conectam ao bridge do Gateway.
-- Pareamento + token por node armazenados no gateway.
+- macOS app in node mode connects to Gateway bridge (`MacNodeBridgeSession`).
+- iOS/Android apps connect to Gateway bridge.
+- Pairing + per‑node token stored on gateway.
 
-## Fluxo de aprovação atual (exec)
+## Current approval flow (exec)
 
-- Agente usa `system.run` via Gateway.
-- Gateway invoca node pelo bridge.
-- Runtime do node decide aprovação.
-- Prompt de UI exibido pelo app macOS (quando node == app macOS).
-- Node retorna `invoke-res` ao Gateway.
-- Multi-hop, UI vinculada ao host do node.
+- Agent uses `system.run` via Gateway.
+- Gateway invokes node over bridge.
+- Node runtime decides approval.
+- UI prompt shown by mac app (when node == mac app).
+- Node returns `invoke-res` to Gateway.
+- Multi‑hop, UI tied to node host.
 
-## Presença + identidade hoje
+## Presence + identity today
 
-- Entradas de presença do gateway de clientes WS.
-- Entradas de presença de node do bridge.
-- App macOS pode mostrar duas entradas para a mesma máquina (UI + node).
-- Identidade do node armazenada no armazenamento de pareamento; identidade de UI separada.
-
----
-
-# Problemas / pontos de dor
-
-- Duas stacks de protocolo para manter (WS + Bridge).
-- Aprovações em nodes remotos: prompt aparece no host do node, não onde o usuário está.
-- Pinning TLS existe apenas para bridge; WS depende de SSH/Tailscale.
-- Duplicação de identidade: a mesma máquina aparece como múltiplas instâncias.
-- Roles ambíguas: capacidades de UI + node + CLI não claramente separadas.
+- Gateway presence entries from WS clients.
+- Node presence entries from bridge.
+- mac app can show two entries for same machine (UI + node).
+- Node identity stored in pairing store; UI identity separate.
 
 ---
 
-# Novo estado proposto (Clawnet)
+# Problems / pain points
 
-## Um protocolo, dois roles
+- Two protocol stacks to maintain (WS + Bridge).
+- Approvals on remote nodes: prompt appears on node host, not where user is.
+- TLS pinning only exists for bridge; WS depends on SSH/Tailscale.
+- Identity duplication: same machine shows as multiple instances.
+- Ambiguous roles: UI + node + CLI capabilities not clearly separated.
 
-Protocolo WS único com role + escopo.
+---
 
-- **Role: node** (host de capacidade)
-- **Role: operador** (plano de controle)
-- **Escopo** opcional para operador:
-  - `operator.read` (status + visualização)
-  - `operator.write` (execução de agente, envios)
-  - `operator.admin` (config, canais, modelos)
+# Proposed new state (Clawnet)
 
-### Comportamentos de role
+## One protocol, two roles
+
+Single WS protocol with role + scope.
+
+- **Role: node** (capability host)
+- **Role: operator** (control plane)
+- Optional **scope** for operator:
+  - `operator.read` (status + viewing)
+  - `operator.write` (agent run, sends)
+  - `operator.admin` (config, channels, models)
+
+### Role behaviors
 
 **Node**
 
-- Pode registrar capacidades (`caps`, `commands`, permissões).
-- Pode receber comandos `invoke` (`system.run`, `camera.*`, `canvas.*`, `screen.record`, etc.).
-- Pode enviar eventos: `voice.transcript`, `agent.request`, `chat.subscribe`.
-- Não pode chamar APIs de plano de controle de config/modelos/canais/sessões/agente.
+- Can register capabilities (`caps`, `commands`, permissions).
+- Can receive `invoke` commands (`system.run`, `camera.*`, `canvas.*`, `screen.record`, etc).
+- Can send events: `voice.transcript`, `agent.request`, `chat.subscribe`.
+- Cannot call config/models/channels/sessions/agent control plane APIs.
 
-**Operador**
+**Operator**
 
-- API completa do plano de controle, controlada por escopo.
-- Recebe todas as aprovações.
-- Não executa diretamente ações do SO; roteia para nodes.
+- Full control plane API, gated by scope.
+- Receives all approvals.
+- Does not directly execute OS actions; routes to nodes.
 
-### Regra principal
+### Key rule
 
-Role é por conexão, não por dispositivo. Um dispositivo pode abrir ambas as roles, separadamente.
+Role is per‑connection, not per device. A device may open both roles, separately.
 
 ---
 
-# Autenticação + pareamento unificados
+# Unified authentication + pairing
 
-## Identidade do cliente
+## Client identity
 
-Cada cliente fornece:
+Every client provides:
 
-- `deviceId` (estável, derivado da chave do dispositivo).
-- `displayName` (nome humano).
+- `deviceId` (stable, derived from device key).
+- `displayName` (human name).
 - `role` + `scope` + `caps` + `commands`.
 
-## Fluxo de pareamento (unificado)
+## Pairing flow (unified)
 
-- Cliente conecta sem autenticação.
-- Gateway cria uma **solicitação de pareamento** para aquele `deviceId`.
-- Operador recebe prompt; aprova/nega.
-- Gateway emite credenciais vinculadas a:
-  - chave pública do dispositivo
+- Client connects unauthenticated.
+- Gateway creates a **pairing request** for that `deviceId`.
+- Operator receives prompt; approves/denies.
+- Gateway issues credentials bound to:
+  - device public key
   - role(s)
-  - escopo(s)
-  - capacidades/comandos
-- Cliente persiste token, reconecta autenticado.
+  - scope(s)
+  - capabilities/commands
+- Client persists token, reconnects authenticated.
 
-## Autenticação vinculada ao dispositivo (evitar replay de bearer token)
+## Device‑bound auth (avoid bearer token replay)
 
-Preferido: pares de chaves de dispositivo.
+Preferred: device keypairs.
 
-- Dispositivo gera par de chaves uma vez.
+- Device generates keypair once.
 - `deviceId = fingerprint(publicKey)`.
-- Gateway envia nonce; dispositivo assina; gateway verifica.
-- Tokens são emitidos para uma chave pública (prova de posse), não uma string.
+- Gateway sends nonce; device signs; gateway verifies.
+- Tokens are issued to a public key (proof‑of‑possession), not a string.
 
-Alternativas:
+Alternatives:
 
-- mTLS (certs de cliente): mais forte, mais complexidade de operações.
-- Tokens bearer de curta duração apenas como fase temporária (rotar + revogar cedo).
+- mTLS (client certs): strongest, more ops complexity.
+- Short‑lived bearer tokens only as a temporary phase (rotate + revoke early).
 
-## Aprovação silenciosa (heurística SSH)
+## Silent approval (SSH heuristic)
 
-Defini-la precisamente para evitar um elo fraco. Preferir uma:
+Define it precisely to avoid a weak link. Prefer one:
 
-- **Somente local**: auto-parear quando cliente conecta via loopback/socket Unix.
-- **Desafio via SSH**: gateway emite nonce; cliente prova SSH buscando-o.
-- **Janela de presença física**: após uma aprovação local na UI do host do gateway, permitir auto-parear por uma janela curta (ex.: 10 minutos).
+- **Local‑only**: auto‑pair when client connects via loopback/Unix socket.
+- **Challenge via SSH**: gateway issues nonce; client proves SSH by fetching it.
+- **Physical presence window**: after a local approval on gateway host UI, allow auto‑pair for a short window (e.g. 10 minutes).
 
-Sempre registrar + gravar aprovações automáticas.
+Always log + record auto‑approvals.
 
 ---
 
-# TLS em todo lugar (dev + prod)
+# TLS everywhere (dev + prod)
 
-## Reutilizar TLS do bridge existente
+## Reuse existing bridge TLS
 
-Usar runtime TLS atual + pinning de fingerprint:
+Use current TLS runtime + fingerprint pinning:
 
 - `src/infra/bridge/server/tls.ts`
-- lógica de verificação de fingerprint em `src/node-host/bridge-client.ts`
+- fingerprint verification logic in `src/node-host/bridge-client.ts`
 
-## Aplicar ao WS
+## Apply to WS
 
-- Servidor WS suporta TLS com mesmo cert/chave + fingerprint.
-- Clientes WS podem fixar fingerprint (opcional).
-- Descoberta anuncia TLS + fingerprint para todos os endpoints.
-  - Descoberta é apenas dicas de localizador; nunca âncora de confiança.
+- WS server supports TLS with same cert/key + fingerprint.
+- WS clients can pin fingerprint (optional).
+- Discovery advertises TLS + fingerprint for all endpoints.
+  - Discovery is locator hints only; never a trust anchor.
 
-## Por que
+## Why
 
-- Reduzir dependência do SSH/Tailscale para confidencialidade.
-- Tornar conexões móveis remotas seguras por padrão.
-
----
-
-# Redesenho de aprovações (centralizado)
-
-## Atual
-
-Aprovação acontece no host do node (runtime do node do app macOS). Prompt aparece onde o node executa.
-
-## Proposto
-
-Aprovação é **hospedada no gateway**, UI entregue para clientes operadores.
-
-### Novo fluxo
-
-1. Gateway recebe intenção `system.run` (agente).
-2. Gateway cria registro de aprovação: `approval.requested`.
-3. UI(s) do operador exibem prompt.
-4. Decisão de aprovação enviada ao gateway: `approval.resolve`.
-5. Gateway invoca comando do node se aprovado.
-6. Node executa, retorna `invoke-res`.
-
-### Semântica de aprovação (proteção)
-
-- Transmitir para todos os operadores; apenas a UI ativa mostra um modal (outros recebem um toast).
-- Primeira resolução vence; gateway rejeita resoluções subsequentes como já resolvidas.
-- Timeout padrão: negar após N segundos (ex.: 60s), registrar motivo.
-- Resolução requer escopo `operator.approvals`.
-
-## Benefícios
-
-- Prompt aparece onde o usuário está (mac/celular).
-- Aprovações consistentes para nodes remotos.
-- Runtime do node permanece headless; sem dependência de UI.
+- Reduce reliance on SSH/Tailscale for confidentiality.
+- Make remote mobile connections safe by default.
 
 ---
 
-# Exemplos de clareza de roles
+# Approvals redesign (centralized)
 
-## App iPhone
+## Current
 
-- **Role node** para: microfone, câmera, chat de voz, localização, push-to-talk.
-- **operator.read** opcional para status e visualização de chat.
-- **operator.write/admin** opcional apenas quando explicitamente habilitado.
+Approval happens on node host (mac app node runtime). Prompt appears where node runs.
 
-## App macOS
+## Proposed
 
-- Role de operador por padrão (UI de controle).
-- Role de node quando "Mac node" habilitado (system.run, tela, câmera).
-- Mesmo deviceId para ambas as conexões → entrada de UI mesclada.
+Approval is **gateway‑hosted**, UI delivered to operator clients.
+
+### New flow
+
+1. Gateway receives `system.run` intent (agent).
+2. Gateway creates approval record: `approval.requested`.
+3. Operator UI(s) show prompt.
+4. Approval decision sent to gateway: `approval.resolve`.
+5. Gateway invokes node command if approved.
+6. Node executes, returns `invoke-res`.
+
+### Approval semantics (hardening)
+
+- Broadcast to all operators; only the active UI shows a modal (others get a toast).
+- First resolution wins; gateway rejects subsequent resolves as already settled.
+- Default timeout: deny after N seconds (e.g. 60s), log reason.
+- Resolution requires `operator.approvals` scope.
+
+## Benefits
+
+- Prompt appears where user is (mac/phone).
+- Consistent approvals for remote nodes.
+- Node runtime stays headless; no UI dependency.
+
+---
+
+# Role clarity examples
+
+## iPhone app
+
+- **Node role** for: mic, camera, voice chat, location, push‑to‑talk.
+- Optional **operator.read** for status and chat view.
+- Optional **operator.write/admin** only when explicitly enabled.
+
+## macOS app
+
+- Operator role by default (control UI).
+- Node role when “Mac node” enabled (system.run, screen, camera).
+- Same deviceId for both connections → merged UI entry.
 
 ## CLI
 
-- Role de operador sempre.
-- Escopo derivado por subcomando:
+- Operator role always.
+- Scope derived by subcommand:
   - `status`, `logs` → read
   - `agent`, `message` → write
   - `config`, `channels` → admin
-  - aprovações + pareamento → `operator.approvals` / `operator.pairing`
+  - approvals + pairing → `operator.approvals` / `operator.pairing`
 
 ---
 
-# Identidade + slugs
+# Identity + slugs
 
-## ID estável
+## Stable ID
 
-Necessário para autenticação; nunca muda.
-Preferido:
+Required for auth; never changes.
+Preferred:
 
-- Fingerprint do par de chaves (hash da chave pública).
+- Keypair fingerprint (public key hash).
 
-## Slug simpático (temático de lagosta)
+## Cute slug (lobster‑themed)
 
-Apenas rótulo humano.
+Human label only.
 
-- Exemplo: `scarlet-claw`, `saltwave`, `mantis-pinch`.
-- Armazenado no registry do gateway, editável.
-- Tratamento de colisão: `-2`, `-3`.
+- Example: `scarlet-claw`, `saltwave`, `mantis-pinch`.
+- Stored in gateway registry, editable.
+- Collision handling: `-2`, `-3`.
 
-## Agrupamento na UI
+## UI grouping
 
-Mesmo `deviceId` entre roles → única linha "Instância":
+Same `deviceId` across roles → single “Instance” row:
 
 - Badge: `operator`, `node`.
-- Mostra capacidades + último visto.
+- Shows capabilities + last seen.
 
 ---
 
-# Estratégia de migração
+# Migration strategy
 
-## Fase 0: Documentar + alinhar
+## Phase 0: Document + align
 
-- Publicar este documento.
-- Inventariar todas as chamadas de protocolo + fluxos de aprovação.
+- Publish this doc.
+- Inventory all protocol calls + approval flows.
 
-## Fase 1: Adicionar roles/escopos ao WS
+## Phase 1: Add roles/scopes to WS
 
-- Estender parâmetros de `connect` com `role`, `scope`, `deviceId`.
-- Adicionar controle de allowlist para role de node.
+- Extend `connect` params with `role`, `scope`, `deviceId`.
+- Add allowlist gating for node role.
 
-## Fase 2: Compatibilidade do Bridge
+## Phase 2: Bridge compatibility
 
-- Manter bridge em funcionamento.
-- Adicionar suporte a node WS em paralelo.
-- Controlar recursos por flag de configuração.
+- Keep bridge running.
+- Add WS node support in parallel.
+- Gate features behind config flag.
 
-## Fase 3: Aprovações centrais
+## Phase 3: Central approvals
 
-- Adicionar eventos de solicitação + resolução de aprovação no WS.
-- Atualizar UI do app macOS para exibir prompt + responder.
-- Runtime do node para de exibir prompt na UI.
+- Add approval request + resolve events in WS.
+- Update mac app UI to prompt + respond.
+- Node runtime stops prompting UI.
 
-## Fase 4: Unificação TLS
+## Phase 4: TLS unification
 
-- Adicionar configuração TLS para WS usando runtime TLS do bridge.
-- Adicionar pinning aos clientes.
+- Add TLS config for WS using bridge TLS runtime.
+- Add pinning to clients.
 
-## Fase 5: Deprecar bridge
+## Phase 5: Deprecate bridge
 
-- Migrar iOS/Android/mac node para WS.
-- Manter bridge como fallback; remover quando estável.
+- Migrate iOS/Android/mac node to WS.
+- Keep bridge as fallback; remove once stable.
 
-## Fase 6: Autenticação vinculada ao dispositivo
+## Phase 6: Device‑bound auth
 
-- Exigir identidade baseada em chave para todas as conexões não locais.
-- Adicionar UI de revogação + rotação.
-
----
-
-# Notas de segurança
-
-- Role/allowlist aplicados no limite do gateway.
-- Nenhum cliente obtém API "completa" sem escopo de operador.
-- Pareamento necessário para _todas_ as conexões.
-- TLS + pinning reduz risco de MITM para mobile.
-- Aprovação silenciosa SSH é conveniência; ainda registrada + revogável.
-- Descoberta nunca é âncora de confiança.
-- Declarações de capacidade são verificadas contra allowlists do servidor por plataforma/tipo.
-
-# Streaming + payloads grandes (mídia de node)
-
-Plano de controle WS é adequado para mensagens pequenas, mas nodes também fazem:
-
-- clipes de câmera
-- gravações de tela
-- streams de áudio
-
-Opções:
-
-1. Frames binários WS + chunking + regras de backpressure.
-2. Endpoint de streaming separado (ainda TLS + autenticação).
-3. Manter bridge por mais tempo para comandos com muita mídia, migrar por último.
-
-Escolher um antes da implementação para evitar divergência.
-
-# Política de capacidade + comando
-
-- Capacidades/comandos relatados pelo node são tratados como **declarações**.
-- Gateway aplica allowlists por plataforma.
-- Qualquer novo comando requer aprovação do operador ou mudança explícita na allowlist.
-- Auditar mudanças com timestamps.
-
-# Auditoria + limitação de taxa
-
-- Registrar: solicitações de pareamento, aprovações/negações, emissão/rotação/revogação de token.
-- Limitar taxa de spam de pareamento e prompts de aprovação.
-
-# Higiene do protocolo
-
-- Versão explícita do protocolo + códigos de erro.
-- Regras de reconexão + política de heartbeat.
-- TTL de presença e semântica de último visto.
+- Require key‑based identity for all non‑local connections.
+- Add revocation + rotation UI.
 
 ---
 
-# Questões em aberto
+# Security notes
 
-1. Dispositivo único executando ambas as roles: modelo de token
-   - Recomendar tokens separados por role (node vs operador).
-   - Mesmo deviceId; escopos diferentes; revogação mais clara.
+- Role/allowlist enforced at gateway boundary.
+- No client gets “full” API without operator scope.
+- Pairing required for _all_ connections.
+- TLS + pinning reduces MITM risk for mobile.
+- SSH silent approval is a convenience; still recorded + revocable.
+- Discovery is never a trust anchor.
+- Capability claims are verified against server allowlists by platform/type.
 
-2. Granularidade de escopo do operador
-   - read/write/admin + aprovações + pareamento (mínimo viável).
-   - Considerar escopos por recurso depois.
+# Streaming + large payloads (node media)
 
-3. UX de rotação + revogação de token
-   - Auto-rotar na mudança de role.
-   - UI para revogar por deviceId + role.
+WS control plane is fine for small messages, but nodes also do:
 
-4. Descoberta
-   - Estender TXT Bonjour atual para incluir fingerprint WS TLS + dicas de role.
-   - Tratar apenas como dicas de localizador.
+- camera clips
+- screen recordings
+- audio streams
 
-5. Aprovação entre redes
-   - Transmitir para todos os clientes operadores; UI ativa mostra modal.
-   - Primeira resposta vence; gateway aplica atomicidade.
+Options:
+
+1. WS binary frames + chunking + backpressure rules.
+2. Separate streaming endpoint (still TLS + auth).
+3. Keep bridge longer for media‑heavy commands, migrate last.
+
+Pick one before implementation to avoid drift.
+
+# Capability + command policy
+
+- Node‑reported caps/commands are treated as **claims**.
+- Gateway enforces per‑platform allowlists.
+- Any new command requires operator approval or explicit allowlist change.
+- Audit changes with timestamps.
+
+# Audit + rate limiting
+
+- Log: pairing requests, approvals/denials, token issuance/rotation/revocation.
+- Rate‑limit pairing spam and approval prompts.
+
+# Protocol hygiene
+
+- Explicit protocol version + error codes.
+- Reconnect rules + heartbeat policy.
+- Presence TTL and last‑seen semantics.
 
 ---
 
-# Resumo (TL;DR)
+# Open questions
 
-- Hoje: plano de controle WS + transporte de node Bridge.
-- Dor: aprovações + duplicação + duas stacks.
-- Proposta: um protocolo WS com roles + escopos explícitos, pareamento + pinning TLS unificados, aprovações hospedadas no gateway, IDs de dispositivo estáveis + slugs simpáticos.
-- Resultado: UX mais simples, segurança mais forte, menos duplicação, melhor roteamento mobile.
+1. Single device running both roles: token model
+   - Recommend separate tokens per role (node vs operator).
+   - Same deviceId; different scopes; clearer revocation.
+
+2. Operator scope granularity
+   - read/write/admin + approvals + pairing (minimum viable).
+   - Consider per‑feature scopes later.
+
+3. Token rotation + revocation UX
+   - Auto‑rotate on role change.
+   - UI to revoke by deviceId + role.
+
+4. Discovery
+   - Extend current Bonjour TXT to include WS TLS fingerprint + role hints.
+   - Treat as locator hints only.
+
+5. Cross‑network approval
+   - Broadcast to all operator clients; active UI shows modal.
+   - First response wins; gateway enforces atomicity.
+
+---
+
+# Summary (TL;DR)
+
+- Today: WS control plane + Bridge node transport.
+- Pain: approvals + duplication + two stacks.
+- Proposal: one WS protocol with explicit roles + scopes, unified pairing + TLS pinning, gateway‑hosted approvals, stable device IDs + cute slugs.
+- Outcome: simpler UX, stronger security, less duplication, better mobile routing.

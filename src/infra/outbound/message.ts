@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { callGatewayLeastPrivilege, randomIdempotencyKey } from "../../gateway/call.js";
 import type { PollInput } from "../../polls.js";
@@ -46,7 +46,7 @@ type MessageSendParams = {
   dryRun?: boolean;
   bestEffort?: boolean;
   deps?: OutboundSendDeps;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
   mirror?: OutboundMirror;
@@ -77,7 +77,7 @@ type MessagePollParams = {
   silent?: boolean;
   isAnonymous?: boolean;
   dryRun?: boolean;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
 };
@@ -128,7 +128,7 @@ function buildMessagePollResult(params: {
 }
 
 async function resolveRequiredChannel(params: {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   channel?: string;
 }): Promise<string> {
   return (
@@ -139,7 +139,7 @@ async function resolveRequiredChannel(params: {
   ).channel;
 }
 
-function resolveRequiredPlugin(channel: string, cfg: OpenCraftConfig) {
+function resolveRequiredPlugin(channel: string, cfg: OpenClawConfig) {
   const plugin = resolveOutboundChannelPlugin({ channel, cfg });
   if (!plugin) {
     throw new Error(`Unknown channel: ${channel}`);

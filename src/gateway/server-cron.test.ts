@@ -2,7 +2,7 @@ import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CliDeps } from "../cli/deps.js";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { SsrFBlockedError } from "../infra/net/ssrf.js";
 
 const {
@@ -53,7 +53,7 @@ vi.mock("../cron/isolated-agent.js", () => ({
 
 import { buildGatewayCronService } from "./server-cron.js";
 
-function createCronConfig(name: string): OpenCraftConfig {
+function createCronConfig(name: string): OpenClawConfig {
   const tmpDir = path.join(os.tmpdir(), `${name}-${Date.now()}`);
   return {
     session: {
@@ -62,7 +62,7 @@ function createCronConfig(name: string): OpenCraftConfig {
     cron: {
       store: path.join(tmpDir, "cron.json"),
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 describe("buildGatewayCronService", () => {
@@ -166,7 +166,7 @@ describe("buildGatewayCronService", () => {
       cron: {
         store: path.join(tmpDir, "cron.json"),
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     loadConfigMock.mockReturnValue(cfg);
 
     const state = buildGatewayCronService({

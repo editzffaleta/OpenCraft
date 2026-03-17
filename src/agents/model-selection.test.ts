@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resetLogger, setLoggerOverride } from "../logging/logger.js";
 import {
   buildAllowedModelSet,
@@ -25,7 +25,7 @@ const EXPLICIT_ALLOWLIST_CONFIG = {
       },
     },
   },
-} as OpenCraftConfig;
+} as OpenClawConfig;
 
 const BUNDLED_ALLOWLIST_CATALOG = [
   { provider: "anthropic", id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5" },
@@ -41,7 +41,7 @@ const ANTHROPIC_OPUS_CATALOG = [
   },
 ];
 
-function resolveAnthropicOpusThinking(cfg: OpenCraftConfig) {
+function resolveAnthropicOpusThinking(cfg: OpenClawConfig) {
   return resolveThinkingDefault({
     cfg,
     provider: "anthropic",
@@ -80,7 +80,7 @@ function createAgentFallbackConfig(params: {
           }
         : {}),
     },
-  } as OpenCraftConfig;
+  } as OpenClawConfig;
 }
 
 function createProviderWithModelsConfig(provider: string, models: Array<Record<string, unknown>>) {
@@ -93,12 +93,12 @@ function createProviderWithModelsConfig(provider: string, models: Array<Record<s
         },
       },
     },
-  } as Partial<OpenCraftConfig>;
+  } as Partial<OpenClawConfig>;
 }
 
-function resolveConfiguredRefForTest(cfg: Partial<OpenCraftConfig>) {
+function resolveConfiguredRefForTest(cfg: Partial<OpenClawConfig>) {
   return resolveConfiguredModelRef({
-    cfg: cfg as OpenCraftConfig,
+    cfg: cfg as OpenClawConfig,
     defaultProvider: "anthropic",
     defaultModel: "claude-opus-4-6",
   });
@@ -273,7 +273,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(
         inferUniqueProviderFromConfiguredModels({
@@ -293,7 +293,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(
         inferUniqueProviderFromConfiguredModels({
@@ -312,7 +312,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(
         inferUniqueProviderFromConfiguredModels({
@@ -331,7 +331,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(
         inferUniqueProviderFromConfiguredModels({
@@ -344,7 +344,7 @@ describe("model-selection", () => {
 
   describe("buildModelAliasIndex", () => {
     it("should build alias index from config", () => {
-      const cfg: Partial<OpenCraftConfig> = {
+      const cfg: Partial<OpenClawConfig> = {
         agents: {
           defaults: {
             models: {
@@ -356,7 +356,7 @@ describe("model-selection", () => {
       };
 
       const index = buildModelAliasIndex({
-        cfg: cfg as OpenCraftConfig,
+        cfg: cfg as OpenClawConfig,
         defaultProvider: "anthropic",
       });
 
@@ -454,7 +454,7 @@ describe("model-selection", () => {
     });
 
     it("strips trailing auth profile suffix before allowlist matching", () => {
-      const cfg: OpenCraftConfig = {
+      const cfg: OpenClawConfig = {
         agents: {
           defaults: {
             models: {
@@ -462,7 +462,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       const result = resolveAllowedModelRef({
         cfg,
@@ -583,7 +583,7 @@ describe("model-selection", () => {
       setLoggerOverride({ level: "silent", consoleLevel: "warn" });
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
-        const cfg: Partial<OpenCraftConfig> = {
+        const cfg: Partial<OpenClawConfig> = {
           agents: {
             defaults: {
               model: { primary: "claude-3-5-sonnet" },
@@ -592,7 +592,7 @@ describe("model-selection", () => {
         };
 
         const result = resolveConfiguredModelRef({
-          cfg: cfg as OpenCraftConfig,
+          cfg: cfg as OpenClawConfig,
           defaultProvider: "google",
           defaultModel: "gemini-pro",
         });
@@ -611,7 +611,7 @@ describe("model-selection", () => {
       setLoggerOverride({ level: "silent", consoleLevel: "warn" });
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
-        const cfg: Partial<OpenCraftConfig> = {
+        const cfg: Partial<OpenClawConfig> = {
           agents: {
             defaults: {
               model: { primary: "\u001B[31mclaude-3-5-sonnet\nspoof" },
@@ -620,7 +620,7 @@ describe("model-selection", () => {
         };
 
         const result = resolveConfiguredModelRef({
-          cfg: cfg as OpenCraftConfig,
+          cfg: cfg as OpenClawConfig,
           defaultProvider: "google",
           defaultModel: "gemini-pro",
         });
@@ -641,9 +641,9 @@ describe("model-selection", () => {
     });
 
     it("should use default provider/model if config is empty", () => {
-      const cfg: Partial<OpenCraftConfig> = {};
+      const cfg: Partial<OpenClawConfig> = {};
       const result = resolveConfiguredModelRef({
-        cfg: cfg as OpenCraftConfig,
+        cfg: cfg as OpenClawConfig,
         defaultProvider: "openai",
         defaultModel: "gpt-4",
       });
@@ -692,7 +692,7 @@ describe("model-selection", () => {
       setLoggerOverride({ level: "silent", consoleLevel: "warn" });
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
-        const cfg: Partial<OpenCraftConfig> = {
+        const cfg: Partial<OpenClawConfig> = {
           agents: {
             defaults: {
               model: { primary: "openai/" },
@@ -701,7 +701,7 @@ describe("model-selection", () => {
         };
 
         const result = resolveConfiguredModelRef({
-          cfg: cfg as OpenCraftConfig,
+          cfg: cfg as OpenClawConfig,
           defaultProvider: "anthropic",
           defaultModel: "claude-opus-4-6",
         });
@@ -731,7 +731,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(resolveAnthropicOpusThinking(cfg)).toBe("high");
     });
@@ -747,7 +747,7 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(
         resolveThinkingDefault({
@@ -769,13 +769,13 @@ describe("model-selection", () => {
             },
           },
         },
-      } as OpenCraftConfig;
+      } as OpenClawConfig;
 
       expect(resolveAnthropicOpusThinking(cfg)).toBe("adaptive");
     });
 
     it("defaults Anthropic Claude 4.6 models to adaptive", () => {
-      const cfg = {} as OpenCraftConfig;
+      const cfg = {} as OpenClawConfig;
 
       expect(resolveAnthropicOpusThinking(cfg)).toBe("adaptive");
 

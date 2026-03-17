@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import {
   buildConfigureCandidates,
   buildConfigureCandidatesForScope,
@@ -19,7 +19,7 @@ describe("secrets configure plan helpers", () => {
           botToken: "token", // pragma: allowlist secret
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const candidates = buildConfigureCandidates(config);
     const paths = candidates.map((entry) => entry.path);
@@ -35,7 +35,7 @@ describe("secrets configure plan helpers", () => {
           legacy: { source: "env" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
     const next = {
       secrets: {
         providers: {
@@ -43,7 +43,7 @@ describe("secrets configure plan helpers", () => {
           modern: { source: "env" },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const changes = collectConfigureProviderChanges({ original, next });
     expect(Object.keys(changes.upserts).toSorted()).toEqual(["default", "modern"]);
@@ -52,7 +52,7 @@ describe("secrets configure plan helpers", () => {
 
   it("discovers auth-profiles candidates for the selected agent scope", () => {
     const candidates = buildConfigureCandidatesForScope({
-      config: {} as OpenCraftConfig,
+      config: {} as OpenClawConfig,
       authProfiles: {
         agentId: "main",
         store: {
@@ -90,7 +90,7 @@ describe("secrets configure plan helpers", () => {
             id: "TALK_API_KEY",
           },
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
       authProfiles: {
         agentId: "main",
         store: {
@@ -144,12 +144,12 @@ describe("secrets configure plan helpers", () => {
           },
           apiKey: "demo-talk-key", // pragma: allowlist secret
         },
-      } as OpenCraftConfig,
-      authoredOpenCraftConfig: {
+      } as OpenClawConfig,
+      authoredOpenClawConfig: {
         talk: {
           apiKey: "demo-talk-key", // pragma: allowlist secret
         },
-      } as OpenCraftConfig,
+      } as OpenClawConfig,
     });
 
     const legacy = candidates.find((entry) => entry.path === "talk.apiKey");
@@ -169,7 +169,7 @@ describe("secrets configure plan helpers", () => {
           path: "talk.apiKey",
           pathSegments: ["talk", "apiKey"],
           label: "talk.apiKey",
-          configFile: "opencraft.json" as const,
+          configFile: "openclaw.json" as const,
           expectedResolvedValue: "string" as const,
           ref: {
             source: "env" as const,

@@ -1,14 +1,14 @@
 import { describe, expect, it, test } from "vitest";
 import {
-  applyOpenCraftManifestInstallCommonFields,
+  applyOpenClawManifestInstallCommonFields,
   getFrontmatterString,
   normalizeStringList,
   parseFrontmatterBool,
-  parseOpenCraftManifestInstallBase,
-  resolveOpenCraftManifestBlock,
-  resolveOpenCraftManifestInstall,
-  resolveOpenCraftManifestOs,
-  resolveOpenCraftManifestRequires,
+  parseOpenClawManifestInstallBase,
+  resolveOpenClawManifestBlock,
+  resolveOpenClawManifestInstall,
+  resolveOpenClawManifestOs,
+  resolveOpenClawManifestRequires,
 } from "./frontmatter.js";
 
 describe("shared/frontmatter", () => {
@@ -30,62 +30,62 @@ describe("shared/frontmatter", () => {
     expect(parseFrontmatterBool("maybe", false)).toBe(false);
   });
 
-  test("resolveOpenCraftManifestBlock reads current manifest keys and custom metadata fields", () => {
+  test("resolveOpenClawManifestBlock reads current manifest keys and custom metadata fields", () => {
     expect(
-      resolveOpenCraftManifestBlock({
+      resolveOpenClawManifestBlock({
         frontmatter: {
-          metadata: "{ opencraft: { foo: 1, bar: 'baz' } }",
+          metadata: "{ openclaw: { foo: 1, bar: 'baz' } }",
         },
       }),
     ).toEqual({ foo: 1, bar: "baz" });
 
     expect(
-      resolveOpenCraftManifestBlock({
+      resolveOpenClawManifestBlock({
         frontmatter: {
-          pluginMeta: "{ opencraft: { foo: 2 } }",
+          pluginMeta: "{ openclaw: { foo: 2 } }",
         },
         key: "pluginMeta",
       }),
     ).toEqual({ foo: 2 });
   });
 
-  test("resolveOpenCraftManifestBlock returns undefined for invalid input", () => {
-    expect(resolveOpenCraftManifestBlock({ frontmatter: {} })).toBeUndefined();
+  test("resolveOpenClawManifestBlock returns undefined for invalid input", () => {
+    expect(resolveOpenClawManifestBlock({ frontmatter: {} })).toBeUndefined();
     expect(
-      resolveOpenCraftManifestBlock({ frontmatter: { metadata: "not-json5" } }),
+      resolveOpenClawManifestBlock({ frontmatter: { metadata: "not-json5" } }),
     ).toBeUndefined();
-    expect(resolveOpenCraftManifestBlock({ frontmatter: { metadata: "123" } })).toBeUndefined();
-    expect(resolveOpenCraftManifestBlock({ frontmatter: { metadata: "[]" } })).toBeUndefined();
+    expect(resolveOpenClawManifestBlock({ frontmatter: { metadata: "123" } })).toBeUndefined();
+    expect(resolveOpenClawManifestBlock({ frontmatter: { metadata: "[]" } })).toBeUndefined();
     expect(
-      resolveOpenCraftManifestBlock({ frontmatter: { metadata: "{ nope: { a: 1 } }" } }),
+      resolveOpenClawManifestBlock({ frontmatter: { metadata: "{ nope: { a: 1 } }" } }),
     ).toBeUndefined();
   });
 
   it("normalizes manifest requirement and os lists", () => {
     expect(
-      resolveOpenCraftManifestRequires({
+      resolveOpenClawManifestRequires({
         requires: {
           bins: "bun, node",
           anyBins: [" ffmpeg ", ""],
-          env: ["OPENCRAFT_TOKEN", " OPENCRAFT_URL "],
+          env: ["OPENCLAW_TOKEN", " OPENCLAW_URL "],
           config: null,
         },
       }),
     ).toEqual({
       bins: ["bun", "node"],
       anyBins: ["ffmpeg"],
-      env: ["OPENCRAFT_TOKEN", "OPENCRAFT_URL"],
+      env: ["OPENCLAW_TOKEN", "OPENCLAW_URL"],
       config: [],
     });
-    expect(resolveOpenCraftManifestRequires({})).toBeUndefined();
-    expect(resolveOpenCraftManifestOs({ os: [" darwin ", "linux", ""] })).toEqual([
+    expect(resolveOpenClawManifestRequires({})).toBeUndefined();
+    expect(resolveOpenClawManifestOs({ os: [" darwin ", "linux", ""] })).toEqual([
       "darwin",
       "linux",
     ]);
   });
 
   it("parses and applies install common fields", () => {
-    const parsed = parseOpenCraftManifestInstallBase(
+    const parsed = parseOpenClawManifestInstallBase(
       {
         type: " Brew ",
         id: "brew.git",
@@ -107,9 +107,9 @@ describe("shared/frontmatter", () => {
       label: "Git",
       bins: ["git", "git"],
     });
-    expect(parseOpenCraftManifestInstallBase({ kind: "bad" }, ["brew"])).toBeUndefined();
+    expect(parseOpenClawManifestInstallBase({ kind: "bad" }, ["brew"])).toBeUndefined();
     expect(
-      applyOpenCraftManifestInstallCommonFields<{
+      applyOpenClawManifestInstallCommonFields<{
         extra: boolean;
         id?: string;
         label?: string;
@@ -124,7 +124,7 @@ describe("shared/frontmatter", () => {
   });
 
   it("prefers explicit kind, ignores invalid common fields, and leaves missing ones untouched", () => {
-    const parsed = parseOpenCraftManifestInstallBase(
+    const parsed = parseOpenClawManifestInstallBase(
       {
         kind: " npm ",
         type: "brew",
@@ -146,7 +146,7 @@ describe("shared/frontmatter", () => {
       kind: "npm",
     });
     expect(
-      applyOpenCraftManifestInstallCommonFields(
+      applyOpenClawManifestInstallCommonFields(
         { id: "keep", label: "Keep", bins: ["bun"] },
         parsed!,
       ),
@@ -159,7 +159,7 @@ describe("shared/frontmatter", () => {
 
   it("maps install entries through the parser and filters rejected specs", () => {
     expect(
-      resolveOpenCraftManifestInstall(
+      resolveOpenClawManifestInstall(
         {
           install: [{ id: "keep" }, { id: "drop" }, "bad"],
         },

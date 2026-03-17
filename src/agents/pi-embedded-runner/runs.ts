@@ -27,7 +27,7 @@ type EmbeddedRunWaiter = {
  * Use global singleton state so busy/streaming checks stay consistent even
  * when the bundler emits multiple copies of this module into separate chunks.
  */
-const EMBEDDED_RUN_STATE_KEY = Symbol.for("opencraft.embeddedRunState");
+const EMBEDDED_RUN_STATE_KEY = Symbol.for("openclaw.embeddedRunState");
 
 const embeddedRunState = resolveGlobalSingleton(EMBEDDED_RUN_STATE_KEY, () => ({
   activeRuns: new Map<string, EmbeddedPiQueueHandle>(),

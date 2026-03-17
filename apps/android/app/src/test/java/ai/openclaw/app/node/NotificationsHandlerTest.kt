@@ -1,7 +1,7 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
 import android.content.Context
-import ai.opencraft.app.gateway.GatewaySession
+import ai.openclaw.app.gateway.GatewaySession
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject

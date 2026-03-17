@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createEmptyPluginRegistry } from "./registry.js";
-import type { OpenCraftPluginService, OpenCraftPluginServiceContext } from "./types.js";
+import type { OpenClawPluginService, OpenClawPluginServiceContext } from "./types.js";
 
 const mockedLogger = vi.hoisted(() => ({
   info: vi.fn<(msg: string) => void>(),
@@ -16,10 +16,15 @@ vi.mock("../logging/subsystem.js", () => ({
 import { STATE_DIR } from "../config/paths.js";
 import { startPluginServices } from "./services.js";
 
-function createRegistry(services: OpenCraftPluginService[]) {
+function createRegistry(services: OpenClawPluginService[]) {
   const registry = createEmptyPluginRegistry();
   for (const service of services) {
-    registry.services.push({ pluginId: "plugin:test", service, source: "test" });
+    registry.services.push({
+      pluginId: "plugin:test",
+      service,
+      source: "test",
+      rootDir: "/plugins/test-plugin",
+    });
   }
   return registry;
 }
@@ -32,9 +37,9 @@ describe("startPluginServices", () => {
   it("starts services and stops them in reverse order", async () => {
     const starts: string[] = [];
     const stops: string[] = [];
-    const contexts: OpenCraftPluginServiceContext[] = [];
+    const contexts: OpenClawPluginServiceContext[] = [];
 
-    const serviceA: OpenCraftPluginService = {
+    const serviceA: OpenClawPluginService = {
       id: "service-a",
       start: (ctx) => {
         starts.push("a");
@@ -44,14 +49,14 @@ describe("startPluginServices", () => {
         stops.push("a");
       },
     };
-    const serviceB: OpenCraftPluginService = {
+    const serviceB: OpenClawPluginService = {
       id: "service-b",
       start: (ctx) => {
         starts.push("b");
         contexts.push(ctx);
       },
     };
-    const serviceC: OpenCraftPluginService = {
+    const serviceC: OpenClawPluginService = {
       id: "service-c",
       start: (ctx) => {
         starts.push("c");
@@ -116,7 +121,9 @@ describe("startPluginServices", () => {
     await handle.stop();
 
     expect(mockedLogger.error).toHaveBeenCalledWith(
-      expect.stringContaining("plugin service failed (service-start-fail):"),
+      expect.stringContaining(
+        "plugin service failed (service-start-fail, plugin=plugin:test, root=/plugins/test-plugin):",
+      ),
     );
     expect(mockedLogger.warn).toHaveBeenCalledWith(
       expect.stringContaining("plugin service stop failed (service-stop-fail):"),

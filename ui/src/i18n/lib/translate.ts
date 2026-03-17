@@ -1,4 +1,5 @@
-import { pt_BR } from "../locales/pt-BR.ts";
+import { getSafeLocalStorage } from "../../local-storage.ts";
+import { en } from "../locales/en.ts";
 import {
   DEFAULT_LOCALE,
   SUPPORTED_LOCALES,
@@ -14,7 +15,7 @@ export { SUPPORTED_LOCALES, isSupportedLocale };
 
 class I18nManager {
   private locale: Locale = DEFAULT_LOCALE;
-  private translations: Partial<Record<Locale, TranslationMap>> = { [DEFAULT_LOCALE]: pt_BR };
+  private translations: Partial<Record<Locale, TranslationMap>> = { [DEFAULT_LOCALE]: en };
   private subscribers: Set<Subscriber> = new Set();
 
   constructor() {
@@ -22,24 +23,24 @@ class I18nManager {
   }
 
   private readStoredLocale(): string | null {
-    const storage = globalThis.localStorage;
-    if (!storage || typeof storage.getItem !== "function") {
+    const storage = getSafeLocalStorage();
+    if (!storage) {
       return null;
     }
     try {
-      return storage.getItem("opencraft.i18n.locale");
+      return storage.getItem("openclaw.i18n.locale");
     } catch {
       return null;
     }
   }
 
   private persistLocale(locale: Locale) {
-    const storage = globalThis.localStorage;
-    if (!storage || typeof storage.setItem !== "function") {
+    const storage = getSafeLocalStorage();
+    if (!storage) {
       return;
     }
     try {
-      storage.setItem("opencraft.i18n.locale", locale);
+      storage.setItem("openclaw.i18n.locale", locale);
     } catch {
       // Ignore storage write failures in private/blocked contexts.
     }

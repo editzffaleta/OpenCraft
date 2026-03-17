@@ -1,4 +1,4 @@
-import OpenCraftKit
+import OpenClawKit
 import CoreLocation
 import Foundation
 
@@ -31,7 +31,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
         self.configureLocationManager()
     }
 
-    func ensureAuthorization(mode: OpenCraftLocationMode) async -> CLAuthorizationStatus {
+    func ensureAuthorization(mode: OpenClawLocationMode) async -> CLAuthorizationStatus {
         guard CLLocationManager.locationServicesEnabled() else { return .denied }
 
         let status = self.manager.authorizationStatus
@@ -54,8 +54,8 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     }
 
     func currentLocation(
-        params: OpenCraftLocationGetParams,
-        desiredAccuracy: OpenCraftLocationAccuracy,
+        params: OpenClawLocationGetParams,
+        desiredAccuracy: OpenClawLocationAccuracy,
         maxAgeMs: Int?,
         timeoutMs: Int?) async throws -> CLLocation
     {
@@ -85,7 +85,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     }
 
     func startLocationUpdates(
-        desiredAccuracy: OpenCraftLocationAccuracy,
+        desiredAccuracy: OpenClawLocationAccuracy,
         significantChangesOnly: Bool) -> AsyncStream<CLLocation>
     {
         self.stopLocationUpdates()

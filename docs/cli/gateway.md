@@ -1,234 +1,235 @@
 ---
-summary: "CLI do Gateway OpenCraft (`opencraft gateway`) — rodar, consultar e descobrir gateways"
+summary: "OpenClaw Gateway CLI (`openclaw gateway`) — run, query, and discover gateways"
 read_when:
-  - Rodando o Gateway pelo CLI (dev ou servidores)
-  - Depurando auth, modos de bind e conectividade do Gateway
-  - Descobrindo gateways via Bonjour (LAN + tailnet)
+  - Running the Gateway from the CLI (dev or servers)
+  - Debugging Gateway auth, bind modes, and connectivity
+  - Discovering gateways via Bonjour (LAN + tailnet)
 title: "gateway"
 ---
 
-# CLI do Gateway
+# Gateway CLI
 
-O Gateway é o servidor WebSocket do OpenCraft (canais, nodes, sessões, hooks).
+The Gateway is OpenClaw’s WebSocket server (channels, nodes, sessions, hooks).
 
-Subcomandos desta página ficam em `opencraft gateway …`.
+Subcommands in this page live under `openclaw gateway …`.
 
-Docs relacionados:
+Related docs:
 
 - [/gateway/bonjour](/gateway/bonjour)
 - [/gateway/discovery](/gateway/discovery)
 - [/gateway/configuration](/gateway/configuration)
 
-## Rodar o Gateway
+## Run the Gateway
 
-Rodar um processo de Gateway local:
-
-```bash
-opencraft gateway
-```
-
-Alias em foreground:
+Run a local Gateway process:
 
 ```bash
-opencraft gateway run
+openclaw gateway
 ```
 
-Notas:
+Foreground alias:
 
-- Por padrão, o Gateway se recusa a iniciar a menos que `gateway.mode=local` esteja definido em `~/.opencraft/opencraft.json`. Use `--allow-unconfigured` para execuções ad-hoc/dev.
-- Binding além de loopback sem auth é bloqueado (guardrail de segurança).
-- `SIGUSR1` aciona um restart in-process quando autorizado (`commands.restart` está habilitado por padrão; defina `commands.restart: false` para bloquear restart manual, enquanto gateway tool/config apply/update permanecem permitidos).
-- Handlers `SIGINT`/`SIGTERM` param o processo do gateway, mas não restauram estado de terminal personalizado. Se você envolver o CLI com uma TUI ou input de modo raw, restaure o terminal antes de sair.
+```bash
+openclaw gateway run
+```
 
-### Opções
+Notes:
 
-- `--port <port>`: porta WebSocket (padrão vem de config/env; geralmente `18789`).
-- `--bind <loopback|lan|tailnet|auto|custom>`: modo de bind do listener.
-- `--auth <token|password>`: override do modo de auth.
-- `--token <token>`: override de token (também define `OPENCLAW_GATEWAY_TOKEN` para o processo).
-- `--password <password>`: override de senha. Aviso: senhas inline podem ser expostas em listagens de processos locais.
-- `--password-file <path>`: ler a senha do gateway de um arquivo.
-- `--tailscale <off|serve|funnel>`: expor o Gateway via Tailscale.
-- `--tailscale-reset-on-exit`: resetar config de serve/funnel do Tailscale no shutdown.
-- `--allow-unconfigured`: permitir início do gateway sem `gateway.mode=local` na config.
-- `--dev`: criar uma config dev + workspace se ausente (pula BOOTSTRAP.md).
-- `--reset`: resetar config dev + credenciais + sessões + workspace (requer `--dev`).
-- `--force`: matar qualquer listener existente na porta selecionada antes de iniciar.
-- `--verbose`: logs detalhados.
-- `--claude-cli-logs`: exibir apenas logs do claude-cli no console (e habilitar seu stdout/stderr).
-- `--ws-log <auto|full|compact>`: estilo de log de websocket (padrão `auto`).
-- `--compact`: alias para `--ws-log compact`.
-- `--raw-stream`: registrar eventos raw do stream de modelo em jsonl.
-- `--raw-stream-path <path>`: path do jsonl de stream raw.
+- By default, the Gateway refuses to start unless `gateway.mode=local` is set in `~/.openclaw/openclaw.json`. Use `--allow-unconfigured` for ad-hoc/dev runs.
+- Binding beyond loopback without auth is blocked (safety guardrail).
+- `SIGUSR1` triggers an in-process restart when authorized (`commands.restart` is enabled by default; set `commands.restart: false` to block manual restart, while gateway tool/config apply/update remain allowed).
+- `SIGINT`/`SIGTERM` handlers stop the gateway process, but they don’t restore any custom terminal state. If you wrap the CLI with a TUI or raw-mode input, restore the terminal before exit.
 
-## Consultar um Gateway em execução
+### Options
 
-Todos os comandos de consulta usam RPC WebSocket.
+- `--port <port>`: WebSocket port (default comes from config/env; usually `18789`).
+- `--bind <loopback|lan|tailnet|auto|custom>`: listener bind mode.
+- `--auth <token|password>`: auth mode override.
+- `--token <token>`: token override (also sets `OPENCLAW_GATEWAY_TOKEN` for the process).
+- `--password <password>`: password override. Warning: inline passwords can be exposed in local process listings.
+- `--password-file <path>`: read the gateway password from a file.
+- `--tailscale <off|serve|funnel>`: expose the Gateway via Tailscale.
+- `--tailscale-reset-on-exit`: reset Tailscale serve/funnel config on shutdown.
+- `--allow-unconfigured`: allow gateway start without `gateway.mode=local` in config.
+- `--dev`: create a dev config + workspace if missing (skips BOOTSTRAP.md).
+- `--reset`: reset dev config + credentials + sessions + workspace (requires `--dev`).
+- `--force`: kill any existing listener on the selected port before starting.
+- `--verbose`: verbose logs.
+- `--claude-cli-logs`: only show claude-cli logs in the console (and enable its stdout/stderr).
+- `--ws-log <auto|full|compact>`: websocket log style (default `auto`).
+- `--compact`: alias for `--ws-log compact`.
+- `--raw-stream`: log raw model stream events to jsonl.
+- `--raw-stream-path <path>`: raw stream jsonl path.
 
-Modos de saída:
+## Query a running Gateway
 
-- Padrão: legível por humanos (colorido em TTY).
-- `--json`: JSON legível por máquina (sem styling/spinner).
-- `--no-color` (ou `NO_COLOR=1`): desabilitar ANSI mantendo layout humano.
+All query commands use WebSocket RPC.
 
-Opções compartilhadas (onde suportado):
+Output modes:
 
-- `--url <url>`: URL WebSocket do Gateway.
-- `--token <token>`: token do Gateway.
-- `--password <password>`: senha do Gateway.
-- `--timeout <ms>`: timeout/budget (varia por comando).
-- `--expect-final`: aguardar uma resposta "final" (chamadas de agente).
+- Default: human-readable (colored in TTY).
+- `--json`: machine-readable JSON (no styling/spinner).
+- `--no-color` (or `NO_COLOR=1`): disable ANSI while keeping human layout.
 
-Nota: ao definir `--url`, o CLI não retorna para credenciais de config ou ambiente.
-Passe `--token` ou `--password` explicitamente. Credenciais explícitas ausentes são um erro.
+Shared options (where supported):
+
+- `--url <url>`: Gateway WebSocket URL.
+- `--token <token>`: Gateway token.
+- `--password <password>`: Gateway password.
+- `--timeout <ms>`: timeout/budget (varies per command).
+- `--expect-final`: wait for a “final” response (agent calls).
+
+Note: when you set `--url`, the CLI does not fall back to config or environment credentials.
+Pass `--token` or `--password` explicitly. Missing explicit credentials is an error.
 
 ### `gateway health`
 
 ```bash
-opencraft gateway health --url ws://127.0.0.1:18789
+openclaw gateway health --url ws://127.0.0.1:18789
 ```
 
 ### `gateway status`
 
-`gateway status` mostra o serviço do Gateway (launchd/systemd/schtasks) mais uma probe RPC opcional.
+`gateway status` shows the Gateway service (launchd/systemd/schtasks) plus an optional RPC probe.
 
 ```bash
-opencraft gateway status
-opencraft gateway status --json
-opencraft gateway status --require-rpc
+openclaw gateway status
+openclaw gateway status --json
+openclaw gateway status --require-rpc
 ```
 
-Opções:
+Options:
 
-- `--url <url>`: sobrescrever a URL da probe.
-- `--token <token>`: auth por token para a probe.
-- `--password <password>`: auth por senha para a probe.
-- `--timeout <ms>`: timeout da probe (padrão `10000`).
-- `--no-probe`: pular a probe RPC (visão apenas de serviço).
-- `--deep`: escanear serviços de nível de sistema também.
-- `--require-rpc`: sair com não-zero quando a probe RPC falha. Não pode ser combinado com `--no-probe`.
+- `--url <url>`: override the probe URL.
+- `--token <token>`: token auth for the probe.
+- `--password <password>`: password auth for the probe.
+- `--timeout <ms>`: probe timeout (default `10000`).
+- `--no-probe`: skip the RPC probe (service-only view).
+- `--deep`: scan system-level services too.
+- `--require-rpc`: exit non-zero when the RPC probe fails. Cannot be combined with `--no-probe`.
 
-Notas:
+Notes:
 
-- `gateway status` resolve SecretRefs de auth configurados para auth de probe quando possível.
-- Se um SecretRef de auth obrigatório não estiver resolvido neste path de comando, a auth de probe pode falhar; passe `--token`/`--password` explicitamente ou resolva a fonte do segredo primeiro.
-- Use `--require-rpc` em scripts e automação quando um serviço ouvindo não é suficiente e você precisa que o RPC do Gateway em si esteja saudável.
-- Em instalações systemd Linux, verificações de deriva de auth de serviço leem valores de `Environment=` e `EnvironmentFile=` da unit (incluindo `%h`, paths entre aspas, múltiplos arquivos e arquivos opcionais `-`).
+- `gateway status` resolves configured auth SecretRefs for probe auth when possible.
+- If a required auth SecretRef is unresolved in this command path, `gateway status --json` reports `rpc.authWarning` when probe connectivity/auth fails; pass `--token`/`--password` explicitly or resolve the secret source first.
+- If the probe succeeds, unresolved auth-ref warnings are suppressed to avoid false positives.
+- Use `--require-rpc` in scripts and automation when a listening service is not enough and you need the Gateway RPC itself to be healthy.
+- On Linux systemd installs, service auth drift checks read both `Environment=` and `EnvironmentFile=` values from the unit (including `%h`, quoted paths, multiple files, and optional `-` files).
 
 ### `gateway probe`
 
-`gateway probe` é o comando "depurar tudo". Ele sempre faz probe:
+`gateway probe` is the “debug everything” command. It always probes:
 
-- do seu gateway remoto configurado (se definido), e
-- do localhost (loopback) **mesmo que o remoto esteja configurado**.
+- your configured remote gateway (if set), and
+- localhost (loopback) **even if remote is configured**.
 
-Se múltiplos gateways estiverem acessíveis, ele imprime todos eles. Múltiplos gateways são suportados quando você usa perfis/portas isolados (por exemplo, um bot de rescue), mas a maioria das instalações ainda roda um único gateway.
-
-```bash
-opencraft gateway probe
-opencraft gateway probe --json
-```
-
-Interpretação:
-
-- `Reachable: yes` significa que ao menos um alvo aceitou uma conexão WebSocket.
-- `RPC: ok` significa que chamadas RPC de detalhe (`health`/`status`/`system-presence`/`config.get`) também tiveram sucesso.
-- `RPC: limited - missing scope: operator.read` significa que a conexão teve sucesso mas o RPC de detalhe tem escopo limitado. Isso é reportado como reachability **degradada**, não falha total.
-- O código de saída é não-zero apenas quando nenhum alvo testado está acessível.
-
-Notas JSON (`--json`):
-
-- Nível superior:
-  - `ok`: ao menos um alvo está acessível.
-  - `degraded`: ao menos um alvo teve RPC de detalhe com escopo limitado.
-- Por alvo (`targets[].connect`):
-  - `ok`: acessibilidade após conexão + classificação degradada.
-  - `rpcOk`: sucesso total do RPC de detalhe.
-  - `scopeLimited`: RPC de detalhe falhou por falta de escopo de operador.
-
-#### Remoto via SSH (paridade com app Mac)
-
-O modo "Remote over SSH" do app macOS usa um port-forward local para que o gateway remoto (que pode estar vinculado apenas ao loopback) se torne acessível em `ws://127.0.0.1:<port>`.
-
-Equivalente CLI:
+If multiple gateways are reachable, it prints all of them. Multiple gateways are supported when you use isolated profiles/ports (e.g., a rescue bot), but most installs still run a single gateway.
 
 ```bash
-opencraft gateway probe --ssh user@gateway-host
+openclaw gateway probe
+openclaw gateway probe --json
 ```
 
-Opções:
+Interpretation:
 
-- `--ssh <target>`: `user@host` ou `user@host:port` (porta padrão: `22`).
-- `--ssh-identity <path>`: arquivo de identidade.
-- `--ssh-auto`: escolher o primeiro host de gateway descoberto como alvo SSH (apenas LAN/WAB).
+- `Reachable: yes` means at least one target accepted a WebSocket connect.
+- `RPC: ok` means detail RPC calls (`health`/`status`/`system-presence`/`config.get`) also succeeded.
+- `RPC: limited - missing scope: operator.read` means connect succeeded but detail RPC is scope-limited. This is reported as **degraded** reachability, not full failure.
+- Exit code is non-zero only when no probed target is reachable.
 
-Config (opcional, usada como padrão):
+JSON notes (`--json`):
+
+- Top level:
+  - `ok`: at least one target is reachable.
+  - `degraded`: at least one target had scope-limited detail RPC.
+- Per target (`targets[].connect`):
+  - `ok`: reachability after connect + degraded classification.
+  - `rpcOk`: full detail RPC success.
+  - `scopeLimited`: detail RPC failed due to missing operator scope.
+
+#### Remote over SSH (Mac app parity)
+
+The macOS app “Remote over SSH” mode uses a local port-forward so the remote gateway (which may be bound to loopback only) becomes reachable at `ws://127.0.0.1:<port>`.
+
+CLI equivalent:
+
+```bash
+openclaw gateway probe --ssh user@gateway-host
+```
+
+Options:
+
+- `--ssh <target>`: `user@host` or `user@host:port` (port defaults to `22`).
+- `--ssh-identity <path>`: identity file.
+- `--ssh-auto`: pick the first discovered gateway host as SSH target (LAN/WAB only).
+
+Config (optional, used as defaults):
 
 - `gateway.remote.sshTarget`
 - `gateway.remote.sshIdentity`
 
 ### `gateway call <method>`
 
-Helper de RPC de baixo nível.
+Low-level RPC helper.
 
 ```bash
-opencraft gateway call status
-opencraft gateway call logs.tail --params '{"sinceMs": 60000}'
+openclaw gateway call status
+openclaw gateway call logs.tail --params '{"sinceMs": 60000}'
 ```
 
-## Gerenciar o serviço do Gateway
+## Manage the Gateway service
 
 ```bash
-opencraft gateway install
-opencraft gateway start
-opencraft gateway stop
-opencraft gateway restart
-opencraft gateway uninstall
+openclaw gateway install
+openclaw gateway start
+openclaw gateway stop
+openclaw gateway restart
+openclaw gateway uninstall
 ```
 
-Notas:
+Notes:
 
-- `gateway install` suporta `--port`, `--runtime`, `--token`, `--force`, `--json`.
-- Quando auth por token requer um token e `gateway.auth.token` é gerenciado por SecretRef, `gateway install` valida que o SecretRef é resolvível mas não persiste o token resolvido nos metadados de ambiente do serviço.
-- Se auth por token requer um token e o SecretRef de token configurado não está resolvido, a instalação falha fechada em vez de persistir texto simples de fallback.
-- Para auth por senha em `gateway run`, prefira `OPENCLAW_GATEWAY_PASSWORD`, `--password-file`, ou um `gateway.auth.password` com SecretRef em vez de `--password` inline.
-- Em modo de auth inferido, `OPENCLAW_GATEWAY_PASSWORD`/`CLAWDBOT_GATEWAY_PASSWORD` apenas de shell não relaxa os requisitos de token de instalação; use config durável (`gateway.auth.password` ou config `env`) ao instalar um serviço gerenciado.
-- Se tanto `gateway.auth.token` quanto `gateway.auth.password` estiverem configurados e `gateway.auth.mode` não estiver definido, a instalação é bloqueada até que o modo seja definido explicitamente.
-- Comandos de ciclo de vida aceitam `--json` para scripts.
+- `gateway install` supports `--port`, `--runtime`, `--token`, `--force`, `--json`.
+- When token auth requires a token and `gateway.auth.token` is SecretRef-managed, `gateway install` validates that the SecretRef is resolvable but does not persist the resolved token into service environment metadata.
+- If token auth requires a token and the configured token SecretRef is unresolved, install fails closed instead of persisting fallback plaintext.
+- For password auth on `gateway run`, prefer `OPENCLAW_GATEWAY_PASSWORD`, `--password-file`, or a SecretRef-backed `gateway.auth.password` over inline `--password`.
+- In inferred auth mode, shell-only `OPENCLAW_GATEWAY_PASSWORD`/`CLAWDBOT_GATEWAY_PASSWORD` does not relax install token requirements; use durable config (`gateway.auth.password` or config `env`) when installing a managed service.
+- If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, install is blocked until mode is set explicitly.
+- Lifecycle commands accept `--json` for scripting.
 
-## Descobrir gateways (Bonjour)
+## Discover gateways (Bonjour)
 
-`gateway discover` escaneia por beacons do Gateway (`_openclaw-gw._tcp`).
+`gateway discover` scans for Gateway beacons (`_openclaw-gw._tcp`).
 
 - Multicast DNS-SD: `local.`
-- Unicast DNS-SD (Wide-Area Bonjour): escolha um domínio (exemplo: `openclaw.internal.`) e configure split DNS + um servidor DNS; veja [/gateway/bonjour](/gateway/bonjour)
+- Unicast DNS-SD (Wide-Area Bonjour): choose a domain (example: `openclaw.internal.`) and set up split DNS + a DNS server; see [/gateway/bonjour](/gateway/bonjour)
 
-Apenas gateways com descoberta Bonjour habilitada (padrão) anunciam o beacon.
+Only gateways with Bonjour discovery enabled (default) advertise the beacon.
 
-Registros de descoberta Wide-Area incluem (TXT):
+Wide-Area discovery records include (TXT):
 
-- `role` (hint de papel do gateway)
-- `transport` (hint de transporte, ex. `gateway`)
-- `gatewayPort` (porta WebSocket, geralmente `18789`)
-- `sshPort` (porta SSH; padrão `22` se não presente)
-- `tailnetDns` (hostname MagicDNS, quando disponível)
-- `gatewayTls` / `gatewayTlsSha256` (TLS habilitado + fingerprint do cert)
-- `cliPath` (hint opcional para instalações remotas)
+- `role` (gateway role hint)
+- `transport` (transport hint, e.g. `gateway`)
+- `gatewayPort` (WebSocket port, usually `18789`)
+- `sshPort` (SSH port; defaults to `22` if not present)
+- `tailnetDns` (MagicDNS hostname, when available)
+- `gatewayTls` / `gatewayTlsSha256` (TLS enabled + cert fingerprint)
+- `cliPath` (optional hint for remote installs)
 
 ### `gateway discover`
 
 ```bash
-opencraft gateway discover
+openclaw gateway discover
 ```
 
-Opções:
+Options:
 
-- `--timeout <ms>`: timeout por comando (browse/resolve); padrão `2000`.
-- `--json`: saída legível por máquina (também desabilita styling/spinner).
+- `--timeout <ms>`: per-command timeout (browse/resolve); default `2000`.
+- `--json`: machine-readable output (also disables styling/spinner).
 
-Exemplos:
+Examples:
 
 ```bash
-opencraft gateway discover --timeout 4000
-opencraft gateway discover --json | jq '.beacons[].wsUrl'
+openclaw gateway discover --timeout 4000
+openclaw gateway discover --json | jq '.beacons[].wsUrl'
 ```

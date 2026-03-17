@@ -19,7 +19,7 @@ vi.mock("./openrouter-model-capabilities.js", () => ({
     mockLoadOpenRouterModelCapabilities(modelId),
 }));
 
-import type { OpenCraftConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { buildInlineProviderModels, resolveModel, resolveModelAsync } from "./model.js";
 import {
   buildOpenAICodexForwardCompatExpectation,
@@ -66,7 +66,7 @@ function expectResolvedForwardCompatFallback(params: {
   provider: string;
   id: string;
   expectedModel: Record<string, unknown>;
-  cfg?: OpenCraftConfig;
+  cfg?: OpenClawConfig;
 }) {
   const result = resolveModel(params.provider, params.id, "/tmp/agent", params.cfg);
   expect(result.error).toBeUndefined();
@@ -249,7 +249,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig);
+    } as unknown as OpenClawConfig);
 
     expect(result.error).toBeUndefined();
     expect(Array.isArray(result.model?.input)).toBe(true);
@@ -266,7 +266,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("custom", "missing-model", "/tmp/agent", cfg);
 
@@ -286,7 +286,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     // Requesting a non-listed model forces the providerCfg fallback branch.
     const result = resolveModel("custom", "missing-model", "/tmp/agent", cfg);
@@ -312,7 +312,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("custom", "missing-model", "/tmp/agent", cfg);
 
@@ -366,7 +366,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("custom", "model-b", "/tmp/agent", cfg);
 
@@ -393,7 +393,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("custom", "model-b", "/tmp/agent", cfg);
 
@@ -419,7 +419,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("openrouter", "openrouter/healer-alpha", "/tmp/agent", cfg);
 
@@ -571,7 +571,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("onehub", "glm-5", "/tmp/agent", cfg);
 
@@ -630,7 +630,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("qwen", "qwen3-coder-plus", "/tmp/agent", cfg);
 
@@ -741,7 +741,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = resolveModel("openai", "gpt-5.4", "/tmp/agent", cfg);
 
@@ -918,7 +918,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenCraftConfig;
+    } as OpenClawConfig;
 
     const result = resolveModel("openai", "gpt-5.3-codex-spark", "/tmp/agent", cfg);
 
@@ -941,7 +941,7 @@ describe("resolveModel", () => {
     // This test verifies the ordering: codex fallback must fire BEFORE the generic providerCfg fallback.
     // If ordering is wrong, the generic fallback would use api: "openai-responses" (the default)
     // instead of "openai-codex-responses".
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       models: {
         providers: {
           "openai-codex": {
@@ -950,7 +950,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     expectResolvedForwardCompatFallback({
       provider: "openai-codex",
@@ -967,7 +967,7 @@ describe("resolveModel", () => {
   it("uses codex fallback when inline model omits api (#39682)", () => {
     mockOpenAICodexTemplateModel();
 
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       models: {
         providers: {
           "openai-codex": {
@@ -977,7 +977,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = resolveModel("openai-codex", "gpt-5.4", "/tmp/agent", cfg);
     expect(result.error).toBeUndefined();
@@ -993,7 +993,7 @@ describe("resolveModel", () => {
   it("normalizes openai-codex gpt-5.4 overrides away from /v1/responses", () => {
     mockOpenAICodexTemplateModel();
 
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       models: {
         providers: {
           "openai-codex": {
@@ -1002,7 +1002,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     expectResolvedForwardCompatFallback({
       provider: "openai-codex",
@@ -1020,7 +1020,7 @@ describe("resolveModel", () => {
   it("does not rewrite openai baseUrl when openai-codex api stays non-codex", () => {
     mockOpenAICodexTemplateModel();
 
-    const cfg: OpenCraftConfig = {
+    const cfg: OpenClawConfig = {
       models: {
         providers: {
           "openai-codex": {
@@ -1029,7 +1029,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     expectResolvedForwardCompatFallback({
       provider: "openai-codex",
@@ -1051,7 +1051,7 @@ describe("resolveModel", () => {
     expect(result.model).toBeUndefined();
     expect(result.error).toContain("Unknown model: ollama/gemma3:4b");
     expect(result.error).toContain("OLLAMA_API_KEY");
-    expect(result.error).toContain("docs.opencraft.ai/providers/ollama");
+    expect(result.error).toContain("docs.openclaw.ai/providers/ollama");
   });
 
   it("includes auth hint for unknown vllm models", () => {
@@ -1090,7 +1090,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = resolveModel("anthropic", "claude-sonnet-4-5", "/tmp/agent", cfg);
     expect(result.error).toBeUndefined();
@@ -1118,7 +1118,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = resolveModel("anthropic", "claude-sonnet-4-5", "/tmp/agent", cfg);
     expect(result.error).toBeUndefined();
@@ -1154,7 +1154,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as unknown as OpenCraftConfig;
+    } as unknown as OpenClawConfig;
 
     const result = resolveModel("kimi-coding", "k2p5", "/tmp/agent", cfg);
     expect(result.error).toBeUndefined();

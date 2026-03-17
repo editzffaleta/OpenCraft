@@ -4,7 +4,7 @@ import {
   GroupPolicySchema,
   MarkdownConfigSchema,
   requireOpenAllowFrom,
-} from "opencraft/plugin-sdk/mattermost";
+} from "openclaw/plugin-sdk/mattermost";
 import { z } from "zod";
 import { requireChannelOpenAllowFrom } from "../../shared/config-schema-helpers.js";
 import { buildSecretInputSchema } from "./secret-input.js";

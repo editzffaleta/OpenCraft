@@ -1,4 +1,4 @@
-package ai.opencraft.app.ui
+package ai.openclaw.app.ui
 
 import java.util.Base64
 import org.junit.Assert.assertEquals

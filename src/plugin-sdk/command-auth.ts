@@ -1,8 +1,8 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import { resolveDmGroupAccessWithLists } from "../security/dm-policy-shared.js";
 
 export type ResolveSenderCommandAuthorizationParams = {
-  cfg: OpenCraftConfig;
+  cfg: OpenClawConfig;
   rawBody: string;
   isGroup: boolean;
   dmPolicy: string;
@@ -11,7 +11,7 @@ export type ResolveSenderCommandAuthorizationParams = {
   senderId: string;
   isSenderAllowed: (senderId: string, allowFrom: string[]) => boolean;
   readAllowFromStore: () => Promise<string[]>;
-  shouldComputeCommandAuthorized: (rawBody: string, cfg: OpenCraftConfig) => boolean;
+  shouldComputeCommandAuthorized: (rawBody: string, cfg: OpenClawConfig) => boolean;
   resolveCommandAuthorizedFromAuthorizers: (params: {
     useAccessGroups: boolean;
     authorizers: Array<{ configured: boolean; allowed: boolean }>;
@@ -19,7 +19,7 @@ export type ResolveSenderCommandAuthorizationParams = {
 };
 
 export type CommandAuthorizationRuntime = {
-  shouldComputeCommandAuthorized: (rawBody: string, cfg: OpenCraftConfig) => boolean;
+  shouldComputeCommandAuthorized: (rawBody: string, cfg: OpenClawConfig) => boolean;
   resolveCommandAuthorizedFromAuthorizers: (params: {
     useAccessGroups: boolean;
     authorizers: Array<{ configured: boolean; allowed: boolean }>;
@@ -33,6 +33,7 @@ export type ResolveSenderCommandAuthorizationWithRuntimeParams = Omit<
   runtime: CommandAuthorizationRuntime;
 };
 
+/** Fast-path DM command authorization when only policy and sender allowlist state matter. */
 export function resolveDirectDmAuthorizationOutcome(params: {
   isGroup: boolean;
   dmPolicy: string;
@@ -50,6 +51,7 @@ export function resolveDirectDmAuthorizationOutcome(params: {
   return "allowed";
 }
 
+/** Runtime-backed wrapper around sender command authorization for grouped helper surfaces. */
 export async function resolveSenderCommandAuthorizationWithRuntime(
   params: ResolveSenderCommandAuthorizationWithRuntimeParams,
 ): ReturnType<typeof resolveSenderCommandAuthorization> {
@@ -60,6 +62,7 @@ export async function resolveSenderCommandAuthorizationWithRuntime(
   });
 }
 
+/** Compute effective allowlists and command authorization for one inbound sender. */
 export async function resolveSenderCommandAuthorization(
   params: ResolveSenderCommandAuthorizationParams,
 ): Promise<{

@@ -1,99 +1,99 @@
 ---
-summary: "Pareamento de node sob responsabilidade do Gateway (Opção B) para iOS e outros nodes remotos"
+summary: "Gateway-owned node pairing (Option B) for iOS and other remote nodes"
 read_when:
-  - Implementando aprovações de pareamento de node sem UI macOS
-  - Adicionando fluxos CLI para aprovar nodes remotos
-  - Estendendo o protocolo do gateway com gerenciamento de node
-title: "Pareamento sob Responsabilidade do Gateway"
+  - Implementing node pairing approvals without macOS UI
+  - Adding CLI flows for approving remote nodes
+  - Extending gateway protocol with node management
+title: "Gateway-Owned Pairing"
 ---
 
-# Pareamento sob responsabilidade do Gateway (Opção B)
+# Gateway-owned pairing (Option B)
 
-No pareamento sob responsabilidade do Gateway, o **Gateway** é a fonte de verdade sobre quais nodes
-têm permissão para entrar. UIs (app macOS, futuros clientes) são apenas frontends que
-aprovam ou rejeitam requisições pendentes.
+In Gateway-owned pairing, the **Gateway** is the source of truth for which nodes
+are allowed to join. UIs (macOS app, future clients) are just frontends that
+approve or reject pending requests.
 
-**Importante:** Nodes WS usam **pareamento de dispositivo** (role `node`) durante `connect`.
-`node.pair.*` é um store de pareamento separado e **não** controla o handshake WS.
-Apenas clientes que chamam explicitamente `node.pair.*` usam este fluxo.
+**Important:** WS nodes use **device pairing** (role `node`) during `connect`.
+`node.pair.*` is a separate pairing store and does **not** gate the WS handshake.
+Only clients that explicitly call `node.pair.*` use this flow.
 
-## Conceitos
+## Concepts
 
-- **Requisição pendente**: um node pediu para entrar; requer aprovação.
-- **Node pareado**: node aprovado com um token de auth emitido.
-- **Transporte**: o endpoint Gateway WS encaminha requisições mas não decide
-  a adesão. (Suporte à bridge TCP legada está depreciado/removido.)
+- **Pending request**: a node asked to join; requires approval.
+- **Paired node**: approved node with an issued auth token.
+- **Transport**: the Gateway WS endpoint forwards requests but does not decide
+  membership. (Legacy TCP bridge support is deprecated/removed.)
 
-## Como o pareamento funciona
+## How pairing works
 
-1. Um node conecta ao Gateway WS e solicita pareamento.
-2. O Gateway armazena uma **requisição pendente** e emite `node.pair.requested`.
-3. Você aprova ou rejeita a requisição (CLI ou UI).
-4. Na aprovação, o Gateway emite um **novo token** (tokens são rotacionados no re-pareamento).
-5. O node reconecta usando o token e está agora "pareado".
+1. A node connects to the Gateway WS and requests pairing.
+2. The Gateway stores a **pending request** and emits `node.pair.requested`.
+3. You approve or reject the request (CLI or UI).
+4. On approval, the Gateway issues a **new token** (tokens are rotated on re‑pair).
+5. The node reconnects using the token and is now “paired”.
 
-Requisições pendentes expiram automaticamente após **5 minutos**.
+Pending requests expire automatically after **5 minutes**.
 
-## Fluxo CLI (amigável a headless)
+## CLI workflow (headless friendly)
 
 ```bash
-opencraft nodes pending
-opencraft nodes approve <requestId>
-opencraft nodes reject <requestId>
-opencraft nodes status
-opencraft nodes rename --node <id|name|ip> --name "iPad da Sala"
+openclaw nodes pending
+openclaw nodes approve <requestId>
+openclaw nodes reject <requestId>
+openclaw nodes status
+openclaw nodes rename --node <id|name|ip> --name "Living Room iPad"
 ```
 
-`nodes status` mostra nodes pareados/conectados e suas capacidades.
+`nodes status` shows paired/connected nodes and their capabilities.
 
-## Superfície de API (protocolo do gateway)
+## API surface (gateway protocol)
 
-Eventos:
+Events:
 
-- `node.pair.requested` — emitido quando uma nova requisição pendente é criada.
-- `node.pair.resolved` — emitido quando uma requisição é aprovada/rejeitada/expirada.
+- `node.pair.requested` — emitted when a new pending request is created.
+- `node.pair.resolved` — emitted when a request is approved/rejected/expired.
 
-Métodos:
+Methods:
 
-- `node.pair.request` — criar ou reutilizar uma requisição pendente.
-- `node.pair.list` — listar nodes pendentes + pareados.
-- `node.pair.approve` — aprovar uma requisição pendente (emite token).
-- `node.pair.reject` — rejeitar uma requisição pendente.
-- `node.pair.verify` — verificar `{ nodeId, token }`.
+- `node.pair.request` — create or reuse a pending request.
+- `node.pair.list` — list pending + paired nodes.
+- `node.pair.approve` — approve a pending request (issues token).
+- `node.pair.reject` — reject a pending request.
+- `node.pair.verify` — verify `{ nodeId, token }`.
 
-Notas:
+Notes:
 
-- `node.pair.request` é idempotente por node: chamadas repetidas retornam a mesma
-  requisição pendente.
-- Aprovação **sempre** gera um token novo; nenhum token é retornado de
+- `node.pair.request` is idempotent per node: repeated calls return the same
+  pending request.
+- Approval **always** generates a fresh token; no token is ever returned from
   `node.pair.request`.
-- Requisições podem incluir `silent: true` como um hint para fluxos de aprovação automática.
+- Requests may include `silent: true` as a hint for auto-approval flows.
 
-## Aprovação automática (app macOS)
+## Auto-approval (macOS app)
 
-O app macOS pode opcionalmente tentar uma **aprovação silenciosa** quando:
+The macOS app can optionally attempt a **silent approval** when:
 
-- a requisição está marcada como `silent`, e
-- o app consegue verificar uma conexão SSH ao host do gateway usando o mesmo usuário.
+- the request is marked `silent`, and
+- the app can verify an SSH connection to the gateway host using the same user.
 
-Se a aprovação silenciosa falhar, volta ao prompt normal "Aprovar/Rejeitar".
+If silent approval fails, it falls back to the normal “Approve/Reject” prompt.
 
-## Armazenamento (local, privado)
+## Storage (local, private)
 
-O estado de pareamento é armazenado no diretório de state do Gateway (padrão `~/.opencraft`):
+Pairing state is stored under the Gateway state directory (default `~/.openclaw`):
 
-- `~/.opencraft/nodes/paired.json`
-- `~/.opencraft/nodes/pending.json`
+- `~/.openclaw/nodes/paired.json`
+- `~/.openclaw/nodes/pending.json`
 
-Se você substituir `OPENCLAW_STATE_DIR`, a pasta `nodes/` se move junto.
+If you override `OPENCLAW_STATE_DIR`, the `nodes/` folder moves with it.
 
-Notas de segurança:
+Security notes:
 
-- Tokens são segredos; trate `paired.json` como sensível.
-- Rotacionar um token requer re-aprovação (ou excluir a entrada do node).
+- Tokens are secrets; treat `paired.json` as sensitive.
+- Rotating a token requires re-approval (or deleting the node entry).
 
-## Comportamento do transporte
+## Transport behavior
 
-- O transporte é **stateless**; não armazena adesão.
-- Se o Gateway estiver offline ou o pareamento estiver desabilitado, nodes não conseguem parear.
-- Se o Gateway estiver em modo remoto, o pareamento ainda acontece contra o store do Gateway remoto.
+- The transport is **stateless**; it does not store membership.
+- If the Gateway is offline or pairing is disabled, nodes cannot pair.
+- If the Gateway is in remote mode, pairing still happens against the remote Gateway’s store.

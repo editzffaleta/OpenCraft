@@ -1,19 +1,19 @@
-package ai.opencraft.app.node
+package ai.openclaw.app.node
 
-import ai.opencraft.app.protocol.OpenCraftCalendarCommand
-import ai.opencraft.app.protocol.OpenCraftCanvasA2UICommand
-import ai.opencraft.app.protocol.OpenCraftCanvasCommand
-import ai.opencraft.app.protocol.OpenCraftCameraCommand
-import ai.opencraft.app.protocol.OpenCraftCapability
-import ai.opencraft.app.protocol.OpenCraftCallLogCommand
-import ai.opencraft.app.protocol.OpenCraftContactsCommand
-import ai.opencraft.app.protocol.OpenCraftDeviceCommand
-import ai.opencraft.app.protocol.OpenCraftLocationCommand
-import ai.opencraft.app.protocol.OpenCraftMotionCommand
-import ai.opencraft.app.protocol.OpenCraftNotificationsCommand
-import ai.opencraft.app.protocol.OpenCraftPhotosCommand
-import ai.opencraft.app.protocol.OpenCraftSmsCommand
-import ai.opencraft.app.protocol.OpenCraftSystemCommand
+import ai.openclaw.app.protocol.OpenClawCalendarCommand
+import ai.openclaw.app.protocol.OpenClawCanvasA2UICommand
+import ai.openclaw.app.protocol.OpenClawCanvasCommand
+import ai.openclaw.app.protocol.OpenClawCameraCommand
+import ai.openclaw.app.protocol.OpenClawCapability
+import ai.openclaw.app.protocol.OpenClawCallLogCommand
+import ai.openclaw.app.protocol.OpenClawContactsCommand
+import ai.openclaw.app.protocol.OpenClawDeviceCommand
+import ai.openclaw.app.protocol.OpenClawLocationCommand
+import ai.openclaw.app.protocol.OpenClawMotionCommand
+import ai.openclaw.app.protocol.OpenClawNotificationsCommand
+import ai.openclaw.app.protocol.OpenClawPhotosCommand
+import ai.openclaw.app.protocol.OpenClawSmsCommand
+import ai.openclaw.app.protocol.OpenClawSystemCommand
 
 data class NodeRuntimeFlags(
   val cameraEnabled: Boolean,
@@ -58,139 +58,139 @@ data class InvokeCommandSpec(
 object InvokeCommandRegistry {
   val capabilityManifest: List<NodeCapabilitySpec> =
     listOf(
-      NodeCapabilitySpec(name = OpenCraftCapability.Canvas.rawValue),
-      NodeCapabilitySpec(name = OpenCraftCapability.Device.rawValue),
-      NodeCapabilitySpec(name = OpenCraftCapability.Notifications.rawValue),
-      NodeCapabilitySpec(name = OpenCraftCapability.System.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Canvas.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Device.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Notifications.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.System.rawValue),
       NodeCapabilitySpec(
-        name = OpenCraftCapability.Camera.rawValue,
+        name = OpenClawCapability.Camera.rawValue,
         availability = NodeCapabilityAvailability.CameraEnabled,
       ),
       NodeCapabilitySpec(
-        name = OpenCraftCapability.Sms.rawValue,
+        name = OpenClawCapability.Sms.rawValue,
         availability = NodeCapabilityAvailability.SmsAvailable,
       ),
       NodeCapabilitySpec(
-        name = OpenCraftCapability.VoiceWake.rawValue,
+        name = OpenClawCapability.VoiceWake.rawValue,
         availability = NodeCapabilityAvailability.VoiceWakeEnabled,
       ),
       NodeCapabilitySpec(
-        name = OpenCraftCapability.Location.rawValue,
+        name = OpenClawCapability.Location.rawValue,
         availability = NodeCapabilityAvailability.LocationEnabled,
       ),
-      NodeCapabilitySpec(name = OpenCraftCapability.Photos.rawValue),
-      NodeCapabilitySpec(name = OpenCraftCapability.Contacts.rawValue),
-      NodeCapabilitySpec(name = OpenCraftCapability.Calendar.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Photos.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Contacts.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.Calendar.rawValue),
       NodeCapabilitySpec(
-        name = OpenCraftCapability.Motion.rawValue,
+        name = OpenClawCapability.Motion.rawValue,
         availability = NodeCapabilityAvailability.MotionAvailable,
       ),
-      NodeCapabilitySpec(name = OpenCraftCapability.CallLog.rawValue),
+      NodeCapabilitySpec(name = OpenClawCapability.CallLog.rawValue),
     )
 
   val all: List<InvokeCommandSpec> =
     listOf(
       InvokeCommandSpec(
-        name = OpenCraftCanvasCommand.Present.rawValue,
+        name = OpenClawCanvasCommand.Present.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasCommand.Hide.rawValue,
+        name = OpenClawCanvasCommand.Hide.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasCommand.Navigate.rawValue,
+        name = OpenClawCanvasCommand.Navigate.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasCommand.Eval.rawValue,
+        name = OpenClawCanvasCommand.Eval.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasCommand.Snapshot.rawValue,
+        name = OpenClawCanvasCommand.Snapshot.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasA2UICommand.Push.rawValue,
+        name = OpenClawCanvasA2UICommand.Push.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasA2UICommand.PushJSONL.rawValue,
+        name = OpenClawCanvasA2UICommand.PushJSONL.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCanvasA2UICommand.Reset.rawValue,
+        name = OpenClawCanvasA2UICommand.Reset.rawValue,
         requiresForeground = true,
       ),
       InvokeCommandSpec(
-        name = OpenCraftSystemCommand.Notify.rawValue,
+        name = OpenClawSystemCommand.Notify.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCameraCommand.List.rawValue,
-        requiresForeground = true,
-        availability = InvokeCommandAvailability.CameraEnabled,
-      ),
-      InvokeCommandSpec(
-        name = OpenCraftCameraCommand.Snap.rawValue,
+        name = OpenClawCameraCommand.List.rawValue,
         requiresForeground = true,
         availability = InvokeCommandAvailability.CameraEnabled,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCameraCommand.Clip.rawValue,
+        name = OpenClawCameraCommand.Snap.rawValue,
         requiresForeground = true,
         availability = InvokeCommandAvailability.CameraEnabled,
       ),
       InvokeCommandSpec(
-        name = OpenCraftLocationCommand.Get.rawValue,
+        name = OpenClawCameraCommand.Clip.rawValue,
+        requiresForeground = true,
+        availability = InvokeCommandAvailability.CameraEnabled,
+      ),
+      InvokeCommandSpec(
+        name = OpenClawLocationCommand.Get.rawValue,
         availability = InvokeCommandAvailability.LocationEnabled,
       ),
       InvokeCommandSpec(
-        name = OpenCraftDeviceCommand.Status.rawValue,
+        name = OpenClawDeviceCommand.Status.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftDeviceCommand.Info.rawValue,
+        name = OpenClawDeviceCommand.Info.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftDeviceCommand.Permissions.rawValue,
+        name = OpenClawDeviceCommand.Permissions.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftDeviceCommand.Health.rawValue,
+        name = OpenClawDeviceCommand.Health.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftNotificationsCommand.List.rawValue,
+        name = OpenClawNotificationsCommand.List.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftNotificationsCommand.Actions.rawValue,
+        name = OpenClawNotificationsCommand.Actions.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftPhotosCommand.Latest.rawValue,
+        name = OpenClawPhotosCommand.Latest.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftContactsCommand.Search.rawValue,
+        name = OpenClawContactsCommand.Search.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftContactsCommand.Add.rawValue,
+        name = OpenClawContactsCommand.Add.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCalendarCommand.Events.rawValue,
+        name = OpenClawCalendarCommand.Events.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCalendarCommand.Add.rawValue,
+        name = OpenClawCalendarCommand.Add.rawValue,
       ),
       InvokeCommandSpec(
-        name = OpenCraftMotionCommand.Activity.rawValue,
+        name = OpenClawMotionCommand.Activity.rawValue,
         availability = InvokeCommandAvailability.MotionActivityAvailable,
       ),
       InvokeCommandSpec(
-        name = OpenCraftMotionCommand.Pedometer.rawValue,
+        name = OpenClawMotionCommand.Pedometer.rawValue,
         availability = InvokeCommandAvailability.MotionPedometerAvailable,
       ),
       InvokeCommandSpec(
-        name = OpenCraftSmsCommand.Send.rawValue,
+        name = OpenClawSmsCommand.Send.rawValue,
         availability = InvokeCommandAvailability.SmsAvailable,
       ),
       InvokeCommandSpec(
-        name = OpenCraftCallLogCommand.Search.rawValue,
+        name = OpenClawCallLogCommand.Search.rawValue,
       ),
       InvokeCommandSpec(
         name = "debug.logs",

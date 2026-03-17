@@ -14,7 +14,7 @@ import {
   type PluginRuntime,
   type RuntimeEnv,
   type RuntimeLogger,
-} from "opencraft/plugin-sdk/matrix";
+} from "openclaw/plugin-sdk/matrix";
 import type { CoreConfig, MatrixRoomConfig, ReplyToMode } from "../../types.js";
 import { fetchEventSummary } from "../actions/summary.js";
 import {

@@ -1,161 +1,168 @@
 ---
-summary: "Ferramentas de depuração: modo watch, streams brutas do modelo e rastreamento de vazamento de raciocínio"
+summary: "Debugging tools: watch mode, raw model streams, and tracing reasoning leakage"
 read_when:
-  - Você precisa inspecionar a saída bruta do modelo para vazamento de raciocínio
-  - Você quer executar o Gateway em modo watch durante iterações
-  - Você precisa de um fluxo de depuração reproduzível
-title: "Depuração"
+  - You need to inspect raw model output for reasoning leakage
+  - You want to run the Gateway in watch mode while iterating
+  - You need a repeatable debugging workflow
+title: "Debugging"
 ---
 
-# Depuração
+# Debugging
 
-Esta página cobre helpers de depuração para saída de streaming, especialmente quando um
-provedor mistura raciocínio no texto normal.
+This page covers debugging helpers for streaming output, especially when a
+provider mixes reasoning into normal text.
 
-## Substituições de config em tempo de execução
+## Runtime debug overrides
 
-Use `/debug` no chat para definir substituições de config **apenas em tempo de execução** (memória, não disco).
-`/debug` é desabilitado por padrão; habilite com `commands.debug: true`.
-Útil quando você precisa alternar configurações obscuras sem editar `opencraft.json`.
+Use `/debug` in chat to set **runtime-only** config overrides (memory, not disk).
+`/debug` is disabled by default; enable with `commands.debug: true`.
+This is handy when you need to toggle obscure settings without editing `openclaw.json`.
 
-Exemplos:
+Examples:
 
 ```
 /debug show
-/debug set messages.responsePrefix="[opencraft]"
+/debug set messages.responsePrefix="[openclaw]"
 /debug unset messages.responsePrefix
 /debug reset
 ```
 
-`/debug reset` limpa todas as substituições e retorna à configuração em disco.
+`/debug reset` clears all overrides and returns to the on-disk config.
 
-## Modo watch do Gateway
+## Gateway watch mode
 
-Para iteração rápida, execute o gateway sob o observador de arquivos:
+For fast iteration, run the gateway under the file watcher:
 
 ```bash
 pnpm gateway:watch
 ```
 
-Isso equivale a:
+This maps to:
 
 ```bash
-node --watch-path src --watch-path tsconfig.json --watch-path package.json --watch-preserve-output scripts/run-node.mjs gateway --force
+node scripts/watch-node.mjs gateway --force
 ```
 
-Adicione quaisquer flags CLI do gateway após `gateway:watch` e eles serão passados
-a cada reinicialização.
+The watcher restarts on build-relevant files under `src/`, extension source files,
+extension `package.json` and `openclaw.plugin.json` metadata, `tsconfig.json`,
+`package.json`, and `tsdown.config.ts`. Extension metadata changes restart the
+gateway without forcing a `tsdown` rebuild; source and config changes still
+rebuild `dist` first.
 
-## Perfil dev + gateway dev (--dev)
+Add any gateway CLI flags after `gateway:watch` and they will be passed through on
+each restart.
 
-Use o perfil dev para isolar estado e criar uma configuração segura e descartável para
-depuração. Há **dois** flags `--dev`:
+## Dev profile + dev gateway (--dev)
 
-- **`--dev` global (perfil):** isola estado em `~/.openclaw-dev` e
-  padroniza a porta do gateway para `19001` (portas derivadas mudam com ela).
-- **`gateway --dev`: diz ao Gateway para criar automaticamente um config + workspace padrão**
-  quando ausente (e pular BOOTSTRAP.md).
+Use the dev profile to isolate state and spin up a safe, disposable setup for
+debugging. There are **two** `--dev` flags:
 
-Fluxo recomendado (perfil dev + bootstrap dev):
+- **Global `--dev` (profile):** isolates state under `~/.openclaw-dev` and
+  defaults the gateway port to `19001` (derived ports shift with it).
+- **`gateway --dev`: tells the Gateway to auto-create a default config +
+  workspace** when missing (and skip BOOTSTRAP.md).
+
+Recommended flow (dev profile + dev bootstrap):
 
 ```bash
 pnpm gateway:dev
-OPENCLAW_PROFILE=dev opencraft tui
+OPENCLAW_PROFILE=dev openclaw tui
 ```
 
-Se você ainda não tem uma instalação global, execute o CLI via `pnpm opencraft ...`.
+If you don’t have a global install yet, run the CLI via `pnpm openclaw ...`.
 
-O que isso faz:
+What this does:
 
-1. **Isolamento de perfil** (`--dev` global)
+1. **Profile isolation** (global `--dev`)
    - `OPENCLAW_PROFILE=dev`
    - `OPENCLAW_STATE_DIR=~/.openclaw-dev`
-   - `OPENCLAW_CONFIG_PATH=~/.openclaw-dev/opencraft.json`
-   - `OPENCLAW_GATEWAY_PORT=19001` (browser/canvas ajustam conforme necessário)
+   - `OPENCLAW_CONFIG_PATH=~/.openclaw-dev/openclaw.json`
+   - `OPENCLAW_GATEWAY_PORT=19001` (browser/canvas shift accordingly)
 
-2. **Bootstrap dev** (`gateway --dev`)
-   - Escreve uma config mínima se ausente (`gateway.mode=local`, bind loopback).
-   - Define `agent.workspace` para o workspace dev.
-   - Define `agent.skipBootstrap=true` (sem BOOTSTRAP.md).
-   - Cria arquivos do workspace se ausentes:
+2. **Dev bootstrap** (`gateway --dev`)
+   - Writes a minimal config if missing (`gateway.mode=local`, bind loopback).
+   - Sets `agent.workspace` to the dev workspace.
+   - Sets `agent.skipBootstrap=true` (no BOOTSTRAP.md).
+   - Seeds the workspace files if missing:
      `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`.
-   - Identidade padrão: **C3-PO** (droide de protocolo).
-   - Pula provedores de canal em modo dev (`OPENCLAW_SKIP_CHANNELS=1`).
+   - Default identity: **C3‑PO** (protocol droid).
+   - Skips channel providers in dev mode (`OPENCLAW_SKIP_CHANNELS=1`).
 
-Fluxo de reset (início limpo):
+Reset flow (fresh start):
 
 ```bash
 pnpm gateway:dev:reset
 ```
 
-Nota: `--dev` é um flag de **perfil global** e pode ser consumido por alguns runners.
-Se precisar especificá-lo explicitamente, use a forma de variável de ambiente:
+Note: `--dev` is a **global** profile flag and gets eaten by some runners.
+If you need to spell it out, use the env var form:
 
 ```bash
-OPENCLAW_PROFILE=dev opencraft gateway --dev --reset
+OPENCLAW_PROFILE=dev openclaw gateway --dev --reset
 ```
 
-`--reset` apaga config, credenciais, sessões e o workspace dev (usando
-`trash`, não `rm`), depois recria a configuração dev padrão.
+`--reset` wipes config, credentials, sessions, and the dev workspace (using
+`trash`, not `rm`), then recreates the default dev setup.
 
-Dica: se um gateway não-dev já estiver em execução (launchd/systemd), pare-o primeiro:
+Tip: if a non‑dev gateway is already running (launchd/systemd), stop it first:
 
 ```bash
-opencraft gateway stop
+openclaw gateway stop
 ```
 
-## Log de stream bruta (OpenCraft)
+## Raw stream logging (OpenClaw)
 
-O OpenCraft pode registrar o **stream bruto do assistente** antes de qualquer filtragem/formatação.
-Esta é a melhor forma de ver se o raciocínio está chegando como deltas de texto simples
-(ou como blocos de thinking separados).
+OpenClaw can log the **raw assistant stream** before any filtering/formatting.
+This is the best way to see whether reasoning is arriving as plain text deltas
+(or as separate thinking blocks).
 
-Habilite via CLI:
+Enable it via CLI:
 
 ```bash
 pnpm gateway:watch --raw-stream
 ```
 
-Substituição opcional de caminho:
+Optional path override:
 
 ```bash
-pnpm gateway:watch --raw-stream --raw-stream-path ~/.opencraft/logs/raw-stream.jsonl
+pnpm gateway:watch --raw-stream --raw-stream-path ~/.openclaw/logs/raw-stream.jsonl
 ```
 
-Variáveis de ambiente equivalentes:
+Equivalent env vars:
 
 ```bash
 OPENCLAW_RAW_STREAM=1
-OPENCLAW_RAW_STREAM_PATH=~/.opencraft/logs/raw-stream.jsonl
+OPENCLAW_RAW_STREAM_PATH=~/.openclaw/logs/raw-stream.jsonl
 ```
 
-Arquivo padrão:
+Default file:
 
-`~/.opencraft/logs/raw-stream.jsonl`
+`~/.openclaw/logs/raw-stream.jsonl`
 
-## Log de chunks brutos (pi-mono)
+## Raw chunk logging (pi-mono)
 
-Para capturar **chunks brutos compatíveis com OpenAI** antes de serem analisados em blocos,
-o pi-mono expõe um logger separado:
+To capture **raw OpenAI-compat chunks** before they are parsed into blocks,
+pi-mono exposes a separate logger:
 
 ```bash
 PI_RAW_STREAM=1
 ```
 
-Caminho opcional:
+Optional path:
 
 ```bash
 PI_RAW_STREAM_PATH=~/.pi-mono/logs/raw-openai-completions.jsonl
 ```
 
-Arquivo padrão:
+Default file:
 
 `~/.pi-mono/logs/raw-openai-completions.jsonl`
 
-> Nota: isso só é emitido por processos que usam o provedor `openai-completions` do pi-mono.
+> Note: this is only emitted by processes using pi-mono’s
+> `openai-completions` provider.
 
-## Notas de segurança
+## Safety notes
 
-- Logs de stream bruta podem incluir prompts completos, saída de ferramentas e dados do usuário.
-- Mantenha os logs localmente e delete-os após a depuração.
-- Se compartilhar logs, remova segredos e PII primeiro.
+- Raw stream logs can include full prompts, tool output, and user data.
+- Keep logs local and delete them after debugging.
+- If you share logs, scrub secrets and PII first.

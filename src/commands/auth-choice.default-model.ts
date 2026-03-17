@@ -1,17 +1,17 @@
-import type { OpenCraftConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { ensureModelAllowlistEntry } from "./model-allowlist.js";
 
 export async function applyDefaultModelChoice(params: {
-  config: OpenCraftConfig;
+  config: OpenClawConfig;
   setDefaultModel: boolean;
   defaultModel: string;
-  applyDefaultConfig: (config: OpenCraftConfig) => OpenCraftConfig;
-  applyProviderConfig: (config: OpenCraftConfig) => OpenCraftConfig;
+  applyDefaultConfig: (config: OpenClawConfig) => OpenClawConfig;
+  applyProviderConfig: (config: OpenClawConfig) => OpenClawConfig;
   noteDefault?: string;
   noteAgentModel: (model: string) => Promise<void>;
   prompter: WizardPrompter;
-}): Promise<{ config: OpenCraftConfig; agentModelOverride?: string }> {
+}): Promise<{ config: OpenClawConfig; agentModelOverride?: string }> {
   if (params.setDefaultModel) {
     const next = params.applyDefaultConfig(params.config);
     if (params.noteDefault) {

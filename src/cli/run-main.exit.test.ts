@@ -14,8 +14,8 @@ vi.mock("./route.js", () => ({
   tryRouteCli: tryRouteCliMock,
 }));
 
-vi.mock("../infra/dotenv.js", () => ({
-  loadDotEnv: loadDotEnvMock,
+vi.mock("./dotenv.js", () => ({
+  loadCliDotEnv: loadDotEnvMock,
 }));
 
 vi.mock("../infra/env.js", () => ({
@@ -23,7 +23,7 @@ vi.mock("../infra/env.js", () => ({
 }));
 
 vi.mock("../infra/path-env.js", () => ({
-  ensureOpenCraftCliOnPath: ensurePathMock,
+  ensureOpenClawCliOnPath: ensurePathMock,
 }));
 
 vi.mock("../infra/runtime-guard.js", () => ({
@@ -55,9 +55,9 @@ describe("runCli exit behavior", () => {
       throw new Error(`unexpected process.exit(${String(code)})`);
     }) as typeof process.exit);
 
-    await runCli(["node", "opencraft", "status"]);
+    await runCli(["node", "openclaw", "status"]);
 
-    expect(tryRouteCliMock).toHaveBeenCalledWith(["node", "opencraft", "status"]);
+    expect(tryRouteCliMock).toHaveBeenCalledWith(["node", "openclaw", "status"]);
     expect(closeAllMemorySearchManagersMock).toHaveBeenCalledTimes(1);
     expect(exitSpy).not.toHaveBeenCalled();
     exitSpy.mockRestore();
@@ -68,7 +68,7 @@ describe("runCli exit behavior", () => {
       throw new Error(`unexpected process.exit(${String(code)})`);
     }) as typeof process.exit);
 
-    await runCli(["node", "opencraft", "--help"]);
+    await runCli(["node", "openclaw", "--help"]);
 
     expect(tryRouteCliMock).not.toHaveBeenCalled();
     expect(outputRootHelpMock).toHaveBeenCalledTimes(1);
