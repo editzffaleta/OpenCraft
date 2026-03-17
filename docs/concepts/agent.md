@@ -1,123 +1,122 @@
 ---
-summary: "Agent runtime (embedded pi-mono), workspace contract, and session bootstrap"
+summary: "Tempo de execução do agente (pi-mono integrado), contrato de espaço de trabalho e bootstrap de sessão"
 read_when:
-  - Changing agent runtime, workspace bootstrap, or session behavior
-title: "Agent Runtime"
+  - Mudando tempo de execução do agente, bootstrap de espaço de trabalho ou comportamento de sessão
+title: "Tempo de Execução do Agente"
 ---
 
-# Agent Runtime 🤖
+# Tempo de Execução do Agente
 
-OpenCraft runs a single embedded agent runtime derived from **pi-mono**.
+O OpenCraft executa um único tempo de execução de agente integrado derivado de **pi-mono**.
 
-## Workspace (required)
+## Espaço de trabalho (necessário)
 
-OpenCraft uses a single agent workspace directory (`agents.defaults.workspace`) as the agent’s **only** working directory (`cwd`) for tools and context.
+O OpenCraft usa um diretório de espaço de trabalho de agente único (`agents.defaults.workspace`) como o **único** diretório de trabalho do agente (`cwd`) para ferramentas e contexto.
 
-Recommended: use `opencraft setup` to create `~/.editzffaleta/OpenCraft.json` if missing and initialize the workspace files.
+Recomendado: use `opencraft setup` para criar `~/.editzffaleta/OpenCraft.json` se faltando e inicializar os arquivos do espaço de trabalho.
 
-Full workspace layout + backup guide: [Agent workspace](/concepts/agent-workspace)
+Layout completo de espaço de trabalho + guia de backup: [Espaço de trabalho do agente](/concepts/agent-workspace)
 
-If `agents.defaults.sandbox` is enabled, non-main sessions can override this with
-per-session workspaces under `agents.defaults.sandbox.workspaceRoot` (see
-[Gateway configuration](/gateway/configuration)).
+Se `agents.defaults.sandbox` está habilitado, sessões não-principais podem substituir isso com
+espaços de trabalho por sessão em `agents.defaults.sandbox.workspaceRoot` (veja
+[Configuração do Gateway](/gateway/configuration)).
 
-## Bootstrap files (injected)
+## Arquivos de bootstrap (injetados)
 
-Inside `agents.defaults.workspace`, OpenCraft expects these user-editable files:
+Dentro de `agents.defaults.workspace`, OpenCraft espera estes arquivos editáveis do usuário:
 
-- `AGENTS.md` — operating instructions + “memory”
-- `SOUL.md` — persona, boundaries, tone
-- `TOOLS.md` — user-maintained tool notes (e.g. `imsg`, `sag`, conventions)
-- `BOOTSTRAP.md` — one-time first-run ritual (deleted after completion)
-- `IDENTITY.md` — agent name/vibe/emoji
-- `USER.md` — user profile + preferred address
+- `AGENTS.md` — instruções operacionais + "memória"
+- `SOUL.md` — persona, limites, tom
+- `TOOLS.md` — notas de ferramentas mantidas pelo usuário (ex: `imsg`, `sag`, convenções)
+- `BOOTSTRAP.md` — ritual de primeira execução única (deletado após conclusão)
+- `IDENTITY.md` — nome/vibe/emoji do agente
+- `USER.md` — perfil de usuário + endereço preferido
 
-On the first turn of a new session, OpenCraft injects the contents of these files directly into the agent context.
+No primeiro turno de uma nova sessão, OpenCraft injeta o conteúdo destes arquivos diretamente no contexto do agente.
 
-Blank files are skipped. Large files are trimmed and truncated with a marker so prompts stay lean (read the file for full content).
+Arquivos em branco são pulados. Arquivos grandes são aparados e truncados com um marcador para que prompts permaneçam enxutos (leia o arquivo para conteúdo completo).
 
-If a file is missing, OpenCraft injects a single “missing file” marker line (and `opencraft setup` will create a safe default template).
+Se um arquivo está faltando, OpenCraft injeta uma única linha de marcador "arquivo faltando" (e `opencraft setup` criará um template seguro padrão).
 
-`BOOTSTRAP.md` is only created for a **brand new workspace** (no other bootstrap files present). If you delete it after completing the ritual, it should not be recreated on later restarts.
+`BOOTSTRAP.md` é apenas criado para um **espaço de trabalho completamente novo** (nenhum outro arquivo de bootstrap presente). Se você deletar após completar o ritual, não deve ser recriado em reinícios posteriores.
 
-To disable bootstrap file creation entirely (for pre-seeded workspaces), set:
+Para desabilitar criação de arquivo de bootstrap inteiramente (para espaços de trabalho pré-semeados), defina:
 
 ```json5
 { agent: { skipBootstrap: true } }
 ```
 
-## Built-in tools
+## Ferramentas integradas
 
-Core tools (read/exec/edit/write and related system tools) are always available,
-subject to tool policy. `apply_patch` is optional and gated by
-`tools.exec.applyPatch`. `TOOLS.md` does **not** control which tools exist; it’s
-guidance for how _you_ want them used.
+Ferramentas principais (read/exec/edit/write e ferramentas de sistema relacionadas) estão sempre disponíveis,
+sujeitas a política de ferramenta. `apply_patch` é opcional e protegido por
+`tools.exec.applyPatch`. `TOOLS.md` **não** controla quais ferramentas existem; é
+orientação para como _você_ quer que sejam usadas.
 
 ## Skills
 
-OpenCraft loads skills from three locations (workspace wins on name conflict):
+OpenCraft carrega skills de três locais (workspace vence em conflito de nome):
 
-- Bundled (shipped with the install)
+- Bundled (enviado com a instalação)
 - Managed/local: `~/.opencraft/skills`
 - Workspace: `<workspace>/skills`
 
-Skills can be gated by config/env (see `skills` in [Gateway configuration](/gateway/configuration)).
+Skills podem ser protegidas por config/env (veja `skills` em [Configuração do Gateway](/gateway/configuration)).
 
-## pi-mono integration
+## Integração pi-mono
 
-OpenCraft reuses pieces of the pi-mono codebase (models/tools), but **session management, discovery, and tool wiring are OpenCraft-owned**.
+OpenCraft reutiliza peças da base de código pi-mono (modelos/ferramentas), mas **gerenciamento de sessão, descoberta e fiação de ferramenta são de propriedade do OpenCraft**.
 
-- No pi-coding agent runtime.
-- No `~/.pi/agent` or `<workspace>/.pi` settings are consulted.
+- Nenhum tempo de execução de agente pi-coding.
+- Nenhuma configuração `~/.pi/agent` ou `<workspace>/.pi` é consultada.
 
-## Sessions
+## Sessões
 
-Session transcripts are stored as JSONL at:
+Transcrições de sessão são armazenadas como JSONL em:
 
 - `~/.opencraft/agents/<agentId>/sessions/<SessionId>.jsonl`
 
-The session ID is stable and chosen by OpenCraft.
-Legacy Pi/Tau session folders are **not** read.
+O ID da sessão é estável e escolhido por OpenCraft.
+Pastas de sessão legadas Pi/Tau **não** são lidas.
 
-## Steering while streaming
+## Steering durante streaming
 
-When queue mode is `steer`, inbound messages are injected into the current run.
-The queue is checked **after each tool call**; if a queued message is present,
-remaining tool calls from the current assistant message are skipped (error tool
-results with "Skipped due to queued user message."), then the queued user
-message is injected before the next assistant response.
+Quando modo de fila é `steer`, mensagens de entrada são injetadas na execução atual.
+A fila é verificada **após cada chamada de ferramenta**; se uma mensagem enfileirada está presente,
+chamadas de ferramenta restantes da mensagem assistente atual são puladas (resultados de ferramenta de erro com "Skipped due to queued user message."), então a mensagem de usuário enfileirada
+é injetada antes da próxima resposta de assistente.
 
-When queue mode is `followup` or `collect`, inbound messages are held until the
-current turn ends, then a new agent turn starts with the queued payloads. See
-[Queue](/concepts/queue) for mode + debounce/cap behavior.
+Quando modo de fila é `followup` ou `collect`, mensagens de entrada são mantidas até que o
+turno atual termine, então um novo turno de agente começa com os payloads enfileirados. Veja
+[Fila](/concepts/queue) para modo + comportamento de debounce/cap.
 
-Block streaming sends completed assistant blocks as soon as they finish; it is
-**off by default** (`agents.defaults.blockStreamingDefault: "off"`).
-Tune the boundary via `agents.defaults.blockStreamingBreak` (`text_end` vs `message_end`; defaults to text_end).
-Control soft block chunking with `agents.defaults.blockStreamingChunk` (defaults to
-800–1200 chars; prefers paragraph breaks, then newlines; sentences last).
-Coalesce streamed chunks with `agents.defaults.blockStreamingCoalesce` to reduce
-single-line spam (idle-based merging before send). Non-Telegram channels require
-explicit `*.blockStreaming: true` to enable block replies.
-Verbose tool summaries are emitted at tool start (no debounce); Control UI
-streams tool output via agent events when available.
-More details: [Streaming + chunking](/concepts/streaming).
+Block streaming envia blocos de assistente concluídos assim que terminam; está
+**desabilitado por padrão** (`agents.defaults.blockStreamingDefault: "off"`).
+Sintonize a fronteira via `agents.defaults.blockStreamingBreak` (`text_end` vs `message_end`; padrão para text_end).
+Controle soft block chunking com `agents.defaults.blockStreamingChunk` (padrão para
+800–1200 chars; prefere quebras de parágrafo, então newlines; frases por último).
+Coalesce chunks transmitidos com `agents.defaults.blockStreamingCoalesce` para reduzir
+spam de linha única (merging baseado em idle antes de envio). Canais não-Telegram requerem
+`*.blockStreaming: true` explícito para habilitar respostas de bloco.
+Resumos de ferramenta verbosos são emitidos no início da ferramenta (sem debounce); Control UI
+transmite saída de ferramenta via eventos de agente quando disponíveis.
+Mais detalhes: [Streaming + chunking](/concepts/streaming).
 
-## Model refs
+## Refs de modelo
 
-Model refs in config (for example `agents.defaults.model` and `agents.defaults.models`) are parsed by splitting on the **first** `/`.
+Refs de modelo em config (por exemplo `agents.defaults.model` e `agents.defaults.models`) são analisadas pela divisão no **primeiro** `/`.
 
-- Use `provider/model` when configuring models.
-- If the model ID itself contains `/` (OpenRouter-style), include the provider prefix (example: `openrouter/moonshotai/kimi-k2`).
-- If you omit the provider, OpenCraft treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
+- Use `provider/model` ao configurar modelos.
+- Se o ID do modelo em si contém `/` (estilo OpenRouter), inclua o prefixo do provedor (exemplo: `openrouter/moonshotai/kimi-k2`).
+- Se você omite o provedor, OpenCraft trata a entrada como um alias ou um modelo para o **provedor padrão** (apenas funciona quando não há `/` no ID do modelo).
 
-## Configuration (minimal)
+## Configuração (mínima)
 
-At minimum, set:
+No mínimo, defina:
 
 - `agents.defaults.workspace`
-- `channels.whatsapp.allowFrom` (strongly recommended)
+- `channels.whatsapp.allowFrom` (fortemente recomendado)
 
 ---
 
-_Next: [Group Chats](/channels/group-messages)_ 🦞
+_Próximo: [Chats de Grupo](/channels/group-messages)_

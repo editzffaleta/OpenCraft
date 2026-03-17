@@ -37,7 +37,7 @@ export const pt_BR: TranslationMap = {
     skills: "Habilidades",
     nodes: "Nós",
     chat: "Chat",
-    config: "Config",
+    config: "Configuração",
     communications: "Comunicações",
     appearance: "Aparência",
     automation: "Automação",

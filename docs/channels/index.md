@@ -1,47 +1,47 @@
 ---
-summary: "Messaging platforms OpenCraft can connect to"
+summary: "Plataformas de mensagens que o OpenCraft pode conectar"
 read_when:
-  - You want to choose a chat channel for OpenCraft
-  - You need a quick overview of supported messaging platforms
-title: "Chat Channels"
+  - Você quer escolher um canal de chat para o OpenCraft
+  - Você precisa de uma visão geral rápida das plataformas de mensagens suportadas
+title: "Canais de Chat"
 ---
 
-# Chat Channels
+# Canais de Chat
 
-OpenCraft can talk to you on any chat app you already use. Each channel connects via the Gateway.
-Text is supported everywhere; media and reactions vary by channel.
+O OpenCraft pode conversar com você em qualquer aplicativo de chat que você já usa. Cada canal se conecta via Gateway.
+Texto é suportado em todos os lugares; mídia e reações variam por canal.
 
-## Supported channels
+## Canais suportados
 
-- [BlueBubbles](/channels/bluebubbles) — **Recommended for iMessage**; uses the BlueBubbles macOS server REST API with full feature support (edit, unsend, effects, reactions, group management — edit currently broken on macOS 26 Tahoe).
-- [Discord](/channels/discord) — Discord Bot API + Gateway; supports servers, channels, and DMs.
-- [Feishu](/channels/feishu) — Feishu/Lark bot via WebSocket (plugin, installed separately).
-- [Google Chat](/channels/googlechat) — Google Chat API app via HTTP webhook.
-- [iMessage (legacy)](/channels/imessage) — Legacy macOS integration via imsg CLI (deprecated, use BlueBubbles for new setups).
-- [IRC](/channels/irc) — Classic IRC servers; channels + DMs with pairing/allowlist controls.
-- [LINE](/channels/line) — LINE Messaging API bot (plugin, installed separately).
-- [Matrix](/channels/matrix) — Matrix protocol (plugin, installed separately).
-- [Mattermost](/channels/mattermost) — Bot API + WebSocket; channels, groups, DMs (plugin, installed separately).
-- [Microsoft Teams](/channels/msteams) — Bot Framework; enterprise support (plugin, installed separately).
-- [Nextcloud Talk](/channels/nextcloud-talk) — Self-hosted chat via Nextcloud Talk (plugin, installed separately).
-- [Nostr](/channels/nostr) — Decentralized DMs via NIP-04 (plugin, installed separately).
-- [Signal](/channels/signal) — signal-cli; privacy-focused.
-- [Synology Chat](/channels/synology-chat) — Synology NAS Chat via outgoing+incoming webhooks (plugin, installed separately).
-- [Slack](/channels/slack) — Bolt SDK; workspace apps.
-- [Telegram](/channels/telegram) — Bot API via grammY; supports groups.
-- [Tlon](/channels/tlon) — Urbit-based messenger (plugin, installed separately).
-- [Twitch](/channels/twitch) — Twitch chat via IRC connection (plugin, installed separately).
-- [WebChat](/web/webchat) — Gateway WebChat UI over WebSocket.
-- [WhatsApp](/channels/whatsapp) — Most popular; uses Baileys and requires QR pairing.
-- [Zalo](/channels/zalo) — Zalo Bot API; Vietnam's popular messenger (plugin, installed separately).
-- [Zalo Personal](/channels/zalouser) — Zalo personal account via QR login (plugin, installed separately).
+- [BlueBubbles](/channels/bluebubbles) — **Recomendado para iMessage**; usa a API REST do servidor macOS BlueBubbles com suporte completo de recursos (editar, desfazer, efeitos, reações, gerenciamento de grupos — editar atualmente quebrado no macOS 26 Tahoe).
+- [Discord](/channels/discord) — Discord Bot API + Gateway; suporta servidores, canais e DMs.
+- [Feishu](/channels/feishu) — Bot Feishu/Lark via WebSocket (plugin, instalado separadamente).
+- [Google Chat](/channels/googlechat) — Aplicativo Google Chat API via webhook HTTP.
+- [iMessage (legado)](/channels/imessage) — Integração macOS legada via CLI imsg (descontinuado, use BlueBubbles para novas configurações).
+- [IRC](/channels/irc) — Servidores IRC clássicos; canais + DMs com controles de pareamento/lista de permissões.
+- [LINE](/channels/line) — Bot LINE Messaging API (plugin, instalado separadamente).
+- [Matrix](/channels/matrix) — Protocolo Matrix (plugin, instalado separadamente).
+- [Mattermost](/channels/mattermost) — Bot API + WebSocket; canais, grupos, DMs (plugin, instalado separadamente).
+- [Microsoft Teams](/channels/msteams) — Bot Framework; suporte empresarial (plugin, instalado separadamente).
+- [Nextcloud Talk](/channels/nextcloud-talk) — Chat auto-hospedado via Nextcloud Talk (plugin, instalado separadamente).
+- [Nostr](/channels/nostr) — DMs descentralizados via NIP-04 (plugin, instalado separadamente).
+- [Signal](/channels/signal) — signal-cli; focado em privacidade.
+- [Synology Chat](/channels/synology-chat) — Synology NAS Chat via webhooks saintes+entradas (plugin, instalado separadamente).
+- [Slack](/channels/slack) — Bolt SDK; aplicativos de espaço de trabalho.
+- [Telegram](/channels/telegram) — Bot API via grammY; suporta grupos.
+- [Tlon](/channels/tlon) — Mensageiro baseado em Urbit (plugin, instalado separadamente).
+- [Twitch](/channels/twitch) — Chat Twitch via conexão IRC (plugin, instalado separadamente).
+- [WebChat](/web/webchat) — Gateway WebChat UI sobre WebSocket.
+- [WhatsApp](/channels/whatsapp) — O mais popular; usa Baileys e requer pareamento QR.
+- [Zalo](/channels/zalo) — Zalo Bot API; mensageiro popular do Vietnã (plugin, instalado separadamente).
+- [Zalo Personal](/channels/zalouser) — Conta pessoal Zalo via login QR (plugin, instalado separadamente).
 
-## Notes
+## Notas
 
-- Channels can run simultaneously; configure multiple and OpenCraft will route per chat.
-- Fastest setup is usually **Telegram** (simple bot token). WhatsApp requires QR pairing and
-  stores more state on disk.
-- Group behavior varies by channel; see [Groups](/channels/groups).
-- DM pairing and allowlists are enforced for safety; see [Security](/gateway/security).
-- Troubleshooting: [Channel troubleshooting](/channels/troubleshooting).
-- Model providers are documented separately; see [Model Providers](/providers/models).
+- Os canais podem ser executados simultaneamente; configure vários e o OpenCraft será roteado por chat.
+- A configuração mais rápida geralmente é **Telegram** (token de bot simples). WhatsApp requer pareamento QR e
+  armazena mais estado em disco.
+- O comportamento do grupo varia por canal; veja [Grupos](/channels/groups).
+- Pareamento DM e listas de permissões são aplicados por segurança; veja [Segurança](/gateway/security).
+- Solução de problemas: [Solução de problemas do canal](/channels/troubleshooting).
+- Provedores de modelos são documentados separadamente; veja [Provedores de Modelos](/providers/models).

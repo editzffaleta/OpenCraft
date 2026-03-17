@@ -1,39 +1,39 @@
 ---
-summary: "Install OpenCraft — installer script, npm/pnpm, from source, Docker, and more"
+summary: "Instalar OpenCraft — script do instalador, npm/pnpm, do source, Docker, e mais"
 read_when:
   - You need an install method other than the Getting Started quickstart
   - You want to deploy to a cloud platform
   - You need to update, migrate, or uninstall
-title: "Install"
+title: "Instalar"
 ---
 
-# Install
+# Instalar
 
-Already followed [Getting Started](/start/getting-started)? You're all set — this page is for alternative install methods, platform-specific instructions, and maintenance.
+Já seguiu [Getting Started](/start/getting-started)? Você está tudo pronto — esta página é para métodos alternativos de instalação, instruções específicas da plataforma e manutenção.
 
-## System requirements
+## Requisitos de sistema
 
-- **[Node 24 (recommended)](/install/node)** (Node 22 LTS, currently `22.16+`, is still supported for compatibility; the [installer script](#install-methods) will install Node 24 if missing)
-- macOS, Linux, or Windows
-- `pnpm` only if you build from source
+- **[Node 24 (recomendado)](/install/node)** (Node 22 LTS, atualmente `22.16+`, ainda é suportado para compatibilidade; o [script do instalador](#install-methods) instalará Node 24 se ausente)
+- macOS, Linux, ou Windows
+- `pnpm` apenas se você construir do source
 
 <Note>
-On Windows, we strongly recommend running OpenCraft under [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+No Windows, recomendamos fortemente executar OpenCraft em [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
 </Note>
 
-## Install methods
+## Métodos de instalação
 
 <Tip>
-The **installer script** is the recommended way to install OpenCraft. It handles Node detection, installation, and onboarding in one step.
+O **script do instalador** é a forma recomendada de instalar OpenCraft. Ele cuida da detecção de Node, instalação e onboarding em uma única etapa.
 </Tip>
 
 <Warning>
-For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possible. Prefer a clean base OS image (for example Ubuntu LTS), then install OpenCraft yourself with the installer script.
+Para hosts VPS/cloud, evite imagens marketplace "1-click" de terceiros quando possível. Prefira uma imagem base do SO limpa (por exemplo Ubuntu LTS), depois instale OpenCraft você mesmo com o script do instalador.
 </Warning>
 
 <AccordionGroup>
-  <Accordion title="Installer script" icon="rocket" defaultOpen>
-    Downloads the CLI, installs it globally via npm, and launches onboarding.
+  <Accordion title="Script do instalador" icon="rocket" defaultOpen>
+    Baixa o CLI, instala globalmente via npm, e inicia onboarding.
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -48,9 +48,9 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
       </Tab>
     </Tabs>
 
-    That's it — the script handles Node detection, installation, and onboarding.
+    É isso — o script cuida da detecção de Node, instalação e onboarding.
 
-    To skip onboarding and just install the binary:
+    Para pular onboarding e apenas instalar o binário:
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -65,12 +65,12 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
       </Tab>
     </Tabs>
 
-    For all flags, env vars, and CI/automation options, see [Installer internals](/install/installer).
+    Para todas as flags, variáveis de ambiente e opções CI/automação, veja [Internos do instalador](/install/installer).
 
   </Accordion>
 
   <Accordion title="npm / pnpm" icon="package">
-    If you already manage Node yourself, we recommend Node 24. OpenCraft still supports Node 22 LTS, currently `22.16+`, for compatibility:
+    Se você já gerencia Node você mesmo, recomendamos Node 24. OpenCraft ainda suporta Node 22 LTS, atualmente `22.16+`, para compatibilidade:
 
     <Tabs>
       <Tab title="npm">
@@ -80,13 +80,13 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
         ```
 
         <Accordion title="sharp build errors?">
-          If you have libvips installed globally (common on macOS via Homebrew) and `sharp` fails, force prebuilt binaries:
+          Se você tem libvips instalado globalmente (comum em macOS via Homebrew) e `sharp` falha, force binários pré-compilados:
 
           ```bash
           SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g opencraft@latest
           ```
 
-          If you see `sharp: Please add node-gyp to your dependencies`, either install build tooling (macOS: Xcode CLT + `npm install -g node-gyp`) or use the env var above.
+          Se você vê `sharp: Please add node-gyp to your dependencies`, instale ferramentas de compilação (macOS: Xcode CLT + `npm install -g node-gyp`) ou use a variável de ambiente acima.
         </Accordion>
       </Tab>
       <Tab title="pnpm">
@@ -97,12 +97,12 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
         ```
 
         <Note>
-        pnpm requires explicit approval for packages with build scripts. After the first install shows the "Ignored build scripts" warning, run `pnpm approve-builds -g` and select the listed packages.
+        pnpm requer aprovação explícita para pacotes com scripts de compilação. Após a primeira instalação mostrar o aviso "Ignored build scripts", execute `pnpm approve-builds -g` e selecione os pacotes listados.
         </Note>
       </Tab>
     </Tabs>
 
-    Want the current GitHub `main` head with a package-manager install?
+    Quer o `main` atual do GitHub com uma instalação do package-manager?
 
     ```bash
     npm install -g github:editzffaleta/OpenCraft#main
@@ -114,12 +114,12 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
 
   </Accordion>
 
-  <Accordion title="From source" icon="github">
-    For contributors or anyone who wants to run from a local checkout.
+  <Accordion title="Do source" icon="github">
+    Para contribuidores ou qualquer um que queira executar de um checkout local.
 
     <Steps>
-      <Step title="Clone and build">
-        Clone the [OpenCraft repo](https://github.com/editzffaleta/OpenCraft) and build:
+      <Step title="Clone e construa">
+        Clone o [repositório OpenCraft](https://github.com/editzffaleta/OpenCraft) e construa:
 
         ```bash
         git clone https://github.com/editzffaleta/OpenCraft.git
@@ -129,50 +129,50 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
         pnpm build
         ```
       </Step>
-      <Step title="Link the CLI">
-        Make the `opencraft` command available globally:
+      <Step title="Link do CLI">
+        Disponibilize o comando `opencraft` globalmente:
 
         ```bash
         pnpm link --global
         ```
 
-        Alternatively, skip the link and run commands via `pnpm opencraft ...` from inside the repo.
+        Alternativamente, pule o link e execute comandos via `pnpm opencraft ...` dentro do repositório.
       </Step>
-      <Step title="Run onboarding">
+      <Step title="Execute onboarding">
         ```bash
         opencraft onboard --install-daemon
         ```
       </Step>
     </Steps>
 
-    For deeper development workflows, see [Setup](/start/setup).
+    Para fluxos de desenvolvimento mais profundos, veja [Setup](/start/setup).
 
   </Accordion>
 </AccordionGroup>
 
-## Other install methods
+## Outros métodos de instalação
 
 <CardGroup cols={2}>
   <Card title="Docker" href="/install/docker" icon="container">
-    Containerized or headless deployments.
+    Deployments containerizados ou headless.
   </Card>
   <Card title="Podman" href="/install/podman" icon="container">
-    Rootless container: run `setup-podman.sh` once, then the launch script.
+    Container sem root: execute `setup-podman.sh` uma vez, depois o script de inicialização.
   </Card>
   <Card title="Nix" href="/install/nix" icon="snowflake">
-    Declarative install via Nix.
+    Instalação declarativa via Nix.
   </Card>
   <Card title="Ansible" href="/install/ansible" icon="server">
-    Automated fleet provisioning.
+    Provisionamento automatizado de fleet.
   </Card>
   <Card title="Bun" href="/install/bun" icon="zap">
-    CLI-only usage via the Bun runtime.
+    Uso CLI apenas via runtime Bun.
   </Card>
 </CardGroup>
 
-## After install
+## Após instalação
 
-Verify everything is working:
+Verifique se tudo está funcionando:
 
 ```bash
 opencraft doctor         # check for config issues
@@ -180,18 +180,18 @@ opencraft status         # gateway status
 opencraft dashboard      # open the browser UI
 ```
 
-If you need custom runtime paths, use:
+Se você precisa de caminhos de runtime personalizados, use:
 
-- `OPENCRAFT_HOME` for home-directory based internal paths
-- `OPENCRAFT_STATE_DIR` for mutable state location
-- `OPENCRAFT_CONFIG_PATH` for config file location
+- `OPENCRAFT_HOME` para caminhos internos baseados em diretório inicial
+- `OPENCRAFT_STATE_DIR` para localização de estado mutável
+- `OPENCRAFT_CONFIG_PATH` para localização de arquivo de configuração
 
-See [Environment vars](/help/environment) for precedence and full details.
+Veja [Environment vars](/help/environment) para precedência e detalhes completos.
 
-## Troubleshooting: `opencraft` not found
+## Solução de problemas: `opencraft` não encontrado
 
-<Accordion title="PATH diagnosis and fix">
-  Quick diagnosis:
+<Accordion title="Diagnóstico e correção de PATH">
+  Diagnóstico rápido:
 
 ```bash
 node -v
@@ -200,29 +200,29 @@ npm prefix -g
 echo "$PATH"
 ```
 
-If `$(npm prefix -g)/bin` (macOS/Linux) or `$(npm prefix -g)` (Windows) is **not** in your `$PATH`, your shell can't find global npm binaries (including `opencraft`).
+Se `$(npm prefix -g)/bin` (macOS/Linux) ou `$(npm prefix -g)` (Windows) **não estão** em seu `$PATH`, seu shell não consegue encontrar binários npm globais (incluindo `opencraft`).
 
-Fix — add it to your shell startup file (`~/.zshrc` or `~/.bashrc`):
+Correção — adicione ao arquivo de inicialização do seu shell (`~/.zshrc` ou `~/.bashrc`):
 
 ```bash
 export PATH="$(npm prefix -g)/bin:$PATH"
 ```
 
-On Windows, add the output of `npm prefix -g` to your PATH.
+No Windows, adicione a saída de `npm prefix -g` ao seu PATH.
 
-Then open a new terminal (or `rehash` in zsh / `hash -r` in bash).
+Depois abra um novo terminal (ou `rehash` em zsh / `hash -r` em bash).
 </Accordion>
 
-## Update / uninstall
+## Atualizar / desinstalar
 
 <CardGroup cols={3}>
-  <Card title="Updating" href="/install/updating" icon="refresh-cw">
-    Keep OpenCraft up to date.
+  <Card title="Atualizando" href="/install/updating" icon="refresh-cw">
+    Mantenha OpenCraft atualizado.
   </Card>
-  <Card title="Migrating" href="/install/migrating" icon="arrow-right">
-    Move to a new machine.
+  <Card title="Migrando" href="/install/migrating" icon="arrow-right">
+    Mude para uma nova máquina.
   </Card>
-  <Card title="Uninstall" href="/install/uninstall" icon="trash-2">
-    Remove OpenCraft completely.
+  <Card title="Desinstalar" href="/install/uninstall" icon="trash-2">
+    Remova OpenCraft completamente.
   </Card>
 </CardGroup>

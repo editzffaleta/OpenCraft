@@ -1,34 +1,34 @@
 ---
-summary: "Get OpenCraft installed and run your first chat in minutes."
+summary: "Obtenha OpenCraft instalado e execute seu primeiro chat em minutos."
 read_when:
   - First time setup from zero
   - You want the fastest path to a working chat
-title: "Getting Started"
+title: "Começando"
 ---
 
-# Getting Started
+# Começando
 
-Goal: go from zero to a first working chat with minimal setup.
+Objetivo: sair do zero para o primeiro chat funcionando com configuração mínima.
 
 <Info>
-Fastest chat: open the Control UI (no channel setup needed). Run `opencraft dashboard`
-and chat in the browser, or open `http://127.0.0.1:18789/` on the
+Chat mais rápido: abra a Control UI (sem configuração de canal necessária). Execute `opencraft dashboard`
+e converse no navegador, ou abra `http://127.0.0.1:18789/` no
 <Tooltip headline="Gateway host" tip="The machine running the OpenCraft gateway service.">gateway host</Tooltip>.
-Docs: [Dashboard](/web/dashboard) and [Control UI](/web/control-ui).
+Docs: [Dashboard](/web/dashboard) e [Control UI](/web/control-ui).
 </Info>
 
-## Prereqs
+## Pré-requisitos
 
-- Node 24 recommended (Node 22 LTS, currently `22.16+`, still supported for compatibility)
+- Node 24 recomendado (Node 22 LTS, atualmente `22.16+`, ainda suportado para compatibilidade)
 
 <Tip>
-Check your Node version with `node --version` if you are unsure.
+Verifique sua versão do Node com `node --version` se não tiver certeza.
 </Tip>
 
-## Quick setup (CLI)
+## Configuração rápida (CLI)
 
 <Steps>
-  <Step title="Install OpenCraft (recommended)">
+  <Step title="Instale o OpenCraft (recomendado)">
     <Tabs>
       <Tab title="macOS/Linux">
         ```bash
@@ -48,28 +48,28 @@ Check your Node version with `node --version` if you are unsure.
     </Tabs>
 
     <Note>
-    Other install methods and requirements: [Install](/install).
+    Outros métodos de instalação e requisitos: [Instalar](/install).
     </Note>
 
   </Step>
-  <Step title="Run onboarding">
+  <Step title="Execute onboarding">
     ```bash
     opencraft onboard --install-daemon
     ```
 
-    Onboarding configures auth, gateway settings, and optional channels.
-    See [Onboarding (CLI)](/start/wizard) for details.
+    O onboarding configura autenticação, configurações de gateway e canais opcionais.
+    Veja [Onboarding (CLI)](/start/wizard) para detalhes.
 
   </Step>
-  <Step title="Check the Gateway">
-    If you installed the service, it should already be running:
+  <Step title="Verifique o Gateway">
+    Se você instalou o serviço, ele já deve estar em execução:
 
     ```bash
     opencraft gateway status
     ```
 
   </Step>
-  <Step title="Open the Control UI">
+  <Step title="Abra a Control UI">
     ```bash
     opencraft dashboard
     ```
@@ -77,22 +77,22 @@ Check your Node version with `node --version` if you are unsure.
 </Steps>
 
 <Check>
-If the Control UI loads, your Gateway is ready for use.
+Se a Control UI carregar, seu Gateway está pronto para uso.
 </Check>
 
-## Optional checks and extras
+## Verificações opcionais e extras
 
 <AccordionGroup>
-  <Accordion title="Run the Gateway in the foreground">
-    Useful for quick tests or troubleshooting.
+  <Accordion title="Execute o Gateway em primeiro plano">
+    Útil para testes rápidos ou solução de problemas.
 
     ```bash
     opencraft gateway --port 18789
     ```
 
   </Accordion>
-  <Accordion title="Send a test message">
-    Requires a configured channel.
+  <Accordion title="Envie uma mensagem de teste">
+    Requer um canal configurado.
 
     ```bash
     opencraft message send --target +15555550123 --message "Hello from OpenCraft"
@@ -101,35 +101,35 @@ If the Control UI loads, your Gateway is ready for use.
   </Accordion>
 </AccordionGroup>
 
-## Useful environment variables
+## Variáveis de ambiente úteis
 
-If you run OpenCraft as a service account or want custom config/state locations:
+Se você executar o OpenCraft como uma conta de serviço ou desejar localizações personalizadas de configuração/estado:
 
-- `OPENCRAFT_HOME` sets the home directory used for internal path resolution.
-- `OPENCRAFT_STATE_DIR` overrides the state directory.
-- `OPENCRAFT_CONFIG_PATH` overrides the config file path.
+- `OPENCRAFT_HOME` define o diretório inicial usado para resolução de caminho interno.
+- `OPENCRAFT_STATE_DIR` substitui o diretório de estado.
+- `OPENCRAFT_CONFIG_PATH` substitui o caminho do arquivo de configuração.
 
-Full environment variable reference: [Environment vars](/help/environment).
+Referência completa de variáveis de ambiente: [Variáveis de ambiente](/help/environment).
 
-## Go deeper
+## Vá mais a fundo
 
 <Columns>
   <Card title="Onboarding (CLI)" href="/start/wizard">
-    Full CLI onboarding reference and advanced options.
+    Referência completa de onboarding CLI e opções avançadas.
   </Card>
-  <Card title="macOS app onboarding" href="/start/onboarding">
-    First run flow for the macOS app.
+  <Card title="Onboarding do app macOS" href="/start/onboarding">
+    Fluxo de primeira execução para o app macOS.
   </Card>
 </Columns>
 
-## What you will have
+## O que você terá
 
-- A running Gateway
-- Auth configured
-- Control UI access or a connected channel
+- Um Gateway em execução
+- Autenticação configurada
+- Acesso a Control UI ou um canal conectado
 
-## Next steps
+## Próximos passos
 
-- DM safety and approvals: [Pairing](/channels/pairing)
-- Connect more channels: [Channels](/channels)
-- Advanced workflows and from source: [Setup](/start/setup)
+- Segurança e aprovações de DM: [Pareamento](/channels/pairing)
+- Conecte mais canais: [Canais](/channels)
+- Fluxos de trabalho avançados e da origem: [Configuração](/start/setup)

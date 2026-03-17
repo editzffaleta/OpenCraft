@@ -1,8 +1,8 @@
 ---
-description: Update OpenClaw from upstream when branch has diverged (ahead/behind)
+description: Update OpenCraft from upstream when branch has diverged (ahead/behind)
 ---
 
-# OpenClaw Upstream Sync Workflow
+# OpenCraft Upstream Sync Workflow
 
 Use this workflow when your fork has diverged from upstream (e.g., "18 commits ahead, 29 commits behind").
 
@@ -132,16 +132,16 @@ pnpm mac:package
 
 ```bash
 # Kill running app
-pkill -x "OpenClaw" || true
+pkill -x "OpenCraft" || true
 
 # Move old version
-mv /Applications/OpenClaw.app /tmp/OpenClaw-backup.app
+mv /Applications/OpenCraft.app /tmp/OpenCraft-backup.app
 
 # Install new build
-cp -R dist/OpenClaw.app /Applications/
+cp -R dist/OpenCraft.app /Applications/
 
 # Launch
-open /Applications/OpenClaw.app
+open /Applications/OpenCraft.app
 ```
 
 ---
@@ -235,7 +235,7 @@ If upstream introduced new model configurations:
 # Check for OpenRouter API key requirements
 grep -r "openrouter\|OPENROUTER" src/ --include="*.ts" --include="*.js"
 
-# Update openclaw.json with fallback chains
+# Update opencraft.json with fallback chains
 # Add model fallback configurations as needed
 ```
 

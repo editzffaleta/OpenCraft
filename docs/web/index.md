@@ -1,44 +1,44 @@
 ---
-summary: "Gateway web surfaces: Control UI, bind modes, and security"
+summary: "Gateway web surfaces: Control UI, bind modes e segurança"
 read_when:
-  - You want to access the Gateway over Tailscale
-  - You want the browser Control UI and config editing
+  - Você quer acessar o Gateway sobre Tailscale
+  - Você quer o browser Control UI e config editing
 title: "Web"
 ---
 
 # Web (Gateway)
 
-The Gateway serves a small **browser Control UI** (Vite + Lit) from the same port as the Gateway WebSocket:
+O Gateway serve um pequeno **browser Control UI** (Vite + Lit) do mesmo port que o Gateway WebSocket:
 
-- default: `http://<host>:18789/`
-- optional prefix: set `gateway.controlUi.basePath` (e.g. `/opencraft`)
+- padrão: `http://<host>:18789/`
+- prefixo opcional: defina `gateway.controlUi.basePath` (ex. `/opencraft`)
 
-Capabilities live in [Control UI](/web/control-ui).
-This page focuses on bind modes, security, and web-facing surfaces.
+Capacidades vivem em [Control UI](/web/control-ui).
+Esta página se foca em bind modes, segurança e web-facing surfaces.
 
 ## Webhooks
 
-When `hooks.enabled=true`, the Gateway also exposes a small webhook endpoint on the same HTTP server.
-See [Gateway configuration](/gateway/configuration) → `hooks` for auth + payloads.
+Quando `hooks.enabled=true`, o Gateway também expõe um pequeno webhook endpoint no mesmo HTTP server.
+Veja [Gateway configuration](/gateway/configuration) → `hooks` para auth + payloads.
 
 ## Config (default-on)
 
-The Control UI is **enabled by default** when assets are present (`dist/control-ui`).
-You can control it via config:
+Control UI é **habilitado por padrão** quando assets estão presentes (`dist/control-ui`).
+Você pode controlá-lo via config:
 
 ```json5
 {
   gateway: {
-    controlUi: { enabled: true, basePath: "/opencraft" }, // basePath optional
+    controlUi: { enabled: true, basePath: "/opencraft" }, // basePath opcional
   },
 }
 ```
 
 ## Tailscale access
 
-### Integrated Serve (recommended)
+### Integrated Serve (recomendado)
 
-Keep the Gateway on loopback and let Tailscale Serve proxy it:
+Mantenha o Gateway em loopback e deixe Tailscale Serve fazer proxy:
 
 ```json5
 {
@@ -49,15 +49,15 @@ Keep the Gateway on loopback and let Tailscale Serve proxy it:
 }
 ```
 
-Then start the gateway:
+Depois inicie o gateway:
 
 ```bash
 opencraft gateway
 ```
 
-Open:
+Abra:
 
-- `https://<magicdns>/` (or your configured `gateway.controlUi.basePath`)
+- `https://<magicdns>/` (ou seu configurado `gateway.controlUi.basePath`)
 
 ### Tailnet bind + token
 
@@ -71,15 +71,15 @@ Open:
 }
 ```
 
-Then start the gateway (token required for non-loopback binds):
+Depois inicie o gateway (token necessário para non-loopback binds):
 
 ```bash
 opencraft gateway
 ```
 
-Open:
+Abra:
 
-- `http://<tailscale-ip>:18789/` (or your configured `gateway.controlUi.basePath`)
+- `http://<tailscale-ip>:18789/` (ou seu configurado `gateway.controlUi.basePath`)
 
 ### Public internet (Funnel)
 
@@ -88,32 +88,26 @@ Open:
   gateway: {
     bind: "loopback",
     tailscale: { mode: "funnel" },
-    auth: { mode: "password" }, // or OPENCLAW_GATEWAY_PASSWORD
+    auth: { mode: "password" }, // ou OPENCLAW_GATEWAY_PASSWORD
   },
 }
 ```
 
-## Security notes
+## Notas de segurança
 
-- Gateway auth is required by default (token/password or Tailscale identity headers).
-- Non-loopback binds still **require** a shared token/password (`gateway.auth` or env).
-- The wizard generates a gateway token by default (even on loopback).
-- The UI sends `connect.params.auth.token` or `connect.params.auth.password`.
-- For non-loopback Control UI deployments, set `gateway.controlUi.allowedOrigins`
-  explicitly (full origins). Without it, gateway startup is refused by default.
-- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` enables
-  Host-header origin fallback mode, but is a dangerous security downgrade.
-- With Serve, Tailscale identity headers can satisfy Control UI/WebSocket auth
-  when `gateway.auth.allowTailscale` is `true` (no token/password required).
-  HTTP API endpoints still require token/password. Set
-  `gateway.auth.allowTailscale: false` to require explicit credentials. See
-  [Tailscale](/gateway/tailscale) and [Security](/gateway/security). This
-  tokenless flow assumes the gateway host is trusted.
-- `gateway.tailscale.mode: "funnel"` requires `gateway.auth.mode: "password"` (shared password).
+- Gateway auth é necessário por padrão (token/password ou Tailscale identity headers).
+- Non-loopback binds ainda **requerem** um shared token/password (`gateway.auth` ou env).
+- O wizard gera um gateway token por padrão (mesmo em loopback).
+- A UI envia `connect.params.auth.token` ou `connect.params.auth.password`.
+- Para non-loopback Control UI deployments, defina `gateway.controlUi.allowedOrigins` explicitamente (full origins). Sem ele, startup do gateway é recusado por padrão.
+- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` habilita Host-header origin fallback mode, mas é um dangerous security downgrade.
+- Com Serve, Tailscale identity headers podem satisfazer Control UI/WebSocket auth quando `gateway.auth.allowTailscale` é `true` (nenhum token/password requerido).
+  HTTP API endpoints ainda requerem token/password. Defina `gateway.auth.allowTailscale: false` para requer explicit credentials. Veja [Tailscale](/gateway/tailscale) e [Security](/gateway/security). Este fluxo tokenless assume o host do gateway é confiável.
+- `gateway.tailscale.mode: "funnel"` requer `gateway.auth.mode: "password"` (shared password).
 
-## Building the UI
+## Construindo a UI
 
-The Gateway serves static files from `dist/control-ui`. Build them with:
+O Gateway serve static files de `dist/control-ui`. Construa-os com:
 
 ```bash
 pnpm ui:build # auto-installs UI deps on first run

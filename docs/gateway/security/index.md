@@ -1,33 +1,33 @@
 ---
-summary: "Security considerations and threat model for running an AI gateway with shell access"
+summary: "Considerações de segurança e modelo de ameaça para executar um gateway de IA com acesso a shell"
 read_when:
-  - Adding features that widen access or automation
+  - Adicionando features que ampliam acesso ou automação
 title: "Security"
 ---
 
 # Security 🔒
 
 > [!WARNING]
-> **Personal assistant trust model:** this guidance assumes one trusted operator boundary per gateway (single-user/personal assistant model).
-> OpenCraft is **not** a hostile multi-tenant security boundary for multiple adversarial users sharing one agent/gateway.
-> If you need mixed-trust or adversarial-user operation, split trust boundaries (separate gateway + credentials, ideally separate OS users/hosts).
+> **Modelo de trust de assistente pessoal:** esta orientação assume um limite confiável de operador por gateway (modelo de assistente pessoal de um único usuário).
+> OpenCraft **não é** um limite de segurança multi-tenant hostil para múltiplos usuários adversários compartilhando um agente/gateway.
+> Se você precisa de operação multi-trust misto ou adversária, divida os limites de trust (gateway separado + credenciais, idealmente usuários/hosts de OS separados).
 
-## Scope first: personal assistant security model
+## Scope primeiro: modelo de segurança de assistente pessoal
 
-OpenCraft security guidance assumes a **personal assistant** deployment: one trusted operator boundary, potentially many agents.
+A orientação de segurança do OpenCraft assume uma deploy de **assistente pessoal**: um limite confiável de operador, potencialmente muitos agentes.
 
-- Supported security posture: one user/trust boundary per gateway (prefer one OS user/host/VPS per boundary).
-- Not a supported security boundary: one shared gateway/agent used by mutually untrusted or adversarial users.
-- If adversarial-user isolation is required, split by trust boundary (separate gateway + credentials, and ideally separate OS users/hosts).
-- If multiple untrusted users can message one tool-enabled agent, treat them as sharing the same delegated tool authority for that agent.
+- Postura de segurança suportada: um usuário/limite de trust por gateway (prefira um usuário/host/VPS de OS por limite).
+- Não é um limite de segurança suportado: um gateway/agente compartilhado usado por usuários mutuamente não confiáveis ou adversários.
+- Se isolamento de usuários adversários é necessário, divida por limite de trust (gateway + credenciais separados, e idealmente usuários/hosts de OS separados).
+- Se múltiplos usuários não confiáveis podem enviar mensagens a um agente habilitado para tools, trate-os como compartilhando a mesma autoridade delegada de tool para aquele agente.
 
-This page explains hardening **within that model**. It does not claim hostile multi-tenant isolation on one shared gateway.
+Esta página explica hardening **dentro daquele modelo**. Ela não alega isolamento multi-tenant hostil em um gateway compartilhado.
 
 ## Quick check: `opencraft security audit`
 
-See also: [Formal Verification (Security Models)](/security/formal-verification/)
+Veja também: [Formal Verification (Security Models)](/security/formal-verification/)
 
-Run this regularly (especially after changing config or exposing network surfaces):
+Execute isto regularmente (especialmente depois de mudar config ou expor network surfaces):
 
 ```bash
 opencraft security audit
@@ -36,116 +36,116 @@ opencraft security audit --fix
 opencraft security audit --json
 ```
 
-It flags common footguns (Gateway auth exposure, browser control exposure, elevated allowlists, filesystem permissions).
+Ele marca footguns comuns (exposição de auth de Gateway, exposição de browser control, allowlists elevados, permissões de filesystem).
 
-OpenCraft is both a product and an experiment: you’re wiring frontier-model behavior into real messaging surfaces and real tools. **There is no “perfectly secure” setup.** The goal is to be deliberate about:
+OpenCraft é tanto um produto quanto um experimento: você está conectando comportamento de frontier-model em surfaces de messaging reais e tools reais. **Não há setup "perfeitamente seguro".** O objetivo é ser deliberado sobre:
 
-- who can talk to your bot
-- where the bot is allowed to act
-- what the bot can touch
+- quem pode falar com seu bot
+- onde o bot é permitido agir
+- o que o bot pode tocar
 
-Start with the smallest access that still works, then widen it as you gain confidence.
+Comece com o acesso mínimo que ainda funciona, depois o amplie conforme você ganha confiança.
 
-## Deployment assumption (important)
+## Suposição de deployment (importante)
 
-OpenCraft assumes the host and config boundary are trusted:
+OpenCraft assume o host e boundary de config são confiáveis:
 
-- If someone can modify Gateway host state/config (`~/.opencraft`, including `opencraft.json`), treat them as a trusted operator.
-- Running one Gateway for multiple mutually untrusted/adversarial operators is **not a recommended setup**.
-- For mixed-trust teams, split trust boundaries with separate gateways (or at minimum separate OS users/hosts).
-- OpenCraft can run multiple gateway instances on one machine, but recommended operations favor clean trust-boundary separation.
-- Recommended default: one user per machine/host (or VPS), one gateway for that user, and one or more agents in that gateway.
-- If multiple users want OpenCraft, use one VPS/host per user.
+- Se alguém pode modificar estado/config do host Gateway (`~/.opencraft`, incluindo `opencraft.json`), trate-os como um operador confiável.
+- Executar um Gateway para múltiplos operadores mutuamente não confiáveis/adversários é **não uma setup recomendada**.
+- Para equipes com multi-trust, divida limites de trust com gateways separados (ou no mínimo usuários/hosts de OS separados).
+- OpenCraft pode executar múltiplas instâncias de gateway em uma máquina, mas operações recomendadas favorecem separação limpa de trust-boundary.
+- Recomendado padrão: um usuário por máquina/host (ou VPS), um gateway para aquele usuário, e um ou mais agentes naquele gateway.
+- Se múltiplos usuários querem OpenCraft, use um VPS/host por usuário.
 
-### Practical consequence (operator trust boundary)
+### Consequência prática (trust boundary do operador)
 
-Inside one Gateway instance, authenticated operator access is a trusted control-plane role, not a per-user tenant role.
+Dentro de uma instância de Gateway, acesso de operador autenticado é um papel de control-plane confiável, não um papel de tenant por-usuário.
 
-- Operators with read/control-plane access can inspect gateway session metadata/history by design.
-- Session identifiers (`sessionKey`, session IDs, labels) are routing selectors, not authorization tokens.
-- Example: expecting per-operator isolation for methods like `sessions.list`, `sessions.preview`, or `chat.history` is outside this model.
-- If you need adversarial-user isolation, run separate gateways per trust boundary.
-- Multiple gateways on one machine are technically possible, but not the recommended baseline for multi-user isolation.
+- Operadores com acesso de read/control-plane podem inspecionar metadados/histórico de sessão do gateway por design.
+- Identificadores de sessão (`sessionKey`, IDs de sessão, labels) são seletores de roteamento, não tokens de autorização.
+- Exemplo: esperar isolamento por-operador para métodos como `sessions.list`, `sessions.preview`, ou `chat.history` está fora deste modelo.
+- Se você precisa de isolamento de usuário adversário, execute gateways separados por limite de trust.
+- Múltiplos gateways em uma máquina são tecnicamente possíveis, mas não a linha de base recomendada para isolamento multi-usuário.
 
-## Personal assistant model (not a multi-tenant bus)
+## Modelo de assistente pessoal (não um bus multi-tenant)
 
-OpenCraft is designed as a personal assistant security model: one trusted operator boundary, potentially many agents.
+OpenCraft é projetado como um modelo de assistente pessoal: um limite confiável de operador, potencialmente muitos agentes.
 
-- If several people can message one tool-enabled agent, each of them can steer that same permission set.
-- Per-user session/memory isolation helps privacy, but does not convert a shared agent into per-user host authorization.
-- If users may be adversarial to each other, run separate gateways (or separate OS users/hosts) per trust boundary.
+- Se várias pessoas podem enviar mensagens a um agente habilitado para tools, cada uma delas pode dirigir aquele mesmo conjunto de permissão.
+- Isolamento de memória/sessão por-usuário ajuda privacidade, mas não converte um agente compartilhado em autorização de host por-usuário.
+- Se usuários podem ser adversários um para o outro, execute gateways separados (ou usuários/hosts de OS separados) por limite de trust.
 
-### Shared Slack workspace: real risk
+### Workspace Slack compartilhado: risco real
 
-If "everyone in Slack can message the bot," the core risk is delegated tool authority:
+Se "todos no Slack podem enviar mensagens ao bot," o risco central é autoridade delegada de tool:
 
-- any allowed sender can induce tool calls (`exec`, browser, network/file tools) within the agent's policy;
-- prompt/content injection from one sender can cause actions that affect shared state, devices, or outputs;
-- if one shared agent has sensitive credentials/files, any allowed sender can potentially drive exfiltration via tool usage.
+- qualquer remetente permitido pode induzir tool calls (`exec`, browser, tools de rede/file) dentro da política do agente;
+- prompt/injeção de conteúdo de um remetente pode causar ações que afetam estado compartilhado, dispositivos ou outputs;
+- se um agente compartilhado tem credenciais/arquivos sensíveis, qualquer remetente permitido pode potencialmente conduzir exfiltração via uso de tool.
 
-Use separate agents/gateways with minimal tools for team workflows; keep personal-data agents private.
+Use agentes/gateways separados com minimal tools para workflows de time; mantenha agentes de dados pessoais privados.
 
-### Company-shared agent: acceptable pattern
+### Agente compartilhado da empresa: padrão aceitável
 
-This is acceptable when everyone using that agent is in the same trust boundary (for example one company team) and the agent is strictly business-scoped.
+Isto é aceitável quando todos usando aquele agente estão no mesmo limite de trust (por exemplo um time da empresa) e o agente é estritamente business-scoped.
 
-- run it on a dedicated machine/VM/container;
-- use a dedicated OS user + dedicated browser/profile/accounts for that runtime;
-- do not sign that runtime into personal Apple/Google accounts or personal password-manager/browser profiles.
+- execute-o em uma máquina/VM/container dedicada;
+- use um usuário de OS dedicado + browser/profile/contas dedicadas para aquele runtime;
+- não assine aquele runtime em contas pessoais Apple/Google ou perfis de password-manager/browser pessoais.
 
-If you mix personal and company identities on the same runtime, you collapse the separation and increase personal-data exposure risk.
+Se você mistura identidades pessoais e da empresa no mesmo runtime, você colapsa a separação e aumenta risco de exposição de dados pessoais.
 
-## Gateway and node trust concept
+## Conceito de trust de Gateway e node
 
-Treat Gateway and node as one operator trust domain, with different roles:
+Trate Gateway e node como um domínio de trust de operador, com papéis diferentes:
 
-- **Gateway** is the control plane and policy surface (`gateway.auth`, tool policy, routing).
-- **Node** is remote execution surface paired to that Gateway (commands, device actions, host-local capabilities).
-- A caller authenticated to the Gateway is trusted at Gateway scope. After pairing, node actions are trusted operator actions on that node.
-- `sessionKey` is routing/context selection, not per-user auth.
-- Exec approvals (allowlist + ask) are guardrails for operator intent, not hostile multi-tenant isolation.
-- Exec approvals bind exact request context and best-effort direct local file operands; they do not semantically model every runtime/interpreter loader path. Use sandboxing and host isolation for strong boundaries.
+- **Gateway** é o control plane e surface de política (`gateway.auth`, política de tool, roteamento).
+- **Node** é surface de execução remota pareada àquele Gateway (comandos, ações de device, capacidades host-local).
+- Um chamador autenticado ao Gateway é confiável em escopo de Gateway. Depois do pairing, ações de node são ações de operador confiável naquele node.
+- `sessionKey` é roteamento/seleção de contexto, não auth por-usuário.
+- Exec approvals (allowlist + ask) são guardrails para intenção do operador, não isolamento multi-tenant hostil.
+- Exec approvals vinculam contexto exato de request e operandos diretos de arquivo local best-effort; eles não modelam semanticamente cada caminho de loader de runtime/interpreter. Use sandboxing e isolamento de host para limites fortes.
 
-If you need hostile-user isolation, split trust boundaries by OS user/host and run separate gateways.
+Se você precisa de isolamento de usuário hostil, divida limites de trust por usuário/host de OS e execute gateways separados.
 
-## Trust boundary matrix
+## Matriz de trust boundary
 
-Use this as the quick model when triaging risk:
+Use isto como o modelo rápido quando triaging risk:
 
-| Boundary or control                         | What it means                                     | Common misread                                                                |
+| Boundary ou controle                         | O que significa                                     | Leitura comum errada                                                                |
 | ------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `gateway.auth` (token/password/device auth) | Authenticates callers to gateway APIs             | "Needs per-message signatures on every frame to be secure"                    |
-| `sessionKey`                                | Routing key for context/session selection         | "Session key is a user auth boundary"                                         |
-| Prompt/content guardrails                   | Reduce model abuse risk                           | "Prompt injection alone proves auth bypass"                                   |
-| `canvas.eval` / browser evaluate            | Intentional operator capability when enabled      | "Any JS eval primitive is automatically a vuln in this trust model"           |
-| Local TUI `!` shell                         | Explicit operator-triggered local execution       | "Local shell convenience command is remote injection"                         |
-| Node pairing and node commands              | Operator-level remote execution on paired devices | "Remote device control should be treated as untrusted user access by default" |
+| `gateway.auth` (token/password/device auth) | Autentica chamadores a APIs do gateway             | "Precisa de assinaturas por-mensagem em cada frame para ser seguro"                    |
+| `sessionKey`                                | Chave de roteamento para seleção de contexto/sessão         | "Session key é um boundary de auth de usuário"                                         |
+| Prompt/content guardrails                   | Reduz risco de model abuse                           | "Prompt injection sozinho prova bypass de auth"                                   |
+| `canvas.eval` / browser evaluate            | Capacidade de operador intencional quando habilitado      | "Qualquer primitivo JS eval é automaticamente uma vuln neste modelo de trust"           |
+| Local TUI `!` shell                         | Execução local explicitamente disparada por operador       | "Comando de shell de conveniência local é injeção remota"                         |
+| Node pairing e node commands              | Execução remota nivel-operador em dispositivos pareados | "Controle de dispositivo remoto deve ser tratado como acesso de usuário não confiável por padrão" |
 
-## Not vulnerabilities by design
+## Não são vulnerabilidades por design
 
-These patterns are commonly reported and are usually closed as no-action unless a real boundary bypass is shown:
+Estes padrões são comumente reportados e geralmente são fechados como no-action a menos que um bypass real de boundary seja mostrado:
 
-- Prompt-injection-only chains without a policy/auth/sandbox bypass.
-- Claims that assume hostile multi-tenant operation on one shared host/config.
-- Claims that classify normal operator read-path access (for example `sessions.list`/`sessions.preview`/`chat.history`) as IDOR in a shared-gateway setup.
-- Localhost-only deployment findings (for example HSTS on loopback-only gateway).
-- Discord inbound webhook signature findings for inbound paths that do not exist in this repo.
-- "Missing per-user authorization" findings that treat `sessionKey` as an auth token.
+- Cadeias de injection-apenas sem bypass de política/auth/sandbox.
+- Reclamações que assumem operação multi-tenant hostil em um host/config compartilhado.
+- Reclamações que classificam acesso de read-path de operador normal (por exemplo `sessions.list`/`sessions.preview`/`chat.history`) como IDOR em uma setup de gateway compartilhado.
+- Achados de deployment localhost-only (por exemplo HSTS em gateway loopback-only).
+- Achados de assinatura de webhook inbound Discord para caminhos inbound que não existem neste repo.
+- Achados de "autorização faltando por-usuário" que tratam `sessionKey` como um token de auth.
 
-## Researcher preflight checklist
+## Checklist de preflight de pesquisador
 
-Before opening a GHSA, verify all of these:
+Antes de abrir uma GHSA, verifique todos estes:
 
-1. Repro still works on latest `main` or latest release.
-2. Report includes exact code path (`file`, function, line range) and tested version/commit.
-3. Impact crosses a documented trust boundary (not just prompt injection).
-4. Claim is not listed in [Out of Scope](https://github.com/editzffaleta/OpenCraft/blob/main/SECURITY.md#out-of-scope).
-5. Existing advisories were checked for duplicates (reuse canonical GHSA when applicable).
-6. Deployment assumptions are explicit (loopback/local vs exposed, trusted vs untrusted operators).
+1. Repro ainda funciona em `main` mais recente ou release mais recente.
+2. Report inclui caminho exato de código (`file`, função, intervalo de linhas) e versão testada/commit.
+3. Impacto cruza um trust boundary documentado (não apenas injection).
+4. Reclamação não está listada em [Out of Scope](https://github.com/editzffaleta/OpenCraft/blob/main/SECURITY.md#out-of-scope).
+5. Advisories existentes foram verificados para duplicatas (reutilize GHSA canônica quando aplicável).
+6. Suposições de deployment são explícitas (loopback/local vs exposto, operadores confiáveis vs não confiáveis).
 
-## Hardened baseline in 60 seconds
+## Baseline endurecida em 60 segundos
 
-Use this baseline first, then selectively re-enable tools per trusted agent:
+Use este baseline primeiro, depois re-habilite seletivamente tools por agente confiável:
 
 ```json5
 {
@@ -170,119 +170,113 @@ Use this baseline first, then selectively re-enable tools per trusted agent:
 }
 ```
 
-This keeps the Gateway local-only, isolates DMs, and disables control-plane/runtime tools by default.
+Isto mantém o Gateway local-only, isola DMs e desabilita control-plane/runtime tools por padrão.
 
-## Shared inbox quick rule
+## Regra rápida de inbox compartilhada
 
-If more than one person can DM your bot:
+Se mais de uma pessoa pode DM seu bot:
 
-- Set `session.dmScope: "per-channel-peer"` (or `"per-account-channel-peer"` for multi-account channels).
-- Keep `dmPolicy: "pairing"` or strict allowlists.
-- Never combine shared DMs with broad tool access.
-- This hardens cooperative/shared inboxes, but is not designed as hostile co-tenant isolation when users share host/config write access.
+- Defina `session.dmScope: "per-channel-peer"` (ou `"per-account-channel-peer"` para canais multi-account).
+- Mantenha `dmPolicy: "pairing"` ou allowlists estritos.
+- Nunca combine DMs compartilhados com acesso amplo a tools.
+- Isto endurecido inboxes cooperativas/compartilhadas, mas não é projetado como isolamento hostil de co-tenant quando usuários compartilham acesso write host/config.
 
-### What the audit checks (high level)
+### O que o audit verifica (alto nível)
 
-- **Inbound access** (DM policies, group policies, allowlists): can strangers trigger the bot?
-- **Tool blast radius** (elevated tools + open rooms): could prompt injection turn into shell/file/network actions?
-- **Network exposure** (Gateway bind/auth, Tailscale Serve/Funnel, weak/short auth tokens).
+- **Inbound access** (DM policies, group policies, allowlists): estranhos podem disparar o bot?
+- **Tool blast radius** (tools elevados + rooms abertos): injeção de prompt poderia virar shell/file/network actions?
+- **Network exposure** (Gateway bind/auth, Tailscale Serve/Funnel, tokens/passwords fracos/curtos).
 - **Browser control exposure** (remote nodes, relay ports, remote CDP endpoints).
-- **Local disk hygiene** (permissions, symlinks, config includes, “synced folder” paths).
-- **Plugins** (extensions exist without an explicit allowlist).
-- **Policy drift/misconfig** (sandbox docker settings configured but sandbox mode off; ineffective `gateway.nodes.denyCommands` patterns because matching is exact command-name only (for example `system.run`) and does not inspect shell text; dangerous `gateway.nodes.allowCommands` entries; global `tools.profile="minimal"` overridden by per-agent profiles; extension plugin tools reachable under permissive tool policy).
-- **Runtime expectation drift** (for example `tools.exec.host="sandbox"` while sandbox mode is off, which runs directly on the gateway host).
-- **Model hygiene** (warn when configured models look legacy; not a hard block).
+- **Local disk hygiene** (permissões, symlinks, config includes, "synced folder" paths).
+- **Plugins** (extensões existem sem um allowlist explícito).
+- **Policy drift/misconfig** (sandbox docker settings configurado mas sandbox mode off; inefetivo `gateway.nodes.denyCommands` patterns porque matching é command-name exato apenas (por exemplo `system.run`) e não inspeciona texto de shell; entradas perigosas `gateway.nodes.allowCommands`; global `tools.profile="minimal"` override por per-agent profiles; plugin extension tools reachable sob permissive tool policy).
+- **Runtime expectation drift** (por exemplo `tools.exec.host="sandbox"` enquanto sandbox mode está off, que executa diretamente no host gateway).
+- **Model hygiene** (warn quando modelos configurados parecem legacy; não um hard block).
 
-If you run `--deep`, OpenCraft also attempts a best-effort live Gateway probe.
+Se você executar `--deep`, OpenCraft também tenta um Gateway probe ao vivo best-effort.
 
 ## Credential storage map
 
-Use this when auditing access or deciding what to back up:
+Use isto quando auditando acesso ou decidindo o que fazer backup:
 
 - **WhatsApp**: `~/.opencraft/credentials/whatsapp/<accountId>/creds.json`
-- **Telegram bot token**: config/env or `channels.telegram.tokenFile` (regular file only; symlinks rejected)
-- **Discord bot token**: config/env or SecretRef (env/file/exec providers)
+- **Telegram bot token**: config/env ou `channels.telegram.tokenFile` (arquivo regular apenas; symlinks rejeitados)
+- **Discord bot token**: config/env ou SecretRef (env/file/exec providers)
 - **Slack tokens**: config/env (`channels.slack.*`)
 - **Pairing allowlists**:
-  - `~/.opencraft/credentials/<channel>-allowFrom.json` (default account)
-  - `~/.opencraft/credentials/<channel>-<accountId>-allowFrom.json` (non-default accounts)
+  - `~/.opencraft/credentials/<channel>-allowFrom.json` (conta padrão)
+  - `~/.opencraft/credentials/<channel>-<accountId>-allowFrom.json` (contas não-padrão)
 - **Model auth profiles**: `~/.opencraft/agents/<agentId>/agent/auth-profiles.json`
-- **File-backed secrets payload (optional)**: `~/.opencraft/secrets.json`
+- **File-backed secrets payload (opcional)**: `~/.opencraft/secrets.json`
 - **Legacy OAuth import**: `~/.opencraft/credentials/oauth.json`
 
 ## Security Audit Checklist
 
-When the audit prints findings, treat this as a priority order:
+Quando o audit imprime achados, trate isto como uma ordem de prioridade:
 
-1. **Anything “open” + tools enabled**: lock down DMs/groups first (pairing/allowlists), then tighten tool policy/sandboxing.
-2. **Public network exposure** (LAN bind, Funnel, missing auth): fix immediately.
-3. **Browser control remote exposure**: treat it like operator access (tailnet-only, pair nodes deliberately, avoid public exposure).
-4. **Permissions**: make sure state/config/credentials/auth are not group/world-readable.
-5. **Plugins/extensions**: only load what you explicitly trust.
-6. **Model choice**: prefer modern, instruction-hardened models for any bot with tools.
+1. **Qualquer coisa "aberta" + tools habilitadas**: lock down DMs/groups primeiro (pairing/allowlists), depois aperte tool policy/sandboxing.
+2. **Public network exposure** (LAN bind, Funnel, auth faltando): corrijir imediatamente.
+3. **Browser control remote exposure**: trate como acesso de operador (tailnet-only, pareie nodes deliberadamente, evite public exposure).
+4. **Permissões**: tenha certeza de que state/config/credentials/auth não são group/world-readable.
+5. **Plugins/extensões**: apenas carregue o que você explicitamente confia.
+6. **Model choice**: prefira modern, instruction-hardened models para qualquer bot com tools.
 
-## Security audit glossary
+## Glossário de security audit
 
-High-signal `checkId` values you will most likely see in real deployments (not exhaustive):
+Valores de `checkId` high-signal que você muito provavelmente verá em deployments reais (não exaustivo):
 
-| `checkId`                                          | Severity      | Why it matters                                                                       | Primary fix key/path                                                                              | Auto-fix |
+| `checkId`                                          | Severity      | Por que importa                                                                       | Chave/caminho de fix primário                                                                              | Auto-fix |
 | -------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | -------- |
-| `fs.state_dir.perms_world_writable`                | critical      | Other users/processes can modify full OpenCraft state                                | filesystem perms on `~/.opencraft`                                                                | yes      |
-| `fs.config.perms_writable`                         | critical      | Others can change auth/tool policy/config                                            | filesystem perms on `~/.editzffaleta/OpenCraft.json`                                              | yes      |
-| `fs.config.perms_world_readable`                   | critical      | Config can expose tokens/settings                                                    | filesystem perms on config file                                                                   | yes      |
-| `gateway.bind_no_auth`                             | critical      | Remote bind without shared secret                                                    | `gateway.bind`, `gateway.auth.*`                                                                  | no       |
-| `gateway.loopback_no_auth`                         | critical      | Reverse-proxied loopback may become unauthenticated                                  | `gateway.auth.*`, proxy setup                                                                     | no       |
-| `gateway.http.no_auth`                             | warn/critical | Gateway HTTP APIs reachable with `auth.mode="none"`                                  | `gateway.auth.mode`, `gateway.http.endpoints.*`                                                   | no       |
-| `gateway.tools_invoke_http.dangerous_allow`        | warn/critical | Re-enables dangerous tools over HTTP API                                             | `gateway.tools.allow`                                                                             | no       |
-| `gateway.nodes.allow_commands_dangerous`           | warn/critical | Enables high-impact node commands (camera/screen/contacts/calendar/SMS)              | `gateway.nodes.allowCommands`                                                                     | no       |
+| `fs.state_dir.perms_world_writable`                | critical      | Outros usuários/processos podem modificar estado completo de OpenCraft                                | filesystem perms em `~/.opencraft`                                                                | yes      |
+| `fs.config.perms_writable`                         | critical      | Outros podem mudar auth/tool policy/config                                            | filesystem perms em `~/.editzffaleta/OpenCraft.json`                                              | yes      |
+| `fs.config.perms_world_readable`                   | critical      | Config pode expor tokens/settings                                                    | filesystem perms no arquivo de config                                                                   | yes      |
+| `gateway.bind_no_auth`                             | critical      | Remote bind sem shared secret                                                    | `gateway.bind`, `gateway.auth.*`                                                                  | no       |
+| `gateway.loopback_no_auth`                         | critical      | Loopback reverse-proxied pode se tornar unauthenticated                                  | `gateway.auth.*`, proxy setup                                                                     | no       |
+| `gateway.http.no_auth`                             | warn/critical | Gateway HTTP APIs reachable com `auth.mode="none"`                                  | `gateway.auth.mode`, `gateway.http.endpoints.*`                                                   | no       |
+| `gateway.tools_invoke_http.dangerous_allow`        | warn/critical | Re-habilita tools perigosas sobre HTTP API                                             | `gateway.tools.allow`                                                                             | no       |
+| `gateway.nodes.allow_commands_dangerous`           | warn/critical | Habilita node commands de high-impact (camera/screen/contacts/calendar/SMS)              | `gateway.nodes.allowCommands`                                                                     | no       |
 | `gateway.tailscale_funnel`                         | critical      | Public internet exposure                                                             | `gateway.tailscale.mode`                                                                          | no       |
-| `gateway.control_ui.allowed_origins_required`      | critical      | Non-loopback Control UI without explicit browser-origin allowlist                    | `gateway.controlUi.allowedOrigins`                                                                | no       |
-| `gateway.control_ui.host_header_origin_fallback`   | warn/critical | Enables Host-header origin fallback (DNS rebinding hardening downgrade)              | `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback`                                      | no       |
-| `gateway.control_ui.insecure_auth`                 | warn          | Insecure-auth compatibility toggle enabled                                           | `gateway.controlUi.allowInsecureAuth`                                                             | no       |
-| `gateway.control_ui.device_auth_disabled`          | critical      | Disables device identity check                                                       | `gateway.controlUi.dangerouslyDisableDeviceAuth`                                                  | no       |
-| `gateway.real_ip_fallback_enabled`                 | warn/critical | Trusting `X-Real-IP` fallback can enable source-IP spoofing via proxy misconfig      | `gateway.allowRealIpFallback`, `gateway.trustedProxies`                                           | no       |
-| `discovery.mdns_full_mode`                         | warn/critical | mDNS full mode advertises `cliPath`/`sshPort` metadata on local network              | `discovery.mdns.mode`, `gateway.bind`                                                             | no       |
-| `config.insecure_or_dangerous_flags`               | warn          | Any insecure/dangerous debug flags enabled                                           | multiple keys (see finding detail)                                                                | no       |
-| `hooks.token_too_short`                            | warn          | Easier brute force on hook ingress                                                   | `hooks.token`                                                                                     | no       |
-| `hooks.request_session_key_enabled`                | warn/critical | External caller can choose sessionKey                                                | `hooks.allowRequestSessionKey`                                                                    | no       |
-| `hooks.request_session_key_prefixes_missing`       | warn/critical | No bound on external session key shapes                                              | `hooks.allowedSessionKeyPrefixes`                                                                 | no       |
-| `logging.redact_off`                               | warn          | Sensitive values leak to logs/status                                                 | `logging.redactSensitive`                                                                         | yes      |
-| `sandbox.docker_config_mode_off`                   | warn          | Sandbox Docker config present but inactive                                           | `agents.*.sandbox.mode`                                                                           | no       |
-| `sandbox.dangerous_network_mode`                   | critical      | Sandbox Docker network uses `host` or `container:*` namespace-join mode              | `agents.*.sandbox.docker.network`                                                                 | no       |
-| `tools.exec.host_sandbox_no_sandbox_defaults`      | warn          | `exec host=sandbox` resolves to host exec when sandbox is off                        | `tools.exec.host`, `agents.defaults.sandbox.mode`                                                 | no       |
-| `tools.exec.host_sandbox_no_sandbox_agents`        | warn          | Per-agent `exec host=sandbox` resolves to host exec when sandbox is off              | `agents.list[].tools.exec.host`, `agents.list[].sandbox.mode`                                     | no       |
-| `tools.exec.safe_bins_interpreter_unprofiled`      | warn          | Interpreter/runtime bins in `safeBins` without explicit profiles broaden exec risk   | `tools.exec.safeBins`, `tools.exec.safeBinProfiles`, `agents.list[].tools.exec.*`                 | no       |
-| `skills.workspace.symlink_escape`                  | warn          | Workspace `skills/**/SKILL.md` resolves outside workspace root (symlink-chain drift) | workspace `skills/**` filesystem state                                                            | no       |
-| `security.exposure.open_groups_with_elevated`      | critical      | Open groups + elevated tools create high-impact prompt-injection paths               | `channels.*.groupPolicy`, `tools.elevated.*`                                                      | no       |
-| `security.exposure.open_groups_with_runtime_or_fs` | critical/warn | Open groups can reach command/file tools without sandbox/workspace guards            | `channels.*.groupPolicy`, `tools.profile/deny`, `tools.fs.workspaceOnly`, `agents.*.sandbox.mode` | no       |
-| `security.trust_model.multi_user_heuristic`        | warn          | Config looks multi-user while gateway trust model is personal-assistant              | split trust boundaries, or shared-user hardening (`sandbox.mode`, tool deny/workspace scoping)    | no       |
-| `tools.profile_minimal_overridden`                 | warn          | Agent overrides bypass global minimal profile                                        | `agents.list[].tools.profile`                                                                     | no       |
-| `plugins.tools_reachable_permissive_policy`        | warn          | Extension tools reachable in permissive contexts                                     | `tools.profile` + tool allow/deny                                                                 | no       |
-| `models.small_params`                              | critical/info | Small models + unsafe tool surfaces raise injection risk                             | model choice + sandbox/tool policy                                                                | no       |
+| `gateway.control_ui.allowed_origins_required`      | critical      | Non-loopback Control UI sem explicit browser-origin allowlist                    | `gateway.controlUi.allowedOrigins`                                                                | no       |
+| `gateway.control_ui.host_header_origin_fallback`   | warn/critical | Habilita Host-header origin fallback (DNS rebinding hardening downgrade)              | `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback`                                      | no       |
+| `gateway.control_ui.insecure_auth`                 | warn          | Insecure-auth compatibility toggle habilitado                                           | `gateway.controlUi.allowInsecureAuth`                                                             | no       |
+| `gateway.control_ui.device_auth_disabled`          | critical      | Desabilita device identity check                                                       | `gateway.controlUi.dangerouslyDisableDeviceAuth`                                                  | no       |
+| `gateway.real_ip_fallback_enabled`                 | warn/critical | Confiar em `X-Real-IP` fallback pode habilitar source-IP spoofing via proxy misconfig      | `gateway.allowRealIpFallback`, `gateway.trustedProxies`                                           | no       |
+| `discovery.mdns_full_mode`                         | warn/critical | mDNS full mode anuncia `cliPath`/`sshPort` metadata em local network              | `discovery.mdns.mode`, `gateway.bind`                                                             | no       |
+| `config.insecure_or_dangerous_flags`               | warn          | Qualquer insecure/dangerous debug flags habilitadas                                           | múltiplas chaves (veja detalhe de achado)                                                                | no       |
+| `hooks.token_too_short`                            | warn          | Brute force mais fácil em hook ingress                                                   | `hooks.token`                                                                                     | no       |
+| `hooks.request_session_key_enabled`                | warn/critical | External caller pode escolher sessionKey                                                | `hooks.allowRequestSessionKey`                                                                    | no       |
+| `hooks.request_session_key_prefixes_missing`       | warn/critical | Sem bound em external session key shapes                                              | `hooks.allowedSessionKeyPrefixes`                                                                 | no       |
+| `logging.redact_off`                               | warn          | Sensitive values vazar para logs/status                                                 | `logging.redactSensitive`                                                                         | yes      |
+| `sandbox.docker_config_mode_off`                   | warn          | Sandbox Docker config presente mas inativo                                           | `agents.*.sandbox.mode`                                                                           | no       |
+| `sandbox.dangerous_network_mode`                   | critical      | Sandbox Docker network usa `host` ou `container:*` namespace-join mode              | `agents.*.sandbox.docker.network`                                                                 | no       |
+| `tools.exec.host_sandbox_no_sandbox_defaults`      | warn          | `exec host=sandbox` resolve para host exec quando sandbox está off                        | `tools.exec.host`, `agents.defaults.sandbox.mode`                                                 | no       |
+| `tools.exec.host_sandbox_no_sandbox_agents`        | warn          | Per-agent `exec host=sandbox` resolve para host exec quando sandbox está off              | `agents.list[].tools.exec.host`, `agents.list[].sandbox.mode`                                     | no       |
+| `tools.exec.safe_bins_interpreter_unprofiled`      | warn          | Interpreter/runtime bins em `safeBins` sem explicit profiles ampliam exec risk   | `tools.exec.safeBins`, `tools.exec.safeBinProfiles`, `agents.list[].tools.exec.*`                 | no       |
+| `skills.workspace.symlink_escape`                  | warn          | Workspace `skills/**/SKILL.md` resolve fora workspace root (symlink-chain drift) | workspace `skills/**` filesystem state                                                            | no       |
+| `security.exposure.open_groups_with_elevated`      | critical      | Open groups + elevated tools criam high-impact prompt-injection paths               | `channels.*.groupPolicy`, `tools.elevated.*`                                                      | no       |
+| `security.exposure.open_groups_with_runtime_or_fs` | critical/warn | Open groups podem atingir command/file tools sem sandbox/workspace guards            | `channels.*.groupPolicy`, `tools.profile/deny`, `tools.fs.workspaceOnly`, `agents.*.sandbox.mode` | no       |
+| `security.trust_model.multi_user_heuristic`        | warn          | Config parece multi-user enquanto trust model de gateway é personal-assistant              | divida trust boundaries, ou shared-user hardening (`sandbox.mode`, tool deny/workspace scoping)    | no       |
+| `tools.profile_minimal_overridden`                 | warn          | Agent override bypassa global minimal profile                                        | `agents.list[].tools.profile`                                                                     | no       |
+| `plugins.tools_reachable_permissive_policy`        | warn          | Extension tools reachable em permissive contexts                                     | `tools.profile` + tool allow/deny                                                                 | no       |
+| `models.small_params`                              | critical/info | Small models + unsafe tool surfaces elevam injection risk                             | model choice + sandbox/tool policy                                                                | no       |
 
-## Control UI over HTTP
+## Control UI sobre HTTP
 
-The Control UI needs a **secure context** (HTTPS or localhost) to generate device
-identity. `gateway.controlUi.allowInsecureAuth` is a local compatibility toggle:
+Control UI precisa de um **secure context** (HTTPS ou localhost) para gerar device identity. `gateway.controlUi.allowInsecureAuth` é um toggle de compatibilidade local:
 
-- On localhost, it allows Control UI auth without device identity when the page
-  is loaded over non-secure HTTP.
-- It does not bypass pairing checks.
-- It does not relax remote (non-localhost) device identity requirements.
+- Em localhost, permite Control UI auth sem device identity quando a página é carregada sobre HTTP não-seguro.
+- Não bypassa pairing checks.
+- Não relassa requisitos de device identity remota (não-localhost).
 
-Prefer HTTPS (Tailscale Serve) or open the UI on `127.0.0.1`.
+Prefira HTTPS (Tailscale Serve) ou abra a UI em `127.0.0.1`.
 
-For break-glass scenarios only, `gateway.controlUi.dangerouslyDisableDeviceAuth`
-disables device identity checks entirely. This is a severe security downgrade;
-keep it off unless you are actively debugging and can revert quickly.
+Para cenários break-glass apenas, `gateway.controlUi.dangerouslyDisableDeviceAuth` desabilita device identity checks totalmente. Isto é um downgrade de segurança severo; mantenha-o off a menos que você esteja ativamente debugando e possa reverter rapidamente.
 
-`opencraft security audit` warns when this setting is enabled.
+`opencraft security audit` avisa quando esta setting está habilitada.
 
-## Insecure or dangerous flags summary
+## Sumário de flags insecuras ou perigosas
 
-`opencraft security audit` includes `config.insecure_or_dangerous_flags` when
-known insecure/dangerous debug switches are enabled. That check currently
-aggregates:
+`opencraft security audit` inclui `config.insecure_or_dangerous_flags` quando conhecidos switches insecuros/perigosos estão habilitados. Aquele check atualmente agrega:
 
 - `gateway.controlUi.allowInsecureAuth=true`
 - `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true`
@@ -291,8 +285,7 @@ aggregates:
 - `hooks.mappings[<index>].allowUnsafeExternalContent=true`
 - `tools.exec.applyPatch.workspaceOnly=false`
 
-Complete `dangerous*` / `dangerously*` config keys defined in OpenCraft config
-schema:
+Completo `dangerous*` / `dangerously*` config keys definidas em OpenCraft config schema:
 
 - `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback`
 - `gateway.controlUi.dangerouslyDisableDeviceAuth`
@@ -316,117 +309,111 @@ schema:
 - `agents.list[<index>].sandbox.docker.dangerouslyAllowExternalBindSources`
 - `agents.list[<index>].sandbox.docker.dangerouslyAllowContainerNamespaceJoin`
 
-## Reverse Proxy Configuration
+## Configuração de Reverse Proxy
 
-If you run the Gateway behind a reverse proxy (nginx, Caddy, Traefik, etc.), you should configure `gateway.trustedProxies` for proper client IP detection.
+Se você executar o Gateway atrás de um reverse proxy (nginx, Caddy, Traefik, etc.), você deve configurar `gateway.trustedProxies` para detecção apropriada de client IP.
 
-When the Gateway detects proxy headers from an address that is **not** in `trustedProxies`, it will **not** treat connections as local clients. If gateway auth is disabled, those connections are rejected. This prevents authentication bypass where proxied connections would otherwise appear to come from localhost and receive automatic trust.
+Quando o Gateway detecta proxy headers de um endereço que é **não** em `trustedProxies`, ele será **não** tratar conexões como clientes locais. Se gateway auth está desabilitado, aquelas conexões são rejeitadas. Isto previne authentication bypass onde conexões proxied de outra forma pareceriam vir de localhost e receber trust automático.
 
 ```yaml
 gateway:
   trustedProxies:
     - "127.0.0.1" # if your proxy runs on localhost
-  # Optional. Default false.
-  # Only enable if your proxy cannot provide X-Forwarded-For.
+  # Opcional. Padrão false.
+  # Habilite apenas se seu proxy não pode fornecer X-Forwarded-For.
   allowRealIpFallback: false
   auth:
     mode: password
     password: ${OPENCLAW_GATEWAY_PASSWORD}
 ```
 
-When `trustedProxies` is configured, the Gateway uses `X-Forwarded-For` to determine the client IP. `X-Real-IP` is ignored by default unless `gateway.allowRealIpFallback: true` is explicitly set.
+Quando `trustedProxies` está configurado, o Gateway usa `X-Forwarded-For` para determinar o client IP. `X-Real-IP` é ignorado por padrão a menos que `gateway.allowRealIpFallback: true` seja explicitamente definido.
 
-Good reverse proxy behavior (overwrite incoming forwarding headers):
+Bom comportamento de reverse proxy (overwrite incoming forwarding headers):
 
 ```nginx
 proxy_set_header X-Forwarded-For $remote_addr;
 proxy_set_header X-Real-IP $remote_addr;
 ```
 
-Bad reverse proxy behavior (append/preserve untrusted forwarding headers):
+Mau comportamento de reverse proxy (append/preserve untrusted forwarding headers):
 
 ```nginx
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
 
-## HSTS and origin notes
+## HSTS e notas de origin
 
-- OpenCraft gateway is local/loopback first. If you terminate TLS at a reverse proxy, set HSTS on the proxy-facing HTTPS domain there.
-- If the gateway itself terminates HTTPS, you can set `gateway.http.securityHeaders.strictTransportSecurity` to emit the HSTS header from OpenCraft responses.
-- Detailed deployment guidance is in [Trusted Proxy Auth](/gateway/trusted-proxy-auth#tls-termination-and-hsts).
-- For non-loopback Control UI deployments, `gateway.controlUi.allowedOrigins` is required by default.
-- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` enables Host-header origin fallback mode; treat it as a dangerous operator-selected policy.
-- Treat DNS rebinding and proxy-host header behavior as deployment hardening concerns; keep `trustedProxies` tight and avoid exposing the gateway directly to the public internet.
+- OpenCraft gateway é local/loopback primeiro. Se você terminar TLS em um reverse proxy, defina HSTS no domínio HTTPS proxy-facing lá.
+- Se o gateway em si termina HTTPS, você pode defininir `gateway.http.securityHeaders.strictTransportSecurity` para emitir o header HSTS das respostas do OpenCraft.
+- Orientação de deployment detalhada está em [Trusted Proxy Auth](/gateway/trusted-proxy-auth#tls-termination-and-hsts).
+- Para deployments non-loopback Control UI, `gateway.controlUi.allowedOrigins` é necessário por padrão.
+- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` habilita modo Host-header origin fallback; trate como uma política selecionada por operador perigoso.
+- Trate DNS rebinding e comportamento de proxy-host header como preocupações de hardening de deployment; mantenha `trustedProxies` tight e evite expor o gateway diretamente à public internet.
 
-## Local session logs live on disk
+## Logs de sessão local vivem no disk
 
-OpenCraft stores session transcripts on disk under `~/.opencraft/agents/<agentId>/sessions/*.jsonl`.
-This is required for session continuity and (optionally) session memory indexing, but it also means
-**any process/user with filesystem access can read those logs**. Treat disk access as the trust
-boundary and lock down permissions on `~/.opencraft` (see the audit section below). If you need
-stronger isolation between agents, run them under separate OS users or separate hosts.
+OpenCraft armazena transcripts de sessão no disk sob `~/.opencraft/agents/<agentId>/sessions/*.jsonl`.
+Isto é necessário para continuidade de sessão e (opcionalmente) session memory indexing, mas também significa
+**qualquer processo/usuário com acesso a filesystem pode ler aqueles logs**. Trate acesso a disk como o trust boundary e lock down permissões em `~/.opencraft` (veja a seção audit abaixo). Se você precisa de isolamento mais forte entre agentes, execute-os sob usuários OS separados ou hosts separados.
 
-## Node execution (system.run)
+## Execução de node (system.run)
 
-If a macOS node is paired, the Gateway can invoke `system.run` on that node. This is **remote code execution** on the Mac:
+Se um node macOS está pareado, o Gateway pode invocar `system.run` naquele node. Isto é **execução remota de código** no Mac:
 
-- Requires node pairing (approval + token).
-- Controlled on the Mac via **Settings → Exec approvals** (security + ask + allowlist).
-- Approval mode binds exact request context and, when possible, one concrete local script/file operand. If OpenCraft cannot identify exactly one direct local file for an interpreter/runtime command, approval-backed execution is denied rather than promising full semantic coverage.
-- If you don’t want remote execution, set security to **deny** and remove node pairing for that Mac.
+- Requer node pairing (aprovação + token).
+- Controlado no Mac via **Settings → Exec approvals** (segurança + ask + allowlist).
+- Modo de aprovação vincula contexto exato de request e, quando possível, um operando direto concreto de arquivo local. Se OpenCraft não pode identificar exatamente um arquivo local direto para um comando de interpreter/runtime, execução backed por aprovação é negada ao invés de prometer cobertura semântica completa.
+- Se você não quer execução remota, defina segurança a **deny** e remova node pairing para aquele Mac.
 
-## Dynamic skills (watcher / remote nodes)
+## Skills dinâmicas (watcher / remote nodes)
 
-OpenCraft can refresh the skills list mid-session:
+OpenCraft pode atualizar a lista de skills mid-sessão:
 
-- **Skills watcher**: changes to `SKILL.md` can update the skills snapshot on the next agent turn.
-- **Remote nodes**: connecting a macOS node can make macOS-only skills eligible (based on bin probing).
+- **Skills watcher**: mudanças a `SKILL.md` podem atualizar o skills snapshot no próximo agent turn.
+- **Remote nodes**: conectando um node macOS pode tornar skills macOS-only elegíveis (baseado em bin probing).
 
-Treat skill folders as **trusted code** and restrict who can modify them.
+Trate skill folders como **código confiável** e restrinja quem pode modificá-las.
 
-## The Threat Model
+## O Modelo de Ameaça
 
-Your AI assistant can:
+Seu assistente de IA pode:
 
-- Execute arbitrary shell commands
-- Read/write files
-- Access network services
-- Send messages to anyone (if you give it WhatsApp access)
+- Executar comandos shell arbitrários
+- Ler/escrever arquivos
+- Acessar serviços de rede
+- Enviar mensagens para qualquer um (se você der a ele acesso WhatsApp)
 
-People who message you can:
+Pessoas que enviam mensagens para você podem:
 
-- Try to trick your AI into doing bad things
-- Social engineer access to your data
-- Probe for infrastructure details
+- Tentar enganar seu IA para fazer coisas ruins
+- Engenharia social de acesso aos seus dados
+- Sondar detalhes de infraestrutura
 
-## Core concept: access control before intelligence
+## Conceito central: controle de acesso antes de inteligência
 
-Most failures here are not fancy exploits — they’re “someone messaged the bot and the bot did what they asked.”
+A maioria das falhas aqui não são exploits fancy — eles são "alguém enviou mensagem ao bot e o bot fez o que foi pedido."
 
-OpenCraft’s stance:
+Postura do OpenCraft:
 
-- **Identity first:** decide who can talk to the bot (DM pairing / allowlists / explicit “open”).
-- **Scope next:** decide where the bot is allowed to act (group allowlists + mention gating, tools, sandboxing, device permissions).
-- **Model last:** assume the model can be manipulated; design so manipulation has limited blast radius.
+- **Identidade primeiro:** decida quem pode falar com o bot (DM pairing / allowlists / explícito "aberto").
+- **Escopo próximo:** decida onde o bot é permitido agir (group allowlists + mention gating, tools, sandboxing, device permissions).
+- **Modelo último:** assuma o modelo pode ser manipulado; projete para manipulação ter blast radius limitado.
 
-## Command authorization model
+## Modelo de autorização de comando
 
-Slash commands and directives are only honored for **authorized senders**. Authorization is derived from
-channel allowlists/pairing plus `commands.useAccessGroups` (see [Configuration](/gateway/configuration)
-and [Slash commands](/tools/slash-commands)). If a channel allowlist is empty or includes `"*"`,
-commands are effectively open for that channel.
+Slash commands e directives são apenas honradas para **remetentes autorizados**. Autorização é derivada de allowlists de canal/pairing mais `commands.useAccessGroups` (veja [Configuration](/gateway/configuration) e [Slash commands](/tools/slash-commands)). Se um allowlist de canal está vazio ou inclui `"*"`, comandos são efetivamente abertos para aquele canal.
 
-`/exec` is a session-only convenience for authorized operators. It does **not** write config or
-change other sessions.
+`/exec` é uma conveniência session-only para operadores autorizados. Ela **não** escreve config ou muda outras sessões.
 
-## Control plane tools risk
+## Risco de tools de control plane
 
-Two built-in tools can make persistent control-plane changes:
+Dois tools built-in podem fazer mudanças de control-plane persistentes:
 
-- `gateway` can call `config.apply`, `config.patch`, and `update.run`.
-- `cron` can create scheduled jobs that keep running after the original chat/task ends.
+- `gateway` pode chamar `config.apply`, `config.patch` e `update.run`.
+- `cron` pode criar scheduled jobs que continuam rodando depois que o chat/task original termina.
 
-For any agent/surface that handles untrusted content, deny these by default:
+Para qualquer agente/surface que maneja conteúdo não confiável, negar estes por padrão:
 
 ```json5
 {
@@ -436,44 +423,44 @@ For any agent/surface that handles untrusted content, deny these by default:
 }
 ```
 
-`commands.restart=false` only blocks restart actions. It does not disable `gateway` config/update actions.
+`commands.restart=false` apenas bloqueia restart actions. Ele não desabilita `gateway` config/update actions.
 
-## Plugins/extensions
+## Plugins/extensões
 
-Plugins run **in-process** with the Gateway. Treat them as trusted code:
+Plugins executam **in-process** com o Gateway. Trate como código confiável:
 
-- Only install plugins from sources you trust.
-- Prefer explicit `plugins.allow` allowlists.
-- Review plugin config before enabling.
-- Restart the Gateway after plugin changes.
-- If you install plugins from npm (`opencraft plugins install <npm-spec>`), treat it like running untrusted code:
-  - The install path is `~/.opencraft/extensions/<pluginId>/` (or `$OPENCRAFT_STATE_DIR/extensions/<pluginId>/`).
-  - OpenCraft uses `npm pack` and then runs `npm install --omit=dev` in that directory (npm lifecycle scripts can execute code during install).
-  - Prefer pinned, exact versions (`@scope/pkg@1.2.3`), and inspect the unpacked code on disk before enabling.
+- Apenas instale plugins de fontes que você confia.
+- Prefira `plugins.allow` allowlists explícitos.
+- Revise plugin config antes de habilitá-lo.
+- Reinicie o Gateway depois de mudanças de plugin.
+- Se você instala plugins de npm (`opencraft plugins install <npm-spec>`), trate como executar código não confiável:
+  - O caminho de instalação é `~/.opencraft/extensions/<pluginId>/` (ou `$OPENCRAFT_STATE_DIR/extensions/<pluginId>/`).
+  - OpenCraft usa `npm pack` e depois executa `npm install --omit=dev` naquele diretório (lifecycle scripts de npm podem executar código durante instalação).
+  - Prefira versões pinned, exatas (`@scope/pkg@1.2.3`), e inspecione o código desempacotado no disk antes de habilitar.
 
-Details: [Plugins](/tools/plugin)
+Detalhes: [Plugins](/tools/plugin)
 
-## DM access model (pairing / allowlist / open / disabled)
+## Modelo de acesso de DM (pairing / allowlist / open / disabled)
 
-All current DM-capable channels support a DM policy (`dmPolicy` or `*.dm.policy`) that gates inbound DMs **before** the message is processed:
+Todos canais DM-capable atuais suportam uma DM policy (`dmPolicy` ou `*.dm.policy`) que gate DMs inbound **antes** da mensagem ser processada:
 
-- `pairing` (default): unknown senders receive a short pairing code and the bot ignores their message until approved. Codes expire after 1 hour; repeated DMs won’t resend a code until a new request is created. Pending requests are capped at **3 per channel** by default.
-- `allowlist`: unknown senders are blocked (no pairing handshake).
-- `open`: allow anyone to DM (public). **Requires** the channel allowlist to include `"*"` (explicit opt-in).
-- `disabled`: ignore inbound DMs entirely.
+- `pairing` (padrão): remetentes desconhecidos recebem um código de pairing curto e o bot ignora suas mensagens até aprovação. Códigos expiram depois de 1 hora; DMs repetidos não vão reenviar código até uma nova request ser criada. Requisições pendentes são cappadas em **3 por canal** por padrão.
+- `allowlist`: remetentes desconhecidos são bloqueados (sem handshake de pairing).
+- `open`: permitir qualquer um para DM (público). **Requer** o allowlist de canal incluir `"*"` (opt-in explícito).
+- `disabled`: ignorar DMs inbound inteiramente.
 
-Approve via CLI:
+Aprove via CLI:
 
 ```bash
 opencraft pairing list <channel>
 opencraft pairing approve <channel> <code>
 ```
 
-Details + files on disk: [Pairing](/channels/pairing)
+Detalhes + arquivos no disk: [Pairing](/channels/pairing)
 
-## DM session isolation (multi-user mode)
+## Isolamento de sessão de DM (modo multi-usuário)
 
-By default, OpenCraft routes **all DMs into the main session** so your assistant has continuity across devices and channels. If **multiple people** can DM the bot (open DMs or a multi-person allowlist), consider isolating DM sessions:
+Por padrão, OpenCraft roteia **todos DMs na sessão principal** então seu assistente tem continuidade através devices e canais. Se **múltiplas pessoas** podem DM o bot (DMs abertos ou um allowlist multi-pessoa), considere isolar sessões de DM:
 
 ```json5
 {
@@ -481,178 +468,164 @@ By default, OpenCraft routes **all DMs into the main session** so your assistant
 }
 ```
 
-This prevents cross-user context leakage while keeping group chats isolated.
+Isto previne cross-user context leakage enquanto mantém chats de grupo isolados.
 
-This is a messaging-context boundary, not a host-admin boundary. If users are mutually adversarial and share the same Gateway host/config, run separate gateways per trust boundary instead.
+Isto é um boundary de messaging-context, não um boundary de host-admin. Se usuários são mutuamente adversários e compartilham o mesmo host Gateway/config, execute gateways separados por limite de trust ao invés.
 
-### Secure DM mode (recommended)
+### Modo secure DM (recomendado)
 
-Treat the snippet above as **secure DM mode**:
+Trate o trecho acima como **secure DM mode**:
 
-- Default: `session.dmScope: "main"` (all DMs share one session for continuity).
-- Local CLI onboarding default: writes `session.dmScope: "per-channel-peer"` when unset (keeps existing explicit values).
-- Secure DM mode: `session.dmScope: "per-channel-peer"` (each channel+sender pair gets an isolated DM context).
+- Padrão: `session.dmScope: "main"` (todos DMs compartilham uma sessão para continuidade).
+- Local CLI onboarding padrão: escreve `session.dmScope: "per-channel-peer"` quando unset (mantém valores explícitos existentes).
+- Secure DM mode: `session.dmScope: "per-channel-peer"` (cada canal+remetente pair recebe um contexto DM isolado).
 
-If you run multiple accounts on the same channel, use `per-account-channel-peer` instead. If the same person contacts you on multiple channels, use `session.identityLinks` to collapse those DM sessions into one canonical identity. See [Session Management](/concepts/session) and [Configuration](/gateway/configuration).
+Se você executa múltiplas contas no mesmo canal, use `per-account-channel-peer` ao invés. Se a mesma pessoa o contacta em múltiplos canais, use `session.identityLinks` para colapsar aquelas sessões de DM em uma identidade canônica. Veja [Session Management](/concepts/session) e [Configuration](/gateway/configuration).
 
-## Allowlists (DM + groups) — terminology
+## Allowlists (DM + groups) — terminologia
 
-OpenCraft has two separate “who can trigger me?” layers:
+OpenCraft tem dois "quem pode me disparar?" layers separados:
 
-- **DM allowlist** (`allowFrom` / `channels.discord.allowFrom` / `channels.slack.allowFrom`; legacy: `channels.discord.dm.allowFrom`, `channels.slack.dm.allowFrom`): who is allowed to talk to the bot in direct messages.
-  - When `dmPolicy="pairing"`, approvals are written to the account-scoped pairing allowlist store under `~/.opencraft/credentials/` (`<channel>-allowFrom.json` for default account, `<channel>-<accountId>-allowFrom.json` for non-default accounts), merged with config allowlists.
-- **Group allowlist** (channel-specific): which groups/channels/guilds the bot will accept messages from at all.
-  - Common patterns:
-    - `channels.whatsapp.groups`, `channels.telegram.groups`, `channels.imessage.groups`: per-group defaults like `requireMention`; when set, it also acts as a group allowlist (include `"*"` to keep allow-all behavior).
-    - `groupPolicy="allowlist"` + `groupAllowFrom`: restrict who can trigger the bot _inside_ a group session (WhatsApp/Telegram/Signal/iMessage/Microsoft Teams).
-    - `channels.discord.guilds` / `channels.slack.channels`: per-surface allowlists + mention defaults.
-  - Group checks run in this order: `groupPolicy`/group allowlists first, mention/reply activation second.
-  - Replying to a bot message (implicit mention) does **not** bypass sender allowlists like `groupAllowFrom`.
-  - **Security note:** treat `dmPolicy="open"` and `groupPolicy="open"` as last-resort settings. They should be barely used; prefer pairing + allowlists unless you fully trust every member of the room.
+- **DM allowlist** (`allowFrom` / `channels.discord.allowFrom` / `channels.slack.allowFrom`; legacy: `channels.discord.dm.allowFrom`, `channels.slack.dm.allowFrom`): quem é permitido falar com o bot em direct messages.
+  - Quando `dmPolicy="pairing"`, aprovações são escritas para a pairing allowlist store scoped a account sob `~/.opencraft/credentials/` (`<channel>-allowFrom.json` para conta padrão, `<channel>-<accountId>-allowFrom.json` para contas não-padrão), merged com allowlists de config.
+- **Group allowlist** (específico a canal): quais grupos/canais/guilds o bot aceitará mensagens de qualquer forma.
+  - Padrões comuns:
+    - `channels.whatsapp.groups`, `channels.telegram.groups`, `channels.imessage.groups`: per-group padrões como `requireMention`; quando definido, também age como um group allowlist (inclua `"*"` para manter comportamento allow-all).
+    - `groupPolicy="allowlist"` + `groupAllowFrom`: restrinja quem pode disparar o bot _dentro_ uma sessão de grupo (WhatsApp/Telegram/Signal/iMessage/Microsoft Teams).
+    - `channels.discord.guilds` / `channels.slack.channels`: per-surface allowlists + mention padrões.
+  - Group checks executam nesta ordem: `groupPolicy`/group allowlists primeiro, mention/reply activation segundo.
+  - Respondendo a uma mensagem de bot (implicit mention) faz **não** bypass sender allowlists como `groupAllowFrom`.
+  - **Security note:** trate `dmPolicy="open"` e `groupPolicy="open"` como last-resort settings. Eles devem ser mal utilizados; prefira pairing + allowlists a menos que você totalmente confia em cada membro da room.
 
-Details: [Configuration](/gateway/configuration) and [Groups](/channels/groups)
+Detalhes: [Configuration](/gateway/configuration) e [Groups](/channels/groups)
 
-## Prompt injection (what it is, why it matters)
+## Prompt injection (o que é, por que importa)
 
-Prompt injection is when an attacker crafts a message that manipulates the model into doing something unsafe (“ignore your instructions”, “dump your filesystem”, “follow this link and run commands”, etc.).
+Prompt injection é quando um atacante cria uma mensagem que manipula o modelo em fazer algo unsafe ("ignore suas instruções", "dump seu filesystem", "siga este link e execute comandos", etc.).
 
-Even with strong system prompts, **prompt injection is not solved**. System prompt guardrails are soft guidance only; hard enforcement comes from tool policy, exec approvals, sandboxing, and channel allowlists (and operators can disable these by design). What helps in practice:
+Mesmo com strong system prompts, **prompt injection não está resolvido**. Guardrails de system prompt são apenas soft guidance; hard enforcement vem de tool policy, exec approvals, sandboxing e channel allowlists (e operadores podem desabilitar estes por design). O que ajuda em prática:
 
-- Keep inbound DMs locked down (pairing/allowlists).
-- Prefer mention gating in groups; avoid “always-on” bots in public rooms.
-- Treat links, attachments, and pasted instructions as hostile by default.
-- Run sensitive tool execution in a sandbox; keep secrets out of the agent’s reachable filesystem.
-- Note: sandboxing is opt-in. If sandbox mode is off, exec runs on the gateway host even though tools.exec.host defaults to sandbox, and host exec does not require approvals unless you set host=gateway and configure exec approvals.
-- Limit high-risk tools (`exec`, `browser`, `web_fetch`, `web_search`) to trusted agents or explicit allowlists.
-- **Model choice matters:** older/smaller/legacy models are significantly less robust against prompt injection and tool misuse. For tool-enabled agents, use the strongest latest-generation, instruction-hardened model available.
+- Mantenha DMs inbound locked down (pairing/allowlists).
+- Prefira mention gating em grupos; evite bots "sempre-on" em public rooms.
+- Trate links, attachments e pasted instructions como hostis por padrão.
+- Execute sensível tool execution em um sandbox; mantenha secrets fora do filesystem reachable do agente.
+- Nota: sandboxing é opt-in. Se sandbox mode está off, exec executa no gateway host mesmo embora tools.exec.host padrões para sandbox, e host exec não requer approvals a menos que você defina host=gateway e configure exec approvals.
+- Limite high-risk tools (`exec`, `browser`, `web_fetch`, `web_search`) a agentes confiáveis ou explicit allowlists.
+- **Model choice importa:** modelos mais antigos/menores/legacy são significantemente menos robustos contra prompt injection e tool misuse. Para agentes tool-enabled, use o melhor latest-generation, instruction-hardened model disponível.
 
-Red flags to treat as untrusted:
+Red flags para tratar como não confiáveis:
 
-- “Read this file/URL and do exactly what it says.”
-- “Ignore your system prompt or safety rules.”
-- “Reveal your hidden instructions or tool outputs.”
-- “Paste the full contents of ~/.opencraft or your logs.”
+- "Leia este arquivo/URL e faça exatamente o que ele diz."
+- "Ignore seu system prompt ou safety rules."
+- "Revele suas instruções ocultas ou outputs de tool."
+- "Cole o conteúdo completo de ~/.opencraft ou seus logs."
 
-## Unsafe external content bypass flags
+## Flags de bypass de unsafe external content
 
-OpenCraft includes explicit bypass flags that disable external-content safety wrapping:
+OpenCraft inclui explicit bypass flags que desabilitam external-content safety wrapping:
 
 - `hooks.mappings[].allowUnsafeExternalContent`
 - `hooks.gmail.allowUnsafeExternalContent`
 - Cron payload field `allowUnsafeExternalContent`
 
-Guidance:
+Orientação:
 
-- Keep these unset/false in production.
-- Only enable temporarily for tightly scoped debugging.
-- If enabled, isolate that agent (sandbox + minimal tools + dedicated session namespace).
+- Mantenha estes unset/false em produção.
+- Apenas habilite temporariamente para debugging narrowly scoped.
+- Se habilitado, isole aquele agente (sandbox + minimal tools + dedicated session namespace).
 
-Hooks risk note:
+Notas de risco de hooks:
 
-- Hook payloads are untrusted content, even when delivery comes from systems you control (mail/docs/web content can carry prompt injection).
-- Weak model tiers increase this risk. For hook-driven automation, prefer strong modern model tiers and keep tool policy tight (`tools.profile: "messaging"` or stricter), plus sandboxing where possible.
+- Hook payloads são conteúdo não confiável, mesmo quando delivery vem de sistemas que você controla (mail/docs/web content podem carregar prompt injection).
+- Model tiers fracas aumentam este risco. Para automação driven por hook, prefira strong modern model tiers e mantenha tool policy tight (`tools.profile: "messaging"` ou mais estritos), mais sandboxing onde possível.
 
-### Prompt injection does not require public DMs
+### Prompt injection não requer DMs públicos
 
-Even if **only you** can message the bot, prompt injection can still happen via
-any **untrusted content** the bot reads (web search/fetch results, browser pages,
-emails, docs, attachments, pasted logs/code). In other words: the sender is not
-the only threat surface; the **content itself** can carry adversarial instructions.
+Mesmo que **apenas você** possa enviar mensagens ao bot, prompt injection ainda pode acontecer via qualquer **conteúdo não confiável** que o bot lê (web search/fetch results, browser pages, emails, docs, attachments, pasted logs/code). Em outras palavras: o remetente não é a única threat surface; o **conteúdo em si** pode carregar instruções adversárias.
 
-When tools are enabled, the typical risk is exfiltrating context or triggering
-tool calls. Reduce the blast radius by:
+Quando tools estão habilitadas, o risco típico é exfiltração de contexto ou trigger de tool calls. Reduza o blast radius por:
 
-- Using a read-only or tool-disabled **reader agent** to summarize untrusted content,
-  then pass the summary to your main agent.
-- Keeping `web_search` / `web_fetch` / `browser` off for tool-enabled agents unless needed.
-- For OpenResponses URL inputs (`input_file` / `input_image`), set tight
-  `gateway.http.endpoints.responses.files.urlAllowlist` and
-  `gateway.http.endpoints.responses.images.urlAllowlist`, and keep `maxUrlParts` low.
-- Enabling sandboxing and strict tool allowlists for any agent that touches untrusted input.
-- Keeping secrets out of prompts; pass them via env/config on the gateway host instead.
+- Usando um **reader agent** read-only ou tool-disabled para sumarizar conteúdo não confiável, depois passe o sumário para seu agente principal.
+- Mantendo `web_search` / `web_fetch` / `browser` off para agentes tool-enabled a menos que necessário.
+- Para OpenResponses URL inputs (`input_file` / `input_image`), defina tight `gateway.http.endpoints.responses.files.urlAllowlist` e `gateway.http.endpoints.responses.images.urlAllowlist`, e mantenha `maxUrlParts` baixo.
+- Habilitando sandboxing e strict tool allowlists para qualquer agente que toca conteúdo não confiável.
+- Mantendo secrets fora de prompts; passe-os via env/config no host gateway ao invés.
 
-### Model strength (security note)
+### Força de model (security note)
 
-Prompt injection resistance is **not** uniform across model tiers. Smaller/cheaper models are generally more susceptible to tool misuse and instruction hijacking, especially under adversarial prompts.
+Resistência de prompt injection é **não** uniforme através de model tiers. Modelos menores/mais baratos são geralmente mais suscetíveis a tool misuse e instruction hijacking, especialmente sob adversarial prompts.
 
 <Warning>
-For tool-enabled agents or agents that read untrusted content, prompt-injection risk with older/smaller models is often too high. Do not run those workloads on weak model tiers.
+Para agentes tool-enabled ou agentes que leem conteúdo não confiável, risco de prompt-injection com modelos mais antigos/menores é frequentemente muito alto. Não execute aqueles workloads em weak model tiers.
 </Warning>
 
-Recommendations:
+Recomendações:
 
-- **Use the latest generation, best-tier model** for any bot that can run tools or touch files/networks.
-- **Do not use older/weaker/smaller tiers** for tool-enabled agents or untrusted inboxes; the prompt-injection risk is too high.
-- If you must use a smaller model, **reduce blast radius** (read-only tools, strong sandboxing, minimal filesystem access, strict allowlists).
-- When running small models, **enable sandboxing for all sessions** and **disable web_search/web_fetch/browser** unless inputs are tightly controlled.
-- For chat-only personal assistants with trusted input and no tools, smaller models are usually fine.
+- **Use o latest generation, best-tier model** para qualquer bot que pode executar tools ou tocar files/networks.
+- **Não use tiers mais antigos/mais fracos/menores** para agentes tool-enabled ou inboxes não confiáveis; o risco de prompt-injection é muito alto.
+- Se você deve usar um modelo menor, **reduza blast radius** (read-only tools, strong sandboxing, minimal filesystem access, strict allowlists).
+- Quando executando small models, **habilite sandboxing para todas sessões** e **desabilite web_search/web_fetch/browser** a menos que inputs são tightly controlled.
+- Para chat-only personal assistants com trusted input e sem tools, small models são geralmente fine.
 
-## Reasoning & verbose output in groups
+## Reasoning & verbose output em grupos
 
-`/reasoning` and `/verbose` can expose internal reasoning or tool output that
-was not meant for a public channel. In group settings, treat them as **debug
-only** and keep them off unless you explicitly need them.
+`/reasoning` e `/verbose` podem expor reasoning interno ou tool output que não era feito para um channel público. Em group settings, trate-os como **debug apenas** e mantenha-os off a menos que você explicitamente precise deles.
 
-Guidance:
+Orientação:
 
-- Keep `/reasoning` and `/verbose` disabled in public rooms.
-- If you enable them, do so only in trusted DMs or tightly controlled rooms.
-- Remember: verbose output can include tool args, URLs, and data the model saw.
+- Mantenha `/reasoning` e `/verbose` desabilitados em public rooms.
+- Se você os habilita, apenas faça em trusted DMs ou tightly controlled rooms.
+- Lembre-se: verbose output pode incluir tool args, URLs e dados que o modelo viu.
 
-## Configuration Hardening (examples)
+## Configuração Hardening (exemplos)
 
-### 0) File permissions
+### 0) Permissões de arquivo
 
-Keep config + state private on the gateway host:
+Mantenha config + state privado no host gateway:
 
-- `~/.editzffaleta/OpenCraft.json`: `600` (user read/write only)
-- `~/.opencraft`: `700` (user only)
+- `~/.editzffaleta/OpenCraft.json`: `600` (user read/write apenas)
+- `~/.opencraft`: `700` (user apenas)
 
-`opencraft doctor` can warn and offer to tighten these permissions.
+`opencraft doctor` pode avisar e oferecer para apertar estas permissões.
 
 ### 0.4) Network exposure (bind + port + firewall)
 
-The Gateway multiplexes **WebSocket + HTTP** on a single port:
+O Gateway multiplexes **WebSocket + HTTP** em uma porta única:
 
-- Default: `18789`
+- Padrão: `18789`
 - Config/flags/env: `gateway.port`, `--port`, `OPENCRAFT_GATEWAY_PORT`
 
-This HTTP surface includes the Control UI and the canvas host:
+Esta HTTP surface inclui Control UI e canvas host:
 
-- Control UI (SPA assets) (default base path `/`)
-- Canvas host: `/__opencraft__/canvas/` and `/__opencraft__/a2ui/` (arbitrary HTML/JS; treat as untrusted content)
+- Control UI (SPA assets) (caminho base padrão `/`)
+- Canvas host: `/__opencraft__/canvas/` e `/__opencraft__/a2ui/` (arbitrary HTML/JS; trate como conteúdo não confiável)
 
-If you load canvas content in a normal browser, treat it like any other untrusted web page:
+Se você carrega canvas content em um browser normal, trate como qualquer outra página web não confiável:
 
-- Don't expose the canvas host to untrusted networks/users.
-- Don't make canvas content share the same origin as privileged web surfaces unless you fully understand the implications.
+- Não exponha o canvas host a redes/usuários não confiáveis.
+- Não faça canvas content compartilhar a mesma origin que privileged web surfaces a menos que você totalmente entenda as implicações.
 
-Bind mode controls where the Gateway listens:
+Bind mode controla onde o Gateway escuta:
 
-- `gateway.bind: "loopback"` (default): only local clients can connect.
-- Non-loopback binds (`"lan"`, `"tailnet"`, `"custom"`) expand the attack surface. Only use them with a shared token/password and a real firewall.
+- `gateway.bind: "loopback"` (padrão): apenas clientes locais podem conectar.
+- Non-loopback binds (`"lan"`, `"tailnet"`, `"custom"`) expandem a attack surface. Apenas use-os com um shared token/password e um real firewall.
 
-Rules of thumb:
+Regras de thumb:
 
-- Prefer Tailscale Serve over LAN binds (Serve keeps the Gateway on loopback, and Tailscale handles access).
-- If you must bind to LAN, firewall the port to a tight allowlist of source IPs; do not port-forward it broadly.
-- Never expose the Gateway unauthenticated on `0.0.0.0`.
+- Prefira Tailscale Serve sobre LAN binds (Serve mantém o Gateway em loopback e Tailscale cuida do acesso).
+- Se você deve bind a LAN, firewall a porta para um tight allowlist de source IPs; não port-forward broadly.
+- Nunca exponha o Gateway unauthenticated em `0.0.0.0`.
 
 ### 0.4.1) Docker port publishing + UFW (`DOCKER-USER`)
 
-If you run OpenCraft with Docker on a VPS, remember that published container ports
-(`-p HOST:CONTAINER` or Compose `ports:`) are routed through Docker's forwarding
-chains, not only host `INPUT` rules.
+Se você executa OpenCraft com Docker em um VPS, lembre-se que published container ports (`-p HOST:CONTAINER` ou Compose `ports:`) são roteados através de Docker's forwarding chains, não apenas host `INPUT` rules.
 
-To keep Docker traffic aligned with your firewall policy, enforce rules in
-`DOCKER-USER` (this chain is evaluated before Docker's own accept rules).
-On many modern distros, `iptables`/`ip6tables` use the `iptables-nft` frontend
-and still apply these rules to the nftables backend.
+Para manter traffic de Docker alinhado com sua firewall policy, enforce rules em `DOCKER-USER` (esta chain é avaliada antes das accept rules do Docker próprio). Em muitos modern distros, `iptables`/`ip6tables` usam o `iptables-nft` frontend e ainda aplicam estas rules ao nftables backend.
 
-Minimal allowlist example (IPv4):
+Exemplo minimal allowlist (IPv4):
 
 ```bash
-# /etc/ufw/after.rules (append as its own *filter section)
+# /etc/ufw/after.rules (append como sua própria *filter section)
 *filter
 :DOCKER-USER - [0:0]
 -A DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
@@ -668,14 +641,11 @@ Minimal allowlist example (IPv4):
 COMMIT
 ```
 
-IPv6 has separate tables. Add a matching policy in `/etc/ufw/after6.rules` if
-Docker IPv6 is enabled.
+IPv6 tem tabelas separadas. Adicione uma policy correspondente em `/etc/ufw/after6.rules` se Docker IPv6 está habilitado.
 
-Avoid hardcoding interface names like `eth0` in docs snippets. Interface names
-vary across VPS images (`ens3`, `enp*`, etc.) and mismatches can accidentally
-skip your deny rule.
+Evite hardcode interface names como `eth0` em snippets de docs. Interface names variam através VPS images (`ens3`, `enp*`, etc.) e mismatches podem acidentalmente skip sua deny rule.
 
-Quick validation after reload:
+Validação rápida depois de reload:
 
 ```bash
 ufw reload
@@ -684,22 +654,21 @@ ip6tables -S DOCKER-USER
 nmap -sT -p 1-65535 <public-ip> --open
 ```
 
-Expected external ports should be only what you intentionally expose (for most
-setups: SSH + your reverse proxy ports).
+External ports esperadas devem ser apenas o que você intencionalmente exponha (para a maioria setups: SSH + suas reverse proxy ports).
 
 ### 0.4.2) mDNS/Bonjour discovery (information disclosure)
 
-The Gateway broadcasts its presence via mDNS (`_opencraft-gw._tcp` on port 5353) for local device discovery. In full mode, this includes TXT records that may expose operational details:
+O Gateway anuncia sua presence via mDNS (`_opencraft-gw._tcp` na porta 5353) para device discovery local. Em full mode, isto inclui TXT records que podem expor detalhes operacionais:
 
-- `cliPath`: full filesystem path to the CLI binary (reveals username and install location)
-- `sshPort`: advertises SSH availability on the host
-- `displayName`, `lanHost`: hostname information
+- `cliPath`: caminho completo de filesystem para o CLI binary (revela username e install location)
+- `sshPort`: anuncia SSH availability no host
+- `displayName`, `lanHost`: informações de hostname
 
-**Operational security consideration:** Broadcasting infrastructure details makes reconnaissance easier for anyone on the local network. Even "harmless" info like filesystem paths and SSH availability helps attackers map your environment.
+**Consideração de operational security:** Broadcast de detalhes de infraestrutura torna reconnaissance mais fácil para qualquer um na local network. Mesmo informação "inofensiva" como filesystem paths e SSH availability ajuda atacantes mapear seu environment.
 
-**Recommendations:**
+**Recomendações:**
 
-1. **Minimal mode** (default, recommended for exposed gateways): omit sensitive fields from mDNS broadcasts:
+1. **Minimal mode** (padrão, recomendado para exposed gateways): omita campos sensíveis de mDNS broadcasts:
 
    ```json5
    {
@@ -709,7 +678,7 @@ The Gateway broadcasts its presence via mDNS (`_opencraft-gw._tcp` on port 5353)
    }
    ```
 
-2. **Disable entirely** if you don't need local device discovery:
+2. **Desabilite inteiramente** se você não precisa device discovery local:
 
    ```json5
    {
@@ -719,7 +688,7 @@ The Gateway broadcasts its presence via mDNS (`_opencraft-gw._tcp` on port 5353)
    }
    ```
 
-3. **Full mode** (opt-in): include `cliPath` + `sshPort` in TXT records:
+3. **Full mode** (opt-in): inclua `cliPath` + `sshPort` em TXT records:
 
    ```json5
    {
@@ -729,19 +698,17 @@ The Gateway broadcasts its presence via mDNS (`_opencraft-gw._tcp` on port 5353)
    }
    ```
 
-4. **Environment variable** (alternative): set `OPENCRAFT_DISABLE_BONJOUR=1` to disable mDNS without config changes.
+4. **Variável de ambiente** (alternativa): defina `OPENCRAFT_DISABLE_BONJOUR=1` para desabilitar mDNS sem mudanças de config.
 
-In minimal mode, the Gateway still broadcasts enough for device discovery (`role`, `gatewayPort`, `transport`) but omits `cliPath` and `sshPort`. Apps that need CLI path information can fetch it via the authenticated WebSocket connection instead.
+Em minimal mode, o Gateway ainda anuncia o suficiente para device discovery (`role`, `gatewayPort`, `transport`) mas omite `cliPath` e `sshPort`. Apps que precisam informação de CLI path podem buscá-la via a conexão autenticada de WebSocket ao invés.
 
-### 0.5) Lock down the Gateway WebSocket (local auth)
+### 0.5) Lock down o WebSocket de Gateway (auth local)
 
-Gateway auth is **required by default**. If no token/password is configured,
-the Gateway refuses WebSocket connections (fail‑closed).
+Gateway auth é **necessário por padrão**. Se nenhum token/password está configurado, o Gateway recusa WebSocket connections (fail-closed).
 
-Onboarding generates a token by default (even for loopback) so
-local clients must authenticate.
+Onboarding gera um token por padrão (mesmo para loopback) então clientes locais devem autenticar.
 
-Set a token so **all** WS clients must authenticate:
+Defina um token então **todos** clientes WS devem autenticar:
 
 ```json5
 {
@@ -751,125 +718,106 @@ Set a token so **all** WS clients must authenticate:
 }
 ```
 
-Doctor can generate one for you: `opencraft doctor --generate-gateway-token`.
+Doctor pode gerar um para você: `opencraft doctor --generate-gateway-token`.
 
-Note: `gateway.remote.token` / `.password` are client credential sources. They
-do **not** protect local WS access by themselves.
-Local call paths can use `gateway.remote.*` as fallback only when `gateway.auth.*`
-is unset.
-If `gateway.auth.token` / `gateway.auth.password` is explicitly configured via
-SecretRef and unresolved, resolution fails closed (no remote fallback masking).
-Optional: pin remote TLS with `gateway.remote.tlsFingerprint` when using `wss://`.
-Plaintext `ws://` is loopback-only by default. For trusted private-network
-paths, set `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` on the client process as break-glass.
+Nota: `gateway.remote.token` / `.password` são client credential sources. Eles fazem **não** proteger acesso WS local por eles mesmos.
+Caminhos de chamada local podem usar `gateway.remote.*` como fallback apenas quando `gateway.auth.*` está unset.
+Se `gateway.auth.token` / `gateway.auth.password` é explicitamente configurado via SecretRef e unresolvido, resolução falha fechado (sem remote fallback masking).
+Opcional: pin remote TLS com `gateway.remote.tlsFingerprint` quando usando `wss://`.
+Plaintext `ws://` é loopback-only por padrão. Para caminhos de trusted private-network, defina `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` no client process como break-glass.
 
-Local device pairing:
+Pairing de device local:
 
-- Device pairing is auto‑approved for **local** connects (loopback or the
-  gateway host’s own tailnet address) to keep same‑host clients smooth.
-- Other tailnet peers are **not** treated as local; they still need pairing
-  approval.
+- Device pairing é auto-aprovado para **local** connects (loopback ou o endereço tailnet próprio do host gateway) para manter clientes same-host lisos.
+- Outros tailnet peers são **não** tratados como locais; eles ainda precisam pairing approval.
 
-Auth modes:
+Modos de auth:
 
-- `gateway.auth.mode: "token"`: shared bearer token (recommended for most setups).
-- `gateway.auth.mode: "password"`: password auth (prefer setting via env: `OPENCLAW_GATEWAY_PASSWORD`).
-- `gateway.auth.mode: "trusted-proxy"`: trust an identity-aware reverse proxy to authenticate users and pass identity via headers (see [Trusted Proxy Auth](/gateway/trusted-proxy-auth)).
+- `gateway.auth.mode: "token"`: shared bearer token (recomendado para maioria setups).
+- `gateway.auth.mode: "password"`: password auth (prefira definir via env: `OPENCLAW_GATEWAY_PASSWORD`).
+- `gateway.auth.mode: "trusted-proxy"`: confia em um reverse proxy identity-aware para autenticar usuários e passar identity via headers (veja [Trusted Proxy Auth](/gateway/trusted-proxy-auth)).
 
-Rotation checklist (token/password):
+Checklist de rotação (token/password):
 
-1. Generate/set a new secret (`gateway.auth.token` or `OPENCLAW_GATEWAY_PASSWORD`).
-2. Restart the Gateway (or restart the macOS app if it supervises the Gateway).
-3. Update any remote clients (`gateway.remote.token` / `.password` on machines that call into the Gateway).
-4. Verify you can no longer connect with the old credentials.
+1. Gere/defina um novo secret (`gateway.auth.token` ou `OPENCLAW_GATEWAY_PASSWORD`).
+2. Reinicie o Gateway (ou reinicie o macOS app se ele supervisiona o Gateway).
+3. Atualize qualquer cliente remoto (`gateway.remote.token` / `.password` em máquinas que chamam no Gateway).
+4. Verifique você pode não conectar mais com as credenciais antigas.
 
 ### 0.6) Tailscale Serve identity headers
 
-When `gateway.auth.allowTailscale` is `true` (default for Serve), OpenCraft
-accepts Tailscale Serve identity headers (`tailscale-user-login`) for Control
-UI/WebSocket authentication. OpenCraft verifies the identity by resolving the
-`x-forwarded-for` address through the local Tailscale daemon (`tailscale whois`)
-and matching it to the header. This only triggers for requests that hit loopback
-and include `x-forwarded-for`, `x-forwarded-proto`, and `x-forwarded-host` as
-injected by Tailscale.
-HTTP API endpoints (for example `/v1/*`, `/tools/invoke`, and `/api/channels/*`)
-still require token/password auth.
+Quando `gateway.auth.allowTailscale` é `true` (padrão para Serve), OpenCraft aceita Tailscale Serve identity headers (`tailscale-user-login`) para Control UI/WebSocket authentication. OpenCraft verifica a identity resolvendo o endereço `x-forwarded-for` através do daemon Tailscale local (`tailscale whois`) e matchando a header. Isto apenas triggera para requests que batem loopback e incluem `x-forwarded-for`, `x-forwarded-proto` e `x-forwarded-host` como injetadas pelo Tailscale.
+HTTP API endpoints (por exemplo `/v1/*`, `/tools/invoke` e `/api/channels/*`) ainda requerem token/password auth.
 
-Important boundary note:
+Nota de boundary importante:
 
-- Gateway HTTP bearer auth is effectively all-or-nothing operator access.
-- Treat credentials that can call `/v1/chat/completions`, `/v1/responses`, `/tools/invoke`, or `/api/channels/*` as full-access operator secrets for that gateway.
-- Do not share these credentials with untrusted callers; prefer separate gateways per trust boundary.
+- Gateway HTTP bearer auth é efetivamente all-or-nothing operator access.
+- Trate credenciais que podem chamar `/v1/chat/completions`, `/v1/responses`, `/tools/invoke` ou `/api/channels/*` como full-access operator secrets para aquele gateway.
+- Não compartilhe estas credenciais com chamadores não confiáveis; prefira gateways separados por limite de trust.
 
-**Trust assumption:** tokenless Serve auth assumes the gateway host is trusted.
-Do not treat this as protection against hostile same-host processes. If untrusted
-local code may run on the gateway host, disable `gateway.auth.allowTailscale`
-and require token/password auth.
+**Trust assumption:** tokenless Serve auth assume o host gateway é confiável. Não trate isto como proteção contra hostile same-host processes. Se código local não confiável pode rodar no host gateway, desabilite `gateway.auth.allowTailscale` e requer token/password auth.
 
-**Security rule:** do not forward these headers from your own reverse proxy. If
-you terminate TLS or proxy in front of the gateway, disable
-`gateway.auth.allowTailscale` and use token/password auth (or [Trusted Proxy Auth](/gateway/trusted-proxy-auth)) instead.
+**Security rule:** não forward estas headers do seu próprio reverse proxy. Se você termina TLS ou proxy na frente do gateway, desabilite `gateway.auth.allowTailscale` e use token/password auth (ou [Trusted Proxy Auth](/gateway/trusted-proxy-auth)) ao invés.
 
-Trusted proxies:
+Proxies confiáveis:
 
-- If you terminate TLS in front of the Gateway, set `gateway.trustedProxies` to your proxy IPs.
-- OpenCraft will trust `x-forwarded-for` (or `x-real-ip`) from those IPs to determine the client IP for local pairing checks and HTTP auth/local checks.
-- Ensure your proxy **overwrites** `x-forwarded-for` and blocks direct access to the Gateway port.
+- Se você termina TLS na frente do Gateway, defina `gateway.trustedProxies` para seus IPs de proxy.
+- OpenCraft confiará `x-forwarded-for` (ou `x-real-ip`) daqueles IPs para determinar client IP para local pairing checks e HTTP auth/local checks.
+- Garanta seu proxy **overwrites** `x-forwarded-for` e bloqueia acesso direto ao Gateway port.
 
-See [Tailscale](/gateway/tailscale) and [Web overview](/web).
+Veja [Tailscale](/gateway/tailscale) e [Web overview](/web).
 
-### 0.6.1) Browser control via node host (recommended)
+### 0.6.1) Browser control via node host (recomendado)
 
-If your Gateway is remote but the browser runs on another machine, run a **node host**
-on the browser machine and let the Gateway proxy browser actions (see [Browser tool](/tools/browser)).
-Treat node pairing like admin access.
+Se seu Gateway é remoto mas o browser roda em outra máquina, execute um **node host** na máquina de browser e deixe o Gateway proxy browser actions (veja [Browser tool](/tools/browser)).
+Trate node pairing como admin access.
 
-Recommended pattern:
+Padrão recomendado:
 
-- Keep the Gateway and node host on the same tailnet (Tailscale).
-- Pair the node intentionally; disable browser proxy routing if you don’t need it.
+- Mantenha o Gateway e node host no mesmo tailnet (Tailscale).
+- Pareie o node intencionalmente; desabilite browser proxy routing se você não precisa.
 
-Avoid:
+Evite:
 
-- Exposing relay/control ports over LAN or public Internet.
-- Tailscale Funnel for browser control endpoints (public exposure).
+- Expor relay/control ports sobre LAN ou public Internet.
+- Tailscale Funnel para browser control endpoints (public exposure).
 
-### 0.7) Secrets on disk (what’s sensitive)
+### 0.7) Secrets no disk (o que é sensível)
 
-Assume anything under `~/.opencraft/` (or `$OPENCRAFT_STATE_DIR/`) may contain secrets or private data:
+Assuma qualquer coisa sob `~/.opencraft/` (ou `$OPENCRAFT_STATE_DIR/`) pode conter secrets ou dados privados:
 
-- `opencraft.json`: config may include tokens (gateway, remote gateway), provider settings, and allowlists.
-- `credentials/**`: channel credentials (example: WhatsApp creds), pairing allowlists, legacy OAuth imports.
-- `agents/<agentId>/agent/auth-profiles.json`: API keys, token profiles, OAuth tokens, and optional `keyRef`/`tokenRef`.
-- `secrets.json` (optional): file-backed secret payload used by `file` SecretRef providers (`secrets.providers`).
-- `agents/<agentId>/agent/auth.json`: legacy compatibility file. Static `api_key` entries are scrubbed when discovered.
-- `agents/<agentId>/sessions/**`: session transcripts (`*.jsonl`) + routing metadata (`sessions.json`) that can contain private messages and tool output.
-- `extensions/**`: installed plugins (plus their `node_modules/`).
-- `sandboxes/**`: tool sandbox workspaces; can accumulate copies of files you read/write inside the sandbox.
+- `opencraft.json`: config pode incluir tokens (gateway, remote gateway), provider settings e allowlists.
+- `credentials/**`: credenciais de canal (exemplo: WhatsApp creds), pairing allowlists, legacy OAuth imports.
+- `agents/<agentId>/agent/auth-profiles.json`: API keys, token profiles, OAuth tokens e opcional `keyRef`/`tokenRef`.
+- `secrets.json` (opcional): file-backed secret payload usado por `file` SecretRef providers (`secrets.providers`).
+- `agents/<agentId>/agent/auth.json`: arquivo de compatibilidade legacy. Static `api_key` entries são scrubbed quando descobertos.
+- `agents/<agentId>/sessions/**`: session transcripts (`*.jsonl`) + routing metadata (`sessions.json`) que podem conter mensagens privadas e tool output.
+- `extensions/**`: plugins instalados (plus seu `node_modules/`).
+- `sandboxes/**`: tool sandbox workspaces; podem acumular cópias de arquivos que você read/write dentro do sandbox.
 
-Hardening tips:
+Dicas de hardening:
 
-- Keep permissions tight (`700` on dirs, `600` on files).
-- Use full-disk encryption on the gateway host.
-- Prefer a dedicated OS user account for the Gateway if the host is shared.
+- Mantenha permissões tight (`700` em dirs, `600` em arquivos).
+- Use full-disk encryption no host gateway.
+- Prefira uma conta de usuário de OS dedicado para o Gateway se o host é compartilhado.
 
-### 0.8) Logs + transcripts (redaction + retention)
+### 0.8) Logs + transcripts (redação + retenção)
 
-Logs and transcripts can leak sensitive info even when access controls are correct:
+Logs e transcripts podem vazar informação sensível mesmo quando controles de acesso estão corretos:
 
-- Gateway logs may include tool summaries, errors, and URLs.
-- Session transcripts can include pasted secrets, file contents, command output, and links.
+- Gateway logs podem incluir tool summaries, erros e URLs.
+- Session transcripts podem incluir secrets pasted, conteúdos de arquivo, output de comando e links.
 
-Recommendations:
+Recomendações:
 
-- Keep tool summary redaction on (`logging.redactSensitive: "tools"`; default).
-- Add custom patterns for your environment via `logging.redactPatterns` (tokens, hostnames, internal URLs).
-- When sharing diagnostics, prefer `opencraft status --all` (pasteable, secrets redacted) over raw logs.
-- Prune old session transcripts and log files if you don’t need long retention.
+- Mantenha tool summary redaction on (`logging.redactSensitive: "tools"`; padrão).
+- Adicione custom patterns para seu environment via `logging.redactPatterns` (tokens, hostnames, internal URLs).
+- Quando compartilhando diagnostics, prefira `opencraft status --all` (pasteable, secrets redacted) sobre raw logs.
+- Prune old session transcripts e log files se você não precisa long retention.
 
-Details: [Logging](/gateway/logging)
+Detalhes: [Logging](/gateway/logging)
 
-### 1) DMs: pairing by default
+### 1) DMs: pairing por padrão
 
 ```json5
 {
@@ -877,7 +825,7 @@ Details: [Logging](/gateway/logging)
 }
 ```
 
-### 2) Groups: require mention everywhere
+### 2) Groups: requer mention em todos
 
 ```json
 {
@@ -899,33 +847,33 @@ Details: [Logging](/gateway/logging)
 }
 ```
 
-In group chats, only respond when explicitly mentioned.
+Em group chats, apenas responda quando explicitamente mencionado.
 
-### 3. Separate Numbers
+### 3. Números Separados
 
-Consider running your AI on a separate phone number from your personal one:
+Considere executar seu IA em um número de telefone separado do seu pessoal:
 
-- Personal number: Your conversations stay private
-- Bot number: AI handles these, with appropriate boundaries
+- Número pessoal: Suas conversas ficam privadas
+- Número de bot: IA lida com estes, com boundaries apropriadas
 
-### 4. Read-Only Mode (Today, via sandbox + tools)
+### 4. Read-Only Mode (Hoje, via sandbox + tools)
 
-You can already build a read-only profile by combining:
+Você pode já construir um read-only profile combinando:
 
-- `agents.defaults.sandbox.workspaceAccess: "ro"` (or `"none"` for no workspace access)
-- tool allow/deny lists that block `write`, `edit`, `apply_patch`, `exec`, `process`, etc.
+- `agents.defaults.sandbox.workspaceAccess: "ro"` (ou `"none"` para sem acesso ao workspace)
+- tool allow/deny lists que bloqueiam `write`, `edit`, `apply_patch`, `exec`, `process`, etc.
 
-We may add a single `readOnlyMode` flag later to simplify this configuration.
+Podemos adicionar um único flag `readOnlyMode` depois para simplificar esta configuração.
 
-Additional hardening options:
+Opções adicionais de hardening:
 
-- `tools.exec.applyPatch.workspaceOnly: true` (default): ensures `apply_patch` cannot write/delete outside the workspace directory even when sandboxing is off. Set to `false` only if you intentionally want `apply_patch` to touch files outside the workspace.
-- `tools.fs.workspaceOnly: true` (optional): restricts `read`/`write`/`edit`/`apply_patch` paths and native prompt image auto-load paths to the workspace directory (useful if you allow absolute paths today and want a single guardrail).
-- Keep filesystem roots narrow: avoid broad roots like your home directory for agent workspaces/sandbox workspaces. Broad roots can expose sensitive local files (for example state/config under `~/.opencraft`) to filesystem tools.
+- `tools.exec.applyPatch.workspaceOnly: true` (padrão): garante `apply_patch` não pode write/delete fora do diretório workspace mesmo quando sandboxing está off. Defina para `false` apenas se você intencionalmente quer `apply_patch` tocar arquivos fora do workspace.
+- `tools.fs.workspaceOnly: true` (opcional): restringe caminhos de `read`/`write`/`edit`/`apply_patch` e native prompt image auto-load paths para o diretório workspace (útil se você permita absolute paths hoje e quer um único guardrail).
+- Mantenha filesystem roots narrow: evite broad roots como seu home directory para agent workspaces/sandbox workspaces. Broad roots podem expor arquivos locais sensíveis (por exemplo state/config sob `~/.opencraft`) para filesystem tools.
 
-### 5) Secure baseline (copy/paste)
+### 5) Baseline seguro (copy/paste)
 
-One “safe default” config that keeps the Gateway private, requires DM pairing, and avoids always-on group bots:
+Um config "safe default" que mantém o Gateway privado, requer DM pairing e evita sempre-on group bots:
 
 ```json5
 {
@@ -944,67 +892,63 @@ One “safe default” config that keeps the Gateway private, requires DM pairin
 }
 ```
 
-If you want “safer by default” tool execution too, add a sandbox + deny dangerous tools for any non-owner agent (example below under “Per-agent access profiles”).
+Se você quer "mais seguro por padrão" tool execution também, adicione um sandbox + negar tools perigosas para qualquer agente non-owner (exemplo abaixo em "Per-agent access profiles").
 
-Built-in baseline for chat-driven agent turns: non-owner senders cannot use the `cron` or `gateway` tools.
+Built-in baseline para chat-driven agent turns: non-owner senders não podem usar os tools `cron` ou `gateway`.
 
-## Sandboxing (recommended)
+## Sandboxing (recomendado)
 
-Dedicated doc: [Sandboxing](/gateway/sandboxing)
+Doc dedicada: [Sandboxing](/gateway/sandboxing)
 
-Two complementary approaches:
+Duas abordagens complementares:
 
-- **Run the full Gateway in Docker** (container boundary): [Docker](/install/docker)
+- **Execute o Gateway completo em Docker** (container boundary): [Docker](/install/docker)
 - **Tool sandbox** (`agents.defaults.sandbox`, host gateway + Docker-isolated tools): [Sandboxing](/gateway/sandboxing)
 
-Note: to prevent cross-agent access, keep `agents.defaults.sandbox.scope` at `"agent"` (default)
-or `"session"` for stricter per-session isolation. `scope: "shared"` uses a
-single container/workspace.
+Nota: para prevenir cross-agent access, mantenha `agents.defaults.sandbox.scope` em `"agent"` (padrão) ou `"session"` para isolamento per-session mais estritos. `scope: "shared"` usa um container/workspace único.
 
-Also consider agent workspace access inside the sandbox:
+Também considere agent workspace access dentro do sandbox:
 
-- `agents.defaults.sandbox.workspaceAccess: "none"` (default) keeps the agent workspace off-limits; tools run against a sandbox workspace under `~/.opencraft/sandboxes`
-- `agents.defaults.sandbox.workspaceAccess: "ro"` mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`)
-- `agents.defaults.sandbox.workspaceAccess: "rw"` mounts the agent workspace read/write at `/workspace`
+- `agents.defaults.sandbox.workspaceAccess: "none"` (padrão) mantém o agent workspace off-limits; tools executam contra um workspace sandbox sob `~/.opencraft/sandboxes`
+- `agents.defaults.sandbox.workspaceAccess: "ro"` monta o agent workspace read-only em `/agent` (desabilita `write`/`edit`/`apply_patch`)
+- `agents.defaults.sandbox.workspaceAccess: "rw"` monta o agent workspace read/write em `/workspace`
 
-Important: `tools.elevated` is the global baseline escape hatch that runs exec on the host. Keep `tools.elevated.allowFrom` tight and don’t enable it for strangers. You can further restrict elevated per agent via `agents.list[].tools.elevated`. See [Elevated Mode](/tools/elevated).
+Importante: `tools.elevated` é o global baseline escape hatch que executa exec no host. Mantenha `tools.elevated.allowFrom` tight e não o habilite para estranhos. Você pode ainda restringir elevated per agent via `agents.list[].tools.elevated`. Veja [Elevated Mode](/tools/elevated).
 
-### Sub-agent delegation guardrail
+### Guardrail de delegação de sub-agent
 
-If you allow session tools, treat delegated sub-agent runs as another boundary decision:
+Se você permite session tools, trate delegated sub-agent runs como outra decisão de boundary:
 
-- Deny `sessions_spawn` unless the agent truly needs delegation.
-- Keep `agents.list[].subagents.allowAgents` restricted to known-safe target agents.
-- For any workflow that must remain sandboxed, call `sessions_spawn` with `sandbox: "require"` (default is `inherit`).
-- `sandbox: "require"` fails fast when the target child runtime is not sandboxed.
+- Negar `sessions_spawn` a menos que o agente verdadeiramente precisa delegação.
+- Mantenha `agents.list[].subagents.allowAgents` restrito para known-safe target agents.
+- Para qualquer workflow que deve permanecer sandboxed, chame `sessions_spawn` com `sandbox: "require"` (padrão é `inherit`).
+- `sandbox: "require"` falha rápido quando o runtime child target não é sandboxed.
 
-## Browser control risks
+## Riscos de browser control
 
-Enabling browser control gives the model the ability to drive a real browser.
-If that browser profile already contains logged-in sessions, the model can
-access those accounts and data. Treat browser profiles as **sensitive state**:
+Habilitar browser control dá ao modelo a ability de dirigir um real browser. Se aquele browser profile já contém logged-in sessions, o modelo pode acessar aquelas contas e dados. Trate browser profiles como **sensível state**:
 
-- Prefer a dedicated profile for the agent (the default `opencraft` profile).
-- Avoid pointing the agent at your personal daily-driver profile.
-- Keep host browser control disabled for sandboxed agents unless you trust them.
-- Treat browser downloads as untrusted input; prefer an isolated downloads directory.
-- Disable browser sync/password managers in the agent profile if possible (reduces blast radius).
-- For remote gateways, assume “browser control” is equivalent to “operator access” to whatever that profile can reach.
-- Keep the Gateway and node hosts tailnet-only; avoid exposing browser control ports to LAN or public Internet.
-- Disable browser proxy routing when you don’t need it (`gateway.nodes.browser.mode="off"`).
-- Chrome MCP existing-session mode is **not** “safer”; it can act as you in whatever that host Chrome profile can reach.
+- Prefira um profile dedicado para o agente (o default `opencraft` profile).
+- Evite apontar o agente ao seu pessoal daily-driver profile.
+- Mantenha host browser control desabilitado para agentes sandboxed a menos que você confie neles.
+- Trate browser downloads como untrusted input; prefira um isolated downloads directory.
+- Desabilite browser sync/password managers no profile do agente se possível (reduz blast radius).
+- Para remote gateways, assuma "browser control" é equivalente a "operator access" para o que aquele profile pode alcançar.
+- Mantenha o Gateway e node hosts tailnet-only; evite expor browser control ports para LAN ou public Internet.
+- Desabilite browser proxy routing quando você não precisa (`gateway.nodes.browser.mode="off"`).
+- Chrome MCP existing-session mode é **não** "mais seguro"; ele pode agir como você em qualquer que aquele host Chrome profile pode alcançar.
 
-### Browser SSRF policy (trusted-network default)
+### Browser SSRF policy (trusted-network padrão)
 
-OpenCraft’s browser network policy defaults to the trusted-operator model: private/internal destinations are allowed unless you explicitly disable them.
+Policy de rede do browser do OpenCraft padrões para o trusted-operator model: destinos privados/internos são permitidos a menos que você explicitamente desabilite-os.
 
-- Default: `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: true` (implicit when unset).
-- Legacy alias: `browser.ssrfPolicy.allowPrivateNetwork` is still accepted for compatibility.
-- Strict mode: set `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: false` to block private/internal/special-use destinations by default.
-- In strict mode, use `hostnameAllowlist` (patterns like `*.example.com`) and `allowedHostnames` (exact host exceptions, including blocked names like `localhost`) for explicit exceptions.
-- Navigation is checked before request and best-effort re-checked on the final `http(s)` URL after navigation to reduce redirect-based pivots.
+- Padrão: `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: true` (implícito quando unset).
+- Alias legacy: `browser.ssrfPolicy.allowPrivateNetwork` ainda é aceito para compatibilidade.
+- Strict mode: defina `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: false` para bloquear destinos privados/internos/special-use por padrão.
+- Em strict mode, use `hostnameAllowlist` (padrões como `*.example.com`) e `allowedHostnames` (exatas host exceptions, incluindo blocked names como `localhost`) para explicit exceptions.
+- Navigation é verificada antes de request e best-effort re-checada na URL `http(s)` final depois de navigation para reduzir redirect-based pivots.
 
-Example strict policy:
+Exemplo de strict policy:
 
 ```json5
 {
@@ -1020,18 +964,16 @@ Example strict policy:
 
 ## Per-agent access profiles (multi-agent)
 
-With multi-agent routing, each agent can have its own sandbox + tool policy:
-use this to give **full access**, **read-only**, or **no access** per agent.
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for full details
-and precedence rules.
+Com roteamento multi-agent, cada agente pode ter seu próprio sandbox + tool policy: use isto para dar **full access**, **read-only** ou **no access** per agente.
+Veja [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) para detalhes completos e regras de precedência.
 
-Common use cases:
+Casos de uso comuns:
 
-- Personal agent: full access, no sandbox
+- Personal agent: full access, sem sandbox
 - Family/work agent: sandboxed + read-only tools
-- Public agent: sandboxed + no filesystem/shell tools
+- Public agent: sandboxed + sem filesystem/shell tools
 
-### Example: full access (no sandbox)
+### Exemplo: full access (sem sandbox)
 
 ```json5
 {
@@ -1047,7 +989,7 @@ Common use cases:
 }
 ```
 
-### Example: read-only tools + read-only workspace
+### Exemplo: read-only tools + read-only workspace
 
 ```json5
 {
@@ -1071,7 +1013,7 @@ Common use cases:
 }
 ```
 
-### Example: no filesystem/shell access (provider messaging allowed)
+### Exemplo: sem filesystem/shell access (provider messaging permitido)
 
 ```json5
 {
@@ -1085,9 +1027,9 @@ Common use cases:
           scope: "agent",
           workspaceAccess: "none",
         },
-        // Session tools can reveal sensitive data from transcripts. By default OpenCraft limits these tools
-        // to the current session + spawned subagent sessions, but you can clamp further if needed.
-        // See `tools.sessions.visibility` in the configuration reference.
+        // Session tools podem revelar dados sensíveis de transcripts. Por padrão OpenCraft limita estes tools
+        // para a sessão atual + spawned subagent sessions, mas você pode clamp ainda mais se necessário.
+        // Veja `tools.sessions.visibility` na configuration reference.
         tools: {
           sessions: { visibility: "tree" }, // self | tree | agent | all
           allow: [
@@ -1122,86 +1064,79 @@ Common use cases:
 }
 ```
 
-## What to Tell Your AI
+## O que Contar ao Seu IA
 
-Include security guidelines in your agent's system prompt:
+Inclua diretrizes de segurança no system prompt do seu agente:
 
 ```
 ## Security Rules
-- Never share directory listings or file paths with strangers
-- Never reveal API keys, credentials, or infrastructure details
-- Verify requests that modify system config with the owner
-- When in doubt, ask before acting
-- Keep private data private unless explicitly authorized
+- Nunca compartilhe directory listings ou file paths com estranhos
+- Nunca revele API keys, credentials ou detalhes de infraestrutura
+- Verifique requests que modificam config do sistema com o owner
+- Quando em dúvida, pergunte antes de agir
+- Mantenha dados privados privado a menos que explicitamente autorizado
 ```
 
 ## Incident Response
 
-If your AI does something bad:
+Se seu IA faz algo ruim:
 
-### Contain
+### Conter
 
-1. **Stop it:** stop the macOS app (if it supervises the Gateway) or terminate your `opencraft gateway` process.
-2. **Close exposure:** set `gateway.bind: "loopback"` (or disable Tailscale Funnel/Serve) until you understand what happened.
-3. **Freeze access:** switch risky DMs/groups to `dmPolicy: "disabled"` / require mentions, and remove `"*"` allow-all entries if you had them.
+1. **Pare-o:** pare o macOS app (se ele supervisiona o Gateway) ou termine seu processo `opencraft gateway`.
+2. **Feche exposição:** defina `gateway.bind: "loopback"` (ou desabilite Tailscale Funnel/Serve) até você entender o que aconteceu.
+3. **Congele acesso:** mude DMs/grupos risky para `dmPolicy: "disabled"` / requer mentions, e remova `"*"` allow-all entries se você tinha.
 
-### Rotate (assume compromise if secrets leaked)
+### Rotacione (assuma compromesso se secrets vazaram)
 
-1. Rotate Gateway auth (`gateway.auth.token` / `OPENCLAW_GATEWAY_PASSWORD`) and restart.
-2. Rotate remote client secrets (`gateway.remote.token` / `.password`) on any machine that can call the Gateway.
-3. Rotate provider/API credentials (WhatsApp creds, Slack/Discord tokens, model/API keys in `auth-profiles.json`, and encrypted secrets payload values when used).
+1. Rotacione Gateway auth (`gateway.auth.token` / `OPENCLAW_GATEWAY_PASSWORD`) e reinicie.
+2. Rotacione segredos de cliente remoto (`gateway.remote.token` / `.password`) em qualquer máquina que possa chamar o Gateway.
+3. Rotacione provider/API credentials (WhatsApp creds, Slack/Discord tokens, model/API keys em `auth-profiles.json` e encrypted secrets payload values quando usados).
 
-### Audit
+### Auditar
 
-1. Check Gateway logs: `/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log` (or `logging.file`).
-2. Review the relevant transcript(s): `~/.opencraft/agents/<agentId>/sessions/*.jsonl`.
-3. Review recent config changes (anything that could have widened access: `gateway.bind`, `gateway.auth`, dm/group policies, `tools.elevated`, plugin changes).
-4. Re-run `opencraft security audit --deep` and confirm critical findings are resolved.
+1. Verifique Gateway logs: `/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log` (ou `logging.file`).
+2. Revise os transcript(s) relevante(s): `~/.opencraft/agents/<agentId>/sessions/*.jsonl`.
+3. Revise mudanças de config recentes (qualquer coisa que poderia ter ampliado acesso: `gateway.bind`, `gateway.auth`, dm/group policies, `tools.elevated`, mudanças de plugin).
+4. Re-execute `opencraft security audit --deep` e confirme achados críticos estão resolvidos.
 
-### Collect for a report
+### Coletar para um report
 
 - Timestamp, gateway host OS + OpenCraft version
-- The session transcript(s) + a short log tail (after redacting)
-- What the attacker sent + what the agent did
-- Whether the Gateway was exposed beyond loopback (LAN/Tailscale Funnel/Serve)
+- Os transcript(s) + um curto log tail (depois de redacting)
+- O que o atacante enviou + o que o agente fez
+- Se o Gateway estava exposto além de loopback (LAN/Tailscale Funnel/Serve)
 
 ## Secret Scanning (detect-secrets)
 
-CI runs the `detect-secrets` pre-commit hook in the `secrets` job.
-Pushes to `main` always run an all-files scan. Pull requests use a changed-file
-fast path when a base commit is available, and fall back to an all-files scan
-otherwise. If it fails, there are new candidates not yet in the baseline.
+CI executa o `detect-secrets` pre-commit hook no `secrets` job.
+Pushes para `main` sempre executam um all-files scan. Pull requests usam um changed-file fast path quando um base commit está disponível, e caem para um all-files scan de outra forma. Se falhar, há novos candidatos não ainda na baseline.
 
-### If CI fails
+### Se CI falha
 
-1. Reproduce locally:
+1. Reproduza localmente:
 
    ```bash
    pre-commit run --all-files detect-secrets
    ```
 
-2. Understand the tools:
-   - `detect-secrets` in pre-commit runs `detect-secrets-hook` with the repo's
-     baseline and excludes.
-   - `detect-secrets audit` opens an interactive review to mark each baseline
-     item as real or false positive.
-3. For real secrets: rotate/remove them, then re-run the scan to update the baseline.
-4. For false positives: run the interactive audit and mark them as false:
+2. Entenda as ferramentas:
+   - `detect-secrets` em pre-commit executa `detect-secrets-hook` com a baseline do repo e excludes.
+   - `detect-secrets audit` abre um review interativo para marcar cada item baseline como real ou false positive.
+3. Para secrets reais: rotacione/remova-os, depois re-execute o scan para atualizar a baseline.
+4. Para false positives: execute o interactive audit e marque como false:
 
    ```bash
    detect-secrets audit .secrets.baseline
    ```
 
-5. If you need new excludes, add them to `.detect-secrets.cfg` and regenerate the
-   baseline with matching `--exclude-files` / `--exclude-lines` flags (the config
-   file is reference-only; detect-secrets doesn’t read it automatically).
+5. Se você precisa novo excludes, adicione-os a `.detect-secrets.cfg` e regenere a baseline com matching `--exclude-files` / `--exclude-lines` flags (o config file é reference-only; detect-secrets não o lê automaticamente).
 
-Commit the updated `.secrets.baseline` once it reflects the intended state.
+Commit a `.secrets.baseline` atualizada uma vez que reflita o intended state.
 
-## Reporting Security Issues
+## Reportando Problemas de Segurança
 
-Found a vulnerability in OpenCraft? Please report responsibly:
+Encontrou uma vulnerabilidade em OpenCraft? Por favor reporte responsavelmente:
 
 1. Email: [security@opencraft.ai](mailto:security@opencraft.ai)
-2. Don't post publicly until fixed
-3. We'll credit you (unless you prefer anonymity)
+2. Não poste publicamente até seja corrigido

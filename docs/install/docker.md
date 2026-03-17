@@ -1,100 +1,90 @@
 ---
-summary: "Optional Docker-based setup and onboarding for OpenCraft"
+summary: "Setup opcional baseado em Docker e onboarding para OpenCraft"
 read_when:
   - You want a containerized gateway instead of local installs
   - You are validating the Docker flow
 title: "Docker"
 ---
 
-# Docker (optional)
+# Docker (opcional)
 
-Docker is **optional**. Use it only if you want a containerized gateway or to validate the Docker flow.
+Docker é **opcional**. Use apenas se você quer um gateway containerizado ou para validar o fluxo Docker.
 
-## Is Docker right for me?
+## Docker é certo para mim?
 
-- **Yes**: you want an isolated, throwaway gateway environment or to run OpenCraft on a host without local installs.
-- **No**: you’re running on your own machine and just want the fastest dev loop. Use the normal install flow instead.
-- **Sandboxing note**: agent sandboxing uses Docker too, but it does **not** require the full gateway to run in Docker. See [Sandboxing](/gateway/sandboxing).
+- **Sim**: você quer um ambiente gateway isolado e descartável ou executar OpenCraft em um host sem instalações locais.
+- **Não**: você está rodando em sua própria máquina e apenas quer o loop de dev mais rápido. Use o fluxo de instalação normal em vez disso.
+- **Nota de sandboxing**: sandboxing de agent também usa Docker, mas **não requer** que o gateway completo rode em Docker. Veja [Sandboxing](/gateway/sandboxing).
 
-This guide covers:
+Este guia cobre:
 
-- Containerized Gateway (full OpenCraft in Docker)
-- Per-session Agent Sandbox (host gateway + Docker-isolated agent tools)
+- Gateway containerizado (OpenCraft completo em Docker)
+- Agent Sandbox por sessão (gateway host + ferramentas de agent isoladas em Docker)
 
-Sandboxing details: [Sandboxing](/gateway/sandboxing)
+Detalhes de sandboxing: [Sandboxing](/gateway/sandboxing)
 
-## Requirements
+## Requisitos
 
-- Docker Desktop (or Docker Engine) + Docker Compose v2
-- At least 2 GB RAM for image build (`pnpm install` may be OOM-killed on 1 GB hosts with exit 137)
-- Enough disk for images + logs
-- If running on a VPS/public host, review
-  [Security hardening for network exposure](/gateway/security#04-network-exposure-bind--port--firewall),
-  especially Docker `DOCKER-USER` firewall policy.
+- Docker Desktop (ou Docker Engine) + Docker Compose v2
+- No mínimo 2 GB RAM para build de imagem (`pnpm install` pode ser OOM-killed em hosts 1 GB com exit 137)
+- Disco suficiente para imagens + logs
+- Se rodando em host VPS/público, revise [Security hardening for network exposure](/gateway/security#04-network-exposure-bind--port--firewall), especialmente política de firewall Docker `DOCKER-USER`.
 
-## Containerized Gateway (Docker Compose)
+## Gateway containerizado (Docker Compose)
 
-### Quick start (recommended)
+### Início rápido (recomendado)
 
 <Note>
-Docker defaults here assume bind modes (`lan`/`loopback`), not host aliases. Use bind
-mode values in `gateway.bind` (for example `lan` or `loopback`), not host aliases like
-`0.0.0.0` or `localhost`.
+Docker defaults aqui assumem bind modes (`lan`/`loopback`), não host aliases. Use valores de bind mode em `gateway.bind` (por exemplo `lan` ou `loopback`), não host aliases como `0.0.0.0` ou `localhost`.
 </Note>
 
-From repo root:
+De repo root:
 
 ```bash
 ./docker-setup.sh
 ```
 
-This script:
+Este script:
 
-- builds the gateway image locally (or pulls a remote image if `OPENCRAFT_IMAGE` is set)
-- runs onboarding
-- prints optional provider setup hints
-- starts the gateway via Docker Compose
-- generates a gateway token and writes it to `.env`
+- constrói a imagem de gateway localmente (ou puxa uma imagem remota se `OPENCRAFT_IMAGE` está definido)
+- executa onboarding
+- imprime dicas de configuração de provider opcional
+- inicia o gateway via Docker Compose
+- gera um token de gateway e escreve para `.env`
 
-Optional env vars:
+Variáveis de ambiente opcionais:
 
-- `OPENCRAFT_IMAGE` — use a remote image instead of building locally (e.g. `ghcr.io/editzffaleta/OpenCraft:latest`)
-- `OPENCRAFT_DOCKER_APT_PACKAGES` — install extra apt packages during build
-- `OPENCRAFT_EXTENSIONS` — pre-install extension dependencies at build time (space-separated extension names, e.g. `diagnostics-otel matrix`)
-- `OPENCRAFT_EXTRA_MOUNTS` — add extra host bind mounts
-- `OPENCRAFT_HOME_VOLUME` — persist `/home/node` in a named volume
-- `OPENCRAFT_SANDBOX` — opt in to Docker gateway sandbox bootstrap. Only explicit truthy values enable it: `1`, `true`, `yes`, `on`
-- `OPENCRAFT_INSTALL_DOCKER_CLI` — build arg passthrough for local image builds (`1` installs Docker CLI in the image). `docker-setup.sh` sets this automatically when `OPENCRAFT_SANDBOX=1` for local builds.
-- `OPENCRAFT_DOCKER_SOCKET` — override Docker socket path (default: `DOCKER_HOST=unix://...` path, else `/var/run/docker.sock`)
-- `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` — break-glass: allow trusted private-network
-  `ws://` targets for CLI/onboarding client paths (default is loopback-only)
-- `OPENCRAFT_BROWSER_DISABLE_GRAPHICS_FLAGS=0` — disable container browser hardening flags
-  `--disable-3d-apis`, `--disable-software-rasterizer`, `--disable-gpu` when you need
-  WebGL/3D compatibility.
-- `OPENCRAFT_BROWSER_DISABLE_EXTENSIONS=0` — keep extensions enabled when browser
-  flows require them (default keeps extensions disabled in sandbox browser).
-- `OPENCRAFT_BROWSER_RENDERER_PROCESS_LIMIT=<N>` — set Chromium renderer process
-  limit; set to `0` to skip the flag and use Chromium default behavior.
+- `OPENCRAFT_IMAGE` — use uma imagem remota em vez de construir localmente (ex. `ghcr.io/editzffaleta/OpenCraft:latest`)
+- `OPENCRAFT_DOCKER_APT_PACKAGES` — instala pacotes apt extras durante build
+- `OPENCRAFT_EXTENSIONS` — pré-instala dependências de extensão em tempo de build (nomes de extensão separados por espaço, ex. `diagnostics-otel matrix`)
+- `OPENCRAFT_EXTRA_MOUNTS` — adiciona bind mounts de host extras
+- `OPENCRAFT_HOME_VOLUME` — persiste `/home/node` em um named volume
+- `OPENCRAFT_SANDBOX` — opt in a Docker gateway sandbox bootstrap. Apenas valores explicitamente truthy habilitam: `1`, `true`, `yes`, `on`
+- `OPENCRAFT_INSTALL_DOCKER_CLI` — passthrough build arg para local image builds (`1` instala Docker CLI na imagem). `docker-setup.sh` define isso automaticamente quando `OPENCRAFT_SANDBOX=1` para builds locais.
+- `OPENCRAFT_DOCKER_SOCKET` — sobrescreve caminho de Docker socket (padrão: path `DOCKER_HOST=unix://...`, senão `/var/run/docker.sock`)
+- `OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS=1` — break-glass: permite targets `ws://` de private-network confiável para caminhos de cliente CLI/onboarding (padrão é loopback-only)
+- `OPENCRAFT_BROWSER_DISABLE_GRAPHICS_FLAGS=0` — desabilita flags de hardening de browser de container `--disable-3d-apis`, `--disable-software-rasterizer`, `--disable-gpu` quando você precisa de compatibilidade WebGL/3D.
+- `OPENCRAFT_BROWSER_DISABLE_EXTENSIONS=0` — mantém extensões habilitadas quando fluxos de browser requerem (padrão mantém extensões desabilitadas no browser sandbox).
+- `OPENCRAFT_BROWSER_RENDERER_PROCESS_LIMIT=<N>` — define limite de processo de renderer Chromium; defina para `0` para pular a flag e usar comportamento padrão Chromium.
 
-After it finishes:
+Após terminar:
 
-- Open `http://127.0.0.1:18789/` in your browser.
-- Paste the token into the Control UI (Settings → token).
-- Need the URL again? Run `docker compose run --rm opencraft-cli dashboard --no-open`.
+- Abra `http://127.0.0.1:18789/` no seu navegador.
+- Cole o token no Control UI (Settings → token).
+- Precisa da URL novamente? Execute `docker compose run --rm opencraft-cli dashboard --no-open`.
 
-### Enable agent sandbox for Docker gateway (opt-in)
+### Habilitar sandbox de agent para Docker gateway (opt-in)
 
-`docker-setup.sh` can also bootstrap `agents.defaults.sandbox.*` for Docker
-deployments.
+`docker-setup.sh` também pode bootstrap `agents.defaults.sandbox.*` para deployments Docker.
 
-Enable with:
+Habilite com:
 
 ```bash
 export OPENCRAFT_SANDBOX=1
 ./docker-setup.sh
 ```
 
-Custom socket path (for example rootless Docker):
+Caminho de socket customizado (ex. Docker sem root):
 
 ```bash
 export OPENCRAFT_SANDBOX=1
@@ -102,73 +92,60 @@ export OPENCRAFT_DOCKER_SOCKET=/run/user/1000/docker.sock
 ./docker-setup.sh
 ```
 
-Notes:
+Notas:
 
-- The script mounts `docker.sock` only after sandbox prerequisites pass.
-- If sandbox setup cannot be completed, the script resets
-  `agents.defaults.sandbox.mode` to `off` to avoid stale/broken sandbox config
-  on reruns.
-- If `Dockerfile.sandbox` is missing, the script prints a warning and continues;
-  build `openclaw-sandbox:bookworm-slim` with `scripts/sandbox-setup.sh` if
-  needed.
-- For non-local `OPENCRAFT_IMAGE` values, the image must already contain Docker
-  CLI support for sandbox execution.
+- O script monta `docker.sock` apenas após pré-requisitos de sandbox passarem.
+- Se setup de sandbox não puder ser completado, o script reseta `agents.defaults.sandbox.mode` para `off` para evitar config de sandbox stale/quebrado em reruns.
+- Se `Dockerfile.sandbox` está faltando, o script imprime um aviso e continua; construa `openclaw-sandbox:bookworm-slim` com `scripts/sandbox-setup.sh` se necessário.
+- Para valores não-locais de `OPENCRAFT_IMAGE`, a imagem deve já conter suporte Docker CLI para execução de sandbox.
 
-### Automation/CI (non-interactive, no TTY noise)
+### Automação/CI (não-interativo, sem TTY noise)
 
-For scripts and CI, disable Compose pseudo-TTY allocation with `-T`:
+Para scripts e CI, desabilite alocação de pseudo-TTY do Compose com `-T`:
 
 ```bash
 docker compose run -T --rm opencraft-cli gateway probe
 docker compose run -T --rm opencraft-cli devices list --json
 ```
 
-If your automation exports no Claude session vars, leaving them unset now resolves to
-empty values by default in `docker-compose.yml` to avoid repeated "variable is not set"
-warnings.
+Se sua automação não exporta variáveis de sessão Claude, deixá-las unset agora resolve para valores vazios por padrão em `docker-compose.yml` para evitar avisos "variable is not set" repetidos.
 
-### Shared-network security note (CLI + gateway)
+### Nota de segurança de rede compartilhada (CLI + gateway)
 
-`opencraft-cli` uses `network_mode: "service:opencraft-gateway"` so CLI commands can
-reliably reach the gateway over `127.0.0.1` in Docker.
+`opencraft-cli` usa `network_mode: "service:opencraft-gateway"` para que comandos CLI possam alcançar o gateway de forma confiável sobre `127.0.0.1` em Docker.
 
-Treat this as a shared trust boundary: loopback binding is not isolation between these two
-containers. If you need stronger separation, run commands from a separate container/host
-network path instead of the bundled `opencraft-cli` service.
+Trate isto como uma fronteira de confiança compartilhada: binding loopback não é isolamento entre estes dois containers. Se você precisa de separação mais forte, execute comandos de um container/host network path separado em vez do serviço `opencraft-cli` empacotado.
 
-To reduce impact if the CLI process is compromised, the compose config drops
-`NET_RAW`/`NET_ADMIN` and enables `no-new-privileges` on `opencraft-cli`.
+Para reduzir impacto se o processo CLI é comprometido, a config de compose descarta `NET_RAW`/`NET_ADMIN` e habilita `no-new-privileges` em `opencraft-cli`.
 
-It writes config/workspace on the host:
+Escreve config/workspace no host:
 
 - `~/.opencraft/`
 - `~/.opencraft/workspace`
 
-Running on a VPS? See [Hetzner (Docker VPS)](/install/hetzner).
+Rodando em VPS? Veja [Hetzner (Docker VPS)](/install/hetzner).
 
-### Use a remote image (skip local build)
+### Use uma imagem remota (pule build local)
 
-Official pre-built images are published at:
+Imagens pré-compiladas oficiais são publicadas em:
 
-- [GitHub Container Registry package](https://github.com/editzffaleta/OpenCraft/pkgs/container/opencraft)
+- [Pacote GitHub Container Registry](https://github.com/editzffaleta/OpenCraft/pkgs/container/opencraft)
 
-Use image name `ghcr.io/editzffaleta/OpenCraft` (not similarly named Docker Hub
-images).
+Use nome de imagem `ghcr.io/editzffaleta/OpenCraft` (não imagens similarmente nomeadas no Docker Hub).
 
-Common tags:
+Tags comuns:
 
-- `main` — latest build from `main`
-- `<version>` — release tag builds (for example `2026.2.26`)
+- `main` — build latest de `main`
+- `<version>` — builds de release tag (por exemplo `2026.2.26`)
 - `latest` — latest stable release tag
 
-### Base image metadata
+### Metadados de imagem base
 
-The main Docker image currently uses:
+A imagem Docker main usa atualmente:
 
 - `node:24-bookworm`
 
-The docker image now publishes OCI base-image annotations (sha256 is an example,
-and points at the pinned multi-arch manifest list for that tag):
+A imagem docker agora publica anotações OCI de base-image (sha256 é um exemplo, e aponta para a lista de manifest multi-arch fixada para essa tag):
 
 - `org.opencontainers.image.base.name=docker.io/library/node:24-bookworm`
 - `org.opencontainers.image.base.digest=sha256:3a09aa6354567619221ef6c45a5051b671f953f0a1924d1f819ffb236e520e6b`
@@ -182,46 +159,40 @@ and points at the pinned multi-arch manifest list for that tag):
 - `org.opencontainers.image.version=<tag-or-main>`
 - `org.opencontainers.image.created=<rfc3339 timestamp>`
 
-Reference: [OCI image annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
+Referência: [Anotações OCI image](https://github.com/opencontainers/image-spec/blob/main/annotations.md)
 
-Release context: this repository's tagged history already uses Bookworm in
-`v2026.2.22` and earlier 2026 tags (for example `v2026.2.21`, `v2026.2.9`).
+Contexto de release: o histórico tagged deste repositório já usa Bookworm em `v2026.2.22` e tags 2026 anteriores (por exemplo `v2026.2.21`, `v2026.2.9`).
 
-By default the setup script builds the image from source. To pull a pre-built
-image instead, set `OPENCRAFT_IMAGE` before running the script:
+Por padrão o script de setup constrói a imagem do source. Para puxar uma imagem pré-compilada em vez disso, defina `OPENCRAFT_IMAGE` antes de executar o script:
 
 ```bash
 export OPENCRAFT_IMAGE="ghcr.io/editzffaleta/OpenCraft:latest"
 ./docker-setup.sh
 ```
 
-The script detects that `OPENCRAFT_IMAGE` is not the default `opencraft:local` and
-runs `docker pull` instead of `docker build`. Everything else (onboarding,
-gateway start, token generation) works the same way.
+O script detecta que `OPENCRAFT_IMAGE` não é o padrão `opencraft:local` e executa `docker pull` em vez de `docker build`. Tudo mais (onboarding, gateway start, token generation) funciona da mesma forma.
 
-`docker-setup.sh` still runs from the repository root because it uses the local
-`docker-compose.yml` and helper files. `OPENCRAFT_IMAGE` skips local image build
-time; it does not replace the compose/setup workflow.
+`docker-setup.sh` ainda executa do repo root porque usa `docker-compose.yml` local e arquivos helpers. `OPENCRAFT_IMAGE` pula tempo de build de imagem local; não substitui o fluxo de compose/setup.
 
-### Shell Helpers (optional)
+### Shell Helpers (opcional)
 
-For easier day-to-day Docker management, install `ClawDock`:
+Para gerenciamento Docker mais fácil dia-a-dia, instale `ClawDock`:
 
 ```bash
 mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
 ```
 
-**Add to your shell config (zsh):**
+**Adicione ao seu config de shell (zsh):**
 
 ```bash
 echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 ```
 
-Then use `clawdock-start`, `clawdock-stop`, `clawdock-dashboard`, etc. Run `clawdock-help` for all commands.
+Então use `clawdock-start`, `clawdock-stop`, `clawdock-dashboard`, etc. Execute `clawdock-help` para todos os comandos.
 
-See [`ClawDock` Helper README](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/shell-helpers/README.md) for details.
+Veja [`ClawDock` Helper README](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/shell-helpers/README.md) para detalhes.
 
-### Manual flow (compose)
+### Fluxo manual (compose)
 
 ```bash
 docker build -t opencraft:local -f Dockerfile .
@@ -229,18 +200,15 @@ docker compose run --rm opencraft-cli onboard
 docker compose up -d opencraft-gateway
 ```
 
-Note: run `docker compose ...` from the repo root. If you enabled
-`OPENCRAFT_EXTRA_MOUNTS` or `OPENCRAFT_HOME_VOLUME`, the setup script writes
-`docker-compose.extra.yml`; include it when running Compose elsewhere:
+Nota: execute `docker compose ...` do repo root. Se você habilitou `OPENCRAFT_EXTRA_MOUNTS` ou `OPENCRAFT_HOME_VOLUME`, o script de setup escreve `docker-compose.extra.yml`; inclua quando executar Compose em outro lugar:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.extra.yml <command>
 ```
 
-### Control UI token + pairing (Docker)
+### Token Control UI + pairing (Docker)
 
-If you see “unauthorized” or “disconnected (1008): pairing required”, fetch a
-fresh dashboard link and approve the browser device:
+Se você vê "unauthorized" ou "disconnected (1008): pairing required", busque um link de dashboard fresco e aprove o device browser:
 
 ```bash
 docker compose run --rm opencraft-cli dashboard --no-open
@@ -248,46 +216,38 @@ docker compose run --rm opencraft-cli devices list
 docker compose run --rm opencraft-cli devices approve <requestId>
 ```
 
-More detail: [Dashboard](/web/dashboard), [Devices](/cli/devices).
+Mais detalhes: [Dashboard](/web/dashboard), [Devices](/cli/devices).
 
-### Extra mounts (optional)
+### Mounts extras (opcional)
 
-If you want to mount additional host directories into the containers, set
-`OPENCRAFT_EXTRA_MOUNTS` before running `docker-setup.sh`. This accepts a
-comma-separated list of Docker bind mounts and applies them to both
-`opencraft-gateway` and `opencraft-cli` by generating `docker-compose.extra.yml`.
+Se você quer montar diretórios de host adicionais nos containers, defina `OPENCRAFT_EXTRA_MOUNTS` antes de executar `docker-setup.sh`. Isto aceita uma lista separada por vírgula de Docker bind mounts e as aplica a ambos `opencraft-gateway` e `opencraft-cli` gerando `docker-compose.extra.yml`.
 
-Example:
+Exemplo:
 
 ```bash
 export OPENCRAFT_EXTRA_MOUNTS="$HOME/.codex:/home/node/.codex:ro,$HOME/github:/home/node/github:rw"
 ./docker-setup.sh
 ```
 
-Notes:
+Notas:
 
-- Paths must be shared with Docker Desktop on macOS/Windows.
-- Each entry must be `source:target[:options]` with no spaces, tabs, or newlines.
-- If you edit `OPENCRAFT_EXTRA_MOUNTS`, rerun `docker-setup.sh` to regenerate the
-  extra compose file.
-- `docker-compose.extra.yml` is generated. Don’t hand-edit it.
+- Paths devem ser compartilhados com Docker Desktop em macOS/Windows.
+- Cada entrada deve ser `source:target[:options]` sem espaços, abas, ou newlines.
+- Se você edita `OPENCRAFT_EXTRA_MOUNTS`, reexecute `docker-setup.sh` para regenerar o arquivo compose extra.
+- `docker-compose.extra.yml` é gerado. Não edite manualmente.
 
-### Persist the entire container home (optional)
+### Persista todo o home do container (opcional)
 
-If you want `/home/node` to persist across container recreation, set a named
-volume via `OPENCRAFT_HOME_VOLUME`. This creates a Docker volume and mounts it at
-`/home/node`, while keeping the standard config/workspace bind mounts. Use a
-named volume here (not a bind path); for bind mounts, use
-`OPENCRAFT_EXTRA_MOUNTS`.
+Se você quer `/home/node` persistir entre recreação de container, defina um named volume via `OPENCRAFT_HOME_VOLUME`. Isto cria um volume Docker e monta em `/home/node`, enquanto mantém os bind mounts padrão de config/workspace. Use um named volume aqui (não um bind path); para bind mounts, use `OPENCRAFT_EXTRA_MOUNTS`.
 
-Example:
+Exemplo:
 
 ```bash
 export OPENCRAFT_HOME_VOLUME="opencraft_home"
 ./docker-setup.sh
 ```
 
-You can combine this with extra mounts:
+Você pode combinar isto com mounts extras:
 
 ```bash
 export OPENCRAFT_HOME_VOLUME="opencraft_home"
@@ -295,117 +255,102 @@ export OPENCRAFT_EXTRA_MOUNTS="$HOME/.codex:/home/node/.codex:ro,$HOME/github:/h
 ./docker-setup.sh
 ```
 
-Notes:
+Notas:
 
-- Named volumes must match `^[A-Za-z0-9][A-Za-z0-9_.-]*$`.
-- If you change `OPENCRAFT_HOME_VOLUME`, rerun `docker-setup.sh` to regenerate the
-  extra compose file.
-- The named volume persists until removed with `docker volume rm <name>`.
+- Named volumes devem corresponder `^[A-Za-z0-9][A-Za-z0-9_.-]*$`.
+- Se você muda `OPENCRAFT_HOME_VOLUME`, reexecute `docker-setup.sh` para regenerar o arquivo compose extra.
+- O named volume persiste até ser removido com `docker volume rm <name>`.
 
-### Install extra apt packages (optional)
+### Instale pacotes apt extras (opcional)
 
-If you need system packages inside the image (for example, build tools or media
-libraries), set `OPENCRAFT_DOCKER_APT_PACKAGES` before running `docker-setup.sh`.
-This installs the packages during the image build, so they persist even if the
-container is deleted.
+Se você precisa de pacotes de sistema dentro da imagem (por exemplo, build tools ou bibliotecas de mídia), defina `OPENCRAFT_DOCKER_APT_PACKAGES` antes de executar `docker-setup.sh`. Isto instala os pacotes durante o build de imagem, então persistem mesmo se o container é deletado.
 
-Example:
+Exemplo:
 
 ```bash
 export OPENCRAFT_DOCKER_APT_PACKAGES="ffmpeg build-essential"
 ./docker-setup.sh
 ```
 
-Notes:
+Notas:
 
-- This accepts a space-separated list of apt package names.
-- If you change `OPENCRAFT_DOCKER_APT_PACKAGES`, rerun `docker-setup.sh` to rebuild
-  the image.
+- Isto aceita uma lista separada por espaço de nomes de pacotes apt.
+- Se você muda `OPENCRAFT_DOCKER_APT_PACKAGES`, reexecute `docker-setup.sh` para reconstruir a imagem.
 
-### Pre-install extension dependencies (optional)
+### Pré-instale dependências de extensão (opcional)
 
-Extensions with their own `package.json` (e.g. `diagnostics-otel`, `matrix`,
-`msteams`) install their npm dependencies on first load. To bake those
-dependencies into the image instead, set `OPENCRAFT_EXTENSIONS` before
-running `docker-setup.sh`:
+Extensões com seu próprio `package.json` (ex. `diagnostics-otel`, `matrix`, `msteams`) instalam suas dependências npm na primeira carga. Para bake essas dependências na imagem em vez, defina `OPENCRAFT_EXTENSIONS` antes de executar `docker-setup.sh`:
 
 ```bash
 export OPENCRAFT_EXTENSIONS="diagnostics-otel matrix"
 ./docker-setup.sh
 ```
 
-Or when building directly:
+Ou quando construindo diretamente:
 
 ```bash
 docker build --build-arg OPENCRAFT_EXTENSIONS="diagnostics-otel matrix" .
 ```
 
-Notes:
+Notas:
 
-- This accepts a space-separated list of extension directory names (under `extensions/`).
-- Only extensions with a `package.json` are affected; lightweight plugins without one are ignored.
-- If you change `OPENCRAFT_EXTENSIONS`, rerun `docker-setup.sh` to rebuild
-  the image.
+- Isto aceita uma lista separada por espaço de nomes de diretório de extensão (sob `extensions/`).
+- Apenas extensões com um `package.json` são afetadas; plugins leve sem um são ignorados.
+- Se você muda `OPENCRAFT_EXTENSIONS`, reexecute `docker-setup.sh` para reconstruir a imagem.
 
-### Power-user / full-featured container (opt-in)
+### Power-user / container full-featured (opt-in)
 
-The default Docker image is **security-first** and runs as the non-root `node`
-user. This keeps the attack surface small, but it means:
+A imagem Docker padrão é **security-first** e roda como usuário não-root `node`. Isto mantém a superfície de ataque pequena, mas significa:
 
-- no system package installs at runtime
-- no Homebrew by default
-- no bundled Chromium/Playwright browsers
+- sem instalações de pacote de sistema em runtime
+- sem Homebrew por padrão
+- sem Chromium/Playwright browsers empacotados
 
-If you want a more full-featured container, use these opt-in knobs:
+Se você quer um container mais full-featured, use estes knobs opt-in:
 
-1. **Persist `/home/node`** so browser downloads and tool caches survive:
+1. **Persista `/home/node`** para que downloads de browser e caches de tool sobrevivam:
 
 ```bash
 export OPENCRAFT_HOME_VOLUME="opencraft_home"
 ./docker-setup.sh
 ```
 
-2. **Bake system deps into the image** (repeatable + persistent):
+2. **Bake system deps na imagem** (repetível + persistente):
 
 ```bash
 export OPENCRAFT_DOCKER_APT_PACKAGES="git curl jq"
 ./docker-setup.sh
 ```
 
-3. **Install Playwright browsers without `npx`** (avoids npm override conflicts):
+3. **Instale Playwright browsers sem `npx`** (evita conflitos override npm):
 
 ```bash
 docker compose run --rm opencraft-cli \
   node /app/node_modules/playwright-core/cli.js install chromium
 ```
 
-If you need Playwright to install system deps, rebuild the image with
-`OPENCRAFT_DOCKER_APT_PACKAGES` instead of using `--with-deps` at runtime.
+Se você precisa Playwright instalar system deps, reconstrua a imagem com `OPENCRAFT_DOCKER_APT_PACKAGES` em vez de usar `--with-deps` em runtime.
 
-4. **Persist Playwright browser downloads**:
+4. **Persista downloads de Playwright browser**:
 
-- Set `PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright` in
-  `docker-compose.yml`.
-- Ensure `/home/node` persists via `OPENCRAFT_HOME_VOLUME`, or mount
-  `/home/node/.cache/ms-playwright` via `OPENCRAFT_EXTRA_MOUNTS`.
+- Defina `PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright` em `docker-compose.yml`.
+- Garanta que `/home/node` persista via `OPENCRAFT_HOME_VOLUME`, ou monte `/home/node/.cache/ms-playwright` via `OPENCRAFT_EXTRA_MOUNTS`.
 
 ### Permissions + EACCES
 
-The image runs as `node` (uid 1000). If you see permission errors on
-`/home/node/.opencraft`, make sure your host bind mounts are owned by uid 1000.
+A imagem roda como `node` (uid 1000). Se você vê erros de permissão em `/home/node/.opencraft`, certifique-se seus bind mounts de host são owned por uid 1000.
 
-Example (Linux host):
+Exemplo (host Linux):
 
 ```bash
 sudo chown -R 1000:1000 /path/to/opencraft-config /path/to/opencraft-workspace
 ```
 
-If you choose to run as root for convenience, you accept the security tradeoff.
+Se você escolhe rodar como root para conveniência, você aceita o tradeoff de segurança.
 
-### Faster rebuilds (recommended)
+### Rebuilds mais rápidos (recomendado)
 
-To speed up rebuilds, order your Dockerfile so dependency layers are cached.
-This avoids re-running `pnpm install` unless lockfiles change:
+Para acelerar rebuilds, ordene seu Dockerfile para que camadas de dependência sejam cacheadas. Isto evita re-executar `pnpm install` a menos que lockfiles mudem:
 
 ```dockerfile
 FROM node:24-bookworm
@@ -435,9 +380,9 @@ ENV NODE_ENV=production
 CMD ["node","dist/index.js"]
 ```
 
-### Channel setup (optional)
+### Setup de channel (opcional)
 
-Use the CLI container to configure channels, then restart the gateway if needed.
+Use o container CLI para configurar channels, depois reinicie o gateway se necessário.
 
 WhatsApp (QR):
 
@@ -459,35 +404,27 @@ docker compose run --rm opencraft-cli channels add --channel discord --token "<t
 
 Docs: [WhatsApp](/channels/whatsapp), [Telegram](/channels/telegram), [Discord](/channels/discord)
 
-### OpenAI Codex OAuth (headless Docker)
+### OpenAI Code OAuth (Docker headless)
 
-If you pick OpenAI Codex OAuth in the wizard, it opens a browser URL and tries
-to capture a callback on `http://127.0.0.1:1455/auth/callback`. In Docker or
-headless setups that callback can show a browser error. Copy the full redirect
-URL you land on and paste it back into the wizard to finish auth.
+Se você escolhe OpenAI Code OAuth no wizard, ele abre uma URL de browser e tenta capturar um callback em `http://127.0.0.1:1455/auth/callback`. Em Docker ou setups headless esse callback pode mostrar um erro de browser. Copie a URL de redirect completa que você landing em e cole de volta no wizard para terminar auth.
 
 ### Health checks
 
-Container probe endpoints (no auth required):
+Endpoints de probe de container (sem auth requerida):
 
 ```bash
 curl -fsS http://127.0.0.1:18789/healthz
 curl -fsS http://127.0.0.1:18789/readyz
 ```
 
-Aliases: `/health` and `/ready`.
+Aliases: `/health` e `/ready`.
 
-`/healthz` is a shallow liveness probe for "the gateway process is up".
-`/readyz` stays ready during startup grace, then becomes `503` only if required
-managed channels are still disconnected after grace or disconnect later.
+`/healthz` é um probe de liveness raso para "o processo gateway está up".
+`/readyz` permanece ready durante startup grace, depois fica `503` apenas se canais managed requeridos ainda estão desconectados após grace ou desconectam depois.
 
-The Docker image includes a built-in `HEALTHCHECK` that pings `/healthz` in the
-background. In plain terms: Docker keeps checking if OpenCraft is still
-responsive. If checks keep failing, Docker marks the container as `unhealthy`,
-and orchestration systems (Docker Compose restart policy, Swarm, Kubernetes,
-etc.) can automatically restart or replace it.
+A imagem Docker inclui um `HEALTHCHECK` built-in que faz ping de `/healthz` em background. Em termos simples: Docker continua verificando se OpenCraft ainda está responsivo. Se verificações continuam falhando, Docker marca o container como `unhealthy`, e sistemas de orquestração (política restart Docker Compose, Swarm, Kubernetes, etc.) podem automaticamente reiniciar ou substituir.
 
-Authenticated deep health snapshot (gateway + channels):
+Health snapshot autenticado profundo (gateway + channels):
 
 ```bash
 docker compose exec opencraft-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
@@ -507,22 +444,16 @@ pnpm test:docker:qr
 
 ### LAN vs loopback (Docker Compose)
 
-`docker-setup.sh` defaults `OPENCRAFT_GATEWAY_BIND=lan` so host access to
-`http://127.0.0.1:18789` works with Docker port publishing.
+`docker-setup.sh` padrão `OPENCRAFT_GATEWAY_BIND=lan` para que acesso de host a `http://127.0.0.1:18789` funcione com publicação de porta Docker.
 
-- `lan` (default): host browser + host CLI can reach the published gateway port.
-- `loopback`: only processes inside the container network namespace can reach
-  the gateway directly; host-published port access may fail.
+- `lan` (padrão): browser de host + CLI de host pode alcançar a porta de gateway publicada.
+- `loopback`: apenas processos dentro do namespace de rede de container podem alcançar o gateway diretamente; acesso de porta publicada de host pode falhar.
 
-The setup script also pins `gateway.mode=local` after onboarding so Docker CLI
-commands default to local loopback targeting.
+O script de setup também fixa `gateway.mode=local` após onboarding para que comandos Docker CLI resolvam para direcionamento loopback local.
 
-Legacy config note: use bind mode values in `gateway.bind` (`lan` / `loopback` /
-`custom` / `tailnet` / `auto`), not host aliases (`0.0.0.0`, `127.0.0.1`,
-`localhost`, `::`, `::1`).
+Nota de config legado: use valores de bind mode em `gateway.bind` (`lan` / `loopback` / `custom` / `tailnet` / `auto`), não host aliases (`0.0.0.0`, `127.0.0.1`, `localhost`, `::`, `::1`).
 
-If you see `Gateway target: ws://172.x.x.x:18789` or repeated `pairing required`
-errors from Docker CLI commands, run:
+Se você vê `Gateway target: ws://172.x.x.x:18789` ou erros `pairing required` repetidos de comandos Docker CLI, execute:
 
 ```bash
 docker compose run --rm opencraft-cli config set gateway.mode local
@@ -530,77 +461,71 @@ docker compose run --rm opencraft-cli config set gateway.bind lan
 docker compose run --rm opencraft-cli devices list --url ws://127.0.0.1:18789
 ```
 
-### Notes
+### Notas
 
-- Gateway bind defaults to `lan` for container use (`OPENCRAFT_GATEWAY_BIND`).
-- Dockerfile CMD uses `--allow-unconfigured`; mounted config with `gateway.mode` not `local` will still start. Override CMD to enforce the guard.
-- The gateway container is the source of truth for sessions (`~/.opencraft/agents/<agentId>/sessions/`).
+- Gateway bind padrão para `lan` para uso de container (`OPENCRAFT_GATEWAY_BIND`).
+- Dockerfile CMD usa `--allow-unconfigured`; config montado com `gateway.mode` não `local` ainda iniciará. Sobrescreva CMD para forçar o guard.
+- O container gateway é a source of truth para sessions (`~/.opencraft/agents/<agentId>/sessions/`).
 
-### Storage model
+### Modelo de storage
 
-- **Persistent host data:** Docker Compose bind-mounts `OPENCRAFT_CONFIG_DIR` to `/home/node/.opencraft` and `OPENCRAFT_WORKSPACE_DIR` to `/home/node/.opencraft/workspace`, so those paths survive container replacement.
-- **Ephemeral sandbox tmpfs:** when `agents.defaults.sandbox` is enabled, the sandbox containers use `tmpfs` for `/tmp`, `/var/tmp`, and `/run`. Those mounts are separate from the top-level Compose stack and disappear with the sandbox container.
-- **Disk growth hotspots:** watch `media/`, `agents/<agentId>/sessions/sessions.json`, transcript JSONL files, `cron/runs/*.jsonl`, and rolling file logs under `/tmp/opencraft/` (or your configured `logging.file`). If you also run the macOS app outside Docker, its service logs are separate again: `~/.opencraft/logs/gateway.log`, `~/.opencraft/logs/gateway.err.log`, and `/tmp/editzffaleta/OpenCraft-gateway.log`.
+- **Dados de host persistentes:** Docker Compose bind-monta `OPENCRAFT_CONFIG_DIR` para `/home/node/.opencraft` e `OPENCRAFT_WORKSPACE_DIR` para `/home/node/.opencraft/workspace`, para que esses paths sobrevivam à recreação de container.
+- **Sandbox tmpfs efêmero:** quando `agents.defaults.sandbox` está habilitado, os containers de sandbox usam `tmpfs` para `/tmp`, `/var/tmp`, e `/run`. Esses mounts são separados da stack Compose top-level e desaparecem com o container de sandbox.
+- **Disk growth hotspots:** observe `media/`, `agents/<agentId>/sessions/sessions.json`, arquivos JSONL de transcript, `cron/runs/*.jsonl`, e logs de arquivo rolling sob `/tmp/opencraft/` (ou seu `logging.file` configurado). Se você também executa o app macOS fora de Docker, seus service logs são separados novamente: `~/.opencraft/logs/gateway.log`, `~/.opencraft/logs/gateway.err.log`, e `/tmp/editzffaleta/OpenCraft-gateway.log`.
 
-## Agent Sandbox (host gateway + Docker tools)
+## Agent Sandbox (host gateway + ferramentas Docker)
 
 Deep dive: [Sandboxing](/gateway/sandboxing)
 
-### What it does
+### O que faz
 
-When `agents.defaults.sandbox` is enabled, **non-main sessions** run tools inside a Docker
-container. The gateway stays on your host, but the tool execution is isolated:
+Quando `agents.defaults.sandbox` está habilitado, **sessões não-main** executam ferramentas dentro de um container Docker. O gateway fica em seu host, mas a execução de ferramenta é isolada:
 
-- scope: `"agent"` by default (one container + workspace per agent)
-- scope: `"session"` for per-session isolation
-- per-scope workspace folder mounted at `/workspace`
-- optional agent workspace access (`agents.defaults.sandbox.workspaceAccess`)
-- allow/deny tool policy (deny wins)
-- inbound media is copied into the active sandbox workspace (`media/inbound/*`) so tools can read it (with `workspaceAccess: "rw"`, this lands in the agent workspace)
+- scope: `"agent"` por padrão (um container + workspace por agent)
+- scope: `"session"` para isolamento por sessão
+- pasta de workspace por scope montada em `/workspace`
+- acesso opcional de workspace de agent (`agents.defaults.sandbox.workspaceAccess`)
+- política de ferramenta allow/deny (deny vence)
+- mídia de inbound é copiada no workspace de sandbox ativo (`media/inbound/*`) para que ferramentas possam ler (com `workspaceAccess: "rw"`, isto landing no workspace de agent)
 
-Warning: `scope: "shared"` disables cross-session isolation. All sessions share
-one container and one workspace.
+Aviso: `scope: "shared"` desabilita isolamento de cross-session. Todas as sessões compartilham um container e um workspace.
 
-### Per-agent sandbox profiles (multi-agent)
+### Perfis de sandbox per-agent (multi-agent)
 
-If you use multi-agent routing, each agent can override sandbox + tool settings:
-`agents.list[].sandbox` and `agents.list[].tools` (plus `agents.list[].tools.sandbox.tools`). This lets you run
-mixed access levels in one gateway:
+Se você usa roteamento multi-agent, cada agent pode sobrescrever sandbox + configurações de ferramentas:
+`agents.list[].sandbox` e `agents.list[].tools` (mais `agents.list[].tools.sandbox.tools`). Isto permite você rodar níveis de acesso mistos em um gateway:
 
-- Full access (personal agent)
-- Read-only tools + read-only workspace (family/work agent)
-- No filesystem/shell tools (public agent)
+- Acesso completo (agent pessoal)
+- Ferramentas read-only + workspace read-only (agent família/trabalho)
+- Sem ferramentas de filesystem/shell (agent público)
 
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for examples,
-precedence, and troubleshooting.
+Veja [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) para exemplos, precedência, e troubleshooting.
 
-### Default behavior
+### Comportamento padrão
 
-- Image: `openclaw-sandbox:bookworm-slim`
-- One container per agent
-- Agent workspace access: `workspaceAccess: "none"` (default) uses `~/.opencraft/sandboxes`
-  - `"ro"` keeps the sandbox workspace at `/workspace` and mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`)
-  - `"rw"` mounts the agent workspace read/write at `/workspace`
-- Auto-prune: idle > 24h OR age > 7d
-- Network: `none` by default (explicitly opt-in if you need egress)
-  - `host` is blocked.
-  - `container:<id>` is blocked by default (namespace-join risk).
-- Default allow: `exec`, `process`, `read`, `write`, `edit`, `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
-- Default deny: `browser`, `canvas`, `nodes`, `cron`, `discord`, `gateway`
+- Imagem: `openclaw-sandbox:bookworm-slim`
+- Um container por agent
+- Acesso de workspace de agent: `workspaceAccess: "none"` (padrão) usa `~/.opencraft/sandboxes`
+  - `"ro"` mantém workspace de sandbox em `/workspace` e monta workspace de agent read-only em `/agent` (desabilita `write`/`edit`/`apply_patch`)
+  - `"rw"` monta workspace de agent read/write em `/workspace`
+- Auto-prune: idle > 24h OR idade > 7d
+- Network: `none` por padrão (explicitamente opt-in se você precisa egress)
+  - `host` é bloqueado.
+  - `container:<id>` é bloqueado por padrão (namespace-join risk).
+- Allow padrão: `exec`, `process`, `read`, `write`, `edit`, `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
+- Deny padrão: `browser`, `canvas`, `nodes`, `cron`, `discord`, `gateway`
 
-### Enable sandboxing
+### Habilite sandboxing
 
-If you plan to install packages in `setupCommand`, note:
+Se você planeja instalar pacotes em `setupCommand`, note:
 
-- Default `docker.network` is `"none"` (no egress).
-- `docker.network: "host"` is blocked.
-- `docker.network: "container:<id>"` is blocked by default.
+- Default `docker.network` é `"none"` (sem egress).
+- `docker.network: "host"` é bloqueado.
+- `docker.network: "container:<id>"` é bloqueado por padrão.
 - Break-glass override: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
-- `readOnlyRoot: true` blocks package installs.
-- `user` must be root for `apt-get` (omit `user` or set `user: "0:0"`).
-  OpenCraft auto-recreates containers when `setupCommand` (or docker config) changes
-  unless the container was **recently used** (within ~5 minutes). Hot containers
-  log a warning with the exact `opencraft sandbox recreate ...` command.
+- `readOnlyRoot: true` bloqueia instalações de pacote.
+- `user` deve ser root para `apt-get` (omita `user` ou defina `user: "0:0"`).
+  OpenCraft auto-recria containers quando `setupCommand` (ou config docker) muda a menos que o container foi **usado recentemente** (dentro de ~5 minutos). Hot containers registram um aviso com o comando exato `opencraft sandbox recreate ...`.
 
 ```json5
 {
@@ -663,31 +588,31 @@ If you plan to install packages in `setupCommand`, note:
 }
 ```
 
-Hardening knobs live under `agents.defaults.sandbox.docker`:
+Hardening knobs vivem sob `agents.defaults.sandbox.docker`:
 `network`, `user`, `pidsLimit`, `memory`, `memorySwap`, `cpus`, `ulimits`,
 `seccompProfile`, `apparmorProfile`, `dns`, `extraHosts`,
-`dangerouslyAllowContainerNamespaceJoin` (break-glass only).
+`dangerouslyAllowContainerNamespaceJoin` (break-glass apenas).
 
-Multi-agent: override `agents.defaults.sandbox.{docker,browser,prune}.*` per agent via `agents.list[].sandbox.{docker,browser,prune}.*`
-(ignored when `agents.defaults.sandbox.scope` / `agents.list[].sandbox.scope` is `"shared"`).
+Multi-agent: sobrescreva `agents.defaults.sandbox.{docker,browser,prune}.*` por agent via `agents.list[].sandbox.{docker,browser,prune}.*`
+(ignorado quando `agents.defaults.sandbox.scope` / `agents.list[].sandbox.scope` é `"shared"`).
 
-### Build the default sandbox image
+### Construa a imagem de sandbox padrão
 
 ```bash
 scripts/sandbox-setup.sh
 ```
 
-This builds `openclaw-sandbox:bookworm-slim` using `Dockerfile.sandbox`.
+Isto constrói `openclaw-sandbox:bookworm-slim` usando `Dockerfile.sandbox`.
 
-### Sandbox common image (optional)
+### Imagem common de sandbox (opcional)
 
-If you want a sandbox image with common build tooling (Node, Go, Rust, etc.), build the common image:
+Se você quer uma imagem sandbox com ferramentas comuns de build (Node, Go, Rust, etc.), construa a imagem comum:
 
 ```bash
 scripts/sandbox-common-setup.sh
 ```
 
-This builds `openclaw-sandbox-common:bookworm-slim`. To use it:
+Isto constrói `openclaw-sandbox-common:bookworm-slim`. Para usá-la:
 
 ```json5
 {
@@ -699,28 +624,26 @@ This builds `openclaw-sandbox-common:bookworm-slim`. To use it:
 }
 ```
 
-### Sandbox browser image
+### Imagem de browser de sandbox
 
-To run the browser tool inside the sandbox, build the browser image:
+Para executar a ferramenta de browser dentro do sandbox, construa a imagem de browser:
 
 ```bash
 scripts/sandbox-browser-setup.sh
 ```
 
-This builds `openclaw-sandbox-browser:bookworm-slim` using
-`Dockerfile.sandbox-browser`. The container runs Chromium with CDP enabled and
-an optional noVNC observer (headful via Xvfb).
+Isto constrói `openclaw-sandbox-browser:bookworm-slim` usando `Dockerfile.sandbox-browser`. O container executa Chromium com CDP habilitado e um observador noVNC opcional (headful via Xvfb).
 
-Notes:
+Notas:
 
-- Docker and other headless/container browser flows stay on raw CDP. Chrome MCP `existing-session` is for host-local Chrome, not container takeover.
-- Headful (Xvfb) reduces bot blocking vs headless.
-- Headless can still be used by setting `agents.defaults.sandbox.browser.headless=true`.
-- No full desktop environment (GNOME) is needed; Xvfb provides the display.
-- Browser containers default to a dedicated Docker network (`openclaw-sandbox-browser`) instead of global `bridge`.
-- Optional `agents.defaults.sandbox.browser.cdpSourceRange` restricts container-edge CDP ingress by CIDR (for example `172.21.0.1/32`).
-- noVNC observer access is password-protected by default; OpenCraft provides a short-lived observer token URL that serves a local bootstrap page and keeps the password in URL fragment (instead of URL query).
-- Browser container startup defaults are conservative for shared/container workloads, including:
+- Docker e outros fluxos de browser headless/container ficam em CDP bruto. Chrome MCP `existing-session` é para Chrome local de host, não container takeover.
+- Headful (Xvfb) reduz bot blocking vs headless.
+- Headless ainda pode ser usado definindo `agents.defaults.sandbox.browser.headless=true`.
+- Nenhum ambiente desktop completo (GNOME) é necessário; Xvfb fornece o display.
+- Browser containers padrão para um Docker network dedicado (`openclaw-sandbox-browser`) em vez de global `bridge`.
+- Opcional `agents.defaults.sandbox.browser.cdpSourceRange` restringe ingresso CDP de edge de container por CIDR (por exemplo `172.21.0.1/32`).
+- Acesso de observador noVNC é password-protected por padrão; OpenCraft fornece uma URL de observer token curta que serve uma página bootstrap local e mantém a senha em URL fragment (em vez de URL query).
+- Browser container startup padrões são conservadores para workloads compartilhados/container, incluindo:
   - `--remote-debugging-address=127.0.0.1`
   - `--remote-debugging-port=<derived from OPENCRAFT_BROWSER_CDP_PORT>`
   - `--user-data-dir=${HOME}/.chrome`
@@ -738,20 +661,12 @@ Notes:
   - `--renderer-process-limit=2`
   - `--no-zygote`
   - `--disable-extensions`
-  - If `agents.defaults.sandbox.browser.noSandbox` is set, `--no-sandbox` and
-    `--disable-setuid-sandbox` are also appended.
-  - The three graphics hardening flags above are optional. If your workload needs
-    WebGL/3D, set `OPENCRAFT_BROWSER_DISABLE_GRAPHICS_FLAGS=0` to run without
-    `--disable-3d-apis`, `--disable-software-rasterizer`, and `--disable-gpu`.
-  - Extension behavior is controlled by `--disable-extensions` and can be disabled
-    (enables extensions) via `OPENCRAFT_BROWSER_DISABLE_EXTENSIONS=0` for
-    extension-dependent pages or extensions-heavy workflows.
-  - `--renderer-process-limit=2` is also configurable with
-    `OPENCRAFT_BROWSER_RENDERER_PROCESS_LIMIT`; set `0` to let Chromium choose its
-    default process limit when browser concurrency needs tuning.
+  - Se `agents.defaults.sandbox.browser.noSandbox` está definido, `--no-sandbox` e `--disable-setuid-sandbox` também são anexados.
+  - Os três flags de hardening de gráficos acima são opcionais. Se sua workload precisa WebGL/3D, defina `OPENCRAFT_BROWSER_DISABLE_GRAPHICS_FLAGS=0` para rodar sem `--disable-3d-apis`, `--disable-software-rasterizer`, e `--disable-gpu`.
+  - Comportamento de extensão é controlado por `--disable-extensions` e pode ser desabilitado (habilita extensões) via `OPENCRAFT_BROWSER_DISABLE_EXTENSIONS=0` para páginas extension-dependent ou workloads extension-heavy.
+  - `--renderer-process-limit=2` também é configurável com `OPENCRAFT_BROWSER_RENDERER_PROCESS_LIMIT`; defina `0` para deixar Chromium escolher seu limite de processo padrão quando concorrência de browser precisa tuning.
 
-Defaults are applied by default in the bundled image. If you need different
-Chromium flags, use a custom browser image and provide your own entrypoint.
+Padrões são aplicados por padrão na imagem empacotada. Se você precisa de diferentes flags Chromium, use uma imagem de browser customizada e forneça seu próprio entrypoint.
 
 Use config:
 
@@ -767,7 +682,7 @@ Use config:
 }
 ```
 
-Custom browser image:
+Imagem de browser customizada:
 
 ```json5
 {
@@ -779,18 +694,17 @@ Custom browser image:
 }
 ```
 
-When enabled, the agent receives:
+Quando habilitado, o agent recebe:
 
-- a sandbox browser control URL (for the `browser` tool)
-- a noVNC URL (if enabled and headless=false)
+- uma URL de controle de browser de sandbox (para a ferramenta `browser`)
+- uma URL noVNC (se habilitado e headless=false)
 
-Remember: if you use an allowlist for tools, add `browser` (and remove it from
-deny) or the tool remains blocked.
-Prune rules (`agents.defaults.sandbox.prune`) apply to browser containers too.
+Lembre: se você usa uma allowlist para ferramentas, adicione `browser` (e remova de deny) ou a ferramenta permanece bloqueada.
+Regras de prune (`agents.defaults.sandbox.prune`) se aplicam a browser containers também.
 
-### Custom sandbox image
+### Imagem de sandbox customizada
 
-Build your own image and point config to it:
+Construa sua própria imagem e aponte config para ela:
 
 ```bash
 docker build -t my-opencraft-sbx -f Dockerfile.sandbox .
@@ -806,39 +720,35 @@ docker build -t my-opencraft-sbx -f Dockerfile.sandbox .
 }
 ```
 
-### Tool policy (allow/deny)
+### Política de ferramenta (allow/deny)
 
-- `deny` wins over `allow`.
-- If `allow` is empty: all tools (except deny) are available.
-- If `allow` is non-empty: only tools in `allow` are available (minus deny).
+- `deny` vence sobre `allow`.
+- Se `allow` está vazio: todas as ferramentas (exceto deny) estão disponíveis.
+- Se `allow` é não-vazio: apenas ferramentas em `allow` estão disponíveis (menos deny).
 
-### Pruning strategy
+### Estratégia de pruning
 
-Two knobs:
+Dois knobs:
 
-- `prune.idleHours`: remove containers not used in X hours (0 = disable)
-- `prune.maxAgeDays`: remove containers older than X days (0 = disable)
+- `prune.idleHours`: remove containers não usados em X horas (0 = desabilita)
+- `prune.maxAgeDays`: remove containers mais antigos que X dias (0 = desabilita)
 
-Example:
+Exemplo:
 
-- Keep busy sessions but cap lifetime:
+- Mantenha sessões ocupadas mas limpe lifetime:
   `idleHours: 24`, `maxAgeDays: 7`
-- Never prune:
+- Nunca prune:
   `idleHours: 0`, `maxAgeDays: 0`
 
-### Security notes
+### Notas de segurança
 
-- Hard wall only applies to **tools** (exec/read/write/edit/apply_patch).
-- Host-only tools like browser/camera/canvas are blocked by default.
-- Allowing `browser` in sandbox **breaks isolation** (browser runs on host).
+- Parede dura apenas se aplica a **ferramentas** (exec/read/write/edit/apply_patch).
+- Ferramentas apenas-host como browser/camera/canvas são bloqueadas por padrão.
+- Permitir `browser` em sandbox **quebra isolamento** (browser roda em host).
 
 ## Troubleshooting
 
-- Image missing: build with [`scripts/sandbox-setup.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/sandbox-setup.sh) or set `agents.defaults.sandbox.docker.image`.
-- Container not running: it will auto-create per session on demand.
-- Permission errors in sandbox: set `docker.user` to a UID:GID that matches your
-  mounted workspace ownership (or chown the workspace folder).
-- Custom tools not found: OpenCraft runs commands with `sh -lc` (login shell), which
-  sources `/etc/profile` and may reset PATH. Set `docker.env.PATH` to prepend your
-  custom tool paths (e.g., `/custom/bin:/usr/local/share/npm-global/bin`), or add
-  a script under `/etc/profile.d/` in your Dockerfile.
+- Imagem faltando: construa com [`scripts/sandbox-setup.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/sandbox-setup.sh) ou defina `agents.defaults.sandbox.docker.image`.
+- Container não rodando: vai auto-criar por sessão sob demanda.
+- Erros de permissão em sandbox: defina `docker.user` para um UID:GID que corresponde a propriedade de workspace montado (ou chown a pasta workspace).
+- Ferramentas customizadas não encontradas: OpenCraft executa comandos com `sh -lc` (login shell), que sourcea `/etc/profile` e pode resetar PATH. Defina `docker.env.PATH` para prepender seus caminhos de ferramenta customizada (ex. `/custom/bin:/usr/local/share/npm-global/bin`), ou adicione um script sob `/etc/profile.d/` em seu Dockerfile.

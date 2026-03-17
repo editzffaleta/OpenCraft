@@ -1,45 +1,45 @@
 ---
-summary: "Runbook for the Gateway service, lifecycle, and operations"
+summary: "Runbook para o serviço Gateway, lifecycle e operações"
 read_when:
-  - Running or debugging the gateway process
+  - Executando ou debugando o processo gateway
 title: "Gateway Runbook"
 ---
 
 # Gateway runbook
 
-Use this page for day-1 startup and day-2 operations of the Gateway service.
+Use esta página para startup de dia-1 e operações de dia-2 do serviço Gateway.
 
 <CardGroup cols={2}>
   <Card title="Deep troubleshooting" icon="siren" href="/gateway/troubleshooting">
-    Symptom-first diagnostics with exact command ladders and log signatures.
+    Diagnósticos com foco em sintomas com command ladders exatos e assinaturas de log.
   </Card>
   <Card title="Configuration" icon="sliders" href="/gateway/configuration">
-    Task-oriented setup guide + full configuration reference.
+    Guia de configuração orientado a tarefas + referência de configuração completa.
   </Card>
   <Card title="Secrets management" icon="key-round" href="/gateway/secrets">
-    SecretRef contract, runtime snapshot behavior, and migrate/reload operations.
+    Contrato SecretRef, comportamento de snapshot em runtime e operações de migrate/reload.
   </Card>
   <Card title="Secrets plan contract" icon="shield-check" href="/gateway/secrets-plan-contract">
-    Exact `secrets apply` target/path rules and ref-only auth-profile behavior.
+    Regras exatas de target/path para `secrets apply` e comportamento ref-only de auth-profile.
   </Card>
 </CardGroup>
 
-## 5-minute local startup
+## Startup local de 5 minutos
 
 <Steps>
-  <Step title="Start the Gateway">
+  <Step title="Inicie o Gateway">
 
 ```bash
 opencraft gateway --port 18789
-# debug/trace mirrored to stdio
+# debug/trace espelhado para stdio
 opencraft gateway --port 18789 --verbose
-# force-kill listener on selected port, then start
+# force-kill listener na porta selecionada, depois inicie
 opencraft gateway --force
 ```
 
   </Step>
 
-  <Step title="Verify service health">
+  <Step title="Verifique a saúde do serviço">
 
 ```bash
 opencraft gateway status
@@ -47,11 +47,11 @@ opencraft status
 opencraft logs --follow
 ```
 
-Healthy baseline: `Runtime: running` and `RPC probe: ok`.
+Linha de base saudável: `Runtime: running` e `RPC probe: ok`.
 
   </Step>
 
-  <Step title="Validate channel readiness">
+  <Step title="Valide a prontidão do canal">
 
 ```bash
 opencraft channels status --probe
@@ -61,37 +61,37 @@ opencraft channels status --probe
 </Steps>
 
 <Note>
-Gateway config reload watches the active config file path (resolved from profile/state defaults, or `OPENCRAFT_CONFIG_PATH` when set).
-Default mode is `gateway.reload.mode="hybrid"`.
+Gateway config reload observa o caminho do arquivo de config ativo (resolvido a partir de profile/state defaults, ou `OPENCRAFT_CONFIG_PATH` quando definido).
+Modo padrão é `gateway.reload.mode="hybrid"`.
 </Note>
 
-## Runtime model
+## Modelo de runtime
 
-- One always-on process for routing, control plane, and channel connections.
-- Single multiplexed port for:
-  - WebSocket control/RPC
-  - HTTP APIs (OpenAI-compatible, Responses, tools invoke)
-  - Control UI and hooks
-- Default bind mode: `loopback`.
-- Auth is required by default (`gateway.auth.token` / `gateway.auth.password`, or `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
+- Um processo sempre ativo para roteamento, control plane e conexões de canais.
+- Porta multiplexada única para:
+  - Controle WebSocket/RPC
+  - APIs HTTP (compatíveis com OpenAI, Responses, tools invoke)
+  - Control UI e hooks
+- Modo de bind padrão: `loopback`.
+- Autenticação é necessária por padrão (`gateway.auth.token` / `gateway.auth.password`, ou `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`).
 
-### Port and bind precedence
+### Precedência de port e bind
 
-| Setting      | Resolution order                                               |
+| Setting      | Ordem de resolução                                               |
 | ------------ | -------------------------------------------------------------- |
 | Gateway port | `--port` → `OPENCRAFT_GATEWAY_PORT` → `gateway.port` → `18789` |
 | Bind mode    | CLI/override → `gateway.bind` → `loopback`                     |
 
-### Hot reload modes
+### Modos de hot reload
 
-| `gateway.reload.mode` | Behavior                                   |
+| `gateway.reload.mode` | Comportamento                                   |
 | --------------------- | ------------------------------------------ |
-| `off`                 | No config reload                           |
-| `hot`                 | Apply only hot-safe changes                |
-| `restart`             | Restart on reload-required changes         |
-| `hybrid` (default)    | Hot-apply when safe, restart when required |
+| `off`                 | Sem config reload                           |
+| `hot`                 | Aplicar apenas mudanças hot-safe                |
+| `restart`             | Reiniciar em mudanças que requerem reload         |
+| `hybrid` (padrão)    | Hot-apply quando seguro, reiniciar quando necessário |
 
-## Operator command set
+## Conjunto de comandos do operador
 
 ```bash
 opencraft gateway status
@@ -105,26 +105,26 @@ opencraft logs --follow
 opencraft doctor
 ```
 
-## Remote access
+## Acesso remoto
 
-Preferred: Tailscale/VPN.
+Preferido: Tailscale/VPN.
 Fallback: SSH tunnel.
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 user@host
 ```
 
-Then connect clients to `ws://127.0.0.1:18789` locally.
+Então conecte clientes a `ws://127.0.0.1:18789` localmente.
 
 <Warning>
-If gateway auth is configured, clients still must send auth (`token`/`password`) even over SSH tunnels.
+Se gateway auth está configurado, clientes ainda devem enviar auth (`token`/`password`) mesmo sobre SSH tunnels.
 </Warning>
 
-See: [Remote Gateway](/gateway/remote), [Authentication](/gateway/authentication), [Tailscale](/gateway/tailscale).
+Veja: [Remote Gateway](/gateway/remote), [Authentication](/gateway/authentication), [Tailscale](/gateway/tailscale).
 
-## Supervision and service lifecycle
+## Supervisão e lifecycle do serviço
 
-Use supervised runs for production-like reliability.
+Use execuções supervisionadas para confiabilidade parecida com produção.
 
 <Tabs>
   <Tab title="macOS (launchd)">
@@ -136,7 +136,7 @@ opencraft gateway restart
 opencraft gateway stop
 ```
 
-LaunchAgent labels are `ai.opencraft.gateway` (default) or `ai.opencraft.<profile>` (named profile). `opencraft doctor` audits and repairs service config drift.
+LaunchAgent labels são `ai.opencraft.gateway` (padrão) ou `ai.opencraft.<profile>` (named profile). `opencraft doctor` audita e repara config drift do serviço.
 
   </Tab>
 
@@ -148,7 +148,7 @@ systemctl --user enable --now opencraft-gateway[-<profile>].service
 opencraft gateway status
 ```
 
-For persistence after logout, enable lingering:
+Para persistência após logout, habilite lingering:
 
 ```bash
 sudo loginctl enable-linger <user>
@@ -158,7 +158,7 @@ sudo loginctl enable-linger <user>
 
   <Tab title="Linux (system service)">
 
-Use a system unit for multi-user/always-on hosts.
+Use uma unit do sistema para hosts multi-user/sempre-on.
 
 ```bash
 sudo systemctl daemon-reload
@@ -168,28 +168,28 @@ sudo systemctl enable --now opencraft-gateway[-<profile>].service
   </Tab>
 </Tabs>
 
-## Multiple gateways on one host
+## Múltiplos gateways em um host
 
-Most setups should run **one** Gateway.
-Use multiple only for strict isolation/redundancy (for example a rescue profile).
+A maioria das configurações deve executar **um** Gateway.
+Use múltiplos apenas para isolamento/redundância estrita (por exemplo um perfil de resgate).
 
-Checklist per instance:
+Checklist por instância:
 
-- Unique `gateway.port`
-- Unique `OPENCRAFT_CONFIG_PATH`
-- Unique `OPENCRAFT_STATE_DIR`
-- Unique `agents.defaults.workspace`
+- `gateway.port` único
+- `OPENCRAFT_CONFIG_PATH` único
+- `OPENCRAFT_STATE_DIR` único
+- `agents.defaults.workspace` único
 
-Example:
+Exemplo:
 
 ```bash
 OPENCRAFT_CONFIG_PATH=~/.opencraft/a.json OPENCRAFT_STATE_DIR=~/.opencraft-a opencraft gateway --port 19001
 OPENCRAFT_CONFIG_PATH=~/.opencraft/b.json OPENCRAFT_STATE_DIR=~/.opencraft-b opencraft gateway --port 19002
 ```
 
-See: [Multiple gateways](/gateway/multiple-gateways).
+Veja: [Multiple gateways](/gateway/multiple-gateways).
 
-### Dev profile quick path
+### Caminho rápido de perfil de dev
 
 ```bash
 opencraft --dev setup
@@ -197,28 +197,28 @@ opencraft --dev gateway --allow-unconfigured
 opencraft --dev status
 ```
 
-Defaults include isolated state/config and base gateway port `19001`.
+Os padrões incluem estado/config isolado e gateway port base `19001`.
 
-## Protocol quick reference (operator view)
+## Referência rápida de protocolo (visualização do operador)
 
-- First client frame must be `connect`.
-- Gateway returns `hello-ok` snapshot (`presence`, `health`, `stateVersion`, `uptimeMs`, limits/policy).
+- Primeiro frame do cliente deve ser `connect`.
+- Gateway retorna snapshot `hello-ok` (`presence`, `health`, `stateVersion`, `uptimeMs`, limits/policy).
 - Requests: `req(method, params)` → `res(ok/payload|error)`.
-- Common events: `connect.challenge`, `agent`, `chat`, `presence`, `tick`, `health`, `heartbeat`, `shutdown`.
+- Eventos comuns: `connect.challenge`, `agent`, `chat`, `presence`, `tick`, `health`, `heartbeat`, `shutdown`.
 
-Agent runs are two-stage:
+Execuções de agentes são em dois estágios:
 
-1. Immediate accepted ack (`status:"accepted"`)
-2. Final completion response (`status:"ok"|"error"`), with streamed `agent` events in between.
+1. Ack aceito imediatamente (`status:"accepted"`)
+2. Resposta de conclusão final (`status:"ok"|"error"`), com eventos `agent` em stream no meio.
 
-See full protocol docs: [Gateway Protocol](/gateway/protocol).
+Veja documentação de protocolo completo: [Gateway Protocol](/gateway/protocol).
 
-## Operational checks
+## Verificações operacionais
 
 ### Liveness
 
-- Open WS and send `connect`.
-- Expect `hello-ok` response with snapshot.
+- Abra WS e envie `connect`.
+- Espere resposta `hello-ok` com snapshot.
 
 ### Readiness
 
@@ -230,28 +230,28 @@ opencraft health
 
 ### Gap recovery
 
-Events are not replayed. On sequence gaps, refresh state (`health`, `system-presence`) before continuing.
+Eventos não são replicados. Em gaps de sequência, atualize estado (`health`, `system-presence`) antes de continuar.
 
-## Common failure signatures
+## Assinaturas de falha comuns
 
-| Signature                                                      | Likely issue                             |
+| Assinatura                                                      | Problema provável                             |
 | -------------------------------------------------------------- | ---------------------------------------- |
-| `refusing to bind gateway ... without auth`                    | Non-loopback bind without token/password |
-| `another gateway instance is already listening` / `EADDRINUSE` | Port conflict                            |
-| `Gateway start blocked: set gateway.mode=local`                | Config set to remote mode                |
-| `unauthorized` during connect                                  | Auth mismatch between client and gateway |
+| `refusing to bind gateway ... without auth`                    | Bind não-loopback sem token/password |
+| `another gateway instance is already listening` / `EADDRINUSE` | Conflito de port                            |
+| `Gateway start blocked: set gateway.mode=local`                | Config definido para modo remoto                |
+| `unauthorized` durante connect                                  | Desajuste de auth entre cliente e gateway |
 
-For full diagnosis ladders, use [Gateway Troubleshooting](/gateway/troubleshooting).
+Para diagnosis ladders completos, use [Gateway Troubleshooting](/gateway/troubleshooting).
 
-## Safety guarantees
+## Garantias de segurança
 
-- Gateway protocol clients fail fast when Gateway is unavailable (no implicit direct-channel fallback).
-- Invalid/non-connect first frames are rejected and closed.
-- Graceful shutdown emits `shutdown` event before socket close.
+- Clientes do protocolo Gateway falham rápido quando Gateway não está disponível (sem fallback de canal direto implícito).
+- Frames não-connect inválidos/iniciais são rejeitados e fechados.
+- Shutdown gracioso emite evento `shutdown` antes de socket close.
 
 ---
 
-Related:
+Relacionado:
 
 - [Troubleshooting](/gateway/troubleshooting)
 - [Background Process](/gateway/background-process)

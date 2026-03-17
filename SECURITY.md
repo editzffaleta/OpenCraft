@@ -1,10 +1,10 @@
-# Security Policy
+# Política de Segurança
 
-If you believe you've found a security issue in OpenCraft, please report it privately.
+Se você acredita que encontrou um problema de segurança no OpenCraft, por favor reporte-o em privado.
 
-## Reporting
+## Reportagem
 
-Report vulnerabilities directly to the repository where the issue lives:
+Reporte vulnerabilidades diretamente no repositório onde o problema existe:
 
 - **Core CLI and gateway** — [editzffaleta/OpenCraft](https://github.com/editzffaleta/OpenCraft)
 - **macOS desktop app** — [editzffaleta/OpenCraft](https://github.com/editzffaleta/OpenCraft) (apps/macos)
@@ -13,265 +13,265 @@ Report vulnerabilities directly to the repository where the issue lives:
 - **ClawHub** — [opencraft/clawhub](https://github.com/opencraft/clawhub)
 - **Trust and threat model** — [opencraft/trust](https://github.com/opencraft/trust)
 
-For issues that don't fit a specific repo, or if you're unsure, email **[security@opencraft.ai](mailto:security@opencraft.ai)** and we'll route it.
+Para problemas que não se encaixam em um repositório específico, ou se tiver dúvidas, envie um email para **[security@opencraft.ai](mailto:security@opencraft.ai)** e nós o redirecionaremos.
 
-For full reporting instructions see our [Trust page](https://trust.opencraft.ai).
+Para instruções completas de reportagem, consulte nossa [página de Confiança](https://trust.opencraft.ai).
 
-### Required in Reports
+### Obrigatório nos Relatórios
 
-1. **Title**
-2. **Severity Assessment**
-3. **Impact**
-4. **Affected Component**
-5. **Technical Reproduction**
-6. **Demonstrated Impact**
-7. **Environment**
-8. **Remediation Advice**
+1. **Título**
+2. **Avaliação de Severidade**
+3. **Impacto**
+4. **Componente Afetado**
+5. **Reprodução Técnica**
+6. **Impacto Demonstrado**
+7. **Ambiente**
+8. **Conselho de Remediação**
 
-Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
+Relatórios sem etapas de reprodução, impacto demonstrado e conselho de remediação serão depriorizados. Dado o volume de descobertas geradas por scanner de IA, devemos garantir que estamos recebendo relatórios vetados de pesquisadores que entendem os problemas.
 
-### Report Acceptance Gate (Triage Fast Path)
+### Gate de Aceitação de Relatório (Caminho Rápido de Triagem)
 
-For fastest triage, include all of the following:
+Para triagem mais rápida, inclua todos os seguintes itens:
 
-- Exact vulnerable path (`file`, function, and line range) on a current revision.
-- Tested version details (OpenCraft version and/or commit SHA).
-- Reproducible PoC against latest `main` or latest released version.
-- If the claim targets a released version, evidence from the shipped tag and published artifact/package for that exact version (not only `main`).
-- Demonstrated impact tied to OpenCraft's documented trust boundaries.
-- For exposed-secret reports: proof the credential is OpenCraft-owned (or grants access to OpenCraft-operated infrastructure/services).
-- Explicit statement that the report does not rely on adversarial operators sharing one gateway host/config.
-- Scope check explaining why the report is **not** covered by the Out of Scope section below.
-- For command-risk/parity reports (for example obfuscation detection differences), a concrete boundary-bypass path is required (auth/approval/allowlist/sandbox). Parity-only findings are treated as hardening, not vulnerabilities.
+- Caminho vulnerável exato (`file`, função e intervalo de linhas) em uma revisão atual.
+- Detalhes da versão testada (versão do OpenCraft e/ou SHA do commit).
+- PoC reproduzível contra a versão mais recente `main` ou versão lançada mais recente.
+- Se a alegação visa uma versão lançada, evidência da tag enviada e artefato/pacote publicado para essa versão exata (não apenas `main`).
+- Impacto demonstrado vinculado aos limites de confiança documentados do OpenCraft.
+- Para relatórios de credencial exposta: prova de que a credencial é propriedade do OpenCraft (ou concede acesso à infraestrutura/serviços operados pelo OpenCraft).
+- Declaração explícita de que o relatório não depende de operadores adversariais compartilhando um host/config do gateway.
+- Verificação de escopo explicando por que o relatório **não** está coberto pela seção Fora do Escopo abaixo.
+- Para relatórios de risco de comando/paridade (por exemplo, diferenças de detecção de ofuscação), um caminho concreto de bypass de limite é necessário (auth/approval/allowlist/sandbox). Descobertas de paridade são tratadas como endurecimento, não vulnerabilidades.
 
-Reports that miss these requirements may be closed as `invalid` or `no-action`.
+Relatórios que perdem esses requisitos podem ser fechados como `invalid` ou `no-action`.
 
-### Common False-Positive Patterns
+### Padrões Comuns de Falsos Positivos
 
-These are frequently reported but are typically closed with no code change:
+Estes são frequentemente reportados, mas geralmente são fechados sem alteração de código:
 
-- Prompt-injection-only chains without a boundary bypass (prompt injection is out of scope).
-- Operator-intended local features (for example TUI local `!` shell) presented as remote injection.
-- Reports that treat explicit operator-control surfaces (for example `canvas.eval`, browser evaluate/script execution, or direct `node.invoke` execution primitives) as vulnerabilities without demonstrating an auth/policy/sandbox boundary bypass. These capabilities are intentional when enabled and are trusted-operator features, not standalone security bugs.
-- Authorized user-triggered local actions presented as privilege escalation. Example: an allowlisted/owner sender running `/export-session /absolute/path.html` to write on the host. In this trust model, authorized user actions are trusted host actions unless you demonstrate an auth/sandbox/boundary bypass.
-- Reports that only show a malicious plugin executing privileged actions after a trusted operator installs/enables it.
-- Reports that assume per-user multi-tenant authorization on a shared gateway host/config.
-- Reports that treat the Gateway HTTP compatibility endpoints (`POST /v1/chat/completions`, `POST /v1/responses`) as if they implemented scoped operator auth (`operator.write` vs `operator.admin`). These endpoints authenticate the shared Gateway bearer secret/password and are documented full operator-access surfaces, not per-user/per-scope boundaries.
-- Reports that only show differences in heuristic detection/parity (for example obfuscation-pattern detection on one exec path but not another, such as `node.invoke -> system.run` parity gaps) without demonstrating bypass of auth, approvals, allowlist enforcement, sandboxing, or other documented trust boundaries.
-- ReDoS/DoS claims that require trusted operator configuration input (for example catastrophic regex in `sessionFilter` or `logging.redactPatterns`) without a trust-boundary bypass.
-- Archive/install extraction claims that require pre-existing local filesystem priming in trusted state (for example planting symlink/hardlink aliases under destination directories such as skills/tools paths) without showing an untrusted path that can create/control that primitive.
-- Reports that depend on replacing or rewriting an already-approved executable path on a trusted host (same-path inode/content swap) without showing an untrusted path to perform that write.
-- Reports that depend on pre-existing symlinked skill/workspace filesystem state (for example symlink chains involving `skills/*/SKILL.md`) without showing an untrusted path that can create/control that state.
-- Missing HSTS findings on default local/loopback deployments.
-- Slack webhook signature findings when HTTP mode already uses signing-secret verification.
-- Discord inbound webhook signature findings for paths not used by this repo's Discord integration.
-- Claims that Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl` is attacker-controlled without demonstrating one of: auth boundary bypass, a real authenticated Teams/Bot Framework event carrying attacker-chosen URL, or compromise of the Microsoft/Bot trust path.
-- Scanner-only claims against stale/nonexistent paths, or claims without a working repro.
-- Reports that restate an already-fixed issue against later released versions without showing the vulnerable path still exists in the shipped tag or published artifact for that later version.
+- Cadeias de injeção de prompt sem bypass de limite (injeção de prompt está fora do escopo).
+- Recursos locais pretendidos pelo operador (por exemplo, shell local TUI `!`) apresentados como injeção remota.
+- Relatórios que tratam superfícies de controle de operador explícitas (por exemplo, `canvas.eval`, execução de script/avaliação de navegador ou primitivos de execução `node.invoke` diretos) como vulnerabilidades sem demonstrar um bypass de limite de auth/política/sandbox. Essas capacidades são intencionais quando habilitadas e são recursos de operador confiável, não bugs de segurança independentes.
+- Ações locais desencadeadas por usuário autorizado apresentadas como escalação de privilégio. Exemplo: um remetente autorizado/proprietário executando `/export-session /absolute/path.html` para escrever no host. Neste modelo de confiança, ações autorizadas de usuário são ações de host confiáveis, a menos que você demonstre um bypass de auth/sandbox/limite.
+- Relatórios que apenas mostram um plugin malicioso executando ações privilegiadas após um operador confiável instalar/habilitá-lo.
+- Relatórios que assumem autorização multi-tenant por usuário em um host/config do gateway compartilhado.
+- Relatórios que tratam os endpoints de compatibilidade HTTP do Gateway (`POST /v1/chat/completions`, `POST /v1/responses`) como se tivessem implementado auth de operador com escopo (`operator.write` vs `operator.admin`). Esses endpoints autenticam o secret/senha do portador do Gateway compartilhado e são superfícies de acesso de operador completo documentadas, não limites por usuário/escopo.
+- Relatórios que apenas mostram diferenças em detecção heurística/paridade (por exemplo, detecção de padrão de ofuscação em um caminho exec, mas não em outro, como lacunas de paridade `node.invoke -> system.run`) sem demonstrar bypass de auth, aprovações, imposição de allowlist, sandboxing ou outros limites de confiança documentados.
+- Alegações de ReDoS/DoS que requerem entrada de configuração de operador confiável (por exemplo, regex catastrófica em `sessionFilter` ou `logging.redactPatterns`) sem um bypass de limite de confiança.
+- Alegações de extração de arquivo/instalação que requerem preparação de sistema de arquivos local preexistente em estado confiável (por exemplo, plantando aliases symlink/hardlink sob diretórios de destino como caminhos de skills/tools) sem mostrar um caminho não confiável que possa criar/controlar essa primitiva.
+- Relatórios que dependem de substituir ou reescrever um caminho executável já aprovado em um host confiável (swap de inode/conteúdo do mesmo caminho) sem mostrar um caminho não confiável para executar essa escrita.
+- Relatórios que dependem de estado de sistema de arquivos de skill/workspace symlinked pré-existente (por exemplo, cadeias symlink envolvendo `skills/*/SKILL.md`) sem mostrar um caminho não confiável que possa criar/controlar esse estado.
+- Achados HSTS faltando em deployments locais/loopback padrão.
+- Achados de assinatura webhook Slack quando o modo HTTP já usa verificação de secret de assinatura.
+- Achados de assinatura webhook Discord inbound para caminhos não usados pela integração Discord deste repositório.
+- Alegações de que Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl` é controlado pelo atacante sem demonstrar um de: bypass de limite de auth, um evento real autenticado do Teams/Bot Framework carregando URL escolhida pelo atacante, ou compromisso do caminho de confiança Microsoft/Bot.
+- Alegações de scanner contra caminhos obsoletos/inexistentes, ou alegações sem um repro funcional.
+- Relatórios que reafirmam um problema já corrigido contra versões lançadas posteriormente sem mostrar que o caminho vulnerável ainda existe na tag enviada ou artefato publicado para essa versão posterior.
 
-### Duplicate Report Handling
+### Tratamento de Relatórios Duplicados
 
-- Search existing advisories before filing.
-- Include likely duplicate GHSA IDs in your report when applicable.
-- Maintainers may close lower-quality/later duplicates in favor of the earliest high-quality canonical report.
+- Pesquise os advisories existentes antes de apresentar.
+- Inclua IDs GHSA provavelmente duplicados em seu relatório quando aplicável.
+- Mantenedores podem fechar duplicatas de menor qualidade/posteriores em favor do relatório canônico de maior qualidade mais antigo.
 
-## Security & Trust
+## Segurança e Confiança
 
-**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) is Security & Trust at OpenCraft. Jamieson is the founder of [Dvuln](https://dvuln.com) and brings extensive experience in offensive security, penetration testing, and security program development.
+**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) é Security & Trust no OpenCraft. Jamieson é fundador da [Dvuln](https://dvuln.com) e traz ampla experiência em segurança ofensiva, teste de penetração e desenvolvimento de programa de segurança.
 
-## Bug Bounties
+## Recompensas por Bugs
 
-OpenCraft is a labor of love. There is no bug bounty program and no budget for paid reports. Please still disclose responsibly so we can fix issues quickly.
-The best way to help the project right now is by sending PRs.
+OpenCraft é um trabalho de amor. Não há programa de recompensa por bugs e nenhum orçamento para relatórios pagos. Por favor, ainda assim divulgue responsavelmente para que possamos corrigir problemas rapidamente.
+A melhor maneira de ajudar o projeto agora é enviando PRs.
 
-## Maintainers: GHSA Updates via CLI
+## Mantenedores: Atualizações GHSA via CLI
 
-When patching a GHSA via `gh api`, include `X-GitHub-Api-Version: 2022-11-28` (or newer). Without it, some fields (notably CVSS) may not persist even if the request returns 200.
+Ao corrigir um GHSA via `gh api`, inclua `X-GitHub-Api-Version: 2022-11-28` (ou mais recente). Sem isso, alguns campos (notavelmente CVSS) podem não persistir mesmo se a solicitação retornar 200.
 
-## Operator Trust Model (Important)
+## Modelo de Confiança de Operador (Importante)
 
-OpenCraft does **not** model one gateway as a multi-tenant, adversarial user boundary.
+OpenCraft **não** modela um gateway como um limite de usuário adversarial multi-tenant.
 
-- Authenticated Gateway callers are treated as trusted operators for that gateway instance.
-- The HTTP compatibility endpoints (`POST /v1/chat/completions`, `POST /v1/responses`) are in that same trusted-operator bucket. Passing Gateway bearer auth there is equivalent to operator access for that gateway; they do not implement a narrower `operator.write` vs `operator.admin` trust split.
-- Session identifiers (`sessionKey`, session IDs, labels) are routing controls, not per-user authorization boundaries.
-- If one operator can view data from another operator on the same gateway, that is expected in this trust model.
-- OpenCraft can technically run multiple gateway instances on one machine, but recommended operations are clean separation by trust boundary.
-- Recommended mode: one user per machine/host (or VPS), one gateway for that user, and one or more agents inside that gateway.
-- If multiple users need OpenCraft, use one VPS (or host/OS user boundary) per user.
-- For advanced setups, multiple gateways on one machine are possible, but only with strict isolation and are not the recommended default.
-- Exec behavior is host-first by default: `agents.defaults.sandbox.mode` defaults to `off`.
-- `tools.exec.host` defaults to `sandbox` as a routing preference, but if sandbox runtime is not active for the session, exec runs on the gateway host.
-- Implicit exec calls (no explicit host in the tool call) follow the same behavior.
-- This is expected in OpenCraft's one-user trusted-operator model. If you need isolation, enable sandbox mode (`non-main`/`all`) and keep strict tool policy.
+- Chamadores de Gateway autenticados são tratados como operadores confiáveis para aquela instância de gateway.
+- Os endpoints de compatibilidade HTTP (`POST /v1/chat/completions`, `POST /v1/responses`) estão no mesmo bucket de operador confiável. Passar auth de portador do Gateway lá é equivalente a acesso de operador para aquele gateway; eles não implementam uma divisão de confiança `operator.write` vs `operator.admin` mais estreita.
+- Identificadores de sessão (`sessionKey`, IDs de sessão, labels) são controles de roteamento, não limites de autorização por usuário.
+- Se um operador pode visualizar dados de outro operador no mesmo gateway, isso é esperado neste modelo de confiança.
+- OpenCraft pode tecnicamente executar múltiplas instâncias do gateway em uma máquina, mas as operações recomendadas são separação clara por limite de confiança.
+- Modo recomendado: um usuário por máquina/host (ou VPS), um gateway para esse usuário e um ou mais agents dentro daquele gateway.
+- Se múltiplos usuários precisam do OpenCraft, use um VPS (ou limite de usuário/host/SO) por usuário.
+- Para configurações avançadas, múltiplos gateways em uma máquina são possíveis, mas apenas com isolamento estrito e não são o padrão recomendado.
+- O comportamento Exec é host-first por padrão: `agents.defaults.sandbox.mode` assume como padrão `off`.
+- `tools.exec.host` assume como padrão `sandbox` como uma preferência de roteamento, mas se o runtime sandbox não estiver ativo para a sessão, exec é executado no host do gateway.
+- Chamadas exec implícitas (sem host explícito na chamada de ferramenta) seguem o mesmo comportamento.
+- Isso é esperado no modelo de operador confiável de um usuário do OpenCraft. Se você precisa de isolamento, habilite o modo sandbox (`non-main`/`all`) e mantenha uma política de ferramentas rigorosa.
 
-## Trusted Plugin Concept (Core)
+## Conceito de Plugin Confiável (Core)
 
-Plugins/extensions are part of OpenCraft's trusted computing base for a gateway.
+Plugins/extensões fazem parte da base de computação confiável do OpenCraft para um gateway.
 
-- Installing or enabling a plugin grants it the same trust level as local code running on that gateway host.
-- Plugin behavior such as reading env/files or running host commands is expected inside this trust boundary.
-- Security reports must show a boundary bypass (for example unauthenticated plugin load, allowlist/policy bypass, or sandbox/path-safety bypass), not only malicious behavior from a trusted-installed plugin.
+- Instalar ou habilitar um plugin concede a ele o mesmo nível de confiança que código local em execução naquele host do gateway.
+- Comportamento de plugin como ler env/arquivos ou executar comandos do host é esperado dentro deste limite de confiança.
+- Relatórios de segurança devem mostrar um bypass de limite (por exemplo, carregamento de plugin não autenticado, bypass de allowlist/política ou bypass de sandbox/segurança de caminho), não apenas comportamento malicioso de um plugin confiável instalado.
 
-## Out of Scope
+## Fora do Escopo
 
-- Public Internet Exposure
-- Using OpenCraft in ways that the docs recommend not to
-- Deployments where mutually untrusted/adversarial operators share one gateway host and config (for example, reports expecting per-operator isolation for `sessions.list`, `sessions.preview`, `chat.history`, or similar control-plane reads)
-- Prompt-injection-only attacks (without a policy/auth/sandbox boundary bypass)
-- Reports that require write access to trusted local state (`~/.opencraft`, workspace files like `MEMORY.md` / `memory/*.md`)
-- Reports where exploitability depends on attacker-controlled pre-existing symlink/hardlink filesystem state in trusted local paths (for example extraction/install target trees) unless a separate untrusted boundary bypass is shown that creates that state.
-- Reports whose only claim is sandbox/workspace read expansion through trusted local skill/workspace symlink state (for example `skills/*/SKILL.md` symlink chains) unless a separate untrusted boundary bypass is shown that creates/controls that state.
-- Reports whose only claim is post-approval executable identity drift on a trusted host via same-path file replacement/rewrite unless a separate untrusted boundary bypass is shown for that host write primitive.
-- Reports where the only demonstrated impact is an already-authorized sender intentionally invoking a local-action command (for example `/export-session` writing to an absolute host path) without bypassing auth, sandbox, or another documented boundary
-- Reports whose only claim is use of an explicit trusted-operator control surface (for example `canvas.eval`, browser evaluate/script execution, or direct `node.invoke` execution) without demonstrating an auth, policy, allowlist, approval, or sandbox bypass.
-- Reports where the only claim is that a trusted-installed/enabled plugin can execute with gateway/host privileges (documented trust model behavior).
-- Any report whose only claim is that an operator-enabled `dangerous*`/`dangerously*` config option weakens defaults (these are explicit break-glass tradeoffs by design)
-- Reports that depend on trusted operator-supplied configuration values to trigger availability impact (for example custom regex patterns). These may still be fixed as defense-in-depth hardening, but are not security-boundary bypasses.
-- Reports whose only claim is heuristic/parity drift in command-risk detection (for example obfuscation-pattern checks) across exec surfaces, without a demonstrated trust-boundary bypass. These are hardening-only findings and are not vulnerabilities; triage may close them as `invalid`/`no-action` or track them separately as low/informational hardening.
-- Reports whose only claim is that exec approvals do not semantically model every interpreter/runtime loader form, subcommand, flag combination, package script, or transitive module/config import. Exec approvals bind exact request context and best-effort direct local file operands; they are not a complete semantic model of everything a runtime may load.
-- Exposed secrets that are third-party/user-controlled credentials (not OpenCraft-owned and not granting access to OpenCraft-operated infrastructure/services) without demonstrated OpenCraft impact
-- Reports whose only claim is host-side exec when sandbox runtime is disabled/unavailable (documented default behavior in the trusted-operator model), without a boundary bypass.
-- Reports whose only claim is that a platform-provided upload destination URL is untrusted (for example Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl`) without proving attacker control in an authenticated production flow.
+- Exposição à Internet Pública
+- Usar OpenCraft de formas que a documentação recomenda não fazer
+- Deployments onde operadores mutuamente não confiáveis/adversariais compartilham um host/config do gateway (por exemplo, relatórios esperando isolamento por operador para `sessions.list`, `sessions.preview`, `chat.history` ou leituras de plano de controle semelhantes)
+- Ataques de injeção de prompt (sem bypass de limite de política/auth/sandbox)
+- Relatórios que requerem acesso de escrita a estado local confiável (`~/.opencraft`, arquivos de workspace como `MEMORY.md` / `memory/*.md`)
+- Relatórios onde exploratibilidade depende de estado de sistema de arquivos symlink/hardlink pré-existente controlado pelo atacante em caminhos locais confiáveis (por exemplo, árvores de destino de extração/instalação) a menos que um bypass de limite não confiável separado seja demonstrado que cria aquele estado.
+- Relatórios cuja única alegação é expansão de leitura de sandbox/workspace através de estado symlink confiável de skill/workspace local (por exemplo, cadeias symlink `skills/*/SKILL.md`) a menos que um bypass de limite não confiável separado seja demonstrado que cria/controla aquele estado.
+- Relatórios cuja única alegação é drift de identidade executável pós-aprovação em um host confiável via substituição/reescrita de arquivo do mesmo caminho a menos que um bypass de limite não confiável separado seja demonstrado para aquela primitiva de escrita do host.
+- Relatórios onde o único impacto demonstrado é um remetente já autorizado invocando intencionalmente um comando de ação local (por exemplo, `/export-session` escrevendo em um caminho de host absoluto) sem contornar auth, sandbox ou outro limite documentado
+- Relatórios cuja única alegação é uso de uma superfície de controle de operador confiável explícita (por exemplo, `canvas.eval`, execução de script/avaliação de navegador, ou execução `node.invoke` direto) sem demonstrar um bypass de auth, política, allowlist, aprovação ou sandbox.
+- Relatórios onde a única alegação é que um plugin confiável instalado/habilitado pode executar com privilégios de gateway/host (comportamento de modelo de confiança documentado).
+- Qualquer relatório cuja única alegação seja que uma opção de config `dangerous*`/`dangerously*` habilitada pelo operador enfraquece padrões (estes são tradeoffs de break-glass explícitos por design)
+- Relatórios que dependem de valores de configuração fornecidos pelo operador confiável para desencadear impacto de disponibilidade (por exemplo, padrões de regex customizados). Estes ainda podem ser corrigidos como endurecimento de defesa-em-profundidade, mas não são bypasses de limite de segurança.
+- Relatórios cuja única alegação é drift heurístico/paridade em detecção de risco de comando (por exemplo, verificações de padrão de ofuscação) através de superfícies exec, sem um bypass de limite de confiança demonstrado. Estes são achados apenas de endurecimento e não são vulnerabilidades; triagem pode fechá-los como `invalid`/`no-action` ou rastreá-los separadamente como endurecimento baixo/informacional.
+- Relatórios cuja única alegação é que aprovações exec não modelam semanticamente cada forma de carregador de intérprete/runtime, subcomando, combinação de flag, script de pacote ou importação de módulo/config transitiva. Aprovações exec vinculam contexto exato de solicitação e operandos de arquivo local direto de melhor esforço; elas não são um modelo semântico completo de tudo o que um runtime pode carregar.
+- Segredos expostos que são credenciais controladas por terceiros/usuário (não propriedade do OpenCraft e não concedendo acesso à infraestrutura/serviços operados pelo OpenCraft) sem impacto demonstrado do OpenCraft
+- Relatórios cuja única alegação é exec do lado do host quando o runtime sandbox está desabilitado/indisponível (comportamento padrão documentado no modelo de operador confiável), sem um bypass de limite.
+- Relatórios cuja única alegação é que uma URL de destino de upload fornecida pela plataforma não é confiável (por exemplo, Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl`) sem provar controle de atacante em um fluxo de produção autenticado.
 
-## Deployment Assumptions
+## Suposições de Deployment
 
-OpenCraft security guidance assumes:
+A orientação de segurança do OpenCraft assume:
 
-- The host where OpenCraft runs is within a trusted OS/admin boundary.
-- Anyone who can modify `~/.opencraft` state/config (including `opencraft.json`) is effectively a trusted operator.
-- A single Gateway shared by mutually untrusted people is **not a recommended setup**. Use separate gateways (or at minimum separate OS users/hosts) per trust boundary.
-- Authenticated Gateway callers are treated as trusted operators. Session identifiers (for example `sessionKey`) are routing controls, not per-user authorization boundaries.
-- Multiple gateway instances can run on one machine, but the recommended model is clean per-user isolation (prefer one host/VPS per user).
+- O host onde OpenCraft é executado está dentro de um limite de SO/administrador confiável.
+- Qualquer pessoa que possa modificar estado/config `~/.opencraft` (incluindo `opencraft.json`) é efetivamente um operador confiável.
+- Um Gateway único compartilhado por pessoas mutuamente não confiáveis é **não recomendado**. Use gateways separados (ou no mínimo usuários/hosts de SO separados) por limite de confiança.
+- Chamadores de Gateway autenticados são tratados como operadores confiáveis. Identificadores de sessão (por exemplo, `sessionKey`) são controles de roteamento, não limites de autorização por usuário.
+- Múltiplas instâncias do gateway podem ser executadas em uma máquina, mas o modelo recomendado é isolamento limpo por usuário (prefira um host/VPS por usuário).
 
-## One-User Trust Model (Personal Assistant)
+## Modelo de Confiança de Um Usuário (Assistente Pessoal)
 
-OpenCraft's security model is "personal assistant" (one trusted operator, potentially many agents), not "shared multi-tenant bus."
+O modelo de segurança do OpenCraft é "assistente pessoal" (um operador confiável, potencialmente muitos agents), não "barramento multi-tenant compartilhado."
 
-- If multiple people can message the same tool-enabled agent (for example a shared Slack workspace), they can all steer that agent within its granted permissions.
-- Non-owner sender status only affects owner-only tools/commands. If a non-owner can still access a non-owner-only tool on that same agent (for example `canvas`), that is within the granted tool boundary unless the report demonstrates an auth, policy, allowlist, approval, or sandbox bypass.
-- Session or memory scoping reduces context bleed, but does **not** create per-user host authorization boundaries.
-- For mixed-trust or adversarial users, isolate by OS user/host/gateway and use separate credentials per boundary.
-- A company-shared agent can be a valid setup when users are in the same trust boundary and the agent is strictly business-only.
-- For company-shared setups, use a dedicated machine/VM/container and dedicated accounts; avoid mixing personal data on that runtime.
-- If that host/browser profile is logged into personal accounts (for example Apple/Google/personal password manager), you have collapsed the boundary and increased personal-data exposure risk.
+- Se múltiplas pessoas podem enviar mensagens para o mesmo agent habilitado por ferramentas (por exemplo, um workspace Slack compartilhado), todas podem direcionar aquele agent dentro de suas permissões concedidas.
+- Status de remetente não proprietário apenas afeta ferramentas/comandos apenas do proprietário. Se um não proprietário ainda puder acessar uma ferramenta não apenas do proprietário no mesmo agent (por exemplo, `canvas`), isso está dentro do limite de ferramenta concedido, a menos que o relatório demonstre um auth, política, allowlist, aprovação ou bypass de sandbox.
+- Escopo de sessão ou memória reduz vazamento de contexto, mas **não** cria limites de autorização de host por usuário.
+- Para usuários de confiança mista ou adversariais, isole por usuário/host/gateway de SO e use credenciais separadas por limite.
+- Um agent compartilhado por empresa pode ser uma configuração válida quando usuários estão no mesmo limite de confiança e o agent é estritamente apenas para negócios.
+- Para configurações compartilhadas por empresa, use uma máquina/VM/container dedicada e contas dedicadas; evite misturar dados pessoais naquele runtime.
+- Se aquele host/perfil de navegador estiver conectado em contas pessoais (por exemplo, Apple/Google/gerenciador de senha pessoal), você colapsou o limite e aumentou o risco de exposição de dados pessoais.
 
-## Agent and Model Assumptions
+## Suposições de Agent e Modelo
 
-- The model/agent is **not** a trusted principal. Assume prompt/content injection can manipulate behavior.
-- Security boundaries come from host/config trust, auth, tool policy, sandboxing, and exec approvals.
-- Prompt injection by itself is not a vulnerability report unless it crosses one of those boundaries.
-- Hook/webhook-driven payloads should be treated as untrusted content; keep unsafe bypass flags disabled unless doing tightly scoped debugging (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`).
-- Weak model tiers are generally easier to prompt-inject. For tool-enabled or hook-driven agents, prefer strong modern model tiers and strict tool policy (for example `tools.profile: "messaging"` or stricter), plus sandboxing where possible.
+- O modelo/agent é **não** um principal confiável. Assuma que injeção de prompt/conteúdo pode manipular comportamento.
+- Limites de segurança vêm de confiança de host/config, auth, política de ferramenta, sandboxing e aprovações exec.
+- Injeção de prompt por si só não é um relatório de vulnerabilidade a menos que atravesse um desses limites.
+- Payloads acionados por hook/webhook devem ser tratados como conteúdo não confiável; mantenha flags de bypass não seguro desabilitadas a menos que estejam fazendo debugging estritamente escopo (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`).
+- Níveis de modelo fraco são geralmente mais fáceis de prompt-injetar. Para agents habilitados por ferramentas ou acionados por hook, prefira níveis de modelo moderno forte e política de ferramenta rigorosa (por exemplo, `tools.profile: "messaging"` ou mais rigoroso), além de sandboxing onde possível.
 
-## Gateway and Node trust concept
+## Conceito de Confiança de Gateway e Node
 
-OpenCraft separates routing from execution, but both remain inside the same operator trust boundary:
+OpenCraft separa roteamento de execução, mas ambos permanecem dentro do mesmo limite de confiança de operador:
 
-- **Gateway** is the control plane. If a caller passes Gateway auth, they are treated as a trusted operator for that Gateway.
-- **Node** is an execution extension of the Gateway. Pairing a node grants operator-level remote capability on that node.
-- **Exec approvals** (allowlist/ask UI) are operator guardrails to reduce accidental command execution, not a multi-tenant authorization boundary.
-- Exec approvals bind exact command/cwd/env context and, when OpenCraft can identify one concrete local script/file operand, that file snapshot too. This is best-effort integrity hardening, not a complete semantic model of every interpreter/runtime loader path.
-- Differences in command-risk warning heuristics between exec surfaces (`gateway`, `node`, `sandbox`) do not, by themselves, constitute a security-boundary bypass.
-- For untrusted-user isolation, split by trust boundary: separate gateways and separate OS users/hosts per boundary.
+- **Gateway** é o plano de controle. Se um chamador passa auth do Gateway, ele é tratado como um operador confiável para aquele Gateway.
+- **Node** é uma extensão de execução do Gateway. Parear um node concede capacidade remota no nível de operador naquele node.
+- **Aprovações Exec** (allowlist/ask UI) são proteções de operador para reduzir execução de comando acidental, não um limite de autorização multi-tenant.
+- Aprovações exec vinculam contexto exato de comando/cwd/env e, quando OpenCraft pode identificar um operando de arquivo/script local concreto, aquele snapshot de arquivo também. Este é endurecimento de integridade de melhor esforço, não um modelo semântico completo de cada caminho de carregador de intérprete/runtime.
+- Diferenças em heurística de aviso de risco de comando entre superfícies exec (`gateway`, `node`, `sandbox`) não, por si só, constituem um bypass de limite de segurança.
+- Para isolamento de usuário não confiável, divida por limite de confiança: gateways separados e usuários/hosts de SO separados por limite.
 
-## Workspace Memory Trust Boundary
+## Limite de Confiança de Memória de Workspace
 
-`MEMORY.md` and `memory/*.md` are plain workspace files and are treated as trusted local operator state.
+`MEMORY.md` e `memory/*.md` são arquivos de workspace simples e são tratados como estado de operador local confiável.
 
-- If someone can edit workspace memory files, they already crossed the trusted operator boundary.
-- Memory search indexing/recall over those files is expected behavior, not a sandbox/security boundary.
-- Example report pattern considered out of scope: "attacker writes malicious content into `memory/*.md`, then `memory_search` returns it."
-- If you need isolation between mutually untrusted users, split by OS user or host and run separate gateways.
+- Se alguém pode editar arquivos de memória de workspace, eles já cruzaram o limite de operador confiável.
+- Indexação/recall de busca de memória sobre aqueles arquivos é comportamento esperado, não um limite de sandbox/segurança.
+- Padrão de relatório de exemplo considerado fora de escopo: "atacante escreve conteúdo malicioso em `memory/*.md`, então `memory_search` o retorna."
+- Se você precisa de isolamento entre usuários mutuamente não confiáveis, divida por usuário de SO ou host e execute gateways separados.
 
-## Plugin Trust Boundary
+## Limite de Confiança de Plugin
 
-Plugins/extensions are loaded **in-process** with the Gateway and are treated as trusted code.
+Plugins/extensões são carregados **in-process** com o Gateway e são tratados como código confiável.
 
-- Plugins can execute with the same OS privileges as the OpenCraft process.
-- Runtime helpers (for example `runtime.system.runCommandWithTimeout`) are convenience APIs, not a sandbox boundary.
-- Only install plugins you trust, and prefer `plugins.allow` to pin explicit trusted plugin ids.
+- Plugins podem executar com os mesmos privilégios de SO que o processo OpenCraft.
+- Ajudantes de runtime (por exemplo, `runtime.system.runCommandWithTimeout`) são APIs de conveniência, não um limite de sandbox.
+- Apenas instale plugins que você confia e prefira `plugins.allow` para fixar IDs de plugin confiáveis explícitos.
 
-## Temp Folder Boundary (Media/Sandbox)
+## Limite de Pasta Temporária (Mídia/Sandbox)
 
-OpenCraft uses a dedicated temp root for local media handoff and sandbox-adjacent temp artifacts:
+OpenCraft usa uma raiz temp dedicada para handoff de mídia local e artefatos temp sandbox-adjacentes:
 
-- Preferred temp root: `/tmp/opencraft` (when available and safe on the host).
-- Fallback temp root: `os.tmpdir()/opencraft` (or `opencraft-<uid>` on multi-user hosts).
+- Raiz temp preferida: `/tmp/opencraft` (quando disponível e seguro no host).
+- Raiz temp fallback: `os.tmpdir()/opencraft` (ou `opencraft-<uid>` em hosts multi-usuário).
 
-Security boundary notes:
+Notas sobre limite de segurança:
 
-- Sandbox media validation allows absolute temp paths only under the OpenCraft-managed temp root.
-- Arbitrary host tmp paths are not treated as trusted media roots.
-- Plugin/extension code should use OpenCraft temp helpers (`resolvePreferredOpenCraftTmpDir`, `buildRandomTempFilePath`, `withTempDownloadPath`) rather than raw `os.tmpdir()` defaults when handling media files.
-- Enforcement reference points:
-  - temp root resolver: `src/infra/tmp-opencraft-dir.ts`
-  - SDK temp helpers: `src/plugin-sdk/temp-path.ts`
-  - messaging/channel tmp guardrail: `scripts/check-no-random-messaging-tmp.mjs`
+- Validação de mídia sandbox permite caminhos temp absolutos apenas sob a raiz temp gerenciada pelo OpenCraft.
+- Caminhos tmp de host arbitrários não são tratados como raízes de mídia confiáveis.
+- Código de plugin/extensão deve usar ajudantes temp do OpenCraft (`resolvePreferredOpenCraftTmpDir`, `buildRandomTempFilePath`, `withTempDownloadPath`) em vez de padrões brutos de `os.tmpdir()` ao lidar com arquivos de mídia.
+- Pontos de referência de imposição:
+  - resolvedor de raiz temp: `src/infra/tmp-opencraft-dir.ts`
+  - ajudantes de SDK temp: `src/plugin-sdk/temp-path.ts`
+  - guardrail tmp de mensagens/canal: `scripts/check-no-random-messaging-tmp.mjs`
 
-## Operational Guidance
+## Orientação Operacional
 
-For threat model + hardening guidance (including `opencraft security audit --deep` and `--fix`), see:
+Para orientação de modelo de ameaça + endurecimento (incluindo `opencraft security audit --deep` e `--fix`), consulte:
 
 - `https://docs.opencraft.ai/gateway/security`
 
-### Tool filesystem hardening
+### Endurecimento de sistema de arquivos de ferramentas
 
-- `tools.exec.applyPatch.workspaceOnly: true` (recommended): keeps `apply_patch` writes/deletes within the configured workspace directory.
-- `tools.fs.workspaceOnly: true` (optional): restricts `read`/`write`/`edit`/`apply_patch` paths and native prompt image auto-load paths to the workspace directory.
-- Avoid setting `tools.exec.applyPatch.workspaceOnly: false` unless you fully trust who can trigger tool execution.
+- `tools.exec.applyPatch.workspaceOnly: true` (recomendado): mantém escritas/exclusões de `apply_patch` dentro do diretório de workspace configurado.
+- `tools.fs.workspaceOnly: true` (opcional): restringe caminhos de `read`/`write`/`edit`/`apply_patch` e caminhos de auto-carregamento de imagem de prompt nativo ao diretório de workspace.
+- Evite definir `tools.exec.applyPatch.workspaceOnly: false` a menos que você confie plenamente em quem pode desencadear execução de ferramentas.
 
-### Sub-agent delegation hardening
+### Endurecimento de delegação de sub-agent
 
-- Keep `sessions_spawn` denied unless you explicitly need delegated runs.
-- Keep `agents.list[].subagents.allowAgents` narrow, and only include agents with sandbox settings you trust.
-- When delegation must stay sandboxed, call `sessions_spawn` with `sandbox: "require"` (default is `inherit`).
-  - `sandbox: "require"` rejects the spawn unless the target child runtime is sandboxed.
-  - This prevents a less-restricted session from delegating work into an unsandboxed child by mistake.
+- Mantenha `sessions_spawn` negado a menos que você explicitamente precise de execuções delegadas.
+- Mantenha `agents.list[].subagents.allowAgents` estreito e inclua apenas agents com configurações de sandbox que você confia.
+- Quando delegação deve permanecer em sandbox, chame `sessions_spawn` com `sandbox: "require"` (padrão é `inherit`).
+  - `sandbox: "require"` rejeita o spawn a menos que o runtime filho alvo esteja em sandbox.
+  - Isso previne uma sessão menos restrita de delegar trabalho em um filho não em sandbox por engano.
 
-### Web Interface Safety
+### Segurança de Interface Web
 
-OpenCraft's web interface (Gateway Control UI + HTTP endpoints) is intended for **local use only**.
+A interface web do OpenCraft (Gateway Control UI + HTTP endpoints) é destinada **apenas para uso local**.
 
-- Recommended: keep the Gateway **loopback-only** (`127.0.0.1` / `::1`).
-  - Config: `gateway.bind="loopback"` (default).
+- Recomendado: mantenha o Gateway **apenas loopback** (`127.0.0.1` / `::1`).
+  - Config: `gateway.bind="loopback"` (padrão).
   - CLI: `opencraft gateway run --bind loopback`.
-- `gateway.controlUi.dangerouslyDisableDeviceAuth` is intended for localhost-only break-glass use.
-  - OpenCraft keeps deployment flexibility by design and does not hard-forbid non-local setups.
-  - Non-local and other risky configurations are surfaced by `opencraft security audit` as dangerous findings.
-  - This operator-selected tradeoff is by design and not, by itself, a security vulnerability.
-- Canvas host note: network-visible canvas is **intentional** for trusted node scenarios (LAN/tailnet).
-  - Expected setup: non-loopback bind + Gateway auth (token/password/trusted-proxy) + firewall/tailnet controls.
-  - Expected routes: `/__opencraft__/canvas/`, `/__opencraft__/a2ui/`.
-  - This deployment model alone is not a security vulnerability.
-- Do **not** expose it to the public internet (no direct bind to `0.0.0.0`, no public reverse proxy). It is not hardened for public exposure.
-- If you need remote access, prefer an SSH tunnel or Tailscale serve/funnel (so the Gateway still binds to loopback), plus strong Gateway auth.
-- The Gateway HTTP surface includes the canvas host (`/__opencraft__/canvas/`, `/__opencraft__/a2ui/`). Treat canvas content as sensitive/untrusted and avoid exposing it beyond loopback unless you understand the risk.
+- `gateway.controlUi.dangerouslyDisableDeviceAuth` é destinado para uso break-glass apenas localhost.
+  - OpenCraft mantém flexibilidade de deployment por design e não proíbe duro setups não locais.
+  - Configurações não locais e outras arriscadas são surfaced por `opencraft security audit` como achados perigosos.
+  - Este tradeoff selecionado por operador é por design e não, por si só, uma vulnerabilidade de segurança.
+- Nota de host canvas: canvas visível em rede é **intencional** para cenários de node confiável (LAN/tailnet).
+  - Setup esperado: bind não loopback + auth de Gateway (token/senha/trusted-proxy) + controles de firewall/tailnet.
+  - Rotas esperadas: `/__opencraft__/canvas/`, `/__opencraft__/a2ui/`.
+  - Este modelo de deployment sozinho não é uma vulnerabilidade de segurança.
+- **Não** o exponha à internet pública (sem bind direto a `0.0.0.0`, sem proxy reverso público). Não está endurecido para exposição pública.
+- Se você precisar de acesso remoto, prefira um túnel SSH ou Tailscale serve/funnel (para que o Gateway ainda se vincule a loopback), além de auth de Gateway forte.
+- A superfície HTTP do Gateway inclui o host canvas (`/__opencraft__/canvas/`, `/__opencraft__/a2ui/`). Trate conteúdo canvas como sensível/não confiável e evite expô-lo além de loopback a menos que você entenda o risco.
 
-## Runtime Requirements
+## Requisitos de Runtime
 
-### Node.js Version
+### Versão Node.js
 
-OpenCraft requires **Node.js 22.12.0 or later** (LTS). This version includes important security patches:
+OpenCraft requer **Node.js 22.12.0 ou posterior** (LTS). Esta versão inclui patches de segurança importantes:
 
-- CVE-2025-59466: async_hooks DoS vulnerability
-- CVE-2026-21636: Permission model bypass vulnerability
+- CVE-2025-59466: vulnerabilidade async_hooks DoS
+- CVE-2026-21636: vulnerabilidade de bypass de modelo de permissão
 
-Verify your Node.js version:
+Verifique sua versão Node.js:
 
 ```bash
 node --version  # Should be v22.12.0 or later
 ```
 
-### Docker Security
+### Segurança Docker
 
-When running OpenCraft in Docker:
+Ao executar OpenCraft no Docker:
 
-1. The official image runs as a non-root user (`node`) for reduced attack surface
-2. Use `--read-only` flag when possible for additional filesystem protection
-3. Limit container capabilities with `--cap-drop=ALL`
+1. A imagem oficial é executada como usuário não-root (`node`) para superfície de ataque reduzida
+2. Use flag `--read-only` quando possível para proteção adicional do sistema de arquivos
+3. Limite capacidades de container com `--cap-drop=ALL`
 
-Example secure Docker run:
+Exemplo de execução Docker segura:
 
 ```bash
 docker run --read-only --cap-drop=ALL \
@@ -279,12 +279,12 @@ docker run --read-only --cap-drop=ALL \
   editzffaleta/OpenCraft:latest
 ```
 
-## Security Scanning
+## Scanning de Segurança
 
-This project uses `detect-secrets` for automated secret detection in CI/CD.
-See `.detect-secrets.cfg` for configuration and `.secrets.baseline` for the baseline.
+Este projeto usa `detect-secrets` para detecção automática de segredos em CI/CD.
+Consulte `.detect-secrets.cfg` para configuração e `.secrets.baseline` para a linha de base.
 
-Run locally:
+Execute localmente:
 
 ```bash
 pip install detect-secrets==1.5.0
