@@ -1,19 +1,16 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import {
-  applyTogetherConfig,
-  TOGETHER_DEFAULT_MODEL_REF,
-} from "../../src/commands/onboard-auth.js";
-import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { createProviderApiKeyAuthMethod } from "opencraft/plugin-sdk/provider-auth";
+import { buildSingleProviderApiKeyCatalog } from "opencraft/plugin-sdk/provider-catalog";
+import { applyTogetherConfig, TOGETHER_DEFAULT_MODEL_REF } from "./onboard.js";
 import { buildTogetherProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "together";
 
-const togetherPlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Together Provider",
   description: "Bundled Together provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Together",
@@ -43,21 +40,13 @@ const togetherPlugin = {
       ],
       catalog: {
         order: "simple",
-        run: async (ctx) => {
-          const apiKey = ctx.resolveProviderApiKey(PROVIDER_ID).apiKey;
-          if (!apiKey) {
-            return null;
-          }
-          return {
-            provider: {
-              ...buildTogetherProvider(),
-              apiKey,
-            },
-          };
-        },
+        run: (ctx) =>
+          buildSingleProviderApiKeyCatalog({
+            ctx,
+            providerId: PROVIDER_ID,
+            buildProvider: buildTogetherProvider,
+          }),
       },
     });
   },
-};
-
-export default togetherPlugin;
+});

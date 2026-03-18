@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { DmPolicy, GroupPolicy, WhatsAppAccountConfig } from "opencraft/plugin-sdk/whatsapp";
-import { resolveOAuthDir } from "../../../src/config/paths.js";
 import {
-  type OpenCraftConfig,
   createAccountListHelpers,
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   resolveAccountEntry,
   resolveUserPath,
-} from "../../../src/plugin-sdk-internal/accounts.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import { resolveOAuthDir } from "opencraft/plugin-sdk/state-paths";
+import type { DmPolicy, GroupPolicy, WhatsAppAccountConfig } from "opencraft/plugin-sdk/whatsapp";
 import { hasWebCredsSync } from "./auth-store.js";
 
 export type ResolvedWhatsAppAccount = {

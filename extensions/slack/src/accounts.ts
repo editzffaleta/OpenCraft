@@ -1,12 +1,12 @@
-import type { SlackAccountConfig } from "opencraft/plugin-sdk/slack";
 import {
-  type OpenCraftConfig,
   createAccountListHelpers,
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   normalizeChatType,
   resolveAccountEntry,
-} from "../../../src/plugin-sdk-internal/accounts.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import type { SlackAccountConfig } from "opencraft/plugin-sdk/slack";
 import type { SlackAccountSurfaceFields } from "./account-surface-fields.js";
 import { resolveSlackAppToken, resolveSlackBotToken, resolveSlackUserToken } from "./token.js";
 

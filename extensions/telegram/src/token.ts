@@ -1,9 +1,9 @@
+import type { BaseTokenResolution } from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeResolvedSecretInputString } from "opencraft/plugin-sdk/config-runtime";
+import { tryReadSecretFileSync } from "opencraft/plugin-sdk/infra-runtime";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "opencraft/plugin-sdk/routing";
 import type { TelegramAccountConfig } from "opencraft/plugin-sdk/telegram";
-import type { BaseTokenResolution } from "../../../src/channels/plugins/types.core.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { normalizeResolvedSecretInputString } from "../../../src/config/types.secrets.js";
-import { tryReadSecretFileSync } from "../../../src/infra/secret-file.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../src/routing/session-key.js";
 
 export type TelegramTokenSource = "env" | "tokenFile" | "config" | "none";
 

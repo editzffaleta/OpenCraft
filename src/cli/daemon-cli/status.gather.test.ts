@@ -145,15 +145,15 @@ describe("gatherDaemonStatus", () => {
     envSnapshot = captureEnv([
       "OPENCRAFT_STATE_DIR",
       "OPENCRAFT_CONFIG_PATH",
-      "OPENCLAW_GATEWAY_TOKEN",
-      "OPENCLAW_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_PASSWORD",
       "DAEMON_GATEWAY_TOKEN",
       "DAEMON_GATEWAY_PASSWORD",
     ]);
     process.env.OPENCRAFT_STATE_DIR = "/tmp/opencraft-cli";
     process.env.OPENCRAFT_CONFIG_PATH = "/tmp/opencraft-cli/opencraft.json";
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
     delete process.env.DAEMON_GATEWAY_TOKEN;
     delete process.env.DAEMON_GATEWAY_PASSWORD;
     callGatewayStatusProbe.mockClear();
@@ -419,8 +419,8 @@ describe("gatherDaemonStatus", () => {
         },
       },
     };
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "env-password"; // pragma: allowlist secret
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token";
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "env-password"; // pragma: allowlist secret
 
     await gatherDaemonStatus({
       rpc: {},

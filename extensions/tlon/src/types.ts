@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/tlon";
+import type { OpenCraftConfig } from "../api.js";
 
 export type TlonResolvedAccount = {
   accountId: string;

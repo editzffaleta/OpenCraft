@@ -9,7 +9,7 @@ import Security
 final class PeekabooBridgeHostCoordinator {
     static let shared = PeekabooBridgeHostCoordinator()
 
-    private let logger = Logger(subsystem: "ai.opencraft", category: "PeekabooBridge")
+    private let logger = Logger(subsystem: "ai.openclaw", category: "PeekabooBridge")
 
     private var host: PeekabooBridgeHost?
     private var services: OpenCraftPeekabooBridgeServices?
@@ -165,7 +165,7 @@ private final class OpenCraftPeekabooBridgeServices: PeekabooBridgeServiceProvid
     let snapshots: any SnapshotManagerProtocol
 
     init() {
-        let logging = LoggingService(subsystem: "ai.opencraft.peekaboo")
+        let logging = LoggingService(subsystem: "ai.openclaw.peekaboo")
         let feedbackClient: any AutomationFeedbackClient = NoopAutomationFeedbackClient()
 
         let snapshots = InMemorySnapshotManager(options: .init(

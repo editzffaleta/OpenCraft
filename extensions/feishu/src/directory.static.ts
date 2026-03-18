@@ -1,7 +1,7 @@
 import {
   listDirectoryGroupEntriesFromMapKeysAndAllowFrom,
   listDirectoryUserEntriesFromAllowFromAndMapKeys,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/directory-runtime";
 import type { ClawdbotConfig } from "opencraft/plugin-sdk/feishu";
 import { resolveFeishuAccount } from "./accounts.js";
 import { normalizeFeishuTarget } from "./targets.js";

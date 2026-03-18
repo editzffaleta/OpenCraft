@@ -1,4 +1,4 @@
-import { logVerbose } from "../../../../../src/globals.js";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
 import { authorizeSlackSystemEventSender } from "../auth.js";
 import { resolveSlackChannelLabel } from "../channel-config.js";
 import type { SlackMonitorContext } from "../context.js";

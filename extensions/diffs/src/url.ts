@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/diffs";
+import type { OpenCraftConfig } from "../api.js";
 
 const DEFAULT_GATEWAY_PORT = 18789;
 

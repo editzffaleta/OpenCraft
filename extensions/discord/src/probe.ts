@@ -1,6 +1,6 @@
-import type { BaseProbeResult } from "../../../src/channels/plugins/types.js";
-import { resolveFetch } from "../../../src/infra/fetch.js";
-import { fetchWithTimeout } from "../../../src/utils/fetch-timeout.js";
+import type { BaseProbeResult } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveFetch } from "opencraft/plugin-sdk/infra-runtime";
+import { fetchWithTimeout } from "opencraft/plugin-sdk/text-runtime";
 import { normalizeDiscordToken } from "./token.js";
 
 const DISCORD_API_BASE = "https://discord.com/api/v10";

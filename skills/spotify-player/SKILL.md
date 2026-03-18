@@ -1,6 +1,6 @@
 ---
 name: spotify-player
-description: Reprodução/pesquisa do Spotify no terminal via spogo (preferido) ou spotify_player.
+description: Terminal Spotify playback/search via spogo (preferred) or spotify_player.
 homepage: https://www.spotify.com
 metadata:
   {
@@ -16,14 +16,14 @@ metadata:
               "formula": "spogo",
               "tap": "steipete/tap",
               "bins": ["spogo"],
-              "label": "Instalar spogo (brew)",
+              "label": "Install spogo (brew)",
             },
             {
               "id": "brew",
               "kind": "brew",
               "formula": "spotify_player",
               "bins": ["spotify_player"],
-              "label": "Instalar spotify_player (brew)",
+              "label": "Install spotify_player (brew)",
             },
           ],
       },
@@ -32,33 +32,33 @@ metadata:
 
 # spogo / spotify_player
 
-Use `spogo` **(preferido)** para reprodução/pesquisa no Spotify. Use `spotify_player` como alternativa se necessário.
+Use `spogo` **(preferred)** for Spotify playback/search. Fall back to `spotify_player` if needed.
 
-Requisitos
+Requirements
 
-- Conta Spotify Premium.
-- `spogo` ou `spotify_player` instalado.
+- Spotify Premium account.
+- Either `spogo` or `spotify_player` installed.
 
-Configuração do spogo
+spogo setup
 
-- Importar cookies: `spogo auth import --browser chrome`
+- Import cookies: `spogo auth import --browser chrome`
 
-Comandos CLI comuns
+Common CLI commands
 
-- Pesquisar: `spogo search track "query"`
-- Reprodução: `spogo play|pause|next|prev`
-- Dispositivos: `spogo device list`, `spogo device set "<name|id>"`
+- Search: `spogo search track "query"`
+- Playback: `spogo play|pause|next|prev`
+- Devices: `spogo device list`, `spogo device set "<name|id>"`
 - Status: `spogo status`
 
-Comandos do spotify_player (alternativa)
+spotify_player commands (fallback)
 
-- Pesquisar: `spotify_player search "query"`
-- Reprodução: `spotify_player playback play|pause|next|previous`
-- Conectar dispositivo: `spotify_player connect`
-- Curtir faixa: `spotify_player like`
+- Search: `spotify_player search "query"`
+- Playback: `spotify_player playback play|pause|next|previous`
+- Connect device: `spotify_player connect`
+- Like track: `spotify_player like`
 
-Observações
+Notes
 
-- Pasta de configuração: `~/.config/spotify-player` (ex.: `app.toml`).
-- Para integração com Spotify Connect, defina um `client_id` de usuário na configuração.
-- Os atalhos da TUI estão disponíveis via `?` no app.
+- Config folder: `~/.config/spotify-player` (e.g., `app.toml`).
+- For Spotify Connect integration, set a user `client_id` in config.
+- TUI shortcuts are available via `?` in the app.

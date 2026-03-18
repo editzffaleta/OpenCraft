@@ -1,6 +1,6 @@
 ---
 name: things-mac
-description: Gerenciar o Things 3 via CLI `things` no macOS (adicionar/atualizar projetos+tarefas via URL scheme; ler/pesquisar/listar do banco de dados local do Things). Use quando um usuário pedir ao OpenCraft para adicionar uma tarefa ao Things, listar inbox/hoje/próximos, pesquisar tarefas ou inspecionar projetos/áreas/tags.
+description: Manage Things 3 via the `things` CLI on macOS (add/update projects+todos via URL scheme; read/search/list from the local Things database). Use when a user asks OpenCraft to add a task to Things, list inbox/today/upcoming, search tasks, or inspect projects/areas/tags.
 homepage: https://github.com/ossianhempel/things3-cli
 metadata:
   {
@@ -16,7 +16,7 @@ metadata:
               "kind": "go",
               "module": "github.com/ossianhempel/things3-cli/cmd/things@latest",
               "bins": ["things"],
-              "label": "Instalar things3-cli (go)",
+              "label": "Install things3-cli (go)",
             },
           ],
       },
@@ -25,16 +25,16 @@ metadata:
 
 # Things 3 CLI
 
-Use `things` para ler seu banco de dados local do Things (inbox/hoje/pesquisa/projetos/áreas/tags) e para adicionar/atualizar tarefas via URL scheme do Things.
+Use `things` to read your local Things database (inbox/today/search/projects/areas/tags) and to add/update todos via the Things URL scheme.
 
-Configuração
+Setup
 
-- Instalar (recomendado, Apple Silicon): `GOBIN=/opt/homebrew/bin go install github.com/ossianhempel/things3-cli/cmd/things@latest`
-- Se leituras do banco de dados falharem: conceda **Acesso Total ao Disco** ao app que faz a chamada (Terminal para execuções manuais; `OpenCraft.app` para execuções pelo gateway).
-- Opcional: defina `THINGSDB` (ou passe `--db`) para apontar para sua pasta `ThingsData-*`.
-- Opcional: defina `THINGS_AUTH_TOKEN` para evitar passar `--auth-token` em operações de atualização.
+- Install (recommended, Apple Silicon): `GOBIN=/opt/homebrew/bin go install github.com/ossianhempel/things3-cli/cmd/things@latest`
+- If DB reads fail: grant **Full Disk Access** to the calling app (Terminal for manual runs; `OpenCraft.app` for gateway runs).
+- Optional: set `THINGSDB` (or pass `--db`) to point at your `ThingsData-*` folder.
+- Optional: set `THINGS_AUTH_TOKEN` to avoid passing `--auth-token` for update ops.
 
-Somente leitura (banco de dados)
+Read-only (DB)
 
 - `things inbox --limit 50`
 - `things today`
@@ -42,45 +42,45 @@ Somente leitura (banco de dados)
 - `things search "query"`
 - `things projects` / `things areas` / `things tags`
 
-Escrita (URL scheme)
+Write (URL scheme)
 
-- Prefira pré-visualização segura: `things --dry-run add "Title"`
-- Adicionar: `things add "Title" --notes "..." --when today --deadline 2026-01-02`
-- Trazer Things para frente: `things --foreground add "Title"`
+- Prefer safe preview: `things --dry-run add "Title"`
+- Add: `things add "Title" --notes "..." --when today --deadline 2026-01-02`
+- Bring Things to front: `things --foreground add "Title"`
 
-Exemplos: adicionar uma tarefa
+Examples: add a todo
 
-- Básico: `things add "Buy milk"`
-- Com notas: `things add "Buy milk" --notes "2% + bananas"`
-- Em um projeto/área: `things add "Book flights" --list "Travel"`
-- Em um cabeçalho de projeto: `things add "Pack charger" --list "Travel" --heading "Before"`
-- Com tags: `things add "Call dentist" --tags "health,phone"`
-- Lista de verificação: `things add "Trip prep" --checklist-item "Passport" --checklist-item "Tickets"`
-- Do STDIN (múltiplas linhas => título + notas):
+- Basic: `things add "Buy milk"`
+- With notes: `things add "Buy milk" --notes "2% + bananas"`
+- Into a project/area: `things add "Book flights" --list "Travel"`
+- Into a project heading: `things add "Pack charger" --list "Travel" --heading "Before"`
+- With tags: `things add "Call dentist" --tags "health,phone"`
+- Checklist: `things add "Trip prep" --checklist-item "Passport" --checklist-item "Tickets"`
+- From STDIN (multi-line => title + notes):
   - `cat <<'EOF' | things add -`
   - `Title line`
   - `Notes line 1`
   - `Notes line 2`
   - `EOF`
 
-Exemplos: modificar uma tarefa (requer token de autenticação)
+Examples: modify a todo (needs auth token)
 
-- Primeiro: obtenha o ID (coluna UUID): `things search "milk" --limit 5`
-- Autenticação: defina `THINGS_AUTH_TOKEN` ou passe `--auth-token <TOKEN>`
-- Título: `things update --id <UUID> --auth-token <TOKEN> "New title"`
-- Substituir notas: `things update --id <UUID> --auth-token <TOKEN> --notes "New notes"`
-- Acrescentar/antepor notas: `things update --id <UUID> --auth-token <TOKEN> --append-notes "..."` / `--prepend-notes "..."`
-- Mover listas: `things update --id <UUID> --auth-token <TOKEN> --list "Travel" --heading "Before"`
-- Substituir/adicionar tags: `things update --id <UUID> --auth-token <TOKEN> --tags "a,b"` / `things update --id <UUID> --auth-token <TOKEN> --add-tags "a,b"`
-- Concluir/cancelar (tipo soft-delete): `things update --id <UUID> --auth-token <TOKEN> --completed` / `--canceled`
-- Pré-visualização segura: `things --dry-run update --id <UUID> --auth-token <TOKEN> --completed`
+- First: get the ID (UUID column): `things search "milk" --limit 5`
+- Auth: set `THINGS_AUTH_TOKEN` or pass `--auth-token <TOKEN>`
+- Title: `things update --id <UUID> --auth-token <TOKEN> "New title"`
+- Notes replace: `things update --id <UUID> --auth-token <TOKEN> --notes "New notes"`
+- Notes append/prepend: `things update --id <UUID> --auth-token <TOKEN> --append-notes "..."` / `--prepend-notes "..."`
+- Move lists: `things update --id <UUID> --auth-token <TOKEN> --list "Travel" --heading "Before"`
+- Tags replace/add: `things update --id <UUID> --auth-token <TOKEN> --tags "a,b"` / `things update --id <UUID> --auth-token <TOKEN> --add-tags "a,b"`
+- Complete/cancel (soft-delete-ish): `things update --id <UUID> --auth-token <TOKEN> --completed` / `--canceled`
+- Safe preview: `things --dry-run update --id <UUID> --auth-token <TOKEN> --completed`
 
-Excluir uma tarefa?
+Delete a todo?
 
-- Não suportado pelo `things3-cli` no momento (sem comando de escrita "delete/move-to-trash"; `things trash` é apenas leitura).
-- Opções: use a UI do Things para excluir/mover para lixeira, ou marque como `--completed` / `--canceled` via `things update`.
+- Not supported by `things3-cli` right now (no “delete/move-to-trash” write command; `things trash` is read-only listing).
+- Options: use Things UI to delete/trash, or mark as `--completed` / `--canceled` via `things update`.
 
-Observações
+Notes
 
-- Apenas macOS.
-- `--dry-run` imprime a URL e não abre o Things.
+- macOS-only.
+- `--dry-run` prints the URL and does not open Things.

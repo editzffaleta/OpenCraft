@@ -1,14 +1,14 @@
 ---
-summary: "Schema e exemplos de config de Skills"
+summary: "Skills config schema and examples"
 read_when:
-  - Adicionando ou modificando config de Skills
-  - Ajustando allowlist de bundled ou comportamento de instalação
-title: "Config de Skills"
+  - Adding or modifying skills config
+  - Adjusting bundled allowlist or install behavior
+title: "Skills Config"
 ---
 
-# Config de Skills
+# Skills Config
 
-Toda configuração relacionada a Skills fica em `skills` no `~/.editzffaleta/OpenCraft.json`.
+All skills-related configuration lives under `skills` in `~/.opencraft/opencraft.json`.
 
 ```json5
 {
@@ -21,12 +21,12 @@ Toda configuração relacionada a Skills fica em `skills` no `~/.editzffaleta/Op
     },
     install: {
       preferBrew: true,
-      nodeManager: "npm", // npm | pnpm | yarn | bun (runtime do Gateway ainda é Node; bun não recomendado)
+      nodeManager: "npm", // npm | pnpm | yarn | bun (Gateway runtime still Node; bun not recommended)
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
-        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // ou string em texto simples
+        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // or plaintext string
         env: {
           GEMINI_API_KEY: "GEMINI_KEY_HERE",
         },
@@ -38,40 +38,44 @@ Toda configuração relacionada a Skills fica em `skills` no `~/.editzffaleta/Op
 }
 ```
 
-## Campos
+For built-in image generation/editing, prefer `agents.defaults.imageGenerationModel`
+plus the core `image_generate` tool. `skills.entries.*` is only for custom or
+third-party skill workflows.
 
-- `allowBundled`: allowlist opcional apenas para Skills **integradas**. Quando definida, apenas
-  Skills integradas na lista são elegíveis (Skills gerenciadas/do workspace não são afetadas).
-- `load.extraDirs`: diretórios adicionais de Skills para escanear (menor precedência).
-- `load.watch`: observar pastas de Skills e atualizar o snapshot de Skills (padrão: true).
-- `load.watchDebounceMs`: debounce para eventos do observador de Skills em milissegundos (padrão: 250).
-- `install.preferBrew`: preferir instaladores brew quando disponíveis (padrão: true).
-- `install.nodeManager`: preferência de instalador node (`npm` | `pnpm` | `yarn` | `bun`, padrão: npm).
-  Isso afeta apenas **instalações de Skills**; o runtime do Gateway ainda deve ser Node
-  (Bun não recomendado para WhatsApp/Telegram).
-- `entries.<skillKey>`: substituições por Skill.
+## Fields
 
-Campos por Skill:
+- `allowBundled`: optional allowlist for **bundled** skills only. When set, only
+  bundled skills in the list are eligible (managed/workspace skills unaffected).
+- `load.extraDirs`: additional skill directories to scan (lowest precedence).
+- `load.watch`: watch skill folders and refresh the skills snapshot (default: true).
+- `load.watchDebounceMs`: debounce for skill watcher events in milliseconds (default: 250).
+- `install.preferBrew`: prefer brew installers when available (default: true).
+- `install.nodeManager`: node installer preference (`npm` | `pnpm` | `yarn` | `bun`, default: npm).
+  This only affects **skill installs**; the Gateway runtime should still be Node
+  (Bun not recommended for WhatsApp/Telegram).
+- `entries.<skillKey>`: per-skill overrides.
 
-- `enabled`: defina `false` para desabilitar uma Skill mesmo se estiver integrada/instalada.
-- `env`: variáveis de ambiente injetadas para a execução do agente (apenas se ainda não definidas).
-- `apiKey`: conveniência opcional para Skills que declaram uma variável de ambiente principal.
-  Suporta string em texto simples ou objeto SecretRef (`{ source, provider, id }`).
+Per-skill fields:
 
-## Notas
+- `enabled`: set `false` to disable a skill even if it’s bundled/installed.
+- `env`: environment variables injected for the agent run (only if not already set).
+- `apiKey`: optional convenience for skills that declare a primary env var.
+  Supports plaintext string or SecretRef object (`{ source, provider, id }`).
 
-- Chaves em `entries` mapeiam para o nome da Skill por padrão. Se uma Skill definir
-  `metadata.opencraft.skillKey`, use essa chave em vez disso.
-- Alterações nas Skills são captadas no próximo turno do agente quando o observador está habilitado.
+## Notes
 
-### Skills em sandbox + variáveis de ambiente
+- Keys under `entries` map to the skill name by default. If a skill defines
+  `metadata.opencraft.skillKey`, use that key instead.
+- Changes to skills are picked up on the next agent turn when the watcher is enabled.
 
-Quando uma sessão está em **sandbox**, processos de Skills rodam dentro do Docker. O sandbox
-**não** herda o `process.env` do host.
+### Sandboxed skills + env vars
 
-Use uma das opções:
+When a session is **sandboxed**, skill processes run inside Docker. The sandbox
+does **not** inherit the host `process.env`.
 
-- `agents.defaults.sandbox.docker.env` (ou por agente `agents.list[].sandbox.docker.env`)
-- incorpore o env na sua imagem personalizada de sandbox
+Use one of:
 
-`env` global e `skills.entries.<skill>.env/apiKey` se aplicam apenas a execuções no **host**.
+- `agents.defaults.sandbox.docker.env` (or per-agent `agents.list[].sandbox.docker.env`)
+- bake the env into your custom sandbox image
+
+Global `env` and `skills.entries.<skill>.env/apiKey` apply to **host** runs only.

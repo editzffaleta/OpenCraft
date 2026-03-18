@@ -1,6 +1,6 @@
+import type { BaseProbeResult } from "opencraft/plugin-sdk/channel-runtime";
 import type { TelegramNetworkConfig } from "opencraft/plugin-sdk/telegram";
-import type { BaseProbeResult } from "../../../src/channels/plugins/types.js";
-import { fetchWithTimeout } from "../../../src/utils/fetch-timeout.js";
+import { fetchWithTimeout } from "opencraft/plugin-sdk/text-runtime";
 import { resolveTelegramFetch } from "./fetch.js";
 import { makeProxyFetch } from "./proxy.js";
 

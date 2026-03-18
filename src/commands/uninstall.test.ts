@@ -29,7 +29,7 @@ describe("uninstallCommand", () => {
     vi.clearAllMocks();
     resolveCleanupPlanFromDisk.mockReturnValue({
       stateDir: "/tmp/.opencraft",
-      configPath: "/tmp/.editzffaleta/OpenCraft.json",
+      configPath: "/tmp/.opencraft/opencraft.json",
       oauthDir: "/tmp/.opencraft/credentials",
       configInsideState: true,
       oauthInsideState: true,
@@ -61,8 +61,6 @@ describe("uninstallCommand", () => {
       dryRun: true,
     });
 
-    expect(runtime.log).not.toHaveBeenCalledWith(
-      expect.stringContaining("opencraft backup create"),
-    );
+    expect(runtime.log).not.toHaveBeenCalledWith(expect.stringContaining("opencraft backup create"));
   });
 });

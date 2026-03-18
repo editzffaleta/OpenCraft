@@ -57,13 +57,13 @@ export async function runDaemonInstall(opts: DaemonInstallOptions) {
       emit({
         ok: true,
         result: "already-installed",
-        message: `Serviço do Gateway já ${service.loadedText}.`,
+        message: `Gateway service already ${service.loadedText}.`,
         service: buildDaemonServiceSnapshot(service, loaded),
       });
       if (!json) {
-        defaultRuntime.log(`Serviço do Gateway já ${service.loadedText}.`);
+        defaultRuntime.log(`Gateway service already ${service.loadedText}.`);
         defaultRuntime.log(
-          `Reinstale com: ${formatCliCommand("opencraft gateway install --force")}`,
+          `Reinstall with: ${formatCliCommand("opencraft gateway install --force")}`,
         );
       }
       return;

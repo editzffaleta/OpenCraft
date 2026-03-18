@@ -1906,7 +1906,7 @@ resolve_opencraft_bin() {
 
 install_opencraft_from_git() {
     local repo_dir="$1"
-    local repo_url="https://github.com/editzffaleta/OpenCraft.git"
+    local repo_url="https://github.com/openclaw/openclaw.git"
 
     if [[ -d "$repo_dir/.git" ]]; then
         ui_info "Installing OpenCraft from git checkout: ${repo_dir}"
@@ -1987,7 +1987,7 @@ resolve_package_install_spec() {
     local package_name="$1"
     local value="$2"
     if [[ "${value,,}" == "main" ]]; then
-        echo "github:editzffaleta/OpenCraft#main"
+        echo "github:opencraft/opencraft#main"
         return 0
     fi
     if is_explicit_package_install_spec "$value"; then
@@ -2095,7 +2095,7 @@ run_bootstrap_onboarding_if_needed() {
         return
     fi
 
-    local config_path="${OPENCRAFT_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json}"
+    local config_path="${OPENCRAFT_CONFIG_PATH:-$HOME/.opencraft/opencraft.json}"
     if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
         return
     fi
@@ -2513,7 +2513,7 @@ main() {
         if [[ "$NO_ONBOARD" == "1" || "$skip_onboard" == "true" ]]; then
             ui_info "Skipping onboard (requested); run opencraft onboard later"
         else
-            local config_path="${OPENCRAFT_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json}"
+            local config_path="${OPENCRAFT_CONFIG_PATH:-$HOME/.opencraft/opencraft.json}"
             if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
                 ui_info "Config already present; running doctor"
                 run_doctor

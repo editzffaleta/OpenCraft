@@ -2,15 +2,15 @@ import {
   resolvePayloadMediaUrls,
   sendPayloadMediaSequence,
   sendTextMediaPayload,
-} from "../../../src/channels/plugins/outbound/direct-text-media.js";
-import type { ChannelOutboundAdapter } from "../../../src/channels/plugins/types.js";
-import type { OutboundIdentity } from "../../../src/infra/outbound/identity.js";
-import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { ChannelOutboundAdapter } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveOutboundSendDep } from "opencraft/plugin-sdk/channel-runtime";
 import {
   resolveInteractiveTextFallback,
   type InteractiveReply,
-} from "../../../src/interactive/payload.js";
-import { getGlobalHookRunner } from "../../../src/plugins/hook-runner-global.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { OutboundIdentity } from "opencraft/plugin-sdk/infra-runtime";
+import { getGlobalHookRunner } from "opencraft/plugin-sdk/plugin-runtime";
 import { parseSlackBlocksInput } from "./blocks-input.js";
 import { buildSlackInteractiveBlocks, type SlackBlock } from "./blocks-render.js";
 import { sendMessageSlack, type SlackSendIdentity } from "./send.js";

@@ -1,6 +1,6 @@
 ---
 name: camsnap
-description: Capturar frames ou clipes de câmeras RTSP/ONVIF.
+description: Capture frames or clips from RTSP/ONVIF cameras.
 homepage: https://camsnap.ai
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/camsnap",
               "bins": ["camsnap"],
-              "label": "Instalar camsnap (brew)",
+              "label": "Install camsnap (brew)",
             },
           ],
       },
@@ -24,22 +24,22 @@ metadata:
 
 # camsnap
 
-Use `camsnap` para capturar snapshots, clipes ou eventos de movimento de câmeras configuradas.
+Use `camsnap` to grab snapshots, clips, or motion events from configured cameras.
 
-Configuração
+Setup
 
-- Arquivo de configuração: `~/.config/camsnap/config.yaml`
-- Adicionar câmera: `camsnap add --name kitchen --host 192.168.0.10 --user user --pass pass`
+- Config file: `~/.config/camsnap/config.yaml`
+- Add camera: `camsnap add --name kitchen --host 192.168.0.10 --user user --pass pass`
 
-Comandos comuns
+Common commands
 
-- Descobrir: `camsnap discover --info`
+- Discover: `camsnap discover --info`
 - Snapshot: `camsnap snap kitchen --out shot.jpg`
-- Clipe: `camsnap clip kitchen --dur 5s --out clip.mp4`
-- Monitorar movimento: `camsnap watch kitchen --threshold 0.2 --action '...'`
-- Diagnóstico: `camsnap doctor --probe`
+- Clip: `camsnap clip kitchen --dur 5s --out clip.mp4`
+- Motion watch: `camsnap watch kitchen --threshold 0.2 --action '...'`
+- Doctor: `camsnap doctor --probe`
 
-Observações
+Notes
 
-- Requer `ffmpeg` no PATH.
-- Prefira uma captura de teste curta antes de clipes mais longos.
+- Requires `ffmpeg` on PATH.
+- Prefer a short test capture before longer clips.

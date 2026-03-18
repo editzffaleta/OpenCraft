@@ -1,4 +1,4 @@
-import { mapAllowlistResolutionInputs } from "opencraft/plugin-sdk/compat";
+import { mapAllowlistResolutionInputs } from "opencraft/plugin-sdk/allowlist-resolution";
 import { searchGraphUsers } from "./graph-users.js";
 import {
   listChannelsForTeam,

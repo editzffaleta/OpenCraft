@@ -1,15 +1,11 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/diagnostics-otel";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/diagnostics-otel";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
 import { createDiagnosticsOtelService } from "./src/service.js";
 
-const plugin = {
+export default definePluginEntry({
   id: "diagnostics-otel",
   name: "Diagnostics OpenTelemetry",
   description: "Export diagnostics events to OpenTelemetry",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerService(createDiagnosticsOtelService());
   },
-};
-
-export default plugin;
+});

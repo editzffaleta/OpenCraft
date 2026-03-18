@@ -1,9 +1,6 @@
-import {
-  buildMentionRegexes,
-  normalizeMentionText,
-} from "../../../../src/auto-reply/reply/mentions.js";
-import type { loadConfig } from "../../../../src/config/config.js";
-import { isSelfChatMode, jidToE164, normalizeE164 } from "../../../../src/utils.js";
+import type { loadConfig } from "opencraft/plugin-sdk/config-runtime";
+import { buildMentionRegexes, normalizeMentionText } from "opencraft/plugin-sdk/reply-runtime";
+import { isSelfChatMode, jidToE164, normalizeE164 } from "opencraft/plugin-sdk/text-runtime";
 import type { WebInboundMsg } from "./types.js";
 
 export type MentionConfig = {

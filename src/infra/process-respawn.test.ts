@@ -61,7 +61,7 @@ function expectLaunchdSupervisedWithoutKickstart(params?: {
   if (params?.launchJobLabel) {
     process.env.LAUNCH_JOB_LABEL = params.launchJobLabel;
   }
-  process.env.OPENCRAFT_LAUNCHD_LABEL = "ai.opencraft.gateway";
+  process.env.OPENCLAW_LAUNCHD_LABEL = "ai.openclaw.gateway";
   const result = restartGatewayProcessWithFreshPid();
   expect(result.mode).toBe("supervised");
   if (params?.detailContains) {
@@ -87,19 +87,19 @@ describe("restartGatewayProcessWithFreshPid", () => {
   it("returns supervised when launchd hints are present on macOS (no kickstart)", () => {
     clearSupervisorHints();
     expectLaunchdSupervisedWithoutKickstart({
-      launchJobLabel: "ai.opencraft.gateway",
+      launchJobLabel: "ai.openclaw.gateway",
       detailContains: "launchd restart handoff",
     });
   });
 
   it("returns supervised on macOS when launchd label is set (no kickstart)", () => {
-    expectLaunchdSupervisedWithoutKickstart({ launchJobLabel: "ai.opencraft.gateway" });
+    expectLaunchdSupervisedWithoutKickstart({ launchJobLabel: "ai.openclaw.gateway" });
   });
 
   it("launchd supervisor never returns failed regardless of triggerOpenCraftRestart outcome", () => {
     clearSupervisorHints();
     setPlatform("darwin");
-    process.env.OPENCRAFT_LAUNCHD_LABEL = "ai.opencraft.gateway";
+    process.env.OPENCLAW_LAUNCHD_LABEL = "ai.openclaw.gateway";
     // Even if triggerOpenCraftRestart *would* fail, launchd path must not call it.
     triggerOpenCraftRestartMock.mockReturnValue({
       ok: false,
@@ -115,7 +115,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
   it("falls back to plain supervised exit when launchd handoff scheduling fails", () => {
     clearSupervisorHints();
     setPlatform("darwin");
-    process.env.XPC_SERVICE_NAME = "ai.opencraft.gateway";
+    process.env.XPC_SERVICE_NAME = "ai.openclaw.gateway";
     scheduleDetachedLaunchdRestartHandoffMock.mockReturnValue({
       ok: false,
       detail: "spawn failed",
@@ -134,7 +134,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
   it("does not schedule kickstart on non-darwin platforms", () => {
     setPlatform("linux");
     process.env.INVOCATION_ID = "abc123";
-    process.env.OPENCRAFT_LAUNCHD_LABEL = "ai.opencraft.gateway";
+    process.env.OPENCLAW_LAUNCHD_LABEL = "ai.openclaw.gateway";
 
     const result = restartGatewayProcessWithFreshPid();
 
@@ -146,7 +146,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
   it("returns supervised when XPC_SERVICE_NAME is set by launchd", () => {
     clearSupervisorHints();
     setPlatform("darwin");
-    process.env.XPC_SERVICE_NAME = "ai.opencraft.gateway";
+    process.env.XPC_SERVICE_NAME = "ai.openclaw.gateway";
     const result = restartGatewayProcessWithFreshPid();
     expect(result.mode).toBe("supervised");
     expect(triggerOpenCraftRestartMock).not.toHaveBeenCalled();

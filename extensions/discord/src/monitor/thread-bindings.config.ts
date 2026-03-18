@@ -2,9 +2,9 @@ import {
   resolveThreadBindingIdleTimeoutMs,
   resolveThreadBindingMaxAgeMs,
   resolveThreadBindingsEnabled,
-} from "../../../../src/channels/thread-bindings-policy.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import { normalizeAccountId } from "../../../../src/routing/session-key.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeAccountId } from "opencraft/plugin-sdk/routing";
 
 export {
   resolveThreadBindingIdleTimeoutMs,

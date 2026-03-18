@@ -1,14 +1,11 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { buildElevenLabsSpeechProvider } from "../../src/tts/providers/elevenlabs.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { buildElevenLabsSpeechProvider } from "opencraft/plugin-sdk/speech";
 
-const elevenLabsPlugin = {
+export default definePluginEntry({
   id: "elevenlabs",
   name: "ElevenLabs Speech",
   description: "Bundled ElevenLabs speech provider",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerSpeechProvider(buildElevenLabsSpeechProvider());
   },
-};
-
-export default elevenLabsPlugin;
+});

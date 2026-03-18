@@ -1,6 +1,6 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { TelegramGroupConfig } from "../../../src/config/types.telegram.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { TelegramGroupConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeAccountId } from "opencraft/plugin-sdk/routing";
 
 type TelegramGroups = Record<string, TelegramGroupConfig>;
 

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { SILENT_REPLY_TOKEN, type PluginRuntime } from "opencraft/plugin-sdk/msteams";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPluginRuntimeMock } from "../../test-utils/plugin-runtime-mock.js";
+import { createPluginRuntimeMock } from "../../../test/helpers/extensions/plugin-runtime-mock.js";
 import type { StoredConversationReference } from "./conversation-store.js";
 const graphUploadMockState = vi.hoisted(() => ({
   uploadAndShareOneDrive: vi.fn(),
@@ -217,9 +217,7 @@ describe("msteams messenger", () => {
     });
 
     it("preserves parsed mentions when appending OneDrive fallback file links", async () => {
-      const tmpDir = await mkdtemp(
-        path.join(resolvePreferredOpenCraftTmpDir(), "msteams-mention-"),
-      );
+      const tmpDir = await mkdtemp(path.join(resolvePreferredOpenCraftTmpDir(), "msteams-mention-"));
       const localFile = path.join(tmpDir, "note.txt");
       await writeFile(localFile, "hello");
 

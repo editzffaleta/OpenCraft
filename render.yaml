@@ -13,7 +13,7 @@ services:
         value: /data/.opencraft
       - key: OPENCRAFT_WORKSPACE_DIR
         value: /data/workspace
-      - key: OPENCLAW_GATEWAY_TOKEN
+      - key: OPENCRAFT_GATEWAY_TOKEN
         generateValue: true
     disk:
       name: opencraft-data

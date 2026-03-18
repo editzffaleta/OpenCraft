@@ -3,7 +3,7 @@ import {
   buildNestedDmConfigSchema,
   DmPolicySchema,
   GroupPolicySchema,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-config-schema";
 import { MarkdownConfigSchema, ToolPolicySchema } from "opencraft/plugin-sdk/matrix";
 import { z } from "zod";
 import { buildSecretInputSchema } from "./secret-input.js";

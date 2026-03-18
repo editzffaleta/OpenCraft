@@ -1,23 +1,23 @@
 ---
-summary: "Registro de perfil de usuário"
+summary: "User profile record"
 read_when:
-  - Configurando um workspace manualmente
+  - Bootstrapping a workspace manually
 ---
 
-# USER.md - Sobre Seu Humano
+# USER.md - About Your Human
 
-_Aprenda sobre a pessoa que você está ajudando. Atualize conforme avança._
+_Learn about the person you're helping. Update this as you go._
 
-- **Nome:**
-- **Como chamá-lo(a):**
-- **Pronomes:** _(opcional)_
-- **Fuso horário:**
-- **Notas:**
+- **Name:**
+- **What to call them:**
+- **Pronouns:** _(optional)_
+- **Timezone:**
+- **Notes:**
 
-## Contexto
+## Context
 
-_(Com o que eles se importam? Em quais projetos estão trabalhando? O que os irrita? O que os faz rir? Construa isso com o tempo.)_
+_(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
 
 ---
 
-Quanto mais você souber, melhor poderá ajudar. Mas lembre-se — você está aprendendo sobre uma pessoa, não construindo um dossiê. Respeite a diferença.
+The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.

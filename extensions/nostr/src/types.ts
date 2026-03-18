@@ -3,7 +3,7 @@ import {
   normalizeAccountId,
   normalizeOptionalAccountId,
 } from "opencraft/plugin-sdk/account-id";
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/nostr";
+import type { OpenCraftConfig } from "../api.js";
 import type { NostrProfile } from "./config-schema.js";
 import { DEFAULT_RELAYS } from "./default-relays.js";
 import { getPublicKeyFromPrivate } from "./nostr-bus.js";

@@ -1,86 +1,86 @@
 ---
-title: "Ferramenta PDF"
-summary: "Analisar um ou mais documentos PDF com suporte nativo de provedor e fallback de extração"
+title: "PDF Tool"
+summary: "Analyze one or more PDF documents with native provider support and extraction fallback"
 read_when:
-  - Você quer analisar PDFs a partir de agentes
-  - Você precisa dos parâmetros e limites exatos da ferramenta PDF
-  - Você está depurando modo PDF nativo vs fallback de extração
+  - You want to analyze PDFs from agents
+  - You need exact pdf tool parameters and limits
+  - You are debugging native PDF mode vs extraction fallback
 ---
 
-# Ferramenta PDF
+# PDF tool
 
-`pdf` analisa um ou mais documentos PDF e retorna texto.
+`pdf` analyzes one or more PDF documents and returns text.
 
-Comportamento rápido:
+Quick behavior:
 
-- Modo nativo de provedor para provedores de modelo Anthropic e Google.
-- Modo de fallback de extração para outros provedores (extrai texto primeiro, depois imagens de página quando necessário).
-- Suporta entrada única (`pdf`) ou múltipla (`pdfs`), máximo 10 PDFs por chamada.
+- Native provider mode for Anthropic and Google model providers.
+- Extraction fallback mode for other providers (extract text first, then page images when needed).
+- Supports single (`pdf`) or multi (`pdfs`) input, max 10 PDFs per call.
 
-## Disponibilidade
+## Availability
 
-A ferramenta só é registrada quando o OpenCraft consegue resolver uma config de modelo com capacidade PDF para o agente:
+The tool is only registered when OpenCraft can resolve a PDF-capable model config for the agent:
 
 1. `agents.defaults.pdfModel`
-2. fallback para `agents.defaults.imageModel`
-3. fallback para padrões de melhor esforço do provedor baseado em autenticação disponível
+2. fallback to `agents.defaults.imageModel`
+3. fallback to best effort provider defaults based on available auth
 
-Se nenhum modelo utilizável puder ser resolvido, a ferramenta `pdf` não é exposta.
+If no usable model can be resolved, the `pdf` tool is not exposed.
 
-## Referência de entrada
+## Input reference
 
-- `pdf` (`string`): um caminho ou URL de PDF
-- `pdfs` (`string[]`): múltiplos caminhos ou URLs de PDF, até 10 no total
-- `prompt` (`string`): prompt de análise, padrão `Analyze this PDF document.`
-- `pages` (`string`): filtro de página como `1-5` ou `1,3,7-9`
-- `model` (`string`): substituição opcional de modelo (`provider/model`)
-- `maxBytesMb` (`number`): limite de tamanho por PDF em MB
+- `pdf` (`string`): one PDF path or URL
+- `pdfs` (`string[]`): multiple PDF paths or URLs, up to 10 total
+- `prompt` (`string`): analysis prompt, default `Analyze this PDF document.`
+- `pages` (`string`): page filter like `1-5` or `1,3,7-9`
+- `model` (`string`): optional model override (`provider/model`)
+- `maxBytesMb` (`number`): per-PDF size cap in MB
 
-Notas de entrada:
+Input notes:
 
-- `pdf` e `pdfs` são mesclados e deduplicados antes do carregamento.
-- Se nenhuma entrada PDF for fornecida, a ferramenta retorna erro.
-- `pages` é parseado como números de página base 1, deduplicados, ordenados e limitados ao máximo de páginas configurado.
-- `maxBytesMb` usa como padrão `agents.defaults.pdfMaxBytesMb` ou `10`.
+- `pdf` and `pdfs` are merged and deduplicated before loading.
+- If no PDF input is provided, the tool errors.
+- `pages` is parsed as 1-based page numbers, deduped, sorted, and clamped to the configured max pages.
+- `maxBytesMb` defaults to `agents.defaults.pdfMaxBytesMb` or `10`.
 
-## Referências de PDF suportadas
+## Supported PDF references
 
-- caminho de arquivo local (incluindo expansão `~`)
-- URL `file://`
-- URLs `http://` e `https://`
+- local file path (including `~` expansion)
+- `file://` URL
+- `http://` and `https://` URL
 
-Notas de referência:
+Reference notes:
 
-- Outros esquemas de URI (por exemplo `ftp://`) são rejeitados com `unsupported_pdf_reference`.
-- No modo sandbox, URLs remotas `http(s)` são rejeitadas.
-- Com política de arquivo somente workspace habilitada, caminhos de arquivo locais fora das raízes permitidas são rejeitados.
+- Other URI schemes (for example `ftp://`) are rejected with `unsupported_pdf_reference`.
+- In sandbox mode, remote `http(s)` URLs are rejected.
+- With workspace-only file policy enabled, local file paths outside allowed roots are rejected.
 
-## Modos de execução
+## Execution modes
 
-### Modo nativo de provedor
+### Native provider mode
 
-O modo nativo é usado para provedores `anthropic` e `google`.
-A ferramenta envia bytes PDF brutos diretamente para APIs de provedores.
+Native mode is used for provider `anthropic` and `google`.
+The tool sends raw PDF bytes directly to provider APIs.
 
-Limites do modo nativo:
+Native mode limits:
 
-- `pages` não é suportado. Se definido, a ferramenta retorna um erro.
+- `pages` is not supported. If set, the tool returns an error.
 
-### Modo de fallback de extração
+### Extraction fallback mode
 
-O modo de fallback é usado para provedores não nativos.
+Fallback mode is used for non-native providers.
 
-Fluxo:
+Flow:
 
-1. Extrair texto das páginas selecionadas (até `agents.defaults.pdfMaxPages`, padrão `20`).
-2. Se o comprimento do texto extraído for menor que `200` caracteres, renderizar páginas selecionadas como imagens PNG e incluí-las.
-3. Enviar conteúdo extraído mais prompt para o modelo selecionado.
+1. Extract text from selected pages (up to `agents.defaults.pdfMaxPages`, default `20`).
+2. If extracted text length is below `200` chars, render selected pages to PNG images and include them.
+3. Send extracted content plus prompt to the selected model.
 
-Detalhes do fallback:
+Fallback details:
 
-- A extração de imagem de página usa um orçamento de pixels de `4.000.000`.
-- Se o modelo alvo não suportar entrada de imagem e não houver texto extraível, a ferramenta retorna erro.
-- O fallback de extração requer `pdfjs-dist` (e `@napi-rs/canvas` para renderização de imagem).
+- Page image extraction uses a pixel budget of `4,000,000`.
+- If the target model does not support image input and there is no extractable text, the tool errors.
+- Extraction fallback requires `pdfjs-dist` (and `@napi-rs/canvas` for image rendering).
 
 ## Config
 
@@ -99,34 +99,34 @@ Detalhes do fallback:
 }
 ```
 
-Veja [Referência de Configuração](/gateway/configuration-reference) para detalhes completos dos campos.
+See [Configuration Reference](/gateway/configuration-reference) for full field details.
 
-## Detalhes de saída
+## Output details
 
-A ferramenta retorna texto em `content[0].text` e metadados estruturados em `details`.
+The tool returns text in `content[0].text` and structured metadata in `details`.
 
-Campos comuns de `details`:
+Common `details` fields:
 
-- `model`: referência do modelo resolvido (`provider/model`)
-- `native`: `true` para modo nativo de provedor, `false` para fallback
-- `attempts`: tentativas de fallback que falharam antes do sucesso
+- `model`: resolved model ref (`provider/model`)
+- `native`: `true` for native provider mode, `false` for fallback
+- `attempts`: fallback attempts that failed before success
 
-Campos de caminho:
+Path fields:
 
-- entrada de PDF único: `details.pdf`
-- entradas de múltiplos PDFs: `details.pdfs[]` com entradas `pdf`
-- metadados de reescrita de caminho do sandbox (quando aplicável): `rewrittenFrom`
+- single PDF input: `details.pdf`
+- multiple PDF inputs: `details.pdfs[]` with `pdf` entries
+- sandbox path rewrite metadata (when applicable): `rewrittenFrom`
 
-## Comportamento de erro
+## Error behavior
 
-- Entrada PDF ausente: lança `pdf required: provide a path or URL to a PDF document`
-- Muitos PDFs: retorna erro estruturado em `details.error = "too_many_pdfs"`
-- Esquema de referência não suportado: retorna `details.error = "unsupported_pdf_reference"`
-- Modo nativo com `pages`: lança erro claro `pages is not supported with native PDF providers`
+- Missing PDF input: throws `pdf required: provide a path or URL to a PDF document`
+- Too many PDFs: returns structured error in `details.error = "too_many_pdfs"`
+- Unsupported reference scheme: returns `details.error = "unsupported_pdf_reference"`
+- Native mode with `pages`: throws clear `pages is not supported with native PDF providers` error
 
-## Exemplos
+## Examples
 
-PDF único:
+Single PDF:
 
 ```json
 {
@@ -135,7 +135,7 @@ PDF único:
 }
 ```
 
-Múltiplos PDFs:
+Multiple PDFs:
 
 ```json
 {
@@ -144,7 +144,7 @@ Múltiplos PDFs:
 }
 ```
 
-Modelo de fallback filtrado por página:
+Page-filtered fallback model:
 
 ```json
 {

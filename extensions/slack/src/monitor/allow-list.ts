@@ -2,12 +2,12 @@ import {
   compileAllowlist,
   resolveCompiledAllowlistMatch,
   type AllowlistMatch,
-} from "../../../../src/channels/allowlist-match.js";
+} from "opencraft/plugin-sdk/channel-runtime";
 import {
   normalizeHyphenSlug,
   normalizeStringEntries,
   normalizeStringEntriesLower,
-} from "../../../../src/shared/string-normalization.js";
+} from "opencraft/plugin-sdk/text-runtime";
 
 const SLACK_SLUG_CACHE_MAX = 512;
 const slackSlugCache = new Map<string, string>();

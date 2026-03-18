@@ -2,12 +2,12 @@ import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   type OpenCraftConfig,
-  type SlackAccountConfig,
-} from "opencraft/plugin-sdk/slack";
+} from "opencraft/plugin-sdk/account-resolution";
 import {
   hasConfiguredSecretInput,
   normalizeSecretInputString,
-} from "../../../src/config/types.secrets.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import type { SlackAccountConfig } from "opencraft/plugin-sdk/slack";
 import type { SlackAccountSurfaceFields } from "./account-surface-fields.js";
 import {
   mergeSlackAccountConfig,

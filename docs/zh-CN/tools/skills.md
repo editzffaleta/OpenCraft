@@ -29,7 +29,7 @@ Skills 从**三个**位置加载：
 
 `<workspace>/skills`（最高）→ `~/.opencraft/skills` → 内置 Skills（最低）
 
-此外，你可以通过 `~/.editzffaleta/OpenCraft.json` 中的 `skills.load.extraDirs` 配置额外的 Skills 文件夹（最低优先级）。
+此外，你可以通过 `~/.opencraft/opencraft.json` 中的 `skills.load.extraDirs` 配置额外的 Skills 文件夹（最低优先级）。
 
 ## 单智能体 vs 共享 Skills
 
@@ -170,7 +170,7 @@ metadata:
 
 如果没有 `metadata.opencraft`，该 Skills 始终有资格（除非在配置中禁用或被 `skills.allowBundled` 阻止用于内置 Skills）。
 
-## 配置覆盖（`~/.editzffaleta/OpenCraft.json`）
+## 配置覆盖（`~/.opencraft/opencraft.json`）
 
 内置/托管 Skills 可以被切换并提供环境变量值：
 

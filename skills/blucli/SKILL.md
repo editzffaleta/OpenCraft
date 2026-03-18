@@ -1,6 +1,6 @@
 ---
 name: blucli
-description: CLI BluOS (blu) para descoberta, reprodução, agrupamento e volume.
+description: BluOS CLI (blu) for discovery, playback, grouping, and volume.
 homepage: https://blucli.sh
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "go",
               "module": "github.com/steipete/blucli/cmd/blu@latest",
               "bins": ["blu"],
-              "label": "Instalar blucli (go)",
+              "label": "Install blucli (go)",
             },
           ],
       },
@@ -24,24 +24,24 @@ metadata:
 
 # blucli (blu)
 
-Use `blu` para controlar players Bluesound/NAD.
+Use `blu` to control Bluesound/NAD players.
 
-Início rápido
+Quick start
 
-- `blu devices` (escolher o alvo)
+- `blu devices` (pick target)
 - `blu --device <id> status`
 - `blu play|pause|stop`
 - `blu volume set 15`
 
-Seleção de alvo (em ordem de prioridade)
+Target selection (in priority order)
 
 - `--device <id|name|alias>`
 - `BLU_DEVICE`
-- padrão de configuração (se definido)
+- config default (if set)
 
-Tarefas comuns
+Common tasks
 
-- Agrupamento: `blu group status|add|remove`
-- Pesquisar/reproduzir TuneIn: `blu tunein search "query"`, `blu tunein play "query"`
+- Grouping: `blu group status|add|remove`
+- TuneIn search/play: `blu tunein search "query"`, `blu tunein play "query"`
 
-Prefira `--json` para scripts. Confirme o dispositivo alvo antes de alterar a reprodução.
+Prefer `--json` for scripts. Confirm the target device before changing playback.

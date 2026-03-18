@@ -126,7 +126,7 @@ jobs:
           cd apps/ios
           xcodegen generate
           xcodebuild build \
-            -project OpenClaw.xcodeproj \
+            -project OpenCraft.xcodeproj \
             -scheme OpenCraft \
             -destination "generic/platform=iOS Simulator" \
             CODE_SIGNING_ALLOWED=NO

@@ -1,17 +1,17 @@
-import { loadConfig } from "../../../../src/config/config.js";
+import { loadConfig } from "opencraft/plugin-sdk/config-runtime";
 import {
   resolveOpenProviderRuntimeGroupPolicy,
   resolveDefaultGroupPolicy,
   warnMissingProviderGroupPolicyFallbackOnce,
-} from "../../../../src/config/runtime-group-policy.js";
-import { logVerbose } from "../../../../src/globals.js";
-import { issuePairingChallenge } from "../../../../src/pairing/pairing-challenge.js";
-import { upsertChannelPairingRequest } from "../../../../src/pairing/pairing-store.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { issuePairingChallenge } from "opencraft/plugin-sdk/conversation-runtime";
+import { upsertChannelPairingRequest } from "opencraft/plugin-sdk/conversation-runtime";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
 import {
   readStoreAllowFromForDmPolicy,
   resolveDmGroupAccessWithLists,
-} from "../../../../src/security/dm-policy-shared.js";
-import { isSelfChatMode, normalizeE164 } from "../../../../src/utils.js";
+} from "opencraft/plugin-sdk/security-runtime";
+import { isSelfChatMode, normalizeE164 } from "opencraft/plugin-sdk/text-runtime";
 import { resolveWhatsAppAccount } from "../accounts.js";
 
 export type InboundAccessControlResult = {

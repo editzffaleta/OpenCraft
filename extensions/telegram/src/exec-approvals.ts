@@ -1,7 +1,7 @@
-import type { ReplyPayload } from "../../../src/auto-reply/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { TelegramExecApprovalConfig } from "../../../src/config/types.telegram.js";
-import { getExecApprovalReplyMetadata } from "../../../src/infra/exec-approval-reply.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { TelegramExecApprovalConfig } from "opencraft/plugin-sdk/config-runtime";
+import { getExecApprovalReplyMetadata } from "opencraft/plugin-sdk/infra-runtime";
+import type { ReplyPayload } from "opencraft/plugin-sdk/reply-runtime";
 import { resolveTelegramAccount } from "./accounts.js";
 import { resolveTelegramTargetChatType } from "./targets.js";
 

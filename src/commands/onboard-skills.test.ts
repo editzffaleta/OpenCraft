@@ -110,7 +110,7 @@ function createPrompter(params: {
     ) as unknown as WizardPrompter["multiselect"],
     text: vi.fn(async () => ""),
     confirm: vi.fn(async ({ message }) => {
-      if (message === "Mostrar comando de instalação do Homebrew?") {
+      if (message === "Show Homebrew install command?") {
         return params.showBrewInstall ?? false;
       }
       return confirmAnswers.shift() ?? false;
@@ -155,10 +155,10 @@ describe("setupSkills", () => {
     await setupSkills({} as OpenCraftConfig, "/tmp/ws", runtime, prompter);
 
     // OS-mismatched skill should be counted as unsupported, not installable/missing.
-    const status = notes.find((n) => n.title === "Status das skills")?.message ?? "";
-    expect(status).toContain("Não suportado neste SO: 1");
+    const status = notes.find((n) => n.title === "Skills status")?.message ?? "";
+    expect(status).toContain("Unsupported on this OS: 1");
 
-    const brewNote = notes.find((n) => n.title === "Homebrew recomendado");
+    const brewNote = notes.find((n) => n.title === "Homebrew recommended");
     expect(brewNote).toBeUndefined();
   });
 
@@ -179,7 +179,7 @@ describe("setupSkills", () => {
     const { prompter, notes } = createPrompter({ multiselect: ["video-frames"] });
     await setupSkills({} as OpenCraftConfig, "/tmp/ws", runtime, prompter);
 
-    const brewNote = notes.find((n) => n.title === "Homebrew recomendado");
+    const brewNote = notes.find((n) => n.title === "Homebrew recommended");
     expect(brewNote).toBeDefined();
   });
 });

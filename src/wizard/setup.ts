@@ -30,39 +30,39 @@ async function requireRiskAcknowledgement(params: {
 
   await params.prompter.note(
     [
-      "Aviso de segurança — leia com atenção.",
+      "Security warning — please read.",
       "",
-      "O OpenCraft é um projeto pessoal e ainda está em beta. Espere arestas.",
-      "Por padrão, o OpenCraft é um agente pessoal: um único limite de operador confiável.",
-      "Este bot pode ler arquivos e executar ações se as ferramentas estiverem ativadas.",
-      "Um prompt mal-intencionado pode induzi-lo a fazer coisas inseguras.",
+      "OpenCraft is a hobby project and still in beta. Expect sharp edges.",
+      "By default, OpenCraft is a personal agent: one trusted operator boundary.",
+      "This bot can read files and run actions if tools are enabled.",
+      "A bad prompt can trick it into doing unsafe things.",
       "",
-      "O OpenCraft não é um limite multi-tenant hostil por padrão.",
-      "Se múltiplos usuários podem enviar mensagens a um agente com ferramentas, eles compartilham essa autoridade delegada.",
+      "OpenCraft is not a hostile multi-tenant boundary by default.",
+      "If multiple users can message one tool-enabled agent, they share that delegated tool authority.",
       "",
-      "Se você não tem experiência com hardening de segurança e controle de acesso, não execute o OpenCraft.",
-      "Peça ajuda a alguém experiente antes de ativar ferramentas ou expô-lo à internet.",
+      "If you’re not comfortable with security hardening and access control, don’t run OpenCraft.",
+      "Ask someone experienced to help before enabling tools or exposing it to the internet.",
       "",
-      "Linha de base recomendada:",
-      "- Pareamento/allowlists + controle de menções.",
-      "- Caixa de entrada compartilhada/multiusuário: separe os limites de confiança (gateway/credenciais separados, idealmente usuários/hosts de SO separados).",
-      "- Sandbox + ferramentas de mínimo privilégio.",
-      "- Caixas compartilhadas: isole sessões de DM (`session.dmScope: per-channel-peer`) e mantenha o acesso a ferramentas mínimo.",
-      "- Mantenha secrets fora do sistema de arquivos acessível ao agente.",
-      "- Use o modelo mais poderoso disponível para qualquer bot com ferramentas ou caixas de entrada não confiáveis.",
+      "Recommended baseline:",
+      "- Pairing/allowlists + mention gating.",
+      "- Multi-user/shared inbox: split trust boundaries (separate gateway/credentials, ideally separate OS users/hosts).",
+      "- Sandbox + least-privilege tools.",
+      "- Shared inboxes: isolate DM sessions (`session.dmScope: per-channel-peer`) and keep tool access minimal.",
+      "- Keep secrets out of the agent’s reachable filesystem.",
+      "- Use the strongest available model for any bot with tools or untrusted inboxes.",
       "",
-      "Execute regularmente:",
+      "Run regularly:",
       "opencraft security audit --deep",
       "opencraft security audit --fix",
       "",
-      "Leitura obrigatória: https://docs.opencraft.ai/gateway/security",
+      "Must read: https://docs.opencraft.ai/gateway/security",
     ].join("\n"),
-    "Segurança",
+    "Security",
   );
 
   const ok = await params.prompter.confirm({
     message:
-      "Entendo que o uso padrão é pessoal e que o uso compartilhado/multiusuário exige proteção. Continuar?",
+      "I understand this is personal-by-default and shared/multi-user use requires lock-down. Continue?",
     initialValue: false,
   });
   if (!ok) {
@@ -77,17 +77,14 @@ export async function runSetupWizard(
 ) {
   const onboardHelpers = await import("../commands/onboard-helpers.js");
   onboardHelpers.printWizardHeader(runtime);
-  await prompter.intro("Configuração do OpenCraft");
+  await prompter.intro("OpenCraft setup");
   await requireRiskAcknowledgement({ opts, prompter });
 
   const snapshot = await readConfigFileSnapshot();
   let baseConfig: OpenCraftConfig = snapshot.valid ? (snapshot.exists ? snapshot.config : {}) : {};
 
   if (snapshot.exists && !snapshot.valid) {
-    await prompter.note(
-      onboardHelpers.summarizeExistingConfig(baseConfig),
-      "Configuração inválida",
-    );
+    await prompter.note(onboardHelpers.summarizeExistingConfig(baseConfig), "Invalid config");
     if (snapshot.issues.length > 0) {
       await prompter.note(
         [
@@ -95,18 +92,18 @@ export async function runSetupWizard(
           "",
           "Docs: https://docs.opencraft.ai/gateway/configuration",
         ].join("\n"),
-        "Problemas de configuração",
+        "Config issues",
       );
     }
     await prompter.outro(
-      `Configuração inválida. Execute \`${formatCliCommand("opencraft doctor")}\` para corrigi-la, depois execute o setup novamente.`,
+      `Config invalid. Run \`${formatCliCommand("opencraft doctor")}\` to repair it, then re-run setup.`,
     );
     runtime.exit(1);
     return;
   }
 
-  const quickstartHint = `Configure detalhes depois via ${formatCliCommand("opencraft configure")}.`;
-  const manualHint = "Configure porta, rede, Tailscale e opções de autenticação.";
+  const quickstartHint = `Configure details later via ${formatCliCommand("opencraft configure")}.`;
+  const manualHint = "Configure port, network, Tailscale, and auth options.";
   const explicitFlowRaw = opts.flow?.trim();
   const normalizedExplicitFlow = explicitFlowRaw === "manual" ? "advanced" : explicitFlowRaw;
   if (
@@ -114,7 +111,7 @@ export async function runSetupWizard(
     normalizedExplicitFlow !== "quickstart" &&
     normalizedExplicitFlow !== "advanced"
   ) {
-    runtime.error("--flow inválido (use quickstart, manual ou advanced).");
+    runtime.error("Invalid --flow (use quickstart, manual, or advanced).");
     runtime.exit(1);
     return;
   }
@@ -125,7 +122,7 @@ export async function runSetupWizard(
   let flow: WizardFlow =
     explicitFlow ??
     (await prompter.select({
-      message: "Modo de configuração",
+      message: "Setup mode",
       options: [
         { value: "quickstart", label: "QuickStart", hint: quickstartHint },
         { value: "advanced", label: "Manual", hint: manualHint },
@@ -135,7 +132,7 @@ export async function runSetupWizard(
 
   if (opts.mode === "remote" && flow === "quickstart") {
     await prompter.note(
-      "QuickStart suporta apenas gateways locais. Alternando para modo Manual.",
+      "QuickStart only supports local gateways. Switching to Manual mode.",
       "QuickStart",
     );
     flow = "advanced";
@@ -144,15 +141,15 @@ export async function runSetupWizard(
   if (snapshot.exists) {
     await prompter.note(
       onboardHelpers.summarizeExistingConfig(baseConfig),
-      "Configuração existente detectada",
+      "Existing config detected",
     );
 
     const action = await prompter.select({
-      message: "Gerenciamento de configuração",
+      message: "Config handling",
       options: [
-        { value: "keep", label: "Usar valores existentes" },
-        { value: "modify", label: "Atualizar valores" },
-        { value: "reset", label: "Redefinir" },
+        { value: "keep", label: "Use existing values" },
+        { value: "modify", label: "Update values" },
+        { value: "reset", label: "Reset" },
       ],
     });
 
@@ -160,16 +157,16 @@ export async function runSetupWizard(
       const workspaceDefault =
         baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE;
       const resetScope = (await prompter.select({
-        message: "Escopo da redefinição",
+        message: "Reset scope",
         options: [
-          { value: "config", label: "Somente configuração" },
+          { value: "config", label: "Config only" },
           {
             value: "config+creds+sessions",
-            label: "Config + credenciais + sessões",
+            label: "Config + creds + sessions",
           },
           {
             value: "full",
-            label: "Redefinição completa (config + credenciais + sessões + workspace)",
+            label: "Full reset (config + creds + sessions + workspace)",
           },
         ],
       })) as ResetScope;
@@ -262,29 +259,29 @@ export async function runSetupWizard(
     };
     const quickstartLines = quickstartGateway.hasExisting
       ? [
-          "Mantendo suas configurações atuais do gateway:",
-          `Porta do gateway: ${quickstartGateway.port}`,
-          `Bind do gateway: ${formatBind(quickstartGateway.bind)}`,
+          "Keeping your current gateway settings:",
+          `Gateway port: ${quickstartGateway.port}`,
+          `Gateway bind: ${formatBind(quickstartGateway.bind)}`,
           ...(quickstartGateway.bind === "custom" && quickstartGateway.customBindHost
-            ? [`IP personalizado do gateway: ${quickstartGateway.customBindHost}`]
+            ? [`Gateway custom IP: ${quickstartGateway.customBindHost}`]
             : []),
-          `Autenticação do gateway: ${formatAuth(quickstartGateway.authMode)}`,
-          `Exposição Tailscale: ${formatTailscale(quickstartGateway.tailscaleMode)}`,
-          "Direto para canais de chat.",
+          `Gateway auth: ${formatAuth(quickstartGateway.authMode)}`,
+          `Tailscale exposure: ${formatTailscale(quickstartGateway.tailscaleMode)}`,
+          "Direct to chat channels.",
         ]
       : [
-          `Porta do gateway: ${DEFAULT_GATEWAY_PORT}`,
-          "Bind do gateway: Loopback (127.0.0.1)",
-          "Autenticação do gateway: Token (padrão)",
-          "Exposição Tailscale: Desativado",
-          "Direto para canais de chat.",
+          `Gateway port: ${DEFAULT_GATEWAY_PORT}`,
+          "Gateway bind: Loopback (127.0.0.1)",
+          "Gateway auth: Token (default)",
+          "Tailscale exposure: Off",
+          "Direct to chat channels.",
         ];
     await prompter.note(quickstartLines.join("\n"), "QuickStart");
   }
 
   const localPort = resolveGatewayPort(baseConfig);
   const localUrl = `ws://127.0.0.1:${localPort}`;
-  let localGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN ?? process.env.CLAWDBOT_GATEWAY_TOKEN;
+  let localGatewayToken = process.env.OPENCRAFT_GATEWAY_TOKEN ?? process.env.CLAWDBOT_GATEWAY_TOKEN;
   try {
     const resolvedGatewayToken = await resolveSetupSecretInputString({
       config: baseConfig,
@@ -298,14 +295,14 @@ export async function runSetupWizard(
   } catch (error) {
     await prompter.note(
       [
-        "Não foi possível resolver o SecretRef gateway.auth.token para a sondagem de setup.",
+        "Could not resolve gateway.auth.token SecretRef for setup probe.",
         error instanceof Error ? error.message : String(error),
       ].join("\n"),
-      "Autenticação do gateway",
+      "Gateway auth",
     );
   }
   let localGatewayPassword =
-    process.env.OPENCLAW_GATEWAY_PASSWORD ?? process.env.CLAWDBOT_GATEWAY_PASSWORD;
+    process.env.OPENCRAFT_GATEWAY_PASSWORD ?? process.env.CLAWDBOT_GATEWAY_PASSWORD;
   try {
     const resolvedGatewayPassword = await resolveSetupSecretInputString({
       config: baseConfig,
@@ -319,10 +316,10 @@ export async function runSetupWizard(
   } catch (error) {
     await prompter.note(
       [
-        "Não foi possível resolver o SecretRef gateway.auth.password para a sondagem de setup.",
+        "Could not resolve gateway.auth.password SecretRef for setup probe.",
         error instanceof Error ? error.message : String(error),
       ].join("\n"),
-      "Autenticação do gateway",
+      "Gateway auth",
     );
   }
 
@@ -346,10 +343,10 @@ export async function runSetupWizard(
   } catch (error) {
     await prompter.note(
       [
-        "Não foi possível resolver o SecretRef gateway.remote.token para a sondagem de setup.",
+        "Could not resolve gateway.remote.token SecretRef for setup probe.",
         error instanceof Error ? error.message : String(error),
       ].join("\n"),
-      "Autenticação do gateway",
+      "Gateway auth",
     );
   }
   const remoteProbe = remoteUrl
@@ -364,23 +361,23 @@ export async function runSetupWizard(
     (flow === "quickstart"
       ? "local"
       : ((await prompter.select({
-          message: "O que você quer configurar?",
+          message: "What do you want to set up?",
           options: [
             {
               value: "local",
-              label: "Gateway local (esta máquina)",
+              label: "Local gateway (this machine)",
               hint: localProbe.ok
-                ? `Gateway acessível (${localUrl})`
-                : `Nenhum gateway detectado (${localUrl})`,
+                ? `Gateway reachable (${localUrl})`
+                : `No gateway detected (${localUrl})`,
             },
             {
               value: "remote",
-              label: "Gateway remoto (somente informações)",
+              label: "Remote gateway (info-only)",
               hint: !remoteUrl
-                ? "Nenhuma URL remota configurada ainda"
+                ? "No remote URL configured yet"
                 : remoteProbe?.ok
-                  ? `Gateway acessível (${remoteUrl})`
-                  : `Configurado mas inacessível (${remoteUrl})`,
+                  ? `Gateway reachable (${remoteUrl})`
+                  : `Configured but unreachable (${remoteUrl})`,
             },
           ],
         })) as OnboardMode));
@@ -394,7 +391,7 @@ export async function runSetupWizard(
     nextConfig = onboardHelpers.applyWizardMetadata(nextConfig, { command: "onboard", mode });
     await writeConfigFile(nextConfig);
     logConfigUpdated(runtime);
-    await prompter.outro("Gateway remoto configurado.");
+    await prompter.outro("Remote gateway configured.");
     return;
   }
 
@@ -403,7 +400,7 @@ export async function runSetupWizard(
     (flow === "quickstart"
       ? (baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE)
       : await prompter.text({
-          message: "Diretório de workspace",
+          message: "Workspace directory",
           initialValue: baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE,
         }));
 
@@ -500,7 +497,7 @@ export async function runSetupWizard(
   const settings = gateway.settings;
 
   if (opts.skipChannels ?? opts.skipProviders) {
-    await prompter.note("Pulando configuração de canais.", "Canais");
+    await prompter.note("Skipping channel setup.", "Channels");
   } else {
     const { listChannelPlugins } = await import("../channels/plugins/index.js");
     const { setupChannels } = await import("../commands/onboard-channels.js");
@@ -528,7 +525,7 @@ export async function runSetupWizard(
   });
 
   if (opts.skipSearch) {
-    await prompter.note("Pulando configuração de busca.", "Busca");
+    await prompter.note("Skipping search setup.", "Search");
   } else {
     const { setupSearch } = await import("../commands/onboard-search.js");
     nextConfig = await setupSearch(nextConfig, runtime, prompter, {
@@ -538,7 +535,7 @@ export async function runSetupWizard(
   }
 
   if (opts.skipSkills) {
-    await prompter.note("Pulando configuração de skills.", "Skills");
+    await prompter.note("Skipping skills setup.", "Skills");
   } else {
     const { setupSkills } = await import("../commands/onboard-skills.js");
     nextConfig = await setupSkills(nextConfig, workspaceDir, runtime, prompter);

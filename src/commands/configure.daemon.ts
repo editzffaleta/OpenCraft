@@ -36,11 +36,11 @@ export async function maybeInstallDaemon(params: {
   if (loaded) {
     const action = guardCancel(
       await select({
-        message: "Serviço do Gateway já instalado",
+        message: "Gateway service already installed",
         options: [
-          { value: "restart", label: "Reiniciar" },
-          { value: "reinstall", label: "Reinstalar" },
-          { value: "skip", label: "Pular" },
+          { value: "restart", label: "Restart" },
+          { value: "reinstall", label: "Reinstall" },
+          { value: "skip", label: "Skip" },
         ],
       }),
       params.runtime,
@@ -49,7 +49,7 @@ export async function maybeInstallDaemon(params: {
       await withProgress(
         { label: "Gateway service", indeterminate: true, delayMs: 0 },
         async (progress) => {
-          progress.setLabel("Reiniciando o serviço do Gateway…");
+          progress.setLabel("Restarting Gateway service…");
           const restartResult = await service.restart({
             env: process.env,
             stdout: process.stdout,
@@ -69,9 +69,9 @@ export async function maybeInstallDaemon(params: {
       await withProgress(
         { label: "Gateway service", indeterminate: true, delayMs: 0 },
         async (progress) => {
-          progress.setLabel("Desinstalando o serviço do Gateway…");
+          progress.setLabel("Uninstalling Gateway service…");
           await service.uninstall({ env: process.env, stdout: process.stdout });
-          progress.setLabel("Serviço do Gateway desinstalado.");
+          progress.setLabel("Gateway service uninstalled.");
         },
       );
     }
@@ -85,7 +85,7 @@ export async function maybeInstallDaemon(params: {
       } else {
         daemonRuntime = guardCancel(
           await select({
-            message: "Runtime do serviço do Gateway",
+            message: "Gateway service runtime",
             options: GATEWAY_DAEMON_RUNTIME_OPTIONS,
             initialValue: DEFAULT_GATEWAY_DAEMON_RUNTIME,
           }),
@@ -96,7 +96,7 @@ export async function maybeInstallDaemon(params: {
     await withProgress(
       { label: "Gateway service", indeterminate: true, delayMs: 0 },
       async (progress) => {
-        progress.setLabel("Preparando o serviço do Gateway…");
+        progress.setLabel("Preparing Gateway service…");
 
         const cfg = loadConfig();
         const tokenResolution = await resolveGatewayInstallToken({
@@ -108,11 +108,11 @@ export async function maybeInstallDaemon(params: {
         }
         if (tokenResolution.unavailableReason) {
           installError = [
-            "Instalação do Gateway bloqueada:",
+            "Gateway install blocked:",
             tokenResolution.unavailableReason,
-            "Corrija a configuração de autenticação do gateway e execute o configure novamente.",
+            "Fix gateway auth config/token input and rerun configure.",
           ].join(" ");
-          progress.setLabel("Instalação do serviço do Gateway bloqueada.");
+          progress.setLabel("Gateway service install blocked.");
           return;
         }
         const { programArguments, workingDirectory, environment } = await buildGatewayInstallPlan({
@@ -123,7 +123,7 @@ export async function maybeInstallDaemon(params: {
           config: cfg,
         });
 
-        progress.setLabel("Instalando o serviço do Gateway…");
+        progress.setLabel("Installing Gateway service…");
         try {
           await service.install({
             env: process.env,
@@ -132,15 +132,15 @@ export async function maybeInstallDaemon(params: {
             workingDirectory,
             environment,
           });
-          progress.setLabel("Serviço do Gateway instalado.");
+          progress.setLabel("Gateway service installed.");
         } catch (err) {
           installError = err instanceof Error ? err.message : String(err);
-          progress.setLabel("Falha na instalação do serviço do Gateway.");
+          progress.setLabel("Gateway service install failed.");
         }
       },
     );
     if (installError) {
-      note("Falha na instalação do serviço do Gateway: " + installError, "Gateway");
+      note("Gateway service install failed: " + installError, "Gateway");
       note(gatewayInstallErrorHint(), "Gateway");
       return;
     }

@@ -1,10 +1,7 @@
-import type { DiscordGuildEntry } from "../../../src/config/types.discord.js";
+import type { DiscordGuildEntry } from "opencraft/plugin-sdk/config-runtime";
 import {
-  applyAccountNameToChannelSection,
   DEFAULT_ACCOUNT_ID,
-  formatDocsLink,
-  migrateBaseNameToDefaultAccount,
-  normalizeAccountId,
+  createEnvPatchedAccountSetupAdapter,
   noteChannelLookupFailure,
   noteChannelLookupSummary,
   parseMentionOrPrefixedId,
@@ -12,27 +9,26 @@ import {
   setLegacyChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
   type OpenCraftConfig,
-} from "../../../src/plugin-sdk-internal/setup.js";
+} from "opencraft/plugin-sdk/setup";
 import {
+  createAllowlistSetupWizardProxy,
   type ChannelSetupAdapter,
   type ChannelSetupDmPolicy,
   type ChannelSetupWizard,
-} from "../../../src/plugin-sdk-internal/setup.js";
+} from "opencraft/plugin-sdk/setup";
+import { formatDocsLink } from "opencraft/plugin-sdk/setup-tools";
 import { inspectDiscordAccount } from "./account-inspect.js";
 import { listDiscordAccountIds, resolveDiscordAccount } from "./accounts.js";
 
 const channel = "discord" as const;
 
-// Lazy getter to avoid calling formatDocsLink at module load time during CJS circular-dep init.
-export function getDiscordTokenHelpLines(): string[] {
-  return [
-    "1) Discord Developer Portal -> Applications -> New Application",
-    "2) Bot -> Add Bot -> Reset Token -> copy token",
-    "3) OAuth2 -> URL Generator -> scope 'bot' -> invite to your server",
-    "Tip: enable Message Content Intent if you need message text. (Bot -> Privileged Gateway Intents -> Message Content Intent)",
-    `Docs: ${formatDocsLink("/discord", "discord")}`,
-  ];
-}
+export const DISCORD_TOKEN_HELP_LINES = [
+  "1) Discord Developer Portal -> Applications -> New Application",
+  "2) Bot -> Add Bot -> Reset Token -> copy token",
+  "3) OAuth2 -> URL Generator -> scope 'bot' -> invite to your server",
+  "Tip: enable Message Content Intent if you need message text. (Bot -> Privileged Gateway Intents -> Message Content Intent)",
+  `Docs: ${formatDocsLink("/discord", "discord")}`,
+];
 
 export function setDiscordGuildChannelAllowlist(
   cfg: OpenCraftConfig,
@@ -75,75 +71,23 @@ export function parseDiscordAllowFromId(value: string): string | null {
   });
 }
 
-export const discordSetupAdapter: ChannelSetupAdapter = {
-  resolveAccountId: ({ accountId }) => normalizeAccountId(accountId),
-  applyAccountName: ({ cfg, accountId, name }) =>
-    applyAccountNameToChannelSection({
-      cfg,
-      channelKey: channel,
-      accountId,
-      name,
-    }),
-  validateInput: ({ accountId, input }) => {
-    if (input.useEnv && accountId !== DEFAULT_ACCOUNT_ID) {
-      return "DISCORD_BOT_TOKEN can only be used for the default account.";
-    }
-    if (!input.useEnv && !input.token) {
-      return "Discord requires token (or --use-env).";
-    }
-    return null;
-  },
-  applyAccountConfig: ({ cfg, accountId, input }) => {
-    const namedConfig = applyAccountNameToChannelSection({
-      cfg,
-      channelKey: channel,
-      accountId,
-      name: input.name,
-    });
-    const next =
-      accountId !== DEFAULT_ACCOUNT_ID
-        ? migrateBaseNameToDefaultAccount({
-            cfg: namedConfig,
-            channelKey: channel,
-          })
-        : namedConfig;
-    if (accountId === DEFAULT_ACCOUNT_ID) {
-      return {
-        ...next,
-        channels: {
-          ...next.channels,
-          discord: {
-            ...next.channels?.discord,
-            enabled: true,
-            ...(input.useEnv ? {} : input.token ? { token: input.token } : {}),
-          },
-        },
-      };
-    }
-    return {
-      ...next,
-      channels: {
-        ...next.channels,
-        discord: {
-          ...next.channels?.discord,
-          enabled: true,
-          accounts: {
-            ...next.channels?.discord?.accounts,
-            [accountId]: {
-              ...next.channels?.discord?.accounts?.[accountId],
-              enabled: true,
-              ...(input.token ? { token: input.token } : {}),
-            },
-          },
-        },
-      },
-    };
-  },
-};
+export const discordSetupAdapter: ChannelSetupAdapter = createEnvPatchedAccountSetupAdapter({
+  channelKey: channel,
+  defaultAccountOnlyEnvError: "DISCORD_BOT_TOKEN can only be used for the default account.",
+  missingCredentialError: "Discord requires token (or --use-env).",
+  hasCredentials: (input) => Boolean(input.token),
+  buildPatch: (input) => (input.token ? { token: input.token } : {}),
+});
 
-export function createDiscordSetupWizardProxy(
-  loadWizard: () => Promise<{ discordSetupWizard: ChannelSetupWizard }>,
-) {
+export function createDiscordSetupWizardBase(handlers: {
+  promptAllowFrom: NonNullable<ChannelSetupDmPolicy["promptAllowFrom"]>;
+  resolveAllowFromEntries: NonNullable<
+    NonNullable<ChannelSetupWizard["allowFrom"]>["resolveEntries"]
+  >;
+  resolveGroupAllowlist: NonNullable<
+    NonNullable<NonNullable<ChannelSetupWizard["groupAccess"]>["resolveAllowlist"]>
+  >;
+}) {
   const discordDmPolicy: ChannelSetupDmPolicy = {
     label: "Discord",
     channel,
@@ -157,13 +101,7 @@ export function createDiscordSetupWizardProxy(
         channel,
         dmPolicy: policy,
       }),
-    promptAllowFrom: async ({ cfg, prompter, accountId }) => {
-      const wizard = (await loadWizard()).discordSetupWizard;
-      if (!wizard.dmPolicy?.promptAllowFrom) {
-        return cfg;
-      }
-      return await wizard.dmPolicy.promptAllowFrom({ cfg, prompter, accountId });
-    },
+    promptAllowFrom: handlers.promptAllowFrom,
   };
 
   return {
@@ -188,9 +126,7 @@ export function createDiscordSetupWizardProxy(
         credentialLabel: "Discord bot token",
         preferredEnvVar: "DISCORD_BOT_TOKEN",
         helpTitle: "Discord bot token",
-        get helpLines() {
-          return getDiscordTokenHelpLines();
-        },
+        helpLines: DISCORD_TOKEN_HELP_LINES,
         envPrompt: "DISCORD_BOT_TOKEN detected. Use env var?",
         keepPrompt: "Discord token already configured. Keep it?",
         inputPrompt: "Enter Discord bot token",
@@ -256,12 +192,8 @@ export function createDiscordSetupWizardProxy(
         entries: string[];
         prompter: { note: (message: string, title?: string) => Promise<void> };
       }) => {
-        const wizard = (await loadWizard()).discordSetupWizard;
-        if (!wizard.groupAccess?.resolveAllowlist) {
-          return entries.map((input) => ({ input, resolved: false }));
-        }
         try {
-          return await wizard.groupAccess.resolveAllowlist({
+          return await handlers.resolveGroupAllowlist({
             cfg,
             accountId,
             credentialValues,
@@ -320,18 +252,7 @@ export function createDiscordSetupWizardProxy(
         accountId: string;
         credentialValues: { token?: string };
         entries: string[];
-      }) => {
-        const wizard = (await loadWizard()).discordSetupWizard;
-        if (!wizard.allowFrom) {
-          return entries.map((input) => ({ input, resolved: false, id: null }));
-        }
-        return await wizard.allowFrom.resolveEntries({
-          cfg,
-          accountId,
-          credentialValues,
-          entries,
-        });
-      },
+      }) => await handlers.resolveAllowFromEntries({ cfg, accountId, credentialValues, entries }),
       apply: async ({
         cfg,
         accountId,
@@ -351,4 +272,14 @@ export function createDiscordSetupWizardProxy(
     dmPolicy: discordDmPolicy,
     disable: (cfg: OpenCraftConfig) => setSetupChannelEnabled(cfg, channel, false),
   } satisfies ChannelSetupWizard;
+}
+export function createDiscordSetupWizardProxy(
+  loadWizard: () => Promise<{ discordSetupWizard: ChannelSetupWizard }>,
+) {
+  return createAllowlistSetupWizardProxy({
+    loadWizard: async () => (await loadWizard()).discordSetupWizard,
+    createBase: createDiscordSetupWizardBase,
+    fallbackResolvedGroupAllowlist: (entries) =>
+      entries.map((input) => ({ input, resolved: false })),
+  });
 }

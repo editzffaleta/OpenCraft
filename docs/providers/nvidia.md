@@ -1,18 +1,18 @@
 ---
-summary: "Use a API compatível com OpenAI da NVIDIA no OpenCraft"
+summary: "Use NVIDIA's OpenAI-compatible API in OpenCraft"
 read_when:
-  - Você quer usar modelos NVIDIA no OpenCraft
-  - Você precisa configurar NVIDIA_API_KEY
+  - You want to use NVIDIA models in OpenCraft
+  - You need NVIDIA_API_KEY setup
 title: "NVIDIA"
 ---
 
 # NVIDIA
 
-A NVIDIA fornece uma API compatível com OpenAI em `https://integrate.api.nvidia.com/v1` para modelos Nemotron e NeMo. Autentique-se com uma API key do [NVIDIA NGC](https://catalog.ngc.nvidia.com/).
+NVIDIA provides an OpenAI-compatible API at `https://integrate.api.nvidia.com/v1` for Nemotron and NeMo models. Authenticate with an API key from [NVIDIA NGC](https://catalog.ngc.nvidia.com/).
 
-## Configuração via CLI
+## CLI setup
 
-Exporte a chave uma vez, depois execute o onboarding e defina um modelo NVIDIA:
+Export the key once, then run onboarding and set an NVIDIA model:
 
 ```bash
 export NVIDIA_API_KEY="nvapi-..."
@@ -20,9 +20,9 @@ opencraft onboard --auth-choice skip
 opencraft models set nvidia/nvidia/llama-3.1-nemotron-70b-instruct
 ```
 
-Se você ainda usar `--token`, lembre-se que ele aparece no histórico do shell e na saída do `ps`; prefira a variável de ambiente quando possível.
+If you still pass `--token`, remember it lands in shell history and `ps` output; prefer the env var when possible.
 
-## Trecho de config
+## Config snippet
 
 ```json5
 {
@@ -43,13 +43,13 @@ Se você ainda usar `--token`, lembre-se que ele aparece no histórico do shell 
 }
 ```
 
-## IDs de modelo
+## Model IDs
 
-- `nvidia/llama-3.1-nemotron-70b-instruct` (padrão)
+- `nvidia/llama-3.1-nemotron-70b-instruct` (default)
 - `meta/llama-3.3-70b-instruct`
 - `nvidia/mistral-nemo-minitron-8b-8k-instruct`
 
-## Notas
+## Notes
 
-- Endpoint `/v1` compatível com OpenAI; use uma API key do NVIDIA NGC.
-- O provider é habilitado automaticamente quando `NVIDIA_API_KEY` está definido; usa padrões estáticos (janela de contexto de 131.072 Token, máximo de 4.096 Token).
+- OpenAI-compatible `/v1` endpoint; use an API key from NVIDIA NGC.
+- Provider auto-enables when `NVIDIA_API_KEY` is set; uses static defaults (131,072-token context window, 4,096 max tokens).

@@ -1,10 +1,10 @@
-import type { ChunkMode } from "../../../../src/auto-reply/chunk.js";
-import { chunkMarkdownTextWithMode } from "../../../../src/auto-reply/chunk.js";
-import { createReplyReferencePlanner } from "../../../../src/auto-reply/reply/reply-reference.js";
-import { isSilentReplyText, SILENT_REPLY_TOKEN } from "../../../../src/auto-reply/tokens.js";
-import type { ReplyPayload } from "../../../../src/auto-reply/types.js";
-import type { MarkdownTableMode } from "../../../../src/config/types.base.js";
-import type { RuntimeEnv } from "../../../../src/runtime.js";
+import type { MarkdownTableMode } from "opencraft/plugin-sdk/config-runtime";
+import type { ChunkMode } from "opencraft/plugin-sdk/reply-runtime";
+import { chunkMarkdownTextWithMode } from "opencraft/plugin-sdk/reply-runtime";
+import { createReplyReferencePlanner } from "opencraft/plugin-sdk/reply-runtime";
+import { isSilentReplyText, SILENT_REPLY_TOKEN } from "opencraft/plugin-sdk/reply-runtime";
+import type { ReplyPayload } from "opencraft/plugin-sdk/reply-runtime";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
 import { parseSlackBlocksInput } from "../blocks-input.js";
 import { markdownToSlackMrkdwnChunks } from "../format.js";
 import { sendMessageSlack, type SlackSendIdentity } from "../send.js";

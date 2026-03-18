@@ -7,7 +7,7 @@ const DOCS_PATH_RE = /^(docs\/|.*\.mdx?$)/;
 const SKILLS_PYTHON_SCOPE_RE = /^skills\//;
 const CI_WORKFLOW_SCOPE_RE = /^\.github\/workflows\/ci\.yml$/;
 const MACOS_PROTOCOL_GEN_RE =
-  /^(apps\/macos\/Sources\/OpenClawProtocol\/|apps\/shared\/OpenClawKit\/Sources\/OpenClawProtocol\/)/;
+  /^(apps\/macos\/Sources\/OpenCraftProtocol\/|apps\/shared\/OpenCraftKit\/Sources\/OpenCraftProtocol\/)/;
 const MACOS_NATIVE_RE = /^(apps\/macos\/|apps\/ios\/|apps\/shared\/|Swabble\/)/;
 const ANDROID_NATIVE_RE = /^(apps\/android\/|apps\/shared\/)/;
 const NODE_SCOPE_RE =

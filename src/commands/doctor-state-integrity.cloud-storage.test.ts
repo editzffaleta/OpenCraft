@@ -28,14 +28,7 @@ describe("detectMacCloudSyncedStateDir", () => {
   });
 
   it("detects state dir under Library/CloudStorage", () => {
-    const stateDir = path.join(
-      home,
-      "Library",
-      "CloudStorage",
-      "Dropbox",
-      "OpenCraft",
-      ".opencraft",
-    );
+    const stateDir = path.join(home, "Library", "CloudStorage", "Dropbox", "OpenCraft", ".opencraft");
 
     const result = detectMacCloudSyncedStateDir(stateDir, {
       platform: "darwin",

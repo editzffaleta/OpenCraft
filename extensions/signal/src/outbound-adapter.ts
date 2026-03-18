@@ -1,11 +1,8 @@
-import { resolveTextChunkLimit } from "../../../src/auto-reply/chunk.js";
-import { createScopedChannelMediaMaxBytesResolver } from "../../../src/channels/plugins/outbound/direct-text-media.js";
-import type { ChannelOutboundAdapter } from "../../../src/channels/plugins/types.js";
-import { resolveMarkdownTableMode } from "../../../src/config/markdown-tables.js";
-import {
-  resolveOutboundSendDep,
-  type OutboundSendDeps,
-} from "../../../src/infra/outbound/send-deps.js";
+import { createScopedChannelMediaMaxBytesResolver } from "opencraft/plugin-sdk/channel-runtime";
+import type { ChannelOutboundAdapter } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveOutboundSendDep, type OutboundSendDeps } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveMarkdownTableMode } from "opencraft/plugin-sdk/config-runtime";
+import { resolveTextChunkLimit } from "opencraft/plugin-sdk/reply-runtime";
 import { markdownToSignalTextChunks } from "./format.js";
 import { sendMessageSignal } from "./send.js";
 

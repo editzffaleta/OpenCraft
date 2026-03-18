@@ -18,41 +18,41 @@ import {
 } from "@buape/carbon";
 import type { APIStringSelectComponent } from "discord-api-types/v10";
 import { ButtonStyle, ChannelType } from "discord-api-types/v10";
-import { resolveHumanDelayConfig } from "../../../../src/agents/identity.js";
-import { resolveChunkMode, resolveTextChunkLimit } from "../../../../src/auto-reply/chunk.js";
-import {
-  formatInboundEnvelope,
-  resolveEnvelopeFormatOptions,
-} from "../../../../src/auto-reply/envelope.js";
-import { finalizeInboundContext } from "../../../../src/auto-reply/reply/inbound-context.js";
-import { dispatchReplyWithBufferedBlockDispatcher } from "../../../../src/auto-reply/reply/provider-dispatcher.js";
-import { createReplyReferencePlanner } from "../../../../src/auto-reply/reply/reply-reference.js";
-import { resolveCommandAuthorizedFromAuthorizers } from "../../../../src/channels/command-gating.js";
-import { createReplyPrefixOptions } from "../../../../src/channels/reply-prefix.js";
-import { recordInboundSession } from "../../../../src/channels/session.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import { isDangerousNameMatchingEnabled } from "../../../../src/config/dangerous-name-matching.js";
-import { resolveMarkdownTableMode } from "../../../../src/config/markdown-tables.js";
-import { readSessionUpdatedAt, resolveStorePath } from "../../../../src/config/sessions.js";
-import type { DiscordAccountConfig } from "../../../../src/config/types.discord.js";
-import { logVerbose } from "../../../../src/globals.js";
-import { enqueueSystemEvent } from "../../../../src/infra/system-events.js";
-import { logDebug, logError } from "../../../../src/logger.js";
-import { getAgentScopedMediaLocalRoots } from "../../../../src/media/local-roots.js";
-import { issuePairingChallenge } from "../../../../src/pairing/pairing-challenge.js";
-import { upsertChannelPairingRequest } from "../../../../src/pairing/pairing-store.js";
+import { resolveHumanDelayConfig } from "opencraft/plugin-sdk/agent-runtime";
+import { resolveCommandAuthorizedFromAuthorizers } from "opencraft/plugin-sdk/channel-runtime";
+import { createReplyPrefixOptions } from "opencraft/plugin-sdk/channel-runtime";
+import { recordInboundSession } from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { isDangerousNameMatchingEnabled } from "opencraft/plugin-sdk/config-runtime";
+import { resolveMarkdownTableMode } from "opencraft/plugin-sdk/config-runtime";
+import { readSessionUpdatedAt, resolveStorePath } from "opencraft/plugin-sdk/config-runtime";
+import type { DiscordAccountConfig } from "opencraft/plugin-sdk/config-runtime";
+import { issuePairingChallenge } from "opencraft/plugin-sdk/conversation-runtime";
+import { upsertChannelPairingRequest } from "opencraft/plugin-sdk/conversation-runtime";
 import {
   buildPluginBindingResolvedText,
   parsePluginBindingApprovalCustomId,
   resolvePluginConversationBindingApproval,
-} from "../../../../src/plugins/conversation-binding.js";
-import { dispatchPluginInteractiveHandler } from "../../../../src/plugins/interactive.js";
-import { resolveAgentRoute } from "../../../../src/routing/resolve-route.js";
-import { createNonExitingRuntime, type RuntimeEnv } from "../../../../src/runtime.js";
+} from "opencraft/plugin-sdk/conversation-runtime";
+import { enqueueSystemEvent } from "opencraft/plugin-sdk/infra-runtime";
+import { getAgentScopedMediaLocalRoots } from "opencraft/plugin-sdk/media-runtime";
+import { dispatchPluginInteractiveHandler } from "opencraft/plugin-sdk/plugin-runtime";
+import { resolveChunkMode, resolveTextChunkLimit } from "opencraft/plugin-sdk/reply-runtime";
+import {
+  formatInboundEnvelope,
+  resolveEnvelopeFormatOptions,
+} from "opencraft/plugin-sdk/reply-runtime";
+import { finalizeInboundContext } from "opencraft/plugin-sdk/reply-runtime";
+import { dispatchReplyWithBufferedBlockDispatcher } from "opencraft/plugin-sdk/reply-runtime";
+import { createReplyReferencePlanner } from "opencraft/plugin-sdk/reply-runtime";
+import { resolveAgentRoute } from "opencraft/plugin-sdk/routing";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
+import { createNonExitingRuntime, type RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
 import {
   readStoreAllowFromForDmPolicy,
   resolvePinnedMainDmOwnerFromAllowlist,
-} from "../../../../src/security/dm-policy-shared.js";
+} from "opencraft/plugin-sdk/security-runtime";
+import { logDebug, logError } from "opencraft/plugin-sdk/text-runtime";
 import { resolveDiscordMaxLinesPerMessage } from "../accounts.js";
 import { resolveDiscordComponentEntry, resolveDiscordModalEntry } from "../components-registry.js";
 import {

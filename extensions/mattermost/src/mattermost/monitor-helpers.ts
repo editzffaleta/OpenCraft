@@ -2,8 +2,8 @@ import {
   formatInboundFromLabel as formatInboundFromLabelShared,
   resolveThreadSessionKeys as resolveThreadSessionKeysShared,
   type OpenCraftConfig,
-} from "opencraft/plugin-sdk/mattermost";
-export { createDedupeCache, rawDataToString } from "opencraft/plugin-sdk/mattermost";
+} from "../runtime-api.js";
+export { createDedupeCache, rawDataToString } from "../runtime-api.js";
 
 export type ResponsePrefixContext = {
   model?: string;

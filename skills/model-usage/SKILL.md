@@ -1,6 +1,6 @@
 ---
 name: model-usage
-description: Use o uso de custo local do CLI CodexBar para resumir o uso por modelo para Codex ou Claude, incluindo o modelo atual (mais recente) ou um detalhamento completo por modelo. Ative quando solicitado dados de uso/custo por modelo do codexbar, ou quando precisar de um resumo scriptável por modelo a partir do JSON de custo do codexbar.
+description: Use CodexBar CLI local cost usage to summarize per-model usage for Codex or Claude, including the current (most recent) model or a full model breakdown. Trigger when asked for model-level usage/cost data from codexbar, or when you need a scriptable per-model summary from codexbar cost JSON.
 metadata:
   {
     "opencraft":
@@ -15,25 +15,25 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/codexbar",
               "bins": ["codexbar"],
-              "label": "Instalar CodexBar (brew cask)",
+              "label": "Install CodexBar (brew cask)",
             },
           ],
       },
   }
 ---
 
-# Uso de modelos
+# Model usage
 
-## Visão geral
+## Overview
 
-Obtenha o custo de uso por modelo a partir dos logs de custo locais do CodexBar. Suporta resumos do "modelo atual" (entrada diária mais recente) ou "todos os modelos" para Codex ou Claude.
+Get per-model usage cost from CodexBar's local cost logs. Supports "current model" (most recent daily entry) or "all models" summaries for Codex or Claude.
 
-TODO: adicionar orientações de suporte ao CLI Linux assim que o caminho de instalação do CodexBar CLI for documentado para Linux.
+TODO: add Linux CLI support guidance once CodexBar CLI install path is documented for Linux.
 
-## Início rápido
+## Quick start
 
-1. Obtenha o JSON de custo via CLI do CodexBar ou passe um arquivo JSON.
-2. Use o script incluído para resumir por modelo.
+1. Fetch cost JSON via CodexBar CLI or pass a JSON file.
+2. Use the bundled script to summarize by model.
 
 ```bash
 python {baseDir}/scripts/model_usage.py --provider codex --mode current
@@ -41,17 +41,17 @@ python {baseDir}/scripts/model_usage.py --provider codex --mode all
 python {baseDir}/scripts/model_usage.py --provider claude --mode all --format json --pretty
 ```
 
-## Lógica do modelo atual
+## Current model logic
 
-- Usa a entrada diária mais recente com `modelBreakdowns`.
-- Seleciona o modelo com o maior custo nessa entrada.
-- Usa como alternativa a última entrada em `modelsUsed` quando os detalhamentos estão ausentes.
-- Substitua com `--model <name>` quando precisar de um modelo específico.
+- Uses the most recent daily row with `modelBreakdowns`.
+- Picks the model with the highest cost in that row.
+- Falls back to the last entry in `modelsUsed` when breakdowns are missing.
+- Override with `--model <name>` when you need a specific model.
 
-## Entradas
+## Inputs
 
-- Padrão: executa `codexbar cost --format json --provider <codex|claude>`.
-- Arquivo ou stdin:
+- Default: runs `codexbar cost --format json --provider <codex|claude>`.
+- File or stdin:
 
 ```bash
 codexbar cost --provider codex --format json > /tmp/cost.json
@@ -59,11 +59,11 @@ python {baseDir}/scripts/model_usage.py --input /tmp/cost.json --mode all
 cat /tmp/cost.json | python {baseDir}/scripts/model_usage.py --input - --mode current
 ```
 
-## Saída
+## Output
 
-- Texto (padrão) ou JSON (`--format json --pretty`).
-- Os valores são apenas de custo por modelo; os tokens não são divididos por modelo na saída do CodexBar.
+- Text (default) or JSON (`--format json --pretty`).
+- Values are cost-only per model; tokens are not split by model in CodexBar output.
 
-## Referências
+## References
 
-- Leia `references/codexbar-cli.md` para flags do CLI e campos do JSON de custo.
+- Read `references/codexbar-cli.md` for CLI flags and cost JSON fields.

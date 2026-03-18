@@ -583,7 +583,7 @@ export function collectSecretsInConfigFindings(cfg: OpenCraftConfig): SecurityAu
       detail:
         "gateway.auth.password is set in the config file; prefer environment variables for secrets when possible.",
       remediation:
-        "Prefer OPENCLAW_GATEWAY_PASSWORD (env) and remove gateway.auth.password from disk.",
+        "Prefer OPENCRAFT_GATEWAY_PASSWORD (env) and remove gateway.auth.password from disk.",
     });
   }
 
@@ -626,8 +626,8 @@ export function collectHooksHardeningFindings(
     env,
   });
   const opencraftGatewayToken =
-    typeof env.OPENCLAW_GATEWAY_TOKEN === "string" && env.OPENCLAW_GATEWAY_TOKEN.trim()
-      ? env.OPENCLAW_GATEWAY_TOKEN.trim()
+    typeof env.OPENCRAFT_GATEWAY_TOKEN === "string" && env.OPENCRAFT_GATEWAY_TOKEN.trim()
+      ? env.OPENCRAFT_GATEWAY_TOKEN.trim()
       : null;
   const gatewayToken =
     gatewayAuth.mode === "token" &&
@@ -831,9 +831,7 @@ export function collectSandboxDockerNoopFindings(cfg: OpenCraftConfig): Security
   return findings;
 }
 
-export function collectSandboxDangerousConfigFindings(
-  cfg: OpenCraftConfig,
-): SecurityAuditFinding[] {
+export function collectSandboxDangerousConfigFindings(cfg: OpenCraftConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const agents = Array.isArray(cfg.agents?.list) ? cfg.agents.list : [];
 
@@ -973,7 +971,7 @@ export function collectSandboxDangerousConfigFindings(
         "These sandbox browser configs use Docker bridge networking with no CDP source restriction:\n" +
         browserExposurePaths.map((entry) => `- ${entry}`).join("\n"),
       remediation:
-        "Set sandbox.browser.network to a dedicated bridge network (recommended default: openclaw-sandbox-browser), " +
+        "Set sandbox.browser.network to a dedicated bridge network (recommended default: opencraft-sandbox-browser), " +
         "or set sandbox.browser.cdpSourceRange (for example 172.21.0.1/32) to restrict container-edge CDP ingress.",
     });
   }
@@ -981,9 +979,7 @@ export function collectSandboxDangerousConfigFindings(
   return findings;
 }
 
-export function collectNodeDenyCommandPatternFindings(
-  cfg: OpenCraftConfig,
-): SecurityAuditFinding[] {
+export function collectNodeDenyCommandPatternFindings(cfg: OpenCraftConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const denyListRaw = cfg.gateway?.nodes?.denyCommands;
   if (!Array.isArray(denyListRaw) || denyListRaw.length === 0) {
@@ -1077,9 +1073,7 @@ export function collectNodeDangerousAllowCommandFindings(
   return findings;
 }
 
-export function collectMinimalProfileOverrideFindings(
-  cfg: OpenCraftConfig,
-): SecurityAuditFinding[] {
+export function collectMinimalProfileOverrideFindings(cfg: OpenCraftConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   if (cfg.tools?.profile !== "minimal") {
     return findings;

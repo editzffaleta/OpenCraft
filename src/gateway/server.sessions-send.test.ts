@@ -76,11 +76,11 @@ async function emitLifecycleAssistantReply(params: {
 }
 
 beforeAll(async () => {
-  envSnapshot = captureEnv(["OPENCRAFT_GATEWAY_PORT", "OPENCLAW_GATEWAY_TOKEN"]);
+  envSnapshot = captureEnv(["OPENCRAFT_GATEWAY_PORT", "OPENCRAFT_GATEWAY_TOKEN"]);
   gatewayPort = await getFreePort();
   testState.gatewayAuth = { mode: "token", token: gatewayToken };
   process.env.OPENCRAFT_GATEWAY_PORT = String(gatewayPort);
-  process.env.OPENCLAW_GATEWAY_TOKEN = gatewayToken;
+  process.env.OPENCRAFT_GATEWAY_TOKEN = gatewayToken;
   const { approveDevicePairing, requestDevicePairing } = await import("../infra/device-pairing.js");
   const { loadOrCreateDeviceIdentity, publicKeyRawBase64UrlFromPem } =
     await import("../infra/device-identity.js");

@@ -1,5 +1,5 @@
-import { isRecord } from "../../../src/utils.js";
-import { fetchWithTimeout } from "../../../src/utils/fetch-timeout.js";
+import { isRecord } from "opencraft/plugin-sdk/text-runtime";
+import { fetchWithTimeout } from "opencraft/plugin-sdk/text-runtime";
 import type {
   AuditTelegramGroupMembershipParams,
   TelegramGroupMembershipAudit,

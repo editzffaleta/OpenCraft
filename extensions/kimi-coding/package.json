@@ -1,8 +1,8 @@
 {
-  "name": "@opencraft/kimi-coding-provider",
+  "name": "@opencraft/kimi-provider",
   "version": "2026.3.14",
   "private": true,
-  "description": "OpenCraft Kimi Coding provider plugin",
+  "description": "OpenCraft Kimi provider plugin",
   "type": "module",
   "opencraft": {
     "extensions": [

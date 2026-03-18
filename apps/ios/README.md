@@ -1,216 +1,217 @@
-# OpenClaw iOS (Super Alpha)
+# OpenCraft iOS (Super Alpha)
 
-Este app para iPhone é super-alpha e de uso interno apenas. Ele se conecta a um OpenCraft Gateway como `role: node`.
+This iPhone app is super-alpha and internal-use only. It connects to an OpenCraft Gateway as a `role: node`.
 
-## Status de Distribuição
+## Distribution Status
 
-- Distribuição pública: não disponível.
-- Distribuição beta interna: archive local + upload para TestFlight via Fastlane.
-- Deploy local/manual a partir do código-fonte via Xcode permanece como o caminho padrão de desenvolvimento.
+- Public distribution: not available.
+- Internal beta distribution: local archive + TestFlight upload via Fastlane.
+- Local/manual deploy from source via Xcode remains the default development path.
 
-## Aviso Super-Alpha
+## Super-Alpha Disclaimer
 
-- Mudanças que quebram compatibilidade são esperadas.
-- Fluxos de UI e onboarding podem mudar sem garantias de migração.
-- O uso em primeiro plano é o único modo confiável no momento.
-- Trate este build como sensível enquanto as permissões e o comportamento em segundo plano ainda estão sendo refinados.
+- Breaking changes are expected.
+- UI and onboarding flows can change without migration guarantees.
+- Foreground use is the only reliable mode right now.
+- Treat this build as sensitive while permissions and background behavior are still being hardened.
 
-## Fluxo Exato de Deploy Manual pelo Xcode
+## Exact Xcode Manual Deploy Flow
 
-1. Pré-requisitos:
+1. Prereqs:
    - Xcode 16+
    - `pnpm`
    - `xcodegen`
-   - Assinatura Apple Development configurada no Xcode
-2. A partir da raiz do repositório:
+   - Apple Development signing set up in Xcode
+2. From repo root:
 
 ```bash
 pnpm install
 ./scripts/ios-configure-signing.sh
 cd apps/ios
 xcodegen generate
-open OpenClaw.xcodeproj
+open OpenCraft.xcodeproj
 ```
 
-3. No Xcode:
-   - Scheme: `OpenClaw`
-   - Destino: iPhone conectado (recomendado para comportamento real)
-   - Configuração de build: `Debug`
-   - Executar (`Product` -> `Run`)
-4. Se a assinatura falhar em um time pessoal:
-   - Use IDs de bundle locais únicos via `apps/ios/LocalSigning.xcconfig`.
-   - Comece de `apps/ios/LocalSigning.xcconfig.example`.
+3. In Xcode:
+   - Scheme: `OpenCraft`
+   - Destination: connected iPhone (recommended for real behavior)
+   - Build configuration: `Debug`
+   - Run (`Product` -> `Run`)
+4. If signing fails on a personal team:
+   - Use unique local bundle IDs via `apps/ios/LocalSigning.xcconfig`.
+   - Start from `apps/ios/LocalSigning.xcconfig.example`.
 
-Comando de atalho (mesmo fluxo + abre o projeto):
+Shortcut command (same flow + open project):
 
 ```bash
 pnpm ios:open
 ```
 
-## Fluxo de Release Beta Local
+## Local Beta Release Flow
 
-Pré-requisitos:
+Prereqs:
 
 - Xcode 16+
 - `pnpm`
 - `xcodegen`
 - `fastlane`
-- Conta Apple conectada no Xcode para assinatura/provisionamento automático
-- Chave de API do App Store Connect configurada no Keychain via `scripts/ios-asc-keychain-setup.sh` ao resolver automaticamente um número de build beta ou fazer upload para o TestFlight
+- Apple account signed into Xcode for automatic signing/provisioning
+- App Store Connect API key set up in Keychain via `scripts/ios-asc-keychain-setup.sh` when auto-resolving a beta build number or uploading to TestFlight
 
-Comportamento do release:
+Release behavior:
 
-- O desenvolvimento local continua usando IDs de bundle únicos por desenvolvedor de `scripts/ios-configure-signing.sh`.
-- O release beta usa os IDs de bundle canônicos `ai.openclaw.client*` através de um xcconfig gerado temporariamente em `apps/ios/build/BetaRelease.xcconfig`.
-- O release beta também muda o app para `OpenClawPushTransport=relay`, `OpenClawPushDistribution=official`, e `OpenClawPushAPNsEnvironment=production`.
-- O fluxo beta não modifica `apps/ios/.local-signing.xcconfig` ou `apps/ios/LocalSigning.xcconfig`.
-- `package.json.version` na raiz é a única fonte de versão para iOS.
-- Uma versão raiz como `2026.3.13-beta.1` se torna:
+- Local development keeps using unique per-developer bundle IDs from `scripts/ios-configure-signing.sh`.
+- Beta release uses canonical `ai.openclaw.client*` bundle IDs through a temporary generated xcconfig in `apps/ios/build/BetaRelease.xcconfig`.
+- Beta release also switches the app to `OpenCraftPushTransport=relay`, `OpenCraftPushDistribution=official`, and `OpenCraftPushAPNsEnvironment=production`.
+- The beta flow does not modify `apps/ios/.local-signing.xcconfig` or `apps/ios/LocalSigning.xcconfig`.
+- Root `package.json.version` is the only version source for iOS.
+- A root version like `2026.3.13-beta.1` becomes:
   - `CFBundleShortVersionString = 2026.3.13`
-  - `CFBundleVersion = próximo número de build TestFlight para 2026.3.13`
+  - `CFBundleVersion = next TestFlight build number for 2026.3.13`
 
-Env obrigatório para builds beta:
+Required env for beta builds:
 
-- `OPENCLAW_PUSH_RELAY_BASE_URL=https://relay.example.com`
-  Deve ser uma URL base simples `https://host[:port][/path]` sem espaços em branco, parâmetros de query, fragmentos ou metacaracteres xcconfig.
+- `OPENCRAFT_PUSH_RELAY_BASE_URL=https://relay.example.com`
+  This must be a plain `https://host[:port][/path]` base URL without whitespace, query params, fragments, or xcconfig metacharacters.
 
-Archive sem upload:
+Archive without upload:
 
 ```bash
 pnpm ios:beta:archive
 ```
 
-Archive e upload para TestFlight:
+Archive and upload to TestFlight:
 
 ```bash
 pnpm ios:beta
 ```
 
-Se precisar forçar um número de build específico:
+If you need to force a specific build number:
 
 ```bash
 pnpm ios:beta -- --build-number 7
 ```
 
-## Expectativas de APNs para Builds Locais/Manuais
+## APNs Expectations For Local/Manual Builds
 
-- O app chama `registerForRemoteNotifications()` no lançamento.
-- `apps/ios/Sources/OpenClaw.entitlements` define `aps-environment` como `development`.
-- O registro do token APNs no gateway ocorre apenas após a conexão com o gateway (`push.apns.register`).
-- Builds locais/manuais usam por padrão `OpenClawPushTransport=direct` e `OpenClawPushDistribution=local`.
-- O time/perfil selecionado deve suportar Push Notifications para o ID de bundle do app que você está assinando.
-- Se a capability de push ou o provisionamento estiver incorreto, o registro APNs falha em runtime (verifique os logs do Xcode para `APNs registration failed`).
-- Builds Debug usam por padrão `OpenClawPushAPNsEnvironment=sandbox`; builds Release usam por padrão `production`.
+- The app calls `registerForRemoteNotifications()` at launch.
+- `apps/ios/Sources/OpenCraft.entitlements` sets `aps-environment` to `development`.
+- APNs token registration to gateway happens only after gateway connection (`push.apns.register`).
+- Local/manual builds default to `OpenCraftPushTransport=direct` and `OpenCraftPushDistribution=local`.
+- Your selected team/profile must support Push Notifications for the app bundle ID you are signing.
+- If push capability or provisioning is wrong, APNs registration fails at runtime (check Xcode logs for `APNs registration failed`).
+- Debug builds default to `OpenCraftPushAPNsEnvironment=sandbox`; Release builds default to `production`.
 
-## Expectativas de APNs para Builds Oficiais
+## APNs Expectations For Official Builds
 
-- Builds oficiais/TestFlight registram-se no relay de push externo antes de publicar `push.apns.register` no gateway.
-- O registro no gateway para o modo relay contém um handle opaco do relay, um grant de envio com escopo de registro, metadados de origem do relay e metadados de instalação, em vez do token APNs bruto.
-- O registro do relay está vinculado à identidade do gateway obtida de `gateway.identity.get`, portanto outro gateway não pode reutilizar esse registro armazenado.
-- O app persiste os metadados do handle do relay localmente para que as reconexões possam republicar o registro do gateway sem re-registrar em cada conexão.
-- Se a URL base do relay mudar em um build posterior, o app atualiza o registro do relay em vez de reutilizar a origem antiga do relay.
-- O modo relay requer uma URL base do relay acessível e usa App Attest mais o recibo do app durante o registro.
-- O envio pelo relay no lado do gateway é configurado através de `gateway.push.apns.relay.baseUrl` em `opencraft.json`. `OPENCLAW_APNS_RELAY_BASE_URL` permanece apenas como um override de env temporário.
+- Official/TestFlight builds register with the external push relay before they publish `push.apns.register` to the gateway.
+- The gateway registration for relay mode contains an opaque relay handle, a registration-scoped send grant, relay origin metadata, and installation metadata instead of the raw APNs token.
+- The relay registration is bound to the gateway identity fetched from `gateway.identity.get`, so another gateway cannot reuse that stored registration.
+- The app persists the relay handle metadata locally so reconnects can republish the gateway registration without re-registering on every connect.
+- If the relay base URL changes in a later build, the app refreshes the relay registration instead of reusing the old relay origin.
+- Relay mode requires a reachable relay base URL and uses App Attest plus the app receipt during registration.
+- Gateway-side relay sending is configured through `gateway.push.apns.relay.baseUrl` in `opencraft.json`. `OPENCRAFT_APNS_RELAY_BASE_URL` remains a temporary env override only.
 
-## Modelo de Confiança do Relay de Build Oficial
+## Official Build Relay Trust Model
 
 - `iOS -> gateway`
-  - O app deve fazer par com o gateway e estabelecer tanto sessões node quanto operator.
-  - A sessão operator é usada para buscar `gateway.identity.get`.
+  - The app must pair with the gateway and establish both node and operator sessions.
+  - The operator session is used to fetch `gateway.identity.get`.
 - `iOS -> relay`
-  - O app se registra no relay via HTTPS usando App Attest mais o recibo do app.
-  - O relay exige o caminho oficial de distribuição production/TestFlight, razão pela qual
-    instalações locais via Xcode/dev não podem usar o relay hospedado.
-- `delegação do gateway`
-  - O app inclui a identidade do gateway no registro do relay.
-  - O relay retorna um handle do relay e um grant de envio com escopo de registro delegado àquele gateway.
+  - The app registers with the relay over HTTPS using App Attest plus the app receipt.
+  - The relay requires the official production/TestFlight distribution path, which is why local
+    Xcode/dev installs cannot use the hosted relay.
+- `gateway delegation`
+  - The app includes the gateway identity in relay registration.
+  - The relay returns a relay handle and registration-scoped send grant delegated to that gateway.
 - `gateway -> relay`
-  - O gateway assina as solicitações de envio do relay com sua própria identidade de dispositivo.
-  - O relay verifica tanto o grant de envio delegado quanto a assinatura do gateway antes de enviar para
+  - The gateway signs relay send requests with its own device identity.
+  - The relay verifies both the delegated send grant and the gateway signature before it sends to
     APNs.
 - `relay -> APNs`
-  - As credenciais de APNs de produção e os tokens APNs brutos de builds oficiais ficam na implantação do relay,
-    não no gateway.
+  - Production APNs credentials and raw official-build APNs tokens stay in the relay deployment,
+    not on the gateway.
 
-Isso existe para manter o relay hospedado limitado a builds oficiais genuínos do OpenClaw e para garantir que um gateway possa enviar pushes apenas para dispositivos iOS que fizeram par com aquele gateway.
+This exists to keep the hosted relay limited to genuine OpenCraft official builds and to ensure a
+gateway can only send pushes for iOS devices that paired with that gateway.
 
-## O que Funciona Agora (Concreto)
+## What Works Now (Concrete)
 
-- Pareamento via fluxo de código de configuração (`/pair` depois `/pair approve` no Telegram).
-- Conexão com o gateway via descoberta ou host/porta manual com prompt de confiança de fingerprint TLS.
-- Superfícies de Chat + Talk pela sessão operator do gateway.
-- Comandos node do iPhone em primeiro plano: captura/clipe de câmera, apresentar/navegar/eval/snapshot do canvas, gravação de tela, localização, contatos, calendário, lembretes, fotos, movimento, notificações locais.
-- Encaminhamento de deep-link da extensão de compartilhamento para a sessão conectada do gateway.
+- Pairing via setup code flow (`/pair` then `/pair approve` in Telegram).
+- Gateway connection via discovery or manual host/port with TLS fingerprint trust prompt.
+- Chat + Talk surfaces through the operator gateway session.
+- iPhone node commands in foreground: camera snap/clip, canvas present/navigate/eval/snapshot, screen record, location, contacts, calendar, reminders, photos, motion, local notifications.
+- Share extension deep-link forwarding into the connected gateway session.
 
-## Caso de Uso de Automação de Localização (Testes)
+## Location Automation Use Case (Testing)
 
-Use isso para sinais de automação ("eu me movi", "eu cheguei", "eu saí"), não como mecanismo de manter o app ativo.
+Use this for automation signals ("I moved", "I arrived", "I left"), not as a keep-awake mechanism.
 
-- Intenção do produto:
-  - automações conscientes de movimento impulsionadas por eventos de localização do iOS
-  - exemplo: chegada/saída de geofence, movimento significativo, detecção de visita
-- Não é objetivo:
-  - polling contínuo de GPS apenas para manter o app ativo
+- Product intent:
+  - movement-aware automations driven by iOS location events
+  - example: arrival/exit geofence, significant movement, visit detection
+- Non-goal:
+  - continuous GPS polling just to keep the app alive
 
-Caminho de teste a incluir nas execuções de QA:
+Test path to include in QA runs:
 
-1. Habilitar permissão de localização no app:
-   - defina a permissão `Always`
-   - verifique se a capability de localização em segundo plano está habilitada no perfil de build
-2. Coloque o app em segundo plano e acione movimento:
-   - caminhe/dirija o suficiente para uma atualização significativa de localização, ou cruze um geofence configurado
-3. Valide efeitos colaterais no lado do gateway:
-   - reconexão/wake do node se necessário
-   - evento de localização/movimento esperado chega no gateway
-   - gatilho de automação executa uma vez (sem tempestade de duplicatas)
-4. Valide impacto nos recursos:
-   - sem estado térmico alto sustentado
-   - sem drenagem excessiva de bateria em segundo plano durante uma janela de observação curta
+1. Enable location permission in app:
+   - set `Always` permission
+   - verify background location capability is enabled in the build profile
+2. Background the app and trigger movement:
+   - walk/drive enough for a significant location update, or cross a configured geofence
+3. Validate gateway side effects:
+   - node reconnect/wake if needed
+   - expected location/movement event arrives at gateway
+   - automation trigger executes once (no duplicate storm)
+4. Validate resource impact:
+   - no sustained high thermal state
+   - no excessive background battery drain over a short observation window
 
-Critérios de aprovação:
+Pass criteria:
 
-- eventos de movimento são entregues de forma suficientemente confiável para a UX de automação
-- sem loops de spam de reconexão impulsionados por localização
-- o app permanece estável após transições repetidas de segundo plano/primeiro plano
+- movement events are delivered reliably enough for automation UX
+- no location-driven reconnect spam loops
+- app remains stable after repeated background/foreground transitions
 
-## Problemas Conhecidos / Limitações / Questões
+## Known Issues / Limitations / Problems
 
-- Primeiro plano em primeiro lugar: o iOS pode suspender sockets em segundo plano; a recuperação de reconexão ainda está sendo ajustada.
-- Os limites de comandos em segundo plano são estritos: `canvas.*`, `camera.*`, `screen.*`, e `talk.*` são bloqueados quando em segundo plano.
-- Localização em segundo plano requer permissão de localização `Always`.
-- Erros de pareamento/auth pausam intencionalmente os loops de reconexão até que um humano corrija o estado de auth/pareamento.
-- Voice Wake e Talk competem pelo mesmo microfone; Talk suprime a captura de wake enquanto está ativo.
-- A confiabilidade do APNs depende do alinhamento de assinatura/provisionamento/tópico local.
-- Espere arestas brutas de UX e agitação ocasional de reconexão durante o desenvolvimento ativo.
+- Foreground-first: iOS can suspend sockets in background; reconnect recovery is still being tuned.
+- Background command limits are strict: `canvas.*`, `camera.*`, `screen.*`, and `talk.*` are blocked when backgrounded.
+- Background location requires `Always` location permission.
+- Pairing/auth errors intentionally pause reconnect loops until a human fixes auth/pairing state.
+- Voice Wake and Talk contend for the same microphone; Talk suppresses wake capture while active.
+- APNs reliability depends on local signing/provisioning/topic alignment.
+- Expect rough UX edges and occasional reconnect churn during active development.
 
-## Workstream Atual em Andamento
+## Current In-Progress Workstream
 
-Robustez de wake/reconexão automática:
+Automatic wake/reconnect hardening:
 
-- melhorar o comportamento de wake/resume entre transições de cena
-- reduzir estados de socket morto após segundo plano -> primeiro plano
-- ajustar a coordenação de reconexão de sessão node/operator
-- reduzir etapas de recuperação manual após falhas transitórias de rede
+- improve wake/resume behavior across scene transitions
+- reduce dead-socket states after background -> foreground
+- tighten node/operator session reconnect coordination
+- reduce manual recovery steps after transient network failures
 
-## Checklist de Depuração
+## Debugging Checklist
 
-1. Confirme o baseline de build/assinatura:
-   - regenere o projeto (`xcodegen generate`)
-   - verifique o time selecionado + IDs de bundle
-2. No app `Settings -> Gateway`:
-   - confirme o texto de status, servidor e endereço remoto
-   - verifique se o status mostra bloqueio de pareamento/auth
-3. Se o pareamento for necessário:
-   - execute `/pair approve` no Telegram, depois reconecte
-4. Se a descoberta estiver instável:
-   - habilite `Discovery Debug Logs`
-   - inspecione `Settings -> Gateway -> Discovery Logs`
-5. Se o caminho de rede estiver unclear:
-   - mude para host/porta manual + TLS nas configurações avançadas do Gateway
-6. No console do Xcode, filtre por sinais de subsistema/categoria:
+1. Confirm build/signing baseline:
+   - regenerate project (`xcodegen generate`)
+   - verify selected team + bundle IDs
+2. In app `Settings -> Gateway`:
+   - confirm status text, server, and remote address
+   - verify whether status shows pairing/auth gating
+3. If pairing is required:
+   - run `/pair approve` from Telegram, then reconnect
+4. If discovery is flaky:
+   - enable `Discovery Debug Logs`
+   - inspect `Settings -> Gateway -> Discovery Logs`
+5. If network path is unclear:
+   - switch to manual host/port + TLS in Gateway Advanced settings
+6. In Xcode console, filter for subsystem/category signals:
    - `ai.openclaw.ios`
    - `GatewayDiag`
    - `APNs registration failed`
-7. Valide as expectativas de segundo plano:
-   - reproduza em primeiro plano primeiro
-   - depois teste as transições de segundo plano e confirme a reconexão no retorno
+7. Validate background expectations:
+   - repro in foreground first
+   - then test background transitions and confirm reconnect on return

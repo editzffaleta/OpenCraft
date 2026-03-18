@@ -6,7 +6,7 @@ import {
   type MessagingTarget,
   type MessagingTargetKind,
   type MessagingTargetParseOptions,
-} from "../../../src/channels/targets.js";
+} from "opencraft/plugin-sdk/channel-runtime";
 
 export type SlackTargetKind = MessagingTargetKind;
 

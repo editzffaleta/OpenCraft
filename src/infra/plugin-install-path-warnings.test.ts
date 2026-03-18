@@ -76,9 +76,7 @@ describe("plugin install path warnings", () => {
   });
 
   it("uses the second candidate path when the first one is stale", async () => {
-    const { issue, pluginPath } = await detectMatrixCustomPathIssue(
-      "/tmp/opencraft-matrix-missing",
-    );
+    const { issue, pluginPath } = await detectMatrixCustomPathIssue("/tmp/opencraft-matrix-missing");
     expect(issue).toEqual({
       kind: "custom-path",
       pluginId: "matrix",

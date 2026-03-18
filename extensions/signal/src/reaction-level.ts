@@ -1,9 +1,9 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import {
   resolveReactionLevel,
   type ReactionLevel,
   type ResolvedReactionLevel,
-} from "../../../src/utils/reaction-level.js";
+} from "opencraft/plugin-sdk/text-runtime";
 import { resolveSignalAccount } from "./accounts.js";
 
 export type SignalReactionLevel = ReactionLevel;

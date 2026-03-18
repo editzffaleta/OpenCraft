@@ -1,5 +1,5 @@
-import { issuePairingChallenge } from "../../../../src/pairing/pairing-challenge.js";
-import { upsertChannelPairingRequest } from "../../../../src/pairing/pairing-store.js";
+import { issuePairingChallenge } from "opencraft/plugin-sdk/conversation-runtime";
+import { upsertChannelPairingRequest } from "opencraft/plugin-sdk/conversation-runtime";
 import type { DiscordDmCommandAccess } from "./dm-command-auth.js";
 
 export async function handleDiscordDmCommandDecision(params: {

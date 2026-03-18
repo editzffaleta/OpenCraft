@@ -1,18 +1,17 @@
 import path from "node:path";
-import type { DmPolicy } from "opencraft/plugin-sdk/whatsapp";
 import {
   DEFAULT_ACCOUNT_ID,
-  formatCliCommand,
-  formatDocsLink,
   normalizeAccountId,
   normalizeAllowFromEntries,
   normalizeE164,
   pathExists,
   splitSetupEntries,
   setSetupChannelEnabled,
+  type DmPolicy,
   type OpenCraftConfig,
-} from "../../../src/plugin-sdk-internal/setup.js";
-import type { ChannelSetupWizard } from "../../../src/plugin-sdk-internal/setup.js";
+} from "opencraft/plugin-sdk/setup";
+import type { ChannelSetupWizard } from "opencraft/plugin-sdk/setup";
+import { formatCliCommand, formatDocsLink } from "opencraft/plugin-sdk/setup-tools";
 import { listWhatsAppAccountIds, resolveWhatsAppAuthDir } from "./accounts.js";
 import { loginWeb } from "./login.js";
 import { whatsappSetupAdapter } from "./setup-core.js";

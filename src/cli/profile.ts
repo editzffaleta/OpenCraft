@@ -94,10 +94,7 @@ function resolveProfileStateDir(
   homedir: () => string,
 ): string {
   const suffix = profile.toLowerCase() === "default" ? "" : `-${profile}`;
-  return path.join(
-    resolveRequiredHomeDir(env as NodeJS.ProcessEnv, homedir),
-    `.opencraft${suffix}`,
-  );
+  return path.join(resolveRequiredHomeDir(env as NodeJS.ProcessEnv, homedir), `.opencraft${suffix}`);
 }
 
 export function applyCliProfileEnv(params: {

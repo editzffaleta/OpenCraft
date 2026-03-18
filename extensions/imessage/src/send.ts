@@ -1,8 +1,8 @@
-import { loadConfig } from "../../../src/config/config.js";
-import { resolveMarkdownTableMode } from "../../../src/config/markdown-tables.js";
-import { convertMarkdownTables } from "../../../src/markdown/tables.js";
-import { kindFromMime } from "../../../src/media/mime.js";
-import { resolveOutboundAttachmentFromUrl } from "../../../src/media/outbound-attachment.js";
+import { loadConfig } from "opencraft/plugin-sdk/config-runtime";
+import { resolveMarkdownTableMode } from "opencraft/plugin-sdk/config-runtime";
+import { kindFromMime } from "opencraft/plugin-sdk/media-runtime";
+import { resolveOutboundAttachmentFromUrl } from "opencraft/plugin-sdk/media-runtime";
+import { convertMarkdownTables } from "opencraft/plugin-sdk/text-runtime";
 import { resolveIMessageAccount, type ResolvedIMessageAccount } from "./accounts.js";
 import { createIMessageRpcClient, type IMessageRpcClient } from "./client.js";
 import { formatIMessageChatTarget, type IMessageService, parseIMessageTarget } from "./targets.js";

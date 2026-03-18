@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/mattermost";
+} from "./runtime-api.js";
 
 export {
   buildSecretInputSchema,

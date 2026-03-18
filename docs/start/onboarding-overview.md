@@ -1,51 +1,51 @@
 ---
-summary: "Visão geral das opções e fluxos de onboarding do OpenCraft"
+summary: "Overview of OpenCraft onboarding options and flows"
 read_when:
-  - Escolhendo um caminho de onboarding
-  - Configurando um novo ambiente
-title: "Visão Geral do Onboarding"
-sidebarTitle: "Visão Geral do Onboarding"
+  - Choosing an onboarding path
+  - Setting up a new environment
+title: "Onboarding Overview"
+sidebarTitle: "Onboarding Overview"
 ---
 
-# Visão Geral do Onboarding
+# Onboarding Overview
 
-O OpenCraft suporta múltiplos caminhos de onboarding dependendo de onde o Gateway executa
-e como você prefere configurar os provedores.
+OpenCraft supports multiple onboarding paths depending on where the Gateway runs
+and how you prefer to configure providers.
 
-## Escolha seu caminho de onboarding
+## Choose your onboarding path
 
-- **Onboarding CLI** para macOS, Linux e Windows (via WSL2).
-- **App macOS** para uma primeira execução guiada em Macs Apple silicon ou Intel.
+- **CLI onboarding** for macOS, Linux, and Windows (via WSL2).
+- **macOS app** for a guided first run on Apple silicon or Intel Macs.
 
-## Onboarding CLI
+## CLI onboarding
 
-Execute o onboarding em um terminal:
+Run onboarding in a terminal:
 
 ```bash
 opencraft onboard
 ```
 
-Use o onboarding CLI quando quiser controle total do Gateway, espaço de trabalho,
-canais e skills. Documentação:
+Use CLI onboarding when you want full control of the Gateway, workspace,
+channels, and skills. Docs:
 
 - [Onboarding (CLI)](/start/wizard)
-- [Comando `opencraft onboard`](/cli/onboard)
+- [`opencraft onboard` command](/cli/onboard)
 
-## Onboarding do app macOS
+## macOS app onboarding
 
-Use o app OpenCraft quando quiser uma configuração totalmente guiada no macOS. Documentação:
+Use the OpenCraft app when you want a fully guided setup on macOS. Docs:
 
-- [Onboarding (App macOS)](/start/onboarding)
+- [Onboarding (macOS App)](/start/onboarding)
 
-## Provedor Personalizado
+## Custom Provider
 
-Se você precisa de um endpoint que não está listado, incluindo provedores hospedados que
-expõem APIs padrão OpenAI ou Anthropic, escolha **Provedor Personalizado** no
-onboarding CLI. Será solicitado:
+If you need an endpoint that is not listed, including hosted providers that
+expose standard OpenAI or Anthropic APIs, choose **Custom Provider** in the
+CLI onboarding. You will be asked to:
 
-- Escolher compatível com OpenAI, compatível com Anthropic ou **Desconhecido** (detecção automática).
-- Inserir uma URL base e chave de API (se exigido pelo provedor).
-- Fornecer um ID de modelo e alias opcional.
-- Escolher um ID de Endpoint para que múltiplos endpoints personalizados possam coexistir.
+- Pick OpenAI-compatible, Anthropic-compatible, or **Unknown** (auto-detect).
+- Enter a base URL and API key (if required by the provider).
+- Provide a model ID and optional alias.
+- Choose an Endpoint ID so multiple custom endpoints can coexist.
 
-Para passos detalhados, siga a documentação de onboarding CLI acima.
+For detailed steps, follow the CLI onboarding docs above.

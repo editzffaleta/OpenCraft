@@ -1,27 +1,27 @@
 ---
-summary: "Referência CLI para `opencraft plugins` (list, install, marketplace, uninstall, enable/disable, doctor)"
+summary: "CLI reference for `opencraft plugins` (list, install, marketplace, uninstall, enable/disable, doctor)"
 read_when:
-  - Você quer instalar ou gerenciar Plugins do Gateway ou bundles compatíveis
-  - Você quer depurar falhas de carregamento de Plugin
+  - You want to install or manage Gateway plugins or compatible bundles
+  - You want to debug plugin load failures
 title: "plugins"
 ---
 
 # `opencraft plugins`
 
-Gerenciar Plugins/extensões do Gateway e bundles compatíveis.
+Manage Gateway plugins/extensions and compatible bundles.
 
-Relacionado:
+Related:
 
-- Sistema de Plugins: [Plugins](/tools/plugin)
-- Compatibilidade de bundles: [Plugin bundles](/plugins/bundles)
-- Manifesto e esquema de Plugin: [Plugin manifest](/plugins/manifest)
-- Hardening de segurança: [Security](/gateway/security)
+- Plugin system: [Plugins](/tools/plugin)
+- Bundle compatibility: [Plugin bundles](/plugins/bundles)
+- Plugin manifest + schema: [Plugin manifest](/plugins/manifest)
+- Security hardening: [Security](/gateway/security)
 
-## Comandos
+## Commands
 
 ```bash
 opencraft plugins list
-opencraft plugins info <id>
+opencraft plugins inspect <id>
 opencraft plugins enable <id>
 opencraft plugins disable <id>
 opencraft plugins uninstall <id>
@@ -31,18 +31,20 @@ opencraft plugins update --all
 opencraft plugins marketplace list <marketplace>
 ```
 
-Plugins inclusos vêm com o OpenCraft mas iniciam desativados. Use `plugins enable` para
-ativá-los.
+`info` is an alias for `inspect`.
 
-Plugins nativos do OpenCraft devem incluir `opencraft.plugin.json` com um JSON
-Schema inline (`configSchema`, mesmo que vazio). Bundles compatíveis usam seus próprios manifestos
-de bundle.
+Bundled plugins ship with OpenCraft but start disabled. Use `plugins enable` to
+activate them.
 
-`plugins list` mostra `Format: opencraft` ou `Format: bundle`. Saída detalhada de list/info
-também mostra o subtipo do bundle (`codex`, `claude`, ou `cursor`) mais capacidades
-detectadas do bundle.
+Native OpenCraft plugins must ship `opencraft.plugin.json` with an inline JSON
+Schema (`configSchema`, even if empty). Compatible bundles use their own bundle
+manifests instead.
 
-### Instalação
+`plugins list` shows `Format: opencraft` or `Format: bundle`. Verbose list/info
+output also shows the bundle subtype (`codex`, `claude`, or `cursor`) plus detected bundle
+capabilities.
+
+### Install
 
 ```bash
 opencraft plugins install <path-or-spec>
@@ -51,34 +53,34 @@ opencraft plugins install <plugin>@<marketplace>
 opencraft plugins install <plugin> --marketplace <marketplace>
 ```
 
-Nota de segurança: trate instalações de Plugin como execução de código. Prefira versões fixadas.
+Security note: treat plugin installs like running code. Prefer pinned versions.
 
-Especificações npm são **apenas de registro** (nome do pacote + **versão exata** opcional ou
-**dist-tag**). Especificações Git/URL/arquivo e intervalos de semver são rejeitados. Instalações de
-dependências executam com `--ignore-scripts` por segurança.
+Npm specs are **registry-only** (package name + optional **exact version** or
+**dist-tag**). Git/URL/file specs and semver ranges are rejected. Dependency
+installs run with `--ignore-scripts` for safety.
 
-Especificações sem prefixo e `@latest` ficam no canal estável. Se o npm resolver qualquer
-um deles para um prerelease, o OpenCraft para e pede que você opte explicitamente com uma
-tag de prerelease como `@beta`/`@rc` ou uma versão exata de prerelease como
+Bare specs and `@latest` stay on the stable track. If npm resolves either of
+those to a prerelease, OpenCraft stops and asks you to opt in explicitly with a
+prerelease tag such as `@beta`/`@rc` or an exact prerelease version such as
 `@1.2.3-beta.4`.
 
-Se uma especificação de instalação sem prefixo corresponder a um id de Plugin incluso (por exemplo `diffs`), o OpenCraft
-instala o Plugin incluso diretamente. Para instalar um pacote npm com o mesmo
-nome, use uma especificação com escopo explícito (por exemplo `@scope/diffs`).
+If a bare install spec matches a bundled plugin id (for example `diffs`), OpenCraft
+installs the bundled plugin directly. To install an npm package with the same
+name, use an explicit scoped spec (for example `@scope/diffs`).
 
-Arquivos suportados: `.zip`, `.tgz`, `.tar.gz`, `.tar`.
+Supported archives: `.zip`, `.tgz`, `.tar.gz`, `.tar`.
 
-Instalações de marketplace Claude também são suportadas.
+Claude marketplace installs are also supported.
 
-Use o atalho `plugin@marketplace` quando o nome do marketplace existir no cache de
-registro local do Claude em `~/.claude/plugins/known_marketplaces.json`:
+Use `plugin@marketplace` shorthand when the marketplace name exists in Claude's
+local registry cache at `~/.claude/plugins/known_marketplaces.json`:
 
 ```bash
 opencraft plugins marketplace list <marketplace-name>
 opencraft plugins install <plugin-name>@<marketplace-name>
 ```
 
-Use `--marketplace` quando quiser passar a fonte do marketplace explicitamente:
+Use `--marketplace` when you want to pass the marketplace source explicitly:
 
 ```bash
 opencraft plugins install <plugin-name> --marketplace <marketplace-name>
@@ -86,37 +88,37 @@ opencraft plugins install <plugin-name> --marketplace <owner/repo>
 opencraft plugins install <plugin-name> --marketplace ./my-marketplace
 ```
 
-Fontes de marketplace podem ser:
+Marketplace sources can be:
 
-- um nome de marketplace conhecido do Claude em `~/.claude/plugins/known_marketplaces.json`
-- um caminho local de raiz de marketplace ou caminho `marketplace.json`
-- um atalho de repositório GitHub como `owner/repo`
-- uma URL git
+- a Claude known-marketplace name from `~/.claude/plugins/known_marketplaces.json`
+- a local marketplace root or `marketplace.json` path
+- a GitHub repo shorthand such as `owner/repo`
+- a git URL
 
-Para caminhos locais e arquivos, o OpenCraft detecta automaticamente:
+For local paths and archives, OpenCraft auto-detects:
 
-- Plugins nativos do OpenCraft (`opencraft.plugin.json`)
-- Bundles compatíveis com Codex (`.codex-plugin/plugin.json`)
-- Bundles compatíveis com Claude (`.claude-plugin/plugin.json` ou o layout
-  padrão de componentes Claude)
-- Bundles compatíveis com Cursor (`.cursor-plugin/plugin.json`)
+- native OpenCraft plugins (`opencraft.plugin.json`)
+- Codex-compatible bundles (`.codex-plugin/plugin.json`)
+- Claude-compatible bundles (`.claude-plugin/plugin.json` or the default Claude
+  component layout)
+- Cursor-compatible bundles (`.cursor-plugin/plugin.json`)
 
-Bundles compatíveis são instalados na raiz normal de extensões e participam do
-mesmo fluxo de list/info/enable/disable. Hoje, Skills de bundle, Skills de
-comando Claude, padrões de `settings.json` do Claude, Skills de comando Cursor e diretórios de hook
-Codex compatíveis são suportados; outras capacidades detectadas do bundle são mostradas em
-diagnósticos/info mas ainda não estão conectadas à execução em runtime.
+Compatible bundles install into the normal extensions root and participate in
+the same list/info/enable/disable flow. Today, bundle skills, Claude
+command-skills, Claude `settings.json` defaults, Cursor command-skills, and compatible Codex hook
+directories are supported; other detected bundle capabilities are shown in
+diagnostics/info but are not yet wired into runtime execution.
 
-Use `--link` para evitar copiar um diretório local (adiciona a `plugins.load.paths`):
+Use `--link` to avoid copying a local directory (adds to `plugins.load.paths`):
 
 ```bash
 opencraft plugins install -l ./my-plugin
 ```
 
-Use `--pin` em instalações npm para salvar a especificação exata resolvida (`name@version`) em
-`plugins.installs` mantendo o comportamento padrão não fixado.
+Use `--pin` on npm installs to save the resolved exact spec (`name@version`) in
+`plugins.installs` while keeping the default behavior unpinned.
 
-### Desinstalação
+### Uninstall
 
 ```bash
 opencraft plugins uninstall <id>
@@ -124,17 +126,17 @@ opencraft plugins uninstall <id> --dry-run
 opencraft plugins uninstall <id> --keep-files
 ```
 
-`uninstall` remove registros de Plugin de `plugins.entries`, `plugins.installs`,
-a lista de permissão de Plugins e entradas `plugins.load.paths` vinculadas quando aplicável.
-Para Plugins de memória ativos, o slot de memória é resetado para `memory-core`.
+`uninstall` removes plugin records from `plugins.entries`, `plugins.installs`,
+the plugin allowlist, and linked `plugins.load.paths` entries when applicable.
+For active memory plugins, the memory slot resets to `memory-core`.
 
-Por padrão, a desinstalação também remove o diretório de instalação do Plugin sob a raiz de
-extensões do diretório de estado ativo (`$OPENCRAFT_STATE_DIR/extensions/<id>`). Use
-`--keep-files` para manter os arquivos em disco.
+By default, uninstall also removes the plugin install directory under the active
+state dir extensions root (`$OPENCRAFT_STATE_DIR/extensions/<id>`). Use
+`--keep-files` to keep files on disk.
 
-`--keep-config` é suportado como alias depreciado para `--keep-files`.
+`--keep-config` is supported as a deprecated alias for `--keep-files`.
 
-### Atualização
+### Update
 
 ```bash
 opencraft plugins update <id>
@@ -142,9 +144,32 @@ opencraft plugins update --all
 opencraft plugins update <id> --dry-run
 ```
 
-Atualizações se aplicam a instalações rastreadas em `plugins.installs`, atualmente instalações npm e
-de marketplace.
+Updates apply to tracked installs in `plugins.installs`, currently npm and
+marketplace installs.
 
-Quando um hash de integridade armazenado existe e o hash do artefato obtido muda,
-o OpenCraft imprime um aviso e pede confirmação antes de prosseguir. Use
-`--yes` global para ignorar prompts em execuções CI/não interativas.
+When a stored integrity hash exists and the fetched artifact hash changes,
+OpenCraft prints a warning and asks for confirmation before proceeding. Use
+global `--yes` to bypass prompts in CI/non-interactive runs.
+
+### Inspect
+
+```bash
+opencraft plugins inspect <id>
+opencraft plugins inspect <id> --json
+```
+
+Deep introspection for a single plugin. Shows identity, load status, source,
+plugin shape, registered capabilities, hooks, tools, commands, services,
+gateway methods, HTTP routes, policy flags, diagnostics, and install metadata.
+
+Plugin shape is derived from actual registration behavior:
+
+- **plain-capability** — one capability type registered
+- **hybrid-capability** — multiple capability types registered
+- **hook-only** — only hooks, no capabilities or surfaces
+- **non-capability** — tools/commands/services but no capabilities
+
+The `--json` flag outputs a machine-readable report suitable for scripting and
+auditing.
+
+`info` is an alias for `inspect`.

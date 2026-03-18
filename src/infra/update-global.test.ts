@@ -71,9 +71,9 @@ describe("update global helpers", () => {
     expect(
       resolveGlobalInstallSpec({
         packageName: "opencraft",
-        tag: "github:editzffaleta/OpenCraft#feature/my-branch",
+        tag: "github:opencraft/opencraft#feature/my-branch",
       }),
-    ).toBe("github:editzffaleta/OpenCraft#feature/my-branch");
+    ).toBe("github:opencraft/opencraft#feature/my-branch");
     expect(
       resolveGlobalInstallSpec({
         packageName: "opencraft",
@@ -87,7 +87,7 @@ describe("update global helpers", () => {
     expect(isMainPackageTarget(" MAIN ")).toBe(true);
     expect(isMainPackageTarget("beta")).toBe(false);
 
-    expect(isExplicitPackageInstallSpec("github:editzffaleta/OpenCraft#main")).toBe(true);
+    expect(isExplicitPackageInstallSpec("github:opencraft/opencraft#main")).toBe(true);
     expect(isExplicitPackageInstallSpec("https://example.com/opencraft-main.tgz")).toBe(true);
     expect(isExplicitPackageInstallSpec("file:/tmp/opencraft-main.tgz")).toBe(true);
     expect(isExplicitPackageInstallSpec("beta")).toBe(false);
@@ -95,9 +95,7 @@ describe("update global helpers", () => {
     expect(canResolveRegistryVersionForPackageTarget("latest")).toBe(true);
     expect(canResolveRegistryVersionForPackageTarget("2026.3.14")).toBe(true);
     expect(canResolveRegistryVersionForPackageTarget("main")).toBe(false);
-    expect(canResolveRegistryVersionForPackageTarget("github:editzffaleta/OpenCraft#main")).toBe(
-      false,
-    );
+    expect(canResolveRegistryVersionForPackageTarget("github:opencraft/opencraft#main")).toBe(false);
   });
 
   it("detects install managers from resolved roots and on-disk presence", async () => {

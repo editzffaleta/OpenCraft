@@ -234,6 +234,14 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     includeInOpenCraftGroup: true,
   },
   {
+    id: "image_generate",
+    label: "image_generate",
+    description: "Image generation",
+    sectionId: "media",
+    profiles: ["coding"],
+    includeInOpenCraftGroup: true,
+  },
+  {
     id: "tts",
     label: "tts",
     description: "Text-to-speech conversion",

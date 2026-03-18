@@ -1,5 +1,4 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { feishuPlugin } from "./src/channel.js";
 
-export default {
-  plugin: feishuPlugin,
-};
+export default defineSetupPluginEntry(feishuPlugin);

@@ -1,27 +1,27 @@
 ---
-summary: "Configuração do Together AI (autenticação + seleção de modelo)"
+summary: "Together AI setup (auth + model selection)"
 read_when:
-  - Você quer usar o Together AI com o OpenCraft
-  - Você precisa da variável de ambiente da API key ou da opção de autenticação via CLI
+  - You want to use Together AI with OpenCraft
+  - You need the API key env var or CLI auth choice
 ---
 
 # Together AI
 
-O [Together AI](https://together.ai) fornece acesso a modelos open-source líderes incluindo Llama, DeepSeek, Kimi e mais através de uma API unificada.
+The [Together AI](https://together.ai) provides access to leading open-source models including Llama, DeepSeek, Kimi, and more through a unified API.
 
 - Provider: `together`
-- Autenticação: `TOGETHER_API_KEY`
-- API: Compatível com OpenAI
+- Auth: `TOGETHER_API_KEY`
+- API: OpenAI-compatible
 
-## Início rápido
+## Quick start
 
-1. Defina a API key (recomendado: armazene-a para o Gateway):
+1. Set the API key (recommended: store it for the Gateway):
 
 ```bash
 opencraft onboard --auth-choice together-api-key
 ```
 
-2. Defina um modelo padrão:
+2. Set a default model:
 
 ```json5
 {
@@ -33,7 +33,7 @@ opencraft onboard --auth-choice together-api-key
 }
 ```
 
-## Exemplo não interativo
+## Non-interactive example
 
 ```bash
 opencraft onboard --non-interactive \
@@ -42,24 +42,24 @@ opencraft onboard --non-interactive \
   --together-api-key "$TOGETHER_API_KEY"
 ```
 
-Isso definirá `together/moonshotai/Kimi-K2.5` como o modelo padrão.
+This will set `together/moonshotai/Kimi-K2.5` as the default model.
 
-## Nota sobre ambiente
+## Environment note
 
-Se o Gateway rodar como daemon (launchd/systemd), certifique-se de que `TOGETHER_API_KEY`
-esteja disponível para esse processo (por exemplo, em `~/.opencraft/.env` ou via
+If the Gateway runs as a daemon (launchd/systemd), make sure `TOGETHER_API_KEY`
+is available to that process (for example, in `~/.opencraft/.env` or via
 `env.shellEnv`).
 
-## Modelos disponíveis
+## Available models
 
-O Together AI fornece acesso a diversos modelos open-source populares:
+Together AI provides access to many popular open-source models:
 
-- **GLM 4.7 Fp8** - Modelo padrão com janela de contexto de 200K
-- **Llama 3.3 70B Instruct Turbo** - Seguimento de instruções rápido e eficiente
-- **Llama 4 Scout** - Modelo de visão com compreensão de imagens
-- **Llama 4 Maverick** - Visão e raciocínio avançados
-- **DeepSeek V3.1** - Modelo poderoso de codificação e raciocínio
-- **DeepSeek R1** - Modelo de raciocínio avançado
-- **Kimi K2 Instruct** - Modelo de alto desempenho com janela de contexto de 262K
+- **GLM 4.7 Fp8** - Default model with 200K context window
+- **Llama 3.3 70B Instruct Turbo** - Fast, efficient instruction following
+- **Llama 4 Scout** - Vision model with image understanding
+- **Llama 4 Maverick** - Advanced vision and reasoning
+- **DeepSeek V3.1** - Powerful coding and reasoning model
+- **DeepSeek R1** - Advanced reasoning model
+- **Kimi K2 Instruct** - High-performance model with 262K context window
 
-Todos os modelos suportam chat completions padrão e são compatíveis com a API OpenAI.
+All models support standard chat completions and are OpenAI API compatible.

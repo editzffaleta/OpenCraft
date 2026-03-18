@@ -28,7 +28,7 @@ const buildGatewayInstallPlan = vi.fn(
     workingDirectory: process.cwd(),
     environment: {
       OPENCRAFT_GATEWAY_PORT: String(params.port),
-      ...(params.token ? { OPENCLAW_GATEWAY_TOKEN: params.token } : {}),
+      ...(params.token ? { OPENCRAFT_GATEWAY_TOKEN: params.token } : {}),
     },
   }),
 );
@@ -166,7 +166,7 @@ describe("daemon-cli coverage", () => {
         OPENCRAFT_CONFIG_PATH: "/tmp/opencraft-daemon-state/opencraft.json",
         OPENCRAFT_GATEWAY_PORT: "19001",
       },
-      sourcePath: "/tmp/ai.opencraft.gateway.plist",
+      sourcePath: "/tmp/ai.openclaw.gateway.plist",
     });
 
     await runDaemonCommand(["daemon", "status", "--json"]);

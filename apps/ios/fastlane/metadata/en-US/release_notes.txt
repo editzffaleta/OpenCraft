@@ -1,1 +1,1 @@
-First App Store release of OpenClaw for iPhone. Pair with your OpenCraft Gateway to use chat, voice, sharing, and device actions from iOS.
+First App Store release of OpenCraft for iPhone. Pair with your OpenCraft Gateway to use chat, voice, sharing, and device actions from iOS.

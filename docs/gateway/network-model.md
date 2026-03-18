@@ -1,19 +1,20 @@
 ---
-summary: "Como o Gateway, nodes e canvas host se conectam."
+summary: "How the Gateway, nodes, and canvas host connect."
 read_when:
-  - Você quer uma visão concisa do modelo de networking do Gateway
+  - You want a concise view of the Gateway networking model
 title: "Network model"
 ---
 
-A maioria das operações flui através do Gateway (`opencraft gateway`), um processo único de longa duração que é dono das conexões de canais e do control plane WebSocket.
+Most operations flow through the Gateway (`opencraft gateway`), a single long-running
+process that owns channel connections and the WebSocket control plane.
 
-## Regras fundamentais
+## Core rules
 
-- Um Gateway por host é recomendado. É o único processo permitido a ser dono da sessão WhatsApp Web. Para bots de resgate ou isolamento estrito, execute múltiplos gateways com perfis e portas isolados. Veja [Multiple gateways](/gateway/multiple-gateways).
-- Loopback primeiro: o Gateway WS tem como padrão `ws://127.0.0.1:18789`. O wizard gera um token de gateway por padrão, mesmo para loopback. Para acesso via tailnet, execute `opencraft gateway --bind tailnet --token ...` porque tokens são obrigatórios para binds não-loopback.
-- Nodes se conectam ao Gateway WS via LAN, tailnet ou SSH conforme necessário. O TCP bridge legado está descontinuado.
-- O canvas host é servido pelo servidor HTTP do Gateway na **mesma porta** que o Gateway (padrão `18789`):
+- One Gateway per host is recommended. It is the only process allowed to own the WhatsApp Web session. For rescue bots or strict isolation, run multiple gateways with isolated profiles and ports. See [Multiple gateways](/gateway/multiple-gateways).
+- Loopback first: the Gateway WS defaults to `ws://127.0.0.1:18789`. The wizard generates a gateway token by default, even for loopback. For tailnet access, run `opencraft gateway --bind tailnet --token ...` because tokens are required for non-loopback binds.
+- Nodes connect to the Gateway WS over LAN, tailnet, or SSH as needed. The legacy TCP bridge is deprecated.
+- Canvas host is served by the Gateway HTTP server on the **same port** as the Gateway (default `18789`):
   - `/__opencraft__/canvas/`
   - `/__opencraft__/a2ui/`
-    Quando `gateway.auth` está configurado e o Gateway faz bind além de loopback, essas rotas são protegidas pela auth do Gateway. Clientes node usam URLs de capability com escopo de node vinculadas à sessão WS ativa. Veja [Gateway configuration](/gateway/configuration) (`canvasHost`, `gateway`).
-- Uso remoto é tipicamente SSH tunnel ou tailnet VPN. Veja [Remote access](/gateway/remote) e [Discovery](/gateway/discovery).
+    When `gateway.auth` is configured and the Gateway binds beyond loopback, these routes are protected by Gateway auth. Node clients use node-scoped capability URLs tied to their active WS session. See [Gateway configuration](/gateway/configuration) (`canvasHost`, `gateway`).
+- Remote use is typically SSH tunnel or tailnet VPN. See [Remote access](/gateway/remote) and [Discovery](/gateway/discovery).

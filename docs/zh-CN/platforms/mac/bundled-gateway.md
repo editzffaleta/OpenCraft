@@ -52,7 +52,7 @@ Plist 位置（每用户）：
 
 日志：
 
-- launchd stdout/err：`/tmp/editzffaleta/OpenCraft-gateway.log`
+- launchd stdout/err：`/tmp/opencraft/opencraft-gateway.log`
 
 ## 版本兼容性
 

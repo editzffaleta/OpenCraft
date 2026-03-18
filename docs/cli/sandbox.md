@@ -1,35 +1,35 @@
 ---
 title: Sandbox CLI
-summary: "Gerenciar runtimes de sandbox e inspecionar política efetiva de sandbox"
-read_when: "Você está gerenciando runtimes de sandbox ou depurando comportamento de sandbox/política de ferramentas."
+summary: "Manage sandbox runtimes and inspect effective sandbox policy"
+read_when: "You are managing sandbox runtimes or debugging sandbox/tool-policy behavior."
 status: active
 ---
 
 # Sandbox CLI
 
-Gerenciar runtimes de sandbox para execução isolada de agentes.
+Manage sandbox runtimes for isolated agent execution.
 
-## Visão geral
+## Overview
 
-O OpenCraft pode executar agentes em runtimes de sandbox isolados para segurança. Os comandos `sandbox` ajudam você a inspecionar e recriar esses runtimes após atualizações ou mudanças de configuração.
+OpenCraft can run agents in isolated sandbox runtimes for security. The `sandbox` commands help you inspect and recreate those runtimes after updates or configuration changes.
 
-Hoje isso geralmente significa:
+Today that usually means:
 
-- Contêineres Docker de sandbox
-- Runtimes de sandbox SSH quando `agents.defaults.sandbox.backend = "ssh"`
-- Runtimes de sandbox OpenShell quando `agents.defaults.sandbox.backend = "openshell"`
+- Docker sandbox containers
+- SSH sandbox runtimes when `agents.defaults.sandbox.backend = "ssh"`
+- OpenShell sandbox runtimes when `agents.defaults.sandbox.backend = "openshell"`
 
-Para `ssh` e OpenShell `remote`, a recriação importa mais do que com Docker:
+For `ssh` and OpenShell `remote`, recreate matters more than with Docker:
 
-- o workspace remoto é canônico após a semeadura inicial
-- `opencraft sandbox recreate` exclui esse workspace remoto canônico para o escopo selecionado
-- o próximo uso o semeia novamente a partir do workspace local atual
+- the remote workspace is canonical after the initial seed
+- `opencraft sandbox recreate` deletes that canonical remote workspace for the selected scope
+- next use seeds it again from the current local workspace
 
-## Comandos
+## Commands
 
 ### `opencraft sandbox explain`
 
-Inspecionar o modo/escopo/acesso ao workspace de sandbox **efetivo**, política de ferramentas de sandbox e portas elevadas (com caminhos de chave de config para correção).
+Inspect the **effective** sandbox mode/scope/workspace access, sandbox tool policy, and elevated gates (with fix-it config key paths).
 
 ```bash
 opencraft sandbox explain
@@ -40,74 +40,74 @@ opencraft sandbox explain --json
 
 ### `opencraft sandbox list`
 
-Listar todos os runtimes de sandbox com seus status e configuração.
+List all sandbox runtimes with their status and configuration.
 
 ```bash
 opencraft sandbox list
-opencraft sandbox list --browser  # Listar apenas contêineres de navegador
-opencraft sandbox list --json     # Saída JSON
+opencraft sandbox list --browser  # List only browser containers
+opencraft sandbox list --json     # JSON output
 ```
 
-**A saída inclui:**
+**Output includes:**
 
-- Nome e status do runtime
+- Runtime name and status
 - Backend (`docker`, `openshell`, etc.)
-- Label de config e se corresponde ao config atual
-- Idade (tempo desde a criação)
-- Tempo ocioso (tempo desde o último uso)
-- Sessão/agente associado
+- Config label and whether it matches current config
+- Age (time since creation)
+- Idle time (time since last use)
+- Associated session/agent
 
 ### `opencraft sandbox recreate`
 
-Remover runtimes de sandbox para forçar recriação com config atualizado.
+Remove sandbox runtimes to force recreation with updated config.
 
 ```bash
-opencraft sandbox recreate --all                # Recriar todos os contêineres
-opencraft sandbox recreate --session main       # Sessão específica
-opencraft sandbox recreate --agent mybot        # Agente específico
-opencraft sandbox recreate --browser            # Apenas contêineres de navegador
-opencraft sandbox recreate --all --force        # Pular confirmação
+opencraft sandbox recreate --all                # Recreate all containers
+opencraft sandbox recreate --session main       # Specific session
+opencraft sandbox recreate --agent mybot        # Specific agent
+opencraft sandbox recreate --browser            # Only browser containers
+opencraft sandbox recreate --all --force        # Skip confirmation
 ```
 
-**Opções:**
+**Options:**
 
-- `--all`: Recriar todos os contêineres de sandbox
-- `--session <key>`: Recriar contêiner para sessão específica
-- `--agent <id>`: Recriar contêineres para agente específico
-- `--browser`: Apenas recriar contêineres de navegador
-- `--force`: Pular prompt de confirmação
+- `--all`: Recreate all sandbox containers
+- `--session <key>`: Recreate container for specific session
+- `--agent <id>`: Recreate containers for specific agent
+- `--browser`: Only recreate browser containers
+- `--force`: Skip confirmation prompt
 
-**Importante:** Runtimes são automaticamente recriados quando o agente é usado novamente.
+**Important:** Runtimes are automatically recreated when the agent is next used.
 
-## Casos de uso
+## Use Cases
 
-### Após atualizar uma imagem Docker
+### After updating a Docker image
 
 ```bash
-# Baixar nova imagem
-docker pull openclaw-sandbox:latest
-docker tag openclaw-sandbox:latest openclaw-sandbox:bookworm-slim
+# Pull new image
+docker pull opencraft-sandbox:latest
+docker tag opencraft-sandbox:latest opencraft-sandbox:bookworm-slim
 
-# Atualizar config para usar nova imagem
-# Editar config: agents.defaults.sandbox.docker.image (ou agents.list[].sandbox.docker.image)
+# Update config to use new image
+# Edit config: agents.defaults.sandbox.docker.image (or agents.list[].sandbox.docker.image)
 
-# Recriar contêineres
+# Recreate containers
 opencraft sandbox recreate --all
 ```
 
-### Após alterar configuração de sandbox
+### After changing sandbox configuration
 
 ```bash
-# Editar config: agents.defaults.sandbox.* (ou agents.list[].sandbox.*)
+# Edit config: agents.defaults.sandbox.* (or agents.list[].sandbox.*)
 
-# Recriar para aplicar novo config
+# Recreate to apply new config
 opencraft sandbox recreate --all
 ```
 
-### Após alterar alvo SSH ou material de autenticação SSH
+### After changing SSH target or SSH auth material
 
 ```bash
-# Editar config:
+# Edit config:
 # - agents.defaults.sandbox.backend
 # - agents.defaults.sandbox.ssh.target
 # - agents.defaults.sandbox.ssh.workspaceRoot
@@ -117,13 +117,13 @@ opencraft sandbox recreate --all
 opencraft sandbox recreate --all
 ```
 
-Para o backend `ssh` principal, a recriação exclui a raiz do workspace remoto por escopo
-no alvo SSH. A próxima execução o semeia novamente a partir do workspace local.
+For the core `ssh` backend, recreate deletes the per-scope remote workspace root
+on the SSH target. The next run seeds it again from the local workspace.
 
-### Após alterar fonte, política ou modo do OpenShell
+### After changing OpenShell source, policy, or mode
 
 ```bash
-# Editar config:
+# Edit config:
 # - agents.defaults.sandbox.backend
 # - plugins.entries.openshell.config.from
 # - plugins.entries.openshell.config.mode
@@ -132,40 +132,40 @@ no alvo SSH. A próxima execução o semeia novamente a partir do workspace loca
 opencraft sandbox recreate --all
 ```
 
-Para o modo `remote` do OpenShell, a recriação exclui o workspace remoto canônico
-para aquele escopo. A próxima execução o semeia novamente a partir do workspace local.
+For OpenShell `remote` mode, recreate deletes the canonical remote workspace
+for that scope. The next run seeds it again from the local workspace.
 
-### Após alterar setupCommand
+### After changing setupCommand
 
 ```bash
 opencraft sandbox recreate --all
-# ou apenas um agente:
+# or just one agent:
 opencraft sandbox recreate --agent family
 ```
 
-### Para um agente específico apenas
+### For a specific agent only
 
 ```bash
-# Atualizar apenas os contêineres de um agente
+# Update only one agent's containers
 opencraft sandbox recreate --agent alfred
 ```
 
-## Por que isso é necessário?
+## Why is this needed?
 
-**Problema:** Quando você atualiza a configuração de sandbox:
+**Problem:** When you update sandbox configuration:
 
-- Runtimes existentes continuam executando com configurações antigas
-- Runtimes só são removidos após 24h de inatividade
-- Agentes usados regularmente mantêm runtimes antigos vivos indefinidamente
+- Existing runtimes continue running with old settings
+- Runtimes are only pruned after 24h of inactivity
+- Regularly-used agents keep old runtimes alive indefinitely
 
-**Solução:** Use `opencraft sandbox recreate` para forçar a remoção de runtimes antigos. Eles serão recriados automaticamente com as configurações atuais quando necessário.
+**Solution:** Use `opencraft sandbox recreate` to force removal of old runtimes. They'll be recreated automatically with current settings when next needed.
 
-Dica: prefira `opencraft sandbox recreate` em vez de limpeza manual específica do backend.
-Ele usa o registro de runtime do Gateway e evita incompatibilidades quando chaves de escopo/sessão mudam.
+Tip: prefer `opencraft sandbox recreate` over manual backend-specific cleanup.
+It uses the Gateway’s runtime registry and avoids mismatches when scope/session keys change.
 
-## Configuração
+## Configuration
 
-As configurações de sandbox ficam em `~/.editzffaleta/OpenCraft.json` sob `agents.defaults.sandbox` (sobrescritas por agente vão em `agents.list[].sandbox`):
+Sandbox settings live in `~/.opencraft/opencraft.json` under `agents.defaults.sandbox` (per-agent overrides go in `agents.list[].sandbox`):
 
 ```jsonc
 {
@@ -176,13 +176,13 @@ As configurações de sandbox ficam em `~/.editzffaleta/OpenCraft.json` sob `age
         "backend": "docker", // docker, ssh, openshell
         "scope": "agent", // session, agent, shared
         "docker": {
-          "image": "openclaw-sandbox:bookworm-slim",
-          "containerPrefix": "openclaw-sbx-",
-          // ... mais opções Docker
+          "image": "opencraft-sandbox:bookworm-slim",
+          "containerPrefix": "opencraft-sbx-",
+          // ... more Docker options
         },
         "prune": {
-          "idleHours": 24, // Remoção automática após 24h ociosas
-          "maxAgeDays": 7, // Remoção automática após 7 dias
+          "idleHours": 24, // Auto-prune after 24h idle
+          "maxAgeDays": 7, // Auto-prune after 7 days
         },
       },
     },
@@ -190,8 +190,8 @@ As configurações de sandbox ficam em `~/.editzffaleta/OpenCraft.json` sob `age
 }
 ```
 
-## Veja também
+## See Also
 
-- [Documentação de Sandbox](/gateway/sandboxing)
-- [Configuração de Agente](/concepts/agent-workspace)
-- [Comando Doctor](/gateway/doctor) - Verificar configuração de sandbox
+- [Sandbox Documentation](/gateway/sandboxing)
+- [Agent Configuration](/concepts/agent-workspace)
+- [Doctor Command](/gateway/doctor) - Check sandbox setup

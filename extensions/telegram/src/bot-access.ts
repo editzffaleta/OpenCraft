@@ -2,9 +2,9 @@ import {
   firstDefined,
   isSenderIdAllowed,
   mergeDmAllowFromSources,
-} from "../../../src/channels/allow-from.js";
-import type { AllowlistMatch } from "../../../src/channels/allowlist-match.js";
-import { createSubsystemLogger } from "../../../src/logging/subsystem.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { AllowlistMatch } from "opencraft/plugin-sdk/channel-runtime";
+import { createSubsystemLogger } from "opencraft/plugin-sdk/runtime-env";
 
 export type NormalizedAllowFrom = {
   entries: string[];

@@ -1,9 +1,9 @@
 import type { Message } from "@grammyjs/types";
 import type { Bot } from "grammy";
-import type { DmPolicy } from "../../../src/config/types.js";
-import { logVerbose } from "../../../src/globals.js";
-import { issuePairingChallenge } from "../../../src/pairing/pairing-challenge.js";
-import { upsertChannelPairingRequest } from "../../../src/pairing/pairing-store.js";
+import type { DmPolicy } from "opencraft/plugin-sdk/config-runtime";
+import { issuePairingChallenge } from "opencraft/plugin-sdk/conversation-runtime";
+import { upsertChannelPairingRequest } from "opencraft/plugin-sdk/conversation-runtime";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 import { resolveSenderAllowMatch, type NormalizedAllowFrom } from "./bot-access.js";
 

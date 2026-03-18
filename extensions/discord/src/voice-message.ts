@@ -14,15 +14,15 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { RateLimitError, type RequestClient } from "@buape/carbon";
-import type { RetryRunner } from "../../../src/infra/retry-policy.js";
-import { resolvePreferredOpenCraftTmpDir } from "../../../src/infra/tmp-opencraft-dir.js";
+import type { RetryRunner } from "opencraft/plugin-sdk/infra-runtime";
+import { resolvePreferredOpenCraftTmpDir } from "opencraft/plugin-sdk/infra-runtime";
 import {
   parseFfprobeCodecAndSampleRate,
   runFfmpeg,
   runFfprobe,
-} from "../../../src/media/ffmpeg-exec.js";
-import { MEDIA_FFMPEG_MAX_AUDIO_DURATION_SECS } from "../../../src/media/ffmpeg-limits.js";
-import { unlinkIfExists } from "../../../src/media/temp-files.js";
+} from "opencraft/plugin-sdk/media-runtime";
+import { MEDIA_FFMPEG_MAX_AUDIO_DURATION_SECS } from "opencraft/plugin-sdk/media-runtime";
+import { unlinkIfExists } from "opencraft/plugin-sdk/media-runtime";
 
 const DISCORD_VOICE_MESSAGE_FLAG = 1 << 13;
 const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;

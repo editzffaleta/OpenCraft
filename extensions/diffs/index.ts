@@ -1,6 +1,6 @@
 import path from "node:path";
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/diffs";
-import { resolvePreferredOpenCraftTmpDir } from "opencraft/plugin-sdk/diffs";
+import type { OpenCraftPluginApi } from "./api.js";
+import { resolvePreferredOpenCraftTmpDir } from "./api.js";
 import {
   diffsPluginConfigSchema,
   resolveDiffsPluginDefaults,

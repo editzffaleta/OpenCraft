@@ -133,17 +133,17 @@ const COMPATIBILITY_OPTIONS: Array<{
   {
     value: "openai",
     label: "OpenAI-compatible",
-    hint: "Usa /chat/completions",
+    hint: "Uses /chat/completions",
   },
   {
     value: "anthropic",
     label: "Anthropic-compatible",
-    hint: "Usa /messages",
+    hint: "Uses /messages",
   },
   {
     value: "unknown",
-    label: "Desconhecido (detectar automaticamente)",
-    hint: "Testa endpoints OpenAI e depois Anthropic",
+    label: "Unknown (detect automatically)",
+    hint: "Probes OpenAI then Anthropic endpoints",
   },
 ];
 
@@ -214,7 +214,7 @@ function resolveAliasError(params: {
   if (existingKey === params.modelRef) {
     return undefined;
   }
-  return `O alias ${normalized} já aponta para ${existingKey}.`;
+  return `Alias ${normalized} already points to ${existingKey}.`;
 }
 
 function buildAzureOpenAiHeaders(apiKey: string) {
@@ -388,7 +388,7 @@ async function promptBaseUrlAndKey(params: {
   initialBaseUrl?: string;
 }): Promise<{ baseUrl: string; apiKey?: SecretInput; resolvedApiKey: string }> {
   const baseUrlInput = await params.prompter.text({
-    message: "URL Base da API",
+    message: "API Base URL",
     initialValue: params.initialBaseUrl ?? OLLAMA_DEFAULT_BASE_URL,
     placeholder: "https://api.example.com/v1",
     validate: (val) => {
@@ -396,7 +396,7 @@ async function promptBaseUrlAndKey(params: {
         new URL(val);
         return undefined;
       } catch {
-        return "Por favor, insira uma URL válida (ex.: http://...)";
+        return "Please enter a valid URL (e.g. http://...)";
       }
     },
   });
@@ -407,7 +407,7 @@ async function promptBaseUrlAndKey(params: {
     config: params.config,
     provider: providerHint,
     envLabel: "CUSTOM_API_KEY",
-    promptMessage: "Chave de API (deixe em branco se não for necessária)",
+    promptMessage: "API Key (leave blank if not required)",
     normalize: normalizeSecretInput,
     validate: () => undefined,
     prompter: params.prompter,
@@ -427,11 +427,11 @@ type CustomApiRetryChoice = "baseUrl" | "model" | "both";
 
 async function promptCustomApiRetryChoice(prompter: WizardPrompter): Promise<CustomApiRetryChoice> {
   return await prompter.select({
-    message: "O que você quer alterar?",
+    message: "What would you like to change?",
     options: [
-      { value: "baseUrl", label: "Alterar URL base" },
-      { value: "model", label: "Alterar modelo" },
-      { value: "both", label: "Alterar URL base e modelo" },
+      { value: "baseUrl", label: "Change base URL" },
+      { value: "model", label: "Change model" },
+      { value: "both", label: "Change base URL and model" },
     ],
   });
 }
@@ -439,9 +439,9 @@ async function promptCustomApiRetryChoice(prompter: WizardPrompter): Promise<Cus
 async function promptCustomApiModelId(prompter: WizardPrompter): Promise<string> {
   return (
     await prompter.text({
-      message: "ID do modelo",
-      placeholder: "ex.: llama3, claude-3-7-sonnet",
-      validate: (val) => (val.trim() ? undefined : "O ID do modelo é obrigatório"),
+      message: "Model ID",
+      placeholder: "e.g. llama3, claude-3-7-sonnet",
+      validate: (val) => (val.trim() ? undefined : "Model ID is required"),
     })
   ).trim();
 }
@@ -529,8 +529,8 @@ export function parseNonInteractiveCustomApiFlags(
     throw new CustomApiError(
       "missing_required",
       [
-        'A escolha de autenticação "custom-api-key" requer uma URL base e um ID de modelo.',
-        "Use --custom-base-url e --custom-model-id.",
+        'Auth choice "custom-api-key" requires a base URL and model ID.',
+        "Use --custom-base-url and --custom-model-id.",
       ].join("\n"),
     );
   }
@@ -557,25 +557,19 @@ export function applyCustomApiConfig(params: ApplyCustomApiConfigParams): Custom
   try {
     new URL(baseUrl);
   } catch {
-    throw new CustomApiError(
-      "invalid_base_url",
-      "A URL base do provedor personalizado deve ser uma URL válida.",
-    );
+    throw new CustomApiError("invalid_base_url", "Custom provider base URL must be a valid URL.");
   }
 
   if (params.compatibility !== "openai" && params.compatibility !== "anthropic") {
     throw new CustomApiError(
       "invalid_compatibility",
-      'A compatibilidade do provedor personalizado deve ser "openai" ou "anthropic".',
+      'Custom provider compatibility must be "openai" or "anthropic".',
     );
   }
 
   const modelId = params.modelId.trim();
   if (!modelId) {
-    throw new CustomApiError(
-      "invalid_model_id",
-      "O ID do modelo do provedor personalizado é obrigatório.",
-    );
+    throw new CustomApiError("invalid_model_id", "Custom provider model ID is required.");
   }
 
   // Transform Azure URLs to include the deployment path for API calls
@@ -605,7 +599,7 @@ export function applyCustomApiConfig(params: ApplyCustomApiConfigParams): Custom
   const hasModel = existingModels.some((model) => model.id === modelId);
   const nextModel = {
     id: modelId,
-    name: `${modelId} (Provedor personalizado)`,
+    name: `${modelId} (Custom Provider)`,
     contextWindow: DEFAULT_CONTEXT_WINDOW,
     maxTokens: DEFAULT_MAX_TOKENS,
     input: ["text"] as ["text"],
@@ -709,14 +703,14 @@ export async function promptCustomApiConfig(params: {
   while (true) {
     let verifiedFromProbe = false;
     if (!compatibility) {
-      const probeSpinner = prompter.progress("Detectando tipo de endpoint...");
+      const probeSpinner = prompter.progress("Detecting endpoint type...");
       const openaiProbe = await requestOpenAiVerification({
         baseUrl,
         apiKey: resolvedApiKey,
         modelId,
       });
       if (openaiProbe.ok) {
-        probeSpinner.stop("Endpoint compatível com OpenAI detectado.");
+        probeSpinner.stop("Detected OpenAI-compatible endpoint.");
         compatibility = "openai";
         verifiedFromProbe = true;
       } else {
@@ -726,14 +720,14 @@ export async function promptCustomApiConfig(params: {
           modelId,
         });
         if (anthropicProbe.ok) {
-          probeSpinner.stop("Endpoint compatível com Anthropic detectado.");
+          probeSpinner.stop("Detected Anthropic-compatible endpoint.");
           compatibility = "anthropic";
           verifiedFromProbe = true;
         } else {
-          probeSpinner.stop("Não foi possível detectar o tipo de endpoint.");
+          probeSpinner.stop("Could not detect endpoint type.");
           await prompter.note(
-            "Este endpoint não respondeu a requisições no estilo OpenAI ou Anthropic.",
-            "Detecção de endpoint",
+            "This endpoint did not respond to OpenAI or Anthropic style requests.",
+            "Endpoint detection",
           );
           const retryChoice = await promptCustomApiRetryChoice(prompter);
           ({ baseUrl, apiKey, resolvedApiKey, modelId } = await applyCustomApiRetryChoice({
@@ -752,19 +746,19 @@ export async function promptCustomApiConfig(params: {
       break;
     }
 
-    const verifySpinner = prompter.progress("Verificando...");
+    const verifySpinner = prompter.progress("Verifying...");
     const result =
       compatibility === "anthropic"
         ? await requestAnthropicVerification({ baseUrl, apiKey: resolvedApiKey, modelId })
         : await requestOpenAiVerification({ baseUrl, apiKey: resolvedApiKey, modelId });
     if (result.ok) {
-      verifySpinner.stop("Verificação bem-sucedida.");
+      verifySpinner.stop("Verification successful.");
       break;
     }
     if (result.status !== undefined) {
-      verifySpinner.stop(`Falha na verificação: status ${result.status}`);
+      verifySpinner.stop(`Verification failed: status ${result.status}`);
     } else {
-      verifySpinner.stop(`Falha na verificação: ${formatVerificationError(result.error)}`);
+      verifySpinner.stop(`Verification failed: ${formatVerificationError(result.error)}`);
     }
     const retryChoice = await promptCustomApiRetryChoice(prompter);
     ({ baseUrl, apiKey, resolvedApiKey, modelId } = await applyCustomApiRetryChoice({
@@ -782,20 +776,20 @@ export async function promptCustomApiConfig(params: {
   const providers = config.models?.providers ?? {};
   const suggestedId = buildEndpointIdFromUrl(baseUrl);
   const providerIdInput = await prompter.text({
-    message: "ID do endpoint",
+    message: "Endpoint ID",
     initialValue: suggestedId,
     placeholder: "custom",
     validate: (value) => {
       const normalized = normalizeEndpointId(value);
       if (!normalized) {
-        return "O ID do endpoint é obrigatório.";
+        return "Endpoint ID is required.";
       }
       return undefined;
     },
   });
   const aliasInput = await prompter.text({
-    message: "Alias do modelo (opcional)",
-    placeholder: "ex.: local, ollama",
+    message: "Model alias (optional)",
+    placeholder: "e.g. local, ollama",
     initialValue: "",
     validate: (value) => {
       const requestedId = normalizeEndpointId(providerIdInput) || "custom";
@@ -821,8 +815,8 @@ export async function promptCustomApiConfig(params: {
 
   if (result.providerIdRenamedFrom && result.providerId) {
     await prompter.note(
-      `O ID do endpoint "${result.providerIdRenamedFrom}" já existe para uma URL base diferente. Usando "${result.providerId}".`,
-      "ID do endpoint",
+      `Endpoint ID "${result.providerIdRenamedFrom}" already exists for a different base URL. Using "${result.providerId}".`,
+      "Endpoint ID",
     );
   }
 

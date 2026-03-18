@@ -1,5 +1,5 @@
 // swift-tools-version: 6.2
-// Package manifest for the OpenClaw macOS companion (menu bar app + IPC library).
+// Package manifest for the OpenCraft macOS companion (menu bar app + IPC library).
 
 import PackageDescription
 
@@ -9,10 +9,10 @@ let package = Package(
         .macOS(.v15),
     ],
     products: [
-        .library(name: "OpenClawIPC", targets: ["OpenClawIPC"]),
+        .library(name: "OpenCraftIPC", targets: ["OpenCraftIPC"]),
         .library(name: "OpenCraftDiscovery", targets: ["OpenCraftDiscovery"]),
         .executable(name: "OpenCraft", targets: ["OpenCraft"]),
-        .executable(name: "openclaw-mac", targets: ["OpenCraftMacCLI"]),
+        .executable(name: "opencraft-mac", targets: ["OpenCraftMacCLI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/orchetect/MenuBarExtraAccess", exact: "1.2.2"),
@@ -20,12 +20,12 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.8.1"),
         .package(url: "https://github.com/steipete/Peekaboo.git", branch: "main"),
-        .package(path: "../shared/OpenClawKit"),
+        .package(path: "../shared/OpenCraftKit"),
         .package(path: "../../Swabble"),
     ],
     targets: [
         .target(
-            name: "OpenClawIPC",
+            name: "OpenCraftIPC",
             dependencies: [],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
@@ -33,7 +33,7 @@ let package = Package(
         .target(
             name: "OpenCraftDiscovery",
             dependencies: [
-                .product(name: "OpenClawKit", package: "OpenClawKit"),
+                .product(name: "OpenCraftKit", package: "OpenCraftKit"),
             ],
             path: "Sources/OpenCraftDiscovery",
             swiftSettings: [
@@ -42,11 +42,11 @@ let package = Package(
         .executableTarget(
             name: "OpenCraft",
             dependencies: [
-                "OpenClawIPC",
+                "OpenCraftIPC",
                 "OpenCraftDiscovery",
-                .product(name: "OpenClawKit", package: "OpenClawKit"),
-                .product(name: "OpenClawChatUI", package: "OpenClawKit"),
-                .product(name: "OpenClawProtocol", package: "OpenClawKit"),
+                .product(name: "OpenCraftKit", package: "OpenCraftKit"),
+                .product(name: "OpenCraftChatUI", package: "OpenCraftKit"),
+                .product(name: "OpenCraftProtocol", package: "OpenCraftKit"),
                 .product(name: "SwabbleKit", package: "swabble"),
                 .product(name: "MenuBarExtraAccess", package: "MenuBarExtraAccess"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
@@ -59,7 +59,7 @@ let package = Package(
                 "Resources/Info.plist",
             ],
             resources: [
-                .copy("Resources/OpenClaw.icns"),
+                .copy("Resources/OpenCraft.icns"),
                 .copy("Resources/DeviceModels"),
             ],
             swiftSettings: [
@@ -69,20 +69,20 @@ let package = Package(
             name: "OpenCraftMacCLI",
             dependencies: [
                 "OpenCraftDiscovery",
-                .product(name: "OpenClawKit", package: "OpenClawKit"),
-                .product(name: "OpenClawProtocol", package: "OpenClawKit"),
+                .product(name: "OpenCraftKit", package: "OpenCraftKit"),
+                .product(name: "OpenCraftProtocol", package: "OpenCraftKit"),
             ],
             path: "Sources/OpenCraftMacCLI",
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .testTarget(
-            name: "OpenClawIPCTests",
+            name: "OpenCraftIPCTests",
             dependencies: [
-                "OpenClawIPC",
+                "OpenCraftIPC",
                 "OpenCraft",
                 "OpenCraftDiscovery",
-                .product(name: "OpenClawProtocol", package: "OpenClawKit"),
+                .product(name: "OpenCraftProtocol", package: "OpenCraftKit"),
                 .product(name: "SwabbleKit", package: "swabble"),
             ],
             swiftSettings: [

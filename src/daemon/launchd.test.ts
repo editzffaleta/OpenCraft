@@ -36,7 +36,7 @@ const defaultProgramArguments = ["node", "-e", "process.exit(0)"];
 
 function expectLaunchctlEnableBootstrapOrder(env: Record<string, string | undefined>) {
   const domain = typeof process.getuid === "function" ? `gui/${process.getuid()}` : "gui/501";
-  const label = "ai.opencraft.gateway";
+  const label = "ai.openclaw.gateway";
   const plistPath = resolveLaunchAgentPlistPath(env);
   const serviceId = `${domain}/${label}`;
   const enableIndex = state.launchctlCalls.findIndex(
@@ -222,7 +222,7 @@ describe("launchd runtime parsing", () => {
 
 describe("launchctl list detection", () => {
   it("detects the resolved label in launchctl list", async () => {
-    state.listOutput = "123 0 ai.opencraft.gateway\n";
+    state.listOutput = "123 0 ai.openclaw.gateway\n";
     const listed = await isLaunchAgentListed({
       env: { HOME: "/Users/test", OPENCRAFT_PROFILE: "default" },
     });
@@ -347,7 +347,7 @@ describe("launchd install", () => {
     });
 
     const domain = typeof process.getuid === "function" ? `gui/${process.getuid()}` : "gui/501";
-    const label = "ai.opencraft.gateway";
+    const label = "ai.openclaw.gateway";
     const serviceId = `${domain}/${label}`;
     expect(result).toEqual({ outcome: "completed" });
     expect(cleanStaleGatewayProcessesSync).toHaveBeenCalledWith(18789);
@@ -473,12 +473,12 @@ describe("resolveLaunchAgentPlistPath", () => {
     {
       name: "uses default label when OPENCRAFT_PROFILE is unset",
       env: { HOME: "/Users/test" },
-      expected: "/Users/test/Library/LaunchAgents/ai.opencraft.gateway.plist",
+      expected: "/Users/test/Library/LaunchAgents/ai.openclaw.gateway.plist",
     },
     {
       name: "uses profile-specific label when OPENCRAFT_PROFILE is set to a custom value",
       env: { HOME: "/Users/test", OPENCRAFT_PROFILE: "jbphoenix" },
-      expected: "/Users/test/Library/LaunchAgents/ai.opencraft.jbphoenix.plist",
+      expected: "/Users/test/Library/LaunchAgents/ai.openclaw.jbphoenix.plist",
     },
     {
       name: "prefers OPENCRAFT_LAUNCHD_LABEL over OPENCRAFT_PROFILE",
@@ -504,7 +504,7 @@ describe("resolveLaunchAgentPlistPath", () => {
         OPENCRAFT_PROFILE: "myprofile",
         OPENCRAFT_LAUNCHD_LABEL: "   ",
       },
-      expected: "/Users/test/Library/LaunchAgents/ai.opencraft.myprofile.plist",
+      expected: "/Users/test/Library/LaunchAgents/ai.openclaw.myprofile.plist",
     },
   ])("$name", ({ env, expected }) => {
     expect(resolveLaunchAgentPlistPath(env)).toBe(expected);

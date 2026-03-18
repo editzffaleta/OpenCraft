@@ -1,4 +1,4 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/voice-call";
+import type { OpenCraftPluginApi } from "../api.js";
 import type { VoiceCallTtsConfig } from "./config.js";
 
 export type CoreConfig = {

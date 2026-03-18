@@ -1,75 +1,75 @@
 ---
-summary: "Execute o Gateway OpenCraft no exe.dev (VM + proxy HTTPS) para acesso remoto"
+summary: "Run OpenCraft Gateway on exe.dev (VM + HTTPS proxy) for remote access"
 read_when:
-  - Você quer um host Linux sempre ativo e barato para o Gateway
-  - Você quer acesso remoto à Control UI sem rodar seu próprio VPS
+  - You want a cheap always-on Linux host for the Gateway
+  - You want remote Control UI access without running your own VPS
 title: "exe.dev"
 ---
 
 # exe.dev
 
-Objetivo: Gateway OpenCraft rodando em uma VM exe.dev, acessível do seu laptop via: `https://<vm-name>.exe.xyz`
+Goal: OpenCraft Gateway running on an exe.dev VM, reachable from your laptop via: `https://<vm-name>.exe.xyz`
 
-Esta página assume a imagem padrão **exeuntu** do exe.dev. Se você escolheu outra distribuição, adapte os pacotes conforme necessário.
+This page assumes exe.dev's default **exeuntu** image. If you picked a different distro, map packages accordingly.
 
-## Caminho rápido para iniciantes
+## Beginner quick path
 
 1. [https://exe.new/opencraft](https://exe.new/opencraft)
-2. Preencha sua chave/token de autenticação conforme necessário
-3. Clique em "Agent" ao lado da sua VM e aguarde...
+2. Fill in your auth key/token as needed
+3. Click on "Agent" next to your VM, and wait...
 4. ???
-5. Pronto
+5. Profit
 
-## O que você precisa
+## What you need
 
-- Conta no exe.dev
-- Acesso via `ssh exe.dev` às máquinas virtuais do [exe.dev](https://exe.dev) (opcional)
+- exe.dev account
+- `ssh exe.dev` access to [exe.dev](https://exe.dev) virtual machines (optional)
 
-## Instalação automatizada com Shelley
+## Automated Install with Shelley
 
-Shelley, o agente do [exe.dev](https://exe.dev), pode instalar o OpenCraft instantaneamente com nosso
-prompt. O prompt usado é o seguinte:
+Shelley, [exe.dev](https://exe.dev)'s agent, can install OpenCraft instantly with our
+prompt. The prompt used is as below:
 
 ```
 Set up OpenCraft (https://docs.opencraft.ai/install) on this VM. Use the non-interactive and accept-risk flags for opencraft onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Pairing is done by "opencraft devices list" and "opencraft devices approve <request id>". Make sure the dashboard shows that OpenCraft's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
 ```
 
-## Instalação manual
+## Manual installation
 
-## 1) Criar a VM
+## 1) Create the VM
 
-Do seu dispositivo:
+From your device:
 
 ```bash
 ssh exe.dev new
 ```
 
-Depois conecte:
+Then connect:
 
 ```bash
 ssh <vm-name>.exe.xyz
 ```
 
-Dica: mantenha esta VM **com estado**. O OpenCraft armazena estado em `~/.opencraft/` e `~/.opencraft/workspace/`.
+Tip: keep this VM **stateful**. OpenCraft stores state under `~/.opencraft/` and `~/.opencraft/workspace/`.
 
-## 2) Instalar pré-requisitos (na VM)
+## 2) Install prerequisites (on the VM)
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y git curl jq ca-certificates openssl
 ```
 
-## 3) Instalar o OpenCraft
+## 3) Install OpenCraft
 
-Execute o script de instalação do OpenCraft:
+Run the OpenCraft install script:
 
 ```bash
 curl -fsSL https://opencraft.ai/install.sh | bash
 ```
 
-## 4) Configurar nginx para fazer proxy do OpenCraft na porta 8000
+## 4) Setup nginx to proxy OpenCraft to port 8000
 
-Edite `/etc/nginx/sites-enabled/default` com
+Edit `/etc/nginx/sites-enabled/default` with
 
 ```
 server {
@@ -84,37 +84,37 @@ server {
         proxy_pass http://127.0.0.1:18789;
         proxy_http_version 1.1;
 
-        # Suporte a WebSocket
+        # WebSocket support
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # Headers de proxy padrão
+        # Standard proxy headers
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Configurações de timeout para conexões de longa duração
+        # Timeout settings for long-lived connections
         proxy_read_timeout 86400s;
         proxy_send_timeout 86400s;
     }
 }
 ```
 
-## 5) Acessar o OpenCraft e conceder privilégios
+## 5) Access OpenCraft and grant privileges
 
-Acesse `https://<vm-name>.exe.xyz/` (veja a saída da Control UI do onboarding). Se solicitar autenticação, cole o
-token de `gateway.auth.token` na VM (obtenha com `opencraft config get gateway.auth.token`, ou gere um
-com `opencraft doctor --generate-gateway-token`). Aprove dispositivos com `opencraft devices list` e
-`opencraft devices approve <requestId>`. Em caso de dúvida, use o Shelley do seu navegador!
+Access `https://<vm-name>.exe.xyz/` (see the Control UI output from onboarding). If it prompts for auth, paste the
+token from `gateway.auth.token` on the VM (retrieve with `opencraft config get gateway.auth.token`, or generate one
+with `opencraft doctor --generate-gateway-token`). Approve devices with `opencraft devices list` and
+`opencraft devices approve <requestId>`. When in doubt, use Shelley from your browser!
 
-## Acesso remoto
+## Remote Access
 
-O acesso remoto é gerenciado pela autenticação do [exe.dev](https://exe.dev). Por
-padrão, o tráfego HTTP da porta 8000 é encaminhado para `https://<vm-name>.exe.xyz`
-com autenticação por email.
+Remote access is handled by [exe.dev](https://exe.dev)'s authentication. By
+default, HTTP traffic from port 8000 is forwarded to `https://<vm-name>.exe.xyz`
+with email auth.
 
-## Atualização
+## Updating
 
 ```bash
 npm i -g opencraft@latest
@@ -123,4 +123,4 @@ opencraft gateway restart
 opencraft health
 ```
 
-Guia: [Atualização](/install/updating)
+Guide: [Updating](/install/updating)

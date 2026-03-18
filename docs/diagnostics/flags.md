@@ -1,24 +1,24 @@
 ---
-summary: "Flags de diagnóstico para logs de depuração direcionados"
+summary: "Diagnostics flags for targeted debug logs"
 read_when:
-  - Você precisa de logs de depuração direcionados sem elevar os níveis globais de logging
-  - Você precisa capturar logs específicos de subsistema para suporte
+  - You need targeted debug logs without raising global logging levels
+  - You need to capture subsystem-specific logs for support
 title: "Diagnostics Flags"
 ---
 
-# Flags de Diagnóstico
+# Diagnostics Flags
 
-Flags de diagnóstico permitem que você habilite logs de depuração direcionados sem ativar logging verboso em todos os lugares. As flags são opt-in e não têm efeito a menos que um subsistema as verifique.
+Diagnostics flags let you enable targeted debug logs without turning on verbose logging everywhere. Flags are opt-in and have no effect unless a subsystem checks them.
 
-## Como funciona
+## How it works
 
-- Flags são strings (insensíveis a maiúsculas/minúsculas).
-- Você pode habilitar flags na configuração ou via sobrescrita de variável de ambiente.
-- Curingas são suportados:
-  - `telegram.*` corresponde a `telegram.http`
-  - `*` habilita todas as flags
+- Flags are strings (case-insensitive).
+- You can enable flags in config or via an env override.
+- Wildcards are supported:
+  - `telegram.*` matches `telegram.http`
+  - `*` enables all flags
 
-## Habilitar via configuração
+## Enable via config
 
 ```json
 {
@@ -28,7 +28,7 @@ Flags de diagnóstico permitem que você habilite logs de depuração direcionad
 }
 ```
 
-Múltiplas flags:
+Multiple flags:
 
 ```json
 {
@@ -38,54 +38,54 @@ Múltiplas flags:
 }
 ```
 
-Reinicie o Gateway após alterar as flags.
+Restart the gateway after changing flags.
 
-## Sobrescrita via variável de ambiente (uso único)
+## Env override (one-off)
 
 ```bash
 OPENCRAFT_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
-Desabilitar todas as flags:
+Disable all flags:
 
 ```bash
 OPENCRAFT_DIAGNOSTICS=0
 ```
 
-## Para onde vão os logs
+## Where logs go
 
-Flags emitem logs no arquivo de log de diagnóstico padrão. Por padrão:
+Flags emit logs into the standard diagnostics log file. By default:
 
 ```
-/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log
+/tmp/opencraft/opencraft-YYYY-MM-DD.log
 ```
 
-Se você definir `logging.file`, use esse caminho em vez disso. Os logs são JSONL (um objeto JSON por linha). A redação ainda se aplica baseada em `logging.redactSensitive`.
+If you set `logging.file`, use that path instead. Logs are JSONL (one JSON object per line). Redaction still applies based on `logging.redactSensitive`.
 
-## Extrair logs
+## Extract logs
 
-Escolha o arquivo de log mais recente:
+Pick the latest log file:
 
 ```bash
-ls -t /tmp/editzffaleta/OpenCraft-*.log | head -n 1
+ls -t /tmp/opencraft/opencraft-*.log | head -n 1
 ```
 
-Filtrar por diagnósticos HTTP do Telegram:
+Filter for Telegram HTTP diagnostics:
 
 ```bash
-rg "telegram http error" /tmp/editzffaleta/OpenCraft-*.log
+rg "telegram http error" /tmp/opencraft/opencraft-*.log
 ```
 
-Ou acompanhar enquanto reproduz:
+Or tail while reproducing:
 
 ```bash
-tail -f /tmp/editzffaleta/OpenCraft-$(date +%F).log | rg "telegram http error"
+tail -f /tmp/opencraft/opencraft-$(date +%F).log | rg "telegram http error"
 ```
 
-Para Gateways remotos, você também pode usar `opencraft logs --follow` (veja [/cli/logs](/cli/logs)).
+For remote gateways, you can also use `opencraft logs --follow` (see [/cli/logs](/cli/logs)).
 
-## Notas
+## Notes
 
-- Se `logging.level` estiver definido acima de `warn`, esses logs podem ser suprimidos. O padrão `info` está ok.
-- Flags são seguras para deixar habilitadas; elas afetam apenas o volume de log do subsistema específico.
-- Use [/logging](/logging) para alterar destinos de log, níveis e redação.
+- If `logging.level` is set higher than `warn`, these logs may be suppressed. Default `info` is fine.
+- Flags are safe to leave enabled; they only affect log volume for the specific subsystem.
+- Use [/logging](/logging) to change log destinations, levels, and redaction.

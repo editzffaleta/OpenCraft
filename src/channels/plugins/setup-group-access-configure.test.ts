@@ -132,15 +132,13 @@ describe("configureChannelAccessWithAllowlist", () => {
       text: "#general, #support",
     });
     const calls: string[] = [];
-    const setPolicy = vi.fn(
-      (next: OpenCraftConfig, policy: ChannelAccessPolicy): OpenCraftConfig => {
-        calls.push("setPolicy");
-        return {
-          ...next,
-          channels: { slack: { groupPolicy: policy } },
-        };
-      },
-    );
+    const setPolicy = vi.fn((next: OpenCraftConfig, policy: ChannelAccessPolicy): OpenCraftConfig => {
+      calls.push("setPolicy");
+      return {
+        ...next,
+        channels: { slack: { groupPolicy: policy } },
+      };
+    });
     const resolveAllowlist = vi.fn(async (params: { cfg: OpenCraftConfig; entries: string[] }) => {
       calls.push("resolve");
       expect(params.cfg).toBe(cfg);

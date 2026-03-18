@@ -307,7 +307,7 @@ OPENCRAFT_LIVE_CLI_BACKEND=1 \
 - 如果实时测试说"无凭证"，用调试 `opencraft models list`/模型选择相同的方式调试。
 
 - 配置文件存储：`~/.opencraft/credentials/`（首选；测试中"配置文件密钥"的含义）
-- 配置：`~/.editzffaleta/OpenCraft.json`（或 `OPENCRAFT_CONFIG_PATH`）
+- 配置：`~/.opencraft/opencraft.json`（或 `OPENCRAFT_CONFIG_PATH`）
 
 如果你想依赖环境变量密钥（例如在 `~/.profile` 中导出的），在 `source ~/.profile` 后运行本地测试，或使用下面的 Docker 运行器（它们可以将 `~/.profile` 挂载到容器中）。
 

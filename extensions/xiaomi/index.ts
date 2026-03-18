@@ -1,17 +1,17 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { applyXiaomiConfig, XIAOMI_DEFAULT_MODEL_REF } from "../../src/commands/onboard-auth.js";
-import { PROVIDER_LABELS } from "../../src/infra/provider-usage.shared.js";
-import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { createProviderApiKeyAuthMethod } from "opencraft/plugin-sdk/provider-auth";
+import { buildSingleProviderApiKeyCatalog } from "opencraft/plugin-sdk/provider-catalog";
+import { PROVIDER_LABELS } from "opencraft/plugin-sdk/provider-usage";
+import { applyXiaomiConfig, XIAOMI_DEFAULT_MODEL_REF } from "./onboard.js";
 import { buildXiaomiProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "xiaomi";
 
-const xiaomiPlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Xiaomi Provider",
   description: "Bundled Xiaomi provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Xiaomi",
@@ -41,18 +41,12 @@ const xiaomiPlugin = {
       ],
       catalog: {
         order: "simple",
-        run: async (ctx) => {
-          const apiKey = ctx.resolveProviderApiKey(PROVIDER_ID).apiKey;
-          if (!apiKey) {
-            return null;
-          }
-          return {
-            provider: {
-              ...buildXiaomiProvider(),
-              apiKey,
-            },
-          };
-        },
+        run: (ctx) =>
+          buildSingleProviderApiKeyCatalog({
+            ctx,
+            providerId: PROVIDER_ID,
+            buildProvider: buildXiaomiProvider,
+          }),
       },
       resolveUsageAuth: async (ctx) => {
         const apiKey = ctx.resolveApiKeyFromConfigAndStore({
@@ -67,6 +61,4 @@ const xiaomiPlugin = {
       }),
     });
   },
-};
-
-export default xiaomiPlugin;
+});

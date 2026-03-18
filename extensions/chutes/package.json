@@ -1,0 +1,12 @@
+{
+  "name": "@opencraft/chutes-provider",
+  "version": "2026.3.17",
+  "private": true,
+  "description": "OpenCraft Chutes.ai provider plugin",
+  "type": "module",
+  "opencraft": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

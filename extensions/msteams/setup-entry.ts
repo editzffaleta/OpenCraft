@@ -1,5 +1,4 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { msteamsPlugin } from "./src/channel.js";
 
-export default {
-  plugin: msteamsPlugin,
-};
+export default defineSetupPluginEntry(msteamsPlugin);

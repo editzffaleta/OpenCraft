@@ -1,32 +1,32 @@
 ---
-summary: "Workspace do agente: localização, layout e estratégia de backup"
+summary: "Agent workspace: location, layout, and backup strategy"
 read_when:
-  - Você precisa explicar o workspace do agente ou seu layout de arquivos
-  - Você quer fazer backup ou migrar um workspace de agente
+  - You need to explain the agent workspace or its file layout
+  - You want to back up or migrate an agent workspace
 title: "Agent Workspace"
 ---
 
-# Workspace do agente
+# Agent workspace
 
-O workspace é o lar do agente. É o único diretório de trabalho usado para
-ferramentas de arquivo e para contexto do workspace. Mantenha-o privado e trate-o como memória.
+The workspace is the agent's home. It is the only working directory used for
+file tools and for workspace context. Keep it private and treat it as memory.
 
-Isso é separado de `~/.opencraft/`, que armazena configuração, credenciais e
-sessões.
+This is separate from `~/.opencraft/`, which stores config, credentials, and
+sessions.
 
-**Importante:** o workspace é o **cwd padrão**, não um sandbox rígido. Ferramentas
-resolvem caminhos relativos em relação ao workspace, mas caminhos absolutos ainda podem alcançar
-outros locais no host, a menos que o sandboxing esteja habilitado. Se você precisa de isolamento, use
-[`agents.defaults.sandbox`](/gateway/sandboxing) (e/ou configuração de sandbox por agente).
-Quando o sandboxing está habilitado e `workspaceAccess` não é `"rw"`, ferramentas operam
-dentro de um workspace sandbox em `~/.opencraft/sandboxes`, não no seu workspace do host.
+**Important:** the workspace is the **default cwd**, not a hard sandbox. Tools
+resolve relative paths against the workspace, but absolute paths can still reach
+elsewhere on the host unless sandboxing is enabled. If you need isolation, use
+[`agents.defaults.sandbox`](/gateway/sandboxing) (and/or per‑agent sandbox config).
+When sandboxing is enabled and `workspaceAccess` is not `"rw"`, tools operate
+inside a sandbox workspace under `~/.opencraft/sandboxes`, not your host workspace.
 
-## Localização padrão
+## Default location
 
-- Padrão: `~/.opencraft/workspace`
-- Se `OPENCRAFT_PROFILE` estiver definido e não for `"default"`, o padrão se torna
+- Default: `~/.opencraft/workspace`
+- If `OPENCRAFT_PROFILE` is set and not `"default"`, the default becomes
   `~/.opencraft/workspace-<profile>`.
-- Sobrescreva em `~/.editzffaleta/OpenCraft.json`:
+- Override in `~/.opencraft/opencraft.json`:
 
 ```json5
 {
@@ -36,117 +36,117 @@ dentro de um workspace sandbox em `~/.opencraft/sandboxes`, não no seu workspac
 }
 ```
 
-`opencraft onboard`, `opencraft configure` ou `opencraft setup` criarão o
-workspace e semearão os arquivos de bootstrap se estiverem ausentes.
-Cópias de semente do sandbox aceitam apenas arquivos regulares dentro do workspace; aliases de
-symlink/hardlink que resolvem fora do workspace de origem são ignorados.
+`opencraft onboard`, `opencraft configure`, or `opencraft setup` will create the
+workspace and seed the bootstrap files if they are missing.
+Sandbox seed copies only accept regular in-workspace files; symlink/hardlink
+aliases that resolve outside the source workspace are ignored.
 
-Se você já gerencia os arquivos do workspace por conta própria, pode desabilitar a
-criação de arquivos de bootstrap:
+If you already manage the workspace files yourself, you can disable bootstrap
+file creation:
 
 ```json5
 { agent: { skipBootstrap: true } }
 ```
 
-## Pastas extras do workspace
+## Extra workspace folders
 
-Instalações mais antigas podem ter criado `~/opencraft`. Manter múltiplos diretórios
-de workspace pode causar confusão de autenticação ou divergência de estado, porque apenas um
-workspace está ativo por vez.
+Older installs may have created `~/opencraft`. Keeping multiple workspace
+directories around can cause confusing auth or state drift, because only one
+workspace is active at a time.
 
-**Recomendação:** mantenha um único workspace ativo. Se você não usa mais as
-pastas extras, arquive-as ou mova para a Lixeira (por exemplo `trash ~/opencraft`).
-Se você mantém intencionalmente múltiplos workspaces, certifique-se de que
-`agents.defaults.workspace` aponte para o ativo.
+**Recommendation:** keep a single active workspace. If you no longer use the
+extra folders, archive or move them to Trash (for example `trash ~/opencraft`).
+If you intentionally keep multiple workspaces, make sure
+`agents.defaults.workspace` points to the active one.
 
-`opencraft doctor` avisa quando detecta diretórios de workspace extras.
+`opencraft doctor` warns when it detects extra workspace directories.
 
-## Mapa de arquivos do workspace (o que cada arquivo significa)
+## Workspace file map (what each file means)
 
-Estes são os arquivos padrão que o OpenCraft espera dentro do workspace:
+These are the standard files OpenCraft expects inside the workspace:
 
 - `AGENTS.md`
-  - Instruções de operação para o agente e como ele deve usar a memória.
-  - Carregado no início de cada sessão.
-  - Bom lugar para regras, prioridades e detalhes de "como se comportar".
+  - Operating instructions for the agent and how it should use memory.
+  - Loaded at the start of every session.
+  - Good place for rules, priorities, and "how to behave" details.
 
 - `SOUL.md`
-  - Persona, tom e limites.
-  - Carregado em cada sessão.
+  - Persona, tone, and boundaries.
+  - Loaded every session.
 
 - `USER.md`
-  - Quem é o usuário e como se dirigir a ele.
-  - Carregado em cada sessão.
+  - Who the user is and how to address them.
+  - Loaded every session.
 
 - `IDENTITY.md`
-  - O nome, vibe e emoji do agente.
-  - Criado/atualizado durante o ritual de bootstrap.
+  - The agent's name, vibe, and emoji.
+  - Created/updated during the bootstrap ritual.
 
 - `TOOLS.md`
-  - Notas sobre suas ferramentas e convenções locais.
-  - Não controla a disponibilidade de ferramentas; é apenas orientação.
+  - Notes about your local tools and conventions.
+  - Does not control tool availability; it is only guidance.
 
 - `HEARTBEAT.md`
-  - Checklist pequeno opcional para execuções de heartbeat.
-  - Mantenha curto para evitar consumo de Token.
+  - Optional tiny checklist for heartbeat runs.
+  - Keep it short to avoid token burn.
 
 - `BOOT.md`
-  - Checklist de inicialização opcional executado ao reiniciar o Gateway quando hooks internos estão habilitados.
-  - Mantenha curto; use a ferramenta de mensagem para envios.
+  - Optional startup checklist executed on gateway restart when internal hooks are enabled.
+  - Keep it short; use the message tool for outbound sends.
 
 - `BOOTSTRAP.md`
-  - Ritual de primeira execução, único.
-  - Criado apenas para um workspace novo.
-  - Delete após o ritual estar completo.
+  - One-time first-run ritual.
+  - Only created for a brand-new workspace.
+  - Delete it after the ritual is complete.
 
 - `memory/YYYY-MM-DD.md`
-  - Log de memória diário (um arquivo por dia).
-  - Recomendado ler hoje + ontem no início da sessão.
+  - Daily memory log (one file per day).
+  - Recommended to read today + yesterday on session start.
 
-- `MEMORY.md` (opcional)
-  - Memória curada de longo prazo.
-  - Carregue apenas na sessão principal e privada (não em contextos compartilhados/grupo).
+- `MEMORY.md` (optional)
+  - Curated long-term memory.
+  - Only load in the main, private session (not shared/group contexts).
 
-Veja [Memória](/concepts/memory) para o fluxo de trabalho e flush automático de memória.
+See [Memory](/concepts/memory) for the workflow and automatic memory flush.
 
-- `skills/` (opcional)
-  - Skills específicas do workspace.
-  - Sobrescrevem Skills gerenciadas/empacotadas quando os nomes colidem.
+- `skills/` (optional)
+  - Workspace-specific skills.
+  - Overrides managed/bundled skills when names collide.
 
-- `canvas/` (opcional)
-  - Arquivos de Canvas UI para exibições de nodes (por exemplo `canvas/index.html`).
+- `canvas/` (optional)
+  - Canvas UI files for node displays (for example `canvas/index.html`).
 
-Se algum arquivo de bootstrap estiver ausente, o OpenCraft injeta um marcador de "arquivo ausente" na
-sessão e continua. Arquivos de bootstrap grandes são truncados quando injetados;
-ajuste os limites com `agents.defaults.bootstrapMaxChars` (padrão: 20000) e
-`agents.defaults.bootstrapTotalMaxChars` (padrão: 150000).
-`opencraft setup` pode recriar os padrões ausentes sem sobrescrever arquivos
-existentes.
+If any bootstrap file is missing, OpenCraft injects a "missing file" marker into
+the session and continues. Large bootstrap files are truncated when injected;
+adjust limits with `agents.defaults.bootstrapMaxChars` (default: 20000) and
+`agents.defaults.bootstrapTotalMaxChars` (default: 150000).
+`opencraft setup` can recreate missing defaults without overwriting existing
+files.
 
-## O que NÃO está no workspace
+## What is NOT in the workspace
 
-Estes ficam em `~/.opencraft/` e NÃO devem ser comitados no repositório do workspace:
+These live under `~/.opencraft/` and should NOT be committed to the workspace repo:
 
-- `~/.editzffaleta/OpenCraft.json` (configuração)
-- `~/.opencraft/credentials/` (tokens OAuth, chaves de API)
-- `~/.opencraft/agents/<agentId>/sessions/` (transcrições de sessão + metadados)
-- `~/.opencraft/skills/` (Skills gerenciadas)
+- `~/.opencraft/opencraft.json` (config)
+- `~/.opencraft/credentials/` (OAuth tokens, API keys)
+- `~/.opencraft/agents/<agentId>/sessions/` (session transcripts + metadata)
+- `~/.opencraft/skills/` (managed skills)
 
-Se você precisa migrar sessões ou configurações, copie-as separadamente e mantenha-as
-fora do controle de versão.
+If you need to migrate sessions or config, copy them separately and keep them
+out of version control.
 
-## Backup com Git (recomendado, privado)
+## Git backup (recommended, private)
 
-Trate o workspace como memória privada. Coloque-o em um repositório Git **privado** para que fique
-com backup e seja recuperável.
+Treat the workspace as private memory. Put it in a **private** git repo so it is
+backed up and recoverable.
 
-Execute estes passos na máquina onde o Gateway roda (é onde o
-workspace vive).
+Run these steps on the machine where the Gateway runs (that is where the
+workspace lives).
 
-### 1) Inicialize o repositório
+### 1) Initialize the repo
 
-Se o Git estiver instalado, workspaces novos são inicializados automaticamente. Se este
-workspace ainda não é um repositório, execute:
+If git is installed, brand-new workspaces are initialized automatically. If this
+workspace is not already a repo, run:
 
 ```bash
 cd ~/.opencraft/workspace
@@ -155,14 +155,14 @@ git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md memory/
 git commit -m "Add agent workspace"
 ```
 
-### 2) Adicione um remote privado (opções para iniciantes)
+### 2) Add a private remote (beginner-friendly options)
 
-Opção A: Interface web do GitHub
+Option A: GitHub web UI
 
-1. Crie um novo repositório **privado** no GitHub.
-2. Não inicialize com README (evita conflitos de merge).
-3. Copie a URL remota HTTPS.
-4. Adicione o remote e faça push:
+1. Create a new **private** repository on GitHub.
+2. Do not initialize with a README (avoids merge conflicts).
+3. Copy the HTTPS remote URL.
+4. Add the remote and push:
 
 ```bash
 git branch -M main
@@ -170,19 +170,19 @@ git remote add origin <https-url>
 git push -u origin main
 ```
 
-Opção B: GitHub CLI (`gh`)
+Option B: GitHub CLI (`gh`)
 
 ```bash
 gh auth login
 gh repo create opencraft-workspace --private --source . --remote origin --push
 ```
 
-Opção C: Interface web do GitLab
+Option C: GitLab web UI
 
-1. Crie um novo repositório **privado** no GitLab.
-2. Não inicialize com README (evita conflitos de merge).
-3. Copie a URL remota HTTPS.
-4. Adicione o remote e faça push:
+1. Create a new **private** repository on GitLab.
+2. Do not initialize with a README (avoids merge conflicts).
+3. Copy the HTTPS remote URL.
+4. Add the remote and push:
 
 ```bash
 git branch -M main
@@ -190,7 +190,7 @@ git remote add origin <https-url>
 git push -u origin main
 ```
 
-### 3) Atualizações contínuas
+### 3) Ongoing updates
 
 ```bash
 git status
@@ -199,18 +199,18 @@ git commit -m "Update memory"
 git push
 ```
 
-## Não comite segredos
+## Do not commit secrets
 
-Mesmo em um repositório privado, evite armazenar segredos no workspace:
+Even in a private repo, avoid storing secrets in the workspace:
 
-- Chaves de API, tokens OAuth, senhas ou credenciais privadas.
-- Qualquer coisa em `~/.opencraft/`.
-- Dumps brutos de conversas ou anexos sensíveis.
+- API keys, OAuth tokens, passwords, or private credentials.
+- Anything under `~/.opencraft/`.
+- Raw dumps of chats or sensitive attachments.
 
-Se você precisa armazenar referências sensíveis, use placeholders e mantenha o
-segredo real em outro lugar (gerenciador de senhas, variáveis de ambiente ou `~/.opencraft/`).
+If you must store sensitive references, use placeholders and keep the real
+secret elsewhere (password manager, environment variables, or `~/.opencraft/`).
 
-Sugestão de `.gitignore` inicial:
+Suggested `.gitignore` starter:
 
 ```gitignore
 .DS_Store
@@ -220,17 +220,17 @@ Sugestão de `.gitignore` inicial:
 **/secrets*
 ```
 
-## Movendo o workspace para uma nova máquina
+## Moving the workspace to a new machine
 
-1. Clone o repositório no caminho desejado (padrão `~/.opencraft/workspace`).
-2. Defina `agents.defaults.workspace` para esse caminho em `~/.editzffaleta/OpenCraft.json`.
-3. Execute `opencraft setup --workspace <path>` para semear quaisquer arquivos ausentes.
-4. Se você precisa de sessões, copie `~/.opencraft/agents/<agentId>/sessions/` da
-   máquina antiga separadamente.
+1. Clone the repo to the desired path (default `~/.opencraft/workspace`).
+2. Set `agents.defaults.workspace` to that path in `~/.opencraft/opencraft.json`.
+3. Run `opencraft setup --workspace <path>` to seed any missing files.
+4. If you need sessions, copy `~/.opencraft/agents/<agentId>/sessions/` from the
+   old machine separately.
 
-## Notas avançadas
+## Advanced notes
 
-- O roteamento multi-agente pode usar workspaces diferentes por agente. Veja
-  [Roteamento de canal](/channels/channel-routing) para configuração de roteamento.
-- Se `agents.defaults.sandbox` estiver habilitado, sessões não-principais podem usar workspaces
-  sandbox por sessão em `agents.defaults.sandbox.workspaceRoot`.
+- Multi-agent routing can use different workspaces per agent. See
+  [Channel routing](/channels/channel-routing) for routing configuration.
+- If `agents.defaults.sandbox` is enabled, non-main sessions can use per-session sandbox
+  workspaces under `agents.defaults.sandbox.workspaceRoot`.

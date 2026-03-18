@@ -99,7 +99,7 @@ gateway:
     - "127.0.0.1" # 如果你的代理运行在 localhost
   auth:
     mode: password
-    password: ${OPENCLAW_GATEWAY_PASSWORD}
+    password: ${OPENCRAFT_GATEWAY_PASSWORD}
 ```
 
 配置 `trustedProxies` 后，Gateway 网关将使用 `X-Forwarded-For` 头来确定真实客户端 IP 以进行本地客户端检测。确保你的代理覆盖（而不是追加）传入的 `X-Forwarded-For` 头以防止欺骗。
@@ -309,7 +309,7 @@ OpenCraft 有两个独立的"谁可以触发我？"层：
 
 在 Gateway 网关主机上保持配置 + 状态私有：
 
-- `~/.editzffaleta/OpenCraft.json`：`600`（仅用户读/写）
+- `~/.opencraft/opencraft.json`：`600`（仅用户读/写）
 - `~/.opencraft`：`700`（仅用户）
 
 `opencraft doctor` 可以警告并提供收紧这些权限的选项。
@@ -407,11 +407,11 @@ Doctor 可以为你生成一个：`opencraft doctor --generate-gateway-token`。
 认证模式：
 
 - `gateway.auth.mode: "token"`：共享承载令牌（推荐用于大多数设置）。
-- `gateway.auth.mode: "password"`：密码认证（优先通过环境变量设置：`OPENCLAW_GATEWAY_PASSWORD`）。
+- `gateway.auth.mode: "password"`：密码认证（优先通过环境变量设置：`OPENCRAFT_GATEWAY_PASSWORD`）。
 
 轮换清单（令牌/密码）：
 
-1. 生成/设置一个新的秘密（`gateway.auth.token` 或 `OPENCLAW_GATEWAY_PASSWORD`）。
+1. 生成/设置一个新的秘密（`gateway.auth.token` 或 `OPENCRAFT_GATEWAY_PASSWORD`）。
 2. 重启 Gateway 网关（或者如果 macOS 应用监督 Gateway 网关，重启 macOS 应用）。
 3. 更新任何远程客户端（调用 Gateway 网关的机器上的 `gateway.remote.token` / `.password`）。
 4. 验证你不能再用旧凭证连接。
@@ -704,13 +704,13 @@ Doctor 可以为你生成一个：`opencraft doctor --generate-gateway-token`。
 
 ### 轮换（如果秘密泄露则假设被入侵）
 
-1. 轮换 Gateway 网关认证（`gateway.auth.token` / `OPENCLAW_GATEWAY_PASSWORD`）并重启。
+1. 轮换 Gateway 网关认证（`gateway.auth.token` / `OPENCRAFT_GATEWAY_PASSWORD`）并重启。
 2. 轮换任何可以调用 Gateway 网关的机器上的远程客户端秘密（`gateway.remote.token` / `.password`）。
 3. 轮换提供商/API 凭证（WhatsApp 凭证、Slack/Discord 令牌、`auth-profiles.json` 中的模型/API 密钥）。
 
 ### 审计
 
-1. 检查 Gateway 网关日志：`/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log`（或 `logging.file`）。
+1. 检查 Gateway 网关日志：`/tmp/opencraft/opencraft-YYYY-MM-DD.log`（或 `logging.file`）。
 2. 审查相关记录：`~/.opencraft/agents/<agentId>/sessions/*.jsonl`。
 3. 审查最近的配置更改（任何可能扩大访问权限的内容：`gateway.bind`、`gateway.auth`、私信/群组策略、`tools.elevated`、插件更改）。
 

@@ -61,7 +61,7 @@ OpenCraft 需要 Node 22 或更新版本。
 ## 从源码安装（开发）
 
 ```bash
-git clone https://github.com/editzffaleta/OpenCraft.git
+git clone https://github.com/openclaw/openclaw.git
 cd opencraft
 pnpm install
 pnpm ui:build # 首次运行时会自动安装 UI 依赖

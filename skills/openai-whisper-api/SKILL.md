@@ -1,6 +1,6 @@
 ---
 name: openai-whisper-api
-description: Transcreva áudio via API de Transcrições de Áudio da OpenAI (Whisper).
+description: Transcribe audio via OpenAI Audio Transcriptions API (Whisper).
 homepage: https://platform.openai.com/docs/guides/speech-to-text
 metadata:
   {
@@ -13,22 +13,22 @@ metadata:
   }
 ---
 
-# API OpenAI Whisper (curl)
+# OpenAI Whisper API (curl)
 
-Transcreva um arquivo de áudio via endpoint `/v1/audio/transcriptions` da OpenAI.
+Transcribe an audio file via OpenAI’s `/v1/audio/transcriptions` endpoint.
 
-## Início rápido
+## Quick start
 
 ```bash
 {baseDir}/scripts/transcribe.sh /path/to/audio.m4a
 ```
 
-Padrões:
+Defaults:
 
-- Modelo: `whisper-1`
-- Saída: `<input>.txt`
+- Model: `whisper-1`
+- Output: `<input>.txt`
 
-## Flags úteis
+## Useful flags
 
 ```bash
 {baseDir}/scripts/transcribe.sh /path/to/audio.ogg --model whisper-1 --out /tmp/transcript.txt
@@ -37,9 +37,9 @@ Padrões:
 {baseDir}/scripts/transcribe.sh /path/to/audio.m4a --json --out /tmp/transcript.json
 ```
 
-## Chave de API
+## API key
 
-Defina `OPENAI_API_KEY`, ou configure-a em `~/.editzffaleta/OpenCraft.json`:
+Set `OPENAI_API_KEY`, or configure it in `~/.opencraft/opencraft.json`:
 
 ```json5
 {

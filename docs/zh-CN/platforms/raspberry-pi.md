@@ -125,7 +125,7 @@ curl -fsSL https://opencraft.ai/install.sh | bash
 ### 选项 B：可修改安装（适合折腾）
 
 ```bash
-git clone https://github.com/editzffaleta/OpenCraft.git
+git clone https://github.com/openclaw/openclaw.git
 cd opencraft
 npm install
 npm run build
@@ -182,7 +182,7 @@ ssh -N -L 18789:127.0.0.1:18789 user@gateway-host
 然后在本地浏览器中打开打印出的 Dashboard URL。
 
 如果 UI 要求认证，请将 `gateway.auth.token`
-（或 `OPENCLAW_GATEWAY_TOKEN`）中的 token 粘贴到 Control UI 设置中。
+（或 `OPENCRAFT_GATEWAY_TOKEN`）中的 token 粘贴到 Control UI 设置中。
 
 如需始终在线的远程访问，请参阅 [Tailscale](/gateway/tailscale)。
 

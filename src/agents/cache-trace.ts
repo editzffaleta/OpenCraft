@@ -88,10 +88,8 @@ function resolveCacheTraceConfig(params: CacheTraceInit): CacheTraceConfig {
 
   const includeMessages =
     parseBooleanValue(env.OPENCRAFT_CACHE_TRACE_MESSAGES) ?? config?.includeMessages;
-  const includePrompt =
-    parseBooleanValue(env.OPENCRAFT_CACHE_TRACE_PROMPT) ?? config?.includePrompt;
-  const includeSystem =
-    parseBooleanValue(env.OPENCRAFT_CACHE_TRACE_SYSTEM) ?? config?.includeSystem;
+  const includePrompt = parseBooleanValue(env.OPENCRAFT_CACHE_TRACE_PROMPT) ?? config?.includePrompt;
+  const includeSystem = parseBooleanValue(env.OPENCRAFT_CACHE_TRACE_SYSTEM) ?? config?.includeSystem;
 
   return {
     enabled,

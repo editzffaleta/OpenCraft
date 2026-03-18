@@ -1,17 +1,14 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/googlechat";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/googlechat";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { googlechatPlugin } from "./src/channel.js";
 import { setGoogleChatRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { googlechatPlugin } from "./src/channel.js";
+export { setGoogleChatRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "googlechat",
   name: "Google Chat",
   description: "OpenCraft Google Chat channel plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setGoogleChatRuntime(api.runtime);
-    api.registerChannel(googlechatPlugin);
-  },
-};
-
-export default plugin;
+  plugin: googlechatPlugin,
+  setRuntime: setGoogleChatRuntime,
+});

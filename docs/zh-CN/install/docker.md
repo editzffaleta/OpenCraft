@@ -268,7 +268,7 @@ docker compose run --rm opencraft-cli channels add --channel discord --token "<t
 ### 健康检查
 
 ```bash
-docker compose exec opencraft-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
+docker compose exec opencraft-gateway node dist/index.js health --token "$OPENCRAFT_GATEWAY_TOKEN"
 ```
 
 ### E2E 冒烟测试（Docker）
@@ -318,7 +318,7 @@ pnpm test:docker:qr
 
 ### 默认行为
 
-- 镜像：`openclaw-sandbox:bookworm-slim`
+- 镜像：`opencraft-sandbox:bookworm-slim`
 - 每个智能体一个容器
 - 智能体工作区访问：`workspaceAccess: "none"`（默认）使用 `~/.opencraft/sandboxes`
   - `"ro"` 保持沙箱工作区在 `/workspace` 并将智能体工作区只读挂载在 `/agent`（禁用 `write`/`edit`/`apply_patch`）
@@ -347,7 +347,7 @@ pnpm test:docker:qr
         workspaceAccess: "none", // none | ro | rw
         workspaceRoot: "~/.opencraft/sandboxes",
         docker: {
-          image: "openclaw-sandbox:bookworm-slim",
+          image: "opencraft-sandbox:bookworm-slim",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp", "/var/tmp", "/run"],
@@ -365,7 +365,7 @@ pnpm test:docker:qr
             nproc: 256,
           },
           seccompProfile: "/path/to/seccomp.json",
-          apparmorProfile: "openclaw-sandbox",
+          apparmorProfile: "opencraft-sandbox",
           dns: ["1.1.1.1", "8.8.8.8"],
           extraHosts: ["internal.service:10.0.0.5"],
         },
@@ -408,7 +408,7 @@ pnpm test:docker:qr
 scripts/sandbox-setup.sh
 ```
 
-这使用 `Dockerfile.sandbox` 构建 `openclaw-sandbox:bookworm-slim`。
+这使用 `Dockerfile.sandbox` 构建 `opencraft-sandbox:bookworm-slim`。
 
 ### 沙箱通用镜像（可选）
 
@@ -418,13 +418,13 @@ scripts/sandbox-setup.sh
 scripts/sandbox-common-setup.sh
 ```
 
-这构建 `openclaw-sandbox-common:bookworm-slim`。要使用它：
+这构建 `opencraft-sandbox-common:bookworm-slim`。要使用它：
 
 ```json5
 {
   agents: {
     defaults: {
-      sandbox: { docker: { image: "openclaw-sandbox-common:bookworm-slim" } },
+      sandbox: { docker: { image: "opencraft-sandbox-common:bookworm-slim" } },
     },
   },
 }
@@ -438,7 +438,7 @@ scripts/sandbox-common-setup.sh
 scripts/sandbox-browser-setup.sh
 ```
 
-这使用 `Dockerfile.sandbox-browser` 构建 `openclaw-sandbox-browser:bookworm-slim`。容器运行启用 CDP 的 Chromium 和可选的 noVNC 观察器（通过 Xvfb 有头）。
+这使用 `Dockerfile.sandbox-browser` 构建 `opencraft-sandbox-browser:bookworm-slim`。容器运行启用 CDP 的 Chromium 和可选的 noVNC 观察器（通过 Xvfb 有头）。
 
 注意：
 
@@ -526,7 +526,7 @@ docker build -t my-opencraft-sbx -f Dockerfile.sandbox .
 
 ## 故障排除
 
-- 镜像缺失：使用 [`scripts/sandbox-setup.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/sandbox-setup.sh) 构建或设置 `agents.defaults.sandbox.docker.image`。
+- 镜像缺失：使用 [`scripts/sandbox-setup.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/sandbox-setup.sh) 构建或设置 `agents.defaults.sandbox.docker.image`。
 - 容器未运行：它会按需为每个会话自动创建。
 - 沙箱中的权限错误：将 `docker.user` 设置为与你挂载的工作区所有权匹配的 UID:GID（或 chown 工作区文件夹）。
 - 找不到自定义工具：OpenCraft 使用 `sh -lc`（登录 shell）运行命令，这会 source `/etc/profile` 并可能重置 PATH。设置 `docker.env.PATH` 以在前面添加你的自定义工具路径（例如 `/custom/bin:/usr/local/share/npm-global/bin`），或在你的 Dockerfile 中在 `/etc/profile.d/` 下添加脚本。

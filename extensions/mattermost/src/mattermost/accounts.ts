@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "opencraft/plugin-sdk/account-id";
-import { createAccountListHelpers, type OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import { createAccountListHelpers, type OpenCraftConfig } from "../runtime-api.js";
 import { normalizeResolvedSecretInputString, normalizeSecretInputString } from "../secret-input.js";
 import type {
   MattermostAccountConfig,

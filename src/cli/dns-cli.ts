@@ -105,8 +105,7 @@ export function registerDnsCli(program: Command) {
     .description("DNS helpers for wide-area discovery (Tailscale + CoreDNS)")
     .addHelpText(
       "after",
-      () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/dns", "docs.opencraft.ai/cli/dns")}\n`,
+      () => `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/dns", "docs.opencraft.ai/cli/dns")}\n`,
     );
 
   dns
@@ -154,7 +153,7 @@ export function registerDnsCli(program: Command) {
         }).trimEnd(),
       );
       defaultRuntime.log("");
-      defaultRuntime.log(theme.heading("Recommended ~/.editzffaleta/OpenCraft.json:"));
+      defaultRuntime.log(theme.heading("Recommended ~/.opencraft/opencraft.json:"));
       defaultRuntime.log(
         JSON.stringify(
           {
@@ -255,7 +254,7 @@ export function registerDnsCli(program: Command) {
         defaultRuntime.log("");
         defaultRuntime.log(
           theme.muted(
-            "Note: enable discovery.wideArea.enabled in ~/.editzffaleta/OpenCraft.json on the gateway and restart the gateway so it writes the DNS-SD zone.",
+            "Note: enable discovery.wideArea.enabled in ~/.opencraft/opencraft.json on the gateway and restart the gateway so it writes the DNS-SD zone.",
           ),
         );
       }

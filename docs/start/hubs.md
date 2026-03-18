@@ -1,75 +1,75 @@
 ---
-summary: "Hubs que linkam para toda a documentação do OpenCraft"
+summary: "Hubs that link to every OpenCraft doc"
 read_when:
-  - Você quer um mapa completo da documentação
-title: "Hubs de Documentação"
+  - You want a complete map of the documentation
+title: "Docs Hubs"
 ---
 
-# Hubs de documentação
+# Docs hubs
 
 <Note>
-Se você é novo no OpenCraft, comece com [Começando](/start/getting-started).
+If you are new to OpenCraft, start with [Getting Started](/start/getting-started).
 </Note>
 
-Use esses hubs para descobrir todas as páginas, incluindo aprofundamentos e documentos de referência que não aparecem na navegação lateral.
+Use these hubs to discover every page, including deep dives and reference docs that don’t appear in the left nav.
 
-## Comece aqui
+## Start here
 
-- [Índice](/)
-- [Começando](/start/getting-started)
-- [Quickstart](/start/quickstart)
+- [Index](/)
+- [Getting Started](/start/getting-started)
+- [Quick start](/start/quickstart)
 - [Onboarding](/start/onboarding)
 - [Onboarding (CLI)](/start/wizard)
-- [Configuração](/start/setup)
-- [Dashboard (Gateway local)](http://127.0.0.1:18789/)
-- [Ajuda](/help)
-- [Diretório de documentação](/start/docs-directory)
-- [Configuração](/gateway/configuration)
-- [Exemplos de configuração](/gateway/configuration-examples)
-- [Assistente OpenCraft](/start/opencraft)
+- [Setup](/start/setup)
+- [Dashboard (local Gateway)](http://127.0.0.1:18789/)
+- [Help](/help)
+- [Docs directory](/start/docs-directory)
+- [Configuration](/gateway/configuration)
+- [Configuration examples](/gateway/configuration-examples)
+- [OpenCraft assistant](/start/opencraft)
 - [Showcase](/start/showcase)
 - [Lore](/start/lore)
 
-## Instalação + atualizações
+## Installation + updates
 
 - [Docker](/install/docker)
 - [Nix](/install/nix)
-- [Atualização / rollback](/install/updating)
-- [Fluxo com Bun (experimental)](/install/bun)
+- [Updating / rollback](/install/updating)
+- [Bun workflow (experimental)](/install/bun)
 
-## Conceitos principais
+## Core concepts
 
-- [Arquitetura](/concepts/architecture)
-- [Funcionalidades](/concepts/features)
-- [Hub de rede](/network)
-- [Runtime do agente](/concepts/agent)
-- [Espaço de trabalho do agente](/concepts/agent-workspace)
-- [Memória](/concepts/memory)
-- [Loop do agente](/concepts/agent-loop)
+- [Architecture](/concepts/architecture)
+- [Features](/concepts/features)
+- [Network hub](/network)
+- [Agent runtime](/concepts/agent)
+- [Agent workspace](/concepts/agent-workspace)
+- [Memory](/concepts/memory)
+- [Agent loop](/concepts/agent-loop)
 - [Streaming + chunking](/concepts/streaming)
-- [Roteamento multi-agente](/concepts/multi-agent)
-- [Compactação](/concepts/compaction)
-- [Sessões](/concepts/session)
-- [Poda de sessões](/concepts/session-pruning)
-- [Ferramentas de sessão](/concepts/session-tool)
-- [Fila](/concepts/queue)
-- [Comandos slash](/tools/slash-commands)
-- [Adaptadores RPC](/reference/rpc)
-- [Esquemas TypeBox](/concepts/typebox)
-- [Tratamento de fuso horário](/concepts/timezone)
-- [Presença](/concepts/presence)
-- [Descoberta + transportes](/gateway/discovery)
+- [Multi-agent routing](/concepts/multi-agent)
+- [Compaction](/concepts/compaction)
+- [Sessions](/concepts/session)
+- [Session pruning](/concepts/session-pruning)
+- [Session tools](/concepts/session-tool)
+- [Queue](/concepts/queue)
+- [Slash commands](/tools/slash-commands)
+- [RPC adapters](/reference/rpc)
+- [TypeBox schemas](/concepts/typebox)
+- [Timezone handling](/concepts/timezone)
+- [Presence](/concepts/presence)
+- [Discovery + transports](/gateway/discovery)
 - [Bonjour](/gateway/bonjour)
-- [Roteamento de canais](/channels/channel-routing)
-- [Grupos](/channels/groups)
-- [Mensagens de grupo](/channels/group-messages)
-- [Failover de modelos](/concepts/model-failover)
+- [Channel routing](/channels/channel-routing)
+- [Groups](/channels/groups)
+- [Group messages](/channels/group-messages)
+- [Model failover](/concepts/model-failover)
 - [OAuth](/concepts/oauth)
 
-## Provedores + ingresso
+## Providers + ingress
 
-- [Hub de canais de chat](/channels)
-- [Hub de provedores de modelo](/providers/models)
+- [Chat channels hub](/channels)
+- [Model providers hub](/providers/models)
 - [WhatsApp](/channels/whatsapp)
 - [Telegram](/channels/telegram)
 - [Slack](/channels/slack)
@@ -77,97 +77,97 @@ Use esses hubs para descobrir todas as páginas, incluindo aprofundamentos e doc
 - [Mattermost](/channels/mattermost) (plugin)
 - [Signal](/channels/signal)
 - [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (legado)](/channels/imessage)
-- [Parsing de localização](/channels/location)
+- [iMessage (legacy)](/channels/imessage)
+- [Location parsing](/channels/location)
 - [WebChat](/web/webchat)
 - [Webhooks](/automation/webhook)
 - [Gmail Pub/Sub](/automation/gmail-pubsub)
 
-## Gateway + operações
+## Gateway + operations
 
-- [Runbook do Gateway](/gateway)
-- [Modelo de rede](/gateway/network-model)
-- [Pareamento do Gateway](/gateway/pairing)
-- [Lock do Gateway](/gateway/gateway-lock)
-- [Processo em background](/gateway/background-process)
-- [Saúde](/gateway/health)
+- [Gateway runbook](/gateway)
+- [Network model](/gateway/network-model)
+- [Gateway pairing](/gateway/pairing)
+- [Gateway lock](/gateway/gateway-lock)
+- [Background process](/gateway/background-process)
+- [Health](/gateway/health)
 - [Heartbeat](/gateway/heartbeat)
 - [Doctor](/gateway/doctor)
 - [Logging](/gateway/logging)
 - [Sandboxing](/gateway/sandboxing)
 - [Dashboard](/web/dashboard)
 - [Control UI](/web/control-ui)
-- [Acesso remoto](/gateway/remote)
-- [README do Gateway remoto](/gateway/remote-gateway-readme)
+- [Remote access](/gateway/remote)
+- [Remote gateway README](/gateway/remote-gateway-readme)
 - [Tailscale](/gateway/tailscale)
-- [Segurança](/gateway/security)
-- [Solução de problemas](/gateway/troubleshooting)
+- [Security](/gateway/security)
+- [Troubleshooting](/gateway/troubleshooting)
 
-## Ferramentas + automação
+## Tools + automation
 
-- [Superfície de ferramentas](/tools)
+- [Tools surface](/tools)
 - [OpenProse](/prose)
-- [Referência CLI](/cli)
-- [Ferramenta exec](/tools/exec)
-- [Ferramenta PDF](/tools/pdf)
-- [Modo elevado](/tools/elevated)
+- [CLI reference](/cli)
+- [Exec tool](/tools/exec)
+- [PDF tool](/tools/pdf)
+- [Elevated mode](/tools/elevated)
 - [Cron jobs](/automation/cron-jobs)
 - [Cron vs Heartbeat](/automation/cron-vs-heartbeat)
-- [Pensamento + verbose](/tools/thinking)
-- [Modelos](/concepts/models)
-- [Sub-agentes](/tools/subagents)
-- [CLI agent send](/tools/agent-send)
-- [TUI](/web/tui)
-- [Controle do navegador](/tools/browser)
-- [Navegador (solução de problemas Linux)](/tools/browser-linux-troubleshooting)
-- [Enquetes](/automation/poll)
+- [Thinking + verbose](/tools/thinking)
+- [Models](/concepts/models)
+- [Sub-agents](/tools/subagents)
+- [Agent send CLI](/tools/agent-send)
+- [Terminal UI](/web/tui)
+- [Browser control](/tools/browser)
+- [Browser (Linux troubleshooting)](/tools/browser-linux-troubleshooting)
+- [Polls](/automation/poll)
 
-## Nodes, mídia, voz
+## Nodes, media, voice
 
-- [Visão geral dos nodes](/nodes)
-- [Câmera](/nodes/camera)
-- [Imagens](/nodes/images)
-- [Áudio](/nodes/audio)
-- [Comando de localização](/nodes/location-command)
-- [Despertar por voz](/nodes/voicewake)
-- [Modo conversa](/nodes/talk)
+- [Nodes overview](/nodes)
+- [Camera](/nodes/camera)
+- [Images](/nodes/images)
+- [Audio](/nodes/audio)
+- [Location command](/nodes/location-command)
+- [Voice wake](/nodes/voicewake)
+- [Talk mode](/nodes/talk)
 
-## Plataformas
+## Platforms
 
-- [Visão geral das plataformas](/platforms)
+- [Platforms overview](/platforms)
 - [macOS](/platforms/macos)
 - [iOS](/platforms/ios)
 - [Android](/platforms/android)
 - [Windows (WSL2)](/platforms/windows)
 - [Linux](/platforms/linux)
-- [Superfícies web](/web)
+- [Web surfaces](/web)
 
-## App complementar macOS (avançado)
+## macOS companion app (advanced)
 
-- [Configuração de dev macOS](/platforms/mac/dev-setup)
-- [Barra de menu macOS](/platforms/mac/menu-bar)
-- [Despertar por voz macOS](/platforms/mac/voicewake)
-- [Overlay de voz macOS](/platforms/mac/voice-overlay)
-- [WebChat macOS](/platforms/mac/webchat)
-- [Canvas macOS](/platforms/mac/canvas)
-- [Processo filho macOS](/platforms/mac/child-process)
-- [Saúde macOS](/platforms/mac/health)
-- [Ícone macOS](/platforms/mac/icon)
-- [Logging macOS](/platforms/mac/logging)
-- [Permissões macOS](/platforms/mac/permissions)
-- [Remoto macOS](/platforms/mac/remote)
-- [Assinatura macOS](/platforms/mac/signing)
-- [Gateway macOS (launchd)](/platforms/mac/bundled-gateway)
-- [XPC macOS](/platforms/mac/xpc)
-- [Skills macOS](/platforms/mac/skills)
-- [Peekaboo macOS](/platforms/mac/peekaboo)
+- [macOS dev setup](/platforms/mac/dev-setup)
+- [macOS menu bar](/platforms/mac/menu-bar)
+- [macOS voice wake](/platforms/mac/voicewake)
+- [macOS voice overlay](/platforms/mac/voice-overlay)
+- [macOS WebChat](/platforms/mac/webchat)
+- [macOS Canvas](/platforms/mac/canvas)
+- [macOS child process](/platforms/mac/child-process)
+- [macOS health](/platforms/mac/health)
+- [macOS icon](/platforms/mac/icon)
+- [macOS logging](/platforms/mac/logging)
+- [macOS permissions](/platforms/mac/permissions)
+- [macOS remote](/platforms/mac/remote)
+- [macOS signing](/platforms/mac/signing)
+- [macOS gateway (launchd)](/platforms/mac/bundled-gateway)
+- [macOS XPC](/platforms/mac/xpc)
+- [macOS skills](/platforms/mac/skills)
+- [macOS Peekaboo](/platforms/mac/peekaboo)
 
-## Espaço de trabalho + templates
+## Workspace + templates
 
 - [Skills](/tools/skills)
 - [ClawHub](/tools/clawhub)
-- [Configuração de skills](/tools/skills-config)
-- [AGENTS padrão](/reference/AGENTS.default)
+- [Skills config](/tools/skills-config)
+- [Default AGENTS](/reference/AGENTS.default)
 - [Templates: AGENTS](/reference/templates/AGENTS)
 - [Templates: BOOTSTRAP](/reference/templates/BOOTSTRAP)
 - [Templates: HEARTBEAT](/reference/templates/HEARTBEAT)
@@ -176,18 +176,18 @@ Use esses hubs para descobrir todas as páginas, incluindo aprofundamentos e doc
 - [Templates: TOOLS](/reference/templates/TOOLS)
 - [Templates: USER](/reference/templates/USER)
 
-## Experimentos (exploratório)
+## Experiments (exploratory)
 
-- [Protocolo de configuração de onboarding](/experiments/onboarding-config-protocol)
-- [Pesquisa: memória](/experiments/research/memory)
-- [Exploração de configuração de modelos](/experiments/proposals/model-config)
+- [Onboarding config protocol](/experiments/onboarding-config-protocol)
+- [Research: memory](/experiments/research/memory)
+- [Model config exploration](/experiments/proposals/model-config)
 
-## Projeto
+## Project
 
-- [Créditos](/reference/credits)
+- [Credits](/reference/credits)
 
-## Testes + release
+## Testing + release
 
-- [Testes](/reference/test)
-- [Política de release](/reference/RELEASING)
-- [Modelos de dispositivos](/reference/device-models)
+- [Testing](/reference/test)
+- [Release policy](/reference/RELEASING)
+- [Device models](/reference/device-models)

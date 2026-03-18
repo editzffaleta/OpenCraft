@@ -1,33 +1,33 @@
 ---
-summary: "Invocar uma única ferramenta diretamente via o endpoint HTTP do Gateway"
+summary: "Invoke a single tool directly via the Gateway HTTP endpoint"
 read_when:
-  - Chamando ferramentas sem executar um turno completo de agente
-  - Construindo automações que precisam de aplicação de política de ferramentas
+  - Calling tools without running a full agent turn
+  - Building automations that need tool policy enforcement
 title: "Tools Invoke API"
 ---
 
 # Tools Invoke (HTTP)
 
-O Gateway do OpenCraft expõe um endpoint HTTP simples para invocar uma única ferramenta diretamente. Ele está sempre habilitado, mas protegido por auth do Gateway e política de ferramentas.
+OpenCraft’s Gateway exposes a simple HTTP endpoint for invoking a single tool directly. It is always enabled, but gated by Gateway auth and tool policy.
 
 - `POST /tools/invoke`
-- Mesma porta que o Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/tools/invoke`
+- Same port as the Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/tools/invoke`
 
-Tamanho máximo de payload padrão é 2 MB.
+Default max payload size is 2 MB.
 
-## Autenticação
+## Authentication
 
-Usa a configuração de auth do Gateway. Envie um bearer token:
+Uses the Gateway auth configuration. Send a bearer token:
 
 - `Authorization: Bearer <token>`
 
-Notas:
+Notes:
 
-- Quando `gateway.auth.mode="token"`, use `gateway.auth.token` (ou `OPENCLAW_GATEWAY_TOKEN`).
-- Quando `gateway.auth.mode="password"`, use `gateway.auth.password` (ou `OPENCLAW_GATEWAY_PASSWORD`).
-- Se `gateway.auth.rateLimit` está configurado e muitas falhas de auth ocorrem, o endpoint retorna `429` com `Retry-After`.
+- When `gateway.auth.mode="token"`, use `gateway.auth.token` (or `OPENCRAFT_GATEWAY_TOKEN`).
+- When `gateway.auth.mode="password"`, use `gateway.auth.password` (or `OPENCRAFT_GATEWAY_PASSWORD`).
+- If `gateway.auth.rateLimit` is configured and too many auth failures occur, the endpoint returns `429` with `Retry-After`.
 
-## Corpo da requisição
+## Request body
 
 ```json
 {
@@ -39,64 +39,64 @@ Notas:
 }
 ```
 
-Campos:
+Fields:
 
-- `tool` (string, obrigatório): nome da ferramenta a invocar.
-- `action` (string, opcional): mapeado nos args se o schema da ferramenta suporta `action` e o payload de args o omitiu.
-- `args` (objeto, opcional): argumentos específicos da ferramenta.
-- `sessionKey` (string, opcional): chave de sessão alvo. Se omitido ou `"main"`, o Gateway usa a chave de sessão principal configurada (respeita `session.mainKey` e agente padrão, ou `global` no escopo global).
-- `dryRun` (boolean, opcional): reservado para uso futuro; atualmente ignorado.
+- `tool` (string, required): tool name to invoke.
+- `action` (string, optional): mapped into args if the tool schema supports `action` and the args payload omitted it.
+- `args` (object, optional): tool-specific arguments.
+- `sessionKey` (string, optional): target session key. If omitted or `"main"`, the Gateway uses the configured main session key (honors `session.mainKey` and default agent, or `global` in global scope).
+- `dryRun` (boolean, optional): reserved for future use; currently ignored.
 
-## Comportamento de política + roteamento
+## Policy + routing behavior
 
-A disponibilidade de ferramentas é filtrada pela mesma cadeia de políticas usada por agentes do Gateway:
+Tool availability is filtered through the same policy chain used by Gateway agents:
 
 - `tools.profile` / `tools.byProvider.profile`
 - `tools.allow` / `tools.byProvider.allow`
 - `agents.<id>.tools.allow` / `agents.<id>.tools.byProvider.allow`
-- políticas de grupo (se a chave de sessão mapeia para um grupo ou canal)
-- política de subagente (ao invocar com uma chave de sessão de subagente)
+- group policies (if the session key maps to a group or channel)
+- subagent policy (when invoking with a subagent session key)
 
-Se uma ferramenta não é permitida pela política, o endpoint retorna **404**.
+If a tool is not allowed by policy, the endpoint returns **404**.
 
-O Gateway HTTP também aplica uma lista de negação rígida por padrão (mesmo que a política de sessão permita a ferramenta):
+Gateway HTTP also applies a hard deny list by default (even if session policy allows the tool):
 
 - `sessions_spawn`
 - `sessions_send`
 - `gateway`
 - `whatsapp_login`
 
-Você pode customizar esta lista de negação via `gateway.tools`:
+You can customize this deny list via `gateway.tools`:
 
 ```json5
 {
   gateway: {
     tools: {
-      // Ferramentas adicionais para bloquear via HTTP /tools/invoke
+      // Additional tools to block over HTTP /tools/invoke
       deny: ["browser"],
-      // Remover ferramentas da lista de negação padrão
+      // Remove tools from the default deny list
       allow: ["gateway"],
     },
   },
 }
 ```
 
-Para ajudar políticas de grupo a resolver contexto, você pode opcionalmente definir:
+To help group policies resolve context, you can optionally set:
 
-- `x-opencraft-message-channel: <channel>` (exemplo: `slack`, `telegram`)
-- `x-opencraft-account-id: <accountId>` (quando múltiplas contas existem)
+- `x-opencraft-message-channel: <channel>` (example: `slack`, `telegram`)
+- `x-opencraft-account-id: <accountId>` (when multiple accounts exist)
 
-## Respostas
+## Responses
 
 - `200` → `{ ok: true, result }`
-- `400` → `{ ok: false, error: { type, message } }` (requisição inválida ou erro de input de ferramenta)
-- `401` → não autorizado
-- `429` → rate-limited de auth (`Retry-After` definido)
-- `404` → ferramenta não disponível (não encontrada ou não na allowlist)
-- `405` → método não permitido
-- `500` → `{ ok: false, error: { type, message } }` (erro inesperado de execução de ferramenta; mensagem sanitizada)
+- `400` → `{ ok: false, error: { type, message } }` (invalid request or tool input error)
+- `401` → unauthorized
+- `429` → auth rate-limited (`Retry-After` set)
+- `404` → tool not available (not found or not allowlisted)
+- `405` → method not allowed
+- `500` → `{ ok: false, error: { type, message } }` (unexpected tool execution error; sanitized message)
 
-## Exemplo
+## Example
 
 ```bash
 curl -sS http://127.0.0.1:18789/tools/invoke \

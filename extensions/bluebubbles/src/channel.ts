@@ -1,3 +1,4 @@
+import { formatNormalizedAllowFromEntries } from "opencraft/plugin-sdk/allow-from";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "opencraft/plugin-sdk/bluebubbles";
 import {
   buildChannelConfigSchema,
@@ -11,13 +12,13 @@ import {
   resolveBlueBubblesGroupToolPolicy,
   setAccountEnabledInConfigSection,
 } from "opencraft/plugin-sdk/bluebubbles";
+import { mapAllowFromEntries } from "opencraft/plugin-sdk/channel-config-helpers";
+import { createAccountStatusSink } from "opencraft/plugin-sdk/channel-lifecycle";
 import {
   buildAccountScopedDmSecurityPolicy,
   collectOpenGroupPolicyRestrictSendersWarnings,
-  createAccountStatusSink,
-  formatNormalizedAllowFromEntries,
-  mapAllowFromEntries,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-policy";
+import { createLazyRuntimeNamedExport } from "opencraft/plugin-sdk/lazy-runtime";
 import {
   listBlueBubblesAccountIds,
   type ResolvedBlueBubblesAccount,
@@ -37,12 +38,10 @@ import {
   parseBlueBubblesTarget,
 } from "./targets.js";
 
-let blueBubblesChannelRuntimePromise: Promise<typeof import("./channel.runtime.js")> | null = null;
-
-function loadBlueBubblesChannelRuntime() {
-  blueBubblesChannelRuntimePromise ??= import("./channel.runtime.js");
-  return blueBubblesChannelRuntimePromise;
-}
+const loadBlueBubblesChannelRuntime = createLazyRuntimeNamedExport(
+  () => import("./channel.runtime.js"),
+  "blueBubblesChannelRuntime",
+);
 
 const meta = {
   id: "bluebubbles",

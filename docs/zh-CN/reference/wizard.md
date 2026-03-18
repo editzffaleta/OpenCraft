@@ -24,7 +24,7 @@ x-i18n:
 
 <Steps>
   <Step title="现有配置检测">
-    - 如果 `~/.editzffaleta/OpenCraft.json` 存在，请选择 **Keep / Modify / Reset**。
+    - 如果 `~/.opencraft/opencraft.json` 存在，请选择 **Keep / Modify / Reset**。
     - 重新运行向导**不会**清除任何内容，除非你明确选择 **Reset**
       （或传入 `--reset`）。
     - CLI `--reset` 默认值为 `config+creds+sessions`；使用 `--reset-scope full`
@@ -160,12 +160,12 @@ opencraft onboard --non-interactive \
 在非交互模式中使用 Gateway token SecretRef：
 
 ```bash
-export OPENCLAW_GATEWAY_TOKEN="your-token"
+export OPENCRAFT_GATEWAY_TOKEN="your-token"
 opencraft onboard --non-interactive \
   --mode local \
   --auth-choice skip \
   --gateway-auth token \
-  --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN
+  --gateway-token-ref-env OPENCRAFT_GATEWAY_TOKEN
 ```
 
 `--gateway-token` 和 `--gateway-token-ref-env` 互斥。
@@ -209,7 +209,7 @@ Gateway 网关通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`
 
 ## 向导会写入的内容
 
-`~/.editzffaleta/OpenCraft.json` 中的典型字段：
+`~/.opencraft/opencraft.json` 中的典型字段：
 
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择了 Minimax）

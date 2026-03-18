@@ -1,39 +1,40 @@
 ---
-summary: "Manifesto de Plugin + requisitos de JSON schema (validação estrita de config)"
+summary: "Plugin manifest + JSON schema requirements (strict config validation)"
 read_when:
-  - Você está construindo um Plugin para o OpenCraft
-  - Você precisa enviar um schema de config de Plugin ou depurar erros de validação de Plugin
+  - You are building a OpenCraft plugin
+  - You need to ship a plugin config schema or debug plugin validation errors
 title: "Plugin Manifest"
 ---
 
-# Manifesto de Plugin (opencraft.plugin.json)
+# Plugin manifest (opencraft.plugin.json)
 
-Esta página é apenas para o **manifesto nativo de Plugin do OpenCraft**.
+This page is for the **native OpenCraft plugin manifest** only.
 
-Para layouts de bundle compatíveis, veja [Bundles de Plugin](/plugins/bundles).
+For compatible bundle layouts, see [Plugin bundles](/plugins/bundles).
 
-Formatos de bundle compatíveis usam arquivos de manifesto diferentes:
+Compatible bundle formats use different manifest files:
 
-- Bundle Codex: `.codex-plugin/plugin.json`
-- Bundle Claude: `.claude-plugin/plugin.json` ou o layout padrão de componente Claude
-  sem manifesto
-- Bundle Cursor: `.cursor-plugin/plugin.json`
+- Codex bundle: `.codex-plugin/plugin.json`
+- Claude bundle: `.claude-plugin/plugin.json` or the default Claude component
+  layout without a manifest
+- Cursor bundle: `.cursor-plugin/plugin.json`
 
-O OpenCraft também detecta automaticamente esses layouts de bundle, mas eles não são validados
-contra o schema `opencraft.plugin.json` descrito aqui.
+OpenCraft auto-detects those bundle layouts too, but they are not validated
+against the `opencraft.plugin.json` schema described here.
 
-Para bundles compatíveis, o OpenCraft atualmente lê metadados do bundle mais raízes de Skill
-declaradas, raízes de comando Claude, padrões de `settings.json` do bundle Claude, e
-pacotes de hook suportados quando o layout corresponde às expectativas de runtime do OpenCraft.
+For compatible bundles, OpenCraft currently reads bundle metadata plus declared
+skill roots, Claude command roots, Claude bundle `settings.json` defaults, and
+supported hook packs when the layout matches OpenCraft runtime expectations.
 
-Todo Plugin nativo do OpenCraft **deve** enviar um arquivo `opencraft.plugin.json` na
-**raiz do Plugin**. O OpenCraft usa este manifesto para validar configuração
-**sem executar código do Plugin**. Manifestos ausentes ou inválidos são tratados como
-erros de Plugin e bloqueiam a validação de config.
+Every native OpenCraft plugin **must** ship a `opencraft.plugin.json` file in the
+**plugin root**. OpenCraft uses this manifest to validate configuration
+**without executing plugin code**. Missing or invalid manifests are treated as
+plugin errors and block config validation.
 
-Veja o guia completo do sistema de Plugins: [Plugins](/tools/plugin).
+See the full plugin system guide: [Plugins](/tools/plugin).
+For the public capability model: [Capability model](/tools/plugin#public-capability-model).
 
-## Campos obrigatórios
+## Required fields
 
 ```json
 {
@@ -46,42 +47,42 @@ Veja o guia completo do sistema de Plugins: [Plugins](/tools/plugin).
 }
 ```
 
-Chaves obrigatórias:
+Required keys:
 
-- `id` (string): id canônico do Plugin.
-- `configSchema` (object): JSON Schema para config do Plugin (inline).
+- `id` (string): canonical plugin id.
+- `configSchema` (object): JSON Schema for plugin config (inline).
 
-Chaves opcionais:
+Optional keys:
 
-- `kind` (string): tipo de Plugin (exemplos: `"memory"`, `"context-engine"`).
-- `channels` (array): ids de canal registrados por este Plugin (exemplo: `["matrix"]`).
-- `providers` (array): ids de provedor registrados por este Plugin.
-- `providerAuthEnvVars` (object): variáveis de ambiente de autenticação organizadas por id de provedor. Use quando
-  o OpenCraft deve resolver credenciais de provedor do ambiente sem carregar
-  o runtime do Plugin primeiro.
-- `providerAuthChoices` (array): metadados baratos de onboarding/escolha de autenticação organizados por
-  provedor + método de autenticação. Use quando o OpenCraft deve mostrar um provedor em
-  seletores de escolha de autenticação, resolução de provedor preferido, e ajuda do CLI sem
-  carregar o runtime do Plugin primeiro.
-- `skills` (array): diretórios de Skill para carregar (relativos à raiz do Plugin).
-- `name` (string): nome de exibição do Plugin.
-- `description` (string): resumo curto do Plugin.
-- `uiHints` (object): rótulos/placeholders/flags de sensibilidade de campos de config para renderização na interface.
-- `version` (string): versão do Plugin (informativa).
+- `kind` (string): plugin kind (examples: `"memory"`, `"context-engine"`).
+- `channels` (array): channel ids registered by this plugin (channel capability; example: `["matrix"]`).
+- `providers` (array): provider ids registered by this plugin (text inference capability).
+- `providerAuthEnvVars` (object): auth env vars keyed by provider id. Use this
+  when OpenCraft should resolve provider credentials from env without loading
+  plugin runtime first.
+- `providerAuthChoices` (array): cheap onboarding/auth-choice metadata keyed by
+  provider + auth method. Use this when OpenCraft should show a provider in
+  auth-choice pickers, preferred-provider resolution, and CLI help without
+  loading plugin runtime first.
+- `skills` (array): skill directories to load (relative to the plugin root).
+- `name` (string): display name for the plugin.
+- `description` (string): short plugin summary.
+- `uiHints` (object): config field labels/placeholders/sensitive flags for UI rendering.
+- `version` (string): plugin version (informational).
 
-### Formato de `providerAuthChoices`
+### `providerAuthChoices` shape
 
-Cada entrada pode declarar:
+Each entry can declare:
 
-- `provider`: id do provedor
-- `method`: id do método de autenticação
-- `choiceId`: id estável de onboarding/escolha de autenticação
-- `choiceLabel` / `choiceHint`: rótulo do seletor + dica curta
-- `groupId` / `groupLabel` / `groupHint`: metadados de agrupamento de onboarding
-- `optionKey` / `cliFlag` / `cliOption` / `cliDescription`: fiação opcional de flag única
-  no CLI para fluxos de autenticação simples como API keys
+- `provider`: provider id
+- `method`: auth method id
+- `choiceId`: stable onboarding/auth-choice id
+- `choiceLabel` / `choiceHint`: picker label + short hint
+- `groupId` / `groupLabel` / `groupHint`: grouped onboarding bucket metadata
+- `optionKey` / `cliFlag` / `cliOption` / `cliDescription`: optional one-flag
+  CLI wiring for simple auth flows such as API keys
 
-Exemplo:
+Example:
 
 ```json
 {
@@ -102,38 +103,38 @@ Exemplo:
 }
 ```
 
-## Requisitos de JSON Schema
+## JSON Schema requirements
 
-- **Todo Plugin deve enviar um JSON Schema**, mesmo que não aceite config.
-- Um schema vazio é aceitável (por exemplo, `{ "type": "object", "additionalProperties": false }`).
-- Schemas são validados no momento de leitura/escrita do config, não em runtime.
+- **Every plugin must ship a JSON Schema**, even if it accepts no config.
+- An empty schema is acceptable (for example, `{ "type": "object", "additionalProperties": false }`).
+- Schemas are validated at config read/write time, not at runtime.
 
-## Comportamento de validação
+## Validation behavior
 
-- Chaves desconhecidas em `channels.*` são **erros**, a menos que o id de canal seja declarado por
-  um manifesto de Plugin.
-- `plugins.entries.<id>`, `plugins.allow`, `plugins.deny`, e `plugins.slots.*`
-  devem referenciar ids de Plugin **descobríveis**. IDs desconhecidos são **erros**.
-- Se um Plugin está instalado mas tem um manifesto ou schema quebrado ou ausente,
-  a validação falha e o Doctor reporta o erro do Plugin.
-- Se config de Plugin existe mas o Plugin está **desabilitado**, o config é mantido e
-  um **aviso** é exibido no Doctor + logs.
+- Unknown `channels.*` keys are **errors**, unless the channel id is declared by
+  a plugin manifest.
+- `plugins.entries.<id>`, `plugins.allow`, `plugins.deny`, and `plugins.slots.*`
+  must reference **discoverable** plugin ids. Unknown ids are **errors**.
+- If a plugin is installed but has a broken or missing manifest or schema,
+  validation fails and Doctor reports the plugin error.
+- If plugin config exists but the plugin is **disabled**, the config is kept and
+  a **warning** is surfaced in Doctor + logs.
 
-## Notas
+## Notes
 
-- O manifesto é **obrigatório para Plugins nativos do OpenCraft**, incluindo carregamentos do sistema de arquivos local.
-- O runtime ainda carrega o módulo do Plugin separadamente; o manifesto é apenas para
-  descoberta + validação.
-- `providerAuthEnvVars` é o caminho barato de metadados para sondagens de autenticação, validação de
-  marcadores de ambiente, e superfícies similares de autenticação de provedor que não devem iniciar o runtime do Plugin
-  apenas para inspecionar nomes de variáveis de ambiente.
-- `providerAuthChoices` é o caminho barato de metadados para seletores de escolha de autenticação,
-  resolução de `--auth-choice`, mapeamento de provedor preferido, e registro simples de
-  flag de CLI de onboarding antes do carregamento do runtime do provedor.
-- Tipos exclusivos de Plugin são selecionados através de `plugins.slots.*`.
-  - `kind: "memory"` é selecionado por `plugins.slots.memory`.
-  - `kind: "context-engine"` é selecionado por `plugins.slots.contextEngine`
-    (padrão: `legacy` embutido).
-- Se seu Plugin depende de módulos nativos, documente os passos de build e quaisquer
-  requisitos de allowlist do gerenciador de pacotes (por exemplo, pnpm `allow-build-scripts`
+- The manifest is **required for native OpenCraft plugins**, including local filesystem loads.
+- Runtime still loads the plugin module separately; the manifest is only for
+  discovery + validation.
+- `providerAuthEnvVars` is the cheap metadata path for auth probes, env-marker
+  validation, and similar provider-auth surfaces that should not boot plugin
+  runtime just to inspect env names.
+- `providerAuthChoices` is the cheap metadata path for auth-choice pickers,
+  `--auth-choice` resolution, preferred-provider mapping, and simple onboarding
+  CLI flag registration before provider runtime loads.
+- Exclusive plugin kinds are selected through `plugins.slots.*`.
+  - `kind: "memory"` is selected by `plugins.slots.memory`.
+  - `kind: "context-engine"` is selected by `plugins.slots.contextEngine`
+    (default: built-in `legacy`).
+- If your plugin depends on native modules, document the build steps and any
+  package-manager allowlist requirements (for example, pnpm `allow-build-scripts`
   - `pnpm rebuild <package>`).

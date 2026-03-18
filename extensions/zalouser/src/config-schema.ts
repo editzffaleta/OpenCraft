@@ -3,7 +3,7 @@ import {
   buildCatchallMultiAccountChannelSchema,
   DmPolicySchema,
   GroupPolicySchema,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-config-schema";
 import { MarkdownConfigSchema, ToolPolicySchema } from "opencraft/plugin-sdk/zalouser";
 import { z } from "zod";
 
@@ -24,7 +24,7 @@ const zalouserAccountSchema = z.object({
   allowFrom: AllowFromListSchema,
   historyLimit: z.number().int().min(0).optional(),
   groupAllowFrom: AllowFromListSchema,
-  groupPolicy: GroupPolicySchema.optional(),
+  groupPolicy: GroupPolicySchema.optional().default("allowlist"),
   groups: z.object({}).catchall(groupConfigSchema).optional(),
   messagePrefix: z.string().optional(),
   responsePrefix: z.string().optional(),

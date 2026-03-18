@@ -101,7 +101,7 @@ export const STATE_DIR = resolveStateDir();
 /**
  * Config file path (JSON5).
  * Can be overridden via OPENCRAFT_CONFIG_PATH.
- * Default: ~/.editzffaleta/OpenCraft.json (or $OPENCRAFT_STATE_DIR/opencraft.json)
+ * Default: ~/.opencraft/opencraft.json (or $OPENCRAFT_STATE_DIR/opencraft.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,

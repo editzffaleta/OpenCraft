@@ -1,16 +1,21 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { Type } from "@sinclair/typebox";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { OpenCraftConfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
+import { defaultRuntime } from "../../runtime.js";
 import {
   createChannelTestPluginBase,
   createTestRegistry,
 } from "../../test-utils/channel-plugins.js";
 import {
+  __testing,
   channelSupportsMessageCapability,
   channelSupportsMessageCapabilityForChannel,
+  listChannelMessageActions,
   listChannelMessageCapabilities,
   listChannelMessageCapabilitiesForChannel,
-} from "./message-actions.js";
+  resolveChannelMessageToolSchemaProperties,
+} from "./message-action-discovery.js";
 import type { ChannelMessageCapability } from "./message-capabilities.js";
 import type { ChannelPlugin } from "./types.js";
 
@@ -19,16 +24,22 @@ const emptyRegistry = createTestRegistry([]);
 function createMessageActionsPlugin(params: {
   id: "discord" | "telegram";
   capabilities: readonly ChannelMessageCapability[];
+  aliases?: string[];
 }): ChannelPlugin {
+  const base = createChannelTestPluginBase({
+    id: params.id,
+    label: params.id === "discord" ? "Discord" : "Telegram",
+    capabilities: { chatTypes: ["direct", "group"] },
+    config: {
+      listAccountIds: () => ["default"],
+    },
+  });
   return {
-    ...createChannelTestPluginBase({
-      id: params.id,
-      label: params.id === "discord" ? "Discord" : "Telegram",
-      capabilities: { chatTypes: ["direct", "group"] },
-      config: {
-        listAccountIds: () => ["default"],
-      },
-    }),
+    ...base,
+    meta: {
+      ...base.meta,
+      ...(params.aliases ? { aliases: params.aliases } : {}),
+    },
     actions: {
       listActions: () => ["send"],
       getCapabilities: () => params.capabilities,
@@ -56,8 +67,12 @@ function activateMessageActionTestRegistry() {
 }
 
 describe("message action capability checks", () => {
+  const errorSpy = vi.spyOn(defaultRuntime, "error").mockImplementation(() => undefined);
+
   afterEach(() => {
     setActivePluginRegistry(emptyRegistry);
+    __testing.resetLoggedMessageActionErrors();
+    errorSpy.mockClear();
   });
 
   it("aggregates capabilities across plugins", () => {
@@ -118,8 +133,114 @@ describe("message action capability checks", () => {
         "cards",
       ),
     ).toBe(true);
+    expect(channelSupportsMessageCapabilityForChannel({ cfg: {} as OpenCraftConfig }, "cards")).toBe(
+      false,
+    );
+  });
+
+  it("normalizes channel aliases for per-channel capability checks", () => {
+    setActivePluginRegistry(
+      createTestRegistry([
+        {
+          pluginId: "telegram",
+          source: "test",
+          plugin: createMessageActionsPlugin({
+            id: "telegram",
+            aliases: ["tg"],
+            capabilities: ["cards"],
+          }),
+        },
+      ]),
+    );
+
     expect(
-      channelSupportsMessageCapabilityForChannel({ cfg: {} as OpenCraftConfig }, "cards"),
-    ).toBe(false);
+      listChannelMessageCapabilitiesForChannel({
+        cfg: {} as OpenCraftConfig,
+        channel: "tg",
+      }),
+    ).toEqual(["cards"]);
+  });
+
+  it("prefers unified message tool discovery over legacy discovery methods", () => {
+    const legacyListActions = vi.fn(() => {
+      throw new Error("legacy listActions should not run");
+    });
+    const legacyCapabilities = vi.fn(() => {
+      throw new Error("legacy getCapabilities should not run");
+    });
+    const legacySchema = vi.fn(() => {
+      throw new Error("legacy getToolSchema should not run");
+    });
+    const unifiedPlugin: ChannelPlugin = {
+      ...createChannelTestPluginBase({
+        id: "discord",
+        label: "Discord",
+        capabilities: { chatTypes: ["direct", "group"] },
+        config: {
+          listAccountIds: () => ["default"],
+        },
+      }),
+      actions: {
+        describeMessageTool: () => ({
+          actions: ["react"],
+          capabilities: ["interactive"],
+          schema: {
+            properties: {
+              components: Type.Array(Type.String()),
+            },
+          },
+        }),
+        listActions: legacyListActions,
+        getCapabilities: legacyCapabilities,
+        getToolSchema: legacySchema,
+      },
+    };
+    setActivePluginRegistry(
+      createTestRegistry([{ pluginId: "discord", source: "test", plugin: unifiedPlugin }]),
+    );
+
+    expect(listChannelMessageActions({} as OpenCraftConfig)).toEqual(["send", "broadcast", "react"]);
+    expect(listChannelMessageCapabilities({} as OpenCraftConfig)).toEqual(["interactive"]);
+    expect(
+      resolveChannelMessageToolSchemaProperties({
+        cfg: {} as OpenCraftConfig,
+        channel: "discord",
+      }),
+    ).toHaveProperty("components");
+    expect(legacyListActions).not.toHaveBeenCalled();
+    expect(legacyCapabilities).not.toHaveBeenCalled();
+    expect(legacySchema).not.toHaveBeenCalled();
+  });
+
+  it("skips crashing action/capability discovery paths and logs once", () => {
+    const crashingPlugin: ChannelPlugin = {
+      ...createChannelTestPluginBase({
+        id: "discord",
+        label: "Discord",
+        capabilities: { chatTypes: ["direct", "group"] },
+        config: {
+          listAccountIds: () => ["default"],
+        },
+      }),
+      actions: {
+        listActions: () => {
+          throw new Error("boom");
+        },
+        getCapabilities: () => {
+          throw new Error("boom");
+        },
+      },
+    };
+    setActivePluginRegistry(
+      createTestRegistry([{ pluginId: "discord", source: "test", plugin: crashingPlugin }]),
+    );
+
+    expect(listChannelMessageActions({} as OpenCraftConfig)).toEqual(["send", "broadcast"]);
+    expect(listChannelMessageCapabilities({} as OpenCraftConfig)).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+
+    expect(listChannelMessageActions({} as OpenCraftConfig)).toEqual(["send", "broadcast"]);
+    expect(listChannelMessageCapabilities({} as OpenCraftConfig)).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,153 +1,159 @@
 ---
-summary: "Status de suporte do bot Discord, capacidades e configuração"
+summary: "Discord bot support status, capabilities, and configuration"
 read_when:
-  - Trabalhando em recursos do canal Discord
+  - Working on Discord channel features
 title: "Discord"
 ---
 
 # Discord (Bot API)
 
-Status: pronto para DMs e canais de guild via gateway oficial do Discord.
+Status: ready for DMs and guild channels via the official Discord gateway.
 
 <CardGroup cols={3}>
-  <Card title="Pareamento" icon="link" href="/channels/pairing">
-    DMs do Discord usam padrão de modo pareamento.
+  <Card title="Pairing" icon="link" href="/channels/pairing">
+    Discord DMs default to pairing mode.
   </Card>
-  <Card title="Comandos slash" icon="terminal" href="/tools/slash-commands">
-    Comportamento de comando nativo e catálogo de comandos.
+  <Card title="Slash commands" icon="terminal" href="/tools/slash-commands">
+    Native command behavior and command catalog.
   </Card>
-  <Card title="Solução de problemas do canal" icon="wrench" href="/channels/troubleshooting">
-    Fluxo de diagnóstico entre canais e reparo.
+  <Card title="Channel troubleshooting" icon="wrench" href="/channels/troubleshooting">
+    Cross-channel diagnostics and repair flow.
   </Card>
 </CardGroup>
 
-## Configuração rápida
+## Quick setup
 
-Você precisará criar um novo aplicativo com um bot, adicionar o bot ao seu servidor e pareá-lo ao OpenCraft. Recomendamos adicionar seu bot ao seu próprio servidor privado. Se você não tiver um ainda, [crie um primeiro](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (escolha **Create My Own > For me and my friends**).
+You will need to create a new application with a bot, add the bot to your server, and pair it to OpenCraft. We recommend adding your bot to your own private server. If you don't have one yet, [create one first](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (choose **Create My Own > For me and my friends**).
 
 <Steps>
-  <Step title="Crie um aplicativo Discord e bot">
-    Vá para o [Portal de Desenvolvedor Discord](https://discord.com/developers/applications) e clique em **New Application**. Nomeie como algo tipo "OpenCraft".
+  <Step title="Create a Discord application and bot">
+    Go to the [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**. Name it something like "OpenCraft".
 
-    Clique em **Bot** na barra lateral. Defina o **Username** para o que você chama seu agente OpenCraft.
-
-  </Step>
-
-  <Step title="Habilite intents privilegiados">
-    Ainda na página **Bot**, role para baixo até **Privileged Gateway Intents** e habilite:
-
-    - **Message Content Intent** (necessário)
-    - **Server Members Intent** (recomendado; necessário para allowlists de função e matching de nome para ID)
-    - **Presence Intent** (opcional; apenas necessário para atualizações de presença)
+    Click **Bot** on the sidebar. Set the **Username** to whatever you call your OpenCraft agent.
 
   </Step>
 
-  <Step title="Copie seu token de bot">
-    Role para trás na página **Bot** e clique em **Reset Token**.
+  <Step title="Enable privileged intents">
+    Still on the **Bot** page, scroll down to **Privileged Gateway Intents** and enable:
+
+    - **Message Content Intent** (required)
+    - **Server Members Intent** (recommended; required for role allowlists and name-to-ID matching)
+    - **Presence Intent** (optional; only needed for presence updates)
+
+  </Step>
+
+  <Step title="Copy your bot token">
+    Scroll back up on the **Bot** page and click **Reset Token**.
 
     <Note>
-    Apesar do nome, isso gera seu primeiro token — nada está sendo "resetado."
+    Despite the name, this generates your first token — nothing is being "reset."
     </Note>
 
-    Copie o token e salve em algum lugar. Este é seu **Bot Token** e você precisará dele em breve.
+    Copy the token and save it somewhere. This is your **Bot Token** and you will need it shortly.
 
   </Step>
 
-  <Step title="Gere uma URL de convite e adicione o bot ao seu servidor">
-    Clique em **OAuth2** na barra lateral. Você gerará uma URL de convite com as permissões corretas para adicionar o bot ao seu servidor.
+  <Step title="Generate an invite URL and add the bot to your server">
+    Click **OAuth2** on the sidebar. You'll generate an invite URL with the right permissions to add the bot to your server.
 
-    Role para baixo até **OAuth2 URL Generator** e habilite:
+    Scroll down to **OAuth2 URL Generator** and enable:
 
     - `bot`
     - `applications.commands`
 
-    Uma seção **Bot Permissions** aparecerá abaixo. Habilite:
+    A **Bot Permissions** section will appear below. Enable:
 
     - View Channels
     - Send Messages
     - Read Message History
     - Embed Links
     - Attach Files
-    - Add Reactions (opcional)
+    - Add Reactions (optional)
 
-    Copie a URL gerada na base, cole em seu navegador, selecione seu servidor e clique em **Continue** para conectar. Você deve agora ver seu bot no servidor Discord.
-
-  </Step>
-
-  <Step title="Habilite Developer Mode e colete seus IDs">
-    De volta no aplicativo Discord, você precisa habilitar Developer Mode para poder copiar IDs internos.
-
-    1. Clique em **User Settings** (ícone de engrenagem ao lado do seu avatar) → **Advanced** → alterne **Developer Mode**
-    2. Clique com botão direito no **ícone do seu servidor** na barra lateral → **Copy Server ID**
-    3. Clique com botão direito no **seu avatar** → **Copy User ID**
-
-    Salve seu **Server ID** e **User ID** junto com seu Bot Token — você enviará todos os três ao OpenCraft no próximo passo.
+    Copy the generated URL at the bottom, paste it into your browser, select your server, and click **Continue** to connect. You should now see your bot in the Discord server.
 
   </Step>
 
-  <Step title="Permita DMs dos membros do servidor">
-    Para pareamento funcionar, Discord precisa permitir que seu bot o DM. Clique com botão direito no **ícone do seu servidor** → **Privacy Settings** → alterne **Direct Messages**.
+  <Step title="Enable Developer Mode and collect your IDs">
+    Back in the Discord app, you need to enable Developer Mode so you can copy internal IDs.
 
-    Isso permite que membros do servidor (incluindo bots) o enviem DMs. Mantenha isso habilitado se quiser usar DMs do Discord com OpenCraft. Se você planeja apenas usar canais de guild, você pode desabilitar DMs após pareamento.
+    1. Click **User Settings** (gear icon next to your avatar) → **Advanced** → toggle on **Developer Mode**
+    2. Right-click your **server icon** in the sidebar → **Copy Server ID**
+    3. Right-click your **own avatar** → **Copy User ID**
+
+    Save your **Server ID** and **User ID** alongside your Bot Token — you'll send all three to OpenCraft in the next step.
 
   </Step>
 
-  <Step title="Passo 0: Defina seu token de bot com segurança (não o envie em chat)">
-    Seu token de bot Discord é um segredo (como uma senha). Defina-o na máquina executando OpenCraft antes de enviar mensagens ao seu agente.
+  <Step title="Allow DMs from server members">
+    For pairing to work, Discord needs to allow your bot to DM you. Right-click your **server icon** → **Privacy Settings** → toggle on **Direct Messages**.
+
+    This lets server members (including bots) send you DMs. Keep this enabled if you want to use Discord DMs with OpenCraft. If you only plan to use guild channels, you can disable DMs after pairing.
+
+  </Step>
+
+  <Step title="Step 0: Set your bot token securely (do not send it in chat)">
+    Your Discord bot token is a secret (like a password). Set it on the machine running OpenCraft before messaging your agent.
 
 ```bash
-opencraft config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
-opencraft config set channels.discord.enabled true --json
+export DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN"
+opencraft config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN --dry-run
+opencraft config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
+opencraft config set channels.discord.enabled true --strict-json
 opencraft gateway
 ```
 
-    Se OpenCraft já está em execução como serviço de background, use `opencraft gateway restart` em vez disso.
+    If OpenCraft is already running as a background service, use `opencraft gateway restart` instead.
 
   </Step>
 
-  <Step title="Configure OpenCraft e pareie">
+  <Step title="Configure OpenCraft and pair">
 
     <Tabs>
-      <Tab title="Peça ao seu agente">
-        Converse com seu agente OpenCraft em qualquer canal existente (ex: Telegram) e diga. Se Discord for seu primeiro canal, use a guia CLI / config em vez disso.
+      <Tab title="Ask your agent">
+        Chat with your OpenCraft agent on any existing channel (e.g. Telegram) and tell it. If Discord is your first channel, use the CLI / config tab instead.
 
-        > "Já defini meu token de bot Discord em config. Por favor finalize configuração do Discord com User ID `<user_id>` e Server ID `<server_id>`."
+        > "I already set my Discord bot token in config. Please finish Discord setup with User ID `<user_id>` and Server ID `<server_id>`."
       </Tab>
       <Tab title="CLI / config">
-        Se você prefere configuração baseada em arquivo, defina:
+        If you prefer file-based config, set:
 
 ```json5
 {
   channels: {
     discord: {
       enabled: true,
-      token: "YOUR_BOT_TOKEN",
+      token: {
+        source: "env",
+        provider: "default",
+        id: "DISCORD_BOT_TOKEN",
+      },
     },
   },
 }
 ```
 
-        Fallback de env para a conta padrão:
+        Env fallback for the default account:
 
 ```bash
 DISCORD_BOT_TOKEN=...
 ```
 
-        Valores SecretRef também são suportados para `channels.discord.token` (provedores env/arquivo/exec). Veja [Gerenciamento de Segredos](/gateway/secrets).
+        Plaintext `token` values are supported. SecretRef values are also supported for `channels.discord.token` across env/file/exec providers. See [Secrets Management](/gateway/secrets).
 
       </Tab>
     </Tabs>
 
   </Step>
 
-  <Step title="Aprove primeiro pareamento de DM">
-    Aguarde até que o gateway esteja em execução, então DM seu bot no Discord. Ele responderá com um código de pareamento.
+  <Step title="Approve first DM pairing">
+    Wait until the gateway is running, then DM your bot in Discord. It will respond with a pairing code.
 
     <Tabs>
-      <Tab title="Peça ao seu agente">
-        Envie o código de pareamento ao seu agente em seu canal existente:
+      <Tab title="Ask your agent">
+        Send the pairing code to your agent on your existing channel:
 
-        > "Aprove este código de pareamento do Discord: `<CODE>`"
+        > "Approve this Discord pairing code: `<CODE>`"
       </Tab>
       <Tab title="CLI">
 
@@ -159,29 +165,29 @@ opencraft pairing approve discord <CODE>
       </Tab>
     </Tabs>
 
-    Códigos de pareamento expiram após 1 hora.
+    Pairing codes expire after 1 hour.
 
-    Você deve agora conseguir conversar com seu agente no Discord via DM.
+    You should now be able to chat with your agent in Discord via DM.
 
   </Step>
 </Steps>
 
 <Note>
-Resolução de token é ciente de conta. Valores de token config vencem sobre fallback de env. `DISCORD_BOT_TOKEN` é usado apenas para a conta padrão.
-Para chamadas de saída avançadas (ferramenta de mensagem/ações de canal), um `token` explícito por chamada é usado para essa chamada. Configurações de política/retry de conta ainda vêm da conta selecionada no snapshot de tempo de execução ativo.
+Token resolution is account-aware. Config token values win over env fallback. `DISCORD_BOT_TOKEN` is only used for the default account.
+For advanced outbound calls (message tool/channel actions), an explicit per-call `token` is used for that call. This applies to send and read/probe-style actions (for example read/search/fetch/thread/pins/permissions). Account policy/retry settings still come from the selected account in the active runtime snapshot.
 </Note>
 
-## Recomendado: Configure um espaço de trabalho de guild
+## Recommended: Set up a guild workspace
 
-Uma vez que DMs estão funcionando, você pode configurar seu servidor Discord como espaço de trabalho completo onde cada canal obtém sua própria sessão de agente com seu próprio contexto. Isto é recomendado para servidores privados onde é apenas você e seu bot.
+Once DMs are working, you can set up your Discord server as a full workspace where each channel gets its own agent session with its own context. This is recommended for private servers where it's just you and your bot.
 
 <Steps>
-  <Step title="Adicione seu servidor à lista de permissões de guild">
-    Isto habilita seu agente a responder em qualquer canal em seu servidor, não apenas DMs.
+  <Step title="Add your server to the guild allowlist">
+    This enables your agent to respond in any channel on your server, not just DMs.
 
     <Tabs>
-      <Tab title="Peça ao seu agente">
-        > "Adicione meu Server ID do Discord `<server_id>` à lista de permissões de guild"
+      <Tab title="Ask your agent">
+        > "Add my Discord Server ID `<server_id>` to the guild allowlist"
       </Tab>
       <Tab title="Config">
 
@@ -206,15 +212,15 @@ Uma vez que DMs estão funcionando, você pode configurar seu servidor Discord c
 
   </Step>
 
-  <Step title="Permita respostas sem @mention">
-    Por padrão, seu agente apenas responde em canais de guild quando @mencionado. Para um servidor privado, você provavelmente quer que responda a toda mensagem.
+  <Step title="Allow responses without @mention">
+    By default, your agent only responds in guild channels when @mentioned. For a private server, you probably want it to respond to every message.
 
     <Tabs>
-      <Tab title="Peça ao seu agente">
-        > "Permita que meu agente responda neste servidor sem ter que ser @mencionado"
+      <Tab title="Ask your agent">
+        > "Allow my agent to respond on this server without having to be @mentioned"
       </Tab>
       <Tab title="Config">
-        Defina `requireMention: false` em sua config de guild:
+        Set `requireMention: false` in your guild config:
 
 ```json5
 {
@@ -235,84 +241,84 @@ Uma vez que DMs estão funcionando, você pode configurar seu servidor Discord c
 
   </Step>
 
-  <Step title="Planeje memória em canais de guild">
-    Por padrão, memória de longo prazo (MEMORY.md) apenas carrega em sessões de DM. Canais de guild não carregam MEMORY.md automaticamente.
+  <Step title="Plan for memory in guild channels">
+    By default, long-term memory (MEMORY.md) only loads in DM sessions. Guild channels do not auto-load MEMORY.md.
 
     <Tabs>
-      <Tab title="Peça ao seu agente">
-        > "Quando eu fizer perguntas em canais Discord, use memory_search ou memory_get se você precisar de contexto de longo prazo de MEMORY.md."
+      <Tab title="Ask your agent">
+        > "When I ask questions in Discord channels, use memory_search or memory_get if you need long-term context from MEMORY.md."
       </Tab>
       <Tab title="Manual">
-        Se você precisa de contexto compartilhado em todo canal, coloque as instruções estáveis em `AGENTS.md` ou `USER.md` (elas são injetadas para toda sessão). Mantenha notas de longo prazo em `MEMORY.md` e acesse-as sob demanda com ferramentas de memória.
+        If you need shared context in every channel, put the stable instructions in `AGENTS.md` or `USER.md` (they are injected for every session). Keep long-term notes in `MEMORY.md` and access them on demand with memory tools.
       </Tab>
     </Tabs>
 
   </Step>
 </Steps>
 
-Agora crie alguns canais em seu servidor Discord e comece a conversar. Seu agente pode ver o nome do canal e cada canal obtém sua própria sessão isolada — então você pode configurar `#coding`, `#home`, `#research` ou o que encaixa seu workflow.
+Now create some channels on your Discord server and start chatting. Your agent can see the channel name, and each channel gets its own isolated session — so you can set up `#coding`, `#home`, `#research`, or whatever fits your workflow.
 
-## Modelo de tempo de execução
+## Runtime model
 
-- Gateway possui a conexão Discord.
-- Roteamento de resposta é determinístico: entrada Discord responde para Discord.
-- Por padrão (`session.dmScope=main`), chats diretos compartilham a sessão principal do agente (`agent:main:main`).
-- Canais de guild são chaves de sessão isoladas (`agent:<agentId>:discord:channel:<channelId>`).
-- Grupo DMs são ignorados por padrão (`channels.discord.dm.groupEnabled=false`).
-- Comandos slash nativos rodam em sessões de comando isoladas (`agent:<agentId>:discord:slash:<userId>`), enquanto ainda carregam `CommandTargetSessionKey` para a sessão de conversa roteada.
+- Gateway owns the Discord connection.
+- Reply routing is deterministic: Discord inbound replies back to Discord.
+- By default (`session.dmScope=main`), direct chats share the agent main session (`agent:main:main`).
+- Guild channels are isolated session keys (`agent:<agentId>:discord:channel:<channelId>`).
+- Group DMs are ignored by default (`channels.discord.dm.groupEnabled=false`).
+- Native slash commands run in isolated command sessions (`agent:<agentId>:discord:slash:<userId>`), while still carrying `CommandTargetSessionKey` to the routed conversation session.
 
-## Canais de fórum
+## Forum channels
 
-Canais de fórum e mídia Discord apenas aceitam posts de thread. OpenCraft suporta duas formas de criá-los:
+Discord forum and media channels only accept thread posts. OpenCraft supports two ways to create them:
 
-- Envie uma mensagem para o pai do fórum (`channel:<forumId>`) para auto-criar uma thread. O título da thread usa a primeira linha não-vazia da sua mensagem.
-- Use `opencraft message thread create` para criar uma thread diretamente. Não passe `--message-id` para canais de fórum.
+- Send a message to the forum parent (`channel:<forumId>`) to auto-create a thread. The thread title uses the first non-empty line of your message.
+- Use `opencraft message thread create` to create a thread directly. Do not pass `--message-id` for forum channels.
 
-Exemplo: enviar para pai do fórum para criar uma thread
+Example: send to forum parent to create a thread
 
 ```bash
 opencraft message send --channel discord --target channel:<forumId> \
   --message "Topic title\nBody of the post"
 ```
 
-Exemplo: criar thread de fórum explicitamente
+Example: create a forum thread explicitly
 
 ```bash
 opencraft message thread create --channel discord --target channel:<forumId> \
   --thread-name "Topic title" --message "Body of the post"
 ```
 
-Pais do fórum não aceitam componentes Discord. Se você precisar de componentes, envie para a thread em si (`channel:<threadId>`).
+Forum parents do not accept Discord components. If you need components, send to the thread itself (`channel:<threadId>`).
 
-## Componentes interativos
+## Interactive components
 
-OpenCraft suporta contêineres de componentes Discord v2 para mensagens de agente. Use a ferramenta de mensagem com payload `components`. Resultados de interação são roteados de volta ao agente como mensagens de entrada normais e seguem as configurações `replyToMode` do Discord existentes.
+OpenCraft supports Discord components v2 containers for agent messages. Use the message tool with a `components` payload. Interaction results are routed back to the agent as normal inbound messages and follow the existing Discord `replyToMode` settings.
 
-Blocos suportados:
+Supported blocks:
 
 - `text`, `section`, `separator`, `actions`, `media-gallery`, `file`
-- Linhas de ação permitem até 5 botões ou um único menu de seleção
-- Tipos de seleção: `string`, `user`, `role`, `mentionable`, `channel`
+- Action rows allow up to 5 buttons or a single select menu
+- Select types: `string`, `user`, `role`, `mentionable`, `channel`
 
-Por padrão, componentes são único uso. Defina `components.reusable=true` para permitir que botões, seleções e formulários sejam usados múltiplas vezes até expirar.
+By default, components are single use. Set `components.reusable=true` to allow buttons, selects, and forms to be used multiple times until they expire.
 
-Para restringir quem pode clicar um botão, defina `allowedUsers` naquele botão (IDs de usuário Discord, tags ou `*`). Quando configurado, usuários não correspondentes recebem negação efêmera.
+To restrict who can click a button, set `allowedUsers` on that button (Discord user IDs, tags, or `*`). When configured, unmatched users receive an ephemeral denial.
 
-Os comandos slash `/model` e `/models` abrem um seletor de modelo interativo com dropdowns de provedor e modelo mais um passo Submit. A resposta do seletor é efêmera e apenas o usuário invocador pode usá-la.
+The `/model` and `/models` slash commands open an interactive model picker with provider and model dropdowns plus a Submit step. The picker reply is ephemeral and only the invoking user can use it.
 
-Anexos de arquivo:
+File attachments:
 
-- blocos `file` devem apontar para referência de anexo (`attachment://<filename>`)
-- Forneça o anexo via `media`/`path`/`filePath` (arquivo único); use `media-gallery` para múltiplos arquivos
-- Use `filename` para substituir o nome de upload quando deve corresponder à referência de anexo
+- `file` blocks must point to an attachment reference (`attachment://<filename>`)
+- Provide the attachment via `media`/`path`/`filePath` (single file); use `media-gallery` for multiple files
+- Use `filename` to override the upload name when it should match the attachment reference
 
-Formulários modal:
+Modal forms:
 
-- Adicione `components.modal` com até 5 campos
-- Tipos de campo: `text`, `checkbox`, `radio`, `select`, `role-select`, `user-select`
-- OpenCraft adiciona um botão de acionamento automaticamente
+- Add `components.modal` with up to 5 fields
+- Field types: `text`, `checkbox`, `radio`, `select`, `role-select`, `user-select`
+- OpenCraft adds a trigger button automatically
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -366,53 +372,53 @@ Exemplo:
 }
 ```
 
-## Controle de acesso e roteamento
+## Access control and routing
 
 <Tabs>
-  <Tab title="Política de DM">
-    `channels.discord.dmPolicy` controla acesso a DM (legado: `channels.discord.dm.policy`):
+  <Tab title="DM policy">
+    `channels.discord.dmPolicy` controls DM access (legacy: `channels.discord.dm.policy`):
 
-    - `pairing` (padrão)
+    - `pairing` (default)
     - `allowlist`
-    - `open` (requer `channels.discord.allowFrom` para incluir `"*"`; legado: `channels.discord.dm.allowFrom`)
+    - `open` (requires `channels.discord.allowFrom` to include `"*"`; legacy: `channels.discord.dm.allowFrom`)
     - `disabled`
 
-    Se a política de DM não é open, usuários desconhecidos são bloqueados (ou solicitados para pareamento em modo `pairing`).
+    If DM policy is not open, unknown users are blocked (or prompted for pairing in `pairing` mode).
 
-    Precedência de multi-conta:
+    Multi-account precedence:
 
-    - `channels.discord.accounts.default.allowFrom` se aplica apenas à conta `default`.
-    - Contas nomeadas herdam `channels.discord.allowFrom` quando seu próprio `allowFrom` não está definido.
-    - Contas nomeadas não herdam `channels.discord.accounts.default.allowFrom`.
+    - `channels.discord.accounts.default.allowFrom` applies only to the `default` account.
+    - Named accounts inherit `channels.discord.allowFrom` when their own `allowFrom` is unset.
+    - Named accounts do not inherit `channels.discord.accounts.default.allowFrom`.
 
-    Formato de alvo de DM para entrega:
+    DM target format for delivery:
 
     - `user:<id>`
-    - menção `<@id>`
+    - `<@id>` mention
 
-    IDs numéricos nus são ambíguos e rejeitados a menos que um tipo de alvo de usuário/canal explícito seja fornecido.
+    Bare numeric IDs are ambiguous and rejected unless an explicit user/channel target kind is provided.
 
   </Tab>
 
-  <Tab title="Política de guild">
-    O tratamento de guild é controlado por `channels.discord.groupPolicy`:
+  <Tab title="Guild policy">
+    Guild handling is controlled by `channels.discord.groupPolicy`:
 
     - `open`
     - `allowlist`
     - `disabled`
 
-    Baseline seguro quando `channels.discord` existe é `allowlist`.
+    Secure baseline when `channels.discord` exists is `allowlist`.
 
-    Comportamento de `allowlist`:
+    `allowlist` behavior:
 
-    - guild deve corresponder a `channels.discord.guilds` (id preferido, slug aceito)
-    - allowlists de remetente opcionais: `users` (IDs estáveis recomendados) e `roles` (apenas IDs de role); se qualquer um estiver configurado, remetentes são permitidos quando correspondem a `users` OU `roles`
-    - matching de nome/tag direto é desabilitado por padrão; habilite `channels.discord.dangerouslyAllowNameMatching: true` apenas como modo de compatibilidade de break-glass
-    - nomes/tags são suportados para `users`, mas IDs são mais seguros; `opencraft security audit` avisa quando entradas de nome/tag são usadas
-    - se uma guild tem `channels` configurado, canais não listados são negados
-    - se uma guild não tem bloco `channels`, todos os canais naquela guild permitida são permitidos
+    - guild must match `channels.discord.guilds` (`id` preferred, slug accepted)
+    - optional sender allowlists: `users` (stable IDs recommended) and `roles` (role IDs only); if either is configured, senders are allowed when they match `users` OR `roles`
+    - direct name/tag matching is disabled by default; enable `channels.discord.dangerouslyAllowNameMatching: true` only as break-glass compatibility mode
+    - names/tags are supported for `users`, but IDs are safer; `opencraft security audit` warns when name/tag entries are used
+    - if a guild has `channels` configured, non-listed channels are denied
+    - if a guild has no `channels` block, all channels in that allowlisted guild are allowed
 
-    Exemplo:
+    Example:
 
 ```json5
 {
@@ -436,33 +442,33 @@ Exemplo:
 }
 ```
 
-    Se você apenas define `DISCORD_BOT_TOKEN` e não cria bloco `channels.discord`, fallback de tempo de execução é `groupPolicy="allowlist"` (com aviso em logs), mesmo se `channels.defaults.groupPolicy` for `open`.
+    If you only set `DISCORD_BOT_TOKEN` and do not create a `channels.discord` block, runtime fallback is `groupPolicy="allowlist"` (with a warning in logs), even if `channels.defaults.groupPolicy` is `open`.
 
   </Tab>
 
-  <Tab title="Menções e DMs de grupo">
-    Mensagens de guild são mention-gated por padrão.
+  <Tab title="Mentions and group DMs">
+    Guild messages are mention-gated by default.
 
-    Detecção de menção inclui:
+    Mention detection includes:
 
-    - menção explícita de bot
-    - padrões de menção configurados (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
-    - comportamento implícito de resposta-ao-bot em casos suportados
+    - explicit bot mention
+    - configured mention patterns (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
+    - implicit reply-to-bot behavior in supported cases
 
-    `requireMention` é configurado por guild/canal (`channels.discord.guilds...`).
-    `ignoreOtherMentions` opcionalmente descarta mensagens que mencionam outro usuário/role mas não o bot (excluindo @everyone/@here).
+    `requireMention` is configured per guild/channel (`channels.discord.guilds...`).
+    `ignoreOtherMentions` optionally drops messages that mention another user/role but not the bot (excluding @everyone/@here).
 
-    DMs de grupo:
+    Group DMs:
 
-    - padrão: ignorado (`dm.groupEnabled=false`)
-    - allowlist opcional via `dm.groupChannels` (IDs de canal ou slugs)
+    - default: ignored (`dm.groupEnabled=false`)
+    - optional allowlist via `dm.groupChannels` (channel IDs or slugs)
 
   </Tab>
 </Tabs>
 
-### Roteamento de agente baseado em role
+### Role-based agent routing
 
-Use `bindings[].match.roles` para rotear membros de guild Discord para agentes diferentes por ID de role. Ligações baseadas em role aceitam apenas IDs de role e são avaliadas após ligações de peer ou parent-peer e antes de ligações apenas de guild. Se uma ligação também define outros campos de match (por exemplo `peer` + `guildId` + `roles`), todos os campos configurados devem corresponder.
+Use `bindings[].match.roles` to route Discord guild members to different agents by role ID. Role-based bindings accept role IDs only and are evaluated after peer or parent-peer bindings and before guild-only bindings. If a binding also sets other match fields (for example `peer` + `guildId` + `roles`), all configured fields must match.
 
 ```json5
 {
@@ -486,102 +492,102 @@ Use `bindings[].match.roles` para rotear membros de guild Discord para agentes d
 }
 ```
 
-## Configuração do Portal de Desenvolvedores
+## Developer Portal setup
 
 <AccordionGroup>
-  <Accordion title="Criar app e bot">
+  <Accordion title="Create app and bot">
 
     1. Discord Developer Portal -> **Applications** -> **New Application**
     2. **Bot** -> **Add Bot**
-    3. Copie token do bot
+    3. Copy bot token
 
   </Accordion>
 
-  <Accordion title="Intents privilegiados">
-    Em **Bot -> Privileged Gateway Intents**, habilite:
+  <Accordion title="Privileged intents">
+    In **Bot -> Privileged Gateway Intents**, enable:
 
     - Message Content Intent
-    - Server Members Intent (recomendado)
+    - Server Members Intent (recommended)
 
-    Presence intent é opcional e apenas necessário se quiser receber atualizações de presença. Definir presença do bot (`setPresence`) não requer habilitar atualizações de presença para membros.
+    Presence intent is optional and only required if you want to receive presence updates. Setting bot presence (`setPresence`) does not require enabling presence updates for members.
 
   </Accordion>
 
-  <Accordion title="Escopos OAuth e permissões de baseline">
-    Gerador de URL OAuth:
+  <Accordion title="OAuth scopes and baseline permissions">
+    OAuth URL generator:
 
-    - escopos: `bot`, `applications.commands`
+    - scopes: `bot`, `applications.commands`
 
-    Permissões de baseline típicas:
+    Typical baseline permissions:
 
     - View Channels
     - Send Messages
     - Read Message History
     - Embed Links
     - Attach Files
-    - Add Reactions (opcional)
+    - Add Reactions (optional)
 
-    Evite `Administrator` a menos que explicitamente necessário.
+    Avoid `Administrator` unless explicitly needed.
 
   </Accordion>
 
-  <Accordion title="Copiar IDs">
-    Habilite Discord Developer Mode, então copie:
+  <Accordion title="Copy IDs">
+    Enable Discord Developer Mode, then copy:
 
     - server ID
     - channel ID
     - user ID
 
-    Prefira IDs numéricos em config OpenCraft para audits confiáveis e sondas.
+    Prefer numeric IDs in OpenCraft config for reliable audits and probes.
 
   </Accordion>
 </AccordionGroup>
 
-## Comandos nativos e auth de comando
+## Native commands and command auth
 
-- `commands.native` usa padrão `"auto"` e é habilitado para Discord.
-- Substituição por canal: `channels.discord.commands.native`.
-- `commands.native=false` explicitamente limpa comandos nativos Discord previamente registrados.
-- Auth de comando nativo usa as mesmas listas de permissões/políticas do Discord que manipulação normal de mensagem.
-- Comandos podem ainda ser visíveis em UI Discord para usuários que não estão autorizados; execução ainda força auth OpenCraft e retorna "not authorized".
+- `commands.native` defaults to `"auto"` and is enabled for Discord.
+- Per-channel override: `channels.discord.commands.native`.
+- `commands.native=false` explicitly clears previously registered Discord native commands.
+- Native command auth uses the same Discord allowlists/policies as normal message handling.
+- Commands may still be visible in Discord UI for users who are not authorized; execution still enforces OpenCraft auth and returns "not authorized".
 
-Veja [Comandos Slash](/tools/slash-commands) para catálogo de comando e comportamento.
+See [Slash commands](/tools/slash-commands) for command catalog and behavior.
 
-Configurações de comando slash padrão:
+Default slash command settings:
 
 - `ephemeral: true`
 
-## Detalhes de recursos
+## Feature details
 
 <AccordionGroup>
-  <Accordion title="Etiquetas de resposta e respostas nativas">
-    Discord suporta etiquetas de resposta em saída de agente:
+  <Accordion title="Reply tags and native replies">
+    Discord supports reply tags in agent output:
 
     - `[[reply_to_current]]`
     - `[[reply_to:<id>]]`
 
-    Controlado por `channels.discord.replyToMode`:
+    Controlled by `channels.discord.replyToMode`:
 
-    - `off` (padrão)
+    - `off` (default)
     - `first`
     - `all`
 
-    Nota: `off` desabilita threading de resposta implícita. Etiquetas `[[reply_to_*]]` explícitas ainda são honradas.
+    Note: `off` disables implicit reply threading. Explicit `[[reply_to_*]]` tags are still honored.
 
-    IDs de mensagem são surface em contexto/histórico para que agentes possam alvejar mensagens específicas.
+    Message IDs are surfaced in context/history so agents can target specific messages.
 
   </Accordion>
 
-  <Accordion title="Visualização ao vivo">
-    OpenCraft pode transmitir respostas de rascunho enviando uma mensagem temporária e editando-a conforme texto chega.
+  <Accordion title="Live stream preview">
+    OpenCraft can stream draft replies by sending a temporary message and editing it as text arrives.
 
-    - `channels.discord.streaming` controla transmissão de visualização (`off` | `partial` | `block` | `progress`, padrão: `off`).
-    - `progress` é aceito para consistência entre canais e mapeia para `partial` no Discord.
-    - `channels.discord.streamMode` é um alias legado e é auto-migrado.
-    - `partial` edita uma única mensagem de visualização conforme tokens chegam.
-    - `block` emite chunks do tamanho do rascunho (use `draftChunk` para sintonizar tamanho e pontos de quebra).
+    - `channels.discord.streaming` controls preview streaming (`off` | `partial` | `block` | `progress`, default: `off`).
+    - `progress` is accepted for cross-channel consistency and maps to `partial` on Discord.
+    - `channels.discord.streamMode` is a legacy alias and is auto-migrated.
+    - `partial` edits a single preview message as tokens arrive.
+    - `block` emits draft-sized chunks (use `draftChunk` to tune size and breakpoints).
 
-    Exemplo:
+    Example:
 
 ```json5
 {
@@ -593,7 +599,7 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Chunking padrão de modo `block` (preso a `channels.discord.textChunkLimit`):
+    `block` mode chunking defaults (clamped to `channels.discord.textChunkLimit`):
 
 ```json5
 {
@@ -610,45 +616,45 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Transmissão de visualização é apenas texto; respostas de mídia retornam para entrega normal.
+    Preview streaming is text-only; media replies fall back to normal delivery.
 
-    Nota: transmissão de visualização é separada de transmissão de bloco. Quando transmissão de bloco é explicitamente
-    habilitada para Discord, OpenCraft pula a transmissão de visualização para evitar dupla transmissão.
+    Note: preview streaming is separate from block streaming. When block streaming is explicitly
+    enabled for Discord, OpenCraft skips the preview stream to avoid double streaming.
 
   </Accordion>
 
-  <Accordion title="Histórico, contexto e comportamento de thread">
-    Contexto de histórico de guild:
+  <Accordion title="History, context, and thread behavior">
+    Guild history context:
 
-    - `channels.discord.historyLimit` padrão `20`
+    - `channels.discord.historyLimit` default `20`
     - fallback: `messages.groupChat.historyLimit`
-    - `0` desativa
+    - `0` disables
 
-    Controles de histórico de DM:
+    DM history controls:
 
     - `channels.discord.dmHistoryLimit`
     - `channels.discord.dms["<user_id>"].historyLimit`
 
-    Comportamento de thread:
+    Thread behavior:
 
-    - Threads Discord são roteadas como sessões de canal
-    - metadados de thread pai podem ser usados para linkage de sessão pai
-    - config de thread herda config de canal pai a menos que entrada específica de thread exista
+    - Discord threads are routed as channel sessions
+    - parent thread metadata can be used for parent-session linkage
+    - thread config inherits parent channel config unless a thread-specific entry exists
 
-    Tópicos de canal são injetados como contexto **não confiável** (não como prompt de sistema).
+    Channel topics are injected as **untrusted** context (not as system prompt).
 
   </Accordion>
 
-  <Accordion title="Sessões ligadas a thread para subagentes">
-    Discord pode ligar uma thread a um alvo de sessão para que mensagens subsequentes naquela thread mantenham roteamento para a mesma sessão (incluindo sessões de subagente).
+  <Accordion title="Thread-bound sessions for subagents">
+    Discord can bind a thread to a session target so follow-up messages in that thread keep routing to the same session (including subagent sessions).
 
-    Comandos:
+    Commands:
 
-    - `/focus <target>` ligar thread atual/nova a alvo de subagente/sessão
-    - `/unfocus` remover ligação de thread atual
-    - `/agents` mostrar execuções ativas e estado de ligação
-    - `/session idle <duration|off>` inspecionar/atualizar auto-unfocus de inatividade para ligações focadas
-    - `/session max-age <duration|off>` inspecionar/atualizar hard max age para ligações focadas
+    - `/focus <target>` bind current/new thread to a subagent/session target
+    - `/unfocus` remove current thread binding
+    - `/agents` show active runs and binding state
+    - `/session idle <duration|off>` inspect/update inactivity auto-unfocus for focused bindings
+    - `/session max-age <duration|off>` inspect/update hard max age for focused bindings
 
     Config:
 
@@ -674,26 +680,26 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Notas:
+    Notes:
 
-    - `session.threadBindings.*` define padrões globais.
-    - `channels.discord.threadBindings.*` substitui comportamento Discord.
-    - `spawnSubagentSessions` deve ser true para auto-criar/ligar threads para `sessions_spawn({ thread: true })`.
-    - `spawnAcpSessions` deve ser true para auto-criar/ligar threads para ACP (`/acp spawn ... --thread ...` ou `sessions_spawn({ runtime: "acp", thread: true })`).
-    - Se thread bindings estão desabilitados para uma conta, `/focus` e operações de ligação de thread relacionadas estão indisponíveis.
+    - `session.threadBindings.*` sets global defaults.
+    - `channels.discord.threadBindings.*` overrides Discord behavior.
+    - `spawnSubagentSessions` must be true to auto-create/bind threads for `sessions_spawn({ thread: true })`.
+    - `spawnAcpSessions` must be true to auto-create/bind threads for ACP (`/acp spawn ... --thread ...` or `sessions_spawn({ runtime: "acp", thread: true })`).
+    - If thread bindings are disabled for an account, `/focus` and related thread binding operations are unavailable.
 
-    Veja [Sub-agentes](/tools/subagents), [Agentes ACP](/tools/acp-agents) e [Referência de Configuração](/gateway/configuration-reference).
+    See [Sub-agents](/tools/subagents), [ACP Agents](/tools/acp-agents), and [Configuration Reference](/gateway/configuration-reference).
 
   </Accordion>
 
-  <Accordion title="Ligações persistentes de canal ACP">
-    Para espaços de trabalho ACP estáveis "sempre ligados", configure ligações ACP digitadas de nível superior direcionando conversas Discord.
+  <Accordion title="Persistent ACP channel bindings">
+    For stable "always-on" ACP workspaces, configure top-level typed ACP bindings targeting Discord conversations.
 
-    Caminho de config:
+    Config path:
 
-    - `bindings[]` com `type: "acp"` e `match.channel: "discord"`
+    - `bindings[]` with `type: "acp"` and `match.channel: "discord"`
 
-    Exemplo:
+    Example:
 
 ```json5
 {
@@ -741,51 +747,51 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Notas:
+    Notes:
 
-    - Mensagens de thread podem herdar ligação ACP de canal pai.
-    - Em um canal ou thread ligado, `/new` e `/reset` resetam a mesma sessão ACP no lugar.
-    - Ligações de thread temporárias ainda funcionam e podem substituir resolução de alvo enquanto ativas.
+    - Thread messages can inherit the parent channel ACP binding.
+    - In a bound channel or thread, `/new` and `/reset` reset the same ACP session in place.
+    - Temporary thread bindings still work and can override target resolution while active.
 
-    Veja [Agentes ACP](/tools/acp-agents) para detalhes de comportamento de ligação.
+    See [ACP Agents](/tools/acp-agents) for binding behavior details.
 
   </Accordion>
 
-  <Accordion title="Notificações de reação">
-    Modo de notificação de reação por guild:
+  <Accordion title="Reaction notifications">
+    Per-guild reaction notification mode:
 
     - `off`
-    - `own` (padrão)
+    - `own` (default)
     - `all`
-    - `allowlist` (usa `guilds.<id>.users`)
+    - `allowlist` (uses `guilds.<id>.users`)
 
-    Eventos de reação são transformados em eventos de sistema e anexados à sessão Discord roteada.
+    Reaction events are turned into system events and attached to the routed Discord session.
 
   </Accordion>
 
-  <Accordion title="Reações de reconhecimento">
-    `ackReaction` envia um emoji de reconhecimento enquanto OpenCraft está processando uma mensagem de entrada.
+  <Accordion title="Ack reactions">
+    `ackReaction` sends an acknowledgement emoji while OpenCraft is processing an inbound message.
 
-    Ordem de resolução:
+    Resolution order:
 
     - `channels.discord.accounts.<accountId>.ackReaction`
     - `channels.discord.ackReaction`
     - `messages.ackReaction`
-    - fallback de emoji de identidade do agente (`agents.list[].identity.emoji`, senão "👀")
+    - agent identity emoji fallback (`agents.list[].identity.emoji`, else "👀")
 
-    Notas:
+    Notes:
 
-    - Discord aceita emoji unicode ou nomes de emoji personalizados.
-    - Use `""` para desabilitar a reação para um canal ou conta.
+    - Discord accepts unicode emoji or custom emoji names.
+    - Use `""` to disable the reaction for a channel or account.
 
   </Accordion>
 
-  <Accordion title="Gravações de config">
-    Gravações de config iniciadas por canal são habilitadas por padrão.
+  <Accordion title="Config writes">
+    Channel-initiated config writes are enabled by default.
 
-    Isto afeta fluxos `/config set|unset` (quando recursos de comando estão habilitados).
+    This affects `/config set|unset` flows (when command features are enabled).
 
-    Desabilitar:
+    Disable:
 
 ```json5
 {
@@ -799,8 +805,8 @@ Configurações de comando slash padrão:
 
   </Accordion>
 
-  <Accordion title="Proxy do gateway">
-    Roteia tráfego WebSocket de gateway Discord e lookups REST de inicialização (ID de aplicativo + resolução de allowlist) através de proxy HTTP(S) com `channels.discord.proxy`.
+  <Accordion title="Gateway proxy">
+    Route Discord gateway WebSocket traffic and startup REST lookups (application ID + allowlist resolution) through an HTTP(S) proxy with `channels.discord.proxy`.
 
 ```json5
 {
@@ -812,7 +818,7 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Substituição por conta:
+    Per-account override:
 
 ```json5
 {
@@ -830,8 +836,8 @@ Configurações de comando slash padrão:
 
   </Accordion>
 
-  <Accordion title="Suporte PluralKit">
-    Habilite resolução PluralKit para mapear mensagens proxiadas para identidade de membro do sistema:
+  <Accordion title="PluralKit support">
+    Enable PluralKit resolution to map proxied messages to system member identity:
 
 ```json5
 {
@@ -839,26 +845,26 @@ Configurações de comando slash padrão:
     discord: {
       pluralkit: {
         enabled: true,
-        token: "pk_live_...", // opcional; necessário para sistemas privados
+        token: "pk_live_...", // optional; needed for private systems
       },
     },
   },
 }
 ```
 
-    Notas:
+    Notes:
 
-    - allowlists podem usar `pk:<memberId>`
-    - nomes de exibição de membro são correspondidos por nome/slug apenas quando `channels.discord.dangerouslyAllowNameMatching: true`
-    - lookups usam ID de mensagem original e são constrangidos por janela de tempo
-    - se lookup falhar, mensagens proxiadas são tratadas como mensagens de bot e descartadas a menos que `allowBots=true`
+    - allowlists can use `pk:<memberId>`
+    - member display names are matched by name/slug only when `channels.discord.dangerouslyAllowNameMatching: true`
+    - lookups use original message ID and are time-window constrained
+    - if lookup fails, proxied messages are treated as bot messages and dropped unless `allowBots=true`
 
   </Accordion>
 
-  <Accordion title="Configuração de presença">
-    Atualizações de presença são aplicadas quando você define um campo de status ou atividade, ou quando você habilita auto presença.
+  <Accordion title="Presence configuration">
+    Presence updates are applied when you set a status or activity field, or when you enable auto presence.
 
-    Exemplo de status apenas:
+    Status only example:
 
 ```json5
 {
@@ -870,7 +876,7 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Exemplo de atividade (status personalizado é o tipo de atividade padrão):
+    Activity example (custom status is the default activity type):
 
 ```json5
 {
@@ -883,7 +889,7 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Exemplo de transmissão:
+    Streaming example:
 
 ```json5
 {
@@ -897,16 +903,16 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Mapa de tipo de atividade:
+    Activity type map:
 
     - 0: Playing
-    - 1: Streaming (requer `activityUrl`)
+    - 1: Streaming (requires `activityUrl`)
     - 2: Listening
     - 3: Watching
-    - 4: Custom (usa texto de atividade como estado de status; emoji é opcional)
+    - 4: Custom (uses the activity text as the status state; emoji is optional)
     - 5: Competing
 
-    Exemplo de presença auto (sinal de saúde de tempo de execução):
+    Auto presence example (runtime health signal):
 
 ```json5
 {
@@ -923,71 +929,71 @@ Configurações de comando slash padrão:
 }
 ```
 
-    Auto presença mapeia disponibilidade de tempo de execução para status Discord: saudável => online, degradado ou desconhecido => idle, exaurido ou indisponível => dnd. Substituições de texto opcionais:
+    Auto presence maps runtime availability to Discord status: healthy => online, degraded or unknown => idle, exhausted or unavailable => dnd. Optional text overrides:
 
     - `autoPresence.healthyText`
     - `autoPresence.degradedText`
-    - `autoPresence.exhaustedText` (suporta placeholder `{reason}`)
+    - `autoPresence.exhaustedText` (supports `{reason}` placeholder)
 
   </Accordion>
 
-  <Accordion title="Aprovações exec no Discord">
-    Discord suporta aprovações exec baseadas em botão em DMs e pode opcionalmente postar prompts de aprovação no canal originário.
+  <Accordion title="Exec approvals in Discord">
+    Discord supports button-based exec approvals in DMs and can optionally post approval prompts in the originating channel.
 
-    Caminho de config:
+    Config path:
 
     - `channels.discord.execApprovals.enabled`
     - `channels.discord.execApprovals.approvers`
-    - `channels.discord.execApprovals.target` (`dm` | `channel` | `both`, padrão: `dm`)
+    - `channels.discord.execApprovals.target` (`dm` | `channel` | `both`, default: `dm`)
     - `agentFilter`, `sessionFilter`, `cleanupAfterResolve`
 
-    Quando `target` é `channel` ou `both`, o prompt de aprovação é visível no canal. Apenas aprovadores configurados podem usar os botões; outros usuários recebem negação efêmera. Prompts de aprovação incluem o texto de comando, então apenas habilite entrega de canal em canais/tópicos confiáveis. Se o ID de canal não puder ser derivado da chave de sessão, OpenCraft retorna para entrega de DM.
+    When `target` is `channel` or `both`, the approval prompt is visible in the channel. Only configured approvers can use the buttons; other users receive an ephemeral denial. Approval prompts include the command text, so only enable channel delivery in trusted channels. If the channel ID cannot be derived from the session key, OpenCraft falls back to DM delivery.
 
-    Auth de gateway para este handler usa o mesmo contrato de resolução de credencial compartilhado que outros clientes Gateway:
+    Gateway auth for this handler uses the same shared credential resolution contract as other Gateway clients:
 
-    - auth local priorizando env (`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` então `gateway.auth.*`)
-    - em modo local, `gateway.remote.*` pode ser usado como fallback apenas quando `gateway.auth.*` não está definido; SecretRefs configuradas mas não resolvidas locais falham fechadas
-    - suporte de modo remoto via `gateway.remote.*` quando aplicável
-    - substituições de URL são override-seguras: substituições CLI não reutilizam credenciais implícitas e substituições de env usam apenas credenciais de env
+    - env-first local auth (`OPENCRAFT_GATEWAY_TOKEN` / `OPENCRAFT_GATEWAY_PASSWORD` then `gateway.auth.*`)
+    - in local mode, `gateway.remote.*` can be used as fallback only when `gateway.auth.*` is unset; configured-but-unresolved local SecretRefs fail closed
+    - remote-mode support via `gateway.remote.*` when applicable
+    - URL overrides are override-safe: CLI overrides do not reuse implicit credentials, and env overrides use env credentials only
 
-    Se aprovações falharem com IDs de aprovação desconhecidos, verifique lista de aprovador e habilitação de recurso.
+    If approvals fail with unknown approval IDs, verify approver list and feature enablement.
 
-    Documentos relacionados: [Aprovações exec](/tools/exec-approvals)
+    Related docs: [Exec approvals](/tools/exec-approvals)
 
   </Accordion>
 </AccordionGroup>
 
-## Ferramentas e portões de ação
+## Tools and action gates
 
-Ações de mensagem Discord incluem messaging, administração de canal, moderação, presença e ações de metadados.
+Discord message actions include messaging, channel admin, moderation, presence, and metadata actions.
 
-Exemplos principais:
+Core examples:
 
 - messaging: `sendMessage`, `readMessages`, `editMessage`, `deleteMessage`, `threadReply`
-- reações: `react`, `reactions`, `emojiList`
-- moderação: `timeout`, `kick`, `ban`
-- presença: `setPresence`
+- reactions: `react`, `reactions`, `emojiList`
+- moderation: `timeout`, `kick`, `ban`
+- presence: `setPresence`
 
-Portões de ação vivem sob `channels.discord.actions.*`.
+Action gates live under `channels.discord.actions.*`.
 
-Comportamento padrão de portão:
+Default gate behavior:
 
-| Grupo de ação                                                                                                                                                             | Padrão   |
+| Action group                                                                                                                                                             | Default  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| reações, mensagens, threads, pins, pesquisas, search, memberInfo, roleInfo, channelInfo, canais, voiceStatus, eventos, stickers, emojiUploads, stickerUploads, permissões | habilitado  |
-| roles                                                                                                                                                                    | desabilitado |
-| moderação                                                                                                                                                               | desabilitado |
-| presença                                                                                                                                                                 | desabilitado |
+| reactions, messages, threads, pins, polls, search, memberInfo, roleInfo, channelInfo, channels, voiceStatus, events, stickers, emojiUploads, stickerUploads, permissions | enabled  |
+| roles                                                                                                                                                                    | disabled |
+| moderation                                                                                                                                                               | disabled |
+| presence                                                                                                                                                                 | disabled |
 
-## UI Componentes v2
+## Components v2 UI
 
-OpenCraft usa componentes Discord v2 para aprovações exec e marcadores entre contextos. Ações de mensagem Discord também podem aceitar `components` para UI personalizado (avançado; requer instâncias de componente Carbon), enquanto `embeds` legados permanecem disponíveis mas não são recomendados.
+OpenCraft uses Discord components v2 for exec approvals and cross-context markers. Discord message actions can also accept `components` for custom UI (advanced; requires Carbon component instances), while legacy `embeds` remain available but are not recommended.
 
-- `channels.discord.ui.components.accentColor` define a cor de acento usada por contêineres de componente Discord (hex).
-- Defina por conta com `channels.discord.accounts.<id>.ui.components.accentColor`.
-- `embeds` são ignorados quando componentes v2 estão presentes.
+- `channels.discord.ui.components.accentColor` sets the accent color used by Discord component containers (hex).
+- Set per account with `channels.discord.accounts.<id>.ui.components.accentColor`.
+- `embeds` are ignored when components v2 are present.
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -1003,19 +1009,19 @@ Exemplo:
 }
 ```
 
-## Canais de voz
+## Voice channels
 
-OpenCraft pode entrar em canais de voz Discord para conversas contínuas e em tempo real. Isto é separado de anexos de mensagens de voz.
+OpenCraft can join Discord voice channels for realtime, continuous conversations. This is separate from voice message attachments.
 
-Requisitos:
+Requirements:
 
-- Habilite comandos nativos (`commands.native` ou `channels.discord.commands.native`).
+- Enable native commands (`commands.native` or `channels.discord.commands.native`).
 - Configure `channels.discord.voice`.
-- O bot precisa de permissões Connect + Speak no canal de voz alvo.
+- The bot needs Connect + Speak permissions in the target voice channel.
 
-Use o comando nativo apenas Discord `/vc join|leave|status` para controlar sessões. O comando usa o agente padrão de conta e segue as mesmas regras de allowlist e política de grupo que outros comandos Discord.
+Use the Discord-only native command `/vc join|leave|status` to control sessions. The command uses the account default agent and follows the same allowlist and group policy rules as other Discord commands.
 
-Exemplo de auto-join:
+Auto-join example:
 
 ```json5
 {
@@ -1041,51 +1047,51 @@ Exemplo de auto-join:
 }
 ```
 
-Notas:
+Notes:
 
-- `voice.tts` substitui `messages.tts` para playback de voz apenas.
-- Turnos de transcrição de voz derivam status de proprietário de Discord `allowFrom` (ou `dm.allowFrom`); falantes não-proprietário não podem acessar ferramentas apenas de proprietário (por exemplo `gateway` e `cron`).
-- Voz é habilitado por padrão; defina `channels.discord.voice.enabled=false` para desabilitar.
-- `voice.daveEncryption` e `voice.decryptionFailureTolerance` passam para `@discordjs/voice` join options.
-- Padrões `@discordjs/voice` são `daveEncryption=true` e `decryptionFailureTolerance=24` se não definido.
-- OpenCraft também observa falhas de decrypt de recebimento e auto-recupera saindo/rejuntando o canal de voz após falhas repetidas em uma janela curta.
-- Se logs de recebimento repetidamente mostram `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`, isto pode ser o bug de recebimento upstream `@discordjs/voice` rastreado em [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419).
+- `voice.tts` overrides `messages.tts` for voice playback only.
+- Voice transcript turns derive owner status from Discord `allowFrom` (or `dm.allowFrom`); non-owner speakers cannot access owner-only tools (for example `gateway` and `cron`).
+- Voice is enabled by default; set `channels.discord.voice.enabled=false` to disable it.
+- `voice.daveEncryption` and `voice.decryptionFailureTolerance` pass through to `@discordjs/voice` join options.
+- `@discordjs/voice` defaults are `daveEncryption=true` and `decryptionFailureTolerance=24` if unset.
+- OpenCraft also watches receive decrypt failures and auto-recovers by leaving/rejoining the voice channel after repeated failures in a short window.
+- If receive logs repeatedly show `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`, this may be the upstream `@discordjs/voice` receive bug tracked in [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419).
 
-## Mensagens de voz
+## Voice messages
 
-Mensagens de voz Discord mostram visualização de onda e requerem áudio OGG/Opus mais metadados. OpenCraft gera a onda automaticamente, mas precisa de `ffmpeg` e `ffprobe` disponíveis no host do gateway para inspecionar e converter arquivos de áudio.
+Discord voice messages show a waveform preview and require OGG/Opus audio plus metadata. OpenCraft generates the waveform automatically, but it needs `ffmpeg` and `ffprobe` available on the gateway host to inspect and convert audio files.
 
-Requisitos e restrições:
+Requirements and constraints:
 
-- Forneça um **caminho de arquivo local** (URLs são rejeitadas).
-- Omita conteúdo de texto (Discord não permite texto + mensagem de voz no mesmo payload).
-- Qualquer formato de áudio é aceito; OpenCraft converte para OGG/Opus quando necessário.
+- Provide a **local file path** (URLs are rejected).
+- Omit text content (Discord does not allow text + voice message in the same payload).
+- Any audio format is accepted; OpenCraft converts to OGG/Opus when needed.
 
-Exemplo:
+Example:
 
 ```bash
 message(action="send", channel="discord", target="channel:123", path="/path/to/audio.mp3", asVoice=true)
 ```
 
-## Solução de problemas
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="Usou intents não permitidos ou bot não vê mensagens de guild">
+  <Accordion title="Used disallowed intents or bot sees no guild messages">
 
-    - habilite Message Content Intent
-    - habilite Server Members Intent quando você depende de resolução de usuário/membro
-    - reinicie gateway após mudar intents
+    - enable Message Content Intent
+    - enable Server Members Intent when you depend on user/member resolution
+    - restart gateway after changing intents
 
   </Accordion>
 
-  <Accordion title="Mensagens de guild bloqueadas inesperadamente">
+  <Accordion title="Guild messages blocked unexpectedly">
 
-    - verifique `groupPolicy`
-    - verifique allowlist de guild em `channels.discord.guilds`
-    - se mapa de `channels` de guild existe, apenas canais listados são permitidos
-    - verifique comportamento de `requireMention` e padrões de menção
+    - verify `groupPolicy`
+    - verify guild allowlist under `channels.discord.guilds`
+    - if guild `channels` map exists, only listed channels are allowed
+    - verify `requireMention` behavior and mention patterns
 
-    Verificações úteis:
+    Useful checks:
 
 ```bash
 opencraft doctor
@@ -1095,35 +1101,35 @@ opencraft logs --follow
 
   </Accordion>
 
-  <Accordion title="Require mention false mas ainda bloqueado">
-    Causas comuns:
+  <Accordion title="Require mention false but still blocked">
+    Common causes:
 
-    - `groupPolicy="allowlist"` sem allowlist de guild/canal correspondente
-    - `requireMention` configurado no lugar errado (deve estar em `channels.discord.guilds` ou entrada de canal)
-    - remetente bloqueado por allowlist de `users`/canal `users` de guild
+    - `groupPolicy="allowlist"` without matching guild/channel allowlist
+    - `requireMention` configured in the wrong place (must be under `channels.discord.guilds` or channel entry)
+    - sender blocked by guild/channel `users` allowlist
 
   </Accordion>
 
-  <Accordion title="Handlers de longa execução expiram ou respostas duplicadas">
+  <Accordion title="Long-running handlers time out or duplicate replies">
 
-    Logs típicos:
+    Typical logs:
 
     - `Listener DiscordMessageListener timed out after 30000ms for event MESSAGE_CREATE`
     - `Slow listener detected ...`
     - `discord inbound worker timed out after ...`
 
-    Knob de orçamento de ouvinte:
+    Listener budget knob:
 
     - single-account: `channels.discord.eventQueue.listenerTimeout`
     - multi-account: `channels.discord.accounts.<accountId>.eventQueue.listenerTimeout`
 
-    Knob de timeout de execução de worker:
+    Worker run timeout knob:
 
     - single-account: `channels.discord.inboundWorker.runTimeoutMs`
     - multi-account: `channels.discord.accounts.<accountId>.inboundWorker.runTimeoutMs`
-    - padrão: `1800000` (30 minutos); defina `0` para desabilitar
+    - default: `1800000` (30 minutes); set `0` to disable
 
-    Baseline recomendado:
+    Recommended baseline:
 
 ```json5
 {
@@ -1144,80 +1150,80 @@ opencraft logs --follow
 }
 ```
 
-    Use `eventQueue.listenerTimeout` para configuração de ouvinte lento e `inboundWorker.runTimeoutMs`
-    apenas se você quer uma válvula de segurança separada para turnos de agente enfileirados.
+    Use `eventQueue.listenerTimeout` for slow listener setup and `inboundWorker.runTimeoutMs`
+    only if you want a separate safety valve for queued agent turns.
 
   </Accordion>
 
-  <Accordion title="Mismatches de auditoria de permissões">
-    `channels status --probe` verificações de permissão apenas funcionam para IDs de canal numéricos.
+  <Accordion title="Permissions audit mismatches">
+    `channels status --probe` permission checks only work for numeric channel IDs.
 
-    Se você usa chaves de slug, matching de tempo de execução ainda pode funcionar, mas sondagem não pode verificar completamente permissões.
-
-  </Accordion>
-
-  <Accordion title="Problemas de DM e pareamento">
-
-    - DM desabilitado: `channels.discord.dm.enabled=false`
-    - política de DM desabilitada: `channels.discord.dmPolicy="disabled"` (legado: `channels.discord.dm.policy`)
-    - aguardando aprovação de pareamento em modo `pairing`
+    If you use slug keys, runtime matching can still work, but probe cannot fully verify permissions.
 
   </Accordion>
 
-  <Accordion title="Loops de bot para bot">
-    Por padrão, mensagens criadas por bot são ignoradas.
+  <Accordion title="DM and pairing issues">
 
-    Se você definir `channels.discord.allowBots=true`, use regras de menção rígidas e allowlist para evitar comportamento de loop.
-    Prefira `channels.discord.allowBots="mentions"` para apenas aceitar mensagens de bot que mencionam o bot.
+    - DM disabled: `channels.discord.dm.enabled=false`
+    - DM policy disabled: `channels.discord.dmPolicy="disabled"` (legacy: `channels.discord.dm.policy`)
+    - awaiting pairing approval in `pairing` mode
 
   </Accordion>
 
-  <Accordion title="Drops STT de voz com DecryptionFailed(...)">
+  <Accordion title="Bot to bot loops">
+    By default bot-authored messages are ignored.
 
-    - mantenha OpenCraft atual (`opencraft update`) para que a lógica de recuperação de recebimento de voz Discord esteja presente
-    - confirme `channels.discord.voice.daveEncryption=true` (padrão)
-    - comece de `channels.discord.voice.decryptionFailureTolerance=24` (padrão upstream) e sintonize apenas se necessário
-    - observe logs para:
+    If you set `channels.discord.allowBots=true`, use strict mention and allowlist rules to avoid loop behavior.
+    Prefer `channels.discord.allowBots="mentions"` to only accept bot messages that mention the bot.
+
+  </Accordion>
+
+  <Accordion title="Voice STT drops with DecryptionFailed(...)">
+
+    - keep OpenCraft current (`opencraft update`) so the Discord voice receive recovery logic is present
+    - confirm `channels.discord.voice.daveEncryption=true` (default)
+    - start from `channels.discord.voice.decryptionFailureTolerance=24` (upstream default) and tune only if needed
+    - watch logs for:
       - `discord voice: DAVE decrypt failures detected`
       - `discord voice: repeated decrypt failures; attempting rejoin`
-    - se falhas continuarem após rejoin automático, colete logs e compare contra [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419)
+    - if failures continue after automatic rejoin, collect logs and compare against [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419)
 
   </Accordion>
 </AccordionGroup>
 
-## Ponteiros de referência de configuração
+## Configuration reference pointers
 
-Referência primária:
+Primary reference:
 
-- [Referência de configuração - Discord](/gateway/configuration-reference#discord)
+- [Configuration reference - Discord](/gateway/configuration-reference#discord)
 
-Campos de alto sinal do Discord:
+High-signal Discord fields:
 
-- inicialização/auth: `enabled`, `token`, `accounts.*`, `allowBots`
-- política: `groupPolicy`, `dm.*`, `guilds.*`, `guilds.*.channels.*`
-- comando: `commands.native`, `commands.useAccessGroups`, `configWrites`, `slashCommand.*`
-- fila de eventos: `eventQueue.listenerTimeout` (orçamento de ouvinte), `eventQueue.maxQueueSize`, `eventQueue.maxConcurrency`
-- worker de entrada: `inboundWorker.runTimeoutMs`
-- resposta/histórico: `replyToMode`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
-- entrega: `textChunkLimit`, `chunkMode`, `maxLinesPerMessage`
-- transmissão: `streaming` (alias legado: `streamMode`), `draftChunk`, `blockStreaming`, `blockStreamingCoalesce`
-- mídia/retry: `mediaMaxMb`, `retry`
-  - `mediaMaxMb` limpa uploads Discord de saída (padrão: `8MB`)
-- ações: `actions.*`
-- presença: `activity`, `status`, `activityType`, `activityUrl`
+- startup/auth: `enabled`, `token`, `accounts.*`, `allowBots`
+- policy: `groupPolicy`, `dm.*`, `guilds.*`, `guilds.*.channels.*`
+- command: `commands.native`, `commands.useAccessGroups`, `configWrites`, `slashCommand.*`
+- event queue: `eventQueue.listenerTimeout` (listener budget), `eventQueue.maxQueueSize`, `eventQueue.maxConcurrency`
+- inbound worker: `inboundWorker.runTimeoutMs`
+- reply/history: `replyToMode`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
+- delivery: `textChunkLimit`, `chunkMode`, `maxLinesPerMessage`
+- streaming: `streaming` (legacy alias: `streamMode`), `draftChunk`, `blockStreaming`, `blockStreamingCoalesce`
+- media/retry: `mediaMaxMb`, `retry`
+  - `mediaMaxMb` caps outbound Discord uploads (default: `8MB`)
+- actions: `actions.*`
+- presence: `activity`, `status`, `activityType`, `activityUrl`
 - UI: `ui.components.accentColor`
-- recursos: `threadBindings`, `bindings[]` de nível superior (`type: "acp"`), `pluralkit`, `execApprovals`, `intents`, `agentComponents`, `heartbeat`, `responsePrefix`
+- features: `threadBindings`, top-level `bindings[]` (`type: "acp"`), `pluralkit`, `execApprovals`, `intents`, `agentComponents`, `heartbeat`, `responsePrefix`
 
-## Segurança e operações
+## Safety and operations
 
-- Trate tokens de bot como segredos (`DISCORD_BOT_TOKEN` preferido em ambientes supervisionados).
-- Conceda permissões Discord de menor privilégio.
-- Se deploy/estado de comando está obsoleto, reinicie gateway e re-verifique com `opencraft channels status --probe`.
+- Treat bot tokens as secrets (`DISCORD_BOT_TOKEN` preferred in supervised environments).
+- Grant least-privilege Discord permissions.
+- If command deploy/state is stale, restart gateway and re-check with `opencraft channels status --probe`.
 
-## Relacionados
+## Related
 
-- [Pareamento](/channels/pairing)
-- [Roteamento de canal](/channels/channel-routing)
-- [Roteamento multi-agente](/concepts/multi-agent)
-- [Solução de problemas](/channels/troubleshooting)
-- [Comandos Slash](/tools/slash-commands)
+- [Pairing](/channels/pairing)
+- [Channel routing](/channels/channel-routing)
+- [Multi-agent routing](/concepts/multi-agent)
+- [Troubleshooting](/channels/troubleshooting)
+- [Slash commands](/tools/slash-commands)

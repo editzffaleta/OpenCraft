@@ -2,9 +2,9 @@ import type { Client } from "@buape/carbon";
 import {
   createChannelInboundDebouncer,
   shouldDebounceTextInbound,
-} from "../../../../src/channels/inbound-debounce-policy.js";
-import { resolveOpenProviderRuntimeGroupPolicy } from "../../../../src/config/runtime-group-policy.js";
-import { danger } from "../../../../src/globals.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import { resolveOpenProviderRuntimeGroupPolicy } from "opencraft/plugin-sdk/config-runtime";
+import { danger } from "opencraft/plugin-sdk/runtime-env";
 import { buildDiscordInboundJob } from "./inbound-job.js";
 import { createDiscordInboundWorker } from "./inbound-worker.js";
 import type { DiscordMessageEvent, DiscordMessageHandler } from "./listeners.js";

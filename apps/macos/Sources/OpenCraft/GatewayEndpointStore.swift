@@ -23,7 +23,7 @@ actor GatewayEndpointStore {
         "custom",
     ]
     private static let remoteConnectingDetail = "Connecting to remote gateway…"
-    private static let staticLogger = Logger(subsystem: "ai.opencraft", category: "gateway-endpoint")
+    private static let staticLogger = Logger(subsystem: "ai.openclaw", category: "gateway-endpoint")
     private enum EnvOverrideWarningKind {
         case token
         case password
@@ -224,7 +224,7 @@ actor GatewayEndpointStore {
     }
 
     private let deps: Deps
-    private let logger = Logger(subsystem: "ai.opencraft", category: "gateway-endpoint")
+    private let logger = Logger(subsystem: "ai.openclaw", category: "gateway-endpoint")
 
     private var state: GatewayEndpointState
     private var subscribers: [UUID: AsyncStream<GatewayEndpointState>.Continuation] = [:]

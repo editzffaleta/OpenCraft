@@ -1,5 +1,5 @@
-import type { OpenCraftConfig, PluginRuntime, ReplyPayload } from "opencraft/plugin-sdk/mattermost";
-import { getAgentScopedMediaLocalRoots } from "opencraft/plugin-sdk/mattermost";
+import type { OpenCraftConfig, PluginRuntime, ReplyPayload } from "../runtime-api.js";
+import { getAgentScopedMediaLocalRoots } from "../runtime-api.js";
 
 type MarkdownTableMode = Parameters<PluginRuntime["channel"]["text"]["convertMarkdownTables"]>[1];
 

@@ -1,10 +1,10 @@
-import { fetchGeminiUsage } from "../../src/infra/provider-usage.fetch.js";
-import { buildOauthProviderAuthResult } from "../../src/plugin-sdk/provider-auth-result.js";
 import type {
   OpenCraftPluginApi,
   ProviderAuthContext,
   ProviderFetchUsageSnapshotContext,
-} from "../../src/plugins/types.js";
+} from "opencraft/plugin-sdk/core";
+import { buildOauthProviderAuthResult } from "opencraft/plugin-sdk/provider-auth";
+import { fetchGeminiUsage } from "opencraft/plugin-sdk/provider-usage";
 import { loginGeminiCliOAuth } from "./oauth.js";
 import { isModernGoogleModel, resolveGoogle31ForwardCompatModel } from "./provider-models.js";
 

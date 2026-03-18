@@ -1,34 +1,34 @@
 ---
-summary: "Plano de refatoração holy grail para um pipeline de streaming de runtime unificado para main, subagent e ACP"
+summary: "Holy grail refactor plan for one unified runtime streaming pipeline across main, subagent, and ACP"
 owner: "onutc"
 status: "draft"
 last_updated: "2026-02-25"
 title: "Unified Runtime Streaming Refactor Plan"
 ---
 
-# Plano de Refatoração Unificada de Streaming de Runtime
+# Unified Runtime Streaming Refactor Plan
 
-## Objetivo
+## Objective
 
-Entregar um pipeline de streaming compartilhado para `main`, `subagent` e `acp` para que todos os runtimes obtenham comportamento idêntico de coalescência, chunking, ordenação de entrega e recuperação de crash.
+Deliver one shared streaming pipeline for `main`, `subagent`, and `acp` so all runtimes get identical coalescing, chunking, delivery ordering, and crash recovery behavior.
 
-## Por que isso existe
+## Why this exists
 
-- O comportamento atual está dividido em múltiplos caminhos de formatação específicos de runtime.
-- Bugs de formatação/coalescência podem ser corrigidos em um caminho mas permanecer em outros.
-- Consistência de entrega, supressão de duplicatas e semânticas de recuperação são mais difíceis de raciocinar.
+- Current behavior is split across multiple runtime-specific shaping paths.
+- Formatting/coalescing bugs can be fixed in one path but remain in others.
+- Delivery consistency, duplicate suppression, and recovery semantics are harder to reason about.
 
-## Arquitetura alvo
+## Target architecture
 
-Pipeline único, adaptadores específicos de runtime:
+Single pipeline, runtime-specific adapters:
 
-1. Adaptadores de runtime emitem somente eventos canônicos.
-2. Montador de stream compartilhado coalece e finaliza eventos de texto/ferramenta/status.
-3. Projetor de canal compartilhado aplica chunking/formatação específica do canal uma vez.
-4. Ledger de entrega compartilhado impõe semânticas de envio/replay idempotentes.
-5. Adaptador de canal de saída executa envios e registra checkpoints de entrega.
+1. Runtime adapters emit canonical events only.
+2. Shared stream assembler coalesces and finalizes text/tool/status events.
+3. Shared channel projector applies channel-specific chunking/formatting once.
+4. Shared delivery ledger enforces idempotent send/replay semantics.
+5. Outbound channel adapter executes sends and records delivery checkpoints.
 
-Contrato canônico de eventos:
+Canonical event contract:
 
 - `turn_started`
 - `text_delta`
@@ -40,57 +40,57 @@ Contrato canônico de eventos:
 - `turn_failed`
 - `turn_cancelled`
 
-## Frentes de trabalho
+## Workstreams
 
-### 1) Contrato canônico de streaming
+### 1) Canonical streaming contract
 
-- Definir esquema estrito de eventos + validação no core.
-- Adicionar testes de contrato de adaptador para garantir que cada runtime emita eventos compatíveis.
-- Rejeitar eventos de runtime malformados cedo e exibir diagnósticos estruturados.
+- Define strict event schema + validation in core.
+- Add adapter contract tests to guarantee each runtime emits compatible events.
+- Reject malformed runtime events early and surface structured diagnostics.
 
-### 2) Processador de stream compartilhado
+### 2) Shared stream processor
 
-- Substituir lógica de coalescedor/projetor específica de runtime com um processador.
-- O processador é dono do buffer de deltas de texto, flush por ociosidade, divisão de chunk máximo e flush de conclusão.
-- Mover resolução de configuração de ACP/main/subagent para um helper para prevenir divergência.
+- Replace runtime-specific coalescer/projector logic with one processor.
+- Processor owns text delta buffering, idle flush, max-chunk splitting, and completion flush.
+- Move ACP/main/subagent config resolution into one helper to prevent drift.
 
-### 3) Projeção de canal compartilhada
+### 3) Shared channel projection
 
-- Manter adaptadores de canal simples: aceitar blocos finalizados e enviar.
-- Mover peculiaridades de chunking específicas do Discord para somente o projetor de canal.
-- Manter o pipeline agnóstico de canal antes da projeção.
+- Keep channel adapters dumb: accept finalized blocks and send.
+- Move Discord-specific chunking quirks to channel projector only.
+- Keep pipeline channel-agnostic before projection.
 
-### 4) Ledger de entrega + replay
+### 4) Delivery ledger + replay
 
-- Adicionar IDs de entrega por turno/por chunk.
-- Registrar checkpoints antes e depois do envio físico.
-- No restart, reproduzir chunks pendentes idempotentemente e evitar duplicatas.
+- Add per-turn/per-chunk delivery IDs.
+- Record checkpoints before and after physical send.
+- On restart, replay pending chunks idempotently and avoid duplicates.
 
-### 5) Migração e cutover
+### 5) Migration and cutover
 
-- Fase 1: modo shadow (novo pipeline computa saída mas caminho antigo envia; comparar).
-- Fase 2: cutover runtime por runtime (`acp`, depois `subagent`, depois `main` ou inverso por risco).
-- Fase 3: deletar código legado de streaming específico de runtime.
+- Phase 1: shadow mode (new pipeline computes output but old path sends; compare).
+- Phase 2: runtime-by-runtime cutover (`acp`, then `subagent`, then `main` or reverse by risk).
+- Phase 3: delete legacy runtime-specific streaming code.
 
-## Não-objetivos
+## Non-goals
 
-- Nenhuma mudança no modelo de política/permissões ACP nesta refatoração.
-- Nenhuma expansão de funcionalidade específica de canal fora de correções de compatibilidade de projeção.
-- Nenhum redesign de transporte/backend (contrato de Plugin acpx permanece como está a menos que necessário para paridade de eventos).
+- No changes to ACP policy/permissions model in this refactor.
+- No channel-specific feature expansion outside projection compatibility fixes.
+- No transport/backend redesign (acpx plugin contract remains as-is unless needed for event parity).
 
-## Riscos e mitigações
+## Risks and mitigations
 
-- Risco: regressões comportamentais em caminhos existentes de main/subagent.
-  Mitigação: diff em modo shadow + testes de contrato de adaptador + testes e2e de canal.
-- Risco: envios duplicados durante recuperação de crash.
-  Mitigação: IDs de entrega duráveis + replay idempotente no adaptador de entrega.
-- Risco: adaptadores de runtime divergem novamente.
-  Mitigação: suíte obrigatória de testes de contrato compartilhado para todos os adaptadores.
+- Risk: behavioral regressions in existing main/subagent paths.
+  Mitigation: shadow mode diffing + adapter contract tests + channel e2e tests.
+- Risk: duplicate sends during crash recovery.
+  Mitigation: durable delivery IDs + idempotent replay in delivery adapter.
+- Risk: runtime adapters diverge again.
+  Mitigation: required shared contract test suite for all adapters.
 
-## Critérios de aceitação
+## Acceptance criteria
 
-- Todos os runtimes passam nos testes de contrato de streaming compartilhado.
-- ACP/main/subagent no Discord produzem comportamento equivalente de espaçamento/chunking para deltas pequenos.
-- Replay de crash/restart não envia chunk duplicado para o mesmo ID de entrega.
-- Caminho legado de projetor/coalescedor ACP é removido.
-- Resolução de configuração de streaming é compartilhada e independente de runtime.
+- All runtimes pass shared streaming contract tests.
+- Discord ACP/main/subagent produce equivalent spacing/chunking behavior for tiny deltas.
+- Crash/restart replay sends no duplicate chunk for the same delivery ID.
+- Legacy ACP projector/coalescer path is removed.
+- Streaming config resolution is shared and runtime-independent.

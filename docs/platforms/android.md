@@ -1,94 +1,94 @@
 ---
-summary: "Aplicativo Android (nó): runbook de conexão + superfície de comando Connect/Chat/Voice/Canvas"
+summary: "Android app (node): connection runbook + Connect/Chat/Voice/Canvas command surface"
 read_when:
-  - Emparelhando ou reconectando o nó Android
-  - Depurando descoberta do Gateway Android ou autenticação
-  - Verificando paridade de histórico de chat entre clientes
-title: "Aplicativo Android"
+  - Pairing or reconnecting the Android node
+  - Debugging Android gateway discovery or auth
+  - Verifying chat history parity across clients
+title: "Android App"
 ---
 
-# Aplicativo Android (Nó)
+# Android App (Node)
 
-> **Nota:** O aplicativo Android ainda não foi lançado publicamente. O código-fonte está disponível no [repositório do OpenCraft](https://github.com/editzffaleta/OpenCraft) em `apps/android`. Você pode construir você mesmo usando Java 17 e Android SDK (`./gradlew :app:assembleDebug`). Veja [apps/android/README.md](https://github.com/editzffaleta/OpenCraft/blob/main/apps/android/README.md) para instruções de compilação.
+> **Note:** The Android app has not been publicly released yet. The source code is available in the [OpenClaw repository](https://github.com/openclaw/openclaw) under `apps/android`. You can build it yourself using Java 17 and the Android SDK (`./gradlew :app:assembleDebug`). See [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md) for build instructions.
 
-## Snapshot de suporte
+## Support snapshot
 
-- Função: aplicativo de nó complementar (Android não hospeda o Gateway).
-- Gateway obrigatório: sim (execute em macOS, Linux ou Windows via WSL2).
-- Instalar: [Guia de Introdução](/start/getting-started) + [Emparelhamento](/channels/pairing).
-- Gateway: [Runbook](/gateway) + [Configuração](/gateway/configuration).
-  - Protocolos: [Protocolo do Gateway](/gateway/protocol) (nós + plano de controle).
+- Role: companion node app (Android does not host the Gateway).
+- Gateway required: yes (run it on macOS, Linux, or Windows via WSL2).
+- Install: [Getting Started](/start/getting-started) + [Pairing](/channels/pairing).
+- Gateway: [Runbook](/gateway) + [Configuration](/gateway/configuration).
+  - Protocols: [Gateway protocol](/gateway/protocol) (nodes + control plane).
 
-## Controle de sistema
+## System control
 
-O controle do sistema (launchd/systemd) fica no host do Gateway. Consulte [Gateway](/gateway).
+System control (launchd/systemd) lives on the Gateway host. See [Gateway](/gateway).
 
-## Runbook de conexão
+## Connection Runbook
 
-Aplicativo de nó Android ⇄ (mDNS/NSD + WebSocket) ⇄ **Gateway**
+Android node app ⇄ (mDNS/NSD + WebSocket) ⇄ **Gateway**
 
-Android se conecta diretamente ao WebSocket do Gateway (padrão `ws://<host>:18789`) e usa emparelhamento de dispositivo (`role: node`).
+Android connects directly to the Gateway WebSocket (default `ws://<host>:18789`) and uses device pairing (`role: node`).
 
-### Pré-requisitos
+### Prerequisites
 
-- Você pode executar o Gateway na máquina "master".
-- Dispositivo Android/emulador pode alcançar o WebSocket do Gateway:
-  - Mesmo LAN com mDNS/NSD, **ou**
-  - Mesmo tailnet do Tailscale usando Bonjour de Longo Alcance / DNS-SD unicast (veja abaixo), **ou**
-  - Host/porta manual do Gateway (fallback)
-- Você pode executar a CLI (`opencraft`) na máquina do Gateway (ou via SSH).
+- You can run the Gateway on the “master” machine.
+- Android device/emulator can reach the gateway WebSocket:
+  - Same LAN with mDNS/NSD, **or**
+  - Same Tailscale tailnet using Wide-Area Bonjour / unicast DNS-SD (see below), **or**
+  - Manual gateway host/port (fallback)
+- You can run the CLI (`opencraft`) on the gateway machine (or via SSH).
 
-### 1) Inicie o Gateway
+### 1) Start the Gateway
 
 ```bash
 opencraft gateway --port 18789 --verbose
 ```
 
-Confirme nos logs que você vê algo como:
+Confirm in logs you see something like:
 
 - `listening on ws://0.0.0.0:18789`
 
-Para configurações exclusivas de tailnet (recomendado para Viena ⇄ Londres), vincule o Gateway ao IP da tailnet:
+For tailnet-only setups (recommended for Vienna ⇄ London), bind the gateway to the tailnet IP:
 
-- Defina `gateway.bind: "tailnet"` em `~/.editzffaleta/OpenCraft.json` no host do Gateway.
-- Reinicie o Gateway / aplicativo da barra de menus macOS.
+- Set `gateway.bind: "tailnet"` in `~/.opencraft/opencraft.json` on the gateway host.
+- Restart the Gateway / macOS menubar app.
 
-### 2) Verifique a descoberta (opcional)
+### 2) Verify discovery (optional)
 
-Na máquina do Gateway:
+From the gateway machine:
 
 ```bash
 dns-sd -B _opencraft-gw._tcp local.
 ```
 
-Mais notas de depuração: [Bonjour](/gateway/bonjour).
+More debugging notes: [Bonjour](/gateway/bonjour).
 
-#### Descoberta do Tailnet (Viena ⇄ Londres) via DNS-SD unicast
+#### Tailnet (Vienna ⇄ London) discovery via unicast DNS-SD
 
-A descoberta NSD/mDNS do Android não cruzará redes. Se seu nó Android e o Gateway estiverem em redes diferentes, mas conectados via Tailscale, use Bonjour de Longo Alcance / DNS-SD unicast:
+Android NSD/mDNS discovery won’t cross networks. If your Android node and the gateway are on different networks but connected via Tailscale, use Wide-Area Bonjour / unicast DNS-SD instead:
 
-1. Configure uma zona DNS-SD (exemplo `opencraft.internal.`) no host do Gateway e publique registros `_opencraft-gw._tcp`.
-2. Configure DNS de divisão do Tailscale para seu domínio escolhido apontando para esse servidor DNS.
+1. Set up a DNS-SD zone (example `opencraft.internal.`) on the gateway host and publish `_opencraft-gw._tcp` records.
+2. Configure Tailscale split DNS for your chosen domain pointing at that DNS server.
 
-Detalhes e exemplo de configuração do CoreDNS: [Bonjour](/gateway/bonjour).
+Details and example CoreDNS config: [Bonjour](/gateway/bonjour).
 
-### 3) Conectar do Android
+### 3) Connect from Android
 
-No aplicativo Android:
+In the Android app:
 
-- O aplicativo mantém sua conexão do Gateway viva via **serviço em primeiro plano** (notificação persistente).
-- Abra a aba **Conectar**.
-- Use modo **Setup Code** ou **Manual**.
-- Se a descoberta for bloqueada, use host/porta manual (e TLS/token/senha quando necessário) em **Controles Avançados**.
+- The app keeps its gateway connection alive via a **foreground service** (persistent notification).
+- Open the **Connect** tab.
+- Use **Setup Code** or **Manual** mode.
+- If discovery is blocked, use manual host/port (and TLS/token/password when required) in **Advanced controls**.
 
-Após o primeiro emparelhamento bem-sucedido, Android reconecta automaticamente ao iniciar:
+After the first successful pairing, Android auto-reconnects on launch:
 
-- Endpoint manual (se ativado), caso contrário
-- O último Gateway descoberto (melhor esforço).
+- Manual endpoint (if enabled), otherwise
+- The last discovered gateway (best-effort).
 
-### 4) Aprovar emparelhamento (CLI)
+### 4) Approve pairing (CLI)
 
-Na máquina do Gateway:
+On the gateway machine:
 
 ```bash
 opencraft devices list
@@ -96,11 +96,11 @@ opencraft devices approve <requestId>
 opencraft devices reject <requestId>
 ```
 
-Detalhes de emparelhamento: [Emparelhamento](/channels/pairing).
+Pairing details: [Pairing](/channels/pairing).
 
-### 5) Verifique se o nó está conectado
+### 5) Verify the node is connected
 
-- Via status dos nós:
+- Via nodes status:
 
   ```bash
   opencraft nodes status
@@ -112,52 +112,52 @@ Detalhes de emparelhamento: [Emparelhamento](/channels/pairing).
   opencraft gateway call node.list --params "{}"
   ```
 
-### 6) Chat + histórico
+### 6) Chat + history
 
-A aba Chat do Android suporta seleção de sessão (padrão `main`, mais outras sessões existentes):
+The Android Chat tab supports session selection (default `main`, plus other existing sessions):
 
-- Histórico: `chat.history`
-- Enviar: `chat.send`
-- Atualizações push (melhor esforço): `chat.subscribe` → `event:"chat"`
+- History: `chat.history`
+- Send: `chat.send`
+- Push updates (best-effort): `chat.subscribe` → `event:"chat"`
 
-### 7) Canvas + câmera
+### 7) Canvas + camera
 
-#### Host de Canvas do Gateway (recomendado para conteúdo web)
+#### Gateway Canvas Host (recommended for web content)
 
-Se você quiser que o nó mostre HTML/CSS/JS real que o agente possa editar no disco, aponte o nó para o host de Canvas do Gateway.
+If you want the node to show real HTML/CSS/JS that the agent can edit on disk, point the node at the Gateway canvas host.
 
-Nota: os nós carregam Canvas do servidor HTTP do Gateway (mesma porta que `gateway.port`, padrão `18789`).
+Note: nodes load canvas from the Gateway HTTP server (same port as `gateway.port`, default `18789`).
 
-1. Crie `~/.opencraft/workspace/canvas/index.html` no host do Gateway.
+1. Create `~/.opencraft/workspace/canvas/index.html` on the gateway host.
 
-2. Navegue o nó para ele (LAN):
+2. Navigate the node to it (LAN):
 
 ```bash
 opencraft nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18789/__opencraft__/canvas/"}'
 ```
 
-Tailnet (opcional): se ambos os dispositivos estiverem no Tailscale, use um nome MagicDNS ou IP da tailnet em vez de `.local`, p. ex. `http://<gateway-magicdns>:18789/__opencraft__/canvas/`.
+Tailnet (optional): if both devices are on Tailscale, use a MagicDNS name or tailnet IP instead of `.local`, e.g. `http://<gateway-magicdns>:18789/__opencraft__/canvas/`.
 
-Este servidor injeta um cliente de recarga dinâmica em HTML e recarrega em alterações de arquivo.
-O host A2UI fica em `http://<gateway-host>:18789/__opencraft__/a2ui/`.
+This server injects a live-reload client into HTML and reloads on file changes.
+The A2UI host lives at `http://<gateway-host>:18789/__opencraft__/a2ui/`.
 
-Comandos Canvas (somente em primeiro plano):
+Canvas commands (foreground only):
 
-- `canvas.eval`, `canvas.snapshot`, `canvas.navigate` (use `{"url":""}` ou `{"url":"/"}` para retornar ao scaffold padrão). `canvas.snapshot` retorna `{ format, base64 }` (padrão `format="jpeg"`).
-- A2UI: `canvas.a2ui.push`, `canvas.a2ui.reset` (alias legado `canvas.a2ui.pushJSONL`)
+- `canvas.eval`, `canvas.snapshot`, `canvas.navigate` (use `{"url":""}` or `{"url":"/"}` to return to the default scaffold). `canvas.snapshot` returns `{ format, base64 }` (default `format="jpeg"`).
+- A2UI: `canvas.a2ui.push`, `canvas.a2ui.reset` (`canvas.a2ui.pushJSONL` legacy alias)
 
-Comandos de câmera (somente em primeiro plano; com gate de permissão):
+Camera commands (foreground only; permission-gated):
 
 - `camera.snap` (jpg)
 - `camera.clip` (mp4)
 
-Consulte [Camera node](/nodes/camera) para parâmetros e auxiliares de CLI.
+See [Camera node](/nodes/camera) for parameters and CLI helpers.
 
-### 8) Voz + superfície de comando Android expandida
+### 8) Voice + expanded Android command surface
 
-- Voz: Android usa um único fluxo ativo/inativo de mic na aba Voz com captura de transcrição e reprodução de TTS (ElevenLabs quando configurado, fallback de TTS do sistema). Voice para quando o aplicativo sai do primeiro plano.
-- Os toggles Voice Wake/Talk-Mode foram removidos atualmente da UX/tempo de execução do Android.
-- Famílias de comando Android adicionais (a disponibilidade depende do dispositivo + permissões):
+- Voice: Android uses a single mic on/off flow in the Voice tab with transcript capture and TTS playback (ElevenLabs when configured, system TTS fallback). Voice stops when the app leaves the foreground.
+- Voice wake/talk-mode toggles are currently removed from Android UX/runtime.
+- Additional Android command families (availability depends on device + permissions):
   - `device.status`, `device.info`, `device.permissions`, `device.health`
   - `notifications.list`, `notifications.actions`
   - `photos.latest`

@@ -1,6 +1,6 @@
 import type { PluginRuntime, SsrFPolicy } from "opencraft/plugin-sdk/msteams";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPluginRuntimeMock } from "../../test-utils/plugin-runtime-mock.js";
+import { createPluginRuntimeMock } from "../../../test/helpers/extensions/plugin-runtime-mock.js";
 import {
   buildMSTeamsAttachmentPlaceholder,
   buildMSTeamsGraphMessageUrls,

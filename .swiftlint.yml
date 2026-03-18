@@ -18,7 +18,7 @@ excluded:
   - coverage
   - "*.playground"
   # Generated (protocol-gen-swift.ts)
-  - apps/macos/Sources/OpenClawProtocol/GatewayModels.swift
+  - apps/macos/Sources/OpenCraftProtocol/GatewayModels.swift
   # Generated (generate-host-env-security-policy-swift.mjs)
   - apps/macos/Sources/OpenCraft/HostEnvSecurityPolicy.generated.swift
 

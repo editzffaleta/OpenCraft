@@ -1,3 +1,6 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { discordSetupPlugin } from "./src/channel.setup.js";
 
-export default { plugin: discordSetupPlugin };
+export { discordSetupPlugin } from "./src/channel.setup.js";
+
+export default defineSetupPluginEntry(discordSetupPlugin);

@@ -1,5 +1,5 @@
 const rootEntries = [
-  "openclaw.mjs!",
+  "opencraft.mjs!",
   "src/index.ts!",
   "src/entry.ts!",
   "src/cli/daemon-cli.ts!",

@@ -1,49 +1,51 @@
 ---
-summary: "Atualizando OpenCraft com segurança (instalação global ou source), além de estratégia de rollback"
+summary: "Updating OpenCraft safely (global install or source), plus rollback strategy"
 read_when:
   - Updating OpenCraft
   - Something breaks after an update
-title: "Atualizando"
+title: "Updating"
 ---
 
-# Atualizando
+# Updating
 
-OpenCraft está se movendo rápido (pré "1.0"). Trate atualizações como envio de infraestrutura: atualizar → executar verificações → reiniciar (ou use `opencraft update`, que reinicia) → verificar.
+OpenCraft is moving fast (pre “1.0”). Treat updates like shipping infra: update → run checks → restart (or use `opencraft update`, which restarts) → verify.
 
-## Recomendado: re-execute o instalador do site (atualização em local)
+## Recommended: re-run the website installer (upgrade in place)
 
-O **caminho de atualização preferido** é re-executar o instalador do site. Ele detecta instalações existentes, atualiza em local, e executa `opencraft doctor` quando necessário.
+The **preferred** update path is to re-run the installer from the website. It
+detects existing installs, upgrades in place, and runs `opencraft doctor` when
+needed.
 
 ```bash
 curl -fsSL https://opencraft.ai/install.sh | bash
 ```
 
-Notas:
+Notes:
 
-- Adicione `--no-onboard` se você não quer que onboarding execute novamente.
-- Para **instalações do source**, use:
+- Add `--no-onboard` if you don’t want onboarding to run again.
+- For **source installs**, use:
 
   ```bash
   curl -fsSL https://opencraft.ai/install.sh | bash -s -- --install-method git --no-onboard
   ```
 
-  O instalador executará `git pull --rebase` **apenas** se o repositório estiver limpo.
+  The installer will `git pull --rebase` **only** if the repo is clean.
 
-- Para **instalações globais**, o script usa `npm install -g opencraft@latest` por baixo.
-- Nota de legado: `clawdbot` permanece disponível como um shim de compatibilidade.
+- For **global installs**, the script uses `npm install -g opencraft@latest` under the hood.
+- Legacy note: `clawdbot` remains available as a compatibility shim.
 
-## Antes de atualizar
+## Before you update
 
-- Saiba como você instalou: **global** (npm/pnpm) vs **do source** (git clone).
-- Saiba como seu Gateway está rodando: **terminal em foreground** vs **serviço supervisionado** (launchd/systemd).
-- Crie snapshot de sua customização:
-  - Config: `~/.editzffaleta/OpenCraft.json`
-  - Credenciais: `~/.opencraft/credentials/`
+- Know how you installed: **global** (npm/pnpm) vs **from source** (git clone).
+- Know how your Gateway is running: **foreground terminal** vs **supervised service** (launchd/systemd).
+- Snapshot your tailoring:
+  - Config: `~/.opencraft/opencraft.json`
+  - Credentials: `~/.opencraft/credentials/`
   - Workspace: `~/.opencraft/workspace`
 
-## Atualizar (instalação global)
+## Update (global install)
 
-Instalação global (escolha uma):
+Global install (pick one):
 
 ```bash
 npm i -g opencraft@latest
@@ -53,9 +55,9 @@ npm i -g opencraft@latest
 pnpm add -g opencraft@latest
 ```
 
-Nós **não** recomendamos Bun para o runtime Gateway (bugs com WhatsApp/Telegram).
+We do **not** recommend Bun for the Gateway runtime (WhatsApp/Telegram bugs).
 
-Para trocar canais de atualização (instalações git + npm):
+To switch update channels (git + npm installs):
 
 ```bash
 opencraft update --channel beta
@@ -63,33 +65,33 @@ opencraft update --channel dev
 opencraft update --channel stable
 ```
 
-Use `--tag <dist-tag|version|spec>` para uma sobrescrita de alvo de pacote pontual.
+Use `--tag <dist-tag|version|spec>` for a one-off package target override.
 
-Para o `main` do GitHub atual via uma instalação do package-manager:
+For the current GitHub `main` head via a package-manager install:
 
 ```bash
 opencraft update --tag main
 ```
 
-Equivalentes manuais:
+Manual equivalents:
 
 ```bash
-npm i -g github:editzffaleta/OpenCraft#main
+npm i -g github:opencraft/opencraft#main
 ```
 
 ```bash
-pnpm add -g github:editzffaleta/OpenCraft#main
+pnpm add -g github:opencraft/opencraft#main
 ```
 
-Você também pode passar uma especificação de pacote explícita ao `--tag` para atualizações pontuais (por exemplo uma ref do GitHub ou URL de tarball).
+You can also pass an explicit package spec to `--tag` for one-off updates (for example a GitHub ref or tarball URL).
 
-Veja [Development channels](/install/development-channels) para semântica de canais e notas de lançamento.
+See [Development channels](/install/development-channels) for channel semantics and release notes.
 
-Nota: em instalações npm, o gateway registra uma dica de atualização na inicialização (verifica a tag do canal atual). Desative via `update.checkOnStart: false`.
+Note: on npm installs, the gateway logs an update hint on startup (checks the current channel tag). Disable via `update.checkOnStart: false`.
 
-### Auto-atualizador Core (opcional)
+### Core auto-updater (optional)
 
-O auto-atualizador está **desligado por padrão** e é um recurso Gateway core (não um plugin).
+Auto-updater is **off by default** and is a core Gateway feature (not a plugin).
 
 ```json
 {
@@ -105,15 +107,15 @@ O auto-atualizador está **desligado por padrão** e é um recurso Gateway core 
 }
 ```
 
-Comportamento:
+Behavior:
 
-- `stable`: quando uma nova versão é vista, OpenCraft aguarda `stableDelayHours` e depois aplica um jitter determinístico por instalação em `stableJitterHours` (rollout distribuído).
-- `beta`: verifica em cadência `betaCheckIntervalHours` (padrão: por hora) e aplica quando uma atualização está disponível.
-- `dev`: sem aplicação automática; use `opencraft update` manual.
+- `stable`: when a new version is seen, OpenCraft waits `stableDelayHours` and then applies a deterministic per-install jitter in `stableJitterHours` (spread rollout).
+- `beta`: checks on `betaCheckIntervalHours` cadence (default: hourly) and applies when an update is available.
+- `dev`: no automatic apply; use manual `opencraft update`.
 
-Use `opencraft update --dry-run` para visualizar ações de atualização antes de habilitar automação.
+Use `opencraft update --dry-run` to preview update actions before enabling automation.
 
-Depois:
+Then:
 
 ```bash
 opencraft doctor
@@ -121,50 +123,50 @@ opencraft gateway restart
 opencraft health
 ```
 
-Notas:
+Notes:
 
-- Se seu Gateway roda como um serviço, `opencraft gateway restart` é preferido sobre matar PIDs.
-- Se você está fixado em uma versão específica, veja "Rollback / pinning" abaixo.
+- If your Gateway runs as a service, `opencraft gateway restart` is preferred over killing PIDs.
+- If you’re pinned to a specific version, see “Rollback / pinning” below.
 
-## Atualizar (`opencraft update`)
+## Update (`opencraft update`)
 
-Para **instalações do source** (checkout git), prefira:
-
-```bash
-opencraft update
-```
-
-Ele executa um fluxo de atualização relativamente seguro:
-
-- Requer uma worktree limpa.
-- Muda para o canal selecionado (tag ou branch).
-- Busca + rebase contra o upstream configurado (canal dev).
-- Instala deps, constrói, constrói o Control UI, e executa `opencraft doctor`.
-- Reinicia o gateway por padrão (use `--no-restart` para pular).
-
-Se você instalou via **npm/pnpm** (sem metadados git), `opencraft update` tentará atualizar via seu package manager. Se não conseguir detectar a instalação, use "Atualizar (instalação global)" em vez disso.
-
-## Atualizar (Control UI / RPC)
-
-O Control UI tem **Update & Restart** (RPC: `update.run`). Ele:
-
-1. Executa o mesmo fluxo de atualização de source que `opencraft update` (apenas checkout git).
-2. Escreve um sentinela de reinicialização com um relatório estruturado (cauda stdout/stderr).
-3. Reinicia o gateway e faz ping da última sessão ativa com o relatório.
-
-Se o rebase falhar, o gateway aborta e reinicia sem aplicar a atualização.
-
-## Atualizar (do source)
-
-Do checkout do repositório:
-
-Preferido:
+For **source installs** (git checkout), prefer:
 
 ```bash
 opencraft update
 ```
 
-Manual (aproximadamente equivalente):
+It runs a safe-ish update flow:
+
+- Requires a clean worktree.
+- Switches to the selected channel (tag or branch).
+- Fetches + rebases against the configured upstream (dev channel).
+- Installs deps, builds, builds the Control UI, and runs `opencraft doctor`.
+- Restarts the gateway by default (use `--no-restart` to skip).
+
+If you installed via **npm/pnpm** (no git metadata), `opencraft update` will try to update via your package manager. If it can’t detect the install, use “Update (global install)” instead.
+
+## Update (Control UI / RPC)
+
+The Control UI has **Update & Restart** (RPC: `update.run`). It:
+
+1. Runs the same source-update flow as `opencraft update` (git checkout only).
+2. Writes a restart sentinel with a structured report (stdout/stderr tail).
+3. Restarts the gateway and pings the last active session with the report.
+
+If the rebase fails, the gateway aborts and restarts without applying the update.
+
+## Update (from source)
+
+From the repo checkout:
+
+Preferred:
+
+```bash
+opencraft update
+```
+
+Manual (equivalent-ish):
 
 ```bash
 git pull
@@ -175,32 +177,32 @@ opencraft doctor
 opencraft health
 ```
 
-Notas:
+Notes:
 
-- `pnpm build` importa quando você executa o binário `opencraft` empacotado ([`openclaw.mjs`](https://github.com/editzffaleta/OpenCraft/blob/main/openclaw.mjs)) ou usa Node para executar `dist/`.
-- Se você executa de um checkout de repositório sem uma instalação global, use `pnpm opencraft ...` para comandos CLI.
-- Se você executa diretamente do TypeScript (`pnpm opencraft ...`), um rebuild geralmente é desnecessário, mas **migrações de configuração ainda se aplicam** → execute doctor.
-- Mudar entre instalações global e git é fácil: instale o outro sabor, depois execute `opencraft doctor` para que o ponto de entrada do serviço gateway seja reescrito para a instalação atual.
+- `pnpm build` matters when you run the packaged `openclaw` binary ([`openclaw.mjs`](https://github.com/openclaw/openclaw/blob/main/openclaw.mjs)) or use Node to run `dist/`.
+- If you run from a repo checkout without a global install, use `pnpm opencraft ...` for CLI commands.
+- If you run directly from TypeScript (`pnpm opencraft ...`), a rebuild is usually unnecessary, but **config migrations still apply** → run doctor.
+- Switching between global and git installs is easy: install the other flavor, then run `opencraft doctor` so the gateway service entrypoint is rewritten to the current install.
 
-## Sempre execute: `opencraft doctor`
+## Always Run: `opencraft doctor`
 
-Doctor é o comando "atualização segura". É intencionalmente chato: repara + migra + avisa.
+Doctor is the “safe update” command. It’s intentionally boring: repair + migrate + warn.
 
-Nota: se você está em uma **instalação do source** (checkout git), `opencraft doctor` oferecerá executar `opencraft update` primeiro.
+Note: if you’re on a **source install** (git checkout), `opencraft doctor` will offer to run `opencraft update` first.
 
-Coisas típicas que faz:
+Typical things it does:
 
-- Migra chaves de configuração obsoletas / localizações de arquivo de configuração legado.
-- Audita políticas DM e avisa em configurações "abertas" arriscadas.
-- Verifica saúde do Gateway e pode oferecer para reiniciar.
-- Detecta e migra serviços gateway mais antigos (launchd/systemd; legacy schtasks) para serviços OpenCraft atuais.
-- No Linux, garante lingering de usuário systemd (para que o Gateway sobreviva ao logout).
+- Migrate deprecated config keys / legacy config file locations.
+- Audit DM policies and warn on risky “open” settings.
+- Check Gateway health and can offer to restart.
+- Detect and migrate older gateway services (launchd/systemd; legacy schtasks) to current OpenCraft services.
+- On Linux, ensure systemd user lingering (so the Gateway survives logout).
 
-Detalhes: [Doctor](/gateway/doctor)
+Details: [Doctor](/gateway/doctor)
 
-## Iniciar / parar / reiniciar o Gateway
+## Start / stop / restart the Gateway
 
-CLI (funciona independentemente do SO):
+CLI (works regardless of OS):
 
 ```bash
 opencraft gateway status
@@ -210,20 +212,20 @@ opencraft gateway --port 18789
 opencraft logs --follow
 ```
 
-Se você está supervisionado:
+If you’re supervised:
 
-- macOS launchd (LaunchAgent empacotado em app): `launchctl kickstart -k gui/$UID/ai.opencraft.gateway` (use `ai.opencraft.<profile>`; legado `com.opencraft.*` ainda funciona)
+- macOS launchd (app-bundled LaunchAgent): `launchctl kickstart -k gui/$UID/ai.openclaw.gateway` (use `ai.openclaw.<profile>`; legacy `com.openclaw.*` still works)
 - Linux systemd user service: `systemctl --user restart opencraft-gateway[-<profile>].service`
 - Windows (WSL2): `systemctl --user restart opencraft-gateway[-<profile>].service`
-  - `launchctl`/`systemctl` apenas funcionam se o serviço está instalado; caso contrário execute `opencraft gateway install`.
+  - `launchctl`/`systemctl` only work if the service is installed; otherwise run `opencraft gateway install`.
 
-Runbook + rótulos de serviço exatos: [Gateway runbook](/gateway)
+Runbook + exact service labels: [Gateway runbook](/gateway)
 
-## Rollback / pinning (quando algo quebra)
+## Rollback / pinning (when something breaks)
 
-### Pin (instalação global)
+### Pin (global install)
 
-Instale uma versão conhecida como boa (substitua `<version>` pela última que funcionou):
+Install a known-good version (replace `<version>` with the last working one):
 
 ```bash
 npm i -g opencraft@<version>
@@ -233,25 +235,25 @@ npm i -g opencraft@<version>
 pnpm add -g opencraft@<version>
 ```
 
-Dica: para ver a versão publicada atual, execute `npm view opencraft version`.
+Tip: to see the current published version, run `npm view opencraft version`.
 
-Depois reinicie + re-execute doctor:
+Then restart + re-run doctor:
 
 ```bash
 opencraft doctor
 opencraft gateway restart
 ```
 
-### Pin (source) por data
+### Pin (source) by date
 
-Escolha um commit de uma data (exemplo: "estado de main a partir de 2026-01-01"):
+Pick a commit from a date (example: “state of main as of 2026-01-01”):
 
 ```bash
 git fetch origin
 git checkout "$(git rev-list -n 1 --before=\"2026-01-01\" origin/main)"
 ```
 
-Depois reinstale deps + reinicie:
+Then reinstall deps + restart:
 
 ```bash
 pnpm install
@@ -259,15 +261,15 @@ pnpm build
 opencraft gateway restart
 ```
 
-Se você quer voltar para latest depois:
+If you want to go back to latest later:
 
 ```bash
 git checkout main
 git pull
 ```
 
-## Se você está preso
+## If you’re stuck
 
-- Execute `opencraft doctor` novamente e leia a saída cuidadosamente (frequentemente diz o fix).
-- Verifique: [Troubleshooting](/gateway/troubleshooting)
-- Pergunte no Discord: [https://discord.gg/clawd](https://discord.gg/clawd)
+- Run `opencraft doctor` again and read the output carefully (it often tells you the fix).
+- Check: [Troubleshooting](/gateway/troubleshooting)
+- Ask in Discord: [https://discord.gg/clawd](https://discord.gg/clawd)

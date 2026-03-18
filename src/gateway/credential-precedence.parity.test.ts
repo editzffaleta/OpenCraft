@@ -20,8 +20,8 @@ type TestCase = {
 };
 
 const gatewayEnv = {
-  OPENCLAW_GATEWAY_TOKEN: "env-token", // pragma: allowlist secret
-  OPENCLAW_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
+  OPENCRAFT_GATEWAY_TOKEN: "env-token", // pragma: allowlist secret
+  OPENCRAFT_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
 } as NodeJS.ProcessEnv;
 
 function makeRemoteGatewayConfig(remote: { token?: string; password?: string }): OpenCraftConfig {
@@ -39,8 +39,8 @@ function makeRemoteGatewayConfig(remote: { token?: string; password?: string }):
 
 function withGatewayAuthEnv<T>(env: NodeJS.ProcessEnv, fn: () => T): T {
   const keys = [
-    "OPENCLAW_GATEWAY_TOKEN",
-    "OPENCLAW_GATEWAY_PASSWORD",
+    "OPENCRAFT_GATEWAY_TOKEN",
+    "OPENCRAFT_GATEWAY_PASSWORD",
     "OPENCRAFT_SERVICE_KIND",
     "CLAWDBOT_GATEWAY_TOKEN",
     "CLAWDBOT_GATEWAY_PASSWORD",
@@ -83,8 +83,8 @@ describe("gateway credential precedence parity", () => {
         },
       } as OpenCraftConfig,
       env: {
-        OPENCLAW_GATEWAY_TOKEN: "env-token", // pragma: allowlist secret
-        OPENCLAW_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
+        OPENCRAFT_GATEWAY_TOKEN: "env-token", // pragma: allowlist secret
+        OPENCRAFT_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
       } as NodeJS.ProcessEnv,
       expected: {
         call: { token: "env-token", password: "env-password" }, // pragma: allowlist secret
@@ -151,8 +151,8 @@ describe("gateway credential precedence parity", () => {
         },
       } as OpenCraftConfig,
       env: {
-        OPENCLAW_GATEWAY_TOKEN: "env-token",
-        OPENCLAW_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
+        OPENCRAFT_GATEWAY_TOKEN: "env-token",
+        OPENCRAFT_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
         OPENCRAFT_SERVICE_KIND: "gateway",
       } as NodeJS.ProcessEnv,
       expected: {

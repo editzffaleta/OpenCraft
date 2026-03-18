@@ -1,21 +1,21 @@
 ---
-summary: "Referência CLI para `opencraft models` (status/list/set/scan, aliases, fallbacks, autenticação)"
+summary: "CLI reference for `opencraft models` (status/list/set/scan, aliases, fallbacks, auth)"
 read_when:
-  - Você quer alterar modelos padrão ou ver o status de autenticação do provedor
-  - Você quer escanear modelos/provedores disponíveis e depurar perfis de autenticação
+  - You want to change default models or view provider auth status
+  - You want to scan available models/providers and debug auth profiles
 title: "models"
 ---
 
 # `opencraft models`
 
-Descoberta, escaneamento e configuração de modelos (modelo padrão, fallbacks, perfis de autenticação).
+Model discovery, scanning, and configuration (default model, fallbacks, auth profiles).
 
-Relacionado:
+Related:
 
-- Provedores + modelos: [Models](/providers/models)
-- Configuração de autenticação do provedor: [Getting started](/start/getting-started)
+- Providers + models: [Models](/providers/models)
+- Provider auth setup: [Getting started](/start/getting-started)
 
-## Comandos comuns
+## Common commands
 
 ```bash
 opencraft models status
@@ -24,36 +24,36 @@ opencraft models set <model-or-alias>
 opencraft models scan
 ```
 
-`opencraft models status` mostra o padrão/fallbacks resolvidos mais uma visão geral de autenticação.
-Quando snapshots de uso do provedor estão disponíveis, a seção de status OAuth/Token inclui
-cabeçalhos de uso do provedor.
-Adicione `--probe` para executar sondagens ao vivo de autenticação contra cada perfil de provedor configurado.
-Sondagens são requisições reais (podem consumir Tokens e acionar limites de taxa).
-Use `--agent <id>` para inspecionar o estado de modelo/autenticação de um agente configurado. Quando omitido,
-o comando usa `OPENCRAFT_AGENT_DIR`/`PI_CODING_AGENT_DIR` se definido, caso contrário o
-agente padrão configurado.
+`opencraft models status` shows the resolved default/fallbacks plus an auth overview.
+When provider usage snapshots are available, the OAuth/token status section includes
+provider usage headers.
+Add `--probe` to run live auth probes against each configured provider profile.
+Probes are real requests (may consume tokens and trigger rate limits).
+Use `--agent <id>` to inspect a configured agent’s model/auth state. When omitted,
+the command uses `OPENCRAFT_AGENT_DIR`/`PI_CODING_AGENT_DIR` if set, otherwise the
+configured default agent.
 
-Notas:
+Notes:
 
-- `models set <model-or-alias>` aceita `provider/model` ou um alias.
-- Referências de modelo são analisadas dividindo no **primeiro** `/`. Se o ID do modelo incluir `/` (estilo OpenRouter), inclua o prefixo do provedor (exemplo: `openrouter/moonshotai/kimi-k2`).
-- Se você omitir o provedor, o OpenCraft trata a entrada como um alias ou um modelo para o **provedor padrão** (só funciona quando não há `/` no ID do modelo).
-- `models status` pode mostrar `marker(<value>)` na saída de autenticação para placeholders não secretos (por exemplo `OPENAI_API_KEY`, `secretref-managed`, `minimax-oauth`, `qwen-oauth`, `ollama-local`) em vez de mascará-los como segredos.
+- `models set <model-or-alias>` accepts `provider/model` or an alias.
+- Model refs are parsed by splitting on the **first** `/`. If the model ID includes `/` (OpenRouter-style), include the provider prefix (example: `openrouter/moonshotai/kimi-k2`).
+- If you omit the provider, OpenCraft treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
+- `models status` may show `marker(<value>)` in auth output for non-secret placeholders (for example `OPENAI_API_KEY`, `secretref-managed`, `minimax-oauth`, `qwen-oauth`, `ollama-local`) instead of masking them as secrets.
 
 ### `models status`
 
-Opções:
+Options:
 
 - `--json`
 - `--plain`
-- `--check` (sair 1=expirado/ausente, 2=expirando)
-- `--probe` (sondagem ao vivo dos perfis de autenticação configurados)
-- `--probe-provider <name>` (sondar um provedor)
-- `--probe-profile <id>` (repetível ou ids de perfil separados por vírgula)
+- `--check` (exit 1=expired/missing, 2=expiring)
+- `--probe` (live probe of configured auth profiles)
+- `--probe-provider <name>` (probe one provider)
+- `--probe-profile <id>` (repeat or comma-separated profile ids)
 - `--probe-timeout <ms>`
 - `--probe-concurrency <n>`
 - `--probe-max-tokens <n>`
-- `--agent <id>` (id do agente configurado; sobrepõe `OPENCRAFT_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
+- `--agent <id>` (configured agent id; overrides `OPENCRAFT_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
 
 ## Aliases + fallbacks
 
@@ -62,7 +62,7 @@ opencraft models aliases list
 opencraft models fallbacks list
 ```
 
-## Perfis de autenticação
+## Auth profiles
 
 ```bash
 opencraft models auth add
@@ -71,11 +71,11 @@ opencraft models auth setup-token
 opencraft models auth paste-token
 ```
 
-`models auth login` executa o fluxo de autenticação do Plugin do provedor (OAuth/chave de API). Use
-`opencraft plugins list` para ver quais provedores estão instalados.
+`models auth login` runs a provider plugin’s auth flow (OAuth/API key). Use
+`opencraft plugins list` to see which providers are installed.
 
-Notas:
+Notes:
 
-- `setup-token` solicita um valor de setup-token (gere-o com `claude setup-token` em qualquer máquina).
-- `paste-token` aceita uma string de Token gerada em outro lugar ou por automação.
-- Nota sobre política da Anthropic: o suporte a setup-token é compatibilidade técnica. A Anthropic bloqueou algum uso de assinatura fora do Claude Code no passado, então verifique os termos atuais antes de usá-lo amplamente.
+- `setup-token` prompts for a setup-token value (generate it with `claude setup-token` on any machine).
+- `paste-token` accepts a token string generated elsewhere or from automation.
+- Anthropic policy note: setup-token support is technical compatibility. Anthropic has blocked some subscription usage outside Claude Code in the past, so verify current terms before using it broadly.

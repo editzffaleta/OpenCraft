@@ -150,7 +150,7 @@ OpenCraft 将自动提供本地安装路径。
 2. 创建一个 **Azure Bot**（App ID + 密钥 + 租户 ID）。
 3. 构建一个引用机器人并包含以下 RSC 权限的 **Teams 应用包**。
 4. 将 Teams 应用上传/安装到团队中（或用于私信的个人范围）。
-5. 在 `~/.editzffaleta/OpenCraft.json`（或环境变量）中配置 `msteams` 并启动 Gateway 网关。
+5. 在 `~/.opencraft/opencraft.json`（或环境变量）中配置 `msteams` 并启动 Gateway 网关。
 6. Gateway 网关默认在 `/api/messages` 上监听 Bot Framework webhook 流量。
 
 ## Azure Bot 设置（前提条件）
@@ -162,14 +162,14 @@ OpenCraft 将自动提供本地安装路径。
 1. 前往[创建 Azure Bot](https://portal.azure.com/#create/Microsoft.AzureBot)
 2. 填写**基本信息**选项卡：
 
-   | 字段               | 值                                                   |
-   | ------------------ | ---------------------------------------------------- |
+   | 字段               | 值                                                  |
+   | ------------------ | --------------------------------------------------- |
    | **Bot handle**     | 你的机器人名称，例如 `opencraft-msteams`（必须唯一） |
-   | **Subscription**   | 选择你的 Azure 订阅                                  |
-   | **Resource group** | 新建或使用现有                                       |
-   | **Pricing tier**   | **Free** 用于开发/测试                               |
-   | **Type of App**    | **Single Tenant**（推荐 - 见下方说明）               |
-   | **Creation type**  | **Create new Microsoft App ID**                      |
+   | **Subscription**   | 选择你的 Azure 订阅                                 |
+   | **Resource group** | 新建或使用现有                                      |
+   | **Pricing tier**   | **Free** 用于开发/测试                              |
+   | **Type of App**    | **Single Tenant**（推荐 - 见下方说明）              |
+   | **Creation type**  | **Create new Microsoft App ID**                     |
 
 > **弃用通知：** 2025-07-31 之后已弃用创建新的多租户机器人。新机器人请使用 **Single Tenant**。
 

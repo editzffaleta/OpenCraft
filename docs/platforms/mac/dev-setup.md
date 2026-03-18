@@ -1,104 +1,104 @@
 ---
-summary: "Guia de configuração para desenvolvedores trabalhando no aplicativo macOS do OpenCraft"
+summary: "Setup guide for developers working on the OpenCraft macOS app"
 read_when:
-  - Configurando o ambiente de desenvolvimento macOS
-title: "Configuração de Desenvolvimento macOS"
+  - Setting up the macOS development environment
+title: "macOS Dev Setup"
 ---
 
-# Configuração de Desenvolvimento macOS
+# macOS Developer Setup
 
-Este guia cobre os passos necessários para compilar e executar o aplicativo macOS do OpenCraft a partir do código-fonte.
+This guide covers the necessary steps to build and run the OpenCraft macOS application from source.
 
-## Pré-requisitos
+## Prerequisites
 
-Antes de compilar o aplicativo, certifique-se de ter o seguinte instalado:
+Before building the app, ensure you have the following installed:
 
-1. **Xcode 26.2+**: Necessário para desenvolvimento em Swift.
-2. **Node.js 24 & pnpm**: Recomendado para o Gateway, CLI e scripts de empacotamento. Node 22 LTS, atualmente `22.16+`, permanece suportado para compatibilidade.
+1. **Xcode 26.2+**: Required for Swift development.
+2. **Node.js 24 & pnpm**: Recommended for the gateway, CLI, and packaging scripts. Node 22 LTS, currently `22.16+`, remains supported for compatibility.
 
-## 1. Instale as dependências
+## 1. Install Dependencies
 
-Instale as dependências de todo o projeto:
+Install the project-wide dependencies:
 
 ```bash
 pnpm install
 ```
 
-## 2. Compile e empacote o aplicativo
+## 2. Build and Package the App
 
-Para compilar o aplicativo macOS e empacotá-lo em `dist/OpenCraft.app`, execute:
+To build the macOS app and package it into `dist/OpenCraft.app`, run:
 
 ```bash
 ./scripts/package-mac-app.sh
 ```
 
-Se você não tiver um certificado Apple Developer ID, o script usará automaticamente **assinatura ad-hoc** (`-`).
+If you don't have an Apple Developer ID certificate, the script will automatically use **ad-hoc signing** (`-`).
 
-Para modos de execução de desenvolvimento, flags de assinatura e solução de problemas de Team ID, veja o README do aplicativo macOS:
-[https://github.com/editzffaleta/OpenCraft/blob/main/apps/macos/README.md](https://github.com/editzffaleta/OpenCraft/blob/main/apps/macos/README.md)
+For dev run modes, signing flags, and Team ID troubleshooting, see the macOS app README:
+[https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md](https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md)
 
-> **Nota**: Aplicativos assinados ad-hoc podem gerar avisos de segurança. Se o aplicativo travar imediatamente com "Abort trap 6", veja a seção [Solução de problemas](#solução-de-problemas).
+> **Note**: Ad-hoc signed apps may trigger security prompts. If the app crashes immediately with "Abort trap 6", see the [Troubleshooting](#troubleshooting) section.
 
-## 3. Instale a CLI
+## 3. Install the CLI
 
-O aplicativo macOS espera uma instalação global da CLI `opencraft` para gerenciar tarefas em segundo plano.
+The macOS app expects a global `opencraft` CLI install to manage background tasks.
 
-**Para instalá-la (recomendado):**
+**To install it (recommended):**
 
-1. Abra o aplicativo OpenCraft.
-2. Vá para a aba **General** nas configurações.
-3. Clique em **"Install CLI"**.
+1. Open the OpenCraft app.
+2. Go to the **General** settings tab.
+3. Click **"Install CLI"**.
 
-Alternativamente, instale manualmente:
+Alternatively, install it manually:
 
 ```bash
-npm install -g opencraft@<versão>
+npm install -g opencraft@<version>
 ```
 
-## Solução de problemas
+## Troubleshooting
 
-### Falha na compilação: incompatibilidade de Toolchain ou SDK
+### Build Fails: Toolchain or SDK Mismatch
 
-A compilação do aplicativo macOS espera o SDK macOS mais recente e o toolchain Swift 6.2.
+The macOS app build expects the latest macOS SDK and Swift 6.2 toolchain.
 
-**Dependências do sistema (obrigatórias):**
+**System dependencies (required):**
 
-- **Última versão do macOS disponível no Software Update** (necessária pelos SDKs do Xcode 26.2)
-- **Xcode 26.2** (toolchain Swift 6.2)
+- **Latest macOS version available in Software Update** (required by Xcode 26.2 SDKs)
+- **Xcode 26.2** (Swift 6.2 toolchain)
 
-**Verificações:**
+**Checks:**
 
 ```bash
 xcodebuild -version
 xcrun swift --version
 ```
 
-Se as versões não corresponderem, atualize o macOS/Xcode e execute novamente a compilação.
+If versions don’t match, update macOS/Xcode and re-run the build.
 
-### Aplicativo trava ao conceder permissão
+### App Crashes on Permission Grant
 
-Se o aplicativo travar quando você tentar permitir acesso ao **Reconhecimento de Fala** ou **Microfone**, pode ser devido a um cache TCC corrompido ou incompatibilidade de assinatura.
+If the app crashes when you try to allow **Speech Recognition** or **Microphone** access, it may be due to a corrupted TCC cache or signature mismatch.
 
-**Correção:**
+**Fix:**
 
-1. Redefina as permissões TCC:
+1. Reset the TCC permissions:
 
    ```bash
-   tccutil reset All ai.opencraft.mac.debug
+   tccutil reset All ai.openclaw.mac.debug
    ```
 
-2. Se isso falhar, altere o `BUNDLE_ID` temporariamente em [`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) para forçar uma "tela limpa" do macOS.
+2. If that fails, change the `BUNDLE_ID` temporarily in [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) to force a "clean slate" from macOS.
 
-### Gateway "Starting..." indefinidamente
+### Gateway "Starting..." indefinitely
 
-Se o status do Gateway ficar em "Starting...", verifique se um processo zumbi está ocupando a porta:
+If the gateway status stays on "Starting...", check if a zombie process is holding the port:
 
 ```bash
 opencraft gateway status
 opencraft gateway stop
 
-# Se você não estiver usando um LaunchAgent (modo dev / execução manual), encontre o ouvinte:
+# If you’re not using a LaunchAgent (dev mode / manual runs), find the listener:
 lsof -nP -iTCP:18789 -sTCP:LISTEN
 ```
 
-Se uma execução manual estiver ocupando a porta, pare esse processo (Ctrl+C). Como último recurso, mate o PID encontrado acima.
+If a manual run is holding the port, stop that process (Ctrl+C). As a last resort, kill the PID you found above.

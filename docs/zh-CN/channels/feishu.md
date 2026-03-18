@@ -178,7 +178,7 @@ opencraft channels add
 
 ### 通过配置文件进行配置
 
-编辑 `~/.editzffaleta/OpenCraft.json`：
+编辑 `~/.opencraft/opencraft.json`：
 
 ```json5
 {
@@ -444,8 +444,8 @@ opencraft pairing list feishu
 
 ## Gateway 网关管理命令
 
-| Command                     | Description                |
-| --------------------------- | -------------------------- |
+| Command                    | Description                |
+| -------------------------- | -------------------------- |
 | `opencraft gateway status`  | 显示 Gateway 网关状态      |
 | `opencraft gateway install` | 安装/启动 Gateway 网关服务 |
 | `opencraft gateway stop`    | 停止 Gateway 网关服务      |

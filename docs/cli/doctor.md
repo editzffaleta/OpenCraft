@@ -1,21 +1,21 @@
 ---
-summary: "Referência CLI para `opencraft doctor` (verificações de saúde + reparos guiados)"
+summary: "CLI reference for `opencraft doctor` (health checks + guided repairs)"
 read_when:
-  - Você tem problemas de conectividade/autenticação e quer correções guiadas
-  - Você atualizou e quer uma verificação de sanidade
+  - You have connectivity/auth issues and want guided fixes
+  - You updated and want a sanity check
 title: "doctor"
 ---
 
 # `opencraft doctor`
 
-Verificações de saúde + correções rápidas para o gateway e canais.
+Health checks + quick fixes for the gateway and channels.
 
-Relacionado:
+Related:
 
-- Solução de problemas: [Solução de problemas](/gateway/troubleshooting)
-- Auditoria de segurança: [Segurança](/gateway/security)
+- Troubleshooting: [Troubleshooting](/gateway/troubleshooting)
+- Security audit: [Security](/gateway/security)
 
-## Exemplos
+## Examples
 
 ```bash
 opencraft doctor
@@ -23,24 +23,26 @@ opencraft doctor --repair
 opencraft doctor --deep
 ```
 
-Observações:
+Notes:
 
-- Prompts interativos (como correções de keychain/OAuth) só executam quando stdin é um TTY e `--non-interactive` **não** está definido. Execuções headless (cron, Telegram, sem terminal) pulam prompts.
-- `--fix` (alias para `--repair`) grava um backup em `~/.editzffaleta/OpenCraft.json.bak` e remove chaves de config desconhecidas, listando cada remoção.
-- Verificações de integridade de estado agora detectam arquivos de transcrição órfãos no diretório de sessões e podem arquivá-los como `.deleted.<timestamp>` para recuperar espaço com segurança.
-- O Doctor também varre `~/.opencraft/cron/jobs.json` (ou `cron.store`) em busca de formatos legados de tarefas Cron e pode reescrevê-los no local antes que o agendador tenha que normalizá-los automaticamente em tempo de execução.
-- O Doctor inclui uma verificação de prontidão de busca em memória e pode recomendar `opencraft configure --section model` quando credenciais de embedding estão faltando.
-- Se o modo sandbox está habilitado mas Docker está indisponível, o doctor reporta um aviso de alto sinal com correção (`instalar Docker` ou `opencraft config set agents.defaults.sandbox.mode off`).
-- Se `gateway.auth.token`/`gateway.auth.password` são gerenciados por SecretRef e indisponíveis no caminho de comando atual, o doctor reporta um aviso somente leitura e não grava credenciais de fallback em texto plano.
+- Interactive prompts (like keychain/OAuth fixes) only run when stdin is a TTY and `--non-interactive` is **not** set. Headless runs (cron, Telegram, no terminal) will skip prompts.
+- `--fix` (alias for `--repair`) writes a backup to `~/.opencraft/opencraft.json.bak` and drops unknown config keys, listing each removal.
+- State integrity checks now detect orphan transcript files in the sessions directory and can archive them as `.deleted.<timestamp>` to reclaim space safely.
+- Doctor also scans `~/.opencraft/cron/jobs.json` (or `cron.store`) for legacy cron job shapes and can rewrite them in place before the scheduler has to auto-normalize them at runtime.
+- Doctor includes a memory-search readiness check and can recommend `opencraft configure --section model` when embedding credentials are missing.
+- If sandbox mode is enabled but Docker is unavailable, doctor reports a high-signal warning with remediation (`install Docker` or `opencraft config set agents.defaults.sandbox.mode off`).
+- If `gateway.auth.token`/`gateway.auth.password` are SecretRef-managed and unavailable in the current command path, doctor reports a read-only warning and does not write plaintext fallback credentials.
+- If channel SecretRef inspection fails in a fix path, doctor continues and reports a warning instead of exiting early.
+- Telegram `allowFrom` username auto-resolution (`doctor --fix`) requires a resolvable Telegram token in the current command path. If token inspection is unavailable, doctor reports a warning and skips auto-resolution for that pass.
 
-## macOS: substituições de env do `launchctl`
+## macOS: `launchctl` env overrides
 
-Se você executou anteriormente `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (ou `...PASSWORD`), esse valor substitui seu arquivo de config e pode causar erros persistentes de "não autorizado".
+If you previously ran `launchctl setenv OPENCRAFT_GATEWAY_TOKEN ...` (or `...PASSWORD`), that value overrides your config file and can cause persistent “unauthorized” errors.
 
 ```bash
-launchctl getenv OPENCLAW_GATEWAY_TOKEN
-launchctl getenv OPENCLAW_GATEWAY_PASSWORD
+launchctl getenv OPENCRAFT_GATEWAY_TOKEN
+launchctl getenv OPENCRAFT_GATEWAY_PASSWORD
 
-launchctl unsetenv OPENCLAW_GATEWAY_TOKEN
-launchctl unsetenv OPENCLAW_GATEWAY_PASSWORD
+launchctl unsetenv OPENCRAFT_GATEWAY_TOKEN
+launchctl unsetenv OPENCRAFT_GATEWAY_PASSWORD
 ```

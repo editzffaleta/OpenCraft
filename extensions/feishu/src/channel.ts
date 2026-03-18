@@ -1,8 +1,11 @@
-import {
-  collectAllowlistProviderRestrictSendersWarnings,
-  formatAllowFromLowercase,
-  mapAllowFromEntries,
-} from "opencraft/plugin-sdk/compat";
+import { formatAllowFromLowercase } from "opencraft/plugin-sdk/allow-from";
+import { mapAllowFromEntries } from "opencraft/plugin-sdk/channel-config-helpers";
+import { collectAllowlistProviderRestrictSendersWarnings } from "opencraft/plugin-sdk/channel-policy";
+import { createMessageToolCardSchema } from "opencraft/plugin-sdk/channel-runtime";
+import type {
+  ChannelMessageActionAdapter,
+  ChannelMessageToolDiscovery,
+} from "opencraft/plugin-sdk/channel-runtime";
 import type { ChannelMeta, ChannelPlugin, ClawdbotConfig } from "opencraft/plugin-sdk/feishu";
 import {
   buildChannelConfigSchema,
@@ -14,6 +17,7 @@ import {
   PAIRING_APPROVED_MESSAGE,
 } from "opencraft/plugin-sdk/feishu";
 import type { ChannelMessageActionName } from "opencraft/plugin-sdk/feishu";
+import { createLazyRuntimeNamedExport } from "opencraft/plugin-sdk/lazy-runtime";
 import {
   resolveFeishuAccount,
   resolveFeishuCredentials,
@@ -43,8 +47,59 @@ const meta: ChannelMeta = {
   order: 70,
 };
 
-async function loadFeishuChannelRuntime() {
-  return await import("./channel.runtime.js");
+const loadFeishuChannelRuntime = createLazyRuntimeNamedExport(
+  () => import("./channel.runtime.js"),
+  "feishuChannelRuntime",
+);
+
+function describeFeishuMessageTool({
+  cfg,
+}: Parameters<
+  NonNullable<ChannelMessageActionAdapter["describeMessageTool"]>
+>[0]): ChannelMessageToolDiscovery {
+  const enabled =
+    cfg.channels?.feishu?.enabled !== false &&
+    Boolean(resolveFeishuCredentials(cfg.channels?.feishu as FeishuConfig | undefined));
+  if (listEnabledFeishuAccounts(cfg).length === 0) {
+    return {
+      actions: [],
+      capabilities: enabled ? ["cards"] : [],
+      schema: enabled
+        ? {
+            properties: {
+              card: createMessageToolCardSchema(),
+            },
+          }
+        : null,
+    };
+  }
+  const actions = new Set<ChannelMessageActionName>([
+    "send",
+    "read",
+    "edit",
+    "thread-reply",
+    "pin",
+    "list-pins",
+    "unpin",
+    "member-info",
+    "channel-info",
+    "channel-list",
+  ]);
+  if (areAnyFeishuReactionActionsEnabled(cfg)) {
+    actions.add("react");
+    actions.add("reactions");
+  }
+  return {
+    actions: Array.from(actions),
+    capabilities: enabled ? ["cards"] : [],
+    schema: enabled
+      ? {
+          properties: {
+            card: createMessageToolCardSchema(),
+          },
+        }
+      : null,
+  };
 }
 
 function setFeishuNamedAccountEnabled(
@@ -394,34 +449,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
     formatAllowFrom: ({ allowFrom }) => formatAllowFromLowercase({ allowFrom }),
   },
   actions: {
-    listActions: ({ cfg }) => {
-      if (listEnabledFeishuAccounts(cfg).length === 0) {
-        return [];
-      }
-      const actions = new Set<ChannelMessageActionName>([
-        "send",
-        "read",
-        "edit",
-        "thread-reply",
-        "pin",
-        "list-pins",
-        "unpin",
-        "member-info",
-        "channel-info",
-        "channel-list",
-      ]);
-      if (areAnyFeishuReactionActionsEnabled(cfg)) {
-        actions.add("react");
-        actions.add("reactions");
-      }
-      return Array.from(actions);
-    },
-    getCapabilities: ({ cfg }) => {
-      return cfg.channels?.feishu?.enabled !== false &&
-        Boolean(resolveFeishuCredentials(cfg.channels?.feishu as FeishuConfig | undefined))
-        ? (["cards"] as const)
-        : [];
-    },
+    describeMessageTool: describeFeishuMessageTool,
     handleAction: async (ctx) => {
       const account = resolveFeishuAccount({ cfg: ctx.cfg, accountId: ctx.accountId ?? undefined });
       if (
@@ -822,11 +850,15 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       });
     },
   },
-  acpBindings: {
-    normalizeConfiguredBindingTarget: ({ conversationId }) =>
+  bindings: {
+    compileConfiguredBinding: ({ conversationId }) =>
       normalizeFeishuAcpConversationId(conversationId),
-    matchConfiguredBinding: ({ bindingConversationId, conversationId, parentConversationId }) =>
-      matchFeishuAcpConversation({ bindingConversationId, conversationId, parentConversationId }),
+    matchInboundConversation: ({ compiledBinding, conversationId, parentConversationId }) =>
+      matchFeishuAcpConversation({
+        bindingConversationId: compiledBinding.conversationId,
+        conversationId,
+        parentConversationId,
+      }),
   },
   setup: feishuSetupAdapter,
   setupWizard: feishuSetupWizard,

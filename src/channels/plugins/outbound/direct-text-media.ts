@@ -93,10 +93,7 @@ export async function sendTextMediaPayload(params: {
 export function resolveScopedChannelMediaMaxBytes(params: {
   cfg: OpenCraftConfig;
   accountId?: string | null;
-  resolveChannelLimitMb: (params: {
-    cfg: OpenCraftConfig;
-    accountId: string;
-  }) => number | undefined;
+  resolveChannelLimitMb: (params: { cfg: OpenCraftConfig; accountId: string }) => number | undefined;
 }): number | undefined {
   return resolveChannelMediaMaxBytes({
     cfg: params.cfg,

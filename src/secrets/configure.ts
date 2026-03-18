@@ -135,9 +135,7 @@ function providerHint(provider: SecretProviderConfig): string {
   return `exec (${provider.jsonOnly === false ? "json+text" : "json"})`;
 }
 
-function toSourceChoices(
-  config: OpenCraftConfig,
-): Array<{ value: SecretRefSource; label: string }> {
+function toSourceChoices(config: OpenCraftConfig): Array<{ value: SecretRefSource; label: string }> {
   const hasSource = (source: SecretRefSource) =>
     Object.values(config.secrets?.providers ?? {}).some((provider) => provider?.source === source);
   const choices: Array<{ value: SecretRefSource; label: string }> = [

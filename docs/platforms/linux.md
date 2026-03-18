@@ -1,76 +1,76 @@
 ---
-summary: "Suporte do Linux + status do aplicativo complementar"
+summary: "Linux support + companion app status"
 read_when:
-  - Procurando por status do aplicativo complementar do Linux
-  - Planejando cobertura de plataforma ou contribuições
-title: "Aplicativo Linux"
+  - Looking for Linux companion app status
+  - Planning platform coverage or contributions
+title: "Linux App"
 ---
 
-# Aplicativo Linux
+# Linux App
 
-O Gateway é totalmente suportado no Linux. **Node é o tempo de execução recomendado**.
-Bun não é recomendado para o Gateway (bugs do WhatsApp/Telegram).
+The Gateway is fully supported on Linux. **Node is the recommended runtime**.
+Bun is not recommended for the Gateway (WhatsApp/Telegram bugs).
 
-Aplicativos complementares nativos do Linux estão planejados. Contribuições são bem-vindas se você quiser ajudar a construir um.
+Native Linux companion apps are planned. Contributions are welcome if you want to help build one.
 
-## Caminho rápido para iniciantes (VPS)
+## Beginner quick path (VPS)
 
-1. Instale Node 24 (recomendado; Node 22 LTS, atualmente `22.16+`, ainda funciona para compatibilidade)
+1. Install Node 24 (recommended; Node 22 LTS, currently `22.16+`, still works for compatibility)
 2. `npm i -g opencraft@latest`
 3. `opencraft onboard --install-daemon`
-4. Do seu laptop: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
-5. Abra `http://127.0.0.1:18789/` e cole seu token
+4. From your laptop: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
+5. Open `http://127.0.0.1:18789/` and paste your token
 
-Guia VPS passo a passo: [exe.dev](/install/exe-dev)
+Step-by-step VPS guide: [exe.dev](/install/exe-dev)
 
-## Instalar
+## Install
 
-- [Guia de Introdução](/start/getting-started)
-- [Instalar & atualizações](/install/updating)
-- Fluxos opcionais: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
+- [Getting Started](/start/getting-started)
+- [Install & updates](/install/updating)
+- Optional flows: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
 
 ## Gateway
 
-- [Runbook do Gateway](/gateway)
-- [Configuração](/gateway/configuration)
+- [Gateway runbook](/gateway)
+- [Configuration](/gateway/configuration)
 
-## Instalação do serviço Gateway (CLI)
+## Gateway service install (CLI)
 
-Use um destes:
+Use one of these:
 
 ```
 opencraft onboard --install-daemon
 ```
 
-Ou:
+Or:
 
 ```
 opencraft gateway install
 ```
 
-Ou:
+Or:
 
 ```
 opencraft configure
 ```
 
-Selecione **Gateway service** quando solicitado.
+Select **Gateway service** when prompted.
 
-Reparo/migração:
+Repair/migrate:
 
 ```
 opencraft doctor
 ```
 
-## Controle de sistema (unidade de usuário systemd)
+## System control (systemd user unit)
 
-OpenCraft instala um serviço **usuário** systemd por padrão. Use um serviço **sistema**
-para servidores compartilhados ou sempre ativados. O exemplo de unidade completo e a orientação
-vivem no [Runbook do Gateway](/gateway).
+OpenCraft installs a systemd **user** service by default. Use a **system**
+service for shared or always-on servers. The full unit example and guidance
+live in the [Gateway runbook](/gateway).
 
-Configuração mínima:
+Minimal setup:
 
-Crie `~/.config/systemd/user/opencraft-gateway[-<profile>].service`:
+Create `~/.config/systemd/user/opencraft-gateway[-<profile>].service`:
 
 ```
 [Unit]
@@ -87,7 +87,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-Ative-o:
+Enable it:
 
 ```
 systemctl --user enable --now opencraft-gateway[-<profile>].service

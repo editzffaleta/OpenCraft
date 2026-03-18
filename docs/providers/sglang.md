@@ -1,36 +1,36 @@
 ---
-summary: "Execute o OpenCraft com SGLang (servidor auto-hospedado compatível com OpenAI)"
+summary: "Run OpenCraft with SGLang (OpenAI-compatible self-hosted server)"
 read_when:
-  - Você quer executar o OpenCraft contra um servidor SGLang local
-  - Você quer endpoints /v1 compatíveis com OpenAI com seus próprios modelos
+  - You want to run OpenCraft against a local SGLang server
+  - You want OpenAI-compatible /v1 endpoints with your own models
 title: "SGLang"
 ---
 
 # SGLang
 
-O SGLang pode servir modelos open-source via uma API HTTP **compatível com OpenAI**.
-O OpenCraft pode se conectar ao SGLang usando a API `openai-completions`.
+SGLang can serve open-source models via an **OpenAI-compatible** HTTP API.
+OpenCraft can connect to SGLang using the `openai-completions` API.
 
-O OpenCraft também pode **descobrir automaticamente** modelos disponíveis do SGLang quando você opta
-por usar `SGLANG_API_KEY` (qualquer valor funciona se seu servidor não exigir autenticação)
-e você não define uma entrada explícita em `models.providers.sglang`.
+OpenCraft can also **auto-discover** available models from SGLang when you opt
+in with `SGLANG_API_KEY` (any value works if your server does not enforce auth)
+and you do not define an explicit `models.providers.sglang` entry.
 
-## Início rápido
+## Quick start
 
-1. Inicie o SGLang com um servidor compatível com OpenAI.
+1. Start SGLang with an OpenAI-compatible server.
 
-Sua URL base deve expor endpoints `/v1` (por exemplo `/v1/models`,
-`/v1/chat/completions`). O SGLang normalmente roda em:
+Your base URL should expose `/v1` endpoints (for example `/v1/models`,
+`/v1/chat/completions`). SGLang commonly runs on:
 
 - `http://127.0.0.1:30000/v1`
 
-2. Opte por participar (qualquer valor funciona se não houver autenticação configurada):
+2. Opt in (any value works if no auth is configured):
 
 ```bash
 export SGLANG_API_KEY="sglang-local"
 ```
 
-3. Execute o onboarding e escolha `SGLang`, ou defina um modelo diretamente:
+3. Run onboarding and choose `SGLang`, or set a model directly:
 
 ```bash
 opencraft onboard
@@ -46,25 +46,25 @@ opencraft onboard
 }
 ```
 
-## Descoberta de modelos (provider implícito)
+## Model discovery (implicit provider)
 
-Quando `SGLANG_API_KEY` está definido (ou existe um perfil de autenticação) e você **não**
-define `models.providers.sglang`, o OpenCraft irá consultar:
+When `SGLANG_API_KEY` is set (or an auth profile exists) and you **do not**
+define `models.providers.sglang`, OpenCraft will query:
 
 - `GET http://127.0.0.1:30000/v1/models`
 
-e converter os IDs retornados em entradas de modelo.
+and convert the returned IDs into model entries.
 
-Se você definir `models.providers.sglang` explicitamente, a descoberta automática é ignorada e
-você deve definir os modelos manualmente.
+If you set `models.providers.sglang` explicitly, auto-discovery is skipped and
+you must define models manually.
 
-## Configuração explícita (modelos manuais)
+## Explicit configuration (manual models)
 
-Use config explícito quando:
+Use explicit config when:
 
-- O SGLang roda em um host/porta diferente.
-- Você quer fixar valores de `contextWindow`/`maxTokens`.
-- Seu servidor requer uma API key real (ou você quer controlar os headers).
+- SGLang runs on a different host/port.
+- You want to pin `contextWindow`/`maxTokens` values.
+- Your server requires a real API key (or you want to control headers).
 
 ```json5
 {
@@ -91,14 +91,14 @@ Use config explícito quando:
 }
 ```
 
-## Solução de problemas
+## Troubleshooting
 
-- Verifique se o servidor está acessível:
+- Check the server is reachable:
 
 ```bash
 curl http://127.0.0.1:30000/v1/models
 ```
 
-- Se as requisições falharem com erros de autenticação, defina uma `SGLANG_API_KEY` real que corresponda
-  à configuração do seu servidor, ou configure o provider explicitamente em
+- If requests fail with auth errors, set a real `SGLANG_API_KEY` that matches
+  your server configuration, or configure the provider explicitly under
   `models.providers.sglang`.

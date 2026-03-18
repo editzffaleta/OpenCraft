@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import { listSlackAccountIds, resolveSlackAccount } from "./accounts.js";
 
 function resolveInteractiveRepliesFromCapabilities(capabilities: unknown): boolean {

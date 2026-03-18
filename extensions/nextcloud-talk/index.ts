@@ -1,17 +1,14 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/nextcloud-talk";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/nextcloud-talk";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { nextcloudTalkPlugin } from "./src/channel.js";
 import { setNextcloudTalkRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { nextcloudTalkPlugin } from "./src/channel.js";
+export { setNextcloudTalkRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "nextcloud-talk",
   name: "Nextcloud Talk",
   description: "Nextcloud Talk channel plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setNextcloudTalkRuntime(api.runtime);
-    api.registerChannel({ plugin: nextcloudTalkPlugin });
-  },
-};
-
-export default plugin;
+  plugin: nextcloudTalkPlugin,
+  setRuntime: setNextcloudTalkRuntime,
+});

@@ -2,6 +2,7 @@ import { type Api, type Model } from "@mariozechner/pi-ai";
 import type { OpenCraftConfig } from "../../config/config.js";
 import { getDefaultLocalRoots } from "../../plugin-sdk/web-media.js";
 import type { ImageModelConfig } from "./image-tool.helpers.js";
+import type { ToolModelConfig } from "./model-config.helpers.js";
 import { getApiKeyForModel, normalizeWorkspaceDir, requireApiKey } from "./tool-runtime.helpers.js";
 
 type TextToolAttempt = {
@@ -21,6 +22,21 @@ export function applyImageModelConfigDefaults(
   cfg: OpenCraftConfig | undefined,
   imageModelConfig: ImageModelConfig,
 ): OpenCraftConfig | undefined {
+  return applyAgentDefaultModelConfig(cfg, "imageModel", imageModelConfig);
+}
+
+export function applyImageGenerationModelConfigDefaults(
+  cfg: OpenCraftConfig | undefined,
+  imageGenerationModelConfig: ToolModelConfig,
+): OpenCraftConfig | undefined {
+  return applyAgentDefaultModelConfig(cfg, "imageGenerationModel", imageGenerationModelConfig);
+}
+
+function applyAgentDefaultModelConfig(
+  cfg: OpenCraftConfig | undefined,
+  key: "imageModel" | "imageGenerationModel",
+  modelConfig: ToolModelConfig,
+): OpenCraftConfig | undefined {
   if (!cfg) {
     return undefined;
   }
@@ -30,7 +46,7 @@ export function applyImageModelConfigDefaults(
       ...cfg.agents,
       defaults: {
         ...cfg.agents?.defaults,
-        imageModel: imageModelConfig,
+        [key]: modelConfig,
       },
     },
   };

@@ -7,7 +7,7 @@ import { resolveStateDir } from "../../../src/config/paths.js";
 import { resolvePreferredOpenCraftTmpDir } from "../../../src/infra/tmp-opencraft-dir.js";
 import { optimizeImageToPng } from "../../../src/media/image-ops.js";
 import { mockPinnedHostnameResolution } from "../../../src/test-helpers/ssrf.js";
-import { captureEnv } from "../../../src/test-utils/env.js";
+import { captureEnv } from "../../../test/helpers/extensions/env.js";
 import { sendVoiceMessageDiscord } from "../../discord/src/send.js";
 import {
   LocalMediaAccessError,

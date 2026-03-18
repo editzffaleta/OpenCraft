@@ -84,7 +84,7 @@ Brave 提供免费层和付费计划；查看 Brave API 门户了解当前限制
 
 ### 在哪里设置密钥（推荐）
 
-**推荐：** 运行 `opencraft configure --section web`。它将密钥存储在 `~/.editzffaleta/OpenCraft.json` 的 `tools.web.search.apiKey` 下。
+**推荐：** 运行 `opencraft configure --section web`。它将密钥存储在 `~/.opencraft/opencraft.json` 的 `tools.web.search.apiKey` 下。
 
 **环境变量替代方案：** 在 Gateway 网关进程环境中设置 `BRAVE_API_KEY`。对于 Gateway 网关安装，将其放在 `~/.opencraft/.env`（或你的服务环境）中。参见[环境变量](/help/faq#how-does-opencraft-load-environment-variables)。
 

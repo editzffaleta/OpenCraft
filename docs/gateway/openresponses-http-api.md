@@ -1,52 +1,54 @@
 ---
-summary: "Expor um endpoint HTTP /v1/responses compatível com OpenResponses a partir do Gateway"
+summary: "Expose an OpenResponses-compatible /v1/responses HTTP endpoint from the Gateway"
 read_when:
-  - Integrando clientes que falam a API OpenResponses
-  - Você quer inputs baseados em itens, chamadas de ferramenta do cliente ou eventos SSE
+  - Integrating clients that speak the OpenResponses API
+  - You want item-based inputs, client tool calls, or SSE events
 title: "OpenResponses API"
 ---
 
 # OpenResponses API (HTTP)
 
-O Gateway do OpenCraft pode servir um endpoint `POST /v1/responses` compatível com OpenResponses.
+OpenCraft’s Gateway can serve an OpenResponses-compatible `POST /v1/responses` endpoint.
 
-Este endpoint está **desabilitado por padrão**. Habilite-o na config primeiro.
+This endpoint is **disabled by default**. Enable it in config first.
 
 - `POST /v1/responses`
-- Mesma porta que o Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/responses`
+- Same port as the Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/responses`
 
-Por baixo, as requisições são executadas como uma execução normal de agente do Gateway (mesmo codepath que `opencraft agent`), então roteamento/permissões/config correspondem ao seu Gateway.
+Under the hood, requests are executed as a normal Gateway agent run (same codepath as
+`opencraft agent`), so routing/permissions/config match your Gateway.
 
-## Autenticação, segurança e roteamento
+## Authentication, security, and routing
 
-O comportamento operacional corresponde ao [OpenAI Chat Completions](/gateway/openai-http-api):
+Operational behavior matches [OpenAI Chat Completions](/gateway/openai-http-api):
 
-- use `Authorization: Bearer <token>` com a config de auth normal do Gateway
-- trate o endpoint como acesso completo de operador para a instância do gateway
-- selecione agentes com `model: "opencraft:<agentId>"`, `model: "agent:<agentId>"` ou `x-opencraft-agent-id`
-- use `x-opencraft-session-key` para roteamento de sessão explícito
+- use `Authorization: Bearer <token>` with the normal Gateway auth config
+- treat the endpoint as full operator access for the gateway instance
+- select agents with `model: "opencraft:<agentId>"`, `model: "agent:<agentId>"`, or `x-opencraft-agent-id`
+- use `x-opencraft-session-key` for explicit session routing
 
-Habilite ou desabilite este endpoint com `gateway.http.endpoints.responses.enabled`.
+Enable or disable this endpoint with `gateway.http.endpoints.responses.enabled`.
 
-## Comportamento de sessão
+## Session behavior
 
-Por padrão o endpoint é **stateless por requisição** (uma nova chave de sessão é gerada a cada chamada).
+By default the endpoint is **stateless per request** (a new session key is generated each call).
 
-Se a requisição inclui uma string `user` do OpenResponses, o Gateway deriva uma chave de sessão estável a partir dela, para que chamadas repetidas possam compartilhar uma sessão de agente.
+If the request includes an OpenResponses `user` string, the Gateway derives a stable session key
+from it, so repeated calls can share an agent session.
 
-## Formato da requisição (suportado)
+## Request shape (supported)
 
-A requisição segue a API OpenResponses com input baseado em itens. Suporte atual:
+The request follows the OpenResponses API with item-based input. Current support:
 
-- `input`: string ou array de objetos de item.
-- `instructions`: mesclado no system prompt.
-- `tools`: definições de ferramentas do cliente (ferramentas de função).
-- `tool_choice`: filtrar ou exigir ferramentas do cliente.
-- `stream`: habilita streaming SSE.
-- `max_output_tokens`: limite de saída best-effort (dependente do provider).
-- `user`: roteamento de sessão estável.
+- `input`: string or array of item objects.
+- `instructions`: merged into the system prompt.
+- `tools`: client tool definitions (function tools).
+- `tool_choice`: filter or require client tools.
+- `stream`: enables SSE streaming.
+- `max_output_tokens`: best-effort output limit (provider dependent).
+- `user`: stable session routing.
 
-Aceitos mas **atualmente ignorados**:
+Accepted but **currently ignored**:
 
 - `max_tool_calls`
 - `reasoning`
@@ -55,19 +57,19 @@ Aceitos mas **atualmente ignorados**:
 - `previous_response_id`
 - `truncation`
 
-## Itens (input)
+## Items (input)
 
 ### `message`
 
 Roles: `system`, `developer`, `user`, `assistant`.
 
-- `system` e `developer` são adicionados ao system prompt.
-- O item `user` ou `function_call_output` mais recente se torna a "mensagem atual."
-- Mensagens anteriores user/assistant são incluídas como histórico para contexto.
+- `system` and `developer` are appended to the system prompt.
+- The most recent `user` or `function_call_output` item becomes the “current message.”
+- Earlier user/assistant messages are included as history for context.
 
-### `function_call_output` (ferramentas baseadas em turno)
+### `function_call_output` (turn-based tools)
 
-Envie resultados de ferramentas de volta ao modelo:
+Send tool results back to the model:
 
 ```json
 {
@@ -77,19 +79,20 @@ Envie resultados de ferramentas de volta ao modelo:
 }
 ```
 
-### `reasoning` e `item_reference`
+### `reasoning` and `item_reference`
 
-Aceitos para compatibilidade de schema mas ignorados ao construir o prompt.
+Accepted for schema compatibility but ignored when building the prompt.
 
-## Ferramentas (ferramentas de função do lado do cliente)
+## Tools (client-side function tools)
 
-Forneça ferramentas com `tools: [{ type: "function", function: { name, description?, parameters? } }]`.
+Provide tools with `tools: [{ type: "function", function: { name, description?, parameters? } }]`.
 
-Se o agente decide chamar uma ferramenta, a resposta retorna um item de saída `function_call`. Você então envia uma requisição de follow-up com `function_call_output` para continuar o turno.
+If the agent decides to call a tool, the response returns a `function_call` output item.
+You then send a follow-up request with `function_call_output` to continue the turn.
 
-## Imagens (`input_image`)
+## Images (`input_image`)
 
-Suporta fontes base64 ou URL:
+Supports base64 or URL sources:
 
 ```json
 {
@@ -98,12 +101,12 @@ Suporta fontes base64 ou URL:
 }
 ```
 
-Tipos MIME permitidos (atual): `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`.
-Tamanho máximo (atual): 10MB.
+Allowed MIME types (current): `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`.
+Max size (current): 10MB.
 
-## Arquivos (`input_file`)
+## Files (`input_file`)
 
-Suporta fontes base64 ou URL:
+Supports base64 or URL sources:
 
 ```json
 {
@@ -117,30 +120,36 @@ Suporta fontes base64 ou URL:
 }
 ```
 
-Tipos MIME permitidos (atual): `text/plain`, `text/markdown`, `text/html`, `text/csv`, `application/json`, `application/pdf`.
+Allowed MIME types (current): `text/plain`, `text/markdown`, `text/html`, `text/csv`,
+`application/json`, `application/pdf`.
 
-Tamanho máximo (atual): 5MB.
+Max size (current): 5MB.
 
-Comportamento atual:
+Current behavior:
 
-- Conteúdo de arquivo é decodificado e adicionado ao **system prompt**, não à mensagem do usuário, então permanece efêmero (não persistido no histórico de sessão).
-- PDFs são parseados para texto. Se pouco texto é encontrado, as primeiras páginas são rasterizadas em imagens e passadas ao modelo.
+- File content is decoded and added to the **system prompt**, not the user message,
+  so it stays ephemeral (not persisted in session history).
+- PDFs are parsed for text. If little text is found, the first pages are rasterized
+  into images and passed to the model.
 
-O parsing de PDF usa o build legado `pdfjs-dist` amigável a Node (sem worker). O build moderno do PDF.js espera workers/globals DOM de browser, então não é usado no Gateway.
+PDF parsing uses the Node-friendly `pdfjs-dist` legacy build (no worker). The modern
+PDF.js build expects browser workers/DOM globals, so it is not used in the Gateway.
 
-Padrões de fetch de URL:
+URL fetch defaults:
 
 - `files.allowUrl`: `true`
 - `images.allowUrl`: `true`
-- `maxUrlParts`: `8` (total de partes `input_file` + `input_image` baseadas em URL por requisição)
-- Requisições são protegidas (resolução DNS, bloqueio de IP privado, limites de redirect, timeouts).
-- Allowlists opcionais de hostname são suportadas por tipo de input (`files.urlAllowlist`, `images.urlAllowlist`).
-  - Host exato: `"cdn.example.com"`
-  - Subdomínios wildcard: `"*.assets.example.com"` (não corresponde ao apex)
+- `maxUrlParts`: `8` (total URL-based `input_file` + `input_image` parts per request)
+- Requests are guarded (DNS resolution, private IP blocking, redirect caps, timeouts).
+- Optional hostname allowlists are supported per input type (`files.urlAllowlist`, `images.urlAllowlist`).
+  - Exact host: `"cdn.example.com"`
+  - Wildcard subdomains: `"*.assets.example.com"` (does not match apex)
+  - Empty or omitted allowlists mean no hostname allowlist restriction.
+- To disable URL-based fetches entirely, set `files.allowUrl: false` and/or `images.allowUrl: false`.
 
-## Limites de arquivo + imagem (config)
+## File + image limits (config)
 
-Padrões podem ser ajustados em `gateway.http.endpoints.responses`:
+Defaults can be tuned under `gateway.http.endpoints.responses`:
 
 ```json5
 {
@@ -194,7 +203,7 @@ Padrões podem ser ajustados em `gateway.http.endpoints.responses`:
 }
 ```
 
-Padrões quando omitidos:
+Defaults when omitted:
 
 - `maxBodyBytes`: 20MB
 - `maxUrlParts`: 8
@@ -203,28 +212,29 @@ Padrões quando omitidos:
 - `files.maxRedirects`: 3
 - `files.timeoutMs`: 10s
 - `files.pdf.maxPages`: 4
-- `files.pdf.maxPixels`: 4.000.000
+- `files.pdf.maxPixels`: 4,000,000
 - `files.pdf.minTextChars`: 200
 - `images.maxBytes`: 10MB
 - `images.maxRedirects`: 3
 - `images.timeoutMs`: 10s
-- Fontes `input_image` HEIC/HEIF são aceitas e normalizadas para JPEG antes da entrega ao provider.
+- HEIC/HEIF `input_image` sources are accepted and normalized to JPEG before provider delivery.
 
-Nota de segurança:
+Security note:
 
-- Allowlists de URL são aplicadas antes do fetch e nos hops de redirect.
-- Fazer allowlist de um hostname não ignora bloqueio de IP privado/interno.
-- Para gateways expostos à internet, aplique controles de egress de rede além dos guards de nível de aplicação. Veja [Security](/gateway/security).
+- URL allowlists are enforced before fetch and on redirect hops.
+- Allowlisting a hostname does not bypass private/internal IP blocking.
+- For internet-exposed gateways, apply network egress controls in addition to app-level guards.
+  See [Security](/gateway/security).
 
 ## Streaming (SSE)
 
-Defina `stream: true` para receber Server-Sent Events (SSE):
+Set `stream: true` to receive Server-Sent Events (SSE):
 
 - `Content-Type: text/event-stream`
-- Cada linha de evento é `event: <type>` e `data: <json>`
-- Stream termina com `data: [DONE]`
+- Each event line is `event: <type>` and `data: <json>`
+- Stream ends with `data: [DONE]`
 
-Tipos de evento atualmente emitidos:
+Event types currently emitted:
 
 - `response.created`
 - `response.in_progress`
@@ -235,29 +245,29 @@ Tipos de evento atualmente emitidos:
 - `response.content_part.done`
 - `response.output_item.done`
 - `response.completed`
-- `response.failed` (em erro)
+- `response.failed` (on error)
 
 ## Usage
 
-`usage` é populado quando o provider subjacente reporta contagens de tokens.
+`usage` is populated when the underlying provider reports token counts.
 
-## Erros
+## Errors
 
-Erros usam um objeto JSON como:
+Errors use a JSON object like:
 
 ```json
 { "error": { "message": "...", "type": "invalid_request_error" } }
 ```
 
-Casos comuns:
+Common cases:
 
-- `401` auth faltando/inválida
-- `400` corpo de requisição inválido
-- `405` método errado
+- `401` missing/invalid auth
+- `400` invalid request body
+- `405` wrong method
 
-## Exemplos
+## Examples
 
-Sem streaming:
+Non-streaming:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/responses \
@@ -270,7 +280,7 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   }'
 ```
 
-Com streaming:
+Streaming:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/responses \

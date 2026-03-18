@@ -10,30 +10,24 @@ import {
   type TopLevelComponents,
 } from "@buape/carbon";
 import { ButtonStyle, Routes } from "discord-api-types/v10";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import { loadSessionStore, resolveStorePath } from "../../../../src/config/sessions.js";
-import type { DiscordExecApprovalConfig } from "../../../../src/config/types.discord.js";
-import { GatewayClient } from "../../../../src/gateway/client.js";
-import { createOperatorApprovalsGatewayClient } from "../../../../src/gateway/operator-approvals-client.js";
-import type { EventFrame } from "../../../../src/gateway/protocol/index.js";
-import { resolveExecApprovalCommandDisplay } from "../../../../src/infra/exec-approval-command-display.js";
-import { getExecApprovalApproverDmNoticeText } from "../../../../src/infra/exec-approval-reply.js";
+import { normalizeMessageChannel } from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { loadSessionStore, resolveStorePath } from "opencraft/plugin-sdk/config-runtime";
+import type { DiscordExecApprovalConfig } from "opencraft/plugin-sdk/config-runtime";
+import { GatewayClient } from "opencraft/plugin-sdk/gateway-runtime";
+import { createOperatorApprovalsGatewayClient } from "opencraft/plugin-sdk/gateway-runtime";
+import type { EventFrame } from "opencraft/plugin-sdk/gateway-runtime";
+import { resolveExecApprovalCommandDisplay } from "opencraft/plugin-sdk/infra-runtime";
+import { getExecApprovalApproverDmNoticeText } from "opencraft/plugin-sdk/infra-runtime";
 import type {
   ExecApprovalDecision,
   ExecApprovalRequest,
   ExecApprovalResolved,
-} from "../../../../src/infra/exec-approvals.js";
-import { logDebug, logError } from "../../../../src/logger.js";
-import {
-  normalizeAccountId,
-  resolveAgentIdFromSessionKey,
-} from "../../../../src/routing/session-key.js";
-import type { RuntimeEnv } from "../../../../src/runtime.js";
-import {
-  compileSafeRegex,
-  testRegexWithBoundedInput,
-} from "../../../../src/security/safe-regex.js";
-import { normalizeMessageChannel } from "../../../../src/utils/message-channel.js";
+} from "opencraft/plugin-sdk/infra-runtime";
+import { normalizeAccountId, resolveAgentIdFromSessionKey } from "opencraft/plugin-sdk/routing";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
+import { compileSafeRegex, testRegexWithBoundedInput } from "opencraft/plugin-sdk/security-runtime";
+import { logDebug, logError } from "opencraft/plugin-sdk/text-runtime";
 import { createDiscordClient, stripUndefinedFields } from "../send.shared.js";
 import { DiscordUiContainer } from "../ui.js";
 

@@ -1,108 +1,108 @@
-# Biblioteca Padrão do OpenProse
+# OpenProse Standard Library
 
-Programas principais distribuídos com o OpenProse. Programas de qualidade de produção, bem testados para tarefas comuns.
+Core programs that ship with OpenProse. Production-quality, well-tested programs for common tasks.
 
-## Programas
+## Programs
 
-### Avaliação e melhoria
+### Evaluation & Improvement
 
-| Programa                 | Descrição                                                            |
-| ------------------------ | -------------------------------------------------------------------- |
-| `inspector.prose`        | Análise pós-execução para fidelidade de runtime e eficácia da tarefa |
-| `vm-improver.prose`      | Analisa inspeções e propõe PRs para melhorar a VM                    |
-| `program-improver.prose` | Analisa inspeções e propõe PRs para melhorar o código-fonte .prose   |
-| `cost-analyzer.prose`    | Análise de uso de tokens e padrões de custo                          |
-| `calibrator.prose`       | Valida avaliações leves em relação a avaliações profundas            |
-| `error-forensics.prose`  | Análise de causa raiz para execuções com falha                       |
+| Program                  | Description                                                    |
+| ------------------------ | -------------------------------------------------------------- |
+| `inspector.prose`        | Post-run analysis for runtime fidelity and task effectiveness  |
+| `vm-improver.prose`      | Analyzes inspections and proposes PRs to improve the VM        |
+| `program-improver.prose` | Analyzes inspections and proposes PRs to improve .prose source |
+| `cost-analyzer.prose`    | Token usage and cost pattern analysis                          |
+| `calibrator.prose`       | Validates light evaluations against deep evaluations           |
+| `error-forensics.prose`  | Root cause analysis for failed runs                            |
 
-### Memória
+### Memory
 
-| Programa               | Descrição                                      |
-| ---------------------- | ---------------------------------------------- |
-| `user-memory.prose`    | Memória pessoal persistente entre projetos     |
-| `project-memory.prose` | Memória institucional com escopo de projeto    |
+| Program                | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `user-memory.prose`    | Cross-project persistent personal memory |
+| `project-memory.prose` | Project-scoped institutional memory      |
 
-## O ciclo de melhoria
+## The Improvement Loop
 
-Os programas de avaliação formam um ciclo de melhoria recursivo:
+The evaluation programs form a recursive improvement cycle:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│   Executar Programa  ──►  Inspector  ──►  VM Improver ──► PR │
-│        ▲                     │                              │
-│        │                     ▼                              │
-│        │              Program Improver ──► PR               │
-│        │                     │                              │
-│        └─────────────────────┘                              │
+│   Run Program  ──►  Inspector  ──►  VM Improver ──► PR     │
+│        ▲                │                                   │
+│        │                ▼                                   │
+│        │         Program Improver ──► PR                    │
+│        │                │                                   │
+│        └────────────────┘                                   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Análise de suporte:
+Supporting analysis:
 
-- **cost-analyzer** — Para onde vai o dinheiro? Oportunidades de otimização.
-- **calibrator** — Avaliações baratas são proxies confiáveis para avaliações caras?
-- **error-forensics** — Por que uma execução falhou? Análise de causa raiz.
+- **cost-analyzer** — Where does the money go? Optimization opportunities.
+- **calibrator** — Are cheap evaluations reliable proxies for expensive ones?
+- **error-forensics** — Why did a run fail? Root cause analysis.
 
-## Uso
+## Usage
 
 ```bash
-# Inspecionar uma execução concluída
+# Inspect a completed run
 prose run lib/inspector.prose
-# Entradas: run_path, depth (light|deep), target (vm|task|all)
+# Inputs: run_path, depth (light|deep), target (vm|task|all)
 
-# Propor melhorias à VM
+# Propose VM improvements
 prose run lib/vm-improver.prose
-# Entradas: inspection_path, prose_repo
+# Inputs: inspection_path, prose_repo
 
-# Propor melhorias ao programa
+# Propose program improvements
 prose run lib/program-improver.prose
-# Entradas: inspection_path, run_path
+# Inputs: inspection_path, run_path
 
-# Analisar custos
+# Analyze costs
 prose run lib/cost-analyzer.prose
-# Entradas: run_path, scope (single|compare|trend)
+# Inputs: run_path, scope (single|compare|trend)
 
-# Validar avaliação leve vs profunda
+# Validate light vs deep evaluation
 prose run lib/calibrator.prose
-# Entradas: run_paths, sample_size
+# Inputs: run_paths, sample_size
 
-# Investigar falhas
+# Investigate failures
 prose run lib/error-forensics.prose
-# Entradas: run_path, focus (vm|program|context|external)
+# Inputs: run_path, focus (vm|program|context|external)
 
-# Programas de memória (recomenda backend sqlite+)
+# Memory programs (recommend sqlite+ backend)
 prose run lib/user-memory.prose --backend sqlite+
-# Entradas: mode (teach|query|reflect), content
+# Inputs: mode (teach|query|reflect), content
 
 prose run lib/project-memory.prose --backend sqlite+
-# Entradas: mode (ingest|query|update|summarize), content
+# Inputs: mode (ingest|query|update|summarize), content
 ```
 
-## Programas de memória
+## Memory Programs
 
-Os programas de memória usam agentes persistentes para acumular conhecimento:
+The memory programs use persistent agents to accumulate knowledge:
 
 **user-memory** (`persist: user`)
 
-- Aprende suas preferências, decisões e padrões em todos os projetos
-- Lembra erros e lições aprendidas
-- Responde perguntas a partir do conhecimento acumulado
+- Learns your preferences, decisions, patterns across all projects
+- Remembers mistakes and lessons learned
+- Answers questions from accumulated knowledge
 
 **project-memory** (`persist: project`)
 
-- Entende a arquitetura e as decisões deste projeto
-- Rastreia por que as coisas são do jeito que são
-- Responde perguntas com contexto específico do projeto
+- Understands this project's architecture and decisions
+- Tracks why things are the way they are
+- Answers questions with project-specific context
 
-Ambos recomendam `--backend sqlite+` para persistência durável.
+Both recommend `--backend sqlite+` for durable persistence.
 
-## Princípios de design
+## Design Principles
 
-1. **Pronto para produção** — Testado, documentado, trata casos extremos
-2. **Componível** — Pode ser importado via `use` em outros programas
-3. **Estado com escopo de usuário** — Utilitários entre projetos usam `persist: user`
-4. **Dependências mínimas** — Nenhum serviço externo necessário
-5. **Contratos claros** — Entradas e saídas bem definidas
-6. **Valor incremental** — Útil no modo simples, mais poderoso com profundidade
+1. **Production-ready** — Tested, documented, handles edge cases
+2. **Composable** — Can be imported via `use` in other programs
+3. **User-scoped state** — Cross-project utilities use `persist: user`
+4. **Minimal dependencies** — No external services required
+5. **Clear contracts** — Well-defined inputs and outputs
+6. **Incremental value** — Useful in simple mode, more powerful with depth

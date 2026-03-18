@@ -97,9 +97,9 @@ describe("restart-helper", () => {
       });
       expect(scriptPath.endsWith(".sh")).toBe(true);
       expect(content).toContain("#!/bin/sh");
-      expect(content).toContain("launchctl kickstart -k 'gui/501/ai.opencraft.gateway'");
+      expect(content).toContain("launchctl kickstart -k 'gui/501/ai.openclaw.gateway'");
       // Should clear disabled state and fall back to bootstrap when kickstart fails.
-      expect(content).toContain("launchctl enable 'gui/501/ai.opencraft.gateway'");
+      expect(content).toContain("launchctl enable 'gui/501/ai.openclaw.gateway'");
       expect(content).toContain("launchctl bootstrap 'gui/501'");
       expect(content).toContain('rm -f "$0"');
       await cleanupScript(scriptPath);
@@ -180,7 +180,7 @@ describe("restart-helper", () => {
       const { scriptPath, content } = await prepareAndReadScript({
         OPENCRAFT_PROFILE: "staging",
       });
-      expect(content).toContain("gui/502/ai.opencraft.staging");
+      expect(content).toContain("gui/502/ai.openclaw.staging");
       await cleanupScript(scriptPath);
     });
 
@@ -258,10 +258,10 @@ describe("restart-helper", () => {
 
       const { scriptPath, content } = await prepareAndReadScript({
         HOME: "/Users/testuser",
-        OPENCRAFT_LAUNCHD_LABEL: "ai.opencraft.it's-a-test",
+        OPENCLAW_LAUNCHD_LABEL: "ai.openclaw.it's-a-test",
       });
       // The plist path must also shell-escape the label to prevent injection
-      expect(content).toContain("ai.opencraft.it'\\''s-a-test.plist");
+      expect(content).toContain("ai.openclaw.it'\\''s-a-test.plist");
       await cleanupScript(scriptPath);
     });
 

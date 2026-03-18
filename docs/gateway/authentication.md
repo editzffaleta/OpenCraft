@@ -1,36 +1,40 @@
 ---
-summary: "Autenticação de modelos: OAuth, API keys e setup-token"
+summary: "Model authentication: OAuth, API keys, and setup-token"
 read_when:
-  - Debugando autenticação de modelo ou expiração de OAuth
-  - Documentando autenticação ou armazenamento de credenciais
+  - Debugging model auth or OAuth expiry
+  - Documenting authentication or credential storage
 title: "Authentication"
 ---
 
 # Authentication
 
-OpenCraft suporta OAuth e API keys para provedores de modelos. Para hosts de gateway sempre ativos, API keys são geralmente a opção mais previsível. Fluxos de assinatura/OAuth também são suportados quando correspondem ao modelo de conta do seu provedor.
+OpenCraft supports OAuth and API keys for model providers. For always-on gateway
+hosts, API keys are usually the most predictable option. Subscription/OAuth
+flows are also supported when they match your provider account model.
 
-Veja [/concepts/oauth](/concepts/oauth) para o fluxo completo de OAuth e layout de armazenamento.
-Para autenticação baseada em SecretRef (provedores `env`/`file`/`exec`), veja [Secrets Management](/gateway/secrets).
-Para regras de elegibilidade/código de razão de credenciais usadas por `models status --probe`, veja
+See [/concepts/oauth](/concepts/oauth) for the full OAuth flow and storage
+layout.
+For SecretRef-based auth (`env`/`file`/`exec` providers), see [Secrets Management](/gateway/secrets).
+For credential eligibility/reason-code rules used by `models status --probe`, see
 [Auth Credential Semantics](/auth-credential-semantics).
 
-## Setup recomendado (API key, qualquer provedor)
+## Recommended setup (API key, any provider)
 
-Se você está executando um gateway de longa duração, comece com uma API key para o provedor escolhido.
-Para Anthropic especificamente, autenticação por API key é o caminho seguro e é recomendada
-em vez de autenticação por setup-token de assinatura.
+If you’re running a long-lived gateway, start with an API key for your chosen
+provider.
+For Anthropic specifically, API key auth is the safe path and is recommended
+over subscription setup-token auth.
 
-1. Crie uma API key no console do seu provedor.
-2. Coloque-a no **host do gateway** (a máquina executando `opencraft gateway`).
+1. Create an API key in your provider console.
+2. Put it on the **gateway host** (the machine running `opencraft gateway`).
 
 ```bash
 export <PROVIDER>_API_KEY="..."
 opencraft models status
 ```
 
-3. Se o Gateway roda sob systemd/launchd, prefira colocar a chave em
-   `~/.opencraft/.env` para que o daemon possa lê-la:
+3. If the Gateway runs under systemd/launchd, prefer putting the key in
+   `~/.opencraft/.env` so the daemon can read it:
 
 ```bash
 cat >> ~/.opencraft/.env <<'EOF'
@@ -38,112 +42,112 @@ cat >> ~/.opencraft/.env <<'EOF'
 EOF
 ```
 
-Então reinicie o daemon (ou reinicie seu processo Gateway) e verifique novamente:
+Then restart the daemon (or restart your Gateway process) and re-check:
 
 ```bash
 opencraft models status
 opencraft doctor
 ```
 
-Se você preferir não gerenciar variáveis de ambiente manualmente, o onboarding pode armazenar
-API keys para uso do daemon: `opencraft onboard`.
+If you’d rather not manage env vars yourself, onboarding can store
+API keys for daemon use: `opencraft onboard`.
 
-Veja [Help](/help) para detalhes sobre herança de env (`env.shellEnv`,
+See [Help](/help) for details on env inheritance (`env.shellEnv`,
 `~/.opencraft/.env`, systemd/launchd).
 
-## Anthropic: setup-token (autenticação por assinatura)
+## Anthropic: setup-token (subscription auth)
 
-Se você está usando uma assinatura Claude, o fluxo de setup-token é suportado. Execute
-no **host do gateway**:
+If you’re using a Claude subscription, the setup-token flow is supported. Run
+it on the **gateway host**:
 
 ```bash
 claude setup-token
 ```
 
-Então cole no OpenCraft:
+Then paste it into OpenCraft:
 
 ```bash
 opencraft models auth setup-token --provider anthropic
 ```
 
-Se o token foi criado em outra máquina, cole-o manualmente:
+If the token was created on another machine, paste it manually:
 
 ```bash
 opencraft models auth paste-token --provider anthropic
 ```
 
-Se você vir um erro da Anthropic como:
+If you see an Anthropic error like:
 
 ```
 This credential is only authorized for use with Claude Code and cannot be used for other API requests.
 ```
 
-...use uma API key da Anthropic em vez disso.
+…use an Anthropic API key instead.
 
 <Warning>
-O suporte a setup-token da Anthropic é apenas compatibilidade técnica. A Anthropic bloqueou
-algum uso de assinatura fora do Claude Code no passado. Use-o apenas se você decidir
-que o risco de política é aceitável, e verifique os termos atuais da Anthropic por conta própria.
+Anthropic setup-token support is technical compatibility only. Anthropic has blocked
+some subscription usage outside Claude Code in the past. Use it only if you decide
+the policy risk is acceptable, and verify Anthropic's current terms yourself.
 </Warning>
 
-Entrada manual de token (qualquer provedor; grava `auth-profiles.json` + atualiza config):
+Manual token entry (any provider; writes `auth-profiles.json` + updates config):
 
 ```bash
 opencraft models auth paste-token --provider anthropic
 opencraft models auth paste-token --provider openrouter
 ```
 
-Refs de perfil de autenticação também são suportadas para credenciais estáticas:
+Auth profile refs are also supported for static credentials:
 
-- Credenciais `api_key` podem usar `keyRef: { source, provider, id }`
-- Credenciais `token` podem usar `tokenRef: { source, provider, id }`
+- `api_key` credentials can use `keyRef: { source, provider, id }`
+- `token` credentials can use `tokenRef: { source, provider, id }`
 
-Verificação amigável para automação (exit `1` quando expirado/ausente, `2` quando expirando):
+Automation-friendly check (exit `1` when expired/missing, `2` when expiring):
 
 ```bash
 opencraft models status --check
 ```
 
-Scripts de operação opcionais (systemd/Termux) estão documentados aqui:
+Optional ops scripts (systemd/Termux) are documented here:
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
-> `claude setup-token` requer um TTY interativo.
+> `claude setup-token` requires an interactive TTY.
 
-## Verificando status de autenticação do modelo
+## Checking model auth status
 
 ```bash
 opencraft models status
 opencraft doctor
 ```
 
-## Comportamento de rotação de API key (gateway)
+## API key rotation behavior (gateway)
 
-Alguns provedores suportam tentar novamente uma requisição com chaves alternativas quando uma chamada de API
-atinge um limite de taxa do provedor.
+Some providers support retrying a request with alternative keys when an API call
+hits a provider rate limit.
 
-- Ordem de prioridade:
-  - `OPENCRAFT_LIVE_<PROVIDER>_KEY` (override único)
+- Priority order:
+  - `OPENCRAFT_LIVE_<PROVIDER>_KEY` (single override)
   - `<PROVIDER>_API_KEYS`
   - `<PROVIDER>_API_KEY`
   - `<PROVIDER>_API_KEY_*`
-- Provedores Google também incluem `GOOGLE_API_KEY` como fallback adicional.
-- A mesma lista de chaves é deduplicada antes do uso.
-- OpenCraft tenta novamente com a próxima chave apenas para erros de limite de taxa (por exemplo
+- Google providers also include `GOOGLE_API_KEY` as an additional fallback.
+- The same key list is deduplicated before use.
+- OpenCraft retries with the next key only for rate-limit errors (for example
   `429`, `rate_limit`, `quota`, `resource exhausted`).
-- Erros que não são de limite de taxa não são tentados novamente com chaves alternativas.
-- Se todas as chaves falharem, o erro final da última tentativa é retornado.
+- Non-rate-limit errors are not retried with alternate keys.
+- If all keys fail, the final error from the last attempt is returned.
 
-## Controlando qual credencial é usada
+## Controlling which credential is used
 
-### Por sessão (comando de chat)
+### Per-session (chat command)
 
-Use `/model <alias-ou-id>@<profileId>` para fixar uma credencial de provedor específica para a sessão atual (exemplos de ids de perfil: `anthropic:default`, `anthropic:work`).
+Use `/model <alias-or-id>@<profileId>` to pin a specific provider credential for the current session (example profile ids: `anthropic:default`, `anthropic:work`).
 
-Use `/model` (ou `/model list`) para um seletor compacto; use `/model status` para a visão completa (candidatos + próximo perfil de autenticação, mais detalhes do endpoint do provedor quando configurado).
+Use `/model` (or `/model list`) for a compact picker; use `/model status` for the full view (candidates + next auth profile, plus provider endpoint details when configured).
 
-### Por agente (override via CLI)
+### Per-agent (CLI override)
 
-Defina uma ordem de override explícita de perfil de autenticação para um agente (armazenado no `auth-profiles.json` daquele agente):
+Set an explicit auth profile order override for an agent (stored in that agent’s `auth-profiles.json`):
 
 ```bash
 opencraft models auth order get --provider anthropic
@@ -151,25 +155,25 @@ opencraft models auth order set --provider anthropic anthropic:default
 opencraft models auth order clear --provider anthropic
 ```
 
-Use `--agent <id>` para direcionar um agente específico; omita para usar o agente padrão configurado.
+Use `--agent <id>` to target a specific agent; omit it to use the configured default agent.
 
-## Solução de problemas
+## Troubleshooting
 
-### "No credentials found"
+### “No credentials found”
 
-Se o perfil de token da Anthropic estiver ausente, execute `claude setup-token` no
-**host do gateway**, então verifique novamente:
+If the Anthropic token profile is missing, run `claude setup-token` on the
+**gateway host**, then re-check:
 
 ```bash
 opencraft models status
 ```
 
-### Token expirando/expirado
+### Token expiring/expired
 
-Execute `opencraft models status` para confirmar qual perfil está expirando. Se o perfil
-estiver ausente, execute novamente `claude setup-token` e cole o token novamente.
+Run `opencraft models status` to confirm which profile is expiring. If the profile
+is missing, rerun `claude setup-token` and paste the token again.
 
-## Requisitos
+## Requirements
 
-- Conta de assinatura Anthropic (para `claude setup-token`)
-- Claude Code CLI instalado (comando `claude` disponível)
+- Anthropic subscription account (for `claude setup-token`)
+- Claude Code CLI installed (`claude` command available)

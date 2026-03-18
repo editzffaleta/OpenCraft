@@ -30,6 +30,7 @@ import {
   listSpeechProviders,
   normalizeSpeechProviderId,
 } from "./provider-registry.js";
+import type { SpeechVoiceOption } from "./provider-types.js";
 import {
   DEFAULT_OPENAI_BASE_URL,
   isValidOpenAIModel,
@@ -530,10 +531,7 @@ export function resolveTtsApiKey(
 
 export const TTS_PROVIDERS = ["openai", "elevenlabs", "microsoft"] as const;
 
-export function resolveTtsProviderOrder(
-  primary: TtsProvider,
-  cfg?: OpenCraftConfig,
-): TtsProvider[] {
+export function resolveTtsProviderOrder(primary: TtsProvider, cfg?: OpenCraftConfig): TtsProvider[] {
   const normalizedPrimary = normalizeSpeechProviderId(primary) ?? primary;
   const ordered = new Set<TtsProvider>([normalizedPrimary]);
   for (const provider of TTS_PROVIDERS) {
@@ -572,6 +570,29 @@ function buildTtsFailureResult(errors: string[]): { success: false; error: strin
     success: false,
     error: `TTS conversion failed: ${errors.join("; ") || "no providers available"}`,
   };
+}
+
+function resolveReadySpeechProvider(params: {
+  provider: TtsProvider;
+  cfg: OpenCraftConfig;
+  config: ResolvedTtsConfig;
+  errors: string[];
+  requireTelephony?: boolean;
+}): NonNullable<ReturnType<typeof getSpeechProvider>> | null {
+  const resolvedProvider = getSpeechProvider(params.provider, params.cfg);
+  if (!resolvedProvider) {
+    params.errors.push(`${params.provider}: no provider registered`);
+    return null;
+  }
+  if (!resolvedProvider.isConfigured({ cfg: params.cfg, config: params.config })) {
+    params.errors.push(`${params.provider}: not configured`);
+    return null;
+  }
+  if (params.requireTelephony && !resolvedProvider.synthesizeTelephony) {
+    params.errors.push(`${params.provider}: unsupported for telephony`);
+    return null;
+  }
+  return resolvedProvider;
 }
 
 function resolveTtsRequestSetup(params: {
@@ -629,13 +650,13 @@ export async function textToSpeech(params: {
   for (const provider of providers) {
     const providerStart = Date.now();
     try {
-      const resolvedProvider = getSpeechProvider(provider, params.cfg);
+      const resolvedProvider = resolveReadySpeechProvider({
+        provider,
+        cfg: params.cfg,
+        config,
+        errors,
+      });
       if (!resolvedProvider) {
-        errors.push(`${provider}: no provider registered`);
-        continue;
-      }
-      if (!resolvedProvider.isConfigured({ cfg: params.cfg, config })) {
-        errors.push(`${provider}: not configured`);
         continue;
       }
       const synthesis = await resolvedProvider.synthesize({
@@ -691,17 +712,14 @@ export async function textToSpeechTelephony(params: {
   for (const provider of providers) {
     const providerStart = Date.now();
     try {
-      const resolvedProvider = getSpeechProvider(provider, params.cfg);
-      if (!resolvedProvider) {
-        errors.push(`${provider}: no provider registered`);
-        continue;
-      }
-      if (!resolvedProvider.isConfigured({ cfg: params.cfg, config })) {
-        errors.push(`${provider}: not configured`);
-        continue;
-      }
-      if (!resolvedProvider.synthesizeTelephony) {
-        errors.push(`${provider}: unsupported for telephony`);
+      const resolvedProvider = resolveReadySpeechProvider({
+        provider,
+        cfg: params.cfg,
+        config,
+        errors,
+        requireTelephony: true,
+      });
+      if (!resolvedProvider?.synthesizeTelephony) {
         continue;
       }
       const synthesis = await resolvedProvider.synthesizeTelephony({
@@ -724,6 +742,36 @@ export async function textToSpeechTelephony(params: {
   }
 
   return buildTtsFailureResult(errors);
+}
+
+export async function listSpeechVoices(params: {
+  provider: string;
+  cfg?: OpenCraftConfig;
+  config?: ResolvedTtsConfig;
+  apiKey?: string;
+  baseUrl?: string;
+}): Promise<SpeechVoiceOption[]> {
+  const provider = normalizeSpeechProviderId(params.provider);
+  if (!provider) {
+    throw new Error("speech provider id is required");
+  }
+  const config = params.config ?? (params.cfg ? resolveTtsConfig(params.cfg) : undefined);
+  if (!config) {
+    throw new Error(`speech provider ${provider} requires cfg or resolved config`);
+  }
+  const resolvedProvider = getSpeechProvider(provider, params.cfg);
+  if (!resolvedProvider) {
+    throw new Error(`speech provider ${provider} is not registered`);
+  }
+  if (!resolvedProvider.listVoices) {
+    throw new Error(`speech provider ${provider} does not support voice listing`);
+  }
+  return await resolvedProvider.listVoices({
+    cfg: params.cfg,
+    config,
+    apiKey: params.apiKey,
+    baseUrl: params.baseUrl,
+  });
 }
 
 export async function maybeApplyTtsToPayload(params: {

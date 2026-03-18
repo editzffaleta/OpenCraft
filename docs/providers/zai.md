@@ -1,34 +1,34 @@
 ---
-summary: "Use o Z.AI (modelos GLM) com o OpenCraft"
+summary: "Use Z.AI (GLM models) with OpenCraft"
 read_when:
-  - Você quer modelos Z.AI / GLM no OpenCraft
-  - Você precisa de uma configuração simples de ZAI_API_KEY
+  - You want Z.AI / GLM models in OpenCraft
+  - You need a simple ZAI_API_KEY setup
 title: "Z.AI"
 ---
 
 # Z.AI
 
-Z.AI é a plataforma de API para modelos **GLM**. Ela fornece APIs REST para GLM e usa API keys
-para autenticação. Crie sua API key no console do Z.AI. O OpenCraft usa o provider `zai`
-com uma API key Z.AI.
+Z.AI is the API platform for **GLM** models. It provides REST APIs for GLM and uses API keys
+for authentication. Create your API key in the Z.AI console. OpenCraft uses the `zai` provider
+with a Z.AI API key.
 
-## Configuração via CLI
+## CLI setup
 
 ```bash
-# Coding Plan Global, recomendado para usuários do Coding Plan
+# Coding Plan Global, recommended for Coding Plan users
 opencraft onboard --auth-choice zai-coding-global
 
-# Coding Plan CN (região da China), recomendado para usuários do Coding Plan
+# Coding Plan CN (China region), recommended for Coding Plan users
 opencraft onboard --auth-choice zai-coding-cn
 
-# API geral
+# General API
 opencraft onboard --auth-choice zai-global
 
-# API geral CN (região da China)
+# General API CN (China region)
 opencraft onboard --auth-choice zai-cn
 ```
 
-## Trecho de config
+## Config snippet
 
 ```json5
 {
@@ -37,10 +37,10 @@ opencraft onboard --auth-choice zai-cn
 }
 ```
 
-## Notas
+## Notes
 
-- Modelos GLM estão disponíveis como `zai/<model>` (exemplo: `zai/glm-5`).
-- `tool_stream` está habilitado por padrão para streaming de chamadas de ferramentas do Z.AI. Defina
-  `agents.defaults.models["zai/<model>"].params.tool_stream` como `false` para desabilitar.
-- Veja [/providers/glm](/providers/glm) para a visão geral da família de modelos.
-- O Z.AI usa autenticação Bearer com sua API key.
+- GLM models are available as `zai/<model>` (example: `zai/glm-5`).
+- `tool_stream` is enabled by default for Z.AI tool-call streaming. Set
+  `agents.defaults.models["zai/<model>"].params.tool_stream` to `false` to disable it.
+- See [/providers/glm](/providers/glm) for the model family overview.
+- Z.AI uses Bearer auth with your API key.

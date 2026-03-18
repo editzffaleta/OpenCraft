@@ -40,7 +40,7 @@ plugins {
 }
 
 android {
-    namespace = "ai.opencraft.app"
+    namespace = "ai.openclaw.app"
     compileSdk = 36
 
     // Release signing is local-only; keep the keystore path and passwords out of the repo.
@@ -57,12 +57,12 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.directories.add("../../shared/OpenClawKit/Sources/OpenClawKit/Resources")
+            assets.directories.add("../../shared/OpenCraftKit/Sources/OpenCraftKit/Resources")
         }
     }
 
     defaultConfig {
-        applicationId = "ai.opencraft.app"
+        applicationId = "ai.openclaw.app"
         minSdk = 31
         targetSdk = 36
         versionCode = 2026031400

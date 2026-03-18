@@ -1,4 +1,4 @@
-import { runPassiveAccountLifecycle } from "opencraft/plugin-sdk/core";
+import { runPassiveAccountLifecycle } from "opencraft/plugin-sdk/channel-runtime";
 
 type StoppableMonitor = {
   stop: () => void;

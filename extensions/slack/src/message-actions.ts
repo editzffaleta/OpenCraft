@@ -1,9 +1,9 @@
-import { createActionGate } from "../../../src/agents/tools/common.js";
+import { createActionGate } from "opencraft/plugin-sdk/agent-runtime";
 import type {
   ChannelMessageActionName,
   ChannelToolSend,
-} from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import { listEnabledSlackAccounts } from "./accounts.js";
 
 export function listSlackMessageActions(cfg: OpenCraftConfig): ChannelMessageActionName[] {

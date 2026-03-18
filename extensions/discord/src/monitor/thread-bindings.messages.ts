@@ -3,4 +3,4 @@ export {
   resolveThreadBindingFarewellText,
   resolveThreadBindingIntroText,
   resolveThreadBindingThreadName,
-} from "../../../../src/channels/thread-bindings-messages.js";
+} from "opencraft/plugin-sdk/channel-runtime";

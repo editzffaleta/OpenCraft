@@ -1,19 +1,19 @@
 import { timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { InputFile, webhookCallback } from "grammy";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { isDiagnosticsEnabled } from "../../../src/infra/diagnostic-events.js";
-import { formatErrorMessage } from "../../../src/infra/errors.js";
-import { readJsonBodyWithLimit } from "../../../src/infra/http-body.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { isDiagnosticsEnabled } from "opencraft/plugin-sdk/infra-runtime";
+import { formatErrorMessage } from "opencraft/plugin-sdk/infra-runtime";
+import { readJsonBodyWithLimit } from "opencraft/plugin-sdk/infra-runtime";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
+import { defaultRuntime } from "opencraft/plugin-sdk/runtime-env";
 import {
   logWebhookError,
   logWebhookProcessed,
   logWebhookReceived,
   startDiagnosticHeartbeat,
   stopDiagnosticHeartbeat,
-} from "../../../src/logging/diagnostic.js";
-import type { RuntimeEnv } from "../../../src/runtime.js";
-import { defaultRuntime } from "../../../src/runtime.js";
+} from "opencraft/plugin-sdk/text-runtime";
 import { resolveTelegramAllowedUpdates } from "./allowed-updates.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 import { createTelegramBot } from "./bot.js";

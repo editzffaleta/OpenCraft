@@ -1,74 +1,74 @@
 ---
-summary: "Texto para fala (TTS) para respostas de saída"
+summary: "Text-to-speech (TTS) for outbound replies"
 read_when:
-  - Habilitando texto para fala nas respostas
-  - Configurando provedores ou limites de TTS
-  - Usando comandos /tts
-title: "Texto para Fala"
+  - Enabling text-to-speech for replies
+  - Configuring TTS providers or limits
+  - Using /tts commands
+title: "Text-to-Speech"
 ---
 
-# Texto para fala (TTS)
+# Text-to-speech (TTS)
 
-O OpenCraft pode converter respostas de saída em áudio usando ElevenLabs, Microsoft ou OpenAI.
-Funciona em qualquer lugar onde o OpenCraft possa enviar áudio; no Telegram aparece como bolha redonda de nota de voz.
+OpenCraft can convert outbound replies into audio using ElevenLabs, Microsoft, or OpenAI.
+It works anywhere OpenCraft can send audio; Telegram gets a round voice-note bubble.
 
-## Serviços suportados
+## Supported services
 
-- **ElevenLabs** (provedor primário ou de fallback)
-- **Microsoft** (provedor primário ou de fallback; a implementação incluída atualmente usa `node-edge-tts`, padrão quando não há chaves de API)
-- **OpenAI** (provedor primário ou de fallback; também usado para resumos)
+- **ElevenLabs** (primary or fallback provider)
+- **Microsoft** (primary or fallback provider; current bundled implementation uses `node-edge-tts`, default when no API keys)
+- **OpenAI** (primary or fallback provider; also used for summaries)
 
-### Notas sobre fala Microsoft
+### Microsoft speech notes
 
-O provedor de fala Microsoft incluído atualmente usa o serviço de TTS neural online do Microsoft Edge
-via a biblioteca `node-edge-tts`. É um serviço hospedado (não
-local), usa endpoints da Microsoft e não requer chave de API.
-`node-edge-tts` expõe opções de configuração de fala e formatos de saída, mas
-nem todas as opções são suportadas pelo serviço. Configuração e entrada de diretiva legada
-usando `edge` ainda funciona e é normalizada para `microsoft`.
+The bundled Microsoft speech provider currently uses Microsoft Edge's online
+neural TTS service via the `node-edge-tts` library. It's a hosted service (not
+local), uses Microsoft endpoints, and does not require an API key.
+`node-edge-tts` exposes speech configuration options and output formats, but
+not all options are supported by the service. Legacy config and directive input
+using `edge` still works and is normalized to `microsoft`.
 
-Como este caminho é um serviço web público sem SLA ou cota publicados,
-trate-o como melhor esforço. Se você precisar de limites e suporte garantidos, use OpenAI
-ou ElevenLabs.
+Because this path is a public web service without a published SLA or quota,
+treat it as best-effort. If you need guaranteed limits and support, use OpenAI
+or ElevenLabs.
 
-## Chaves opcionais
+## Optional keys
 
-Se você quiser OpenAI ou ElevenLabs:
+If you want OpenAI or ElevenLabs:
 
-- `ELEVENLABS_API_KEY` (ou `XI_API_KEY`)
+- `ELEVENLABS_API_KEY` (or `XI_API_KEY`)
 - `OPENAI_API_KEY`
 
-Fala Microsoft **não** requer chave de API. Se nenhuma chave de API for encontrada,
-o OpenCraft usa Microsoft por padrão (a menos que desabilitado via
-`messages.tts.microsoft.enabled=false` ou `messages.tts.edge.enabled=false`).
+Microsoft speech does **not** require an API key. If no API keys are found,
+OpenCraft defaults to Microsoft (unless disabled via
+`messages.tts.microsoft.enabled=false` or `messages.tts.edge.enabled=false`).
 
-Se múltiplos provedores estiverem configurados, o provedor selecionado é usado primeiro e os outros são opções de fallback.
-O auto-resumo usa o `summaryModel` configurado (ou `agents.defaults.model.primary`),
-então esse provedor também deve estar autenticado se você habilitar resumos.
+If multiple providers are configured, the selected provider is used first and the others are fallback options.
+Auto-summary uses the configured `summaryModel` (or `agents.defaults.model.primary`),
+so that provider must also be authenticated if you enable summaries.
 
-## Links de serviços
+## Service links
 
-- [Guia de texto para fala OpenAI](https://platform.openai.com/docs/guides/text-to-speech)
-- [Referência da API de áudio OpenAI](https://platform.openai.com/docs/api-reference/audio)
-- [Texto para fala ElevenLabs](https://elevenlabs.io/docs/api-reference/text-to-speech)
-- [Autenticação ElevenLabs](https://elevenlabs.io/docs/api-reference/authentication)
+- [OpenAI Text-to-Speech guide](https://platform.openai.com/docs/guides/text-to-speech)
+- [OpenAI Audio API reference](https://platform.openai.com/docs/api-reference/audio)
+- [ElevenLabs Text to Speech](https://elevenlabs.io/docs/api-reference/text-to-speech)
+- [ElevenLabs Authentication](https://elevenlabs.io/docs/api-reference/authentication)
 - [node-edge-tts](https://github.com/SchneeHertz/node-edge-tts)
-- [Formatos de saída de fala Microsoft](https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech#audio-outputs)
+- [Microsoft Speech output formats](https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech#audio-outputs)
 
-## Está habilitado por padrão?
+## Is it enabled by default?
 
-Não. Auto-TTS está **desligado** por padrão. Habilite na configuração com
-`messages.tts.auto` ou por sessão com `/tts always` (alias: `/tts on`).
+No. Auto‑TTS is **off** by default. Enable it in config with
+`messages.tts.auto` or per session with `/tts always` (alias: `/tts on`).
 
-Fala Microsoft **está** habilitada por padrão uma vez que TTS esteja ativo, e é usada automaticamente
-quando nenhuma chave de API OpenAI ou ElevenLabs está disponível.
+Microsoft speech **is** enabled by default once TTS is on, and is used automatically
+when no OpenAI or ElevenLabs API keys are available.
 
-## Configuração
+## Config
 
-A configuração de TTS fica em `messages.tts` no `opencraft.json`.
-Schema completo está em [Configuração do Gateway](/gateway/configuration).
+TTS config lives under `messages.tts` in `opencraft.json`.
+Full schema is in [Gateway configuration](/gateway/configuration).
 
-### Configuração mínima (habilitar + provedor)
+### Minimal config (enable + provider)
 
 ```json5
 {
@@ -81,7 +81,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### OpenAI primário com fallback ElevenLabs
+### OpenAI primary with ElevenLabs fallback
 
 ```json5
 {
@@ -120,7 +120,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### Microsoft primário (sem chave de API)
+### Microsoft primary (no API key)
 
 ```json5
 {
@@ -141,7 +141,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### Desabilitar fala Microsoft
+### Disable Microsoft speech
 
 ```json5
 {
@@ -155,7 +155,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### Limites personalizados + caminho de prefs
+### Custom limits + prefs path
 
 ```json5
 {
@@ -170,7 +170,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### Responder apenas com áudio após uma nota de voz recebida
+### Only reply with audio after an inbound voice note
 
 ```json5
 {
@@ -182,7 +182,7 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-### Desabilitar auto-resumo para respostas longas
+### Disable auto-summary for long replies
 
 ```json5
 {
@@ -194,85 +194,85 @@ Schema completo está em [Configuração do Gateway](/gateway/configuration).
 }
 ```
 
-Depois execute:
+Then run:
 
 ```
 /tts summary off
 ```
 
-### Notas sobre campos
+### Notes on fields
 
-- `auto`: modo de auto-TTS (`off`, `always`, `inbound`, `tagged`).
-  - `inbound` envia áudio apenas após uma nota de voz recebida.
-  - `tagged` envia áudio apenas quando a resposta inclui tags `[[tts]]`.
-- `enabled`: toggle legado (doctor migra isso para `auto`).
-- `mode`: `"final"` (padrão) ou `"all"` (inclui respostas de ferramenta/bloco).
-- `provider`: ID do provedor de fala como `"elevenlabs"`, `"microsoft"` ou `"openai"` (fallback é automático).
-- Se `provider` **não estiver definido**, o OpenCraft prefere `openai` (se tiver chave), depois `elevenlabs` (se tiver chave),
-  caso contrário `microsoft`.
-- `provider: "edge"` legado ainda funciona e é normalizado para `microsoft`.
-- `summaryModel`: modelo barato opcional para auto-resumo; padrão é `agents.defaults.model.primary`.
-  - Aceita `provider/model` ou um alias de modelo configurado.
-- `modelOverrides`: permite que o modelo emita diretivas TTS (ativado por padrão).
-  - `allowProvider` padrão é `false` (troca de provedor é opt-in).
-- `maxTextLength`: limite rígido para entrada TTS (caracteres). `/tts audio` falha se excedido.
-- `timeoutMs`: timeout da requisição (ms).
-- `prefsPath`: substituir o caminho do JSON de prefs local (provedor/limite/resumo).
-- Valores de `apiKey` recorrem a variáveis de ambiente (`ELEVENLABS_API_KEY`/`XI_API_KEY`, `OPENAI_API_KEY`).
-- `elevenlabs.baseUrl`: substituir URL base da API ElevenLabs.
-- `openai.baseUrl`: substituir o endpoint de TTS OpenAI.
-  - Ordem de resolução: `messages.tts.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
-  - Valores não padrão são tratados como endpoints TTS compatíveis com OpenAI, então nomes personalizados de modelo e voz são aceitos.
+- `auto`: auto‑TTS mode (`off`, `always`, `inbound`, `tagged`).
+  - `inbound` only sends audio after an inbound voice note.
+  - `tagged` only sends audio when the reply includes `[[tts]]` tags.
+- `enabled`: legacy toggle (doctor migrates this to `auto`).
+- `mode`: `"final"` (default) or `"all"` (includes tool/block replies).
+- `provider`: speech provider id such as `"elevenlabs"`, `"microsoft"`, or `"openai"` (fallback is automatic).
+- If `provider` is **unset**, OpenCraft prefers `openai` (if key), then `elevenlabs` (if key),
+  otherwise `microsoft`.
+- Legacy `provider: "edge"` still works and is normalized to `microsoft`.
+- `summaryModel`: optional cheap model for auto-summary; defaults to `agents.defaults.model.primary`.
+  - Accepts `provider/model` or a configured model alias.
+- `modelOverrides`: allow the model to emit TTS directives (on by default).
+  - `allowProvider` defaults to `false` (provider switching is opt-in).
+- `maxTextLength`: hard cap for TTS input (chars). `/tts audio` fails if exceeded.
+- `timeoutMs`: request timeout (ms).
+- `prefsPath`: override the local prefs JSON path (provider/limit/summary).
+- `apiKey` values fall back to env vars (`ELEVENLABS_API_KEY`/`XI_API_KEY`, `OPENAI_API_KEY`).
+- `elevenlabs.baseUrl`: override ElevenLabs API base URL.
+- `openai.baseUrl`: override the OpenAI TTS endpoint.
+  - Resolution order: `messages.tts.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
+  - Non-default values are treated as OpenAI-compatible TTS endpoints, so custom model and voice names are accepted.
 - `elevenlabs.voiceSettings`:
   - `stability`, `similarityBoost`, `style`: `0..1`
   - `useSpeakerBoost`: `true|false`
   - `speed`: `0.5..2.0` (1.0 = normal)
 - `elevenlabs.applyTextNormalization`: `auto|on|off`
-- `elevenlabs.languageCode`: ISO 639-1 de 2 letras (por exemplo `en`, `de`)
-- `elevenlabs.seed`: inteiro `0..4294967295` (determinismo de melhor esforço)
-- `microsoft.enabled`: permitir uso de fala Microsoft (padrão `true`; sem chave de API).
-- `microsoft.voice`: nome de voz neural Microsoft (por exemplo `en-US-MichelleNeural`).
-- `microsoft.lang`: código de idioma (por exemplo `en-US`).
-- `microsoft.outputFormat`: formato de saída Microsoft (por exemplo `audio-24khz-48kbitrate-mono-mp3`).
-  - Consulte formatos de saída de fala Microsoft para valores válidos; nem todos os formatos são suportados pelo transporte baseado em Edge incluído.
-- `microsoft.rate` / `microsoft.pitch` / `microsoft.volume`: strings de porcentagem (por exemplo `+10%`, `-5%`).
-- `microsoft.saveSubtitles`: gravar legendas JSON ao lado do arquivo de áudio.
-- `microsoft.proxy`: URL de proxy para requisições de fala Microsoft.
-- `microsoft.timeoutMs`: substituição de timeout da requisição (ms).
-- `edge.*`: alias legado para as mesmas configurações Microsoft.
+- `elevenlabs.languageCode`: 2-letter ISO 639-1 (e.g. `en`, `de`)
+- `elevenlabs.seed`: integer `0..4294967295` (best-effort determinism)
+- `microsoft.enabled`: allow Microsoft speech usage (default `true`; no API key).
+- `microsoft.voice`: Microsoft neural voice name (e.g. `en-US-MichelleNeural`).
+- `microsoft.lang`: language code (e.g. `en-US`).
+- `microsoft.outputFormat`: Microsoft output format (e.g. `audio-24khz-48kbitrate-mono-mp3`).
+  - See Microsoft Speech output formats for valid values; not all formats are supported by the bundled Edge-backed transport.
+- `microsoft.rate` / `microsoft.pitch` / `microsoft.volume`: percent strings (e.g. `+10%`, `-5%`).
+- `microsoft.saveSubtitles`: write JSON subtitles alongside the audio file.
+- `microsoft.proxy`: proxy URL for Microsoft speech requests.
+- `microsoft.timeoutMs`: request timeout override (ms).
+- `edge.*`: legacy alias for the same Microsoft settings.
 
-## Substituições direcionadas pelo modelo (ativado por padrão)
+## Model-driven overrides (default on)
 
-Por padrão, o modelo **pode** emitir diretivas TTS para uma única resposta.
-Quando `messages.tts.auto` é `tagged`, essas diretivas são necessárias para acionar o áudio.
+By default, the model **can** emit TTS directives for a single reply.
+When `messages.tts.auto` is `tagged`, these directives are required to trigger audio.
 
-Quando habilitado, o modelo pode emitir diretivas `[[tts:...]]` para substituir a voz
-para uma única resposta, mais um bloco opcional `[[tts:text]]...[[/tts:text]]` para
-fornecer tags expressivas (risadas, dicas de canto, etc) que devem aparecer apenas no
-áudio.
+When enabled, the model can emit `[[tts:...]]` directives to override the voice
+for a single reply, plus an optional `[[tts:text]]...[[/tts:text]]` block to
+provide expressive tags (laughter, singing cues, etc) that should only appear in
+the audio.
 
-Diretivas `provider=...` são ignoradas a menos que `modelOverrides.allowProvider: true`.
+`provider=...` directives are ignored unless `modelOverrides.allowProvider: true`.
 
-Exemplo de payload de resposta:
+Example reply payload:
 
 ```
-Aqui está.
+Here you go.
 
 [[tts:voiceId=pMsXgVXv3BLzUgSXRplE model=eleven_v3 speed=1.1]]
-[[tts:text]](risos) Leia a música mais uma vez.[[/tts:text]]
+[[tts:text]](laughs) Read the song once more.[[/tts:text]]
 ```
 
-Chaves de diretiva disponíveis (quando habilitado):
+Available directive keys (when enabled):
 
-- `provider` (ID de provedor de fala registrado, por exemplo `openai`, `elevenlabs` ou `microsoft`; requer `allowProvider: true`)
-- `voice` (voz OpenAI) ou `voiceId` (ElevenLabs)
-- `model` (modelo TTS OpenAI ou ID de modelo ElevenLabs)
+- `provider` (registered speech provider id, for example `openai`, `elevenlabs`, or `microsoft`; requires `allowProvider: true`)
+- `voice` (OpenAI voice) or `voiceId` (ElevenLabs)
+- `model` (OpenAI TTS model or ElevenLabs model id)
 - `stability`, `similarityBoost`, `style`, `speed`, `useSpeakerBoost`
 - `applyTextNormalization` (`auto|on|off`)
 - `languageCode` (ISO 639-1)
 - `seed`
 
-Desabilitar todas as substituições do modelo:
+Disable all model overrides:
 
 ```json5
 {
@@ -286,7 +286,7 @@ Desabilitar todas as substituições do modelo:
 }
 ```
 
-Lista de permissão opcional (habilitar troca de provedor mantendo outros controles configuráveis):
+Optional allowlist (enable provider switching while keeping other knobs configurable):
 
 ```json5
 {
@@ -302,71 +302,71 @@ Lista de permissão opcional (habilitar troca de provedor mantendo outros contro
 }
 ```
 
-## Preferências por usuário
+## Per-user preferences
 
-Comandos slash gravam substituições locais em `prefsPath` (padrão:
-`~/.opencraft/settings/tts.json`, substitua com `OPENCRAFT_TTS_PREFS` ou
+Slash commands write local overrides to `prefsPath` (default:
+`~/.opencraft/settings/tts.json`, override with `OPENCRAFT_TTS_PREFS` or
 `messages.tts.prefsPath`).
 
-Campos armazenados:
+Stored fields:
 
 - `enabled`
 - `provider`
-- `maxLength` (limite de resumo; padrão 1500 caracteres)
-- `summarize` (padrão `true`)
+- `maxLength` (summary threshold; default 1500 chars)
+- `summarize` (default `true`)
 
-Esses substituem `messages.tts.*` para aquele host.
+These override `messages.tts.*` for that host.
 
-## Formatos de saída (fixos)
+## Output formats (fixed)
 
-- **Telegram**: nota de voz Opus (`opus_48000_64` do ElevenLabs, `opus` do OpenAI).
-  - 48kHz / 64kbps é um bom equilíbrio para nota de voz e necessário para a bolha redonda.
-- **Outros canais**: MP3 (`mp3_44100_128` do ElevenLabs, `mp3` do OpenAI).
-  - 44.1kHz / 128kbps é o equilíbrio padrão para clareza de fala.
-- **Microsoft**: usa `microsoft.outputFormat` (padrão `audio-24khz-48kbitrate-mono-mp3`).
-  - O transporte incluído aceita um `outputFormat`, mas nem todos os formatos estão disponíveis no serviço.
-  - Valores de formato de saída seguem os formatos de saída de fala Microsoft (incluindo Ogg/WebM Opus).
-  - `sendVoice` do Telegram aceita OGG/MP3/M4A; use OpenAI/ElevenLabs se você precisar
-    de notas de voz Opus garantidas. citeturn1search1
-  - Se o formato de saída Microsoft configurado falhar, o OpenCraft retenta com MP3.
+- **Telegram**: Opus voice note (`opus_48000_64` from ElevenLabs, `opus` from OpenAI).
+  - 48kHz / 64kbps is a good voice-note tradeoff and required for the round bubble.
+- **Other channels**: MP3 (`mp3_44100_128` from ElevenLabs, `mp3` from OpenAI).
+  - 44.1kHz / 128kbps is the default balance for speech clarity.
+- **Microsoft**: uses `microsoft.outputFormat` (default `audio-24khz-48kbitrate-mono-mp3`).
+  - The bundled transport accepts an `outputFormat`, but not all formats are available from the service.
+  - Output format values follow Microsoft Speech output formats (including Ogg/WebM Opus).
+  - Telegram `sendVoice` accepts OGG/MP3/M4A; use OpenAI/ElevenLabs if you need
+    guaranteed Opus voice notes. citeturn1search1
+  - If the configured Microsoft output format fails, OpenCraft retries with MP3.
 
-Formatos OpenAI/ElevenLabs são fixos; Telegram espera Opus para experiência de nota de voz.
+OpenAI/ElevenLabs formats are fixed; Telegram expects Opus for voice-note UX.
 
-## Comportamento do auto-TTS
+## Auto-TTS behavior
 
-Quando habilitado, o OpenCraft:
+When enabled, OpenCraft:
 
-- pula TTS se a resposta já contém mídia ou uma diretiva `MEDIA:`.
-- pula respostas muito curtas (< 10 caracteres).
-- resume respostas longas quando habilitado usando `agents.defaults.model.primary` (ou `summaryModel`).
-- anexa o áudio gerado à resposta.
+- skips TTS if the reply already contains media or a `MEDIA:` directive.
+- skips very short replies (< 10 chars).
+- summarizes long replies when enabled using `agents.defaults.model.primary` (or `summaryModel`).
+- attaches the generated audio to the reply.
 
-Se a resposta exceder `maxLength` e o resumo estiver desligado (ou sem chave de API para o
-modelo de resumo), o áudio
-é pulado e a resposta de texto normal é enviada.
+If the reply exceeds `maxLength` and summary is off (or no API key for the
+summary model), audio
+is skipped and the normal text reply is sent.
 
-## Diagrama de fluxo
+## Flow diagram
 
 ```
-Resposta -> TTS habilitado?
-  não -> enviar texto
-  sim -> tem mídia / MEDIA: / curto?
-          sim -> enviar texto
-          não -> comprimento > limite?
-                   não -> TTS -> anexar áudio
-                   sim -> resumo habilitado?
-                            não -> enviar texto
-                            sim -> resumir (summaryModel ou agents.defaults.model.primary)
-                                      -> TTS -> anexar áudio
+Reply -> TTS enabled?
+  no  -> send text
+  yes -> has media / MEDIA: / short?
+          yes -> send text
+          no  -> length > limit?
+                   no  -> TTS -> attach audio
+                   yes -> summary enabled?
+                            no  -> send text
+                            yes -> summarize (summaryModel or agents.defaults.model.primary)
+                                      -> TTS -> attach audio
 ```
 
-## Uso do comando slash
+## Slash command usage
 
-Existe um único comando: `/tts`.
-Consulte [Comandos slash](/tools/slash-commands) para detalhes de habilitação.
+There is a single command: `/tts`.
+See [Slash commands](/tools/slash-commands) for enablement details.
 
-Nota do Discord: `/tts` é um comando integrado do Discord, então o OpenCraft registra
-`/voice` como o comando nativo lá. `/tts ...` em texto ainda funciona.
+Discord note: `/tts` is a built-in Discord command, so OpenCraft registers
+`/voice` as the native command there. Text `/tts ...` still works.
 
 ```
 /tts off
@@ -377,26 +377,26 @@ Nota do Discord: `/tts` é um comando integrado do Discord, então o OpenCraft r
 /tts provider openai
 /tts limit 2000
 /tts summary off
-/tts audio Olá do OpenCraft
+/tts audio Hello from OpenCraft
 ```
 
-Notas:
+Notes:
 
-- Comandos requerem um remetente autorizado (regras de lista de permissão/proprietário ainda se aplicam).
-- `commands.text` ou registro de comando nativo deve estar habilitado.
-- `off|always|inbound|tagged` são toggles por sessão (`/tts on` é um alias para `/tts always`).
-- `limit` e `summary` são armazenados em prefs locais, não na configuração principal.
-- `/tts audio` gera uma resposta de áudio única (não ativa TTS).
+- Commands require an authorized sender (allowlist/owner rules still apply).
+- `commands.text` or native command registration must be enabled.
+- `off|always|inbound|tagged` are per‑session toggles (`/tts on` is an alias for `/tts always`).
+- `limit` and `summary` are stored in local prefs, not the main config.
+- `/tts audio` generates a one-off audio reply (does not toggle TTS on).
 
-## Ferramenta do agente
+## Agent tool
 
-A ferramenta `tts` converte texto em fala e retorna um caminho `MEDIA:`. Quando o
-resultado é compatível com Telegram, a ferramenta inclui `[[audio_as_voice]]` para que
-o Telegram envie uma bolha de voz.
+The `tts` tool converts text to speech and returns a `MEDIA:` path. When the
+result is Telegram-compatible, the tool includes `[[audio_as_voice]]` so
+Telegram sends a voice bubble.
 
-## RPC do Gateway
+## Gateway RPC
 
-Métodos do Gateway:
+Gateway methods:
 
 - `tts.status`
 - `tts.enable`

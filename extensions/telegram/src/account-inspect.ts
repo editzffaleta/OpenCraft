@@ -1,14 +1,14 @@
-import type { TelegramAccountConfig } from "opencraft/plugin-sdk/telegram";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import { resolveAccountWithDefaultFallback } from "opencraft/plugin-sdk/account-resolution";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import {
   coerceSecretRef,
   hasConfiguredSecretInput,
   normalizeSecretInputString,
-} from "../../../src/config/types.secrets.js";
-import { tryReadSecretFileSync } from "../../../src/infra/secret-file.js";
-import { resolveAccountWithDefaultFallback } from "../../../src/plugin-sdk/account-resolution.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../src/routing/session-key.js";
-import { resolveDefaultSecretProviderAlias } from "../../../src/secrets/ref-contract.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { tryReadSecretFileSync } from "opencraft/plugin-sdk/infra-runtime";
+import { resolveDefaultSecretProviderAlias } from "opencraft/plugin-sdk/provider-auth";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "opencraft/plugin-sdk/routing";
+import type { TelegramAccountConfig } from "opencraft/plugin-sdk/telegram";
 import {
   mergeTelegramAccountConfig,
   resolveDefaultTelegramAccountId,

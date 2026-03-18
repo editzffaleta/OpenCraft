@@ -79,7 +79,7 @@ function createEnv(
     LC_ALL: process.env.LC_ALL,
     TMPDIR: process.env.TMPDIR,
     DOCKER_STUB_LOG: sandbox.logPath,
-    OPENCLAW_GATEWAY_TOKEN: "test-token",
+    OPENCRAFT_GATEWAY_TOKEN: "test-token",
     OPENCRAFT_CONFIG_DIR: join(sandbox.rootDir, "config"),
     OPENCRAFT_WORKSPACE_DIR: join(sandbox.rootDir, "opencraft"),
   };
@@ -124,7 +124,7 @@ async function runDockerSetupWithUnsetGatewayToken(
   await prepare?.(configDir);
 
   const result = runDockerSetup(sandbox, {
-    OPENCLAW_GATEWAY_TOKEN: undefined,
+    OPENCRAFT_GATEWAY_TOKEN: undefined,
     OPENCRAFT_CONFIG_DIR: configDir,
     OPENCRAFT_WORKSPACE_DIR: workspaceDir,
   });
@@ -261,7 +261,7 @@ describe("docker-setup.sh", () => {
     expect(onboardIdx).toBeGreaterThan(chownIdx);
   });
 
-  it("reuses existing config token when OPENCLAW_GATEWAY_TOKEN is unset", async () => {
+  it("reuses existing config token when OPENCRAFT_GATEWAY_TOKEN is unset", async () => {
     const activeSandbox = requireSandbox(sandbox);
     const { result, envFile } = await runDockerSetupWithUnsetGatewayToken(
       activeSandbox,
@@ -275,14 +275,14 @@ describe("docker-setup.sh", () => {
     );
 
     expect(result.status).toBe(0);
-    expect(envFile).toContain("OPENCLAW_GATEWAY_TOKEN=config-token-123"); // pragma: allowlist secret
+    expect(envFile).toContain("OPENCRAFT_GATEWAY_TOKEN=config-token-123"); // pragma: allowlist secret
   });
 
-  it("reuses existing .env token when OPENCLAW_GATEWAY_TOKEN and config token are unset", async () => {
+  it("reuses existing .env token when OPENCRAFT_GATEWAY_TOKEN and config token are unset", async () => {
     const activeSandbox = requireSandbox(sandbox);
     await writeFile(
       join(activeSandbox.rootDir, ".env"),
-      "OPENCLAW_GATEWAY_TOKEN=dotenv-token-123\nOPENCRAFT_GATEWAY_PORT=18789\n", // pragma: allowlist secret
+      "OPENCRAFT_GATEWAY_TOKEN=dotenv-token-123\nOPENCRAFT_GATEWAY_PORT=18789\n", // pragma: allowlist secret
     );
     const { result, envFile } = await runDockerSetupWithUnsetGatewayToken(
       activeSandbox,
@@ -290,7 +290,7 @@ describe("docker-setup.sh", () => {
     );
 
     expect(result.status).toBe(0);
-    expect(envFile).toContain("OPENCLAW_GATEWAY_TOKEN=dotenv-token-123"); // pragma: allowlist secret
+    expect(envFile).toContain("OPENCRAFT_GATEWAY_TOKEN=dotenv-token-123"); // pragma: allowlist secret
     expect(result.stderr).toBe("");
   });
 
@@ -299,9 +299,9 @@ describe("docker-setup.sh", () => {
     await writeFile(
       join(activeSandbox.rootDir, ".env"),
       [
-        "OPENCLAW_GATEWAY_TOKEN=",
-        "OPENCLAW_GATEWAY_TOKEN=first-token",
-        "OPENCLAW_GATEWAY_TOKEN=last=token=value\r", // pragma: allowlist secret
+        "OPENCRAFT_GATEWAY_TOKEN=",
+        "OPENCRAFT_GATEWAY_TOKEN=first-token",
+        "OPENCRAFT_GATEWAY_TOKEN=last=token=value\r", // pragma: allowlist secret
       ].join("\n"),
     );
     const { result, envFile } = await runDockerSetupWithUnsetGatewayToken(
@@ -310,8 +310,8 @@ describe("docker-setup.sh", () => {
     );
 
     expect(result.status).toBe(0);
-    expect(envFile).toContain("OPENCLAW_GATEWAY_TOKEN=last=token=value"); // pragma: allowlist secret
-    expect(envFile).not.toContain("OPENCLAW_GATEWAY_TOKEN=first-token");
+    expect(envFile).toContain("OPENCRAFT_GATEWAY_TOKEN=last=token=value"); // pragma: allowlist secret
+    expect(envFile).not.toContain("OPENCRAFT_GATEWAY_TOKEN=first-token");
     expect(envFile).not.toContain("\r");
   });
 
@@ -478,7 +478,7 @@ describe("docker-setup.sh", () => {
 
   it("keeps docker-compose gateway token env defaults aligned across services", async () => {
     const compose = await readFile(join(repoRoot, "docker-compose.yml"), "utf8");
-    expect(compose.match(/OPENCLAW_GATEWAY_TOKEN: \$\{OPENCLAW_GATEWAY_TOKEN:-\}/g)).toHaveLength(
+    expect(compose.match(/OPENCRAFT_GATEWAY_TOKEN: \$\{OPENCRAFT_GATEWAY_TOKEN:-\}/g)).toHaveLength(
       2,
     );
   });

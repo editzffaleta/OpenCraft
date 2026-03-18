@@ -1,7 +1,11 @@
-import {
-  collectAllowlistProviderRestrictSendersWarnings,
-  formatAllowFromLowercase,
-} from "opencraft/plugin-sdk/compat";
+import { formatAllowFromLowercase } from "opencraft/plugin-sdk/allow-from";
+import { collectAllowlistProviderRestrictSendersWarnings } from "opencraft/plugin-sdk/channel-policy";
+import { createMessageToolCardSchema } from "opencraft/plugin-sdk/channel-runtime";
+import type {
+  ChannelMessageActionAdapter,
+  ChannelMessageToolDiscovery,
+} from "opencraft/plugin-sdk/channel-runtime";
+import { createLazyRuntimeNamedExport } from "opencraft/plugin-sdk/lazy-runtime";
 import type {
   ChannelMessageActionName,
   ChannelPlugin,
@@ -58,8 +62,30 @@ const TEAMS_GRAPH_PERMISSION_HINTS: Record<string, string> = {
   "Files.Read.All": "files (OneDrive)",
 };
 
-async function loadMSTeamsChannelRuntime() {
-  return await import("./channel.runtime.js");
+const loadMSTeamsChannelRuntime = createLazyRuntimeNamedExport(
+  () => import("./channel.runtime.js"),
+  "msTeamsChannelRuntime",
+);
+
+function describeMSTeamsMessageTool({
+  cfg,
+}: Parameters<
+  NonNullable<ChannelMessageActionAdapter["describeMessageTool"]>
+>[0]): ChannelMessageToolDiscovery {
+  const enabled =
+    cfg.channels?.msteams?.enabled !== false &&
+    Boolean(resolveMSTeamsCredentials(cfg.channels?.msteams));
+  return {
+    actions: enabled ? (["poll"] satisfies ChannelMessageActionName[]) : [],
+    capabilities: enabled ? ["cards"] : [],
+    schema: enabled
+      ? {
+          properties: {
+            card: createMessageToolCardSchema(),
+          },
+        }
+      : null,
+  };
 }
 
 export const msteamsPlugin: ChannelPlugin<ResolvedMSTeamsAccount> = {
@@ -368,21 +394,7 @@ export const msteamsPlugin: ChannelPlugin<ResolvedMSTeamsAccount> = {
     },
   },
   actions: {
-    listActions: ({ cfg }) => {
-      const enabled =
-        cfg.channels?.msteams?.enabled !== false &&
-        Boolean(resolveMSTeamsCredentials(cfg.channels?.msteams));
-      if (!enabled) {
-        return [];
-      }
-      return ["poll"] satisfies ChannelMessageActionName[];
-    },
-    getCapabilities: ({ cfg }) => {
-      return cfg.channels?.msteams?.enabled !== false &&
-        Boolean(resolveMSTeamsCredentials(cfg.channels?.msteams))
-        ? (["cards"] as const)
-        : [];
-    },
+    describeMessageTool: describeMSTeamsMessageTool,
     handleAction: async (ctx) => {
       // Handle send action with card parameter
       if (ctx.action === "send" && ctx.params.card) {

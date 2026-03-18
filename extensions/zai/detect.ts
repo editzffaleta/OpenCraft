@@ -2,7 +2,7 @@ import {
   detectZaiEndpoint as detectZaiEndpointCore,
   type ZaiDetectedEndpoint,
   type ZaiEndpointId,
-} from "../../src/commands/zai-endpoint-detect.js";
+} from "opencraft/plugin-sdk/zai";
 
 type DetectZaiEndpointFn = typeof detectZaiEndpointCore;
 

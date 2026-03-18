@@ -1,60 +1,60 @@
 ---
-summary: "Aplicativo de nó iOS: conexão com o Gateway, emparelhamento, canvas e solução de problemas"
+summary: "iOS node app: connect to the Gateway, pairing, canvas, and troubleshooting"
 read_when:
-  - Emparelhando ou reconectando o nó iOS
-  - Executando o aplicativo iOS a partir da fonte
-  - Depurando descoberta do Gateway ou comandos canvas
-title: "Aplicativo iOS"
+  - Pairing or reconnecting the iOS node
+  - Running the iOS app from source
+  - Debugging gateway discovery or canvas commands
+title: "iOS App"
 ---
 
-# Aplicativo iOS (Nó)
+# iOS App (Node)
 
-Disponibilidade: visualização interna. O aplicativo iOS ainda não é distribuído publicamente.
+Availability: internal preview. The iOS app is not publicly distributed yet.
 
-## O que ele faz
+## What it does
 
-- Se conecta a um Gateway via WebSocket (LAN ou tailnet).
-- Expõe recursos de nó: Canvas, Snapshot de Tela, Captura de Câmera, Localização, Talk Mode, Voice Wake.
-- Recebe comandos `node.invoke` e relata eventos de status do nó.
+- Connects to a Gateway over WebSocket (LAN or tailnet).
+- Exposes node capabilities: Canvas, Screen snapshot, Camera capture, Location, Talk mode, Voice wake.
+- Receives `node.invoke` commands and reports node status events.
 
-## Requisitos
+## Requirements
 
-- Gateway em execução em outro dispositivo (macOS, Linux ou Windows via WSL2).
-- Caminho de rede:
-  - Mesmo LAN via Bonjour, **ou**
-  - Tailnet via DNS-SD unicast (domínio de exemplo: `opencraft.internal.`), **ou**
-  - Host/porta manual (fallback).
+- Gateway running on another device (macOS, Linux, or Windows via WSL2).
+- Network path:
+  - Same LAN via Bonjour, **or**
+  - Tailnet via unicast DNS-SD (example domain: `opencraft.internal.`), **or**
+  - Manual host/port (fallback).
 
-## Início rápido (emparelhar + conectar)
+## Quick start (pair + connect)
 
-1. Inicie o Gateway:
+1. Start the Gateway:
 
 ```bash
 opencraft gateway --port 18789
 ```
 
-2. No aplicativo iOS, abra Configurações e escolha um Gateway descoberto (ou ative Manual Host e insira host/porta).
+2. In the iOS app, open Settings and pick a discovered gateway (or enable Manual Host and enter host/port).
 
-3. Aprove a solicitação de emparelhamento no host do Gateway:
+3. Approve the pairing request on the gateway host:
 
 ```bash
 opencraft devices list
 opencraft devices approve <requestId>
 ```
 
-4. Verifique a conexão:
+4. Verify connection:
 
 ```bash
 opencraft nodes status
 opencraft gateway call node.list --params "{}"
 ```
 
-## Push com suporte de relay para compilações oficiais
+## Relay-backed push for official builds
 
-As compilações iOS oficiais distribuídas usam o relay de push externo em vez de publicar o token APNs bruto
-para o Gateway.
+Official distributed iOS builds use the external push relay instead of publishing the raw APNs
+token to the gateway.
 
-Requisito do lado do Gateway:
+Gateway-side requirement:
 
 ```json5
 {
@@ -70,85 +70,86 @@ Requisito do lado do Gateway:
 }
 ```
 
-Como o fluxo funciona:
+How the flow works:
 
-- O aplicativo iOS se registra no relay usando App Attest e o recebimento do aplicativo.
-- O relay retorna um identificador de relay opaco mais uma concessão de envio com escopo de registro.
-- O aplicativo iOS busca a identidade do Gateway emparelhado e o inclui no registro do relay, para que o registro com suporte de relay seja delegado a esse Gateway específico.
-- O aplicativo encaminha esse registro com suporte de relay para o Gateway emparelhado com `push.apns.register`.
-- O Gateway usa esse identificador de relay armazenado para `push.test`, despertares em segundo plano e empurrões de despertar.
-- A URL base do relay do Gateway deve corresponder à URL do relay incorporada na compilação iOS oficial/TestFlight.
-- Se o aplicativo se conectar posteriormente a um Gateway diferente ou a uma compilação com uma URL de base de relay diferente, ele atualiza o registro de relay em vez de reutilizar a ligação antiga.
+- The iOS app registers with the relay using App Attest and the app receipt.
+- The relay returns an opaque relay handle plus a registration-scoped send grant.
+- The iOS app fetches the paired gateway identity and includes it in relay registration, so the relay-backed registration is delegated to that specific gateway.
+- The app forwards that relay-backed registration to the paired gateway with `push.apns.register`.
+- The gateway uses that stored relay handle for `push.test`, background wakes, and wake nudges.
+- The gateway relay base URL must match the relay URL baked into the official/TestFlight iOS build.
+- If the app later connects to a different gateway or a build with a different relay base URL, it refreshes the relay registration instead of reusing the old binding.
 
-O que o Gateway **não** precisa para esse caminho:
+What the gateway does **not** need for this path:
 
-- Nenhum token de relay em toda a implantação.
-- Nenhuma chave APNs direta para envios com suporte de relay oficial/TestFlight.
+- No deployment-wide relay token.
+- No direct APNs key for official/TestFlight relay-backed sends.
 
-Fluxo de operador esperado:
+Expected operator flow:
 
-1. Instale a compilação iOS oficial/TestFlight.
-2. Defina `gateway.push.apns.relay.baseUrl` no Gateway.
-3. Emparelhe o aplicativo com o Gateway e deixe-o terminar de conectar.
-4. O aplicativo publica `push.apns.register` automaticamente depois de ter um token APNs, a sessão do operador está conectada e o registro do relay tem sucesso.
-5. Depois disso, `push.test`, reconectar despertares e empurrões de despertar podem usar o registro com suporte de relay armazenado.
+1. Install the official/TestFlight iOS build.
+2. Set `gateway.push.apns.relay.baseUrl` on the gateway.
+3. Pair the app to the gateway and let it finish connecting.
+4. The app publishes `push.apns.register` automatically after it has an APNs token, the operator session is connected, and relay registration succeeds.
+5. After that, `push.test`, reconnect wakes, and wake nudges can use the stored relay-backed registration.
 
-Nota de compatibilidade:
+Compatibility note:
 
-- `OPENCRAFT_APNS_RELAY_BASE_URL` ainda funciona como substituição de env temporária para o Gateway.
+- `OPENCRAFT_APNS_RELAY_BASE_URL` still works as a temporary env override for the gateway.
 
-## Fluxo de autenticação e confiança
+## Authentication and trust flow
 
-O relay existe para impor dois restrições que direct APNs-on-Gateway não pode fornecer para
-compilações iOS oficiais:
+The relay exists to enforce two constraints that direct APNs-on-gateway cannot provide for
+official iOS builds:
 
-- Apenas compilações genuínas do OpenCraft iOS distribuídas através da Apple podem usar o relay hospedado.
-- Um Gateway pode enviar pushes com suporte de relay apenas para dispositivos iOS que foram emparelhados com esse Gateway específico.
+- Only genuine OpenCraft iOS builds distributed through Apple can use the hosted relay.
+- A gateway can send relay-backed pushes only for iOS devices that paired with that specific
+  gateway.
 
-Hop a hop:
+Hop by hop:
 
-1. `Aplicativo iOS -> Gateway`
-   - O aplicativo primeiro é emparelhado com o Gateway através do fluxo de autenticação normal do Gateway.
-   - Isso fornece ao aplicativo uma sessão de nó autenticada mais uma sessão de operador autenticada.
-   - A sessão do operador é usada para chamar `gateway.identity.get`.
+1. `iOS app -> gateway`
+   - The app first pairs with the gateway through the normal Gateway auth flow.
+   - That gives the app an authenticated node session plus an authenticated operator session.
+   - The operator session is used to call `gateway.identity.get`.
 
-2. `Aplicativo iOS -> relay`
-   - O aplicativo chama os endpoints de registro do relay via HTTPS.
-   - O registro inclui prova de App Attest plus recebimento do aplicativo.
-   - O relay valida o bundle ID, prova de App Attest e recebimento da Apple, e requer o
-     caminho de distribuição oficial/produção.
-   - Isso é o que bloqueia compilações locais do Xcode/dev de usar o relay hospedado. Uma compilação local pode ser
-     assinada, mas não satisfaz a prova oficial de distribuição da Apple que o relay espera.
+2. `iOS app -> relay`
+   - The app calls the relay registration endpoints over HTTPS.
+   - Registration includes App Attest proof plus the app receipt.
+   - The relay validates the bundle ID, App Attest proof, and Apple receipt, and requires the
+     official/production distribution path.
+   - This is what blocks local Xcode/dev builds from using the hosted relay. A local build may be
+     signed, but it does not satisfy the official Apple distribution proof the relay expects.
 
-3. `Delegação de identidade do Gateway`
-   - Antes do registro no relay, o aplicativo busca a identidade do Gateway emparelhado de
+3. `gateway identity delegation`
+   - Before relay registration, the app fetches the paired gateway identity from
      `gateway.identity.get`.
-   - O aplicativo inclui essa identidade do Gateway na carga de registro do relay.
-   - O relay retorna um identificador de relay e uma concessão de envio com escopo de registro que são delegados a
-     essa identidade do Gateway.
+   - The app includes that gateway identity in the relay registration payload.
+   - The relay returns a relay handle and a registration-scoped send grant that are delegated to
+     that gateway identity.
 
-4. `Gateway -> relay`
-   - O Gateway armazena o identificador de relay e a concessão de envio de `push.apns.register`.
-   - Em `push.test`, reconectar despertares e empurrões de despertar, o Gateway assina a solicitação de envio com seu
-     própria identidade do dispositivo.
-   - O relay verifica tanto a concessão de envio armazenada quanto a assinatura do Gateway contra a delegada
-     identidade do Gateway do registro.
-   - Outro Gateway não pode reutilizar esse registro armazenado, mesmo que de alguma forma obtenha o identificador.
+4. `gateway -> relay`
+   - The gateway stores the relay handle and send grant from `push.apns.register`.
+   - On `push.test`, reconnect wakes, and wake nudges, the gateway signs the send request with its
+     own device identity.
+   - The relay verifies both the stored send grant and the gateway signature against the delegated
+     gateway identity from registration.
+   - Another gateway cannot reuse that stored registration, even if it somehow obtains the handle.
 
 5. `relay -> APNs`
-   - O relay possui as credenciais de APNs de produção e o token APNs bruto para a compilação oficial.
-   - O Gateway nunca armazena o token APNs bruto para compilações oficiais com suporte de relay.
-   - O relay envia o push final para APNs em nome do Gateway emparelhado.
+   - The relay owns the production APNs credentials and the raw APNs token for the official build.
+   - The gateway never stores the raw APNs token for relay-backed official builds.
+   - The relay sends the final push to APNs on behalf of the paired gateway.
 
-Por que esse design foi criado:
+Why this design was created:
 
-- Para manter credenciais de APNs de produção fora dos Gateways dos usuários.
-- Para evitar armazenar tokens APNs brutos de compilação oficial no Gateway.
-- Para permitir o uso do relay hospedado apenas para compilações OpenCraft oficiais/TestFlight.
-- Para impedir que um Gateway envie despertares para dispositivos iOS pertencentes a um Gateway diferente.
+- To keep production APNs credentials out of user gateways.
+- To avoid storing raw official-build APNs tokens on the gateway.
+- To allow hosted relay usage only for official/TestFlight OpenCraft builds.
+- To prevent one gateway from sending wake pushes to iOS devices owned by a different gateway.
 
-Compilações locais/manuais permanecem em APNs direto. Se você estiver testando essas compilações sem o relay, o
-Gateway ainda precisa de credenciais APNs diretas:
+Local/manual builds remain on direct APNs. If you are testing those builds without the relay, the
+gateway still needs direct APNs credentials:
 
 ```bash
 export OPENCRAFT_APNS_TEAM_ID="TEAMID"
@@ -156,35 +157,35 @@ export OPENCRAFT_APNS_KEY_ID="KEYID"
 export OPENCRAFT_APNS_PRIVATE_KEY_P8="$(cat /path/to/AuthKey_KEYID.p8)"
 ```
 
-## Caminhos de descoberta
+## Discovery paths
 
 ### Bonjour (LAN)
 
-O Gateway anuncia `_opencraft-gw._tcp` em `local.`. O aplicativo iOS lista esses automaticamente.
+The Gateway advertises `_opencraft-gw._tcp` on `local.`. The iOS app lists these automatically.
 
-### Tailnet (entre redes)
+### Tailnet (cross-network)
 
-Se o mDNS for bloqueado, use uma zona DNS-SD unicast (escolha um domínio; exemplo: `opencraft.internal.`) e DNS de divisão do Tailscale.
-Consulte [Bonjour](/gateway/bonjour) para o exemplo do CoreDNS.
+If mDNS is blocked, use a unicast DNS-SD zone (choose a domain; example: `opencraft.internal.`) and Tailscale split DNS.
+See [Bonjour](/gateway/bonjour) for the CoreDNS example.
 
-### Host/porta manual
+### Manual host/port
 
-Em Configurações, ative **Manual Host** e insira o host + porta do Gateway (padrão `18789`).
+In Settings, enable **Manual Host** and enter the gateway host + port (default `18789`).
 
 ## Canvas + A2UI
 
-O nó iOS renderiza um Canvas WKWebView. Use `node.invoke` para direcioná-lo:
+The iOS node renders a WKWebView canvas. Use `node.invoke` to drive it:
 
 ```bash
 opencraft nodes invoke --node "iOS Node" --command canvas.navigate --params '{"url":"http://<gateway-host>:18789/__opencraft__/canvas/"}'
 ```
 
-Notas:
+Notes:
 
-- O host do Canvas do Gateway serve `/__opencraft__/canvas/` e `/__opencraft__/a2ui/`.
-- É servido a partir do servidor HTTP do Gateway (mesma porta que `gateway.port`, padrão `18789`).
-- O nó iOS navega automaticamente para A2UI ao conectar quando uma URL de host de Canvas é anunciada.
-- Retorne ao scaffold incorporado com `canvas.navigate` e `{"url":""}`.
+- The Gateway canvas host serves `/__opencraft__/canvas/` and `/__opencraft__/a2ui/`.
+- It is served from the Gateway HTTP server (same port as `gateway.port`, default `18789`).
+- The iOS node auto-navigates to A2UI on connect when a canvas host URL is advertised.
+- Return to the built-in scaffold with `canvas.navigate` and `{"url":""}`.
 
 ### Canvas eval / snapshot
 
@@ -196,20 +197,20 @@ opencraft nodes invoke --node "iOS Node" --command canvas.eval --params '{"javaS
 opencraft nodes invoke --node "iOS Node" --command canvas.snapshot --params '{"maxWidth":900,"format":"jpeg"}'
 ```
 
-## Voice Wake + Talk Mode
+## Voice wake + talk mode
 
-- Voice Wake e Talk Mode estão disponíveis em Configurações.
-- o iOS pode suspender áudio em segundo plano; trate Voice Wake e Talk Mode como melhores esforços quando o aplicativo não está ativo.
+- Voice wake and talk mode are available in Settings.
+- iOS may suspend background audio; treat voice features as best-effort when the app is not active.
 
-## Erros comuns
+## Common errors
 
-- `NODE_BACKGROUND_UNAVAILABLE`: traga o aplicativo iOS para o primeiro plano (comandos canvas/câmera/tela requerem isso).
-- `A2UI_HOST_NOT_CONFIGURED`: o Gateway não anunciou uma URL de host de Canvas; verifique `canvasHost` em [Configuração do Gateway](/gateway/configuration).
-- Prompt de emparelhamento nunca aparece: execute `opencraft devices list` e aprove manualmente.
-- Reconexão falha após reinstalar: o token de emparelhamento do Keychain foi limpo; re-emparelhe o nó.
+- `NODE_BACKGROUND_UNAVAILABLE`: bring the iOS app to the foreground (canvas/camera/screen commands require it).
+- `A2UI_HOST_NOT_CONFIGURED`: the Gateway did not advertise a canvas host URL; check `canvasHost` in [Gateway configuration](/gateway/configuration).
+- Pairing prompt never appears: run `opencraft devices list` and approve manually.
+- Reconnect fails after reinstall: the Keychain pairing token was cleared; re-pair the node.
 
-## Documentação relacionada
+## Related docs
 
-- [Emparelhamento](/channels/pairing)
-- [Descoberta](/gateway/discovery)
+- [Pairing](/channels/pairing)
+- [Discovery](/gateway/discovery)
 - [Bonjour](/gateway/bonjour)

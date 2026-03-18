@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
 import { withTempDownloadPath, type ClawdbotConfig } from "opencraft/plugin-sdk/feishu";
-import { mediaKindFromMime } from "../../../src/media/constants.js";
+import { mediaKindFromMime } from "opencraft/plugin-sdk/media-runtime";
 import { resolveFeishuAccount } from "./accounts.js";
 import { createFeishuClient } from "./client.js";
 import { normalizeFeishuExternalKey } from "./external-keys.js";

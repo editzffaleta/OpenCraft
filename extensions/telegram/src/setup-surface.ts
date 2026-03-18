@@ -6,19 +6,16 @@ import {
   setChannelDmPolicyWithAllowFrom,
   setSetupChannelEnabled,
   splitSetupEntries,
-} from "../../../src/plugin-sdk-internal/setup.js";
-import type {
-  ChannelSetupDmPolicy,
-  ChannelSetupWizard,
-} from "../../../src/plugin-sdk-internal/setup.js";
+} from "opencraft/plugin-sdk/setup";
+import type { ChannelSetupDmPolicy, ChannelSetupWizard } from "opencraft/plugin-sdk/setup";
 import { inspectTelegramAccount } from "./account-inspect.js";
 import { listTelegramAccountIds, resolveTelegramAccount } from "./accounts.js";
 import {
   parseTelegramAllowFromId,
   promptTelegramAllowFromForAccount,
   resolveTelegramAllowFromEntries,
-  getTelegramTokenHelpLines,
-  getTelegramUserIdHelpLines,
+  TELEGRAM_TOKEN_HELP_LINES,
+  TELEGRAM_USER_ID_HELP_LINES,
   telegramSetupAdapter,
 } from "./setup-core.js";
 
@@ -61,9 +58,7 @@ export const telegramSetupWizard: ChannelSetupWizard = {
       credentialLabel: "Telegram bot token",
       preferredEnvVar: "TELEGRAM_BOT_TOKEN",
       helpTitle: "Telegram bot token",
-      get helpLines() {
-        return getTelegramTokenHelpLines();
-      },
+      helpLines: TELEGRAM_TOKEN_HELP_LINES,
       envPrompt: "TELEGRAM_BOT_TOKEN detected. Use env var?",
       keepPrompt: "Telegram token already configured. Keep it?",
       inputPrompt: "Enter Telegram bot token",
@@ -87,9 +82,7 @@ export const telegramSetupWizard: ChannelSetupWizard = {
   ],
   allowFrom: {
     helpTitle: "Telegram user id",
-    get helpLines() {
-      return getTelegramUserIdHelpLines();
-    },
+    helpLines: TELEGRAM_USER_ID_HELP_LINES,
     credentialInputKey: "token",
     message: "Telegram allowFrom (numeric sender id; @username resolves to id)",
     placeholder: "@username",

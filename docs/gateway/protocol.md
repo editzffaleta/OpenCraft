@@ -1,18 +1,18 @@
 ---
-summary: "Protocolo WebSocket do Gateway: handshake, frames, versionamento"
+summary: "Gateway WebSocket protocol: handshake, frames, versioning"
 read_when:
-  - Implementando ou atualizando clientes WS do gateway
-  - Debugando mismatches de protocolo ou falhas de connect
-  - Regenerando schema/modelos de protocolo
+  - Implementing or updating gateway WS clients
+  - Debugging protocol mismatches or connect failures
+  - Regenerating protocol schema/models
 title: "Gateway Protocol"
 ---
 
-# Protocolo do Gateway (WebSocket)
+# Gateway protocol (WebSocket)
 
-O protocolo WS do Gateway é o **único control plane + transporte de node** do
-OpenCraft. Todos os clientes (CLI, web UI, app macOS, nodes iOS/Android, nodes
-headless) conectam via WebSocket e declaram seu **role** + **escopo** no
-momento do handshake.
+The Gateway WS protocol is the **single control plane + node transport** for
+OpenCraft. All clients (CLI, web UI, macOS app, iOS/Android nodes, headless
+nodes) connect over WebSocket and declare their **role** + **scope** at
+handshake time.
 
 ## Transport
 
@@ -199,7 +199,7 @@ The Gateway treats these as **claims** and enforces server-side allowlists.
 
 ## Auth
 
-- If `OPENCLAW_GATEWAY_TOKEN` (or `--token`) is set, `connect.params.auth.token`
+- If `OPENCRAFT_GATEWAY_TOKEN` (or `--token`) is set, `connect.params.auth.token`
   must match or the socket is closed.
 - After pairing, the Gateway issues a **device token** scoped to the connection
   role + scopes. It is returned in `hello-ok.auth.deviceToken` and should be

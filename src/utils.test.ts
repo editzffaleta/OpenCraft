@@ -157,9 +157,9 @@ describe("shortenHomePath", () => {
     vi.stubEnv("OPENCRAFT_HOME", "/srv/opencraft-home");
     vi.stubEnv("HOME", "/home/other");
 
-    expect(
-      shortenHomePath(`${path.resolve("/srv/opencraft-home")}/.editzffaleta/OpenCraft.json`),
-    ).toBe("$OPENCRAFT_HOME/.editzffaleta/OpenCraft.json");
+    expect(shortenHomePath(`${path.resolve("/srv/opencraft-home")}/.opencraft/opencraft.json`)).toBe(
+      "$OPENCRAFT_HOME/.opencraft/opencraft.json",
+    );
 
     vi.unstubAllEnvs();
   });
@@ -171,10 +171,8 @@ describe("shortenHomeInString", () => {
     vi.stubEnv("HOME", "/home/other");
 
     expect(
-      shortenHomeInString(
-        `config: ${path.resolve("/srv/opencraft-home")}/.editzffaleta/OpenCraft.json`,
-      ),
-    ).toBe("config: $OPENCRAFT_HOME/.editzffaleta/OpenCraft.json");
+      shortenHomeInString(`config: ${path.resolve("/srv/opencraft-home")}/.opencraft/opencraft.json`),
+    ).toBe("config: $OPENCRAFT_HOME/.opencraft/opencraft.json");
 
     vi.unstubAllEnvs();
   });
@@ -236,9 +234,7 @@ describe("resolveUserPath", () => {
       OPENCRAFT_HOME: "/srv/opencraft-home",
     } as NodeJS.ProcessEnv;
 
-    expect(resolveUserPath("~/opencraft", env)).toBe(
-      path.resolve("/srv/opencraft-home", "opencraft"),
-    );
+    expect(resolveUserPath("~/opencraft", env)).toBe(path.resolve("/srv/opencraft-home", "opencraft"));
   });
 
   it("keeps blank paths blank", () => {

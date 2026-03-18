@@ -1,112 +1,112 @@
 ---
 name: weather
-description: "Obter clima atual e previsões via wttr.in ou Open-Meteo. Use quando: o usuário perguntar sobre clima, temperatura ou previsões para qualquer local. NÃO use para: dados históricos de clima, alertas de tempo severo ou análise meteorológica detalhada. Nenhuma chave de API necessária."
+description: "Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed."
 homepage: https://wttr.in/:help
 metadata: { "opencraft": { "emoji": "☔", "requires": { "bins": ["curl"] } } }
 ---
 
-# Skill de Clima
+# Weather Skill
 
-Obtenha condições climáticas atuais e previsões.
+Get current weather conditions and forecasts.
 
-## Quando Usar
+## When to Use
 
-✅ **USE esta skill quando:**
+✅ **USE this skill when:**
 
-- "Como está o tempo?"
-- "Vai chover hoje/amanhã?"
-- "Temperatura em [cidade]"
-- "Previsão do tempo para a semana"
-- Verificações de clima para planejamento de viagens
+- "What's the weather?"
+- "Will it rain today/tomorrow?"
+- "Temperature in [city]"
+- "Weather forecast for the week"
+- Travel planning weather checks
 
-## Quando NÃO Usar
+## When NOT to Use
 
-❌ **NÃO use esta skill quando:**
+❌ **DON'T use this skill when:**
 
-- Dados históricos de clima → use arquivos/APIs de clima
-- Análise climática ou tendências → use fontes de dados especializadas
-- Dados de microclima hiper-local → use sensores locais
-- Alertas de tempo severo → verifique fontes oficiais do NWS
-- Clima para aviação/marítimo → use serviços especializados (METAR, etc.)
+- Historical weather data → use weather archives/APIs
+- Climate analysis or trends → use specialized data sources
+- Hyper-local microclimate data → use local sensors
+- Severe weather alerts → check official NWS sources
+- Aviation/marine weather → use specialized services (METAR, etc.)
 
-## Localização
+## Location
 
-Sempre inclua uma cidade, região ou código de aeroporto nas consultas de clima.
+Always include a city, region, or airport code in weather queries.
 
-## Comandos
+## Commands
 
-### Clima Atual
+### Current Weather
 
 ```bash
-# Resumo em uma linha
+# One-line summary
 curl "wttr.in/London?format=3"
 
-# Condições atuais detalhadas
+# Detailed current conditions
 curl "wttr.in/London?0"
 
-# Cidade específica
+# Specific city
 curl "wttr.in/New+York?format=3"
 ```
 
-### Previsões
+### Forecasts
 
 ```bash
-# Previsão de 3 dias
+# 3-day forecast
 curl "wttr.in/London"
 
-# Previsão semanal
+# Week forecast
 curl "wttr.in/London?format=v2"
 
-# Dia específico (0=hoje, 1=amanhã, 2=depois de amanhã)
+# Specific day (0=today, 1=tomorrow, 2=day after)
 curl "wttr.in/London?1"
 ```
 
-### Opções de Formato
+### Format Options
 
 ```bash
-# Uma linha
+# One-liner
 curl "wttr.in/London?format=%l:+%c+%t+%w"
 
-# Saída JSON
+# JSON output
 curl "wttr.in/London?format=j1"
 
-# Imagem PNG
+# PNG image
 curl "wttr.in/London.png"
 ```
 
-### Códigos de Formato
+### Format Codes
 
-- `%c` — Emoji de condição climática
-- `%t` — Temperatura
-- `%f` — "Sensação térmica"
-- `%w` — Vento
-- `%h` — Umidade
-- `%p` — Precipitação
-- `%l` — Localização
+- `%c` — Weather condition emoji
+- `%t` — Temperature
+- `%f` — "Feels like"
+- `%w` — Wind
+- `%h` — Humidity
+- `%p` — Precipitation
+- `%l` — Location
 
-## Respostas Rápidas
+## Quick Responses
 
-**"Como está o tempo?"**
+**"What's the weather?"**
 
 ```bash
 curl -s "wttr.in/London?format=%l:+%c+%t+(feels+like+%f),+%w+wind,+%h+humidity"
 ```
 
-**"Vai chover?"**
+**"Will it rain?"**
 
 ```bash
 curl -s "wttr.in/London?format=%l:+%c+%p"
 ```
 
-**"Previsão do fim de semana"**
+**"Weekend forecast"**
 
 ```bash
 curl "wttr.in/London?format=v2"
 ```
 
-## Observações
+## Notes
 
-- Nenhuma chave de API necessária (usa wttr.in)
-- Com limite de requisições; não faça spam de pedidos
-- Funciona para a maioria das cidades do mundo
-- Suporta códigos de aeroporto: `curl wttr.in/ORD`
+- No API key needed (uses wttr.in)
+- Rate limited; don't spam requests
+- Works for most global cities
+- Supports airport codes: `curl wttr.in/ORD`

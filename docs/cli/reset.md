@@ -1,14 +1,14 @@
 ---
-summary: "Referência CLI para `opencraft reset` (resetar estado/configuração local)"
+summary: "CLI reference for `opencraft reset` (reset local state/config)"
 read_when:
-  - Você quer limpar o estado local mantendo o CLI instalado
-  - Você quer uma simulação do que seria removido
+  - You want to wipe local state while keeping the CLI installed
+  - You want a dry-run of what would be removed
 title: "reset"
 ---
 
 # `opencraft reset`
 
-Resetar configuração/estado local (mantém o CLI instalado).
+Reset local config/state (keeps the CLI installed).
 
 ```bash
 opencraft backup create
@@ -17,4 +17,4 @@ opencraft reset --dry-run
 opencraft reset --scope config+creds+sessions --yes --non-interactive
 ```
 
-Execute `opencraft backup create` primeiro se quiser um snapshot restaurável antes de remover o estado local.
+Run `opencraft backup create` first if you want a restorable snapshot before removing local state.

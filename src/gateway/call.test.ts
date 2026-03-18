@@ -113,7 +113,7 @@ describe("callGateway url resolution", () => {
   const envSnapshot = captureEnv([
     "OPENCRAFT_ALLOW_INSECURE_PRIVATE_WS",
     "OPENCRAFT_GATEWAY_URL",
-    "OPENCLAW_GATEWAY_TOKEN",
+    "OPENCRAFT_GATEWAY_TOKEN",
     "CLAWDBOT_GATEWAY_TOKEN",
   ]);
 
@@ -229,7 +229,7 @@ describe("callGateway url resolution", () => {
     resolveGatewayPort.mockReturnValue(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
     process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
       method: "health",
@@ -258,7 +258,7 @@ describe("callGateway url resolution", () => {
     resolveGatewayPort.mockReturnValue(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
     process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
       method: "health",
@@ -282,7 +282,7 @@ describe("callGateway url resolution", () => {
     setGatewayNetworkDefaults(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
     process.env.OPENCRAFT_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token";
 
     await callGateway({
       method: "health",
@@ -633,8 +633,8 @@ describe("callGateway url override auth requirements", () => {
 
   beforeEach(() => {
     envSnapshot = captureEnv([
-      "OPENCLAW_GATEWAY_TOKEN",
-      "OPENCLAW_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_PASSWORD",
       "OPENCRAFT_GATEWAY_URL",
       "CLAWDBOT_GATEWAY_URL",
     ]);
@@ -647,8 +647,8 @@ describe("callGateway url override auth requirements", () => {
   });
 
   it("throws when url override is set without explicit credentials", async () => {
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "env-password";
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token";
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "env-password";
     loadConfig.mockReturnValue({
       gateway: {
         mode: "local",
@@ -680,7 +680,7 @@ describe("callGateway password resolution", () => {
     {
       label: "password",
       authKey: "password", // pragma: allowlist secret
-      envKey: "OPENCLAW_GATEWAY_PASSWORD",
+      envKey: "OPENCRAFT_GATEWAY_PASSWORD",
       envValue: "from-env",
       configValue: "from-config",
       explicitValue: "explicit-password",
@@ -688,7 +688,7 @@ describe("callGateway password resolution", () => {
     {
       label: "token",
       authKey: "token", // pragma: allowlist secret
-      envKey: "OPENCLAW_GATEWAY_TOKEN",
+      envKey: "OPENCRAFT_GATEWAY_TOKEN",
       envValue: "env-token",
       configValue: "local-token",
       explicitValue: "explicit-token",
@@ -697,16 +697,16 @@ describe("callGateway password resolution", () => {
 
   beforeEach(() => {
     envSnapshot = captureEnv([
-      "OPENCLAW_GATEWAY_PASSWORD",
-      "OPENCLAW_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_TOKEN",
       "LOCAL_REMOTE_FALLBACK_TOKEN",
       "LOCAL_REF_PASSWORD",
       "REMOTE_REF_TOKEN",
       "REMOTE_REF_PASSWORD",
     ]);
     resetGatewayCallMocks();
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
     delete process.env.LOCAL_REMOTE_FALLBACK_TOKEN;
     delete process.env.LOCAL_REF_PASSWORD;
     delete process.env.REMOTE_REF_TOKEN;
@@ -757,7 +757,7 @@ describe("callGateway password resolution", () => {
     },
   ])("$label", async ({ envPassword, config, expectedPassword }) => {
     if (envPassword !== undefined) {
-      process.env.OPENCLAW_GATEWAY_PASSWORD = envPassword;
+      process.env.OPENCRAFT_GATEWAY_PASSWORD = envPassword;
     }
     loadConfig.mockReturnValue(config);
 
@@ -790,7 +790,7 @@ describe("callGateway password resolution", () => {
   });
 
   it("does not resolve local password ref when env password takes precedence", async () => {
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "from-env";
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "from-env";
     loadConfig.mockReturnValue({
       gateway: {
         mode: "local",

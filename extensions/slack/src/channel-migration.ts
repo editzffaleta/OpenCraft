@@ -1,6 +1,6 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { SlackChannelConfig } from "../../../src/config/types.slack.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { SlackChannelConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeAccountId } from "opencraft/plugin-sdk/routing";
 
 type SlackChannels = Record<string, SlackChannelConfig>;
 

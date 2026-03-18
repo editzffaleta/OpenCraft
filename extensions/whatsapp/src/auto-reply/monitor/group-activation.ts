@@ -1,14 +1,14 @@
-import { normalizeGroupActivation } from "../../../../../src/auto-reply/group-activation.js";
-import type { loadConfig } from "../../../../../src/config/config.js";
+import type { loadConfig } from "opencraft/plugin-sdk/config-runtime";
 import {
   resolveChannelGroupPolicy,
   resolveChannelGroupRequireMention,
-} from "../../../../../src/config/group-policy.js";
+} from "opencraft/plugin-sdk/config-runtime";
 import {
   loadSessionStore,
   resolveGroupSessionKey,
   resolveStorePath,
-} from "../../../../../src/config/sessions.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { normalizeGroupActivation } from "opencraft/plugin-sdk/reply-runtime";
 
 export function resolveGroupPolicyFor(cfg: ReturnType<typeof loadConfig>, conversationId: string) {
   const groupId = resolveGroupSessionKey({

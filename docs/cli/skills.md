@@ -1,22 +1,22 @@
 ---
-summary: "Referência CLI para `opencraft skills` (list/info/check) e elegibilidade de Skills"
+summary: "CLI reference for `opencraft skills` (list/info/check) and skill eligibility"
 read_when:
-  - Você quer ver quais Skills estão disponíveis e prontas para executar
-  - Você quer depurar binários/env/config ausentes para Skills
+  - You want to see which skills are available and ready to run
+  - You want to debug missing binaries/env/config for skills
 title: "skills"
 ---
 
 # `opencraft skills`
 
-Inspecionar Skills (incluídas + workspace + sobrescritas gerenciadas) e ver o que é elegível vs requisitos ausentes.
+Inspect skills (bundled + workspace + managed overrides) and see what’s eligible vs missing requirements.
 
-Relacionado:
+Related:
 
-- Sistema de Skills: [Skills](/tools/skills)
-- Configuração de Skills: [Skills config](/tools/skills-config)
-- Instalações ClawHub: [ClawHub](/tools/clawhub)
+- Skills system: [Skills](/tools/skills)
+- Skills config: [Skills config](/tools/skills-config)
+- ClawHub installs: [ClawHub](/tools/clawhub)
 
-## Comandos
+## Commands
 
 ```bash
 opencraft skills list

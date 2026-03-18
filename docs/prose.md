@@ -1,43 +1,43 @@
 ---
-summary: "OpenProse: workflows .prose, comandos slash e estado no OpenCraft"
+summary: "OpenProse: .prose workflows, slash commands, and state in OpenCraft"
 read_when:
-  - Você quer executar ou escrever workflows .prose
-  - Você quer habilitar o Plugin OpenProse
-  - Você precisa entender o armazenamento de estado
+  - You want to run or write .prose workflows
+  - You want to enable the OpenProse plugin
+  - You need to understand state storage
 title: "OpenProse"
 ---
 
 # OpenProse
 
-OpenProse é um formato de workflow portátil, baseado em Markdown, para orquestrar sessões de IA. No OpenCraft, ele é entregue como um Plugin que instala um pacote de Skills OpenProse mais um comando slash `/prose`. Programas ficam em arquivos `.prose` e podem gerar múltiplos subagentes com fluxo de controle explícito.
+OpenProse is a portable, markdown-first workflow format for orchestrating AI sessions. In OpenCraft it ships as a plugin that installs an OpenProse skill pack plus a `/prose` slash command. Programs live in `.prose` files and can spawn multiple sub-agents with explicit control flow.
 
-Site oficial: [https://www.prose.md](https://www.prose.md)
+Official site: [https://www.prose.md](https://www.prose.md)
 
-## O que ele pode fazer
+## What it can do
 
-- Pesquisa + síntese multi-agente com paralelismo explícito.
-- Workflows repetíveis e seguros para aprovação (revisão de código, triagem de incidentes, pipelines de conteúdo).
-- Programas `.prose` reutilizáveis que você pode executar em runtimes de agente suportados.
+- Multi-agent research + synthesis with explicit parallelism.
+- Repeatable approval-safe workflows (code review, incident triage, content pipelines).
+- Reusable `.prose` programs you can run across supported agent runtimes.
 
-## Instalar + habilitar
+## Install + enable
 
-Plugins incluídos são desabilitados por padrão. Habilite o OpenProse:
+Bundled plugins are disabled by default. Enable OpenProse:
 
 ```bash
 opencraft plugins enable open-prose
 ```
 
-Reinicie o Gateway após habilitar o Plugin.
+Restart the Gateway after enabling the plugin.
 
-Checkout dev/local: `opencraft plugins install ./extensions/open-prose`
+Dev/local checkout: `opencraft plugins install ./extensions/open-prose`
 
-Documentação relacionada: [Plugins](/tools/plugin), [Manifesto de Plugin](/plugins/manifest), [Skills](/tools/skills).
+Related docs: [Plugins](/tools/plugin), [Plugin manifest](/plugins/manifest), [Skills](/tools/skills).
 
-## Comando slash
+## Slash command
 
-O OpenProse registra `/prose` como um comando de Skill invocável pelo usuário. Ele roteia para as instruções da VM OpenProse e usa ferramentas do OpenCraft internamente.
+OpenProse registers `/prose` as a user-invocable skill command. It routes to the OpenProse VM instructions and uses OpenCraft tools under the hood.
 
-Comandos comuns:
+Common commands:
 
 ```
 /prose help
@@ -49,34 +49,34 @@ Comandos comuns:
 /prose update
 ```
 
-## Exemplo: um arquivo `.prose` simples
+## Example: a simple `.prose` file
 
 ```prose
-# Pesquisa + síntese com dois agentes rodando em paralelo.
+# Research + synthesis with two agents running in parallel.
 
-input topic: "O que devemos pesquisar?"
+input topic: "What should we research?"
 
 agent researcher:
   model: sonnet
-  prompt: "Você pesquisa minuciosamente e cita fontes."
+  prompt: "You research thoroughly and cite sources."
 
 agent writer:
   model: opus
-  prompt: "Você escreve um resumo conciso."
+  prompt: "You write a concise summary."
 
 parallel:
   findings = session: researcher
-    prompt: "Pesquise {topic}."
+    prompt: "Research {topic}."
   draft = session: writer
-    prompt: "Resuma {topic}."
+    prompt: "Summarize {topic}."
 
-session "Junte as descobertas + rascunho em uma resposta final."
+session "Merge the findings + draft into a final answer."
 context: { findings, draft }
 ```
 
-## Locais de arquivo
+## File locations
 
-O OpenProse mantém o estado em `.prose/` no seu workspace:
+OpenProse keeps state under `.prose/` in your workspace:
 
 ```
 .prose/
@@ -90,45 +90,45 @@ O OpenProse mantém o estado em `.prose/` no seu workspace:
 └── agents/
 ```
 
-Agentes persistentes a nível de usuário ficam em:
+User-level persistent agents live at:
 
 ```
 ~/.prose/agents/
 ```
 
-## Modos de estado
+## State modes
 
-O OpenProse suporta múltiplos backends de estado:
+OpenProse supports multiple state backends:
 
-- **filesystem** (padrão): `.prose/runs/...`
-- **in-context**: transitório, para programas pequenos
-- **sqlite** (experimental): requer binário `sqlite3`
-- **postgres** (experimental): requer `psql` e uma string de conexão
+- **filesystem** (default): `.prose/runs/...`
+- **in-context**: transient, for small programs
+- **sqlite** (experimental): requires `sqlite3` binary
+- **postgres** (experimental): requires `psql` and a connection string
 
-Notas:
+Notes:
 
-- sqlite/postgres são opt-in e experimentais.
-- Credenciais postgres fluem para logs de subagentes; use um banco de dados dedicado com privilégios mínimos.
+- sqlite/postgres are opt-in and experimental.
+- postgres credentials flow into subagent logs; use a dedicated, least-privileged DB.
 
-## Programas remotos
+## Remote programs
 
-`/prose run <handle/slug>` resolve para `https://p.prose.md/<handle>/<slug>`.
-URLs diretas são buscadas como estão. Isso usa a ferramenta `web_fetch` (ou `exec` para POST).
+`/prose run <handle/slug>` resolves to `https://p.prose.md/<handle>/<slug>`.
+Direct URLs are fetched as-is. This uses the `web_fetch` tool (or `exec` for POST).
 
-## Mapeamento de runtime do OpenCraft
+## OpenCraft runtime mapping
 
-Programas OpenProse mapeiam para primitivas do OpenCraft:
+OpenProse programs map to OpenCraft primitives:
 
-| Conceito OpenProse             | Ferramenta OpenCraft |
-| ------------------------------ | -------------------- |
-| Gerar sessão / Ferramenta Task | `sessions_spawn`     |
-| Leitura/escrita de arquivo     | `read` / `write`     |
-| Busca na web                   | `web_fetch`          |
+| OpenProse concept         | OpenCraft tool    |
+| ------------------------- | ---------------- |
+| Spawn session / Task tool | `sessions_spawn` |
+| File read/write           | `read` / `write` |
+| Web fetch                 | `web_fetch`      |
 
-Se sua lista de permissão de ferramentas bloquear essas ferramentas, programas OpenProse falharão. Consulte [Configuração de Skills](/tools/skills-config).
+If your tool allowlist blocks these tools, OpenProse programs will fail. See [Skills config](/tools/skills-config).
 
-## Segurança + aprovações
+## Security + approvals
 
-Trate arquivos `.prose` como código. Revise antes de executar. Use listas de permissão e gates de aprovação de ferramentas do OpenCraft para controlar efeitos colaterais.
+Treat `.prose` files like code. Review before running. Use OpenCraft tool allowlists and approval gates to control side effects.
 
-Para workflows determinísticos e com gate de aprovação, compare com [Lobster](/tools/lobster).
+For deterministic, approval-gated workflows, compare with [Lobster](/tools/lobster).

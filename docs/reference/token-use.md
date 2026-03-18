@@ -1,104 +1,104 @@
 ---
-summary: "Como o OpenCraft constrói o contexto de prompt e reporta uso de tokens + custos"
+summary: "How OpenCraft builds prompt context and reports token usage + costs"
 read_when:
-  - Explicando uso de tokens, custos ou janelas de contexto
-  - Depurando crescimento de contexto ou comportamento de compactação
-title: "Uso e Custos de Token"
+  - Explaining token usage, costs, or context windows
+  - Debugging context growth or compaction behavior
+title: "Token Use and Costs"
 ---
 
-# Uso e custos de Token
+# Token use & costs
 
-O OpenCraft rastreia **tokens**, não caracteres. Tokens são específicos por modelo, mas a maioria
-dos modelos estilo OpenAI tem em média ~4 caracteres por token para texto em inglês.
+OpenCraft tracks **tokens**, not characters. Tokens are model-specific, but most
+OpenAI-style models average ~4 characters per token for English text.
 
-## Como o prompt de sistema é construído
+## How the system prompt is built
 
-O OpenCraft monta seu próprio prompt de sistema a cada execução. Ele inclui:
+OpenCraft assembles its own system prompt on every run. It includes:
 
-- Lista de ferramentas + descrições curtas
-- Lista de skills (apenas metadados; instruções são carregadas sob demanda com `read`)
-- Instruções de auto-atualização
-- Arquivos de workspace + bootstrap (`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md` quando novo, mais `MEMORY.md` quando presente ou `memory.md` como fallback em minúsculo). Arquivos grandes são truncados por `agents.defaults.bootstrapMaxChars` (padrão: 20000), e a injeção total de bootstrap é limitada por `agents.defaults.bootstrapTotalMaxChars` (padrão: 150000). Arquivos `memory/*.md` são sob demanda via ferramentas de memória e não são auto-injetados.
-- Hora (UTC + fuso horário do usuário)
-- Tags de resposta + comportamento de heartbeat
-- Metadados de runtime (host/SO/modelo/pensamento)
+- Tool list + short descriptions
+- Skills list (only metadata; instructions are loaded on demand with `read`)
+- Self-update instructions
+- Workspace + bootstrap files (`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md` when new, plus `MEMORY.md` when present or `memory.md` as a lowercase fallback). Large files are truncated by `agents.defaults.bootstrapMaxChars` (default: 20000), and total bootstrap injection is capped by `agents.defaults.bootstrapTotalMaxChars` (default: 150000). `memory/*.md` files are on-demand via memory tools and are not auto-injected.
+- Time (UTC + user timezone)
+- Reply tags + heartbeat behavior
+- Runtime metadata (host/OS/model/thinking)
 
-Veja o detalhamento completo em [Prompt de Sistema](/concepts/system-prompt).
+See the full breakdown in [System Prompt](/concepts/system-prompt).
 
-## O que conta na janela de contexto
+## What counts in the context window
 
-Tudo que o modelo recebe conta para o limite de contexto:
+Everything the model receives counts toward the context limit:
 
-- Prompt de sistema (todas as seções listadas acima)
-- Histórico de conversa (mensagens de usuário + assistente)
-- Chamadas de ferramentas e resultados de ferramentas
-- Anexos/transcrições (imagens, áudio, arquivos)
-- Resumos de compactação e artefatos de poda
-- Wrappers de provedor ou cabeçalhos de segurança (não visíveis, mas ainda contados)
+- System prompt (all sections listed above)
+- Conversation history (user + assistant messages)
+- Tool calls and tool results
+- Attachments/transcripts (images, audio, files)
+- Compaction summaries and pruning artifacts
+- Provider wrappers or safety headers (not visible, but still counted)
 
-Para imagens, o OpenCraft reduz escala de payloads de imagem de transcrição/ferramenta antes de chamadas ao provedor.
-Use `agents.defaults.imageMaxDimensionPx` (padrão: `1200`) para ajustar isso:
+For images, OpenCraft downscales transcript/tool image payloads before provider calls.
+Use `agents.defaults.imageMaxDimensionPx` (default: `1200`) to tune this:
 
-- Valores menores geralmente reduzem o uso de tokens de visão e tamanho do payload.
-- Valores maiores preservam mais detalhe visual para OCR/screenshots pesados de UI.
+- Lower values usually reduce vision-token usage and payload size.
+- Higher values preserve more visual detail for OCR/UI-heavy screenshots.
 
-Para um detalhamento prático (por arquivo injetado, ferramentas, skills e tamanho do prompt de sistema), use `/context list` ou `/context detail`. Veja [Contexto](/concepts/context).
+For a practical breakdown (per injected file, tools, skills, and system prompt size), use `/context list` or `/context detail`. See [Context](/concepts/context).
 
-## Como ver o uso atual de tokens
+## How to see current token usage
 
-Use estes no chat:
+Use these in chat:
 
-- `/status` → **cartão de status com emojis** com o modelo da sessão, uso de contexto,
-  tokens de entrada/saída da última resposta e **custo estimado** (apenas chave de API).
-- `/usage off|tokens|full` → anexa um **rodapé de uso por resposta** a cada resposta.
-  - Persiste por sessão (armazenado como `responseUsage`).
-  - Autenticação OAuth **oculta custo** (apenas tokens).
-- `/usage cost` → mostra um resumo de custo local dos logs de sessão do OpenCraft.
+- `/status` → **emoji‑rich status card** with the session model, context usage,
+  last response input/output tokens, and **estimated cost** (API key only).
+- `/usage off|tokens|full` → appends a **per-response usage footer** to every reply.
+  - Persists per session (stored as `responseUsage`).
+  - OAuth auth **hides cost** (tokens only).
+- `/usage cost` → shows a local cost summary from OpenCraft session logs.
 
-Outras superfícies:
+Other surfaces:
 
-- **TUI/Web TUI:** `/status` + `/usage` são suportados.
-- **CLI:** `opencraft status --usage` e `opencraft channels list` mostram
-  janelas de cota do provedor (não custos por resposta).
+- **TUI/Web TUI:** `/status` + `/usage` are supported.
+- **CLI:** `opencraft status --usage` and `opencraft channels list` show
+  provider quota windows (not per-response costs).
 
-## Estimativa de custo (quando mostrada)
+## Cost estimation (when shown)
 
-Custos são estimados a partir da sua config de preços de modelo:
+Costs are estimated from your model pricing config:
 
 ```
 models.providers.<provider>.models[].cost
 ```
 
-Estes são **USD por 1M tokens** para `input`, `output`, `cacheRead` e
-`cacheWrite`. Se os preços estiverem ausentes, o OpenCraft mostra apenas tokens. Tokens OAuth
-nunca mostram custo em dólares.
+These are **USD per 1M tokens** for `input`, `output`, `cacheRead`, and
+`cacheWrite`. If pricing is missing, OpenCraft shows tokens only. OAuth tokens
+never show dollar cost.
 
-## Impacto de TTL de cache e poda
+## Cache TTL and pruning impact
 
-Prompt caching de provedor só se aplica dentro da janela de TTL do cache. O OpenCraft pode
-opcionalmente executar **poda cache-ttl**: ele poda a sessão quando o TTL do cache
-expira, depois reseta a janela de cache para que requisições subsequentes possam reutilizar o
-contexto recém-cacheado em vez de recachear todo o histórico. Isso mantém
-custos de escrita de cache mais baixos quando uma sessão fica ociosa além do TTL.
+Provider prompt caching only applies within the cache TTL window. OpenCraft can
+optionally run **cache-ttl pruning**: it prunes the session once the cache TTL
+has expired, then resets the cache window so subsequent requests can re-use the
+freshly cached context instead of re-caching the full history. This keeps cache
+write costs lower when a session goes idle past the TTL.
 
-Configure em [Configuração do Gateway](/gateway/configuration) e veja os
-detalhes de comportamento em [Poda de sessão](/concepts/session-pruning).
+Configure it in [Gateway configuration](/gateway/configuration) and see the
+behavior details in [Session pruning](/concepts/session-pruning).
 
-O heartbeat pode manter o cache **aquecido** entre intervalos ociosos. Se o TTL de cache do seu modelo
-é `1h`, definir o intervalo de heartbeat logo abaixo disso (ex.: `55m`) pode evitar
-recachear o prompt completo, reduzindo custos de escrita de cache.
+Heartbeat can keep the cache **warm** across idle gaps. If your model cache TTL
+is `1h`, setting the heartbeat interval just under that (e.g., `55m`) can avoid
+re-caching the full prompt, reducing cache write costs.
 
-Em configurações multi-agente, você pode manter uma config de modelo compartilhada e ajustar o comportamento de cache
-por agente com `agents.list[].params.cacheRetention`.
+In multi-agent setups, you can keep one shared model config and tune cache behavior
+per agent with `agents.list[].params.cacheRetention`.
 
-Para um guia completo controle por controle, veja [Prompt Caching](/reference/prompt-caching).
+For a full knob-by-knob guide, see [Prompt Caching](/reference/prompt-caching).
 
-Para preços de API da Anthropic, leituras de cache são significativamente mais baratas que tokens
-de entrada, enquanto escritas de cache são cobradas com um multiplicador maior. Veja os preços de
-prompt caching da Anthropic para as taxas e multiplicadores de TTL mais recentes:
+For Anthropic API pricing, cache reads are significantly cheaper than input
+tokens, while cache writes are billed at a higher multiplier. See Anthropic’s
+prompt caching pricing for the latest rates and TTL multipliers:
 [https://docs.anthropic.com/docs/build-with-claude/prompt-caching](https://docs.anthropic.com/docs/build-with-claude/prompt-caching)
 
-### Exemplo: manter cache de 1h aquecido com heartbeat
+### Example: keep 1h cache warm with heartbeat
 
 ```yaml
 agents:
@@ -113,7 +113,7 @@ agents:
       every: "55m"
 ```
 
-### Exemplo: tráfego misto com estratégia de cache por agente
+### Example: mixed traffic with per-agent cache strategy
 
 ```yaml
 agents:
@@ -123,25 +123,25 @@ agents:
     models:
       "anthropic/claude-opus-4-6":
         params:
-          cacheRetention: "long" # baseline padrão para a maioria dos agentes
+          cacheRetention: "long" # default baseline for most agents
   list:
     - id: "research"
       default: true
       heartbeat:
-        every: "55m" # manter cache longo aquecido para sessões profundas
+        every: "55m" # keep long cache warm for deep sessions
     - id: "alerts"
       params:
-        cacheRetention: "none" # evitar escritas de cache para notificações intermitentes
+        cacheRetention: "none" # avoid cache writes for bursty notifications
 ```
 
-`agents.list[].params` faz merge sobre os `params` do modelo selecionado, então você pode
-substituir apenas `cacheRetention` e herdar outros padrões do modelo sem alteração.
+`agents.list[].params` merges on top of the selected model's `params`, so you can
+override only `cacheRetention` and inherit other model defaults unchanged.
 
-### Exemplo: habilitar cabeçalho beta de contexto 1M da Anthropic
+### Example: enable Anthropic 1M context beta header
 
-A janela de contexto de 1M da Anthropic está atualmente limitada por beta. O OpenCraft pode injetar o
-valor `anthropic-beta` necessário quando você habilita `context1m` em modelos Opus
-ou Sonnet suportados.
+Anthropic's 1M context window is currently beta-gated. OpenCraft can inject the
+required `anthropic-beta` value when you enable `context1m` on supported Opus
+or Sonnet models.
 
 ```yaml
 agents:
@@ -152,24 +152,24 @@ agents:
           context1m: true
 ```
 
-Isso mapeia para o cabeçalho beta `context-1m-2025-08-07` da Anthropic.
+This maps to Anthropic's `context-1m-2025-08-07` beta header.
 
-Isso só se aplica quando `context1m: true` está definido naquela entrada de modelo.
+This only applies when `context1m: true` is set on that model entry.
 
-Requisito: a credencial deve ser elegível para uso de contexto longo (cobrança por chave de API
-ou assinatura com Extra Usage habilitado). Caso contrário, a Anthropic responde
-com `HTTP 429: rate_limit_error: Extra usage is required for long context requests`.
+Requirement: the credential must be eligible for long-context usage (API key
+billing, or subscription with Extra Usage enabled). If not, Anthropic responds
+with `HTTP 429: rate_limit_error: Extra usage is required for long context requests`.
 
-Se você autenticar Anthropic com tokens OAuth/assinatura (`sk-ant-oat-*`),
-o OpenCraft pula o cabeçalho beta `context-1m-*` porque a Anthropic atualmente
-rejeita essa combinação com HTTP 401.
+If you authenticate Anthropic with OAuth/subscription tokens (`sk-ant-oat-*`),
+OpenCraft skips the `context-1m-*` beta header because Anthropic currently
+rejects that combination with HTTP 401.
 
-## Dicas para reduzir pressão de tokens
+## Tips for reducing token pressure
 
-- Use `/compact` para resumir sessões longas.
-- Reduza saídas grandes de ferramentas nos seus workflows.
-- Diminua `agents.defaults.imageMaxDimensionPx` para sessões pesadas em screenshots.
-- Mantenha descrições de skills curtas (a lista de skills é injetada no prompt).
-- Prefira modelos menores para trabalho verboso e exploratório.
+- Use `/compact` to summarize long sessions.
+- Trim large tool outputs in your workflows.
+- Lower `agents.defaults.imageMaxDimensionPx` for screenshot-heavy sessions.
+- Keep skill descriptions short (skill list is injected into the prompt).
+- Prefer smaller models for verbose, exploratory work.
 
-Veja [Skills](/tools/skills) para a fórmula exata de overhead da lista de skills.
+See [Skills](/tools/skills) for the exact skill list overhead formula.

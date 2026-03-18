@@ -1,6 +1,9 @@
 import type { OpenCraftConfig, RuntimeEnv } from "opencraft/plugin-sdk/msteams";
 import { describe, expect, it } from "vitest";
-import { createDirectoryTestRuntime, expectDirectorySurface } from "../../test-utils/directory.js";
+import {
+  createDirectoryTestRuntime,
+  expectDirectorySurface,
+} from "../../../test/helpers/extensions/directory.js";
 import { msteamsPlugin } from "./channel.js";
 
 describe("msteams directory", () => {

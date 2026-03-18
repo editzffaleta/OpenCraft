@@ -1,82 +1,82 @@
 ---
-summary: "Regras de roteamento por canal (WhatsApp, Telegram, Discord, Slack) e contexto compartilhado"
+summary: "Routing rules per channel (WhatsApp, Telegram, Discord, Slack) and shared context"
 read_when:
   - Changing channel routing or inbox behavior
 title: "Channel Routing"
 ---
 
-# Canais e roteamento
+# Channels & routing
 
-O OpenCraft roteia as respostas **de volta ao canal de onde a mensagem veio**. O
-modelo nao escolhe um canal; o roteamento e deterministico e controlado pela
-configuracao do host.
+OpenCraft routes replies **back to the channel where a message came from**. The
+model does not choose a channel; routing is deterministic and controlled by the
+host configuration.
 
-## Termos-chave
+## Key terms
 
-- **Canal**: `whatsapp`, `telegram`, `discord`, `slack`, `signal`, `imessage`, `webchat`.
-- **AccountId**: instancia de conta por canal (quando suportado).
-- Conta padrao opcional do canal: `channels.<channel>.defaultAccount` escolhe
-  qual conta e usada quando um caminho de saida nao especifica `accountId`.
-  - Em configuracoes com multiplas contas, defina um padrao explicito (`defaultAccount` ou `accounts.default`) quando duas ou mais contas estiverem configuradas. Sem isso, o roteamento de fallback pode escolher o primeiro ID de conta normalizado.
-- **AgentId**: um workspace isolado + armazenamento de sessao ("cerebro").
-- **SessionKey**: a chave do bucket usada para armazenar contexto e controlar concorrencia.
+- **Channel**: `whatsapp`, `telegram`, `discord`, `slack`, `signal`, `imessage`, `webchat`.
+- **AccountId**: per‑channel account instance (when supported).
+- Optional channel default account: `channels.<channel>.defaultAccount` chooses
+  which account is used when an outbound path does not specify `accountId`.
+  - In multi-account setups, set an explicit default (`defaultAccount` or `accounts.default`) when two or more accounts are configured. Without it, fallback routing may pick the first normalized account ID.
+- **AgentId**: an isolated workspace + session store (“brain”).
+- **SessionKey**: the bucket key used to store context and control concurrency.
 
-## Formatos de chave de sessao (exemplos)
+## Session key shapes (examples)
 
-Mensagens diretas sao agrupadas na sessao **principal** do agente:
+Direct messages collapse to the agent’s **main** session:
 
-- `agent:<agentId>:<mainKey>` (padrao: `agent:main:main`)
+- `agent:<agentId>:<mainKey>` (default: `agent:main:main`)
 
-Grupos e canais permanecem isolados por canal:
+Groups and channels remain isolated per channel:
 
-- Grupos: `agent:<agentId>:<channel>:group:<id>`
-- Canais/salas: `agent:<agentId>:<channel>:channel:<id>`
+- Groups: `agent:<agentId>:<channel>:group:<id>`
+- Channels/rooms: `agent:<agentId>:<channel>:channel:<id>`
 
 Threads:
 
-- Threads do Slack/Discord adicionam `:thread:<threadId>` a chave base.
-- Topicos de forum do Telegram incorporam `:topic:<topicId>` na chave do grupo.
+- Slack/Discord threads append `:thread:<threadId>` to the base key.
+- Telegram forum topics embed `:topic:<topicId>` in the group key.
 
-Exemplos:
+Examples:
 
 - `agent:main:telegram:group:-1001234567890:topic:42`
 - `agent:main:discord:channel:123456:thread:987654`
 
-## Fixacao de rota de DM principal
+## Main DM route pinning
 
-Quando `session.dmScope` e `main`, mensagens diretas podem compartilhar uma sessao principal.
-Para evitar que o `lastRoute` da sessao seja sobrescrito por DMs de nao-proprietarios,
-o OpenCraft infere um proprietario fixo a partir de `allowFrom` quando todas estas condicoes sao verdadeiras:
+When `session.dmScope` is `main`, direct messages may share one main session.
+To prevent the session’s `lastRoute` from being overwritten by non-owner DMs,
+OpenCraft infers a pinned owner from `allowFrom` when all of these are true:
 
-- `allowFrom` tem exatamente uma entrada nao-coringa.
-- A entrada pode ser normalizada para um ID de remetente concreto para aquele canal.
-- O remetente da DM de entrada nao corresponde ao proprietario fixo.
+- `allowFrom` has exactly one non-wildcard entry.
+- The entry can be normalized to a concrete sender ID for that channel.
+- The inbound DM sender does not match that pinned owner.
 
-Nesse caso de incompatibilidade, o OpenCraft ainda registra os metadados da sessao de entrada, mas
-pula a atualizacao do `lastRoute` da sessao principal.
+In that mismatch case, OpenCraft still records inbound session metadata, but it
+skips updating the main session `lastRoute`.
 
-## Regras de roteamento (como um agente e escolhido)
+## Routing rules (how an agent is chosen)
 
-O roteamento escolhe **um agente** para cada mensagem de entrada:
+Routing picks **one agent** for each inbound message:
 
-1. **Correspondencia exata de peer** (`bindings` com `peer.kind` + `peer.id`).
-2. **Correspondencia de peer pai** (heranca de thread).
-3. **Correspondencia de guild + roles** (Discord) via `guildId` + `roles`.
-4. **Correspondencia de guild** (Discord) via `guildId`.
-5. **Correspondencia de team** (Slack) via `teamId`.
-6. **Correspondencia de conta** (`accountId` no canal).
-7. **Correspondencia de canal** (qualquer conta naquele canal, `accountId: "*"`).
-8. **Agente padrao** (`agents.list[].default`, senao primeira entrada da lista, fallback para `main`).
+1. **Exact peer match** (`bindings` with `peer.kind` + `peer.id`).
+2. **Parent peer match** (thread inheritance).
+3. **Guild + roles match** (Discord) via `guildId` + `roles`.
+4. **Guild match** (Discord) via `guildId`.
+5. **Team match** (Slack) via `teamId`.
+6. **Account match** (`accountId` on the channel).
+7. **Channel match** (any account on that channel, `accountId: "*"`).
+8. **Default agent** (`agents.list[].default`, else first list entry, fallback to `main`).
 
-Quando um binding inclui multiplos campos de correspondencia (`peer`, `guildId`, `teamId`, `roles`), **todos os campos fornecidos devem corresponder** para que aquele binding se aplique.
+When a binding includes multiple match fields (`peer`, `guildId`, `teamId`, `roles`), **all provided fields must match** for that binding to apply.
 
-O agente correspondente determina qual workspace e armazenamento de sessao sao usados.
+The matched agent determines which workspace and session store are used.
 
-## Broadcast groups (executar multiplos agentes)
+## Broadcast groups (run multiple agents)
 
-Broadcast groups permitem executar **multiplos agentes** para o mesmo peer **quando o OpenCraft normalmente responderia** (por exemplo: em grupos do WhatsApp, apos controle de mencao/ativacao).
+Broadcast groups let you run **multiple agents** for the same peer **when OpenCraft would normally reply** (for example: in WhatsApp groups, after mention/activation gating).
 
-Configuracao:
+Config:
 
 ```json5
 {
@@ -88,14 +88,14 @@ Configuracao:
 }
 ```
 
-Veja: [Broadcast Groups](/channels/broadcast-groups).
+See: [Broadcast Groups](/channels/broadcast-groups).
 
-## Visao geral da configuracao
+## Config overview
 
-- `agents.list`: definicoes de agentes nomeados (workspace, modelo, etc.).
-- `bindings`: mapeia canais/contas/peers de entrada para agentes.
+- `agents.list`: named agent definitions (workspace, model, etc.).
+- `bindings`: map inbound channels/accounts/peers to agents.
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -109,31 +109,31 @@ Exemplo:
 }
 ```
 
-## Armazenamento de sessao
+## Session storage
 
-Os armazenamentos de sessao ficam no diretorio de estado (padrao `~/.opencraft`):
+Session stores live under the state directory (default `~/.opencraft`):
 
 - `~/.opencraft/agents/<agentId>/sessions/sessions.json`
-- Transcricoes JSONL ficam junto ao armazenamento
+- JSONL transcripts live alongside the store
 
-Voce pode substituir o caminho do armazenamento via `session.store` e templates `{agentId}`.
+You can override the store path via `session.store` and `{agentId}` templating.
 
-O Gateway e a descoberta de sessao ACP tambem escaneiam armazenamentos de agentes em disco sob a
-raiz padrao `agents/` e sob raizes de `session.store` com template. Armazenamentos
-descobertos devem permanecer dentro da raiz resolvida do agente e usar um arquivo
-`sessions.json` regular. Symlinks e caminhos fora da raiz sao ignorados.
+Gateway and ACP session discovery also scans disk-backed agent stores under the
+default `agents/` root and under templated `session.store` roots. Discovered
+stores must stay inside that resolved agent root and use a regular
+`sessions.json` file. Symlinks and out-of-root paths are ignored.
 
-## Comportamento do WebChat
+## WebChat behavior
 
-O WebChat se conecta ao **agente selecionado** e usa como padrao a sessao principal
-do agente. Por causa disso, o WebChat permite ver o contexto entre canais para aquele
-agente em um so lugar.
+WebChat attaches to the **selected agent** and defaults to the agent’s main
+session. Because of this, WebChat lets you see cross‑channel context for that
+agent in one place.
 
-## Contexto de resposta
+## Reply context
 
-Respostas de entrada incluem:
+Inbound replies include:
 
-- `ReplyToId`, `ReplyToBody` e `ReplyToSender` quando disponiveis.
-- O contexto citado e adicionado ao `Body` como um bloco `[Replying to ...]`.
+- `ReplyToId`, `ReplyToBody`, and `ReplyToSender` when available.
+- Quoted context is appended to `Body` as a `[Replying to ...]` block.
 
-Isso e consistente entre canais.
+This is consistent across channels.

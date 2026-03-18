@@ -11,7 +11,7 @@ Deploy OpenCraft on Render using Infrastructure as Code. The included `render.ya
 
 ## Deploy with a Render Blueprint
 
-[Deploy to Render](https://render.com/deploy?repo=https://github.com/editzffaleta/OpenCraft)
+[Deploy to Render](https://render.com/deploy?repo=https://github.com/openclaw/openclaw)
 
 Clicking this link will:
 
@@ -42,7 +42,7 @@ services:
         value: /data/.opencraft
       - key: OPENCRAFT_WORKSPACE_DIR
         value: /data/workspace
-      - key: OPENCLAW_GATEWAY_TOKEN
+      - key: OPENCRAFT_GATEWAY_TOKEN
         generateValue: true # auto-generates a secure token
     disk:
       name: opencraft-data

@@ -1,4 +1,4 @@
-OpenClaw is a personal AI assistant you run on your own devices.
+OpenCraft is a personal AI assistant you run on your own devices.
 
 Pair this iPhone app with your OpenCraft Gateway to connect your phone as a secure node for voice, camera, and device automation.
 
@@ -7,10 +7,10 @@ What you can do:
 - Use voice wake and push-to-talk
 - Capture photos and short clips on request
 - Record screen snippets for troubleshooting and workflows
-- Share text, links, and media directly from iOS into OpenClaw
+- Share text, links, and media directly from iOS into OpenCraft
 - Run location-aware and device-aware automations
 
-OpenClaw is local-first: you control your gateway, keys, and configuration.
+OpenCraft is local-first: you control your gateway, keys, and configuration.
 
 Getting started:
 1) Set up your OpenCraft Gateway

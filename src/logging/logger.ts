@@ -128,9 +128,7 @@ function resolveSettings(): ResolvedSettings {
     }
   }
   const defaultLevel =
-    process.env.VITEST === "true" && process.env.OPENCRAFT_TEST_FILE_LOG !== "1"
-      ? "silent"
-      : "info";
+    process.env.VITEST === "true" && process.env.OPENCRAFT_TEST_FILE_LOG !== "1" ? "silent" : "info";
   const fromConfig = normalizeLogLevel(cfg?.level, defaultLevel);
   const level = envLevel ?? fromConfig;
   const file = cfg?.file ?? defaultRollingPathForToday();

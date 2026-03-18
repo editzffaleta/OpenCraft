@@ -44,7 +44,7 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt --fix-broken install -y  # if there are dependency errors
 ```
 
-然后更新你的 OpenCraft 配置（`~/.editzffaleta/OpenCraft.json`）：
+然后更新你的 OpenCraft 配置（`~/.opencraft/opencraft.json`）：
 
 ```json
 {

@@ -114,18 +114,14 @@ describe("renderTable", () => {
       ],
     });
 
-    const DIM = "\u001b[2m";
-    // Find continuation lines — any table body line with a dim ANSI code after the cell border.
-    const contLines = out
+    const lines = out
       .trimEnd()
       .split("\n")
-      .filter((line) => line.includes("│") && line.includes("│ " + DIM));
-    expect(contLines.length).toBeGreaterThan(0);
-    // Verify no extra leading space between the cell border and the ANSI escape.
-    for (const line of contLines) {
-      expect(line).not.toContain("│  " + DIM); // double space = leaked indent
-      expect(line).not.toContain("│ " + DIM + " "); // space after escape = leaked space
-    }
+      .filter((line) => line.includes("Use when"));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain("\u001b[2mUse when");
+    expect(lines[0]).not.toContain("│  Use when");
+    expect(lines[0]).not.toContain("│ \x1b[2m Use when");
   });
 
   it("respects explicit newlines in cell values", () => {

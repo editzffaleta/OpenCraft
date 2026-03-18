@@ -1,6 +1,6 @@
 import type { Block, KnownBlock } from "@slack/web-api";
-import { reduceInteractiveReply } from "../../../src/channels/plugins/outbound/interactive.js";
-import type { InteractiveReply } from "../../../src/interactive/payload.js";
+import { reduceInteractiveReply } from "opencraft/plugin-sdk/channel-runtime";
+import type { InteractiveReply } from "opencraft/plugin-sdk/channel-runtime";
 import { truncateSlackText } from "./truncate.js";
 
 export const SLACK_REPLY_BUTTON_ACTION_ID = "opencraft:reply_button";

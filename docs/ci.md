@@ -1,56 +1,56 @@
 ---
-title: Pipeline de CI
-description: Como funciona o pipeline de CI do OpenCraft
-summary: "Grafo de jobs de CI, gates de escopo e comandos locais equivalentes"
+title: CI Pipeline
+description: How the OpenCraft CI pipeline works
+summary: "CI job graph, scope gates, and local command equivalents"
 read_when:
-  - Você precisa entender por que um job de CI foi ou não executado
-  - Você está depurando verificações com falha no GitHub Actions
+  - You need to understand why a CI job did or did not run
+  - You are debugging failing GitHub Actions checks
 ---
 
-# Pipeline de CI
+# CI Pipeline
 
-O CI executa em cada push para `main` e em cada pull request. Ele usa escopo inteligente para pular jobs custosos quando apenas áreas não relacionadas foram alteradas.
+The CI runs on every push to `main` and every pull request. It uses smart scoping to skip expensive jobs when only unrelated areas changed.
 
-## Visão Geral dos Jobs
+## Job Overview
 
-| Job               | Propósito                                                                  | Quando executa                                   |
-| ----------------- | -------------------------------------------------------------------------- | ------------------------------------------------ |
-| `docs-scope`      | Detectar alterações apenas em docs                                         | Sempre                                           |
-| `changed-scope`   | Detectar quais áreas mudaram (node/macos/android/windows)                  | Alterações fora de docs                          |
-| `check`           | Tipos TypeScript, lint, formatação                                         | Fora de docs, alterações em node                 |
-| `check-docs`      | Lint de Markdown + verificação de links quebrados                          | Docs alterados                                   |
-| `secrets`         | Detectar segredos vazados                                                  | Sempre                                           |
-| `build-artifacts` | Compilar dist uma vez, compartilhar com `release-check`                    | Pushes para `main`, alterações em node           |
-| `release-check`   | Validar conteúdo do npm pack                                               | Pushes para `main` após build                    |
-| `checks`          | Testes Node + verificação de protocolo em PRs; compatibilidade Bun em push | Fora de docs, alterações em node                 |
-| `compat-node22`   | Compatibilidade mínima com runtime Node suportado                          | Pushes para `main`, alterações em node           |
-| `checks-windows`  | Testes específicos para Windows                                            | Fora de docs, alterações relevantes para Windows |
-| `macos`           | Lint/build/teste Swift + testes TS                                         | PRs com alterações em macos                      |
-| `android`         | Build Gradle + testes                                                      | Fora de docs, alterações em android              |
+| Job               | Purpose                                                 | When it runs                       |
+| ----------------- | ------------------------------------------------------- | ---------------------------------- |
+| `docs-scope`      | Detect docs-only changes                                | Always                             |
+| `changed-scope`   | Detect which areas changed (node/macos/android/windows) | Non-doc changes                    |
+| `check`           | TypeScript types, lint, format                          | Non-docs, node changes             |
+| `check-docs`      | Markdown lint + broken link check                       | Docs changed                       |
+| `secrets`         | Detect leaked secrets                                   | Always                             |
+| `build-artifacts` | Build dist once, share with `release-check`             | Pushes to `main`, node changes     |
+| `release-check`   | Validate npm pack contents                              | Pushes to `main` after build       |
+| `checks`          | Node tests + protocol check on PRs; Bun compat on push  | Non-docs, node changes             |
+| `compat-node22`   | Minimum supported Node runtime compatibility            | Pushes to `main`, node changes     |
+| `checks-windows`  | Windows-specific tests                                  | Non-docs, windows-relevant changes |
+| `macos`           | Swift lint/build/test + TS tests                        | PRs with macos changes             |
+| `android`         | Gradle build + tests                                    | Non-docs, android changes          |
 
-## Ordem Fail-Fast
+## Fail-Fast Order
 
-Os jobs são ordenados para que verificações baratas falhem antes que os custosos executem:
+Jobs are ordered so cheap checks fail before expensive ones run:
 
-1. `docs-scope` + `changed-scope` + `check` + `secrets` (paralelo, gates baratos primeiro)
-2. PRs: `checks` (teste Node Linux dividido em 2 shards), `checks-windows`, `macos`, `android`
-3. Pushes para `main`: `build-artifacts` + `release-check` + compatibilidade Bun + `compat-node22`
+1. `docs-scope` + `changed-scope` + `check` + `secrets` (parallel, cheap gates first)
+2. PRs: `checks` (Linux Node test split into 2 shards), `checks-windows`, `macos`, `android`
+3. Pushes to `main`: `build-artifacts` + `release-check` + Bun compat + `compat-node22`
 
-A lógica de escopo está em `scripts/ci-changed-scope.mjs` e é coberta por testes unitários em `src/scripts/ci-changed-scope.test.ts`.
+Scope logic lives in `scripts/ci-changed-scope.mjs` and is covered by unit tests in `src/scripts/ci-changed-scope.test.ts`.
 
 ## Runners
 
-| Runner                           | Jobs                                                 |
-| -------------------------------- | ---------------------------------------------------- |
-| `blacksmith-16vcpu-ubuntu-2404`  | Maioria dos jobs Linux, incluindo detecção de escopo |
-| `blacksmith-32vcpu-windows-2025` | `checks-windows`                                     |
-| `macos-latest`                   | `macos`, `ios`                                       |
+| Runner                           | Jobs                                       |
+| -------------------------------- | ------------------------------------------ |
+| `blacksmith-16vcpu-ubuntu-2404`  | Most Linux jobs, including scope detection |
+| `blacksmith-32vcpu-windows-2025` | `checks-windows`                           |
+| `macos-latest`                   | `macos`, `ios`                             |
 
-## Equivalentes Locais
+## Local Equivalents
 
 ```bash
-pnpm check          # tipos + lint + formatação
-pnpm test           # testes vitest
-pnpm check:docs     # formatação de docs + lint + links quebrados
-pnpm release:check  # validar npm pack
+pnpm check          # types + lint + format
+pnpm test           # vitest tests
+pnpm check:docs     # docs format + lint + broken links
+pnpm release:check  # validate npm pack
 ```

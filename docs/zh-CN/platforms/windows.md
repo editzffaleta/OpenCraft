@@ -231,7 +231,7 @@ systemctl --user status
 在 WSL 内按照 Linux 入门指南流程操作：
 
 ```bash
-git clone https://github.com/editzffaleta/OpenCraft.git
+git clone https://github.com/openclaw/openclaw.git
 cd opencraft
 pnpm install
 pnpm ui:build # 首次运行时会自动安装 UI 依赖

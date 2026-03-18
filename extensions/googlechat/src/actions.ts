@@ -30,10 +30,7 @@ function listEnabledAccounts(cfg: OpenCraftConfig) {
   );
 }
 
-function isReactionsEnabled(
-  accounts: ReturnType<typeof listEnabledAccounts>,
-  cfg: OpenCraftConfig,
-) {
+function isReactionsEnabled(accounts: ReturnType<typeof listEnabledAccounts>, cfg: OpenCraftConfig) {
   for (const account of accounts) {
     const gate = createActionGate(
       (account.config.actions ??

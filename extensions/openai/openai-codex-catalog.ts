@@ -1,4 +1,4 @@
-import type { ModelProviderConfig } from "../../src/config/types.models.js";
+import type { ModelProviderConfig } from "opencraft/plugin-sdk/provider-models";
 
 export const OPENAI_CODEX_BASE_URL = "https://chatgpt.com/backend-api";
 

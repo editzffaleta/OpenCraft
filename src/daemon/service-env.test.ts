@@ -257,6 +257,18 @@ describe("buildMinimalServicePath", () => {
     const unique = [...new Set(parts)];
     expect(parts.length).toBe(unique.length);
   });
+
+  it("prepends explicit runtime bin directories before guessed user paths", () => {
+    const result = buildMinimalServicePath({
+      platform: "linux",
+      extraDirs: ["/home/alice/.nvm/versions/node/v22.22.0/bin"],
+      env: { HOME: "/home/alice" },
+    });
+    const parts = splitPath(result, "linux");
+
+    expect(parts[0]).toBe("/home/alice/.nvm/versions/node/v22.22.0/bin");
+    expect(parts).toContain("/home/alice/.nvm/current/bin");
+  });
 });
 
 describe("buildServiceEnvironment", () => {
@@ -272,14 +284,14 @@ describe("buildServiceEnvironment", () => {
       expect(env.PATH).toContain("/usr/bin");
     }
     expect(env.OPENCRAFT_GATEWAY_PORT).toBe("18789");
-    expect(env.OPENCLAW_GATEWAY_TOKEN).toBeUndefined();
+    expect(env.OPENCRAFT_GATEWAY_TOKEN).toBeUndefined();
     expect(env.OPENCRAFT_SERVICE_MARKER).toBe("opencraft");
     expect(env.OPENCRAFT_SERVICE_KIND).toBe("gateway");
     expect(typeof env.OPENCRAFT_SERVICE_VERSION).toBe("string");
     expect(env.OPENCRAFT_SYSTEMD_UNIT).toBe("opencraft-gateway.service");
     expect(env.OPENCRAFT_WINDOWS_TASK_NAME).toBe("OpenCraft Gateway");
     if (process.platform === "darwin") {
-      expect(env.OPENCRAFT_LAUNCHD_LABEL).toBe("ai.opencraft.gateway");
+      expect(env.OPENCLAW_LAUNCHD_LABEL).toBe("ai.openclaw.gateway");
     }
   });
 
@@ -307,7 +319,7 @@ describe("buildServiceEnvironment", () => {
     expect(env.OPENCRAFT_SYSTEMD_UNIT).toBe("opencraft-gateway-work.service");
     expect(env.OPENCRAFT_WINDOWS_TASK_NAME).toBe("OpenCraft Gateway (work)");
     if (process.platform === "darwin") {
-      expect(env.OPENCRAFT_LAUNCHD_LABEL).toBe("ai.opencraft.work");
+      expect(env.OPENCLAW_LAUNCHD_LABEL).toBe("ai.openclaw.work");
     }
   });
 
@@ -344,6 +356,19 @@ describe("buildServiceEnvironment", () => {
     expect(env).not.toHaveProperty("PATH");
     expect(env.OPENCRAFT_WINDOWS_TASK_NAME).toBe("OpenCraft Gateway");
   });
+
+  it("prepends extra runtime directories to the gateway service PATH", () => {
+    const env = buildServiceEnvironment({
+      env: { HOME: "/home/user" },
+      port: 18789,
+      platform: "linux",
+      extraPathDirs: ["/home/user/.nvm/versions/node/v22.22.0/bin"],
+    });
+
+    expect(env.PATH?.split(path.posix.delimiter)[0]).toBe(
+      "/home/user/.nvm/versions/node/v22.22.0/bin",
+    );
+  });
 });
 
 describe("buildNodeServiceEnvironment", () => {
@@ -354,40 +379,40 @@ describe("buildNodeServiceEnvironment", () => {
     expect(env.HOME).toBe("/home/user");
   });
 
-  it("passes through OPENCLAW_GATEWAY_TOKEN for node services", () => {
+  it("passes through OPENCRAFT_GATEWAY_TOKEN for node services", () => {
     const env = buildNodeServiceEnvironment({
-      env: { HOME: "/home/user", OPENCLAW_GATEWAY_TOKEN: " node-token " },
+      env: { HOME: "/home/user", OPENCRAFT_GATEWAY_TOKEN: " node-token " },
     });
-    expect(env.OPENCLAW_GATEWAY_TOKEN).toBe("node-token");
+    expect(env.OPENCRAFT_GATEWAY_TOKEN).toBe("node-token");
   });
 
-  it("maps legacy CLAWDBOT_GATEWAY_TOKEN to OPENCLAW_GATEWAY_TOKEN for node services", () => {
+  it("maps legacy CLAWDBOT_GATEWAY_TOKEN to OPENCRAFT_GATEWAY_TOKEN for node services", () => {
     const env = buildNodeServiceEnvironment({
       env: { HOME: "/home/user", CLAWDBOT_GATEWAY_TOKEN: " legacy-token " },
     });
-    expect(env.OPENCLAW_GATEWAY_TOKEN).toBe("legacy-token");
+    expect(env.OPENCRAFT_GATEWAY_TOKEN).toBe("legacy-token");
   });
 
-  it("prefers OPENCLAW_GATEWAY_TOKEN over legacy CLAWDBOT_GATEWAY_TOKEN", () => {
+  it("prefers OPENCRAFT_GATEWAY_TOKEN over legacy CLAWDBOT_GATEWAY_TOKEN", () => {
     const env = buildNodeServiceEnvironment({
       env: {
         HOME: "/home/user",
-        OPENCLAW_GATEWAY_TOKEN: "opencraft-token",
+        OPENCRAFT_GATEWAY_TOKEN: "opencraft-token",
         CLAWDBOT_GATEWAY_TOKEN: "legacy-token",
       },
     });
-    expect(env.OPENCLAW_GATEWAY_TOKEN).toBe("opencraft-token");
+    expect(env.OPENCRAFT_GATEWAY_TOKEN).toBe("opencraft-token");
   });
 
-  it("omits OPENCLAW_GATEWAY_TOKEN when both token env vars are empty", () => {
+  it("omits OPENCRAFT_GATEWAY_TOKEN when both token env vars are empty", () => {
     const env = buildNodeServiceEnvironment({
       env: {
         HOME: "/home/user",
-        OPENCLAW_GATEWAY_TOKEN: "   ",
+        OPENCRAFT_GATEWAY_TOKEN: "   ",
         CLAWDBOT_GATEWAY_TOKEN: " ",
       },
     });
-    expect(env.OPENCLAW_GATEWAY_TOKEN).toBeUndefined();
+    expect(env.OPENCRAFT_GATEWAY_TOKEN).toBeUndefined();
   });
 
   it("forwards proxy environment variables for node services", () => {
@@ -415,6 +440,18 @@ describe("buildNodeServiceEnvironment", () => {
       env: { HOME: "/home/user" },
     });
     expect(env.TMPDIR).toBe(os.tmpdir());
+  });
+
+  it("prepends extra runtime directories to the node service PATH", () => {
+    const env = buildNodeServiceEnvironment({
+      env: { HOME: "/home/user" },
+      platform: "linux",
+      extraPathDirs: ["/home/user/.nvm/versions/node/v22.22.0/bin"],
+    });
+
+    expect(env.PATH?.split(path.posix.delimiter)[0]).toBe(
+      "/home/user/.nvm/versions/node/v22.22.0/bin",
+    );
   });
 });
 

@@ -24,7 +24,7 @@ The `ios metadata` lane uses App Store Connect API key auth from `apps/ios/fastl
 - Keychain-backed (recommended on macOS):
   - `ASC_KEY_ID`
   - `ASC_ISSUER_ID`
-  - `ASC_KEYCHAIN_SERVICE` (default: `openclaw-asc-key`)
+  - `ASC_KEYCHAIN_SERVICE` (default: `opencraft-asc-key`)
   - `ASC_KEYCHAIN_ACCOUNT` (default: current user)
 - File/path fallback:
   - `ASC_KEY_ID`

@@ -107,7 +107,7 @@ Skills 注意事项：`read` 工具以沙箱为根。使用 `workspaceAccess: "n
 
 ## 镜像 + 设置
 
-默认镜像：`openclaw-sandbox:bookworm-slim`
+默认镜像：`opencraft-sandbox:bookworm-slim`
 
 构建一次：
 

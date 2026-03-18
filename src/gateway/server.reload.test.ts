@@ -822,9 +822,9 @@ process.stdin.on("end", () => {
     });
 
     const previousGatewayAuth = testState.gatewayAuth;
-    const previousGatewayTokenEnv = process.env.OPENCLAW_GATEWAY_TOKEN;
+    const previousGatewayTokenEnv = process.env.OPENCRAFT_GATEWAY_TOKEN;
     testState.gatewayAuth = undefined;
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
 
     const started = await startServerWithClient();
     const { server, ws, envSnapshot } = started;
@@ -860,9 +860,9 @@ process.stdin.on("end", () => {
     } finally {
       testState.gatewayAuth = previousGatewayAuth;
       if (previousGatewayTokenEnv === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.OPENCRAFT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayTokenEnv;
+        process.env.OPENCRAFT_GATEWAY_TOKEN = previousGatewayTokenEnv;
       }
       envSnapshot.restore();
       ws.close();

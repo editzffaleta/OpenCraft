@@ -1,4 +1,4 @@
-import { isTelegramVoiceCompatibleAudio } from "../../../src/media/audio.js";
+import { isTelegramVoiceCompatibleAudio } from "opencraft/plugin-sdk/media-runtime";
 
 export function resolveTelegramVoiceDecision(opts: {
   wantsVoice: boolean;

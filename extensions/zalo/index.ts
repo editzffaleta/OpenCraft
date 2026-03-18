@@ -1,17 +1,14 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/zalo";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/zalo";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { zaloPlugin } from "./src/channel.js";
 import { setZaloRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { zaloPlugin } from "./src/channel.js";
+export { setZaloRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "zalo",
   name: "Zalo",
-  description: "Zalo channel plugin (Bot API)",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setZaloRuntime(api.runtime);
-    api.registerChannel(zaloPlugin);
-  },
-};
-
-export default plugin;
+  description: "Zalo channel plugin",
+  plugin: zaloPlugin,
+  setRuntime: setZaloRuntime,
+});

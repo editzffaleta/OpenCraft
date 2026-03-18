@@ -1,46 +1,46 @@
 ---
-summary: "Configuração de Webhook do Synology Chat e configuração do OpenCraft"
+summary: "Synology Chat webhook setup and OpenCraft config"
 read_when:
-  - Configurando Synology Chat com OpenCraft
-  - Depurando roteamento de Webhook do Synology Chat
+  - Setting up Synology Chat with OpenCraft
+  - Debugging Synology Chat webhook routing
 title: "Synology Chat"
 ---
 
 # Synology Chat (plugin)
 
-Status: suportado via Plugin como canal de mensagem direta usando Webhooks do Synology Chat.
-O Plugin aceita mensagens de entrada de Webhooks de saída do Synology Chat e envia respostas
-através de um Webhook de entrada do Synology Chat.
+Status: supported via plugin as a direct-message channel using Synology Chat webhooks.
+The plugin accepts inbound messages from Synology Chat outgoing webhooks and sends replies
+through a Synology Chat incoming webhook.
 
-## Plugin necessário
+## Plugin required
 
-O Synology Chat é baseado em Plugin e não faz parte da instalação padrão do core.
+Synology Chat is plugin-based and not part of the default core channel install.
 
-Instalar a partir de um checkout local:
+Install from a local checkout:
 
 ```bash
 opencraft plugins install ./extensions/synology-chat
 ```
 
-Detalhes: [Plugins](/tools/plugin)
+Details: [Plugins](/tools/plugin)
 
-## Configuração rápida
+## Quick setup
 
-1. Instale e habilite o Plugin Synology Chat.
-   - `opencraft onboard` agora mostra o Synology Chat na mesma lista de configuração de canais que `opencraft channels add`.
-   - Configuração não interativa: `opencraft channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
-2. Nas integrações do Synology Chat:
-   - Crie um Webhook de entrada e copie sua URL.
-   - Crie um Webhook de saída com seu Token secreto.
-3. Aponte a URL do Webhook de saída para o Gateway do OpenCraft:
-   - `https://gateway-host/webhook/synology` por padrão.
-   - Ou seu `channels.synology-chat.webhookPath` personalizado.
-4. Finalize a configuração no OpenCraft.
-   - Guiado: `opencraft onboard`
-   - Direto: `opencraft channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
-5. Reinicie o Gateway e envie uma DM para o Bot do Synology Chat.
+1. Install and enable the Synology Chat plugin.
+   - `opencraft onboard` now shows Synology Chat in the same channel setup list as `opencraft channels add`.
+   - Non-interactive setup: `opencraft channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
+2. In Synology Chat integrations:
+   - Create an incoming webhook and copy its URL.
+   - Create an outgoing webhook with your secret token.
+3. Point the outgoing webhook URL to your OpenCraft gateway:
+   - `https://gateway-host/webhook/synology` by default.
+   - Or your custom `channels.synology-chat.webhookPath`.
+4. Finish setup in OpenCraft.
+   - Guided: `opencraft onboard`
+   - Direct: `opencraft channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
+5. Restart gateway and send a DM to the Synology Chat bot.
 
-Configuração mínima:
+Minimal config:
 
 ```json5
 {
@@ -59,47 +59,47 @@ Configuração mínima:
 }
 ```
 
-## Variáveis de ambiente
+## Environment variables
 
-Para a conta padrão, você pode usar variáveis de ambiente:
+For the default account, you can use env vars:
 
 - `SYNOLOGY_CHAT_TOKEN`
 - `SYNOLOGY_CHAT_INCOMING_URL`
 - `SYNOLOGY_NAS_HOST`
-- `SYNOLOGY_ALLOWED_USER_IDS` (separados por vírgula)
+- `SYNOLOGY_ALLOWED_USER_IDS` (comma-separated)
 - `SYNOLOGY_RATE_LIMIT`
 - `OPENCRAFT_BOT_NAME`
 
-Valores de configuração sobrescrevem variáveis de ambiente.
+Config values override env vars.
 
-## Política de DM e controle de acesso
+## DM policy and access control
 
-- `dmPolicy: "allowlist"` é o padrão recomendado.
-- `allowedUserIds` aceita uma lista (ou string separada por vírgula) de IDs de usuário do Synology.
-- No modo `allowlist`, uma lista `allowedUserIds` vazia é tratada como erro de configuração e a rota de Webhook não será iniciada (use `dmPolicy: "open"` para permitir todos).
-- `dmPolicy: "open"` permite qualquer remetente.
-- `dmPolicy: "disabled"` bloqueia DMs.
-- Aprovações de pareamento funcionam com:
+- `dmPolicy: "allowlist"` is the recommended default.
+- `allowedUserIds` accepts a list (or comma-separated string) of Synology user IDs.
+- In `allowlist` mode, an empty `allowedUserIds` list is treated as misconfiguration and the webhook route will not start (use `dmPolicy: "open"` for allow-all).
+- `dmPolicy: "open"` allows any sender.
+- `dmPolicy: "disabled"` blocks DMs.
+- Pairing approvals work with:
   - `opencraft pairing list synology-chat`
   - `opencraft pairing approve synology-chat <CODE>`
 
-## Entrega de saída
+## Outbound delivery
 
-Use IDs numéricos de usuário do Synology Chat como alvos.
+Use numeric Synology Chat user IDs as targets.
 
-Exemplos:
+Examples:
 
 ```bash
 opencraft message send --channel synology-chat --target 123456 --text "Hello from OpenCraft"
 opencraft message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
 ```
 
-Envio de mídia é suportado por entrega de arquivos baseada em URL.
+Media sends are supported by URL-based file delivery.
 
-## Múltiplas contas
+## Multi-account
 
-Múltiplas contas Synology Chat são suportadas em `channels.synology-chat.accounts`.
-Cada conta pode sobrescrever Token, URL de entrada, caminho de Webhook, política de DM e limites.
+Multiple Synology Chat accounts are supported under `channels.synology-chat.accounts`.
+Each account can override token, incoming URL, webhook path, DM policy, and limits.
 
 ```json5
 {
@@ -124,9 +124,9 @@ Cada conta pode sobrescrever Token, URL de entrada, caminho de Webhook, polític
 }
 ```
 
-## Notas de segurança
+## Security notes
 
-- Mantenha o `token` secreto e rotacione se vazado.
-- Mantenha `allowInsecureSsl: false` a menos que você confie explicitamente em um certificado auto-assinado do NAS local.
-- Solicitações de Webhook de entrada são verificadas por Token e limitadas por taxa por remetente.
-- Prefira `dmPolicy: "allowlist"` para produção.
+- Keep `token` secret and rotate it if leaked.
+- Keep `allowInsecureSsl: false` unless you explicitly trust a self-signed local NAS cert.
+- Inbound webhook requests are token-verified and rate-limited per sender.
+- Prefer `dmPolicy: "allowlist"` for production.

@@ -1,9 +1,9 @@
 import { DisconnectReason } from "@whiskeysockets/baileys";
-import { formatCliCommand } from "../../../src/cli/command-format.js";
-import { loadConfig } from "../../../src/config/config.js";
-import { danger, info, success } from "../../../src/globals.js";
-import { logInfo } from "../../../src/logger.js";
-import { defaultRuntime, type RuntimeEnv } from "../../../src/runtime.js";
+import { formatCliCommand } from "opencraft/plugin-sdk/cli-runtime";
+import { loadConfig } from "opencraft/plugin-sdk/config-runtime";
+import { danger, info, success } from "opencraft/plugin-sdk/runtime-env";
+import { defaultRuntime, type RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
+import { logInfo } from "opencraft/plugin-sdk/text-runtime";
 import { resolveWhatsAppAccount } from "./accounts.js";
 import {
   createWaSocket,

@@ -1,18 +1,18 @@
 ---
-summary: "Hub de solução de problemas com foco em sintomas para o OpenCraft"
+summary: "Symptom first troubleshooting hub for OpenCraft"
 read_when:
-  - O OpenCraft não está funcionando e você precisa do caminho mais rápido para uma correção
-  - Você quer um fluxo de triagem antes de mergulhar em runbooks profundos
-title: "Solução de Problemas"
+  - OpenCraft is not working and you need the fastest path to a fix
+  - You want a triage flow before diving into deep runbooks
+title: "Troubleshooting"
 ---
 
-# Solução de problemas
+# Troubleshooting
 
-Se você tem apenas 2 minutos, use esta página como porta de entrada para triagem.
+If you only have 2 minutes, use this page as a triage front door.
 
-## Primeiros 60 segundos
+## First 60 seconds
 
-Execute esta sequência exata em ordem:
+Run this exact ladder in order:
 
 ```bash
 opencraft status
@@ -24,34 +24,34 @@ opencraft channels status --probe
 opencraft logs --follow
 ```
 
-Boa saída em uma linha:
+Good output in one line:
 
-- `opencraft status` → mostra canais configurados e nenhum erro óbvio de autenticação.
-- `opencraft status --all` → relatório completo presente e compartilhável.
-- `opencraft gateway probe` → alvo esperado do gateway é alcançável (`Reachable: yes`). `RPC: limited - missing scope: operator.read` é diagnóstico degradado, não uma falha de conexão.
-- `opencraft gateway status` → `Runtime: running` e `RPC probe: ok`.
-- `opencraft doctor` → sem erros bloqueantes de config/serviço.
-- `opencraft channels status --probe` → canais reportam `connected` ou `ready`.
-- `opencraft logs --follow` → atividade constante, sem erros fatais repetitivos.
+- `opencraft status` → shows configured channels and no obvious auth errors.
+- `opencraft status --all` → full report is present and shareable.
+- `opencraft gateway probe` → expected gateway target is reachable (`Reachable: yes`). `RPC: limited - missing scope: operator.read` is degraded diagnostics, not a connect failure.
+- `opencraft gateway status` → `Runtime: running` and `RPC probe: ok`.
+- `opencraft doctor` → no blocking config/service errors.
+- `opencraft channels status --probe` → channels report `connected` or `ready`.
+- `opencraft logs --follow` → steady activity, no repeating fatal errors.
 
 ## Anthropic long context 429
 
-Se você vir:
+If you see:
 `HTTP 429: rate_limit_error: Extra usage is required for long context requests`,
-vá para [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context).
+go to [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context).
 
-## Instalação de Plugin falha com extensões opencraft faltando
+## Plugin install fails with missing opencraft extensions
 
-Se a instalação falhar com `package.json missing opencraft.extensions`, o pacote do Plugin
-está usando um formato antigo que o OpenCraft não aceita mais.
+If install fails with `package.json missing opencraft.extensions`, the plugin package
+is using an old shape that OpenCraft no longer accepts.
 
-Correção no pacote do Plugin:
+Fix in the plugin package:
 
-1. Adicione `opencraft.extensions` ao `package.json`.
-2. Aponte entradas para arquivos runtime compilados (geralmente `./dist/index.js`).
-3. Republique o Plugin e execute `opencraft plugins install <npm-spec>` novamente.
+1. Add `opencraft.extensions` to `package.json`.
+2. Point entries at built runtime files (usually `./dist/index.js`).
+3. Republish the plugin and run `opencraft plugins install <npm-spec>` again.
 
-Exemplo:
+Example:
 
 ```json
 {
@@ -63,32 +63,32 @@ Exemplo:
 }
 ```
 
-Referência: [/tools/plugin#distribution-npm](/tools/plugin#distribution-npm)
+Reference: [/tools/plugin#distribution-npm](/tools/plugin#distribution-npm)
 
-## Árvore de decisão
+## Decision tree
 
 ```mermaid
 flowchart TD
-  A[OpenCraft não está funcionando] --> B{O que falha primeiro}
-  B --> C[Sem respostas]
-  B --> D[Dashboard ou Control UI não conecta]
-  B --> E[Gateway não inicia ou serviço não está rodando]
-  B --> F[Canal conecta mas mensagens não fluem]
-  B --> G[Cron ou heartbeat não disparou ou não entregou]
-  B --> H[Node está pareado mas câmera canvas tela exec falha]
-  B --> I[Ferramenta do navegador falha]
+  A[OpenCraft is not working] --> B{What breaks first}
+  B --> C[No replies]
+  B --> D[Dashboard or Control UI will not connect]
+  B --> E[Gateway will not start or service not running]
+  B --> F[Channel connects but messages do not flow]
+  B --> G[Cron or heartbeat did not fire or did not deliver]
+  B --> H[Node is paired but camera canvas screen exec fails]
+  B --> I[Browser tool fails]
 
-  C --> C1[/Seção sem respostas/]
-  D --> D1[/Seção Control UI/]
-  E --> E1[/Seção Gateway/]
-  F --> F1[/Seção fluxo de canal/]
-  G --> G1[/Seção automação/]
-  H --> H1[/Seção ferramentas de node/]
-  I --> I1[/Seção navegador/]
+  C --> C1[/No replies section/]
+  D --> D1[/Control UI section/]
+  E --> E1[/Gateway section/]
+  F --> F1[/Channel flow section/]
+  G --> G1[/Automation section/]
+  H --> H1[/Node tools section/]
+  I --> I1[/Browser section/]
 ```
 
 <AccordionGroup>
-  <Accordion title="Sem respostas">
+  <Accordion title="No replies">
     ```bash
     opencraft status
     opencraft gateway status
@@ -97,20 +97,20 @@ flowchart TD
     opencraft logs --follow
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
     - `Runtime: running`
     - `RPC probe: ok`
-    - Seu canal mostra connected/ready em `channels status --probe`
-    - Remetente aparece aprovado (ou política de DM é open/allowlist)
+    - Your channel shows connected/ready in `channels status --probe`
+    - Sender appears approved (or DM policy is open/allowlist)
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `drop guild message (mention required` → barreira de menção bloqueou a mensagem no Discord.
-    - `pairing request` → remetente não está aprovado e aguardando aprovação de pareamento DM.
-    - `blocked` / `allowlist` nos logs do canal → remetente, sala ou grupo está filtrado.
+    - `drop guild message (mention required` → mention gating blocked the message in Discord.
+    - `pairing request` → sender is unapproved and waiting for DM pairing approval.
+    - `blocked` / `allowlist` in channel logs → sender, room, or group is filtered.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#no-replies](/gateway/troubleshooting#no-replies)
     - [/channels/troubleshooting](/channels/troubleshooting)
@@ -118,7 +118,7 @@ flowchart TD
 
   </Accordion>
 
-  <Accordion title="Dashboard ou Control UI não conecta">
+  <Accordion title="Dashboard or Control UI will not connect">
     ```bash
     opencraft status
     opencraft gateway status
@@ -127,20 +127,20 @@ flowchart TD
     opencraft channels status --probe
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
-    - `Dashboard: http://...` é mostrado em `opencraft gateway status`
+    - `Dashboard: http://...` is shown in `opencraft gateway status`
     - `RPC probe: ok`
-    - Sem loop de autenticação nos logs
+    - No auth loop in logs
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `device identity required` → contexto HTTP/não-seguro não consegue completar autenticação de dispositivo.
-    - `AUTH_TOKEN_MISMATCH` com dicas de retry (`canRetryWithDeviceToken=true`) → uma tentativa automática com token de dispositivo confiável pode ocorrer.
-    - `unauthorized` repetido após essa tentativa → token/senha errado, incompatibilidade de modo de autenticação, ou token de dispositivo pareado obsoleto.
-    - `gateway connect failed:` → UI está mirando URL/porta errada ou gateway inacessível.
+    - `device identity required` → HTTP/non-secure context cannot complete device auth.
+    - `AUTH_TOKEN_MISMATCH` with retry hints (`canRetryWithDeviceToken=true`) → one trusted device-token retry may occur automatically.
+    - repeated `unauthorized` after that retry → wrong token/password, auth mode mismatch, or stale paired device token.
+    - `gateway connect failed:` → UI is targeting the wrong URL/port or unreachable gateway.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#dashboard-control-ui-connectivity](/gateway/troubleshooting#dashboard-control-ui-connectivity)
     - [/web/control-ui](/web/control-ui)
@@ -148,7 +148,7 @@ flowchart TD
 
   </Accordion>
 
-  <Accordion title="Gateway não inicia ou serviço instalado mas não rodando">
+  <Accordion title="Gateway will not start or service installed but not running">
     ```bash
     opencraft status
     opencraft gateway status
@@ -157,19 +157,19 @@ flowchart TD
     opencraft channels status --probe
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
     - `Service: ... (loaded)`
     - `Runtime: running`
     - `RPC probe: ok`
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `Gateway start blocked: set gateway.mode=local` → modo do gateway não está definido/está remoto.
-    - `refusing to bind gateway ... without auth` → bind não-loopback sem token/senha.
-    - `another gateway instance is already listening` ou `EADDRINUSE` → porta já em uso.
+    - `Gateway start blocked: set gateway.mode=local` → gateway mode is unset/remote.
+    - `refusing to bind gateway ... without auth` → non-loopback bind without token/password.
+    - `another gateway instance is already listening` or `EADDRINUSE` → port already taken.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#gateway-service-not-running](/gateway/troubleshooting#gateway-service-not-running)
     - [/gateway/background-process](/gateway/background-process)
@@ -177,7 +177,7 @@ flowchart TD
 
   </Accordion>
 
-  <Accordion title="Canal conecta mas mensagens não fluem">
+  <Accordion title="Channel connects but messages do not flow">
     ```bash
     opencraft status
     opencraft gateway status
@@ -186,26 +186,26 @@ flowchart TD
     opencraft channels status --probe
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
-    - Transporte do canal está conectado.
-    - Verificações de pareamento/allowlist passam.
-    - Menções são detectadas onde necessário.
+    - Channel transport is connected.
+    - Pairing/allowlist checks pass.
+    - Mentions are detected where required.
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `mention required` → barreira de menção do grupo bloqueou processamento.
-    - `pairing` / `pending` → remetente DM ainda não está aprovado.
-    - `not_in_channel`, `missing_scope`, `Forbidden`, `401/403` → problema de token de permissão do canal.
+    - `mention required` → group mention gating blocked processing.
+    - `pairing` / `pending` → DM sender is not approved yet.
+    - `not_in_channel`, `missing_scope`, `Forbidden`, `401/403` → channel permission token issue.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#channel-connected-messages-not-flowing](/gateway/troubleshooting#channel-connected-messages-not-flowing)
     - [/channels/troubleshooting](/channels/troubleshooting)
 
   </Accordion>
 
-  <Accordion title="Cron ou heartbeat não disparou ou não entregou">
+  <Accordion title="Cron or heartbeat did not fire or did not deliver">
     ```bash
     opencraft status
     opencraft gateway status
@@ -215,20 +215,20 @@ flowchart TD
     opencraft logs --follow
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
-    - `cron.status` mostra habilitado com próximo wake.
-    - `cron runs` mostra entradas recentes `ok`.
-    - Heartbeat está habilitado e não fora do horário ativo.
+    - `cron.status` shows enabled with a next wake.
+    - `cron runs` shows recent `ok` entries.
+    - Heartbeat is enabled and not outside active hours.
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `cron: scheduler disabled; jobs will not run automatically` → cron está desabilitado.
-    - `heartbeat skipped` com `reason=quiet-hours` → fora do horário ativo configurado.
-    - `requests-in-flight` → lane principal ocupada; wake do heartbeat foi adiado.
-    - `unknown accountId` → conta alvo de entrega do heartbeat não existe.
+    - `cron: scheduler disabled; jobs will not run automatically` → cron is disabled.
+    - `heartbeat skipped` with `reason=quiet-hours` → outside configured active hours.
+    - `requests-in-flight` → main lane busy; heartbeat wake was deferred.
+    - `unknown accountId` → heartbeat delivery target account does not exist.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#cron-and-heartbeat-delivery](/gateway/troubleshooting#cron-and-heartbeat-delivery)
     - [/automation/troubleshooting](/automation/troubleshooting)
@@ -236,7 +236,7 @@ flowchart TD
 
   </Accordion>
 
-  <Accordion title="Node está pareado mas ferramenta falha câmera canvas tela exec">
+  <Accordion title="Node is paired but tool fails camera canvas screen exec">
     ```bash
     opencraft status
     opencraft gateway status
@@ -245,20 +245,20 @@ flowchart TD
     opencraft logs --follow
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
-    - Node está listado como conectado e pareado para role `node`.
-    - Capacidade existe para o comando que você está invocando.
-    - Estado de permissão está concedido para a ferramenta.
+    - Node is listed as connected and paired for role `node`.
+    - Capability exists for the command you are invoking.
+    - Permission state is granted for the tool.
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `NODE_BACKGROUND_UNAVAILABLE` → traga app do node para primeiro plano.
-    - `*_PERMISSION_REQUIRED` → permissão do SO negada/faltando.
-    - `SYSTEM_RUN_DENIED: approval required` → aprovação exec está pendente.
-    - `SYSTEM_RUN_DENIED: allowlist miss` → comando não está na allowlist exec.
+    - `NODE_BACKGROUND_UNAVAILABLE` → bring node app to foreground.
+    - `*_PERMISSION_REQUIRED` → OS permission was denied/missing.
+    - `SYSTEM_RUN_DENIED: approval required` → exec approval is pending.
+    - `SYSTEM_RUN_DENIED: allowlist miss` → command not on exec allowlist.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#node-paired-tool-fails](/gateway/troubleshooting#node-paired-tool-fails)
     - [/nodes/troubleshooting](/nodes/troubleshooting)
@@ -266,7 +266,7 @@ flowchart TD
 
   </Accordion>
 
-  <Accordion title="Ferramenta do navegador falha">
+  <Accordion title="Browser tool fails">
     ```bash
     opencraft status
     opencraft gateway status
@@ -275,19 +275,19 @@ flowchart TD
     opencraft doctor
     ```
 
-    Boa saída se parece com:
+    Good output looks like:
 
-    - Status do navegador mostra `running: true` e um navegador/perfil escolhido.
-    - `opencraft` inicia, ou `user` pode ver abas locais do Chrome.
+    - Browser status shows `running: true` and a chosen browser/profile.
+    - `opencraft` starts, or `user` can see local Chrome tabs.
 
-    Assinaturas comuns nos logs:
+    Common log signatures:
 
-    - `Failed to start Chrome CDP on port` → inicialização do navegador local falhou.
-    - `browser.executablePath not found` → caminho binário configurado está errado.
-    - `No Chrome tabs found for profile="user"` → o perfil attach do Chrome MCP não tem abas locais abertas do Chrome.
-    - `Browser attachOnly is enabled ... not reachable` → perfil attach-only não tem alvo CDP ativo.
+    - `Failed to start Chrome CDP on port` → local browser launch failed.
+    - `browser.executablePath not found` → configured binary path is wrong.
+    - `No Chrome tabs found for profile="user"` → the Chrome MCP attach profile has no open local Chrome tabs.
+    - `Browser attachOnly is enabled ... not reachable` → attach-only profile has no live CDP target.
 
-    Páginas detalhadas:
+    Deep pages:
 
     - [/gateway/troubleshooting#browser-tool-fails](/gateway/troubleshooting#browser-tool-fails)
     - [/tools/browser-linux-troubleshooting](/tools/browser-linux-troubleshooting)

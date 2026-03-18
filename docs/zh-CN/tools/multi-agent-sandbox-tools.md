@@ -360,7 +360,7 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 2. **验证沙箱容器：**
 
    ```exec
-   docker ps --filter "name=openclaw-sbx-"
+   docker ps --filter "name=opencraft-sbx-"
    ```
 
 3. **测试工具限制：**

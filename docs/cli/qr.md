@@ -1,16 +1,16 @@
 ---
-summary: "Referência CLI para `opencraft qr` (gerar QR de pareamento iOS + código de configuração)"
+summary: "CLI reference for `opencraft qr` (generate iOS pairing QR + setup code)"
 read_when:
-  - Você quer parear o app iOS com um Gateway rapidamente
-  - Você precisa de saída de código de configuração para compartilhamento remoto/manual
+  - You want to pair the iOS app with a gateway quickly
+  - You need setup-code output for remote/manual sharing
 title: "qr"
 ---
 
 # `opencraft qr`
 
-Gerar um QR de pareamento iOS e código de configuração a partir da sua configuração atual do Gateway.
+Generate an iOS pairing QR and setup code from your current Gateway configuration.
 
-## Uso
+## Usage
 
 ```bash
 opencraft qr
@@ -20,27 +20,27 @@ opencraft qr --remote
 opencraft qr --url wss://gateway.example/ws
 ```
 
-## Opções
+## Options
 
-- `--remote`: usar `gateway.remote.url` mais Token/senha remoto do config
-- `--url <url>`: sobrepor URL do Gateway usada no payload
-- `--public-url <url>`: sobrepor URL pública usada no payload
-- `--token <token>`: sobrepor qual Token do Gateway o fluxo de bootstrap autentica contra
-- `--password <password>`: sobrepor qual senha do Gateway o fluxo de bootstrap autentica contra
-- `--setup-code-only`: imprimir apenas o código de configuração
-- `--no-ascii`: pular renderização ASCII do QR
-- `--json`: emitir JSON (`setupCode`, `gatewayUrl`, `auth`, `urlSource`)
+- `--remote`: use `gateway.remote.url` plus remote token/password from config
+- `--url <url>`: override gateway URL used in payload
+- `--public-url <url>`: override public URL used in payload
+- `--token <token>`: override which gateway token the bootstrap flow authenticates against
+- `--password <password>`: override which gateway password the bootstrap flow authenticates against
+- `--setup-code-only`: print only setup code
+- `--no-ascii`: skip ASCII QR rendering
+- `--json`: emit JSON (`setupCode`, `gatewayUrl`, `auth`, `urlSource`)
 
-## Notas
+## Notes
 
-- `--token` e `--password` são mutuamente exclusivos.
-- O código de configuração agora carrega um `bootstrapToken` opaco de curta duração, não o Token/senha compartilhado do Gateway.
-- Com `--remote`, se credenciais remotas efetivamente ativas estiverem configuradas como SecretRefs e você não passar `--token` ou `--password`, o comando as resolve do snapshot do Gateway ativo. Se o Gateway estiver indisponível, o comando falha imediatamente.
-- Sem `--remote`, SecretRefs de autenticação local do Gateway são resolvidos quando nenhuma sobrescrita de autenticação CLI é passada:
-  - `gateway.auth.token` resolve quando autenticação por Token pode vencer (explícito `gateway.auth.mode="token"` ou modo inferido onde nenhuma fonte de senha vence).
-  - `gateway.auth.password` resolve quando autenticação por senha pode vencer (explícito `gateway.auth.mode="password"` ou modo inferido sem Token vencedor de auth/env).
-- Se tanto `gateway.auth.token` quanto `gateway.auth.password` estiverem configurados (incluindo SecretRefs) e `gateway.auth.mode` não estiver definido, a resolução do código de configuração falha até que o modo seja definido explicitamente.
-- Nota sobre diferença de versão do Gateway: este caminho de comando requer um Gateway que suporte `secrets.resolve`; Gateways mais antigos retornam erro de método desconhecido.
-- Após escanear, aprove o pareamento de dispositivo com:
+- `--token` and `--password` are mutually exclusive.
+- The setup code itself now carries an opaque short-lived `bootstrapToken`, not the shared gateway token/password.
+- With `--remote`, if effectively active remote credentials are configured as SecretRefs and you do not pass `--token` or `--password`, the command resolves them from the active gateway snapshot. If gateway is unavailable, the command fails fast.
+- Without `--remote`, local gateway auth SecretRefs are resolved when no CLI auth override is passed:
+  - `gateway.auth.token` resolves when token auth can win (explicit `gateway.auth.mode="token"` or inferred mode where no password source wins).
+  - `gateway.auth.password` resolves when password auth can win (explicit `gateway.auth.mode="password"` or inferred mode with no winning token from auth/env).
+- If both `gateway.auth.token` and `gateway.auth.password` are configured (including SecretRefs) and `gateway.auth.mode` is unset, setup-code resolution fails until mode is set explicitly.
+- Gateway version skew note: this command path requires a gateway that supports `secrets.resolve`; older gateways return an unknown-method error.
+- After scanning, approve device pairing with:
   - `opencraft devices list`
   - `opencraft devices approve <requestId>`

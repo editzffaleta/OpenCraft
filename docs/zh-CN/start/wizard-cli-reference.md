@@ -38,7 +38,7 @@ x-i18n:
 
 <Steps>
   <Step title="现有配置检测">
-    - 如果 `~/.editzffaleta/OpenCraft.json` 存在，可选择 Keep、Modify 或 Reset。
+    - 如果 `~/.opencraft/opencraft.json` 存在，可选择 Keep、Modify 或 Reset。
     - 重新运行向导不会清除任何内容，除非你明确选择 Reset（或传递 `--reset`）。
     - CLI `--reset` 默认作用于 `config+creds+sessions`；使用 `--reset-scope full` 还会删除工作区。
     - 如果配置无效或包含旧版键，向导会停止，并要求你先运行 `opencraft doctor` 再继续。
@@ -255,7 +255,7 @@ x-i18n:
 
 ## 输出和内部机制
 
-`~/.editzffaleta/OpenCraft.json` 中的典型字段：
+`~/.opencraft/opencraft.json` 中的典型字段：
 
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择了 Minimax）

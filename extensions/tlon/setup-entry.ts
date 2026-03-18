@@ -1,5 +1,4 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { tlonPlugin } from "./src/channel.js";
 
-export default {
-  plugin: tlonPlugin,
-};
+export default defineSetupPluginEntry(tlonPlugin);

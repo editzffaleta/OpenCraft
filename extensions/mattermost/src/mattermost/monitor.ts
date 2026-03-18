@@ -4,7 +4,7 @@ import type {
   OpenCraftConfig,
   ReplyPayload,
   RuntimeEnv,
-} from "opencraft/plugin-sdk/mattermost";
+} from "../runtime-api.js";
 import {
   buildAgentMediaPayload,
   buildModelsProviderData,
@@ -30,7 +30,7 @@ import {
   warnMissingProviderGroupPolicyFallbackOnce,
   listSkillCommandsForAgents,
   type HistoryEntry,
-} from "opencraft/plugin-sdk/mattermost";
+} from "../runtime-api.js";
 import { getMattermostRuntime } from "../runtime.js";
 import { resolveMattermostAccount, resolveMattermostReplyToMode } from "./accounts.js";
 import {

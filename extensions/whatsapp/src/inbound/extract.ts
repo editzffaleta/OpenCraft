@@ -4,9 +4,9 @@ import {
   getContentType,
   normalizeMessageContent,
 } from "@whiskeysockets/baileys";
-import { formatLocationText, type NormalizedLocation } from "../../../../src/channels/location.js";
-import { logVerbose } from "../../../../src/globals.js";
-import { jidToE164 } from "../../../../src/utils.js";
+import { formatLocationText, type NormalizedLocation } from "opencraft/plugin-sdk/channel-runtime";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
+import { jidToE164 } from "opencraft/plugin-sdk/text-runtime";
 import { parseVcard } from "../vcard.js";
 
 function unwrapMessage(message: proto.IMessage | undefined): proto.IMessage | undefined {

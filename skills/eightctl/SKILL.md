@@ -1,6 +1,6 @@
 ---
 name: eightctl
-description: Controlar pods Eight Sleep (status, temperatura, alarmes, agendamentos).
+description: Control Eight Sleep pods (status, temperature, alarms, schedules).
 homepage: https://eightctl.sh
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "go",
               "module": "github.com/steipete/eightctl/cmd/eightctl@latest",
               "bins": ["eightctl"],
-              "label": "Instalar eightctl (go)",
+              "label": "Install eightctl (go)",
             },
           ],
       },
@@ -24,27 +24,27 @@ metadata:
 
 # eightctl
 
-Use `eightctl` para controlar o pod Eight Sleep. Requer autenticação.
+Use `eightctl` for Eight Sleep pod control. Requires auth.
 
-Autenticação
+Auth
 
-- Configuração: `~/.config/eightctl/config.yaml`
+- Config: `~/.config/eightctl/config.yaml`
 - Env: `EIGHTCTL_EMAIL`, `EIGHTCTL_PASSWORD`
 
-Início rápido
+Quick start
 
 - `eightctl status`
 - `eightctl on|off`
 - `eightctl temp 20`
 
-Tarefas comuns
+Common tasks
 
-- Alarmes: `eightctl alarm list|create|dismiss`
-- Agendamentos: `eightctl schedule list|create|update`
-- Áudio: `eightctl audio state|play|pause`
+- Alarms: `eightctl alarm list|create|dismiss`
+- Schedules: `eightctl schedule list|create|update`
+- Audio: `eightctl audio state|play|pause`
 - Base: `eightctl base info|angle`
 
-Observações
+Notes
 
-- A API é não oficial e tem limite de taxa; evite logins repetidos.
-- Confirme antes de alterar temperatura ou alarmes.
+- API is unofficial and rate-limited; avoid repeated logins.
+- Confirm before changing temperature or alarms.

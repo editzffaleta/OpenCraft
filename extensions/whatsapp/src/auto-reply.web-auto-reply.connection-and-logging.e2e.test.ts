@@ -4,8 +4,8 @@ import fs from "node:fs/promises";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import type { OpenCraftConfig } from "../../../src/config/config.js";
 import { setLoggerOverride } from "../../../src/logging.js";
-import { withEnvAsync } from "../../../src/test-utils/env.js";
 import { escapeRegExp, formatEnvelopeTimestamp } from "../../../test/helpers/envelope-timestamp.js";
+import { withEnvAsync } from "../../../test/helpers/extensions/env.js";
 import {
   createMockWebListener,
   createWebListenerFactoryCapture,
@@ -345,9 +345,7 @@ describe("web auto-reply connection", () => {
         );
         expect(firstArgs.Body).not.toContain("second");
         expect(secondArgs.Body).toMatch(
-          new RegExp(
-            `\\[WhatsApp \\+1 (\\+\\d+[smhd] )?${secondPattern}\\] \\[opencraft\\] second`,
-          ),
+          new RegExp(`\\[WhatsApp \\+1 (\\+\\d+[smhd] )?${secondPattern}\\] \\[opencraft\\] second`),
         );
         expect(secondArgs.Body).not.toContain("first");
         expect(process.getMaxListeners?.()).toBeGreaterThanOrEqual(50);

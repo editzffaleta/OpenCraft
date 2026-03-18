@@ -2,7 +2,7 @@
  * Upload an image from a URL to Tlon storage.
  */
 import { uploadFile } from "@tloncorp/api";
-import { fetchWithSsrFGuard } from "opencraft/plugin-sdk/tlon";
+import { fetchWithSsrFGuard } from "../../api.js";
 import { getDefaultSsrFPolicy } from "./context.js";
 
 /**

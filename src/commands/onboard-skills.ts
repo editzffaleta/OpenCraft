@@ -65,16 +65,16 @@ export async function setupSkills(
 
   await prompter.note(
     [
-      `Elegíveis: ${eligible.length}`,
-      `Requisitos faltando: ${missing.length}`,
-      `Não suportado neste SO: ${unsupportedOs.length}`,
-      `Bloqueado por allowlist: ${blocked.length}`,
+      `Eligible: ${eligible.length}`,
+      `Missing requirements: ${missing.length}`,
+      `Unsupported on this OS: ${unsupportedOs.length}`,
+      `Blocked by allowlist: ${blocked.length}`,
     ].join("\n"),
-    "Status das skills",
+    "Skills status",
   );
 
   const shouldConfigure = await prompter.confirm({
-    message: "Configurar skills agora? (recomendado)",
+    message: "Configure skills now? (recommended)",
     initialValue: true,
   });
   if (!shouldConfigure) {
@@ -87,12 +87,12 @@ export async function setupSkills(
   let next: OpenCraftConfig = cfg;
   if (installable.length > 0) {
     const toInstall = await prompter.multiselect({
-      message: "Instalar dependências de skills faltando",
+      message: "Install missing skill dependencies",
       options: [
         {
           value: "__skip__",
-          label: "Pular por enquanto",
-          hint: "Continuar sem instalar dependências",
+          label: "Skip for now",
+          hint: "Continue without installing dependencies",
         },
         ...installable.map((skill) => ({
           value: skill.name,
@@ -116,22 +116,22 @@ export async function setupSkills(
     if (needsBrewPrompt) {
       await prompter.note(
         [
-          "Muitas dependências de skills são distribuídas via Homebrew.",
-          "Sem brew, você precisará compilar do código-fonte ou baixar releases manualmente.",
+          "Many skill dependencies are shipped via Homebrew.",
+          "Without brew, you'll need to build from source or download releases manually.",
         ].join("\n"),
-        "Homebrew recomendado",
+        "Homebrew recommended",
       );
       const showBrewInstall = await prompter.confirm({
-        message: "Mostrar comando de instalação do Homebrew?",
+        message: "Show Homebrew install command?",
         initialValue: true,
       });
       if (showBrewInstall) {
         await prompter.note(
           [
-            "Execute:",
+            "Run:",
             '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
           ].join("\n"),
-          "Instalação do Homebrew",
+          "Homebrew install",
         );
       }
     }
@@ -141,7 +141,7 @@ export async function setupSkills(
     );
     if (needsNodeManagerPrompt) {
       const nodeManager = (await prompter.select({
-        message: "Gerenciador de node preferido para instalação de skills",
+        message: "Preferred node manager for skill installs",
         options: resolveNodeManagerOptions(),
       })) as "npm" | "pnpm" | "bun";
       next = {
@@ -165,7 +165,7 @@ export async function setupSkills(
       if (!installId) {
         continue;
       }
-      const spin = prompter.progress(`Instalando ${name}…`);
+      const spin = prompter.progress(`Installing ${name}…`);
       const result = await installSkill({
         workspaceDir,
         skillName: target.name,
@@ -174,7 +174,7 @@ export async function setupSkills(
       });
       const warnings = result.warnings ?? [];
       if (result.ok) {
-        spin.stop(warnings.length > 0 ? `Instalado ${name} (com avisos)` : `Instalado ${name}`);
+        spin.stop(warnings.length > 0 ? `Installed ${name} (with warnings)` : `Installed ${name}`);
         for (const warning of warnings) {
           runtime.log(warning);
         }
@@ -182,7 +182,7 @@ export async function setupSkills(
       }
       const code = result.code == null ? "" : ` (exit ${result.code})`;
       const detail = summarizeInstallFailure(result.message);
-      spin.stop(`Falha na instalação: ${name}${code}${detail ? ` — ${detail}` : ""}`);
+      spin.stop(`Install failed: ${name}${code}${detail ? ` — ${detail}` : ""}`);
       for (const warning of warnings) {
         runtime.log(warning);
       }
@@ -192,7 +192,7 @@ export async function setupSkills(
         runtime.log(result.stdout.trim());
       }
       runtime.log(
-        `Dica: execute \`${formatCliCommand("opencraft doctor")}\` para revisar skills + requisitos.`,
+        `Tip: run \`${formatCliCommand("opencraft doctor")}\` to review skills + requirements.`,
       );
       runtime.log("Docs: https://docs.opencraft.ai/skills");
     }
@@ -203,7 +203,7 @@ export async function setupSkills(
       continue;
     }
     const wantsKey = await prompter.confirm({
-      message: `Configurar ${skill.primaryEnv} para ${skill.name}?`,
+      message: `Set ${skill.primaryEnv} for ${skill.name}?`,
       initialValue: false,
     });
     if (!wantsKey) {
@@ -211,8 +211,8 @@ export async function setupSkills(
     }
     const apiKey = String(
       await prompter.text({
-        message: `Inserir ${skill.primaryEnv}`,
-        validate: (value) => (value?.trim() ? undefined : "Obrigatório"),
+        message: `Enter ${skill.primaryEnv}`,
+        validate: (value) => (value?.trim() ? undefined : "Required"),
       }),
     );
     next = upsertSkillEntry(next, skill.skillKey, { apiKey: normalizeSecretInput(apiKey) });

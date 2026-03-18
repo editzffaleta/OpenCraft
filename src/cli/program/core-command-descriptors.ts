@@ -7,88 +7,88 @@ export type CoreCliCommandDescriptor = {
 export const CORE_CLI_COMMAND_DESCRIPTORS = [
   {
     name: "setup",
-    description: "Inicializar configuração local e espaço de trabalho do agente",
+    description: "Initialize local config and agent workspace",
     hasSubcommands: false,
   },
   {
     name: "onboard",
-    description: "Configuração interativa para gateway, espaço de trabalho e skills",
+    description: "Interactive onboarding for gateway, workspace, and skills",
     hasSubcommands: false,
   },
   {
     name: "configure",
-    description: "Configuração interativa para credenciais, canais, gateway e padrões do agente",
+    description: "Interactive configuration for credentials, channels, gateway, and agent defaults",
     hasSubcommands: false,
   },
   {
     name: "config",
     description:
-      "Auxiliares de configuração não interativos (get/set/unset/file/validate). Padrão: inicia configuração guiada.",
+      "Non-interactive config helpers (get/set/unset/file/validate). Default: starts guided setup.",
     hasSubcommands: true,
   },
   {
     name: "backup",
-    description: "Criar e verificar arquivos de backup locais do estado do OpenCraft",
+    description: "Create and verify local backup archives for OpenCraft state",
     hasSubcommands: true,
   },
   {
     name: "doctor",
-    description: "Verificações de saúde + correções rápidas para o gateway e canais",
+    description: "Health checks + quick fixes for the gateway and channels",
     hasSubcommands: false,
   },
   {
     name: "dashboard",
-    description: "Abrir a interface de controle com seu token atual",
+    description: "Open the Control UI with your current token",
     hasSubcommands: false,
   },
   {
     name: "reset",
-    description: "Redefinir configuração/estado local (mantém o CLI instalado)",
+    description: "Reset local config/state (keeps the CLI installed)",
     hasSubcommands: false,
   },
   {
     name: "uninstall",
-    description: "Desinstalar o serviço de gateway + dados locais (CLI permanece)",
+    description: "Uninstall the gateway service + local data (CLI remains)",
     hasSubcommands: false,
   },
   {
     name: "message",
-    description: "Enviar, ler e gerenciar mensagens",
+    description: "Send, read, and manage messages",
     hasSubcommands: true,
   },
   {
     name: "memory",
-    description: "Pesquisar e reindexar arquivos de memória",
+    description: "Search and reindex memory files",
     hasSubcommands: true,
   },
   {
     name: "agent",
-    description: "Executar um turno do agente via Gateway",
+    description: "Run one agent turn via the Gateway",
     hasSubcommands: false,
   },
   {
     name: "agents",
-    description: "Gerenciar agentes isolados (espaços de trabalho, autenticação, roteamento)",
+    description: "Manage isolated agents (workspaces, auth, routing)",
     hasSubcommands: true,
   },
   {
     name: "status",
-    description: "Mostrar saúde dos canais e destinatários de sessão recentes",
+    description: "Show channel health and recent session recipients",
     hasSubcommands: false,
   },
   {
     name: "health",
-    description: "Obter saúde do gateway em execução",
+    description: "Fetch health from the running gateway",
     hasSubcommands: false,
   },
   {
     name: "sessions",
-    description: "Listar sessões de conversa armazenadas",
+    description: "List stored conversation sessions",
     hasSubcommands: true,
   },
   {
     name: "browser",
-    description: "Gerenciar o browser dedicado do OpenCraft (Chrome/Chromium)",
+    description: "Manage OpenCraft's dedicated browser (Chrome/Chromium)",
     hasSubcommands: true,
   },
 ] as const satisfies ReadonlyArray<CoreCliCommandDescriptor>;

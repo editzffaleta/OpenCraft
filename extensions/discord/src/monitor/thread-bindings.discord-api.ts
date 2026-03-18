@@ -1,6 +1,6 @@
 import { ChannelType, Routes } from "discord-api-types/v10";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import { logVerbose } from "../../../../src/globals.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
 import { createDiscordRestClient } from "../client.js";
 import { sendMessageDiscord, sendWebhookMessageDiscord } from "../send.js";
 import { createThreadDiscord } from "../send.messages.js";

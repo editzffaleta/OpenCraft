@@ -1,63 +1,63 @@
 ---
-summary: "Como executar testes localmente (vitest) e quando usar modos force/coverage"
+summary: "How to run tests locally (vitest) and when to use force/coverage modes"
 read_when:
-  - Executando ou corrigindo testes
-title: "Testes"
+  - Running or fixing tests
+title: "Tests"
 ---
 
-# Testes
+# Tests
 
-- Kit completo de testes (suítes, live, Docker): [Testes](/help/testing)
+- Full testing kit (suites, live, Docker): [Testing](/help/testing)
 
-- `pnpm test:force`: Encerra qualquer processo gateway remanescente ocupando a porta de controle padrão, depois executa a suíte Vitest completa com uma porta gateway isolada para que testes de servidor não colidam com uma instância em execução. Use quando uma execução anterior do gateway deixou a porta 18789 ocupada.
-- `pnpm test:coverage`: Executa a suíte unitária com cobertura V8 (via `vitest.unit.config.ts`). Thresholds globais são 70% linhas/branches/funções/statements. A cobertura exclui entrypoints pesados de integração (fiação CLI, bridges gateway/telegram, servidor estático webchat) para manter o alvo focado em lógica testável unitariamente.
-- `pnpm test` no Node 22, 23 e 24 usa Vitest `vmForks` por padrão para inicialização mais rápida. Node 25+ faz fallback para `forks` até ser revalidado. Você pode forçar o comportamento com `OPENCRAFT_TEST_VM_FORKS=0|1`.
-- `pnpm test`: executa a faixa rápida de unidade core por padrão para feedback local rápido.
-- `pnpm test:channels`: executa suítes pesadas de canais.
-- `pnpm test:extensions`: executa suítes de extensão/plugin.
-- Integração Gateway: opt-in via `OPENCRAFT_TEST_INCLUDE_GATEWAY=1 pnpm test` ou `pnpm test:gateway`.
-- `pnpm test:e2e`: Executa testes de fumaça end-to-end do gateway (pareamento multi-instância WS/HTTP/node). Padrão é `vmForks` + workers adaptativos em `vitest.e2e.config.ts`; ajuste com `OPENCRAFT_E2E_WORKERS=<n>` e defina `OPENCRAFT_E2E_VERBOSE=1` para logs detalhados.
-- `pnpm test:live`: Executa testes live de provedor (minimax/zai). Requer chaves de API e `LIVE=1` (ou `*_LIVE_TEST=1` específico por provedor) para não pular.
+- `pnpm test:force`: Kills any lingering gateway process holding the default control port, then runs the full Vitest suite with an isolated gateway port so server tests don’t collide with a running instance. Use this when a prior gateway run left port 18789 occupied.
+- `pnpm test:coverage`: Runs the unit suite with V8 coverage (via `vitest.unit.config.ts`). Global thresholds are 70% lines/branches/functions/statements. Coverage excludes integration-heavy entrypoints (CLI wiring, gateway/telegram bridges, webchat static server) to keep the target focused on unit-testable logic.
+- `pnpm test` on Node 22, 23, and 24 uses Vitest `vmForks` by default for faster startup. Node 25+ falls back to `forks` until re-validated. You can force behavior with `OPENCRAFT_TEST_VM_FORKS=0|1`.
+- `pnpm test`: runs the fast core unit lane by default for quick local feedback.
+- `pnpm test:channels`: runs channel-heavy suites.
+- `pnpm test:extensions`: runs extension/plugin suites.
+- Gateway integration: opt-in via `OPENCRAFT_TEST_INCLUDE_GATEWAY=1 pnpm test` or `pnpm test:gateway`.
+- `pnpm test:e2e`: Runs gateway end-to-end smoke tests (multi-instance WS/HTTP/node pairing). Defaults to `vmForks` + adaptive workers in `vitest.e2e.config.ts`; tune with `OPENCRAFT_E2E_WORKERS=<n>` and set `OPENCRAFT_E2E_VERBOSE=1` for verbose logs.
+- `pnpm test:live`: Runs provider live tests (minimax/zai). Requires API keys and `LIVE=1` (or provider-specific `*_LIVE_TEST=1`) to unskip.
 
-## Gate de PR local
+## Local PR gate
 
-Para verificações locais de gate/land de PR, execute:
+For local PR land/gate checks, run:
 
 - `pnpm check`
 - `pnpm build`
 - `pnpm test`
 - `pnpm check:docs`
 
-Se `pnpm test` falhar intermitentemente em um host sobrecarregado, reexecute uma vez antes de tratar como regressão, depois isole com `pnpm vitest run <path/to/test>`. Para hosts com restrição de memória, use:
+If `pnpm test` flakes on a loaded host, rerun once before treating it as a regression, then isolate with `pnpm vitest run <path/to/test>`. For memory-constrained hosts, use:
 
 - `OPENCRAFT_TEST_PROFILE=low OPENCRAFT_TEST_SERIAL_GATEWAY=1 pnpm test`
 
-## Benchmark de latência de modelo (chaves locais)
+## Model latency bench (local keys)
 
-Script: [`scripts/bench-model.ts`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/bench-model.ts)
+Script: [`scripts/bench-model.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-model.ts)
 
-Uso:
+Usage:
 
 - `source ~/.profile && pnpm tsx scripts/bench-model.ts --runs 10`
-- Env opcional: `MINIMAX_API_KEY`, `MINIMAX_BASE_URL`, `MINIMAX_MODEL`, `ANTHROPIC_API_KEY`
-- Prompt padrão: "Reply with a single word: ok. No punctuation or extra text."
+- Optional env: `MINIMAX_API_KEY`, `MINIMAX_BASE_URL`, `MINIMAX_MODEL`, `ANTHROPIC_API_KEY`
+- Default prompt: “Reply with a single word: ok. No punctuation or extra text.”
 
-Última execução (2025-12-31, 20 execuções):
+Last run (2025-12-31, 20 runs):
 
-- minimax mediana 1279ms (min 1114, max 2431)
-- opus mediana 2454ms (min 1224, max 3170)
+- minimax median 1279ms (min 1114, max 2431)
+- opus median 2454ms (min 1224, max 3170)
 
-## Benchmark de inicialização do CLI
+## CLI startup bench
 
-Script: [`scripts/bench-cli-startup.ts`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/bench-cli-startup.ts)
+Script: [`scripts/bench-cli-startup.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-cli-startup.ts)
 
-Uso:
+Usage:
 
 - `pnpm tsx scripts/bench-cli-startup.ts`
 - `pnpm tsx scripts/bench-cli-startup.ts --runs 12`
 - `pnpm tsx scripts/bench-cli-startup.ts --entry dist/entry.js --timeout-ms 45000`
 
-Este benchmark testa estes comandos:
+This benchmarks these commands:
 
 - `--version`
 - `--help`
@@ -65,23 +65,23 @@ Este benchmark testa estes comandos:
 - `status --json`
 - `status`
 
-A saída inclui avg, p50, p95, min/max e distribuição de exit-code/signal para cada comando.
+Output includes avg, p50, p95, min/max, and exit-code/signal distribution for each command.
 
 ## Onboarding E2E (Docker)
 
-Docker é opcional; isso é necessário apenas para testes de fumaça de onboarding em container.
+Docker is optional; this is only needed for containerized onboarding smoke tests.
 
-Fluxo completo cold-start em um container Linux limpo:
+Full cold-start flow in a clean Linux container:
 
 ```bash
 scripts/e2e/onboard-docker.sh
 ```
 
-Este script conduz o assistente interativo via pseudo-tty, verifica arquivos de config/workspace/sessão, depois inicia o gateway e executa `opencraft health`.
+This script drives the interactive wizard via a pseudo-tty, verifies config/workspace/session files, then starts the gateway and runs `opencraft health`.
 
-## Teste de fumaça de importação QR (Docker)
+## QR import smoke (Docker)
 
-Garante que `qrcode-terminal` carrega nos runtimes Docker Node suportados (Node 24 padrão, Node 22 compatível):
+Ensures `qrcode-terminal` loads under the supported Docker Node runtimes (Node 24 default, Node 22 compatible):
 
 ```bash
 pnpm test:docker:qr

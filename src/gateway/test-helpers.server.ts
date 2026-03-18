@@ -428,8 +428,8 @@ export async function startServerWithClient(
 ) {
   const { wsHeaders, ...gatewayOpts } = opts ?? {};
   let port = await getFreePort();
-  const envSnapshot = captureEnv(["OPENCLAW_GATEWAY_TOKEN"]);
-  const prev = process.env.OPENCLAW_GATEWAY_TOKEN;
+  const envSnapshot = captureEnv(["OPENCRAFT_GATEWAY_TOKEN"]);
+  const prev = process.env.OPENCRAFT_GATEWAY_TOKEN;
   if (typeof token === "string") {
     testState.gatewayAuth = { mode: "token", token };
   }
@@ -439,9 +439,9 @@ export async function startServerWithClient(
       ? (testState.gatewayAuth as { token?: string }).token
       : undefined);
   if (fallbackToken === undefined) {
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
   } else {
-    process.env.OPENCLAW_GATEWAY_TOKEN = fallbackToken;
+    process.env.OPENCRAFT_GATEWAY_TOKEN = fallbackToken;
   }
 
   const started = await startGatewayServerWithRetries({ port, opts: gatewayOpts });
@@ -560,13 +560,13 @@ export async function connectReq(
       ? undefined
       : typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
         ? ((testState.gatewayAuth as { token?: string }).token ?? undefined)
-        : process.env.OPENCLAW_GATEWAY_TOKEN;
+        : process.env.OPENCRAFT_GATEWAY_TOKEN;
   const defaultPassword =
     opts?.skipDefaultAuth === true
       ? undefined
       : typeof (testState.gatewayAuth as { password?: unknown } | undefined)?.password === "string"
         ? ((testState.gatewayAuth as { password?: string }).password ?? undefined)
-        : process.env.OPENCLAW_GATEWAY_PASSWORD;
+        : process.env.OPENCRAFT_GATEWAY_PASSWORD;
   const token = opts?.token ?? defaultToken;
   const deviceToken = opts?.deviceToken?.trim() || undefined;
   const password = opts?.password ?? defaultPassword;

@@ -17,13 +17,20 @@ EXTERNAL_AUTH_MOUNTS=()
 for auth_dir in .claude .codex .minimax .qwen; do
   host_path="$HOME/$auth_dir"
   if [[ -d "$host_path" ]]; then
-    EXTERNAL_AUTH_MOUNTS+=(-v "$host_path":/home/node/"$auth_dir":ro)
+    EXTERNAL_AUTH_MOUNTS+=(-v "$host_path":/host-auth/"$auth_dir":ro)
   fi
 done
 
 read -r -d '' LIVE_TEST_CMD <<'EOF' || true
 set -euo pipefail
 [ -f "$HOME/.profile" ] && source "$HOME/.profile" || true
+for auth_dir in .claude .codex .minimax .qwen; do
+  if [ -d "/host-auth/$auth_dir" ]; then
+    mkdir -p "$HOME/$auth_dir"
+    cp -R "/host-auth/$auth_dir/." "$HOME/$auth_dir"
+    chmod -R u+rwX "$HOME/$auth_dir" || true
+  fi
+done
 tmp_dir="$(mktemp -d)"
 cleanup() {
   rm -rf "$tmp_dir"
@@ -57,6 +64,9 @@ docker run --rm -t \
   -e OPENCRAFT_LIVE_MAX_MODELS="${OPENCRAFT_LIVE_MAX_MODELS:-${CLAWDBOT_LIVE_MAX_MODELS:-48}}" \
   -e OPENCRAFT_LIVE_MODEL_TIMEOUT_MS="${OPENCRAFT_LIVE_MODEL_TIMEOUT_MS:-${CLAWDBOT_LIVE_MODEL_TIMEOUT_MS:-}}" \
   -e OPENCRAFT_LIVE_REQUIRE_PROFILE_KEYS="${OPENCRAFT_LIVE_REQUIRE_PROFILE_KEYS:-${CLAWDBOT_LIVE_REQUIRE_PROFILE_KEYS:-}}" \
+  -e OPENCRAFT_LIVE_GATEWAY_MODELS="${OPENCRAFT_LIVE_GATEWAY_MODELS:-${CLAWDBOT_LIVE_GATEWAY_MODELS:-}}" \
+  -e OPENCRAFT_LIVE_GATEWAY_PROVIDERS="${OPENCRAFT_LIVE_GATEWAY_PROVIDERS:-${CLAWDBOT_LIVE_GATEWAY_PROVIDERS:-}}" \
+  -e OPENCRAFT_LIVE_GATEWAY_MAX_MODELS="${OPENCRAFT_LIVE_GATEWAY_MAX_MODELS:-${CLAWDBOT_LIVE_GATEWAY_MAX_MODELS:-}}" \
   -v "$ROOT_DIR":/src:ro \
   -v "$CONFIG_DIR":/home/node/.opencraft \
   -v "$WORKSPACE_DIR":/home/node/.opencraft/workspace \

@@ -1,8 +1,8 @@
 import type {
   ChannelThreadingContext,
   ChannelThreadingToolContext,
-} from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import { resolveSlackAccount, resolveSlackReplyToMode } from "./accounts.js";
 
 export function buildSlackThreadingToolContext(params: {

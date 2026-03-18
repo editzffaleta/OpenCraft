@@ -1,18 +1,18 @@
 ---
-summary: "Solução rápida de problemas por canal com assinaturas de falha e correções específicas"
+summary: "Fast channel level troubleshooting with per channel failure signatures and fixes"
 read_when:
   - Channel transport says connected but replies fail
   - You need channel specific checks before deep provider docs
 title: "Channel Troubleshooting"
 ---
 
-# Solução de problemas de canais
+# Channel troubleshooting
 
-Use esta página quando um canal conecta, mas o comportamento está incorreto.
+Use this page when a channel connects but behavior is wrong.
 
-## Sequência de comandos
+## Command ladder
 
-Execute estes na ordem primeiro:
+Run these in order first:
 
 ```bash
 opencraft status
@@ -22,97 +22,97 @@ opencraft doctor
 opencraft channels status --probe
 ```
 
-Linha de base saudável:
+Healthy baseline:
 
 - `Runtime: running`
 - `RPC probe: ok`
-- Sonda do canal mostra conectado/pronto
+- Channel probe shows connected/ready
 
 ## WhatsApp
 
-### Assinaturas de falha do WhatsApp
+### WhatsApp failure signatures
 
-| Sintoma                               | Verificação mais rápida                                  | Correção                                                                      |
-| ------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Conectado mas sem respostas de DM     | `opencraft pairing list whatsapp`                        | Aprove o remetente ou altere a política de DM/allowlist.                      |
-| Mensagens de grupo ignoradas          | Verifique `requireMention` + padrões de menção na config | Mencione o Bot ou relaxe a política de menção para aquele grupo.              |
-| Desconexão aleatória/loops de relogin | `opencraft channels status --probe` + logs               | Faça login novamente e verifique se o diretório de credenciais está saudável. |
+| Symptom                         | Fastest check                                       | Fix                                                     |
+| ------------------------------- | --------------------------------------------------- | ------------------------------------------------------- |
+| Connected but no DM replies     | `opencraft pairing list whatsapp`                    | Approve sender or switch DM policy/allowlist.           |
+| Group messages ignored          | Check `requireMention` + mention patterns in config | Mention the bot or relax mention policy for that group. |
+| Random disconnect/relogin loops | `opencraft channels status --probe` + logs           | Re-login and verify credentials directory is healthy.   |
 
-Solução completa: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
+Full troubleshooting: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
 
 ## Telegram
 
-### Assinaturas de falha do Telegram
+### Telegram failure signatures
 
-| Sintoma                                    | Verificação mais rápida                                    | Correção                                                                                  |
-| ------------------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `/start` mas sem fluxo de resposta útil    | `opencraft pairing list telegram`                          | Aprove o pareamento ou altere a política de DM.                                           |
-| Bot online mas grupo permanece silencioso  | Verifique requisito de menção e modo de privacidade do Bot | Desabilite o modo de privacidade para visibilidade em grupo ou mencione o Bot.            |
-| Falhas de envio com erros de rede          | Inspecione logs para falhas de chamada da API Telegram     | Corrija roteamento DNS/IPv6/proxy para `api.telegram.org`.                                |
-| `setMyCommands` rejeitado na inicialização | Inspecione logs para `BOT_COMMANDS_TOO_MUCH`               | Reduza comandos de plugin/Skill/Telegram personalizados ou desabilite menus nativos.      |
-| Atualizou e allowlist bloqueia você        | `opencraft security audit` e allowlists na config          | Execute `opencraft doctor --fix` ou substitua `@username` por IDs numéricos de remetente. |
+| Symptom                             | Fastest check                                   | Fix                                                                         |
+| ----------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
+| `/start` but no usable reply flow   | `opencraft pairing list telegram`                | Approve pairing or change DM policy.                                        |
+| Bot online but group stays silent   | Verify mention requirement and bot privacy mode | Disable privacy mode for group visibility or mention bot.                   |
+| Send failures with network errors   | Inspect logs for Telegram API call failures     | Fix DNS/IPv6/proxy routing to `api.telegram.org`.                           |
+| `setMyCommands` rejected at startup | Inspect logs for `BOT_COMMANDS_TOO_MUCH`        | Reduce plugin/skill/custom Telegram commands or disable native menus.       |
+| Upgraded and allowlist blocks you   | `opencraft security audit` and config allowlists | Run `opencraft doctor --fix` or replace `@username` with numeric sender IDs. |
 
-Solução completa: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
+Full troubleshooting: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
 
 ## Discord
 
-### Assinaturas de falha do Discord
+### Discord failure signatures
 
-| Sintoma                               | Verificação mais rápida             | Correção                                                          |
-| ------------------------------------- | ----------------------------------- | ----------------------------------------------------------------- |
-| Bot online mas sem respostas no guild | `opencraft channels status --probe` | Permita guild/canal e verifique a intent de conteúdo de mensagem. |
-| Mensagens de grupo ignoradas          | Verifique logs para drops de menção | Mencione o Bot ou defina `requireMention: false` no guild/canal.  |
-| Respostas de DM ausentes              | `opencraft pairing list discord`    | Aprove o pareamento de DM ou ajuste a política de DM.             |
+| Symptom                         | Fastest check                       | Fix                                                       |
+| ------------------------------- | ----------------------------------- | --------------------------------------------------------- |
+| Bot online but no guild replies | `opencraft channels status --probe`  | Allow guild/channel and verify message content intent.    |
+| Group messages ignored          | Check logs for mention gating drops | Mention bot or set guild/channel `requireMention: false`. |
+| DM replies missing              | `opencraft pairing list discord`     | Approve DM pairing or adjust DM policy.                   |
 
-Solução completa: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
+Full troubleshooting: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
 
 ## Slack
 
-### Assinaturas de falha do Slack
+### Slack failure signatures
 
-| Sintoma                                 | Verificação mais rápida                      | Correção                                               |
-| --------------------------------------- | -------------------------------------------- | ------------------------------------------------------ |
-| Socket Mode conectado mas sem respostas | `opencraft channels status --probe`          | Verifique app Token + bot Token e escopos necessários. |
-| DMs bloqueadas                          | `opencraft pairing list slack`               | Aprove o pareamento ou relaxe a política de DM.        |
-| Mensagem do canal ignorada              | Verifique `groupPolicy` e allowlist do canal | Permita o canal ou mude a política para `open`.        |
+| Symptom                                | Fastest check                             | Fix                                               |
+| -------------------------------------- | ----------------------------------------- | ------------------------------------------------- |
+| Socket mode connected but no responses | `opencraft channels status --probe`        | Verify app token + bot token and required scopes. |
+| DMs blocked                            | `opencraft pairing list slack`             | Approve pairing or relax DM policy.               |
+| Channel message ignored                | Check `groupPolicy` and channel allowlist | Allow the channel or switch policy to `open`.     |
 
-Solução completa: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
+Full troubleshooting: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
 
-## iMessage e BlueBubbles
+## iMessage and BlueBubbles
 
-### Assinaturas de falha do iMessage e BlueBubbles
+### iMessage and BlueBubbles failure signatures
 
-| Sintoma                                  | Verificação mais rápida                                                   | Correção                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Nenhum evento de entrada                 | Verifique acessibilidade do Webhook/servidor e permissões do app          | Corrija a URL do Webhook ou o estado do servidor BlueBubbles.       |
-| Consegue enviar mas não receber no macOS | Verifique permissões de privacidade do macOS para automação do Messages   | Conceda novamente as permissões TCC e reinicie o processo do canal. |
-| Remetente de DM bloqueado                | `opencraft pairing list imessage` ou `opencraft pairing list bluebubbles` | Aprove o pareamento ou atualize a allowlist.                        |
+| Symptom                          | Fastest check                                                           | Fix                                                   |
+| -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| No inbound events                | Verify webhook/server reachability and app permissions                  | Fix webhook URL or BlueBubbles server state.          |
+| Can send but no receive on macOS | Check macOS privacy permissions for Messages automation                 | Re-grant TCC permissions and restart channel process. |
+| DM sender blocked                | `opencraft pairing list imessage` or `opencraft pairing list bluebubbles` | Approve pairing or update allowlist.                  |
 
-Solução completa:
+Full troubleshooting:
 
 - [/channels/imessage#troubleshooting-macos-privacy-and-security-tcc](/channels/imessage#troubleshooting-macos-privacy-and-security-tcc)
 - [/channels/bluebubbles#troubleshooting](/channels/bluebubbles#troubleshooting)
 
 ## Signal
 
-### Assinaturas de falha do Signal
+### Signal failure signatures
 
-| Sintoma                             | Verificação mais rápida                          | Correção                                                          |
-| ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------- |
-| Daemon acessível mas Bot silencioso | `opencraft channels status --probe`              | Verifique URL/conta do daemon `signal-cli` e modo de recebimento. |
-| DM bloqueada                        | `opencraft pairing list signal`                  | Aprove o remetente ou ajuste a política de DM.                    |
-| Respostas de grupo não disparam     | Verifique allowlist de grupo e padrões de menção | Adicione remetente/grupo ou relaxe o bloqueio.                    |
+| Symptom                         | Fastest check                              | Fix                                                      |
+| ------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| Daemon reachable but bot silent | `opencraft channels status --probe`         | Verify `signal-cli` daemon URL/account and receive mode. |
+| DM blocked                      | `opencraft pairing list signal`             | Approve sender or adjust DM policy.                      |
+| Group replies do not trigger    | Check group allowlist and mention patterns | Add sender/group or loosen gating.                       |
 
-Solução completa: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
+Full troubleshooting: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
 
 ## Matrix
 
-### Assinaturas de falha do Matrix
+### Matrix failure signatures
 
-| Sintoma                             | Verificação mais rápida                          | Correção                                                             |
-| ----------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
-| Logado mas ignora mensagens da sala | `opencraft channels status --probe`              | Verifique `groupPolicy` e allowlist da sala.                         |
-| DMs não são processadas             | `opencraft pairing list matrix`                  | Aprove o remetente ou ajuste a política de DM.                       |
-| Salas criptografadas falham         | Verifique módulo de criptografia e configurações | Habilite suporte a criptografia e entre/sincronize a sala novamente. |
+| Symptom                             | Fastest check                                | Fix                                             |
+| ----------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| Logged in but ignores room messages | `opencraft channels status --probe`           | Check `groupPolicy` and room allowlist.         |
+| DMs do not process                  | `opencraft pairing list matrix`               | Approve sender or adjust DM policy.             |
+| Encrypted rooms fail                | Verify crypto module and encryption settings | Enable encryption support and rejoin/sync room. |
 
-Solução completa: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)
+Full troubleshooting: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)

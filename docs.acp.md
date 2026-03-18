@@ -1,92 +1,96 @@
-# Bridge ACP do OpenCraft
+# OpenCraft ACP Bridge
 
-Este documento descreve como a bridge ACP (Agent Client Protocol) do OpenCraft funciona,
-como ela mapeia sessões ACP para sessões do Gateway, e como as IDEs devem invocá-la.
+This document describes how the OpenCraft ACP (Agent Client Protocol) bridge works,
+how it maps ACP sessions to Gateway sessions, and how IDEs should invoke it.
 
-## Visão Geral
+## Overview
 
-`opencraft acp` expõe um agente ACP via stdio e encaminha prompts para um
-OpenCraft Gateway em execução via WebSocket. Ele mantém os IDs de sessão ACP mapeados para
-chaves de sessão do Gateway para que IDEs possam reconectar ao mesmo transcript do agente ou redefini-lo
-mediante solicitação.
+`opencraft acp` exposes an ACP agent over stdio and forwards prompts to a running
+OpenCraft Gateway over WebSocket. It keeps ACP session ids mapped to Gateway
+session keys so IDEs can reconnect to the same agent transcript or reset it on
+request.
 
-Objetivos principais:
+Key goals:
 
-- Área de superfície ACP mínima (stdio, NDJSON).
-- Mapeamento de sessão estável entre reconexões.
-- Funciona com o armazenamento de sessão existente do Gateway (list/resolve/reset).
-- Padrões seguros (chaves de sessão ACP isoladas por padrão).
+- Minimal ACP surface area (stdio, NDJSON).
+- Stable session mapping across reconnects.
+- Works with existing Gateway session store (list/resolve/reset).
+- Safe defaults (isolated ACP session keys by default).
 
-## Escopo da Bridge
+## Bridge Scope
 
-`opencraft acp` é uma bridge ACP com suporte do Gateway, não um runtime editor
-nativo ACP completo. Ela é projetada para rotear prompts de IDE em uma sessão OpenCraft Gateway
-existente com mapeamento de sessão previsível e atualizações básicas de streaming.
+`opencraft acp` is a Gateway-backed ACP bridge, not a full ACP-native editor
+runtime. It is designed to route IDE prompts into an existing OpenCraft Gateway
+session with predictable session mapping and basic streaming updates.
 
-## Matriz de Compatibilidade
+## Compatibility Matrix
 
-| Área ACP                                                              | Status        | Notas                                                                                                                                                                                                                                            |
-| --------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `initialize`, `newSession`, `prompt`, `cancel`                        | Implementado  | Fluxo principal da bridge via stdio para chat/send + abort do Gateway.                                                                                                                                                                          |
-| `listSessions`, slash commands                                        | Implementado  | A lista de sessões funciona contra o estado de sessão do Gateway; os comandos são anunciados via `available_commands_update`.                                                                                                                    |
-| `loadSession`                                                         | Parcial       | Revincula a sessão ACP a uma chave de sessão do Gateway e reproduz o histórico de texto de usuário/assistente armazenado. O histórico de tool/system não é reconstruído ainda.                                                                  |
-| Conteúdo de prompt (`text`, `resource` embutido, imagens)             | Parcial       | Texto/recursos são achatados em input de chat; imagens se tornam attachments do Gateway.                                                                                                                                                        |
-| Modos de sessão                                                       | Parcial       | `session/set_mode` é suportado e a bridge expõe controles iniciais de sessão com suporte do Gateway para nível de pensamento, verbosidade de tool, raciocínio, detalhe de uso e ações elevadas. Superfícies mais amplas de modo/config ACP-nativas ainda estão fora do escopo. |
-| Informações de sessão e atualizações de uso                           | Parcial       | A bridge emite notificações `session_info_update` e `usage_update` de melhor esforço a partir de snapshots de sessão do Gateway em cache. O uso é aproximado e só é enviado quando os totais de token do Gateway são marcados como frescos.     |
-| Streaming de tool                                                     | Parcial       | Eventos `tool_call` / `tool_call_update` incluem I/O bruto, conteúdo de texto e localizações de arquivo de melhor esforço quando os args/resultados de tool do Gateway os expõem. Terminais embutidos e saída estruturada de diff nativa ainda não são expostos. |
-| Servidores MCP por sessão (`mcpServers`)                              | Não suportado | O modo bridge rejeita solicitações de servidor MCP por sessão. Configure o MCP no gateway ou agente OpenCraft.                                                                                                                                  |
-| Métodos de sistema de arquivos do cliente (`fs/read_text_file`, `fs/write_text_file`) | Não suportado | A bridge não chama métodos de sistema de arquivos do cliente ACP.                                                                                                                                                             |
-| Métodos de terminal do cliente (`terminal/*`)                         | Não suportado | A bridge não cria terminais de cliente ACP ou transmite IDs de terminal via tool calls.                                                                                                                                                         |
-| Planos de sessão / streaming de pensamento                            | Não suportado | A bridge atualmente emite texto de saída e status de tool, não atualizações de plano ou pensamento ACP.                                                                                                                                         |
+| ACP area                                                              | Status      | Notes                                                                                                                                                                                                                                            |
+| --------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `initialize`, `newSession`, `prompt`, `cancel`                        | Implemented | Core bridge flow over stdio to Gateway chat/send + abort.                                                                                                                                                                                        |
+| `listSessions`, slash commands                                        | Implemented | Session list works against Gateway session state; commands are advertised via `available_commands_update`.                                                                                                                                       |
+| `loadSession`                                                         | Partial     | Rebinds the ACP session to a Gateway session key and replays stored user/assistant text history. Tool/system history is not reconstructed yet.                                                                                                   |
+| Prompt content (`text`, embedded `resource`, images)                  | Partial     | Text/resources are flattened into chat input; images become Gateway attachments.                                                                                                                                                                 |
+| Session modes                                                         | Partial     | `session/set_mode` is supported and the bridge exposes initial Gateway-backed session controls for thought level, tool verbosity, reasoning, usage detail, and elevated actions. Broader ACP-native mode/config surfaces are still out of scope. |
+| Session info and usage updates                                        | Partial     | The bridge emits `session_info_update` and best-effort `usage_update` notifications from cached Gateway session snapshots. Usage is approximate and only sent when Gateway token totals are marked fresh.                                        |
+| Tool streaming                                                        | Partial     | `tool_call` / `tool_call_update` events include raw I/O, text content, and best-effort file locations when Gateway tool args/results expose them. Embedded terminals and richer diff-native output are still not exposed.                        |
+| Per-session MCP servers (`mcpServers`)                                | Unsupported | Bridge mode rejects per-session MCP server requests. Configure MCP on the OpenCraft gateway or agent instead.                                                                                                                                     |
+| Client filesystem methods (`fs/read_text_file`, `fs/write_text_file`) | Unsupported | The bridge does not call ACP client filesystem methods.                                                                                                                                                                                          |
+| Client terminal methods (`terminal/*`)                                | Unsupported | The bridge does not create ACP client terminals or stream terminal ids through tool calls.                                                                                                                                                       |
+| Session plans / thought streaming                                     | Unsupported | The bridge currently emits output text and tool status, not ACP plan or thought updates.                                                                                                                                                         |
 
-## Limitações Conhecidas
+## Known Limitations
 
-- `loadSession` reproduz o histórico de texto de usuário e assistente armazenado, mas não
-  reconstrói tool calls históricas, avisos do sistema ou tipos de evento ACP-nativos mais ricos.
-- Se múltiplos clientes ACP compartilharem a mesma chave de sessão do Gateway, o roteamento de eventos e cancel
-  é de melhor esforço em vez de estritamente isolado por cliente. Prefira as sessões
-  isoladas padrão `acp:<uuid>` quando precisar de turnos locais limpos no editor.
-- Os estados de parada do Gateway são traduzidos para razões de parada ACP, mas esse mapeamento é
-  menos expressivo do que um runtime totalmente ACP-nativo.
-- Os controles iniciais de sessão atualmente expõem um subconjunto focado de controles do Gateway:
-  nível de pensamento, verbosidade de tool, raciocínio, detalhe de uso e ações elevadas. A seleção de modelo e controles de exec-host ainda não são expostos como opções de configuração ACP.
-- `session_info_update` e `usage_update` são derivados de snapshots de sessão do Gateway,
-  não de contabilidade de runtime ACP-nativa ao vivo. O uso é aproximado,
-  não carrega dados de custo e só é emitido quando o Gateway marca os dados totais de token
-  como frescos.
-- Os dados de acompanhamento de tool são de melhor esforço. A bridge pode expor caminhos de arquivo que
-  aparecem em args/resultados conhecidos de tool, mas ainda não emite terminais ACP ou
-  diffs de arquivo estruturados.
+- `loadSession` replays stored user and assistant text history, but it does not
+  reconstruct historic tool calls, system notices, or richer ACP-native event
+  types.
+- If multiple ACP clients share the same Gateway session key, event and cancel
+  routing are best-effort rather than strictly isolated per client. Prefer the
+  default isolated `acp:<uuid>` sessions when you need clean editor-local
+  turns.
+- Gateway stop states are translated into ACP stop reasons, but that mapping is
+  less expressive than a fully ACP-native runtime.
+- Initial session controls currently surface a focused subset of Gateway knobs:
+  thought level, tool verbosity, reasoning, usage detail, and elevated
+  actions. Model selection and exec-host controls are not yet exposed as ACP
+  config options.
+- `session_info_update` and `usage_update` are derived from Gateway session
+  snapshots, not live ACP-native runtime accounting. Usage is approximate,
+  carries no cost data, and is only emitted when the Gateway marks total token
+  data as fresh.
+- Tool follow-along data is best-effort. The bridge can surface file paths that
+  appear in known tool args/results, but it does not yet emit ACP terminals or
+  structured file diffs.
 
-## Como posso usar isso
+## How can I use this
 
-Use ACP quando uma IDE ou ferramenta falar Agent Client Protocol e você quiser que ela
-direcione uma sessão do OpenCraft Gateway.
+Use ACP when an IDE or tooling speaks Agent Client Protocol and you want it to
+drive a OpenCraft Gateway session.
 
-Passos rápidos:
+Quick steps:
 
-1. Execute um Gateway (local ou remoto).
-2. Configure o alvo do Gateway (`gateway.remote.url` + auth) ou passe flags.
-3. Aponte a IDE para executar `opencraft acp` via stdio.
+1. Run a Gateway (local or remote).
+2. Configure the Gateway target (`gateway.remote.url` + auth) or pass flags.
+3. Point the IDE to run `opencraft acp` over stdio.
 
-Configuração de exemplo:
+Example config:
 
 ```bash
 opencraft config set gateway.remote.url wss://gateway-host:18789
 opencraft config set gateway.remote.token <token>
 ```
 
-Execução de exemplo:
+Example run:
 
 ```bash
 opencraft acp --url wss://gateway-host:18789 --token <token>
 ```
 
-## Selecionando agentes
+## Selecting agents
 
-O ACP não seleciona agentes diretamente. Ele roteia pela chave de sessão do Gateway.
+ACP does not pick agents directly. It routes by the Gateway session key.
 
-Use chaves de sessão com escopo de agente para direcionar um agente específico:
+Use agent-scoped session keys to target a specific agent:
 
 ```bash
 opencraft acp --session agent:main:main
@@ -94,13 +98,13 @@ opencraft acp --session agent:design:main
 opencraft acp --session agent:qa:bug-123
 ```
 
-Cada sessão ACP mapeia para uma única chave de sessão do Gateway. Um agente pode ter muitas
-sessões; o ACP usa por padrão uma sessão isolada `acp:<uuid>`, a menos que você sobrescreva
-a chave ou o rótulo.
+Each ACP session maps to a single Gateway session key. One agent can have many
+sessions; ACP defaults to an isolated `acp:<uuid>` session unless you override
+the key or label.
 
-## Configuração do editor Zed
+## Zed editor setup
 
-Adicione um agente ACP personalizado em `~/.config/zed/settings.json`:
+Add a custom ACP agent in `~/.config/zed/settings.json`:
 
 ```json
 {
@@ -115,7 +119,7 @@ Adicione um agente ACP personalizado em `~/.config/zed/settings.json`:
 }
 ```
 
-Para direcionar um Gateway ou agente específico:
+To target a specific Gateway or agent:
 
 ```json
 {
@@ -138,25 +142,25 @@ Para direcionar um Gateway ou agente específico:
 }
 ```
 
-No Zed, abra o painel de Agente e selecione "OpenCraft ACP" para iniciar uma thread.
+In Zed, open the Agent panel and select “OpenCraft ACP” to start a thread.
 
-## Modelo de Execução
+## Execution Model
 
-- O cliente ACP spawna `opencraft acp` e fala mensagens ACP via stdio.
-- A bridge conecta ao Gateway usando a configuração de auth existente (ou flags CLI).
-- O `prompt` ACP traduz para `chat.send` do Gateway.
-- Os eventos de streaming do Gateway são traduzidos de volta em eventos de streaming ACP.
-- O `cancel` ACP mapeia para `chat.abort` do Gateway para a execução ativa.
+- ACP client spawns `opencraft acp` and speaks ACP messages over stdio.
+- The bridge connects to the Gateway using existing auth config (or CLI flags).
+- ACP `prompt` translates to Gateway `chat.send`.
+- Gateway streaming events are translated back into ACP streaming events.
+- ACP `cancel` maps to Gateway `chat.abort` for the active run.
 
-## Mapeamento de Sessão
+## Session Mapping
 
-Por padrão, cada sessão ACP é mapeada para uma chave de sessão dedicada do Gateway:
+By default each ACP session is mapped to a dedicated Gateway session key:
 
-- `acp:<uuid>`, a menos que seja sobrescrito.
+- `acp:<uuid>` unless overridden.
 
-Você pode sobrescrever ou reutilizar sessões de duas formas:
+You can override or reuse sessions in two ways:
 
-1. Padrões CLI
+1. CLI defaults
 
 ```bash
 opencraft acp --session agent:main:main
@@ -164,7 +168,7 @@ opencraft acp --session-label "support inbox"
 opencraft acp --reset-session
 ```
 
-2. Metadados ACP por sessão
+2. ACP metadata per session
 
 ```json
 {
@@ -177,64 +181,64 @@ opencraft acp --reset-session
 }
 ```
 
-Regras:
+Rules:
 
-- `sessionKey`: chave de sessão direta do Gateway.
-- `sessionLabel`: resolve uma sessão existente pelo rótulo.
-- `resetSession`: cria um novo transcript para a chave antes do primeiro uso.
-- `requireExisting`: falha se a chave/rótulo não existir.
+- `sessionKey`: direct Gateway session key.
+- `sessionLabel`: resolve an existing session by label.
+- `resetSession`: mint a new transcript for the key before first use.
+- `requireExisting`: fail if the key/label does not exist.
 
-### Listagem de Sessões
+### Session Listing
 
-`listSessions` ACP mapeia para `sessions.list` do Gateway e retorna um resumo filtrado
-adequado para seletores de sessão de IDE. `_meta.limit` pode limitar o número de
-sessões retornadas.
+ACP `listSessions` maps to Gateway `sessions.list` and returns a filtered
+summary suitable for IDE session pickers. `_meta.limit` can cap the number of
+sessions returned.
 
-## Tradução de Prompt
+## Prompt Translation
 
-Os inputs de prompt ACP são convertidos em um `chat.send` do Gateway:
+ACP prompt inputs are converted into a Gateway `chat.send`:
 
-- Blocos `text` e `resource` tornam-se texto de prompt.
-- `resource_link` com tipos MIME de imagem tornam-se attachments.
-- O diretório de trabalho pode ser prefixado no prompt (ativo por padrão, pode ser
-  desabilitado com `--no-prefix-cwd`).
+- `text` and `resource` blocks become prompt text.
+- `resource_link` with image mime types become attachments.
+- The working directory can be prefixed into the prompt (default on, can be
+  disabled with `--no-prefix-cwd`).
 
-Os eventos de streaming do Gateway são traduzidos em atualizações `message` e `tool_call` ACP.
-Os estados terminais do Gateway mapeiam para `done` ACP com razões de parada:
+Gateway streaming events are translated into ACP `message` and `tool_call`
+updates. Terminal Gateway states map to ACP `done` with stop reasons:
 
 - `complete` -> `stop`
 - `aborted` -> `cancel`
 - `error` -> `error`
 
-## Auth + Descoberta do Gateway
+## Auth + Gateway Discovery
 
-`opencraft acp` resolve a URL do Gateway e auth a partir de flags CLI ou configuração:
+`opencraft acp` resolves the Gateway URL and auth from CLI flags or config:
 
-- `--url` / `--token` / `--password` têm precedência.
-- Caso contrário, use as configurações `gateway.remote.*` configuradas.
+- `--url` / `--token` / `--password` take precedence.
+- Otherwise use configured `gateway.remote.*` settings.
 
-## Notas Operacionais
+## Operational Notes
 
-- As sessões ACP são armazenadas na memória pelo tempo de vida do processo bridge.
-- O estado de sessão do Gateway é persistido pelo próprio Gateway.
-- `--verbose` registra eventos da bridge ACP/Gateway no stderr (nunca no stdout).
-- As execuções ACP podem ser canceladas e o ID de execução ativo é rastreado por sessão.
+- ACP sessions are stored in memory for the bridge process lifetime.
+- Gateway session state is persisted by the Gateway itself.
+- `--verbose` logs ACP/Gateway bridge events to stderr (never stdout).
+- ACP runs can be canceled and the active run id is tracked per session.
 
-## Compatibilidade
+## Compatibility
 
-- A bridge ACP usa `@agentclientprotocol/sdk` (atualmente 0.15.x).
-- Funciona com clientes ACP que implementam `initialize`, `newSession`,
-  `loadSession`, `prompt`, `cancel` e `listSessions`.
-- O modo bridge rejeita `mcpServers` por sessão em vez de ignorá-los silenciosamente.
-  Configure o MCP na camada do Gateway ou agente.
+- ACP bridge uses `@agentclientprotocol/sdk` (currently 0.15.x).
+- Works with ACP clients that implement `initialize`, `newSession`,
+  `loadSession`, `prompt`, `cancel`, and `listSessions`.
+- Bridge mode rejects per-session `mcpServers` instead of silently ignoring
+  them. Configure MCP at the Gateway or agent layer.
 
-## Testes
+## Testing
 
-- Unitário: `src/acp/session.test.ts` cobre o ciclo de vida do ID de execução.
-- Gate completo: `pnpm build && pnpm check && pnpm test && pnpm docs:build`.
+- Unit: `src/acp/session.test.ts` covers run id lifecycle.
+- Full gate: `pnpm build && pnpm check && pnpm test && pnpm docs:build`.
 
-## Docs Relacionados
+## Related Docs
 
-- Uso do CLI: `docs/cli/acp.md`
-- Modelo de sessão: `docs/concepts/session.md`
-- Internos de gerenciamento de sessão: `docs/reference/session-management-compaction.md`
+- CLI usage: `docs/cli/acp.md`
+- Session model: `docs/concepts/session.md`
+- Session management internals: `docs/reference/session-management-compaction.md`

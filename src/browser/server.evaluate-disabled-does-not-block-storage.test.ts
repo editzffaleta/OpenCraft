@@ -73,10 +73,10 @@ describe("browser control evaluate gating", () => {
     testPort = await getFreePort();
     prevGatewayPort = process.env.OPENCRAFT_GATEWAY_PORT;
     process.env.OPENCRAFT_GATEWAY_PORT = String(testPort - 2);
-    prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-    prevGatewayPassword = process.env.OPENCLAW_GATEWAY_PASSWORD;
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+    prevGatewayToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+    prevGatewayPassword = process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
 
     pwMocks.cookiesGetViaPlaywright.mockClear();
     pwMocks.storageGetViaPlaywright.mockClear();
@@ -93,14 +93,14 @@ describe("browser control evaluate gating", () => {
       process.env.OPENCRAFT_GATEWAY_PORT = prevGatewayPort;
     }
     if (prevGatewayToken === undefined) {
-      delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      delete process.env.OPENCRAFT_GATEWAY_TOKEN;
     } else {
-      process.env.OPENCLAW_GATEWAY_TOKEN = prevGatewayToken;
+      process.env.OPENCRAFT_GATEWAY_TOKEN = prevGatewayToken;
     }
     if (prevGatewayPassword === undefined) {
-      delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+      delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
     } else {
-      process.env.OPENCLAW_GATEWAY_PASSWORD = prevGatewayPassword;
+      process.env.OPENCRAFT_GATEWAY_PASSWORD = prevGatewayPassword;
     }
 
     await stopBrowserControlServer();

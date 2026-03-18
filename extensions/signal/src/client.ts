@@ -1,6 +1,6 @@
-import { resolveFetch } from "../../../src/infra/fetch.js";
-import { generateSecureUuid } from "../../../src/infra/secure-random.js";
-import { fetchWithTimeout } from "../../../src/utils/fetch-timeout.js";
+import { resolveFetch } from "opencraft/plugin-sdk/infra-runtime";
+import { generateSecureUuid } from "opencraft/plugin-sdk/infra-runtime";
+import { fetchWithTimeout } from "opencraft/plugin-sdk/text-runtime";
 
 export type SignalRpcOptions = {
   baseUrl: string;

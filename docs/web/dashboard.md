@@ -1,54 +1,54 @@
 ---
-summary: "Acesso e autenticação do dashboard do Gateway (Control UI)"
+summary: "Gateway dashboard (Control UI) access and auth"
 read_when:
-  - Alterando autenticação ou modos de exposição do dashboard
+  - Changing dashboard authentication or exposure modes
 title: "Dashboard"
 ---
 
 # Dashboard (Control UI)
 
-O dashboard do Gateway é a Control UI no navegador servida em `/` por padrão
-(sobrescreva com `gateway.controlUi.basePath`).
+The Gateway dashboard is the browser Control UI served at `/` by default
+(override with `gateway.controlUi.basePath`).
 
-Abertura rápida (Gateway local):
+Quick open (local Gateway):
 
-- [http://127.0.0.1:18789/](http://127.0.0.1:18789/) (ou [http://localhost:18789/](http://localhost:18789/))
+- [http://127.0.0.1:18789/](http://127.0.0.1:18789/) (or [http://localhost:18789/](http://localhost:18789/))
 
-Referências principais:
+Key references:
 
-- [Control UI](/web/control-ui) para uso e capacidades da interface.
-- [Tailscale](/gateway/tailscale) para automação Serve/Funnel.
-- [Superfícies web](/web) para modos de bind e notas de segurança.
+- [Control UI](/web/control-ui) for usage and UI capabilities.
+- [Tailscale](/gateway/tailscale) for Serve/Funnel automation.
+- [Web surfaces](/web) for bind modes and security notes.
 
-A autenticação é aplicada no handshake WebSocket via `connect.params.auth`
-(Token ou senha). Veja `gateway.auth` em [Configuração do Gateway](/gateway/configuration).
+Authentication is enforced at the WebSocket handshake via `connect.params.auth`
+(token or password). See `gateway.auth` in [Gateway configuration](/gateway/configuration).
 
-Nota de segurança: a Control UI é uma **superfície administrativa** (chat, config, aprovações de exec).
-Não a exponha publicamente. A interface mantém Tokens de URL do dashboard no sessionStorage
-para a sessão atual da aba do navegador e URL do Gateway selecionada, e os remove da URL após o carregamento.
-Prefira localhost, Tailscale Serve ou um túnel SSH.
+Security note: the Control UI is an **admin surface** (chat, config, exec approvals).
+Do not expose it publicly. The UI keeps dashboard URL tokens in sessionStorage
+for the current browser tab session and selected gateway URL, and strips them from the URL after load.
+Prefer localhost, Tailscale Serve, or an SSH tunnel.
 
-## Caminho rápido (recomendado)
+## Fast path (recommended)
 
-- Após o onboarding, o CLI abre automaticamente o dashboard e imprime um link limpo (sem Token).
-- Reabra a qualquer momento: `opencraft dashboard` (copia o link, abre o navegador se possível, mostra dica de SSH se headless).
-- Se a interface solicitar autenticação, cole o Token de `gateway.auth.token` (ou `OPENCLAW_GATEWAY_TOKEN`) nas configurações da Control UI.
+- After onboarding, the CLI auto-opens the dashboard and prints a clean (non-tokenized) link.
+- Re-open anytime: `opencraft dashboard` (copies link, opens browser if possible, shows SSH hint if headless).
+- If the UI prompts for auth, paste the token from `gateway.auth.token` (or `OPENCRAFT_GATEWAY_TOKEN`) into Control UI settings.
 
-## Noções básicas de Token (local vs remoto)
+## Token basics (local vs remote)
 
-- **Localhost**: abra `http://127.0.0.1:18789/`.
-- **Origem do Token**: `gateway.auth.token` (ou `OPENCLAW_GATEWAY_TOKEN`); `opencraft dashboard` pode passá-lo via fragmento de URL para bootstrap único, e a Control UI o mantém no sessionStorage para a sessão atual da aba do navegador e URL do Gateway selecionada em vez do localStorage.
-- Se `gateway.auth.token` é gerenciado por SecretRef, `opencraft dashboard` imprime/copia/abre uma URL sem Token por design. Isso evita expor Tokens gerenciados externamente em logs de shell, histórico da área de transferência ou argumentos de lançamento do navegador.
-- Se `gateway.auth.token` está configurado como SecretRef e está sem resolução no seu shell atual, `opencraft dashboard` ainda imprime uma URL sem Token mais orientação acionável de configuração de autenticação.
-- **Não localhost**: use Tailscale Serve (sem Token para Control UI/WebSocket se `gateway.auth.allowTailscale: true`, assume host do Gateway confiável; APIs HTTP ainda precisam de Token/senha), bind tailnet com Token, ou túnel SSH. Veja [Superfícies web](/web).
+- **Localhost**: open `http://127.0.0.1:18789/`.
+- **Token source**: `gateway.auth.token` (or `OPENCRAFT_GATEWAY_TOKEN`); `opencraft dashboard` can pass it via URL fragment for one-time bootstrap, and the Control UI keeps it in sessionStorage for the current browser tab session and selected gateway URL instead of localStorage.
+- If `gateway.auth.token` is SecretRef-managed, `opencraft dashboard` prints/copies/opens a non-tokenized URL by design. This avoids exposing externally managed tokens in shell logs, clipboard history, or browser-launch arguments.
+- If `gateway.auth.token` is configured as a SecretRef and is unresolved in your current shell, `opencraft dashboard` still prints a non-tokenized URL plus actionable auth setup guidance.
+- **Not localhost**: use Tailscale Serve (tokenless for Control UI/WebSocket if `gateway.auth.allowTailscale: true`, assumes trusted gateway host; HTTP APIs still need token/password), tailnet bind with a token, or an SSH tunnel. See [Web surfaces](/web).
 
-## Se você vir "unauthorized" / 1008
+## If you see “unauthorized” / 1008
 
-- Certifique-se de que o Gateway está acessível (local: `opencraft status`; remoto: túnel SSH `ssh -N -L 18789:127.0.0.1:18789 user@host` depois abra `http://127.0.0.1:18789/`).
-- Para `AUTH_TOKEN_MISMATCH`, clientes podem fazer uma retentativa confiável com um Token de dispositivo em cache quando o Gateway retorna dicas de retentativa. Se a autenticação ainda falhar após essa retentativa, resolva a divergência de Token manualmente.
-- Para etapas de reparo de divergência de Token, siga a [Lista de verificação de recuperação de divergência de Token](/cli/devices#token-drift-recovery-checklist).
-- Recupere ou forneça o Token do host do Gateway:
-  - Config em texto plano: `opencraft config get gateway.auth.token`
-  - Config gerenciado por SecretRef: resolva o provedor de segredos externo ou exporte `OPENCLAW_GATEWAY_TOKEN` neste shell, depois execute novamente `opencraft dashboard`
-  - Nenhum Token configurado: `opencraft doctor --generate-gateway-token`
-- Nas configurações do dashboard, cole o Token no campo de autenticação, depois conecte.
+- Ensure the gateway is reachable (local: `opencraft status`; remote: SSH tunnel `ssh -N -L 18789:127.0.0.1:18789 user@host` then open `http://127.0.0.1:18789/`).
+- For `AUTH_TOKEN_MISMATCH`, clients may do one trusted retry with a cached device token when the gateway returns retry hints. If auth still fails after that retry, resolve token drift manually.
+- For token drift repair steps, follow [Token drift recovery checklist](/cli/devices#token-drift-recovery-checklist).
+- Retrieve or supply the token from the gateway host:
+  - Plaintext config: `opencraft config get gateway.auth.token`
+  - SecretRef-managed config: resolve the external secret provider or export `OPENCRAFT_GATEWAY_TOKEN` in this shell, then rerun `opencraft dashboard`
+  - No token configured: `opencraft doctor --generate-gateway-token`
+- In the dashboard settings, paste the token into the auth field, then connect.

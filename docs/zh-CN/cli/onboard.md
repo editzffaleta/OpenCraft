@@ -93,12 +93,12 @@ opencraft onboard --non-interactive \
 示例：
 
 ```bash
-export OPENCLAW_GATEWAY_TOKEN="your-token"
+export OPENCRAFT_GATEWAY_TOKEN="your-token"
 opencraft onboard --non-interactive \
   --mode local \
   --auth-choice skip \
   --gateway-auth token \
-  --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN \
+  --gateway-token-ref-env OPENCRAFT_GATEWAY_TOKEN \
   --accept-risk
 ```
 

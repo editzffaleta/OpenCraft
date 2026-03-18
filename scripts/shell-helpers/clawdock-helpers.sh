@@ -4,7 +4,7 @@
 # https://til.simonwillison.net/llms/opencraft-docker
 #
 # Installation:
-#   mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
+#   mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/opencraft/opencraft/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
 #   echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc
 #
 # Usage:
@@ -113,7 +113,7 @@ _clawdock_ensure_dir() {
     echo ""
     echo "Clone it first:"
     echo ""
-    echo "  git clone https://github.com/editzffaleta/OpenCraft.git ~/opencraft"
+    echo "  git clone https://github.com/openclaw/openclaw.git ~/openclaw"
     echo "  cd ~/opencraft && ./docker-setup.sh"
     echo ""
     echo "Or set CLAWDOCK_DIR if it's elsewhere:"
@@ -149,7 +149,7 @@ _clawdock_read_env_token() {
     return 1
   fi
   local raw
-  raw=$(sed -n 's/^OPENCLAW_GATEWAY_TOKEN=//p' "${CLAWDOCK_DIR}/.env" | head -n 1)
+  raw=$(sed -n 's/^OPENCRAFT_GATEWAY_TOKEN=//p' "${CLAWDOCK_DIR}/.env" | head -n 1)
   if [[ -z "$raw" ]]; then
     return 1
   fi
@@ -194,7 +194,7 @@ clawdock-workspace() {
 # Container Access
 clawdock-shell() {
   _clawdock_compose exec opencraft-gateway \
-    bash -c 'echo "alias opencraft=\"./openclaw.mjs\"" > /tmp/.bashrc_opencraft && bash --rcfile /tmp/.bashrc_opencraft'
+    bash -c 'echo "alias opencraft=\"./opencraft.mjs\"" > /tmp/.bashrc_opencraft && bash --rcfile /tmp/.bashrc_opencraft'
 }
 
 clawdock-exec() {
@@ -224,7 +224,7 @@ clawdock-health() {
     echo "   Check: ${CLAWDOCK_DIR}/.env"
     return 1
   fi
-  _clawdock_compose exec -e "OPENCLAW_GATEWAY_TOKEN=$token" opencraft-gateway \
+  _clawdock_compose exec -e "OPENCRAFT_GATEWAY_TOKEN=$token" opencraft-gateway \
     node dist/index.js health
 }
 
@@ -249,12 +249,12 @@ clawdock-fix-token() {
   echo "📝 Setting token: ${token:0:20}..."
 
   _clawdock_compose exec -e "TOKEN=$token" opencraft-gateway \
-    bash -c './openclaw.mjs config set gateway.remote.token "$TOKEN" && ./openclaw.mjs config set gateway.auth.token "$TOKEN"' 2>&1 | _clawdock_filter_warnings
+    bash -c './opencraft.mjs config set gateway.remote.token "$TOKEN" && ./opencraft.mjs config set gateway.auth.token "$TOKEN"' 2>&1 | _clawdock_filter_warnings
 
   echo "🔍 Verifying token was saved..."
   local saved_token
   saved_token=$(_clawdock_compose exec opencraft-gateway \
-    bash -c "./openclaw.mjs config get gateway.remote.token 2>/dev/null" 2>&1 | _clawdock_filter_warnings | tr -d '\r\n' | head -c 64)
+    bash -c "./opencraft.mjs config get gateway.remote.token 2>/dev/null" 2>&1 | _clawdock_filter_warnings | tr -d '\r\n' | head -c 64)
 
   if [[ "$saved_token" == "$token" ]]; then
     echo "✅ Token saved correctly!"

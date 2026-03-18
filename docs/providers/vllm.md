@@ -1,32 +1,32 @@
 ---
-summary: "Execute o OpenCraft com vLLM (servidor local compatível com OpenAI)"
+summary: "Run OpenCraft with vLLM (OpenAI-compatible local server)"
 read_when:
-  - Você quer executar o OpenCraft contra um servidor vLLM local
-  - Você quer endpoints /v1 compatíveis com OpenAI com seus próprios modelos
+  - You want to run OpenCraft against a local vLLM server
+  - You want OpenAI-compatible /v1 endpoints with your own models
 title: "vLLM"
 ---
 
 # vLLM
 
-O vLLM pode servir modelos open-source (e alguns personalizados) via uma API HTTP **compatível com OpenAI**. O OpenCraft pode se conectar ao vLLM usando a API `openai-completions`.
+vLLM can serve open-source (and some custom) models via an **OpenAI-compatible** HTTP API. OpenCraft can connect to vLLM using the `openai-completions` API.
 
-O OpenCraft também pode **descobrir automaticamente** modelos disponíveis do vLLM quando você opta por usar `VLLM_API_KEY` (qualquer valor funciona se seu servidor não exigir autenticação) e você não define uma entrada explícita em `models.providers.vllm`.
+OpenCraft can also **auto-discover** available models from vLLM when you opt in with `VLLM_API_KEY` (any value works if your server doesn’t enforce auth) and you do not define an explicit `models.providers.vllm` entry.
 
-## Início rápido
+## Quick start
 
-1. Inicie o vLLM com um servidor compatível com OpenAI.
+1. Start vLLM with an OpenAI-compatible server.
 
-Sua URL base deve expor endpoints `/v1` (por exemplo `/v1/models`, `/v1/chat/completions`). O vLLM normalmente roda em:
+Your base URL should expose `/v1` endpoints (e.g. `/v1/models`, `/v1/chat/completions`). vLLM commonly runs on:
 
 - `http://127.0.0.1:8000/v1`
 
-2. Opte por participar (qualquer valor funciona se não houver autenticação configurada):
+2. Opt in (any value works if no auth is configured):
 
 ```bash
 export VLLM_API_KEY="vllm-local"
 ```
 
-3. Selecione um modelo (substitua por um dos IDs de modelo do seu vLLM):
+3. Select a model (replace with one of your vLLM model IDs):
 
 ```json5
 {
@@ -38,23 +38,23 @@ export VLLM_API_KEY="vllm-local"
 }
 ```
 
-## Descoberta de modelos (provider implícito)
+## Model discovery (implicit provider)
 
-Quando `VLLM_API_KEY` está definido (ou existe um perfil de autenticação) e você **não** define `models.providers.vllm`, o OpenCraft irá consultar:
+When `VLLM_API_KEY` is set (or an auth profile exists) and you **do not** define `models.providers.vllm`, OpenCraft will query:
 
 - `GET http://127.0.0.1:8000/v1/models`
 
-...e converter os IDs retornados em entradas de modelo.
+…and convert the returned IDs into model entries.
 
-Se você definir `models.providers.vllm` explicitamente, a descoberta automática é ignorada e você deve definir os modelos manualmente.
+If you set `models.providers.vllm` explicitly, auto-discovery is skipped and you must define models manually.
 
-## Configuração explícita (modelos manuais)
+## Explicit configuration (manual models)
 
-Use config explícito quando:
+Use explicit config when:
 
-- O vLLM roda em um host/porta diferente.
-- Você quer fixar valores de `contextWindow`/`maxTokens`.
-- Seu servidor requer uma API key real (ou você quer controlar os headers).
+- vLLM runs on a different host/port.
+- You want to pin `contextWindow`/`maxTokens` values.
+- Your server requires a real API key (or you want to control headers).
 
 ```json5
 {
@@ -81,12 +81,12 @@ Use config explícito quando:
 }
 ```
 
-## Solução de problemas
+## Troubleshooting
 
-- Verifique se o servidor está acessível:
+- Check the server is reachable:
 
 ```bash
 curl http://127.0.0.1:8000/v1/models
 ```
 
-- Se as requisições falharem com erros de autenticação, defina uma `VLLM_API_KEY` real que corresponda à configuração do seu servidor, ou configure o provider explicitamente em `models.providers.vllm`.
+- If requests fail with auth errors, set a real `VLLM_API_KEY` that matches your server configuration, or configure the provider explicitly under `models.providers.vllm`.

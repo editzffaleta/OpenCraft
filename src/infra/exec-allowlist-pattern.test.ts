@@ -29,10 +29,10 @@ describe("matchesExecAllowlistPattern", () => {
     const prevHome = process.env.HOME;
     process.env.OPENCRAFT_HOME = "/srv/opencraft-home";
     process.env.HOME = "/home/other";
-    const openClawHome = path.join(path.resolve("/srv/opencraft-home"), "bin", "tool");
+    const openCraftHome = path.join(path.resolve("/srv/opencraft-home"), "bin", "tool");
     const fallbackHome = path.join(path.resolve("/home/other"), "bin", "tool");
     try {
-      expect(matchesExecAllowlistPattern("~/bin/tool", openClawHome)).toBe(true);
+      expect(matchesExecAllowlistPattern("~/bin/tool", openCraftHome)).toBe(true);
       expect(matchesExecAllowlistPattern("~/bin/tool", fallbackHome)).toBe(false);
     } finally {
       if (prevOpenCraftHome === undefined) {

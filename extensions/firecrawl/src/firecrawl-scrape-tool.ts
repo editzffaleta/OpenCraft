@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
-import { optionalStringEnum } from "../../../src/agents/schema/typebox.js";
-import { jsonResult, readNumberParam, readStringParam } from "../../../src/agents/tools/common.js";
-import type { OpenCraftPluginApi } from "../../../src/plugins/types.js";
+import { optionalStringEnum } from "opencraft/plugin-sdk/agent-runtime";
+import { jsonResult, readNumberParam, readStringParam } from "opencraft/plugin-sdk/agent-runtime";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/plugin-runtime";
 import { runFirecrawlScrape } from "./firecrawl-client.js";
 
 const FirecrawlScrapeToolSchema = Type.Object(

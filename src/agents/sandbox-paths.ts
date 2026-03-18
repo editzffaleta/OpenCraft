@@ -190,11 +190,11 @@ async function resolveAllowedTmpMediaPath(params: {
     return undefined;
   }
   const resolved = path.resolve(resolveSandboxInputPath(params.candidate, params.sandboxRoot));
-  const openClawTmpDir = path.resolve(resolvePreferredOpenCraftTmpDir());
-  if (!isPathInside(openClawTmpDir, resolved)) {
+  const openCraftTmpDir = path.resolve(resolvePreferredOpenCraftTmpDir());
+  if (!isPathInside(openCraftTmpDir, resolved)) {
     return undefined;
   }
-  await assertNoTmpAliasEscape({ filePath: resolved, tmpRoot: openClawTmpDir });
+  await assertNoTmpAliasEscape({ filePath: resolved, tmpRoot: openCraftTmpDir });
   return resolved;
 }
 

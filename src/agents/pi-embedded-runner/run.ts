@@ -65,6 +65,7 @@ import {
 import { ensureRuntimePluginsLoaded } from "../runtime-plugins.js";
 import { derivePromptTokens, normalizeUsage, type UsageLike } from "../usage.js";
 import { redactRunIdentifier, resolveRunWorkspaceDir } from "../workspace-run.js";
+import { buildEmbeddedCompactionRuntimeContext } from "./compaction-runtime-context.js";
 import { resolveGlobalLane, resolveSessionLane } from "./lanes.js";
 import { log } from "./logger.js";
 import { resolveModelAsync } from "./model.js";
@@ -200,7 +201,7 @@ const toNormalizedUsage = (usage: UsageAccumulator) => {
   // The accumulated cacheRead/cacheWrite inflate context size because each tool-call
   // round-trip reports cacheRead ≈ current_context_size, and summing N calls gives
   // N × context_size which gets clamped to contextWindow (e.g. 200k).
-  // See: https://github.com/editzffaleta/OpenCraft/issues/13698
+  // See: https://github.com/openclaw/openclaw/issues/13698
   //
   // We use lastInput/lastCacheRead/lastCacheWrite (from the most recent API call) for
   // cache-related fields, but keep accumulated output (total generated text this turn).
@@ -1141,24 +1142,30 @@ export async function runEmbeddedPiAgent(
                   force: true,
                   compactionTarget: "budget",
                   runtimeContext: {
-                    sessionKey: params.sessionKey,
-                    messageChannel: params.messageChannel,
-                    messageProvider: params.messageProvider,
-                    agentAccountId: params.agentAccountId,
-                    authProfileId: lastProfileId,
-                    workspaceDir: resolvedWorkspace,
-                    agentDir,
-                    config: params.config,
-                    skillsSnapshot: params.skillsSnapshot,
-                    senderIsOwner: params.senderIsOwner,
-                    provider,
-                    model: modelId,
+                    ...buildEmbeddedCompactionRuntimeContext({
+                      sessionKey: params.sessionKey,
+                      messageChannel: params.messageChannel,
+                      messageProvider: params.messageProvider,
+                      agentAccountId: params.agentAccountId,
+                      currentChannelId: params.currentChannelId,
+                      currentThreadTs: params.currentThreadTs,
+                      currentMessageId: params.currentMessageId,
+                      authProfileId: lastProfileId,
+                      workspaceDir: resolvedWorkspace,
+                      agentDir,
+                      config: params.config,
+                      skillsSnapshot: params.skillsSnapshot,
+                      senderIsOwner: params.senderIsOwner,
+                      senderId: params.senderId,
+                      provider,
+                      modelId,
+                      thinkLevel,
+                      reasoningLevel: params.reasoningLevel,
+                      bashElevated: params.bashElevated,
+                      extraSystemPrompt: params.extraSystemPrompt,
+                      ownerNumbers: params.ownerNumbers,
+                    }),
                     runId: params.runId,
-                    thinkLevel,
-                    reasoningLevel: params.reasoningLevel,
-                    bashElevated: params.bashElevated,
-                    extraSystemPrompt: params.extraSystemPrompt,
-                    ownerNumbers: params.ownerNumbers,
                     trigger: "overflow",
                     ...(observedOverflowTokens !== undefined
                       ? { currentTokenCount: observedOverflowTokens }

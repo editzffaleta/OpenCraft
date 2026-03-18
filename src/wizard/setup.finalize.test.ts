@@ -135,10 +135,10 @@ describe("finalizeSetupWizard", () => {
   });
 
   it("resolves gateway password SecretRef for probe and TUI", async () => {
-    const previous = process.env.OPENCLAW_GATEWAY_PASSWORD;
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "resolved-gateway-password"; // pragma: allowlist secret
+    const previous = process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "resolved-gateway-password"; // pragma: allowlist secret
     const select = vi.fn(async (params: { message: string }) => {
-      if (params.message === "Como você quer inicializar seu bot?") {
+      if (params.message === "How do you want to hatch your bot?") {
         return "tui";
       }
       return "later";
@@ -167,7 +167,7 @@ describe("finalizeSetupWizard", () => {
               password: {
                 source: "env",
                 provider: "default",
-                id: "OPENCLAW_GATEWAY_PASSWORD",
+                id: "OPENCRAFT_GATEWAY_PASSWORD",
               },
             },
           },
@@ -193,9 +193,9 @@ describe("finalizeSetupWizard", () => {
       });
     } finally {
       if (previous === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+        delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
       } else {
-        process.env.OPENCLAW_GATEWAY_PASSWORD = previous;
+        process.env.OPENCRAFT_GATEWAY_PASSWORD = previous;
       }
     }
 
@@ -237,7 +237,7 @@ describe("finalizeSetupWizard", () => {
             token: {
               source: "env",
               provider: "default",
-              id: "OPENCLAW_GATEWAY_TOKEN",
+              id: "OPENCRAFT_GATEWAY_TOKEN",
             },
           },
         },
@@ -268,7 +268,7 @@ describe("finalizeSetupWizard", () => {
     gatewayServiceRestart.mockResolvedValueOnce({ outcome: "scheduled" });
     const prompter = buildWizardPrompter({
       select: vi.fn(async (params: { message: string }) => {
-        if (params.message === "Serviço do Gateway já instalado") {
+        if (params.message === "Gateway service already installed") {
           return "restart";
         }
         return "later";
@@ -304,7 +304,7 @@ describe("finalizeSetupWizard", () => {
     expect(gatewayServiceRestart).toHaveBeenCalledTimes(1);
     expect(gatewayServiceInstall).not.toHaveBeenCalled();
     expect(gatewayServiceUninstall).not.toHaveBeenCalled();
-    expect(progressUpdate).toHaveBeenCalledWith("Reiniciando o serviço do Gateway…");
-    expect(progressStop).toHaveBeenCalledWith("Reinicialização do serviço Gateway agendada.");
+    expect(progressUpdate).toHaveBeenCalledWith("Restarting Gateway service…");
+    expect(progressStop).toHaveBeenCalledWith("Gateway service restart scheduled.");
   });
 });

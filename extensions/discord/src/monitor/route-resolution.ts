@@ -1,11 +1,11 @@
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import {
   deriveLastRoutePolicy,
   resolveAgentRoute,
   type ResolvedAgentRoute,
   type RoutePeer,
-} from "../../../../src/routing/resolve-route.js";
-import { resolveAgentIdFromSessionKey } from "../../../../src/routing/session-key.js";
+} from "opencraft/plugin-sdk/routing";
+import { resolveAgentIdFromSessionKey } from "opencraft/plugin-sdk/routing";
 
 export function buildDiscordRoutePeer(params: {
   isDirectMessage: boolean;

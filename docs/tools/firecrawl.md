@@ -1,30 +1,30 @@
 ---
-summary: "Pesquisa, scraping e fallback web_fetch com Firecrawl"
+summary: "Firecrawl search, scrape, and web_fetch fallback"
 read_when:
-  - Você quer extração web via Firecrawl
-  - Você precisa de uma chave de API Firecrawl
-  - Você quer Firecrawl como provedor de web_search
-  - Você quer extração anti-bot para web_fetch
+  - You want Firecrawl-backed web extraction
+  - You need a Firecrawl API key
+  - You want Firecrawl as a web_search provider
+  - You want anti-bot extraction for web_fetch
 title: "Firecrawl"
 ---
 
 # Firecrawl
 
-O OpenCraft pode usar **Firecrawl** de três formas:
+OpenCraft can use **Firecrawl** in three ways:
 
-- como provedor de `web_search`
-- como ferramentas explícitas de Plugin: `firecrawl_search` e `firecrawl_scrape`
-- como extrator de fallback para `web_fetch`
+- as the `web_search` provider
+- as explicit plugin tools: `firecrawl_search` and `firecrawl_scrape`
+- as a fallback extractor for `web_fetch`
 
-É um serviço hospedado de extração/pesquisa que suporta contornar bots e cache,
-o que ajuda com sites pesados em JS ou páginas que bloqueiam fetches HTTP simples.
+It is a hosted extraction/search service that supports bot circumvention and caching,
+which helps with JS-heavy sites or pages that block plain HTTP fetches.
 
-## Obter uma chave de API
+## Get an API key
 
-1. Crie uma conta Firecrawl e gere uma chave de API.
-2. Armazene na config ou defina `FIRECRAWL_API_KEY` no ambiente do Gateway.
+1. Create a Firecrawl account and generate an API key.
+2. Store it in config or set `FIRECRAWL_API_KEY` in the gateway environment.
 
-## Configurar pesquisa Firecrawl
+## Configure Firecrawl search
 
 ```json5
 {
@@ -49,13 +49,13 @@ o que ajuda com sites pesados em JS ou páginas que bloqueiam fetches HTTP simpl
 }
 ```
 
-Notas:
+Notes:
 
-- Escolher Firecrawl no onboarding ou `opencraft configure --section web` habilita o Plugin Firecrawl integrado automaticamente.
-- `web_search` com Firecrawl suporta `query` e `count`.
-- Para controles específicos do Firecrawl como `sources`, `categories` ou scraping de resultados, use `firecrawl_search`.
+- Choosing Firecrawl in onboarding or `opencraft configure --section web` enables the bundled Firecrawl plugin automatically.
+- `web_search` with Firecrawl supports `query` and `count`.
+- For Firecrawl-specific controls like `sources`, `categories`, or result scraping, use `firecrawl_search`.
 
-## Configurar scrape Firecrawl + fallback web_fetch
+## Configure Firecrawl scrape + web_fetch fallback
 
 ```json5
 {
@@ -82,21 +82,21 @@ Notas:
 }
 ```
 
-Notas:
+Notes:
 
-- `firecrawl.enabled` é `true` por padrão a menos que explicitamente definido como `false`.
-- Tentativas de fallback Firecrawl são executadas apenas quando uma chave de API está disponível (`tools.web.fetch.firecrawl.apiKey` ou `FIRECRAWL_API_KEY`).
-- `maxAgeMs` controla a idade máxima dos resultados em cache (ms). Padrão é 2 dias.
+- `firecrawl.enabled` defaults to `true` unless explicitly set to `false`.
+- Firecrawl fallback attempts run only when an API key is available (`tools.web.fetch.firecrawl.apiKey` or `FIRECRAWL_API_KEY`).
+- `maxAgeMs` controls how old cached results can be (ms). Default is 2 days.
 
-`firecrawl_scrape` reutiliza as mesmas configurações e variáveis de ambiente de `tools.web.fetch.firecrawl.*`.
+`firecrawl_scrape` reuses the same `tools.web.fetch.firecrawl.*` settings and env vars.
 
-## Ferramentas do Plugin Firecrawl
+## Firecrawl plugin tools
 
 ### `firecrawl_search`
 
-Use quando quiser controles de pesquisa específicos do Firecrawl em vez do `web_search` genérico.
+Use this when you want Firecrawl-specific search controls instead of generic `web_search`.
 
-Parâmetros principais:
+Core parameters:
 
 - `query`
 - `count`
@@ -107,9 +107,9 @@ Parâmetros principais:
 
 ### `firecrawl_scrape`
 
-Use para páginas pesadas em JS ou protegidas contra bots onde o `web_fetch` simples é fraco.
+Use this for JS-heavy or bot-protected pages where plain `web_fetch` is weak.
 
-Parâmetros principais:
+Core parameters:
 
 - `url`
 - `extractMode`
@@ -120,19 +120,19 @@ Parâmetros principais:
 - `storeInCache`
 - `timeoutSeconds`
 
-## Modo stealth / contornar bots
+## Stealth / bot circumvention
 
-Firecrawl expõe um parâmetro de **modo proxy** para contornar bots (`basic`, `stealth` ou `auto`).
-O OpenCraft sempre usa `proxy: "auto"` mais `storeInCache: true` para requisições Firecrawl.
-Se proxy for omitido, Firecrawl usa `auto` por padrão. `auto` tenta novamente com proxies stealth se uma tentativa básica falhar, o que pode usar mais créditos
-do que scraping apenas básico.
+Firecrawl exposes a **proxy mode** parameter for bot circumvention (`basic`, `stealth`, or `auto`).
+OpenCraft always uses `proxy: "auto"` plus `storeInCache: true` for Firecrawl requests.
+If proxy is omitted, Firecrawl defaults to `auto`. `auto` retries with stealth proxies if a basic attempt fails, which may use more credits
+than basic-only scraping.
 
-## Como `web_fetch` usa Firecrawl
+## How `web_fetch` uses Firecrawl
 
-Ordem de extração do `web_fetch`:
+`web_fetch` extraction order:
 
 1. Readability (local)
-2. Firecrawl (se configurado)
-3. Limpeza básica de HTML (último fallback)
+2. Firecrawl (if configured)
+3. Basic HTML cleanup (last fallback)
 
-Veja [Ferramentas Web](/tools/web) para a configuração completa de ferramentas web.
+See [Web tools](/tools/web) for the full web tool setup.

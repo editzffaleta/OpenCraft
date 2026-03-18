@@ -1,12 +1,11 @@
 import process from "node:process";
-import type { TelegramNetworkConfig } from "../../../src/config/types.telegram.js";
-import { isTruthyEnvValue } from "../../../src/infra/env.js";
-import { isWSL2Sync } from "../../../src/infra/wsl.js";
+import type { TelegramNetworkConfig } from "opencraft/plugin-sdk/config-runtime";
+import { isTruthyEnvValue } from "opencraft/plugin-sdk/infra-runtime";
+import { isWSL2Sync } from "opencraft/plugin-sdk/infra-runtime";
 
 export const TELEGRAM_DISABLE_AUTO_SELECT_FAMILY_ENV =
   "OPENCRAFT_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY";
-export const TELEGRAM_ENABLE_AUTO_SELECT_FAMILY_ENV =
-  "OPENCRAFT_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY";
+export const TELEGRAM_ENABLE_AUTO_SELECT_FAMILY_ENV = "OPENCRAFT_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY";
 export const TELEGRAM_DNS_RESULT_ORDER_ENV = "OPENCRAFT_TELEGRAM_DNS_RESULT_ORDER";
 
 export type TelegramAutoSelectFamilyDecision = {

@@ -1,7 +1,7 @@
-import { resolveTextChunkLimit } from "../../../src/auto-reply/chunk.js";
-import { type OpenCraftConfig } from "../../../src/config/config.js";
-import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
-import { normalizeAccountId } from "../../../src/routing/session-key.js";
+import { type OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { resolveTextChunkLimit } from "opencraft/plugin-sdk/reply-runtime";
+import { resolveAccountEntry } from "opencraft/plugin-sdk/routing";
+import { normalizeAccountId } from "opencraft/plugin-sdk/routing";
 import { DISCORD_TEXT_CHUNK_LIMIT } from "./outbound-adapter.js";
 
 const DEFAULT_DISCORD_DRAFT_STREAM_MIN = 200;

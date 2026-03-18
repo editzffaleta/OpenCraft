@@ -1,6 +1,6 @@
-import { resolveChannelGroupRequireMention } from "opencraft/plugin-sdk/compat";
-import type { ChannelGroupContext } from "opencraft/plugin-sdk/mattermost";
+import { resolveChannelGroupRequireMention } from "opencraft/plugin-sdk/channel-policy";
 import { resolveMattermostAccount } from "./mattermost/accounts.js";
+import type { ChannelGroupContext } from "./runtime-api.js";
 
 export function resolveMattermostGroupRequireMention(
   params: ChannelGroupContext & { requireMentionOverride?: boolean },

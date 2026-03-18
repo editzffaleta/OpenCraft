@@ -1,21 +1,21 @@
 ---
-summary: "Referência CLI para `opencraft channels` (contas, status, login/logout, logs)"
+summary: "CLI reference for `opencraft channels` (accounts, status, login/logout, logs)"
 read_when:
-  - Você quer adicionar/remover contas de canal (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage)
-  - Você quer verificar o status do canal ou acompanhar logs do canal
+  - You want to add/remove channel accounts (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage)
+  - You want to check channel status or tail channel logs
 title: "channels"
 ---
 
 # `opencraft channels`
 
-Gerencie contas de canais de chat e seu status em tempo de execução no Gateway.
+Manage chat channel accounts and their runtime status on the Gateway.
 
-Documentação relacionada:
+Related docs:
 
-- Guias de canais: [Canais](/channels/index)
-- Configuração do Gateway: [Configuração](/gateway/configuration)
+- Channel guides: [Channels](/channels/index)
+- Gateway configuration: [Configuration](/gateway/configuration)
 
-## Comandos comuns
+## Common commands
 
 ```bash
 opencraft channels list
@@ -26,7 +26,7 @@ opencraft channels resolve --channel slack "#general" "@jane"
 opencraft channels logs --channel all
 ```
 
-## Adicionar / remover contas
+## Add / remove accounts
 
 ```bash
 opencraft channels add --channel telegram --token <bot-token>
@@ -34,60 +34,60 @@ opencraft channels add --channel nostr --private-key "$NOSTR_PRIVATE_KEY"
 opencraft channels remove --channel telegram --delete
 ```
 
-Dica: `opencraft channels add --help` mostra flags por canal (token, chave privada, app token, caminhos do signal-cli, etc).
+Tip: `opencraft channels add --help` shows per-channel flags (token, private key, app token, signal-cli paths, etc).
 
-Quando você executa `opencraft channels add` sem flags, o assistente interativo pode solicitar:
+When you run `opencraft channels add` without flags, the interactive wizard can prompt:
 
-- IDs de conta por canal selecionado
-- nomes de exibição opcionais para essas contas
-- `Vincular contas de canal configuradas aos agentes agora?`
+- account ids per selected channel
+- optional display names for those accounts
+- `Bind configured channel accounts to agents now?`
 
-Se você confirmar a vinculação agora, o assistente pergunta qual agente deve possuir cada conta de canal configurada e grava vinculações de roteamento com escopo de conta.
+If you confirm bind now, the wizard asks which agent should own each configured channel account and writes account-scoped routing bindings.
 
-Você também pode gerenciar as mesmas regras de roteamento posteriormente com `opencraft agents bindings`, `opencraft agents bind` e `opencraft agents unbind` (veja [agents](/cli/agents)).
+You can also manage the same routing rules later with `opencraft agents bindings`, `opencraft agents bind`, and `opencraft agents unbind` (see [agents](/cli/agents)).
 
-Quando você adiciona uma conta não padrão a um canal que ainda está usando configurações de nível superior de conta única (sem entradas `channels.<canal>.accounts` ainda), o OpenCraft move valores com escopo de conta de nível superior para `channels.<canal>.accounts.default`, e então grava a nova conta. Isso preserva o comportamento da conta original enquanto migra para o formato multi-conta.
+When you add a non-default account to a channel that is still using single-account top-level settings (no `channels.<channel>.accounts` entries yet), OpenCraft moves account-scoped single-account top-level values into `channels.<channel>.accounts.default`, then writes the new account. This preserves the original account behavior while moving to the multi-account shape.
 
-O comportamento de roteamento permanece consistente:
+Routing behavior stays consistent:
 
-- Vinculações existentes apenas de canal (sem `accountId`) continuam correspondendo à conta padrão.
-- `channels add` não cria ou reescreve vinculações automaticamente no modo não interativo.
-- A configuração interativa pode opcionalmente adicionar vinculações com escopo de conta.
+- Existing channel-only bindings (no `accountId`) continue to match the default account.
+- `channels add` does not auto-create or rewrite bindings in non-interactive mode.
+- Interactive setup can optionally add account-scoped bindings.
 
-Se sua config já estava em um estado misto (contas nomeadas presentes, faltando `default`, e valores de conta única de nível superior ainda definidos), execute `opencraft doctor --fix` para mover valores com escopo de conta para `accounts.default`.
+If your config was already in a mixed state (named accounts present, missing `default`, and top-level single-account values still set), run `opencraft doctor --fix` to move account-scoped values into `accounts.default`.
 
-## Login / logout (interativo)
+## Login / logout (interactive)
 
 ```bash
 opencraft channels login --channel whatsapp
 opencraft channels logout --channel whatsapp
 ```
 
-## Solução de problemas
+## Troubleshooting
 
-- Execute `opencraft status --deep` para uma verificação ampla.
-- Use `opencraft doctor` para correções guiadas.
-- `opencraft channels list` imprime `Claude: HTTP 403 ... user:profile` → o snapshot de uso precisa do escopo `user:profile`. Use `--no-usage`, ou forneça uma chave de sessão claude.ai (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`), ou re-autentique via Claude Code CLI.
-- `opencraft channels status` recorre a resumos apenas de config quando o gateway está inacessível. Se uma credencial de canal suportada está configurada via SecretRef mas indisponível no caminho de comando atual, ele reporta essa conta como configurada com notas degradadas em vez de mostrá-la como não configurada.
+- Run `opencraft status --deep` for a broad probe.
+- Use `opencraft doctor` for guided fixes.
+- `opencraft channels list` prints `Claude: HTTP 403 ... user:profile` → usage snapshot needs the `user:profile` scope. Use `--no-usage`, or provide a claude.ai session key (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`), or re-auth via Claude Code CLI.
+- `opencraft channels status` falls back to config-only summaries when the gateway is unreachable. If a supported channel credential is configured via SecretRef but unavailable in the current command path, it reports that account as configured with degraded notes instead of showing it as not configured.
 
-## Verificação de capacidades
+## Capabilities probe
 
-Busque dicas de capacidade do provedor (intents/escopos quando disponíveis) mais suporte estático de recursos:
+Fetch provider capability hints (intents/scopes where available) plus static feature support:
 
 ```bash
 opencraft channels capabilities
 opencraft channels capabilities --channel discord --target channel:123
 ```
 
-Observações:
+Notes:
 
-- `--channel` é opcional; omita para listar todos os canais (incluindo extensões).
-- `--target` aceita `channel:<id>` ou um ID numérico de canal e se aplica apenas ao Discord.
-- As verificações são específicas por provedor: Discord intents + permissões opcionais de canal; Slack bot + escopos de usuário; Telegram flags de bot + webhook; Signal versão do daemon; MS Teams app token + roles/escopos do Graph (anotados quando conhecidos). Canais sem verificações reportam `Probe: unavailable`.
+- `--channel` is optional; omit it to list every channel (including extensions).
+- `--target` accepts `channel:<id>` or a raw numeric channel id and only applies to Discord.
+- Probes are provider-specific: Discord intents + optional channel permissions; Slack bot + user scopes; Telegram bot flags + webhook; Signal daemon version; MS Teams app token + Graph roles/scopes (annotated where known). Channels without probes report `Probe: unavailable`.
 
-## Resolver nomes para IDs
+## Resolve names to IDs
 
-Resolva nomes de canal/usuário para IDs usando o diretório do provedor:
+Resolve channel/user names to IDs using the provider directory:
 
 ```bash
 opencraft channels resolve --channel slack "#general" "@jane"
@@ -95,8 +95,8 @@ opencraft channels resolve --channel discord "My Server/#support" "@someone"
 opencraft channels resolve --channel matrix "Project Room"
 ```
 
-Observações:
+Notes:
 
-- Use `--kind user|group|auto` para forçar o tipo de destino.
-- A resolução prefere correspondências ativas quando múltiplas entradas compartilham o mesmo nome.
-- `channels resolve` é somente leitura. Se uma conta selecionada está configurada via SecretRef mas essa credencial está indisponível no caminho de comando atual, o comando retorna resultados degradados não resolvidos com notas em vez de abortar a execução inteira.
+- Use `--kind user|group|auto` to force the target type.
+- Resolution prefers active matches when multiple entries share the same name.
+- `channels resolve` is read-only. If a selected account is configured via SecretRef but that credential is unavailable in the current command path, the command returns degraded unresolved results with notes instead of aborting the entire run.

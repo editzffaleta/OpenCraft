@@ -1,10 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import {
-  isTrustedProxyAddress,
-  resolveClientIp,
-  type OpenCraftConfig,
-} from "opencraft/plugin-sdk/mattermost";
+import { isTrustedProxyAddress, resolveClientIp, type OpenCraftConfig } from "../runtime-api.js";
 import { getMattermostRuntime } from "../runtime.js";
 import { updateMattermostPost, type MattermostClient, type MattermostPost } from "./client.js";
 

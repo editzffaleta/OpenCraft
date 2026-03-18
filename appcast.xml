@@ -5,7 +5,7 @@
         <item>
             <title>2026.3.13</title>
             <pubDate>Sat, 14 Mar 2026 05:19:48 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/opencraft/opencraft/main/appcast.xml</link>
             <sparkle:version>2026031390</sparkle:version>
             <sparkle:shortVersionString>2026.3.13</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -74,14 +74,14 @@
 <li>Config/discovery: accept <code>discovery.wideArea.domain</code> in strict config validation so unicast DNS-SD gateway configs no longer fail with an unrecognized-key error. (#35615) Thanks @ingyukoh.</li>
 <li>Telegram/media errors: redact Telegram file URLs before building media fetch errors so failed inbound downloads do not leak bot tokens into logs. Thanks @space08.</li>
 </ul>
-<p><a href="https://github.com/editzffaleta/OpenCraft/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/editzffaleta/OpenCraft/releases/download/v2026.3.13/OpenCraft-2026.3.13.zip" length="23640917" type="application/octet-stream" sparkle:edSignature="Me63UHSpFLocTo5Lt7Iqsl0Hq61y3jTcZ9DUkiFl9xQvTE0+ORuqRMFWqPgYwfaKMgcgQmUbrV/uFzEoTIRHBA=="/>
+            <enclosure url="https://github.com/openclaw/openclaw/releases/download/v2026.3.13/OpenClaw-2026.3.13.zip" length="23640917" type="application/octet-stream" sparkle:edSignature="Me63UHSpFLocTo5Lt7Iqsl0Hq61y3jTcZ9DUkiFl9xQvTE0+ORuqRMFWqPgYwfaKMgcgQmUbrV/uFzEoTIRHBA=="/>
         </item>
         <item>
             <title>2026.3.12</title>
             <pubDate>Fri, 13 Mar 2026 04:25:50 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/opencraft/opencraft/main/appcast.xml</link>
             <sparkle:version>2026031290</sparkle:version>
             <sparkle:shortVersionString>2026.3.12</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -166,14 +166,14 @@
 <li>ACP/client final-message delivery: preserve terminal assistant text snapshots before resolving <code>end_turn</code>, so ACP clients no longer drop the last visible reply when the gateway sends the final message body on the terminal chat event. (#17615) Thanks @pjeby.</li>
 <li>Telegram/Discord status reactions: show a temporary compacting reaction during auto-compaction pauses and restore thinking afterward so the bot no longer appears frozen while context is being compacted. (#35474) thanks @Cypherm.</li>
 </ul>
-<p><a href="https://github.com/editzffaleta/OpenCraft/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/editzffaleta/OpenCraft/releases/download/v2026.3.12/OpenCraft-2026.3.12.zip" length="23628700" type="application/octet-stream" sparkle:edSignature="o6Zdcw36l3I0jUg14H+RBqNwrhuuSsq1WMDi4tBRa1+5TC3VCVdFKZ2hzmH2Xjru9lDEzVMP8v2A6RexSbOCBQ=="/>
+            <enclosure url="https://github.com/openclaw/openclaw/releases/download/v2026.3.12/OpenClaw-2026.3.12.zip" length="23628700" type="application/octet-stream" sparkle:edSignature="o6Zdcw36l3I0jUg14H+RBqNwrhuuSsq1WMDi4tBRa1+5TC3VCVdFKZ2hzmH2Xjru9lDEzVMP8v2A6RexSbOCBQ=="/>
         </item>
         <item>
             <title>2026.3.8-beta.1</title>
             <pubDate>Mon, 09 Mar 2026 07:19:57 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/opencraft/opencraft/main/appcast.xml</link>
             <sparkle:version>2026030801</sparkle:version>
             <sparkle:shortVersionString>2026.3.8-beta.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -240,9 +240,9 @@
 <li>Security/system.run: bind approved <code>bun</code> and <code>deno run</code> script operands to on-disk file snapshots so post-approval script rewrites are denied before execution.</li>
 <li>Skills/download installs: pin the validated per-skill tools root before writing downloaded archives, so rebinding the lexical tools path cannot redirect download writes outside the intended tools directory. Thanks @tdjackey.</li>
 </ul>
-<p><a href="https://github.com/editzffaleta/OpenCraft/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/editzffaleta/OpenCraft/releases/download/v2026.3.8-beta.1/OpenCraft-2026.3.8-beta.1.zip" length="23407015" type="application/octet-stream" sparkle:edSignature="KCqhSmu4b0tHf55RqcQOHorsc55CgBI5BUmK/NTizxNq04INn/7QvsamHYQou9DbB2IW6B2nawBC4nn4au5yDA=="/>
+            <enclosure url="https://github.com/openclaw/openclaw/releases/download/v2026.3.8-beta.1/OpenClaw-2026.3.8-beta.1.zip" length="23407015" type="application/octet-stream" sparkle:edSignature="KCqhSmu4b0tHf55RqcQOHorsc55CgBI5BUmK/NTizxNq04INn/7QvsamHYQou9DbB2IW6B2nawBC4nn4au5yDA=="/>
         </item>
     </channel>
 </rss>

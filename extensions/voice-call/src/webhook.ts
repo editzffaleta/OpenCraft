@@ -4,7 +4,7 @@ import {
   isRequestBodyLimitError,
   readRequestBodyWithLimit,
   requestBodyErrorToText,
-} from "opencraft/plugin-sdk/voice-call";
+} from "../api.js";
 import { normalizeVoiceCallConfig, type VoiceCallConfig } from "./config.js";
 import type { CoreAgentDeps, CoreConfig } from "./core-bridge.js";
 import type { CallManager } from "./manager.js";

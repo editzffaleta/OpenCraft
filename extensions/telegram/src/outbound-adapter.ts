@@ -1,14 +1,11 @@
-import type { ReplyPayload } from "../../../src/auto-reply/types.js";
 import {
   resolvePayloadMediaUrls,
   sendPayloadMediaSequence,
-} from "../../../src/channels/plugins/outbound/direct-text-media.js";
-import type { ChannelOutboundAdapter } from "../../../src/channels/plugins/types.js";
-import {
-  resolveOutboundSendDep,
-  type OutboundSendDeps,
-} from "../../../src/infra/outbound/send-deps.js";
-import { resolveInteractiveTextFallback } from "../../../src/interactive/payload.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { ChannelOutboundAdapter } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveOutboundSendDep, type OutboundSendDeps } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveInteractiveTextFallback } from "opencraft/plugin-sdk/channel-runtime";
+import type { ReplyPayload } from "opencraft/plugin-sdk/reply-runtime";
 import type { TelegramInlineButtons } from "./button-types.js";
 import { resolveTelegramInlineButtons } from "./button-types.js";
 import { markdownToTelegramHtmlChunks } from "./format.js";

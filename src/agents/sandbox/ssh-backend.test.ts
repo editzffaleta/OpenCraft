@@ -51,7 +51,7 @@ function createSession() {
   return {
     command: "ssh",
     configPath: path.join(os.tmpdir(), "opencraft-test-ssh-config"),
-    host: "openclaw-sandbox",
+    host: "opencraft-sandbox",
   };
 }
 
@@ -108,7 +108,7 @@ describe("ssh sandbox backend", () => {
     );
     expect(sshMocks.runSshSandboxCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        remoteCommand: expect.stringContaining("/remote/editzffaleta/OpenCraft-ssh-agent-worker"),
+        remoteCommand: expect.stringContaining("/remote/opencraft/opencraft-ssh-agent-worker"),
       }),
     );
   });
@@ -166,8 +166,8 @@ describe("ssh sandbox backend", () => {
         workspaceAccess: "rw",
         workspaceRoot: "~/.opencraft/sandboxes",
         docker: {
-          image: "openclaw-sandbox:bookworm-slim",
-          containerPrefix: "openclaw-sbx-",
+          image: "opencraft-sandbox:bookworm-slim",
+          containerPrefix: "opencraft-sbx-",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp"],
@@ -210,7 +210,7 @@ describe("ssh sandbox backend", () => {
     expect(execSpec.argv).toEqual(
       expect.arrayContaining(["ssh", "-F", createSession().configPath, "-T", createSession().host]),
     );
-    expect(execSpec.argv.at(-1)).toContain("/remote/editzffaleta/OpenCraft-ssh-agent-worker");
+    expect(execSpec.argv.at(-1)).toContain("/remote/opencraft/opencraft-ssh-agent-worker");
     expect(sshMocks.uploadDirectoryToSshTarget).toHaveBeenCalledTimes(2);
     expect(sshMocks.uploadDirectoryToSshTarget).toHaveBeenNthCalledWith(
       1,

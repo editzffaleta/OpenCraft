@@ -3,13 +3,13 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Bot } from "grammy";
-import { resolveStateDir } from "../../../src/config/paths.js";
 import {
   normalizeTelegramCommandName,
   TELEGRAM_COMMAND_NAME_PATTERN,
-} from "../../../src/config/telegram-custom-commands.js";
-import { logVerbose } from "../../../src/globals.js";
-import type { RuntimeEnv } from "../../../src/runtime.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
+import { resolveStateDir } from "opencraft/plugin-sdk/state-paths";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 
 export const TELEGRAM_MAX_COMMANDS = 100;
@@ -178,7 +178,7 @@ export function syncTelegramMenuCommands(params: {
     // Skip sync if the command list hasn't changed since the last successful
     // sync. This prevents hitting Telegram's 429 rate limit when the gateway
     // is restarted several times in quick succession.
-    // See: editzffaleta/OpenCraft#32017
+    // See: opencraft/opencraft#32017
     const currentHash = hashCommandList(commandsToRegister);
     const cachedHash = await readCachedCommandHash(accountId, botIdentity);
     if (cachedHash === currentHash) {

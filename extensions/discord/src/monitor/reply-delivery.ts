@@ -1,13 +1,17 @@
 import type { RequestClient } from "@buape/carbon";
-import { resolveAgentAvatar } from "../../../../src/agents/identity-avatar.js";
-import type { ChunkMode } from "../../../../src/auto-reply/chunk.js";
-import type { ReplyPayload } from "../../../../src/auto-reply/types.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import type { MarkdownTableMode, ReplyToMode } from "../../../../src/config/types.base.js";
-import { createDiscordRetryRunner, type RetryRunner } from "../../../../src/infra/retry-policy.js";
-import { resolveRetryConfig, retryAsync, type RetryConfig } from "../../../../src/infra/retry.js";
-import { convertMarkdownTables } from "../../../../src/markdown/tables.js";
-import type { RuntimeEnv } from "../../../../src/runtime.js";
+import { resolveAgentAvatar } from "opencraft/plugin-sdk/agent-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { MarkdownTableMode, ReplyToMode } from "opencraft/plugin-sdk/config-runtime";
+import { createDiscordRetryRunner, type RetryRunner } from "opencraft/plugin-sdk/infra-runtime";
+import {
+  resolveRetryConfig,
+  retryAsync,
+  type RetryConfig,
+} from "opencraft/plugin-sdk/infra-runtime";
+import type { ChunkMode } from "opencraft/plugin-sdk/reply-runtime";
+import type { ReplyPayload } from "opencraft/plugin-sdk/reply-runtime";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
+import { convertMarkdownTables } from "opencraft/plugin-sdk/text-runtime";
 import { resolveDiscordAccount } from "../accounts.js";
 import { chunkDiscordTextWithMode } from "../chunk.js";
 import { sendMessageDiscord, sendVoiceMessageDiscord, sendWebhookMessageDiscord } from "../send.js";

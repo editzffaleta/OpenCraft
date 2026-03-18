@@ -29,7 +29,7 @@ spec:
             - sh
             - -c
             - |
-              cp /config/opencraft.json /home/node/.editzffaleta/OpenCraft.json
+              cp /config/opencraft.json /home/node/.opencraft/opencraft.json
               mkdir -p /home/node/.opencraft/workspace
               cp /config/AGENTS.md /home/node/.opencraft/workspace/AGENTS.md
           securityContext:
@@ -49,7 +49,7 @@ spec:
               mountPath: /config
       containers:
         - name: gateway
-          image: ghcr.io/editzffaleta/OpenCraft:slim
+          image: ghcr.io/opencraft/opencraft:slim
           imagePullPolicy: IfNotPresent
           command:
             - node
@@ -67,11 +67,11 @@ spec:
               value: /home/node/.opencraft
             - name: NODE_ENV
               value: production
-            - name: OPENCLAW_GATEWAY_TOKEN
+            - name: OPENCRAFT_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: opencraft-secrets
-                  key: OPENCLAW_GATEWAY_TOKEN
+                  key: OPENCRAFT_GATEWAY_TOKEN
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:

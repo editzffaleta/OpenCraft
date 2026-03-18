@@ -28,7 +28,7 @@ describe("npm registry spec validation", () => {
 
   it("rejects unsupported registry protocols and malformed selectors", () => {
     expect(validateRegistryNpmSpec("https://npmjs.org/pkg.tgz")).toContain("URLs are not allowed");
-    expect(validateRegistryNpmSpec("git+ssh://github.com/editzffaleta/OpenCraft")).toContain(
+    expect(validateRegistryNpmSpec("git+ssh://github.com/openclaw/openclaw")).toContain(
       "URLs are not allowed",
     );
     expect(validateRegistryNpmSpec("@opencraft/voice-call@")).toContain(

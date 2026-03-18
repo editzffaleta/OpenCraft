@@ -1,7 +1,14 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { readConfigFileSnapshotForWrite, writeConfigFile } from "../../../src/config/config.js";
-import { loadCronStore, resolveCronStorePath, saveCronStore } from "../../../src/cron/store.js";
-import { createSubsystemLogger } from "../../../src/logging/subsystem.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import {
+  readConfigFileSnapshotForWrite,
+  writeConfigFile,
+} from "opencraft/plugin-sdk/config-runtime";
+import {
+  loadCronStore,
+  resolveCronStorePath,
+  saveCronStore,
+} from "opencraft/plugin-sdk/config-runtime";
+import { createSubsystemLogger } from "opencraft/plugin-sdk/runtime-env";
 import {
   normalizeTelegramChatId,
   normalizeTelegramLookupTarget,

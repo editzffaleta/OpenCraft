@@ -115,9 +115,7 @@ describe("shouldEnsureCliPath", () => {
 
   it("skips path bootstrap for read-only fast paths", () => {
     expect(shouldEnsureCliPath(["node", "opencraft", "status"])).toBe(false);
-    expect(shouldEnsureCliPath(["node", "opencraft", "--log-level", "debug", "status"])).toBe(
-      false,
-    );
+    expect(shouldEnsureCliPath(["node", "opencraft", "--log-level", "debug", "status"])).toBe(false);
     expect(shouldEnsureCliPath(["node", "opencraft", "sessions", "--json"])).toBe(false);
     expect(shouldEnsureCliPath(["node", "opencraft", "config", "get", "update"])).toBe(false);
     expect(shouldEnsureCliPath(["node", "opencraft", "models", "status", "--json"])).toBe(false);

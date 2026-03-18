@@ -1,5 +1,5 @@
 import { Container } from "@buape/carbon";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import { inspectDiscordAccount } from "./account-inspect.js";
 
 const DEFAULT_DISCORD_ACCENT_COLOR = "#5865F2";

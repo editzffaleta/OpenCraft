@@ -2,12 +2,12 @@ import {
   asString,
   collectIssuesForEnabledAccounts,
   isRecord,
-} from "../../../src/channels/plugins/status-issues/shared.js";
+} from "opencraft/plugin-sdk/channel-runtime";
 import type {
   ChannelAccountSnapshot,
   ChannelStatusIssue,
-} from "../../../src/channels/plugins/types.js";
-import { formatCliCommand } from "../../../src/cli/command-format.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import { formatCliCommand } from "opencraft/plugin-sdk/cli-runtime";
 
 type WhatsAppAccountStatus = {
   accountId?: unknown;

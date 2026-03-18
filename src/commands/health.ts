@@ -165,11 +165,7 @@ const buildSessionSummary = (storePath: string) => {
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
 
-async function inspectHealthAccount(
-  plugin: ChannelPlugin,
-  cfg: OpenCraftConfig,
-  accountId: string,
-) {
+async function inspectHealthAccount(plugin: ChannelPlugin, cfg: OpenCraftConfig, accountId: string) {
   return (
     plugin.config.inspectAccount?.(cfg, accountId) ??
     (await inspectReadOnlyChannelAccount({

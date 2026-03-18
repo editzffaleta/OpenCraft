@@ -219,10 +219,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/agent", "docs.opencraft.ai/cli/ag
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  [
-    'opencraft agents set-identity --agent main --name "OpenCraft" --emoji "🦞"',
-    "Set name + emoji.",
-  ],
+  ['opencraft agents set-identity --agent main --name "OpenCraft" --emoji "🦞"', "Set name + emoji."],
   ["opencraft agents set-identity --agent main --avatar avatars/opencraft.png", "Set avatar path."],
   [
     "opencraft agents set-identity --workspace ~/.opencraft/workspace --from-identity",

@@ -1,7 +1,7 @@
 ---
-summary: "Status de suporte, capacidades e configuração do Bot Microsoft Teams"
+summary: "Microsoft Teams bot support status, capabilities, and configuration"
 read_when:
-  - Trabalhando em funcionalidades do canal MS Teams
+  - Working on MS Teams channel features
 title: "Microsoft Teams"
 ---
 
@@ -9,44 +9,44 @@ title: "Microsoft Teams"
 
 > "Abandon all hope, ye who enter here."
 
-Atualizado: 2026-01-21
+Updated: 2026-01-21
 
-Status: texto + anexos de DM são suportados; envio de arquivos em canais/grupos requer `sharePointSiteId` + permissões Graph (veja [Enviando arquivos em chats de grupo](#enviando-arquivos-em-chats-de-grupo)). Enquetes são enviadas via Adaptive Cards.
+Status: text + DM attachments are supported; channel/group file sending requires `sharePointSiteId` + Graph permissions (see [Sending files in group chats](#sending-files-in-group-chats)). Polls are sent via Adaptive Cards.
 
-## Plugin necessário
+## Plugin required
 
-O Microsoft Teams é distribuído como Plugin e não está incluído na instalação principal.
+Microsoft Teams ships as a plugin and is not bundled with the core install.
 
-**Alteração importante (2026.1.15):** O MS Teams saiu do core. Se você o usa, deve instalar o Plugin.
+**Breaking change (2026.1.15):** MS Teams moved out of core. If you use it, you must install the plugin.
 
-Explicação: mantém instalações do core mais leves e permite que as dependências do MS Teams sejam atualizadas independentemente.
+Explainable: keeps core installs lighter and lets MS Teams dependencies update independently.
 
-Instalar via CLI (registro npm):
+Install via CLI (npm registry):
 
 ```bash
 opencraft plugins install @opencraft/msteams
 ```
 
-Checkout local (ao executar a partir de um repositório git):
+Local checkout (when running from a git repo):
 
 ```bash
 opencraft plugins install ./extensions/msteams
 ```
 
-Se você escolher Teams durante a configuração e um checkout git for detectado,
-o OpenCraft oferecerá o caminho de instalação local automaticamente.
+If you choose Teams during setup and a git checkout is detected,
+OpenCraft will offer the local install path automatically.
 
-Detalhes: [Plugins](/tools/plugin)
+Details: [Plugins](/tools/plugin)
 
-## Configuração rápida (iniciante)
+## Quick setup (beginner)
 
-1. Instale o Plugin Microsoft Teams.
-2. Crie um **Azure Bot** (App ID + client secret + tenant ID).
-3. Configure o OpenCraft com essas credenciais.
-4. Exponha `/api/messages` (porta 3978 por padrão) via URL pública ou túnel.
-5. Instale o pacote do app Teams e inicie o Gateway.
+1. Install the Microsoft Teams plugin.
+2. Create an **Azure Bot** (App ID + client secret + tenant ID).
+3. Configure OpenCraft with those credentials.
+4. Expose `/api/messages` (port 3978 by default) via a public URL or tunnel.
+5. Install the Teams app package and start the gateway.
 
-Configuração mínima:
+Minimal config:
 
 ```json5
 {
@@ -62,19 +62,19 @@ Configuração mínima:
 }
 ```
 
-Nota: chats de grupo são bloqueados por padrão (`channels.msteams.groupPolicy: "allowlist"`). Para permitir respostas em grupo, defina `channels.msteams.groupAllowFrom` (ou use `groupPolicy: "open"` para permitir qualquer membro, com exigência de menção).
+Note: group chats are blocked by default (`channels.msteams.groupPolicy: "allowlist"`). To allow group replies, set `channels.msteams.groupAllowFrom` (or use `groupPolicy: "open"` to allow any member, mention-gated).
 
-## Objetivos
+## Goals
 
-- Conversar com o OpenCraft via DMs, chats de grupo ou canais do Teams.
-- Manter o roteamento determinístico: respostas sempre voltam para o canal de onde vieram.
-- Padrão para comportamento seguro de canal (menções necessárias a menos que configurado de outra forma).
+- Talk to OpenCraft via Teams DMs, group chats, or channels.
+- Keep routing deterministic: replies always go back to the channel they arrived on.
+- Default to safe channel behavior (mentions required unless configured otherwise).
 
-## Gravações de configuração
+## Config writes
 
-Por padrão, o Microsoft Teams pode gravar atualizações de configuração acionadas por `/config set|unset` (requer `commands.config: true`).
+By default, Microsoft Teams is allowed to write config updates triggered by `/config set|unset` (requires `commands.config: true`).
 
-Desabilitar com:
+Disable with:
 
 ```json5
 {
@@ -82,23 +82,23 @@ Desabilitar com:
 }
 ```
 
-## Controle de acesso (DMs + grupos)
+## Access control (DMs + groups)
 
-**Acesso a DMs**
+**DM access**
 
-- Padrão: `channels.msteams.dmPolicy = "pairing"`. Remetentes desconhecidos são ignorados até serem aprovados.
-- `channels.msteams.allowFrom` deve usar IDs de objeto AAD estáveis.
-- UPNs/nomes de exibição são mutáveis; correspondência direta é desabilitada por padrão e só é habilitada com `channels.msteams.dangerouslyAllowNameMatching: true`.
-- O assistente pode resolver nomes para IDs via Microsoft Graph quando as credenciais permitem.
+- Default: `channels.msteams.dmPolicy = "pairing"`. Unknown senders are ignored until approved.
+- `channels.msteams.allowFrom` should use stable AAD object IDs.
+- UPNs/display names are mutable; direct matching is disabled by default and only enabled with `channels.msteams.dangerouslyAllowNameMatching: true`.
+- The wizard can resolve names to IDs via Microsoft Graph when credentials allow.
 
-**Acesso a grupos**
+**Group access**
 
-- Padrão: `channels.msteams.groupPolicy = "allowlist"` (bloqueado a menos que você adicione `groupAllowFrom`). Use `channels.defaults.groupPolicy` para sobrescrever o padrão quando não definido.
-- `channels.msteams.groupAllowFrom` controla quais remetentes podem acionar em chats de grupo/canais (retorna para `channels.msteams.allowFrom`).
-- Defina `groupPolicy: "open"` para permitir qualquer membro (ainda com exigência de menção por padrão).
-- Para não permitir **nenhum canal**, defina `channels.msteams.groupPolicy: "disabled"`.
+- Default: `channels.msteams.groupPolicy = "allowlist"` (blocked unless you add `groupAllowFrom`). Use `channels.defaults.groupPolicy` to override the default when unset.
+- `channels.msteams.groupAllowFrom` controls which senders can trigger in group chats/channels (falls back to `channels.msteams.allowFrom`).
+- Set `groupPolicy: "open"` to allow any member (still mention‑gated by default).
+- To allow **no channels**, set `channels.msteams.groupPolicy: "disabled"`.
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -111,16 +111,16 @@ Exemplo:
 }
 ```
 
-**Allowlist de equipes + canais**
+**Teams + channel allowlist**
 
-- Delimite respostas de grupo/canal listando equipes e canais em `channels.msteams.teams`.
-- As chaves devem usar IDs de equipe estáveis e IDs de conversa de canal.
-- Quando `groupPolicy="allowlist"` e uma allowlist de equipes está presente, apenas equipes/canais listados são aceitos (com exigência de menção).
-- O assistente de configuração aceita entradas `Team/Channel` e as armazena para você.
-- Na inicialização, o OpenCraft resolve nomes de equipe/canal e allowlist de usuários para IDs (quando permissões Graph permitem)
-  e registra o mapeamento; nomes de equipe/canal não resolvidos são mantidos como digitados, mas ignorados para roteamento por padrão, a menos que `channels.msteams.dangerouslyAllowNameMatching: true` esteja habilitado.
+- Scope group/channel replies by listing teams and channels under `channels.msteams.teams`.
+- Keys should use stable team IDs and channel conversation IDs.
+- When `groupPolicy="allowlist"` and a teams allowlist is present, only listed teams/channels are accepted (mention‑gated).
+- The configure wizard accepts `Team/Channel` entries and stores them for you.
+- On startup, OpenCraft resolves team/channel and user allowlist names to IDs (when Graph permissions allow)
+  and logs the mapping; unresolved team/channel names are kept as typed but ignored for routing by default unless `channels.msteams.dangerouslyAllowNameMatching: true` is enabled.
 
-Exemplo:
+Example:
 
 ```json5
 {
@@ -139,126 +139,126 @@ Exemplo:
 }
 ```
 
-## Como funciona
+## How it works
 
-1. Instale o Plugin Microsoft Teams.
-2. Crie um **Azure Bot** (App ID + secret + tenant ID).
-3. Construa um **pacote de app Teams** que referencia o Bot e inclui as permissões RSC abaixo.
-4. Faça upload/instale o app Teams em uma equipe (ou escopo pessoal para DMs).
-5. Configure `msteams` em `~/.editzffaleta/OpenCraft.json` (ou variáveis de ambiente) e inicie o Gateway.
-6. O Gateway escuta tráfego Webhook do Bot Framework em `/api/messages` por padrão.
+1. Install the Microsoft Teams plugin.
+2. Create an **Azure Bot** (App ID + secret + tenant ID).
+3. Build a **Teams app package** that references the bot and includes the RSC permissions below.
+4. Upload/install the Teams app into a team (or personal scope for DMs).
+5. Configure `msteams` in `~/.opencraft/opencraft.json` (or env vars) and start the gateway.
+6. The gateway listens for Bot Framework webhook traffic on `/api/messages` by default.
 
-## Configuração do Azure Bot (Pré-requisitos)
+## Azure Bot Setup (Prerequisites)
 
-Antes de configurar o OpenCraft, você precisa criar um recurso Azure Bot.
+Before configuring OpenCraft, you need to create an Azure Bot resource.
 
-### Passo 1: Criar Azure Bot
+### Step 1: Create Azure Bot
 
-1. Vá para [Criar Azure Bot](https://portal.azure.com/#create/Microsoft.AzureBot)
-2. Preencha a aba **Basics**:
+1. Go to [Create Azure Bot](https://portal.azure.com/#create/Microsoft.AzureBot)
+2. Fill in the **Basics** tab:
 
-   | Campo              | Valor                                                      |
-   | ------------------ | ---------------------------------------------------------- |
-   | **Bot handle**     | Nome do seu Bot, ex.: `opencraft-msteams` (deve ser único) |
-   | **Subscription**   | Selecione sua assinatura Azure                             |
-   | **Resource group** | Crie novo ou use existente                                 |
-   | **Pricing tier**   | **Free** para dev/testes                                   |
-   | **Type of App**    | **Single Tenant** (recomendado - veja nota abaixo)         |
-   | **Creation type**  | **Create new Microsoft App ID**                            |
+   | Field              | Value                                                    |
+   | ------------------ | -------------------------------------------------------- |
+   | **Bot handle**     | Your bot name, e.g., `opencraft-msteams` (must be unique) |
+   | **Subscription**   | Select your Azure subscription                           |
+   | **Resource group** | Create new or use existing                               |
+   | **Pricing tier**   | **Free** for dev/testing                                 |
+   | **Type of App**    | **Single Tenant** (recommended - see note below)         |
+   | **Creation type**  | **Create new Microsoft App ID**                          |
 
-> **Aviso de descontinuação:** A criação de novos bots multi-tenant foi descontinuada após 2025-07-31. Use **Single Tenant** para novos bots.
+> **Deprecation notice:** Creation of new multi-tenant bots was deprecated after 2025-07-31. Use **Single Tenant** for new bots.
 
-3. Clique em **Review + create** e depois **Create** (aguarde ~1-2 minutos)
+3. Click **Review + create** → **Create** (wait ~1-2 minutes)
 
-### Passo 2: Obter Credenciais
+### Step 2: Get Credentials
 
-1. Vá para o recurso Azure Bot e depois **Configuration**
-2. Copie **Microsoft App ID** -- este é o seu `appId`
-3. Clique em **Manage Password** e vá para App Registration
-4. Em **Certificates & secrets** e depois **New client secret** e copie o **Value** -- este é o seu `appPassword`
-5. Vá para **Overview** e copie **Directory (tenant) ID** -- este é o seu `tenantId`
+1. Go to your Azure Bot resource → **Configuration**
+2. Copy **Microsoft App ID** → this is your `appId`
+3. Click **Manage Password** → go to the App Registration
+4. Under **Certificates & secrets** → **New client secret** → copy the **Value** → this is your `appPassword`
+5. Go to **Overview** → copy **Directory (tenant) ID** → this is your `tenantId`
 
-### Passo 3: Configurar Messaging Endpoint
+### Step 3: Configure Messaging Endpoint
 
-1. No Azure Bot e depois **Configuration**
-2. Defina **Messaging endpoint** para a URL do seu Webhook:
-   - Produção: `https://your-domain.com/api/messages`
-   - Dev local: Use um túnel (veja [Desenvolvimento Local](#desenvolvimento-local-tunelamento) abaixo)
+1. In Azure Bot → **Configuration**
+2. Set **Messaging endpoint** to your webhook URL:
+   - Production: `https://your-domain.com/api/messages`
+   - Local dev: Use a tunnel (see [Local Development](#local-development-tunneling) below)
 
-### Passo 4: Habilitar Canal Teams
+### Step 4: Enable Teams Channel
 
-1. No Azure Bot e depois **Channels**
-2. Clique em **Microsoft Teams** e depois Configure e depois Save
-3. Aceite os Termos de Serviço
+1. In Azure Bot → **Channels**
+2. Click **Microsoft Teams** → Configure → Save
+3. Accept the Terms of Service
 
-## Desenvolvimento Local (Tunelamento)
+## Local Development (Tunneling)
 
-O Teams não consegue alcançar `localhost`. Use um túnel para desenvolvimento local:
+Teams can't reach `localhost`. Use a tunnel for local development:
 
-**Opção A: ngrok**
+**Option A: ngrok**
 
 ```bash
 ngrok http 3978
-# Copie a URL https, ex.: https://abc123.ngrok.io
-# Defina messaging endpoint para: https://abc123.ngrok.io/api/messages
+# Copy the https URL, e.g., https://abc123.ngrok.io
+# Set messaging endpoint to: https://abc123.ngrok.io/api/messages
 ```
 
-**Opção B: Tailscale Funnel**
+**Option B: Tailscale Funnel**
 
 ```bash
 tailscale funnel 3978
-# Use a URL do Tailscale funnel como messaging endpoint
+# Use your Tailscale funnel URL as the messaging endpoint
 ```
 
-## Teams Developer Portal (Alternativa)
+## Teams Developer Portal (Alternative)
 
-Em vez de criar manualmente um ZIP de manifesto, você pode usar o [Teams Developer Portal](https://dev.teams.microsoft.com/apps):
+Instead of manually creating a manifest ZIP, you can use the [Teams Developer Portal](https://dev.teams.microsoft.com/apps):
 
-1. Clique em **+ New app**
-2. Preencha informações básicas (nome, descrição, informações do desenvolvedor)
-3. Vá para **App features** e depois **Bot**
-4. Selecione **Enter a bot ID manually** e cole o App ID do seu Azure Bot
-5. Marque escopos: **Personal**, **Team**, **Group Chat**
-6. Clique em **Distribute** e depois **Download app package**
-7. No Teams: **Apps** e depois **Manage your apps** e depois **Upload a custom app** e selecione o ZIP
+1. Click **+ New app**
+2. Fill in basic info (name, description, developer info)
+3. Go to **App features** → **Bot**
+4. Select **Enter a bot ID manually** and paste your Azure Bot App ID
+5. Check scopes: **Personal**, **Team**, **Group Chat**
+6. Click **Distribute** → **Download app package**
+7. In Teams: **Apps** → **Manage your apps** → **Upload a custom app** → select the ZIP
 
-Isso geralmente é mais fácil do que editar manifestos JSON manualmente.
+This is often easier than hand-editing JSON manifests.
 
-## Testando o Bot
+## Testing the Bot
 
-**Opção A: Azure Web Chat (verificar Webhook primeiro)**
+**Option A: Azure Web Chat (verify webhook first)**
 
-1. No Portal Azure e depois recurso Azure Bot e depois **Test in Web Chat**
-2. Envie uma mensagem - você deve ver uma resposta
-3. Isso confirma que o endpoint do Webhook funciona antes da configuração do Teams
+1. In Azure Portal → your Azure Bot resource → **Test in Web Chat**
+2. Send a message - you should see a response
+3. This confirms your webhook endpoint works before Teams setup
 
-**Opção B: Teams (após instalação do app)**
+**Option B: Teams (after app installation)**
 
-1. Instale o app Teams (sideload ou catálogo da organização)
-2. Encontre o Bot no Teams e envie uma DM
-3. Verifique os logs do Gateway para atividade de entrada
+1. Install the Teams app (sideload or org catalog)
+2. Find the bot in Teams and send a DM
+3. Check gateway logs for incoming activity
 
-## Configuração (mínima, apenas texto)
+## Setup (minimal text-only)
 
-1. **Instale o Plugin Microsoft Teams**
-   - Do npm: `opencraft plugins install @opencraft/msteams`
-   - De um checkout local: `opencraft plugins install ./extensions/msteams`
+1. **Install the Microsoft Teams plugin**
+   - From npm: `opencraft plugins install @opencraft/msteams`
+   - From a local checkout: `opencraft plugins install ./extensions/msteams`
 
-2. **Registro do Bot**
-   - Crie um Azure Bot (veja acima) e anote:
+2. **Bot registration**
+   - Create an Azure Bot (see above) and note:
      - App ID
-     - Client secret (senha do app)
+     - Client secret (App password)
      - Tenant ID (single-tenant)
 
-3. **Manifesto do app Teams**
-   - Inclua uma entrada `bot` com `botId = <App ID>`.
-   - Escopos: `personal`, `team`, `groupChat`.
-   - `supportsFiles: true` (necessário para tratamento de arquivos no escopo pessoal).
-   - Adicione permissões RSC (abaixo).
-   - Crie ícones: `outline.png` (32x32) e `color.png` (192x192).
-   - Compacte os três arquivos juntos: `manifest.json`, `outline.png`, `color.png`.
+3. **Teams app manifest**
+   - Include a `bot` entry with `botId = <App ID>`.
+   - Scopes: `personal`, `team`, `groupChat`.
+   - `supportsFiles: true` (required for personal scope file handling).
+   - Add RSC permissions (below).
+   - Create icons: `outline.png` (32x32) and `color.png` (192x192).
+   - Zip all three files together: `manifest.json`, `outline.png`, `color.png`.
 
-4. **Configure o OpenCraft**
+4. **Configure OpenCraft**
 
    ```json
    {
@@ -272,31 +272,31 @@ Isso geralmente é mais fácil do que editar manifestos JSON manualmente.
    }
    ```
 
-   Você também pode usar variáveis de ambiente em vez de chaves de configuração:
+   You can also use environment variables instead of config keys:
    - `MSTEAMS_APP_ID`
    - `MSTEAMS_APP_PASSWORD`
    - `MSTEAMS_TENANT_ID`
 
-5. **Endpoint do Bot**
-   - Defina o Messaging Endpoint do Azure Bot para:
-     - `https://<host>:3978/api/messages` (ou o caminho/porta escolhido).
+5. **Bot endpoint**
+   - Set the Azure Bot Messaging Endpoint to:
+     - `https://<host>:3978/api/messages` (or your chosen path/port).
 
-6. **Execute o Gateway**
-   - O canal Teams inicia automaticamente quando o Plugin está instalado e a configuração `msteams` existe com credenciais.
+6. **Run the gateway**
+   - The Teams channel starts automatically when the plugin is installed and `msteams` config exists with credentials.
 
-## Contexto de histórico
+## History context
 
-- `channels.msteams.historyLimit` controla quantas mensagens recentes de canal/grupo são incluídas no prompt.
-- Retorna para `messages.groupChat.historyLimit`. Defina `0` para desabilitar (padrão 50).
-- O histórico de DM pode ser limitado com `channels.msteams.dmHistoryLimit` (turnos do usuário). Sobrescritas por usuário: `channels.msteams.dms["<user_id>"].historyLimit`.
+- `channels.msteams.historyLimit` controls how many recent channel/group messages are wrapped into the prompt.
+- Falls back to `messages.groupChat.historyLimit`. Set `0` to disable (default 50).
+- DM history can be limited with `channels.msteams.dmHistoryLimit` (user turns). Per-user overrides: `channels.msteams.dms["<user_id>"].historyLimit`.
 
-## Permissões RSC Atuais do Teams (Manifesto)
+## Current Teams RSC Permissions (Manifest)
 
-Estas são as **permissões resourceSpecific existentes** no manifesto do app Teams. Elas se aplicam apenas dentro da equipe/chat onde o app está instalado.
+These are the **existing resourceSpecific permissions** in our Teams app manifest. They only apply inside the team/chat where the app is installed.
 
-**Para canais (escopo de equipe):**
+**For channels (team scope):**
 
-- `ChannelMessage.Read.Group` (Application) - receber todas as mensagens do canal sem @mention
+- `ChannelMessage.Read.Group` (Application) - receive all channel messages without @mention
 - `ChannelMessage.Send.Group` (Application)
 - `Member.Read.Group` (Application)
 - `Owner.Read.Group` (Application)
@@ -304,13 +304,13 @@ Estas são as **permissões resourceSpecific existentes** no manifesto do app Te
 - `TeamMember.Read.Group` (Application)
 - `TeamSettings.Read.Group` (Application)
 
-**Para chats de grupo:**
+**For group chats:**
 
-- `ChatMessage.Read.Chat` (Application) - receber todas as mensagens do chat de grupo sem @mention
+- `ChatMessage.Read.Chat` (Application) - receive all group chat messages without @mention
 
-## Exemplo de Manifesto Teams (editado)
+## Example Teams Manifest (redacted)
 
-Exemplo mínimo e válido com os campos obrigatórios. Substitua IDs e URLs.
+Minimal, valid example with the required fields. Replace IDs and URLs.
 
 ```json
 {
@@ -358,147 +358,147 @@ Exemplo mínimo e válido com os campos obrigatórios. Substitua IDs e URLs.
 }
 ```
 
-### Ressalvas do manifesto (campos obrigatórios)
+### Manifest caveats (must-have fields)
 
-- `bots[].botId` **deve** corresponder ao App ID do Azure Bot.
-- `webApplicationInfo.id` **deve** corresponder ao App ID do Azure Bot.
-- `bots[].scopes` deve incluir as superfícies que você planeja usar (`personal`, `team`, `groupChat`).
-- `bots[].supportsFiles: true` é necessário para tratamento de arquivos no escopo pessoal.
-- `authorization.permissions.resourceSpecific` deve incluir leitura/envio de canal se você quer tráfego de canal.
+- `bots[].botId` **must** match the Azure Bot App ID.
+- `webApplicationInfo.id` **must** match the Azure Bot App ID.
+- `bots[].scopes` must include the surfaces you plan to use (`personal`, `team`, `groupChat`).
+- `bots[].supportsFiles: true` is required for file handling in personal scope.
+- `authorization.permissions.resourceSpecific` must include channel read/send if you want channel traffic.
 
-### Atualizando um app existente
+### Updating an existing app
 
-Para atualizar um app Teams já instalado (ex.: para adicionar permissões RSC):
+To update an already-installed Teams app (e.g., to add RSC permissions):
 
-1. Atualize seu `manifest.json` com as novas configurações
-2. **Incremente o campo `version`** (ex.: `1.0.0` para `1.1.0`)
-3. **Re-compacte** o manifesto com ícones (`manifest.json`, `outline.png`, `color.png`)
-4. Faça upload do novo zip:
-   - **Opção A (Teams Admin Center):** Teams Admin Center e depois Teams apps e depois Manage apps e depois encontre seu app e depois Upload new version
-   - **Opção B (Sideload):** No Teams e depois Apps e depois Manage your apps e depois Upload a custom app
-5. **Para canais de equipe:** Reinstale o app em cada equipe para que as novas permissões entrem em vigor
-6. **Feche completamente e reinicie o Teams** (não apenas feche a janela) para limpar metadados do app em cache
+1. Update your `manifest.json` with the new settings
+2. **Increment the `version` field** (e.g., `1.0.0` → `1.1.0`)
+3. **Re-zip** the manifest with icons (`manifest.json`, `outline.png`, `color.png`)
+4. Upload the new zip:
+   - **Option A (Teams Admin Center):** Teams Admin Center → Teams apps → Manage apps → find your app → Upload new version
+   - **Option B (Sideload):** In Teams → Apps → Manage your apps → Upload a custom app
+5. **For team channels:** Reinstall the app in each team for new permissions to take effect
+6. **Fully quit and relaunch Teams** (not just close the window) to clear cached app metadata
 
-## Capacidades: apenas RSC vs Graph
+## Capabilities: RSC only vs Graph
 
-### Com **apenas RSC do Teams** (app instalado, sem permissões Graph API)
+### With **Teams RSC only** (app installed, no Graph API permissions)
 
-Funciona:
+Works:
 
-- Ler conteúdo de **texto** de mensagens de canal.
-- Enviar conteúdo de **texto** de mensagens de canal.
-- Receber anexos de **arquivos pessoais (DM)**.
+- Read channel message **text** content.
+- Send channel message **text** content.
+- Receive **personal (DM)** file attachments.
 
-Não funciona:
+Does NOT work:
 
-- Conteúdo de **imagens ou arquivos** de canal/grupo (payload inclui apenas stub HTML).
-- Download de anexos armazenados no SharePoint/OneDrive.
-- Leitura de histórico de mensagens (além do evento Webhook ao vivo).
+- Channel/group **image or file contents** (payload only includes HTML stub).
+- Downloading attachments stored in SharePoint/OneDrive.
+- Reading message history (beyond the live webhook event).
 
-### Com **RSC do Teams + permissões de Application do Microsoft Graph**
+### With **Teams RSC + Microsoft Graph Application permissions**
 
-Adiciona:
+Adds:
 
-- Download de conteúdos hospedados (imagens coladas em mensagens).
-- Download de anexos de arquivo armazenados no SharePoint/OneDrive.
-- Leitura de histórico de mensagens de canal/chat via Graph.
+- Downloading hosted contents (images pasted into messages).
+- Downloading file attachments stored in SharePoint/OneDrive.
+- Reading channel/chat message history via Graph.
 
 ### RSC vs Graph API
 
-| Capacidade                  | Permissões RSC           | Graph API                                      |
-| --------------------------- | ------------------------ | ---------------------------------------------- |
-| **Mensagens em tempo real** | Sim (via Webhook)        | Não (apenas polling)                           |
-| **Histórico de mensagens**  | Não                      | Sim (pode consultar histórico)                 |
-| **Complexidade de setup**   | Apenas manifesto         | Requer consentimento do admin + fluxo de Token |
-| **Funciona offline**        | Não (deve estar rodando) | Sim (consulta a qualquer momento)              |
+| Capability              | RSC Permissions      | Graph API                           |
+| ----------------------- | -------------------- | ----------------------------------- |
+| **Real-time messages**  | Yes (via webhook)    | No (polling only)                   |
+| **Historical messages** | No                   | Yes (can query history)             |
+| **Setup complexity**    | App manifest only    | Requires admin consent + token flow |
+| **Works offline**       | No (must be running) | Yes (query anytime)                 |
 
-**Resumo:** RSC é para escuta em tempo real; Graph API é para acesso histórico. Para recuperar mensagens perdidas enquanto offline, você precisa da Graph API com `ChannelMessage.Read.All` (requer consentimento do admin).
+**Bottom line:** RSC is for real-time listening; Graph API is for historical access. For catching up on missed messages while offline, you need Graph API with `ChannelMessage.Read.All` (requires admin consent).
 
-## Mídia + histórico habilitados via Graph (necessário para canais)
+## Graph-enabled media + history (required for channels)
 
-Se você precisa de imagens/arquivos em **canais** ou quer buscar **histórico de mensagens**, deve habilitar permissões do Microsoft Graph e conceder consentimento do admin.
+If you need images/files in **channels** or want to fetch **message history**, you must enable Microsoft Graph permissions and grant admin consent.
 
-1. No Entra ID (Azure AD) e depois **App Registration**, adicione permissões de **Application** do Microsoft Graph:
-   - `ChannelMessage.Read.All` (anexos de canal + histórico)
-   - `Chat.Read.All` ou `ChatMessage.Read.All` (chats de grupo)
-2. **Conceda consentimento do admin** para o tenant.
-3. Incremente a **versão do manifesto** do app Teams, re-faça upload e **reinstale o app no Teams**.
-4. **Feche completamente e reinicie o Teams** para limpar metadados do app em cache.
+1. In Entra ID (Azure AD) **App Registration**, add Microsoft Graph **Application permissions**:
+   - `ChannelMessage.Read.All` (channel attachments + history)
+   - `Chat.Read.All` or `ChatMessage.Read.All` (group chats)
+2. **Grant admin consent** for the tenant.
+3. Bump the Teams app **manifest version**, re-upload, and **reinstall the app in Teams**.
+4. **Fully quit and relaunch Teams** to clear cached app metadata.
 
-**Permissão adicional para menções de usuário:** Menções de usuário com @ funcionam por padrão para usuários na conversa. No entanto, se você quer buscar dinamicamente e mencionar usuários que **não estão na conversa atual**, adicione a permissão `User.Read.All` (Application) e conceda consentimento do admin.
+**Additional permission for user mentions:** User @mentions work out of the box for users in the conversation. However, if you want to dynamically search and mention users who are **not in the current conversation**, add `User.Read.All` (Application) permission and grant admin consent.
 
-## Limitações Conhecidas
+## Known Limitations
 
-### Timeouts de Webhook
+### Webhook timeouts
 
-O Teams entrega mensagens via Webhook HTTP. Se o processamento demorar muito (ex.: respostas lentas de LLM), você pode ver:
+Teams delivers messages via HTTP webhook. If processing takes too long (e.g., slow LLM responses), you may see:
 
-- Timeouts do Gateway
-- Teams reenviando a mensagem (causando duplicatas)
-- Respostas perdidas
+- Gateway timeouts
+- Teams retrying the message (causing duplicates)
+- Dropped replies
 
-O OpenCraft lida com isso retornando rapidamente e enviando respostas proativamente, mas respostas muito lentas ainda podem causar problemas.
+OpenCraft handles this by returning quickly and sending replies proactively, but very slow responses may still cause issues.
 
-### Formatação
+### Formatting
 
-O markdown do Teams é mais limitado que o do Slack ou Discord:
+Teams markdown is more limited than Slack or Discord:
 
-- Formatação básica funciona: **negrito**, _itálico_, `código`, links
-- Markdown complexo (tabelas, listas aninhadas) pode não renderizar corretamente
-- Adaptive Cards são suportados para enquetes e envios de cards arbitrários (veja abaixo)
+- Basic formatting works: **bold**, _italic_, `code`, links
+- Complex markdown (tables, nested lists) may not render correctly
+- Adaptive Cards are supported for polls and arbitrary card sends (see below)
 
-## Configuração
+## Configuration
 
-Configurações principais (veja `/gateway/configuration` para padrões compartilhados de canal):
+Key settings (see `/gateway/configuration` for shared channel patterns):
 
-- `channels.msteams.enabled`: habilitar/desabilitar o canal.
-- `channels.msteams.appId`, `channels.msteams.appPassword`, `channels.msteams.tenantId`: credenciais do Bot.
-- `channels.msteams.webhook.port` (padrão `3978`)
-- `channels.msteams.webhook.path` (padrão `/api/messages`)
-- `channels.msteams.dmPolicy`: `pairing | allowlist | open | disabled` (padrão: pairing)
-- `channels.msteams.allowFrom`: allowlist de DM (IDs de objeto AAD recomendados). O assistente resolve nomes para IDs durante a configuração quando o acesso Graph está disponível.
-- `channels.msteams.dangerouslyAllowNameMatching`: toggle de emergência para reabilitar correspondência mutável de UPN/nome de exibição e roteamento direto de nomes de equipe/canal.
-- `channels.msteams.textChunkLimit`: tamanho do bloco de texto de saída.
-- `channels.msteams.chunkMode`: `length` (padrão) ou `newline` para dividir em linhas em branco (limites de parágrafo) antes da divisão por tamanho.
-- `channels.msteams.mediaAllowHosts`: allowlist para hosts de anexos de entrada (padrão para domínios Microsoft/Teams).
-- `channels.msteams.mediaAuthAllowHosts`: allowlist para anexar cabeçalhos Authorization em tentativas de mídia (padrão para hosts Graph + Bot Framework).
-- `channels.msteams.requireMention`: exigir @mention em canais/grupos (padrão true).
-- `channels.msteams.replyStyle`: `thread | top-level` (veja [Estilo de Resposta](#estilo-de-resposta-threads-vs-posts)).
-- `channels.msteams.teams.<teamId>.replyStyle`: sobrescrita por equipe.
-- `channels.msteams.teams.<teamId>.requireMention`: sobrescrita por equipe.
-- `channels.msteams.teams.<teamId>.tools`: sobrescritas padrão de política de ferramentas por equipe (`allow`/`deny`/`alsoAllow`) usadas quando uma sobrescrita de canal está ausente.
-- `channels.msteams.teams.<teamId>.toolsBySender`: sobrescritas padrão de política de ferramentas por remetente por equipe (curinga `"*"` suportado).
-- `channels.msteams.teams.<teamId>.channels.<conversationId>.replyStyle`: sobrescrita por canal.
-- `channels.msteams.teams.<teamId>.channels.<conversationId>.requireMention`: sobrescrita por canal.
-- `channels.msteams.teams.<teamId>.channels.<conversationId>.tools`: sobrescritas de política de ferramentas por canal (`allow`/`deny`/`alsoAllow`).
-- `channels.msteams.teams.<teamId>.channels.<conversationId>.toolsBySender`: sobrescritas de política de ferramentas por remetente por canal (curinga `"*"` suportado).
-- Chaves `toolsBySender` devem usar prefixos explícitos:
-  `id:`, `e164:`, `username:`, `name:` (chaves legadas sem prefixo ainda mapeiam apenas para `id:`).
-- `channels.msteams.sharePointSiteId`: ID do site SharePoint para uploads de arquivos em chats de grupo/canais (veja [Enviando arquivos em chats de grupo](#enviando-arquivos-em-chats-de-grupo)).
+- `channels.msteams.enabled`: enable/disable the channel.
+- `channels.msteams.appId`, `channels.msteams.appPassword`, `channels.msteams.tenantId`: bot credentials.
+- `channels.msteams.webhook.port` (default `3978`)
+- `channels.msteams.webhook.path` (default `/api/messages`)
+- `channels.msteams.dmPolicy`: `pairing | allowlist | open | disabled` (default: pairing)
+- `channels.msteams.allowFrom`: DM allowlist (AAD object IDs recommended). The wizard resolves names to IDs during setup when Graph access is available.
+- `channels.msteams.dangerouslyAllowNameMatching`: break-glass toggle to re-enable mutable UPN/display-name matching and direct team/channel name routing.
+- `channels.msteams.textChunkLimit`: outbound text chunk size.
+- `channels.msteams.chunkMode`: `length` (default) or `newline` to split on blank lines (paragraph boundaries) before length chunking.
+- `channels.msteams.mediaAllowHosts`: allowlist for inbound attachment hosts (defaults to Microsoft/Teams domains).
+- `channels.msteams.mediaAuthAllowHosts`: allowlist for attaching Authorization headers on media retries (defaults to Graph + Bot Framework hosts).
+- `channels.msteams.requireMention`: require @mention in channels/groups (default true).
+- `channels.msteams.replyStyle`: `thread | top-level` (see [Reply Style](#reply-style-threads-vs-posts)).
+- `channels.msteams.teams.<teamId>.replyStyle`: per-team override.
+- `channels.msteams.teams.<teamId>.requireMention`: per-team override.
+- `channels.msteams.teams.<teamId>.tools`: default per-team tool policy overrides (`allow`/`deny`/`alsoAllow`) used when a channel override is missing.
+- `channels.msteams.teams.<teamId>.toolsBySender`: default per-team per-sender tool policy overrides (`"*"` wildcard supported).
+- `channels.msteams.teams.<teamId>.channels.<conversationId>.replyStyle`: per-channel override.
+- `channels.msteams.teams.<teamId>.channels.<conversationId>.requireMention`: per-channel override.
+- `channels.msteams.teams.<teamId>.channels.<conversationId>.tools`: per-channel tool policy overrides (`allow`/`deny`/`alsoAllow`).
+- `channels.msteams.teams.<teamId>.channels.<conversationId>.toolsBySender`: per-channel per-sender tool policy overrides (`"*"` wildcard supported).
+- `toolsBySender` keys should use explicit prefixes:
+  `id:`, `e164:`, `username:`, `name:` (legacy unprefixed keys still map to `id:` only).
+- `channels.msteams.sharePointSiteId`: SharePoint site ID for file uploads in group chats/channels (see [Sending files in group chats](#sending-files-in-group-chats)).
 
-## Roteamento e Sessões
+## Routing & Sessions
 
-- Chaves de sessão seguem o formato padrão do agente (veja [/concepts/session](/concepts/session)):
-  - Mensagens diretas compartilham a sessão principal (`agent:<agentId>:<mainKey>`).
-  - Mensagens de canal/grupo usam ID de conversa:
+- Session keys follow the standard agent format (see [/concepts/session](/concepts/session)):
+  - Direct messages share the main session (`agent:<agentId>:<mainKey>`).
+  - Channel/group messages use conversation id:
     - `agent:<agentId>:msteams:channel:<conversationId>`
     - `agent:<agentId>:msteams:group:<conversationId>`
 
-## Estilo de Resposta: Threads vs Posts
+## Reply Style: Threads vs Posts
 
-O Teams introduziu recentemente dois estilos de UI de canal sobre o mesmo modelo de dados subjacente:
+Teams recently introduced two channel UI styles over the same underlying data model:
 
-| Estilo                   | Descrição                                                       | `replyStyle` recomendado |
-| ------------------------ | --------------------------------------------------------------- | ------------------------ |
-| **Posts** (clássico)     | Mensagens aparecem como cards com respostas em thread por baixo | `thread` (padrão)        |
-| **Threads** (tipo Slack) | Mensagens fluem linearmente, mais parecido com o Slack          | `top-level`              |
+| Style                    | Description                                               | Recommended `replyStyle` |
+| ------------------------ | --------------------------------------------------------- | ------------------------ |
+| **Posts** (classic)      | Messages appear as cards with threaded replies underneath | `thread` (default)       |
+| **Threads** (Slack-like) | Messages flow linearly, more like Slack                   | `top-level`              |
 
-**O problema:** A API do Teams não expõe qual estilo de UI um canal usa. Se você usar o `replyStyle` errado:
+**The problem:** The Teams API does not expose which UI style a channel uses. If you use the wrong `replyStyle`:
 
-- `thread` em um canal estilo Threads -- respostas aparecem aninhadas de forma estranha
-- `top-level` em um canal estilo Posts -- respostas aparecem como posts separados de nível superior em vez de no thread
+- `thread` in a Threads-style channel → replies appear nested awkwardly
+- `top-level` in a Posts-style channel → replies appear as separate top-level posts instead of in-thread
 
-**Solução:** Configure `replyStyle` por canal baseado em como o canal está configurado:
+**Solution:** Configure `replyStyle` per-channel based on how the channel is set up:
 
 ```json
 {
@@ -517,104 +517,104 @@ O Teams introduziu recentemente dois estilos de UI de canal sobre o mesmo modelo
 }
 ```
 
-## Anexos e Imagens
+## Attachments & Images
 
-**Limitações atuais:**
+**Current limitations:**
 
-- **DMs:** Imagens e anexos de arquivo funcionam via APIs de arquivo do Bot Teams.
-- **Canais/grupos:** Anexos residem no armazenamento M365 (SharePoint/OneDrive). O payload do Webhook inclui apenas um stub HTML, não os bytes reais do arquivo. **Permissões Graph API são necessárias** para baixar anexos de canal.
+- **DMs:** Images and file attachments work via Teams bot file APIs.
+- **Channels/groups:** Attachments live in M365 storage (SharePoint/OneDrive). The webhook payload only includes an HTML stub, not the actual file bytes. **Graph API permissions are required** to download channel attachments.
 
-Sem permissões Graph, mensagens de canal com imagens serão recebidas apenas como texto (o conteúdo da imagem não é acessível ao Bot).
-Por padrão, o OpenCraft só baixa mídia de hostnames Microsoft/Teams. Sobrescreva com `channels.msteams.mediaAllowHosts` (use `["*"]` para permitir qualquer host).
-Cabeçalhos Authorization são anexados apenas para hosts em `channels.msteams.mediaAuthAllowHosts` (padrão para hosts Graph + Bot Framework). Mantenha esta lista restrita (evite sufixos multi-tenant).
+Without Graph permissions, channel messages with images will be received as text-only (the image content is not accessible to the bot).
+By default, OpenCraft only downloads media from Microsoft/Teams hostnames. Override with `channels.msteams.mediaAllowHosts` (use `["*"]` to allow any host).
+Authorization headers are only attached for hosts in `channels.msteams.mediaAuthAllowHosts` (defaults to Graph + Bot Framework hosts). Keep this list strict (avoid multi-tenant suffixes).
 
-## Enviando arquivos em chats de grupo
+## Sending files in group chats
 
-Bots podem enviar arquivos em DMs usando o fluxo FileConsentCard (integrado). No entanto, **enviar arquivos em chats de grupo/canais** requer configuração adicional:
+Bots can send files in DMs using the FileConsentCard flow (built-in). However, **sending files in group chats/channels** requires additional setup:
 
-| Contexto                        | Como os arquivos são enviados                       | Configuração necessária                      |
-| ------------------------------- | --------------------------------------------------- | -------------------------------------------- |
-| **DMs**                         | FileConsentCard -- usuário aceita -- Bot faz upload | Funciona por padrão                          |
-| **Chats de grupo/canais**       | Upload para SharePoint -- link de compartilhamento  | Requer `sharePointSiteId` + permissões Graph |
-| **Imagens (qualquer contexto)** | Base64 inline                                       | Funciona por padrão                          |
+| Context                  | How files are sent                           | Setup needed                                    |
+| ------------------------ | -------------------------------------------- | ----------------------------------------------- |
+| **DMs**                  | FileConsentCard → user accepts → bot uploads | Works out of the box                            |
+| **Group chats/channels** | Upload to SharePoint → share link            | Requires `sharePointSiteId` + Graph permissions |
+| **Images (any context)** | Base64-encoded inline                        | Works out of the box                            |
 
-### Por que chats de grupo precisam do SharePoint
+### Why group chats need SharePoint
 
-Bots não têm um OneDrive pessoal (o endpoint Graph API `/me/drive` não funciona para identidades de aplicação). Para enviar arquivos em chats de grupo/canais, o Bot faz upload para um **site SharePoint** e cria um link de compartilhamento.
+Bots don't have a personal OneDrive drive (the `/me/drive` Graph API endpoint doesn't work for application identities). To send files in group chats/channels, the bot uploads to a **SharePoint site** and creates a sharing link.
 
-### Configuração
+### Setup
 
-1. **Adicione permissões Graph API** no Entra ID (Azure AD) e depois App Registration:
-   - `Sites.ReadWrite.All` (Application) - upload de arquivos para SharePoint
-   - `Chat.Read.All` (Application) - opcional, habilita links de compartilhamento por usuário
+1. **Add Graph API permissions** in Entra ID (Azure AD) → App Registration:
+   - `Sites.ReadWrite.All` (Application) - upload files to SharePoint
+   - `Chat.Read.All` (Application) - optional, enables per-user sharing links
 
-2. **Conceda consentimento do admin** para o tenant.
+2. **Grant admin consent** for the tenant.
 
-3. **Obtenha o ID do site SharePoint:**
+3. **Get your SharePoint site ID:**
 
    ```bash
-   # Via Graph Explorer ou curl com um Token válido:
+   # Via Graph Explorer or curl with a valid token:
    curl -H "Authorization: Bearer $TOKEN" \
      "https://graph.microsoft.com/v1.0/sites/{hostname}:/{site-path}"
 
-   # Exemplo: para um site em "contoso.sharepoint.com/sites/BotFiles"
+   # Example: for a site at "contoso.sharepoint.com/sites/BotFiles"
    curl -H "Authorization: Bearer $TOKEN" \
      "https://graph.microsoft.com/v1.0/sites/contoso.sharepoint.com:/sites/BotFiles"
 
-   # Resposta inclui: "id": "contoso.sharepoint.com,guid1,guid2"
+   # Response includes: "id": "contoso.sharepoint.com,guid1,guid2"
    ```
 
-4. **Configure o OpenCraft:**
+4. **Configure OpenCraft:**
 
    ```json5
    {
      channels: {
        msteams: {
-         // ... outras configurações ...
+         // ... other config ...
          sharePointSiteId: "contoso.sharepoint.com,guid1,guid2",
        },
      },
    }
    ```
 
-### Comportamento de compartilhamento
+### Sharing behavior
 
-| Permissão                               | Comportamento de compartilhamento                                             |
-| --------------------------------------- | ----------------------------------------------------------------------------- |
-| Apenas `Sites.ReadWrite.All`            | Link de compartilhamento organizacional (qualquer pessoa na org pode acessar) |
-| `Sites.ReadWrite.All` + `Chat.Read.All` | Link de compartilhamento por usuário (apenas membros do chat podem acessar)   |
+| Permission                              | Sharing behavior                                          |
+| --------------------------------------- | --------------------------------------------------------- |
+| `Sites.ReadWrite.All` only              | Organization-wide sharing link (anyone in org can access) |
+| `Sites.ReadWrite.All` + `Chat.Read.All` | Per-user sharing link (only chat members can access)      |
 
-O compartilhamento por usuário é mais seguro, pois apenas os participantes do chat podem acessar o arquivo. Se a permissão `Chat.Read.All` estiver ausente, o Bot retorna para compartilhamento organizacional.
+Per-user sharing is more secure as only the chat participants can access the file. If `Chat.Read.All` permission is missing, the bot falls back to organization-wide sharing.
 
-### Comportamento de fallback
+### Fallback behavior
 
-| Cenário                                                  | Resultado                                               |
-| -------------------------------------------------------- | ------------------------------------------------------- |
-| Chat de grupo + arquivo + `sharePointSiteId` configurado | Upload para SharePoint, enviar link de compartilhamento |
-| Chat de grupo + arquivo + sem `sharePointSiteId`         | Tenta upload OneDrive (pode falhar), envia apenas texto |
-| Chat pessoal + arquivo                                   | Fluxo FileConsentCard (funciona sem SharePoint)         |
-| Qualquer contexto + imagem                               | Base64 inline (funciona sem SharePoint)                 |
+| Scenario                                          | Result                                             |
+| ------------------------------------------------- | -------------------------------------------------- |
+| Group chat + file + `sharePointSiteId` configured | Upload to SharePoint, send sharing link            |
+| Group chat + file + no `sharePointSiteId`         | Attempt OneDrive upload (may fail), send text only |
+| Personal chat + file                              | FileConsentCard flow (works without SharePoint)    |
+| Any context + image                               | Base64-encoded inline (works without SharePoint)   |
 
-### Local de armazenamento dos arquivos
+### Files stored location
 
-Arquivos enviados são armazenados em uma pasta `/OpenCraftShared/` na biblioteca de documentos padrão do site SharePoint configurado.
+Uploaded files are stored in a `/OpenCraftShared/` folder in the configured SharePoint site's default document library.
 
-## Enquetes (Adaptive Cards)
+## Polls (Adaptive Cards)
 
-O OpenCraft envia enquetes do Teams como Adaptive Cards (não há API nativa de enquetes do Teams).
+OpenCraft sends Teams polls as Adaptive Cards (there is no native Teams poll API).
 
 - CLI: `opencraft message poll --channel msteams --target conversation:<id> ...`
-- Votos são registrados pelo Gateway em `~/.opencraft/msteams-polls.json`.
-- O Gateway deve ficar online para registrar votos.
-- Enquetes ainda não publicam resumos de resultados automaticamente (inspecione o arquivo de armazenamento se necessário).
+- Votes are recorded by the gateway in `~/.opencraft/msteams-polls.json`.
+- The gateway must stay online to record votes.
+- Polls do not auto-post result summaries yet (inspect the store file if needed).
 
-## Adaptive Cards (arbitrários)
+## Adaptive Cards (arbitrary)
 
-Envie qualquer JSON de Adaptive Card para usuários ou conversas do Teams usando a ferramenta `message` ou CLI.
+Send any Adaptive Card JSON to Teams users or conversations using the `message` tool or CLI.
 
-O parâmetro `card` aceita um objeto JSON de Adaptive Card. Quando `card` é fornecido, o texto da mensagem é opcional.
+The `card` parameter accepts an Adaptive Card JSON object. When `card` is provided, the message text is optional.
 
-**Ferramenta do agente:**
+**Agent tool:**
 
 ```json
 {
@@ -637,37 +637,37 @@ opencraft message send --channel msteams \
   --card '{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":"Hello!"}]}'
 ```
 
-Veja a [documentação de Adaptive Cards](https://adaptivecards.io/) para esquema e exemplos de cards. Para detalhes de formato de alvo, veja [Formatos de alvo](#formatos-de-alvo) abaixo.
+See [Adaptive Cards documentation](https://adaptivecards.io/) for card schema and examples. For target format details, see [Target formats](#target-formats) below.
 
-## Formatos de alvo
+## Target formats
 
-Alvos do MSTeams usam prefixos para distinguir entre usuários e conversas:
+MSTeams targets use prefixes to distinguish between users and conversations:
 
-| Tipo de alvo        | Formato                          | Exemplo                                           |
-| ------------------- | -------------------------------- | ------------------------------------------------- |
-| Usuário (por ID)    | `user:<aad-object-id>`           | `user:40a1a0ed-4ff2-4164-a219-55518990c197`       |
-| Usuário (por nome)  | `user:<display-name>`            | `user:John Smith` (requer Graph API)              |
-| Grupo/canal         | `conversation:<conversation-id>` | `conversation:19:abc123...@thread.tacv2`          |
-| Grupo/canal (bruto) | `<conversation-id>`              | `19:abc123...@thread.tacv2` (se contém `@thread`) |
+| Target type         | Format                           | Example                                             |
+| ------------------- | -------------------------------- | --------------------------------------------------- |
+| User (by ID)        | `user:<aad-object-id>`           | `user:40a1a0ed-4ff2-4164-a219-55518990c197`         |
+| User (by name)      | `user:<display-name>`            | `user:John Smith` (requires Graph API)              |
+| Group/channel       | `conversation:<conversation-id>` | `conversation:19:abc123...@thread.tacv2`            |
+| Group/channel (raw) | `<conversation-id>`              | `19:abc123...@thread.tacv2` (if contains `@thread`) |
 
-**Exemplos CLI:**
+**CLI examples:**
 
 ```bash
-# Enviar para um usuário por ID
+# Send to a user by ID
 opencraft message send --channel msteams --target "user:40a1a0ed-..." --message "Hello"
 
-# Enviar para um usuário por nome de exibição (aciona busca Graph API)
+# Send to a user by display name (triggers Graph API lookup)
 opencraft message send --channel msteams --target "user:John Smith" --message "Hello"
 
-# Enviar para um chat de grupo ou canal
+# Send to a group chat or channel
 opencraft message send --channel msteams --target "conversation:19:abc...@thread.tacv2" --message "Hello"
 
-# Enviar um Adaptive Card para uma conversa
+# Send an Adaptive Card to a conversation
 opencraft message send --channel msteams --target "conversation:19:abc...@thread.tacv2" \
   --card '{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":"Hello"}]}'
 ```
 
-**Exemplos da ferramenta do agente:**
+**Agent tool examples:**
 
 ```json
 {
@@ -691,86 +691,86 @@ opencraft message send --channel msteams --target "conversation:19:abc...@thread
 }
 ```
 
-Nota: Sem o prefixo `user:`, nomes padrão para resolução de grupo/equipe. Sempre use `user:` ao direcionar pessoas por nome de exibição.
+Note: Without the `user:` prefix, names default to group/team resolution. Always use `user:` when targeting people by display name.
 
-## Mensagens proativas
+## Proactive messaging
 
-- Mensagens proativas só são possíveis **depois** que um usuário interagiu, porque armazenamos referências de conversa nesse momento.
-- Veja `/gateway/configuration` para `dmPolicy` e controle de allowlist.
+- Proactive messages are only possible **after** a user has interacted, because we store conversation references at that point.
+- See `/gateway/configuration` for `dmPolicy` and allowlist gating.
 
-## IDs de Equipe e Canal (Armadilha Comum)
+## Team and Channel IDs (Common Gotcha)
 
-O parâmetro de consulta `groupId` nas URLs do Teams **NÃO** é o ID da equipe usado para configuração. Extraia os IDs do caminho da URL:
+The `groupId` query parameter in Teams URLs is **NOT** the team ID used for configuration. Extract IDs from the URL path instead:
 
-**URL da equipe:**
+**Team URL:**
 
 ```
 https://teams.microsoft.com/l/team/19%3ABk4j...%40thread.tacv2/conversations?groupId=...
                                     └────────────────────────────┘
-                                    ID da Equipe (decodifique a URL)
+                                    Team ID (URL-decode this)
 ```
 
-**URL do canal:**
+**Channel URL:**
 
 ```
 https://teams.microsoft.com/l/channel/19%3A15bc...%40thread.tacv2/ChannelName?groupId=...
                                       └─────────────────────────┘
-                                      ID do Canal (decodifique a URL)
+                                      Channel ID (URL-decode this)
 ```
 
-**Para configuração:**
+**For config:**
 
-- ID da Equipe = segmento do caminho após `/team/` (decodificado, ex.: `19:Bk4j...@thread.tacv2`)
-- ID do Canal = segmento do caminho após `/channel/` (decodificado)
-- **Ignore** o parâmetro de consulta `groupId`
+- Team ID = path segment after `/team/` (URL-decoded, e.g., `19:Bk4j...@thread.tacv2`)
+- Channel ID = path segment after `/channel/` (URL-decoded)
+- **Ignore** the `groupId` query parameter
 
-## Canais Privados
+## Private Channels
 
-Bots têm suporte limitado em canais privados:
+Bots have limited support in private channels:
 
-| Funcionalidade                    | Canais Padrão | Canais Privados             |
-| --------------------------------- | ------------- | --------------------------- |
-| Instalação do Bot                 | Sim           | Limitado                    |
-| Mensagens em tempo real (Webhook) | Sim           | Pode não funcionar          |
-| Permissões RSC                    | Sim           | Pode se comportar diferente |
-| @mentions                         | Sim           | Se o Bot estiver acessível  |
-| Histórico Graph API               | Sim           | Sim (com permissões)        |
+| Feature                      | Standard Channels | Private Channels       |
+| ---------------------------- | ----------------- | ---------------------- |
+| Bot installation             | Yes               | Limited                |
+| Real-time messages (webhook) | Yes               | May not work           |
+| RSC permissions              | Yes               | May behave differently |
+| @mentions                    | Yes               | If bot is accessible   |
+| Graph API history            | Yes               | Yes (with permissions) |
 
-**Soluções alternativas se canais privados não funcionarem:**
+**Workarounds if private channels don't work:**
 
-1. Use canais padrão para interações com o Bot
-2. Use DMs - usuários sempre podem enviar mensagem diretamente para o Bot
-3. Use Graph API para acesso histórico (requer `ChannelMessage.Read.All`)
+1. Use standard channels for bot interactions
+2. Use DMs - users can always message the bot directly
+3. Use Graph API for historical access (requires `ChannelMessage.Read.All`)
 
-## Solução de problemas
+## Troubleshooting
 
-### Problemas comuns
+### Common issues
 
-- **Imagens não aparecem em canais:** Permissões Graph ou consentimento do admin ausentes. Reinstale o app Teams e feche/reabra completamente o Teams.
-- **Sem respostas no canal:** Menções são necessárias por padrão; defina `channels.msteams.requireMention=false` ou configure por equipe/canal.
-- **Incompatibilidade de versão (Teams ainda mostra manifesto antigo):** Remova + re-adicione o app e feche completamente o Teams para atualizar.
-- **401 Unauthorized do Webhook:** Esperado ao testar manualmente sem JWT Azure - significa que o endpoint é acessível mas a autenticação falhou. Use o Azure Web Chat para testar adequadamente.
+- **Images not showing in channels:** Graph permissions or admin consent missing. Reinstall the Teams app and fully quit/reopen Teams.
+- **No responses in channel:** mentions are required by default; set `channels.msteams.requireMention=false` or configure per team/channel.
+- **Version mismatch (Teams still shows old manifest):** remove + re-add the app and fully quit Teams to refresh.
+- **401 Unauthorized from webhook:** Expected when testing manually without Azure JWT - means endpoint is reachable but auth failed. Use Azure Web Chat to test properly.
 
-### Erros de upload do manifesto
+### Manifest upload errors
 
-- **"Icon file cannot be empty":** O manifesto referencia arquivos de ícone que têm 0 bytes. Crie ícones PNG válidos (32x32 para `outline.png`, 192x192 para `color.png`).
-- **"webApplicationInfo.Id already in use":** O app ainda está instalado em outra equipe/chat. Encontre e desinstale primeiro, ou aguarde 5-10 minutos para propagação.
-- **"Something went wrong" no upload:** Faça upload via [https://admin.teams.microsoft.com](https://admin.teams.microsoft.com), abra DevTools do navegador (F12) e depois aba Network, e verifique o corpo da resposta para o erro real.
-- **Sideload falhando:** Tente "Upload an app to your org's app catalog" em vez de "Upload a custom app" - isso frequentemente contorna restrições de sideload.
+- **"Icon file cannot be empty":** The manifest references icon files that are 0 bytes. Create valid PNG icons (32x32 for `outline.png`, 192x192 for `color.png`).
+- **"webApplicationInfo.Id already in use":** The app is still installed in another team/chat. Find and uninstall it first, or wait 5-10 minutes for propagation.
+- **"Something went wrong" on upload:** Upload via [https://admin.teams.microsoft.com](https://admin.teams.microsoft.com) instead, open browser DevTools (F12) → Network tab, and check the response body for the actual error.
+- **Sideload failing:** Try "Upload an app to your org's app catalog" instead of "Upload a custom app" - this often bypasses sideload restrictions.
 
-### Permissões RSC não funcionando
+### RSC permissions not working
 
-1. Verifique se `webApplicationInfo.id` corresponde exatamente ao App ID do seu Bot
-2. Re-faça upload do app e reinstale na equipe/chat
-3. Verifique se o admin da organização bloqueou permissões RSC
-4. Confirme que você está usando o escopo correto: `ChannelMessage.Read.Group` para equipes, `ChatMessage.Read.Chat` para chats de grupo
+1. Verify `webApplicationInfo.id` matches your bot's App ID exactly
+2. Re-upload the app and reinstall in the team/chat
+3. Check if your org admin has blocked RSC permissions
+4. Confirm you're using the right scope: `ChannelMessage.Read.Group` for teams, `ChatMessage.Read.Chat` for group chats
 
-## Referências
+## References
 
-- [Criar Azure Bot](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration) - Guia de configuração do Azure Bot
-- [Teams Developer Portal](https://dev.teams.microsoft.com/apps) - criar/gerenciar apps Teams
-- [Esquema de manifesto do app Teams](https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema)
-- [Receber mensagens de canal com RSC](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/channel-messages-with-rsc)
-- [Referência de permissões RSC](https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/resource-specific-consent)
-- [Tratamento de arquivos do Bot Teams](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4) (canal/grupo requer Graph)
-- [Mensagens proativas](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages)
+- [Create Azure Bot](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration) - Azure Bot setup guide
+- [Teams Developer Portal](https://dev.teams.microsoft.com/apps) - create/manage Teams apps
+- [Teams app manifest schema](https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema)
+- [Receive channel messages with RSC](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/channel-messages-with-rsc)
+- [RSC permissions reference](https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/resource-specific-consent)
+- [Teams bot file handling](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4) (channel/group requires Graph)
+- [Proactive messaging](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages)

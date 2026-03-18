@@ -1,14 +1,11 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { buildMicrosoftSpeechProvider } from "../../src/tts/providers/microsoft.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { buildMicrosoftSpeechProvider } from "opencraft/plugin-sdk/speech";
 
-const microsoftPlugin = {
+export default definePluginEntry({
   id: "microsoft",
   name: "Microsoft Speech",
   description: "Bundled Microsoft speech provider",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerSpeechProvider(buildMicrosoftSpeechProvider());
   },
-};
-
-export default microsoftPlugin;
+});

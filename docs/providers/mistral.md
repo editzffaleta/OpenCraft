@@ -1,26 +1,26 @@
 ---
-summary: "Use modelos Mistral e transcrição Voxtral com o OpenCraft"
+summary: "Use Mistral models and Voxtral transcription with OpenCraft"
 read_when:
-  - Você quer usar modelos Mistral no OpenCraft
-  - Você precisa de onboarding de API key Mistral e referências de modelo
+  - You want to use Mistral models in OpenCraft
+  - You need Mistral API key onboarding and model refs
 title: "Mistral"
 ---
 
 # Mistral
 
-O OpenCraft suporta Mistral tanto para roteamento de modelos de texto/imagem (`mistral/...`) quanto para
-transcrição de áudio via Voxtral na compreensão de mídia.
-O Mistral também pode ser usado para embeddings de memória (`memorySearch.provider = "mistral"`).
+OpenCraft supports Mistral for both text/image model routing (`mistral/...`) and
+audio transcription via Voxtral in media understanding.
+Mistral can also be used for memory embeddings (`memorySearch.provider = "mistral"`).
 
-## Configuração via CLI
+## CLI setup
 
 ```bash
 opencraft onboard --auth-choice mistral-api-key
-# ou não interativo
+# or non-interactive
 opencraft onboard --mistral-api-key "$MISTRAL_API_KEY"
 ```
 
-## Trecho de config (provider de LLM)
+## Config snippet (LLM provider)
 
 ```json5
 {
@@ -29,7 +29,7 @@ opencraft onboard --mistral-api-key "$MISTRAL_API_KEY"
 }
 ```
 
-## Trecho de config (transcrição de áudio com Voxtral)
+## Config snippet (audio transcription with Voxtral)
 
 ```json5
 {
@@ -44,11 +44,11 @@ opencraft onboard --mistral-api-key "$MISTRAL_API_KEY"
 }
 ```
 
-## Notas
+## Notes
 
-- A autenticação Mistral usa `MISTRAL_API_KEY`.
-- A URL base do provider padrão é `https://api.mistral.ai/v1`.
-- O modelo padrão de onboarding é `mistral/mistral-large-latest`.
-- O modelo de áudio padrão para compreensão de mídia do Mistral é `voxtral-mini-latest`.
-- O caminho de transcrição de mídia usa `/v1/audio/transcriptions`.
-- O caminho de embeddings de memória usa `/v1/embeddings` (modelo padrão: `mistral-embed`).
+- Mistral auth uses `MISTRAL_API_KEY`.
+- Provider base URL defaults to `https://api.mistral.ai/v1`.
+- Onboarding default model is `mistral/mistral-large-latest`.
+- Media-understanding default audio model for Mistral is `voxtral-mini-latest`.
+- Media transcription path uses `/v1/audio/transcriptions`.
+- Memory embeddings path uses `/v1/embeddings` (default model: `mistral-embed`).

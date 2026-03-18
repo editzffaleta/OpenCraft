@@ -149,9 +149,9 @@ describe("formatCliCommand", () => {
   });
 
   it("trims whitespace from profile", () => {
-    expect(
-      formatCliCommand("opencraft doctor --fix", { OPENCRAFT_PROFILE: "  jbopencraft  " }),
-    ).toBe("opencraft --profile jbopencraft doctor --fix");
+    expect(formatCliCommand("opencraft doctor --fix", { OPENCRAFT_PROFILE: "  jbopencraft  " })).toBe(
+      "opencraft --profile jbopencraft doctor --fix",
+    );
   });
 
   it("handles command with no args after opencraft", () => {

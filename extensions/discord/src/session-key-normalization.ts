@@ -1,5 +1,5 @@
-import type { MsgContext } from "../../../src/auto-reply/templating.js";
-import { normalizeChatType } from "../../../src/channels/chat-type.js";
+import { normalizeChatType } from "opencraft/plugin-sdk/channel-runtime";
+import type { MsgContext } from "opencraft/plugin-sdk/reply-runtime";
 
 export function normalizeExplicitDiscordSessionKey(
   sessionKey: string,

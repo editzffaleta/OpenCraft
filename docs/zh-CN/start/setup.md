@@ -19,7 +19,7 @@ x-i18n:
 
 ## 太长不看
 
-- **个性化设置存放在仓库之外：** `~/.opencraft/workspace`（工作区）+ `~/.editzffaleta/OpenCraft.json`（配置）。
+- **个性化设置存放在仓库之外：** `~/.opencraft/workspace`（工作区）+ `~/.opencraft/opencraft.json`（配置）。
 - **稳定工作流：** 安装 macOS 应用；让它运行内置的 Gateway 网关。
 - **前沿工作流：** 通过 `pnpm gateway:watch` 自己运行 Gateway 网关，然后让 macOS 应用以本地模式连接。
 
@@ -33,7 +33,7 @@ x-i18n:
 
 如果你想要"100% 为我定制"*并且*易于更新，将你的自定义内容保存在：
 
-- **配置：** `~/.editzffaleta/OpenCraft.json`（JSON/JSON5 格式）
+- **配置：** `~/.opencraft/opencraft.json`（JSON/JSON5 格式）
 - **工作区：** `~/.opencraft/workspace`（Skills、提示、记忆；将其设为私有 git 仓库）
 
 引导一次：

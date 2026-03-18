@@ -1,20 +1,20 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { logVerbose, shouldLogVerbose } from "../../../src/globals.js";
-import { SafeOpenError, readLocalFileSafely } from "../../../src/infra/fs-safe.js";
-import type { SsrFPolicy } from "../../../src/infra/net/ssrf.js";
-import { type MediaKind, maxBytesForKind } from "../../../src/media/constants.js";
-import { fetchRemoteMedia } from "../../../src/media/fetch.js";
+import { SafeOpenError, readLocalFileSafely } from "opencraft/plugin-sdk/infra-runtime";
+import type { SsrFPolicy } from "opencraft/plugin-sdk/infra-runtime";
+import { type MediaKind, maxBytesForKind } from "opencraft/plugin-sdk/media-runtime";
+import { fetchRemoteMedia } from "opencraft/plugin-sdk/media-runtime";
 import {
   convertHeicToJpeg,
   hasAlphaChannel,
   optimizeImageToPng,
   resizeToJpeg,
-} from "../../../src/media/image-ops.js";
-import { getDefaultMediaLocalRoots } from "../../../src/media/local-roots.js";
-import { detectMime, extensionForMime, kindFromMime } from "../../../src/media/mime.js";
-import { resolveUserPath } from "../../../src/utils.js";
+} from "opencraft/plugin-sdk/media-runtime";
+import { getDefaultMediaLocalRoots } from "opencraft/plugin-sdk/media-runtime";
+import { detectMime, extensionForMime, kindFromMime } from "opencraft/plugin-sdk/media-runtime";
+import { logVerbose, shouldLogVerbose } from "opencraft/plugin-sdk/runtime-env";
+import { resolveUserPath } from "opencraft/plugin-sdk/text-runtime";
 
 export type WebMediaResult = {
   buffer: Buffer;

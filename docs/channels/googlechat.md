@@ -1,5 +1,5 @@
 ---
-summary: "Status de suporte, capacidades e configuracao do app Google Chat"
+summary: "Google Chat app support status, capabilities, and configuration"
 read_when:
   - Working on Google Chat channel features
 title: "Google Chat"
@@ -7,119 +7,119 @@ title: "Google Chat"
 
 # Google Chat (Chat API)
 
-Status: pronto para DMs + espacos via Webhooks da API do Google Chat (somente HTTP).
+Status: ready for DMs + spaces via Google Chat API webhooks (HTTP only).
 
-## Configuracao rapida (iniciante)
+## Quick setup (beginner)
 
-1. Crie um projeto no Google Cloud e habilite a **Google Chat API**.
-   - Acesse: [Credenciais da Google Chat API](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials)
-   - Habilite a API se ainda nao estiver habilitada.
-2. Crie uma **Conta de Servico**:
-   - Pressione **Create Credentials** > **Service Account**.
-   - Nomeie como quiser (ex.: `opencraft-chat`).
-   - Deixe as permissoes em branco (pressione **Continue**).
-   - Deixe os principals com acesso em branco (pressione **Done**).
-3. Crie e baixe a **Chave JSON**:
-   - Na lista de contas de servico, clique na que voce acabou de criar.
-   - Va para a aba **Keys**.
-   - Clique em **Add Key** > **Create new key**.
-   - Selecione **JSON** e pressione **Create**.
-4. Armazene o arquivo JSON baixado no seu host do Gateway (ex.: `~/.opencraft/googlechat-service-account.json`).
-5. Crie um app do Google Chat no [Console Google Cloud - Configuracao do Chat](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat):
-   - Preencha as **Informacoes do aplicativo**:
-     - **App name**: (ex.: `OpenCraft`)
-     - **Avatar URL**: (ex.: `https://opencraft.ai/logo.png`)
-     - **Description**: (ex.: `Assistente pessoal de IA`)
-   - Habilite **Interactive features**.
-   - Em **Functionality**, marque **Join spaces and group conversations**.
-   - Em **Connection settings**, selecione **HTTP endpoint URL**.
-   - Em **Triggers**, selecione **Use a common HTTP endpoint URL for all triggers** e defina como a URL publica do seu Gateway seguida de `/googlechat`.
-     - _Dica: Execute `opencraft status` para encontrar a URL publica do seu Gateway._
-   - Em **Visibility**, marque **Make this Chat app available to specific people and groups in &lt;Your Domain&gt;**.
-   - Insira seu endereco de email (ex.: `user@example.com`) na caixa de texto.
-   - Clique em **Save** na parte inferior.
-6. **Habilite o status do app**:
-   - Apos salvar, **atualize a pagina**.
-   - Procure a secao **App status** (geralmente perto do topo ou final apos salvar).
-   - Altere o status para **Live - available to users**.
-   - Clique em **Save** novamente.
-7. Configure o OpenCraft com o caminho da conta de servico + audiencia do Webhook:
+1. Create a Google Cloud project and enable the **Google Chat API**.
+   - Go to: [Google Chat API Credentials](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials)
+   - Enable the API if it is not already enabled.
+2. Create a **Service Account**:
+   - Press **Create Credentials** > **Service Account**.
+   - Name it whatever you want (e.g., `opencraft-chat`).
+   - Leave permissions blank (press **Continue**).
+   - Leave principals with access blank (press **Done**).
+3. Create and download the **JSON Key**:
+   - In the list of service accounts, click on the one you just created.
+   - Go to the **Keys** tab.
+   - Click **Add Key** > **Create new key**.
+   - Select **JSON** and press **Create**.
+4. Store the downloaded JSON file on your gateway host (e.g., `~/.opencraft/googlechat-service-account.json`).
+5. Create a Google Chat app in the [Google Cloud Console Chat Configuration](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat):
+   - Fill in the **Application info**:
+     - **App name**: (e.g. `OpenCraft`)
+     - **Avatar URL**: (e.g. `https://opencraft.ai/logo.png`)
+     - **Description**: (e.g. `Personal AI Assistant`)
+   - Enable **Interactive features**.
+   - Under **Functionality**, check **Join spaces and group conversations**.
+   - Under **Connection settings**, select **HTTP endpoint URL**.
+   - Under **Triggers**, select **Use a common HTTP endpoint URL for all triggers** and set it to your gateway's public URL followed by `/googlechat`.
+     - _Tip: Run `opencraft status` to find your gateway's public URL._
+   - Under **Visibility**, check **Make this Chat app available to specific people and groups in &lt;Your Domain&gt;**.
+   - Enter your email address (e.g. `user@example.com`) in the text box.
+   - Click **Save** at the bottom.
+6. **Enable the app status**:
+   - After saving, **refresh the page**.
+   - Look for the **App status** section (usually near the top or bottom after saving).
+   - Change the status to **Live - available to users**.
+   - Click **Save** again.
+7. Configure OpenCraft with the service account path + webhook audience:
    - Env: `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE=/path/to/service-account.json`
-   - Ou config: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`.
-8. Defina o tipo e valor da audiencia do Webhook (corresponde a configuracao do seu app do Chat).
-9. Inicie o Gateway. O Google Chat enviara POSTs para o seu caminho de Webhook.
+   - Or config: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`.
+8. Set the webhook audience type + value (matches your Chat app config).
+9. Start the gateway. Google Chat will POST to your webhook path.
 
-## Adicionar ao Google Chat
+## Add to Google Chat
 
-Assim que o Gateway estiver em execucao e seu email adicionado a lista de visibilidade:
+Once the gateway is running and your email is added to the visibility list:
 
-1. Va para [Google Chat](https://chat.google.com/).
-2. Clique no icone **+** (mais) ao lado de **Direct Messages**.
-3. Na barra de pesquisa (onde voce normalmente adiciona pessoas), digite o **Nome do app** que voce configurou no Console Google Cloud.
-   - **Nota**: O Bot _nao_ aparecera na lista "Marketplace" porque e um app privado. Voce deve procura-lo pelo nome.
-4. Selecione seu Bot nos resultados.
-5. Clique em **Add** ou **Chat** para iniciar uma conversa 1:1.
-6. Envie "Ola" para acionar o assistente!
+1. Go to [Google Chat](https://chat.google.com/).
+2. Click the **+** (plus) icon next to **Direct Messages**.
+3. In the search bar (where you usually add people), type the **App name** you configured in the Google Cloud Console.
+   - **Note**: The bot will _not_ appear in the "Marketplace" browse list because it is a private app. You must search for it by name.
+4. Select your bot from the results.
+5. Click **Add** or **Chat** to start a 1:1 conversation.
+6. Send "Hello" to trigger the assistant!
 
-## URL publica (somente Webhook)
+## Public URL (Webhook-only)
 
-Os Webhooks do Google Chat requerem um endpoint HTTPS publico. Por seguranca, **exponha apenas o caminho `/googlechat`** para a internet. Mantenha o painel do OpenCraft e outros endpoints sensiveis na sua rede privada.
+Google Chat webhooks require a public HTTPS endpoint. For security, **only expose the `/googlechat` path** to the internet. Keep the OpenCraft dashboard and other sensitive endpoints on your private network.
 
-### Opcao A: Tailscale Funnel (recomendado)
+### Option A: Tailscale Funnel (Recommended)
 
-Use o Tailscale Serve para o painel privado e o Funnel para o caminho publico do Webhook. Isso mantém `/` privado enquanto expoe apenas `/googlechat`.
+Use Tailscale Serve for the private dashboard and Funnel for the public webhook path. This keeps `/` private while exposing only `/googlechat`.
 
-1. **Verifique em qual endereco seu Gateway esta vinculado:**
+1. **Check what address your gateway is bound to:**
 
    ```bash
    ss -tlnp | grep 18789
    ```
 
-   Anote o endereco IP (ex.: `127.0.0.1`, `0.0.0.0` ou seu IP Tailscale como `100.x.x.x`).
+   Note the IP address (e.g., `127.0.0.1`, `0.0.0.0`, or your Tailscale IP like `100.x.x.x`).
 
-2. **Exponha o painel apenas para o tailnet (porta 8443):**
+2. **Expose the dashboard to the tailnet only (port 8443):**
 
    ```bash
-   # Se vinculado ao localhost (127.0.0.1 ou 0.0.0.0):
+   # If bound to localhost (127.0.0.1 or 0.0.0.0):
    tailscale serve --bg --https 8443 http://127.0.0.1:18789
 
-   # Se vinculado apenas ao IP Tailscale (ex.: 100.106.161.80):
+   # If bound to Tailscale IP only (e.g., 100.106.161.80):
    tailscale serve --bg --https 8443 http://100.106.161.80:18789
    ```
 
-3. **Exponha apenas o caminho do Webhook publicamente:**
+3. **Expose only the webhook path publicly:**
 
    ```bash
-   # Se vinculado ao localhost (127.0.0.1 ou 0.0.0.0):
+   # If bound to localhost (127.0.0.1 or 0.0.0.0):
    tailscale funnel --bg --set-path /googlechat http://127.0.0.1:18789/googlechat
 
-   # Se vinculado apenas ao IP Tailscale (ex.: 100.106.161.80):
+   # If bound to Tailscale IP only (e.g., 100.106.161.80):
    tailscale funnel --bg --set-path /googlechat http://100.106.161.80:18789/googlechat
    ```
 
-4. **Autorize o no para acesso ao Funnel:**
-   Se solicitado, visite a URL de autorizacao mostrada na saida para habilitar o Funnel para este no na sua politica de tailnet.
+4. **Authorize the node for Funnel access:**
+   If prompted, visit the authorization URL shown in the output to enable Funnel for this node in your tailnet policy.
 
-5. **Verifique a configuracao:**
+5. **Verify the configuration:**
 
    ```bash
    tailscale serve status
    tailscale funnel status
    ```
 
-Sua URL publica de Webhook sera:
+Your public webhook URL will be:
 `https://<node-name>.<tailnet>.ts.net/googlechat`
 
-Seu painel privado permanece somente no tailnet:
+Your private dashboard stays tailnet-only:
 `https://<node-name>.<tailnet>.ts.net:8443/`
 
-Use a URL publica (sem `:8443`) na configuracao do app do Google Chat.
+Use the public URL (without `:8443`) in the Google Chat app config.
 
-> Nota: Esta configuracao persiste entre reinicializacoes. Para remove-la depois, execute `tailscale funnel reset` e `tailscale serve reset`.
+> Note: This configuration persists across reboots. To remove it later, run `tailscale funnel reset` and `tailscale serve reset`.
 
-### Opcao B: Proxy reverso (Caddy)
+### Option B: Reverse Proxy (Caddy)
 
-Se voce usa um proxy reverso como Caddy, faca proxy apenas do caminho especifico:
+If you use a reverse proxy like Caddy, only proxy the specific path:
 
 ```caddy
 your-domain.com {
@@ -127,40 +127,40 @@ your-domain.com {
 }
 ```
 
-Com esta configuracao, qualquer requisicao para `your-domain.com/` sera ignorada ou retornara 404, enquanto `your-domain.com/googlechat` e roteado com seguranca para o OpenCraft.
+With this config, any request to `your-domain.com/` will be ignored or returned as 404, while `your-domain.com/googlechat` is safely routed to OpenCraft.
 
-### Opcao C: Cloudflare Tunnel
+### Option C: Cloudflare Tunnel
 
-Configure as regras de ingresso do seu tunnel para rotear apenas o caminho do Webhook:
+Configure your tunnel's ingress rules to only route the webhook path:
 
 - **Path**: `/googlechat` -> `http://localhost:18789/googlechat`
-- **Regra padrao**: HTTP 404 (Not Found)
+- **Default Rule**: HTTP 404 (Not Found)
 
-## Como funciona
+## How it works
 
-1. O Google Chat envia POSTs de Webhook para o Gateway. Cada requisicao inclui um header `Authorization: Bearer <token>`.
-   - O OpenCraft verifica a autenticacao bearer antes de ler/analisar o corpo completo do Webhook quando o header esta presente.
-   - Requisicoes de Google Workspace Add-on que carregam `authorizationEventObject.systemIdToken` no corpo sao suportadas via um orcamento de corpo pre-autenticacao mais restrito.
-2. O OpenCraft verifica o Token contra o `audienceType` + `audience` configurados:
-   - `audienceType: "app-url"` -> audiencia e sua URL HTTPS de Webhook.
-   - `audienceType: "project-number"` -> audiencia e o numero do projeto Cloud.
-3. As mensagens sao roteadas por espaco:
-   - DMs usam chave de sessao `agent:<agentId>:googlechat:direct:<spaceId>`.
-   - Espacos usam chave de sessao `agent:<agentId>:googlechat:group:<spaceId>`.
-4. O acesso a DM e por pareamento por padrao. Remetentes desconhecidos recebem um codigo de pareamento; aprove com:
+1. Google Chat sends webhook POSTs to the gateway. Each request includes an `Authorization: Bearer <token>` header.
+   - OpenCraft verifies bearer auth before reading/parsing full webhook bodies when the header is present.
+   - Google Workspace Add-on requests that carry `authorizationEventObject.systemIdToken` in the body are supported via a stricter pre-auth body budget.
+2. OpenCraft verifies the token against the configured `audienceType` + `audience`:
+   - `audienceType: "app-url"` → audience is your HTTPS webhook URL.
+   - `audienceType: "project-number"` → audience is the Cloud project number.
+3. Messages are routed by space:
+   - DMs use session key `agent:<agentId>:googlechat:direct:<spaceId>`.
+   - Spaces use session key `agent:<agentId>:googlechat:group:<spaceId>`.
+4. DM access is pairing by default. Unknown senders receive a pairing code; approve with:
    - `opencraft pairing approve googlechat <code>`
-5. Espacos de grupo requerem @mencao por padrao. Use `botUser` se a deteccao de mencao precisar do nome de usuario do app.
+5. Group spaces require @-mention by default. Use `botUser` if mention detection needs the app’s user name.
 
-## Alvos
+## Targets
 
-Use estes identificadores para entrega e listas de permitidos:
+Use these identifiers for delivery and allowlists:
 
-- Mensagens diretas: `users/<userId>` (recomendado).
-- Email bruto `name@example.com` e mutavel e so e usado para correspondencia direta de lista de permitidos quando `channels.googlechat.dangerouslyAllowNameMatching: true`.
-- Obsoleto: `users/<email>` e tratado como um user id, nao como email de lista de permitidos.
-- Espacos: `spaces/<spaceId>`.
+- Direct messages: `users/<userId>` (recommended).
+- Raw email `name@example.com` is mutable and only used for direct allowlist matching when `channels.googlechat.dangerouslyAllowNameMatching: true`.
+- Deprecated: `users/<email>` is treated as a user id, not an email allowlist.
+- Spaces: `spaces/<spaceId>`.
 
-## Destaques da configuracao
+## Config highlights
 
 ```json5
 {
@@ -168,11 +168,11 @@ Use estes identificadores para entrega e listas de permitidos:
     googlechat: {
       enabled: true,
       serviceAccountFile: "/path/to/service-account.json",
-      // ou serviceAccountRef: { source: "file", provider: "filemain", id: "/channels/googlechat/serviceAccount" }
+      // or serviceAccountRef: { source: "file", provider: "filemain", id: "/channels/googlechat/serviceAccount" }
       audienceType: "app-url",
       audience: "https://gateway.example.com/googlechat",
       webhookPath: "/googlechat",
-      botUser: "users/1234567890", // opcional; ajuda na deteccao de mencao
+      botUser: "users/1234567890", // optional; helps mention detection
       dm: {
         policy: "pairing",
         allowFrom: ["users/1234567890"],
@@ -183,7 +183,7 @@ Use estes identificadores para entrega e listas de permitidos:
           allow: true,
           requireMention: true,
           users: ["users/1234567890"],
-          systemPrompt: "Respostas curtas apenas.",
+          systemPrompt: "Short answers only.",
         },
       },
       actions: { reactions: true },
@@ -194,68 +194,68 @@ Use estes identificadores para entrega e listas de permitidos:
 }
 ```
 
-Notas:
+Notes:
 
-- As credenciais da conta de servico tambem podem ser passadas inline com `serviceAccount` (string JSON).
-- `serviceAccountRef` tambem e suportado (SecretRef env/file), incluindo refs por conta em `channels.googlechat.accounts.<id>.serviceAccountRef`.
-- O caminho padrao do Webhook e `/googlechat` se `webhookPath` nao estiver definido.
-- `dangerouslyAllowNameMatching` reabilita a correspondencia de principal por email mutavel para listas de permitidos (modo de compatibilidade de emergencia).
-- Reacoes estao disponiveis via a ferramenta `reactions` e `channels action` quando `actions.reactions` esta habilitado.
-- `typingIndicator` suporta `none`, `message` (padrao) e `reaction` (reacao requer OAuth do usuario).
-- Anexos sao baixados pela Chat API e armazenados no pipeline de midia (tamanho limitado por `mediaMaxMb`).
+- Service account credentials can also be passed inline with `serviceAccount` (JSON string).
+- `serviceAccountRef` is also supported (env/file SecretRef), including per-account refs under `channels.googlechat.accounts.<id>.serviceAccountRef`.
+- Default webhook path is `/googlechat` if `webhookPath` isn’t set.
+- `dangerouslyAllowNameMatching` re-enables mutable email principal matching for allowlists (break-glass compatibility mode).
+- Reactions are available via the `reactions` tool and `channels action` when `actions.reactions` is enabled.
+- `typingIndicator` supports `none`, `message` (default), and `reaction` (reaction requires user OAuth).
+- Attachments are downloaded through the Chat API and stored in the media pipeline (size capped by `mediaMaxMb`).
 
-Detalhes de referencia de segredos: [Gerenciamento de segredos](/gateway/secrets).
+Secrets reference details: [Secrets Management](/gateway/secrets).
 
-## Solucao de problemas
+## Troubleshooting
 
 ### 405 Method Not Allowed
 
-Se o Google Cloud Logs Explorer mostrar erros como:
+If Google Cloud Logs Explorer shows errors like:
 
 ```
 status code: 405, reason phrase: HTTP error response: HTTP/1.1 405 Method Not Allowed
 ```
 
-Isso significa que o handler do Webhook nao esta registrado. Causas comuns:
+This means the webhook handler isn't registered. Common causes:
 
-1. **Canal nao configurado**: A secao `channels.googlechat` esta faltando na sua configuracao. Verifique com:
+1. **Channel not configured**: The `channels.googlechat` section is missing from your config. Verify with:
 
    ```bash
    opencraft config get channels.googlechat
    ```
 
-   Se retornar "Config path not found", adicione a configuracao (veja [Destaques da configuracao](#destaques-da-configuracao)).
+   If it returns "Config path not found", add the configuration (see [Config highlights](#config-highlights)).
 
-2. **Plugin nao habilitado**: Verifique o status do Plugin:
+2. **Plugin not enabled**: Check plugin status:
 
    ```bash
    opencraft plugins list | grep googlechat
    ```
 
-   Se mostrar "disabled", adicione `plugins.entries.googlechat.enabled: true` a sua configuracao.
+   If it shows "disabled", add `plugins.entries.googlechat.enabled: true` to your config.
 
-3. **Gateway nao reiniciado**: Apos adicionar a configuracao, reinicie o Gateway:
+3. **Gateway not restarted**: After adding config, restart the gateway:
 
    ```bash
    opencraft gateway restart
    ```
 
-Verifique se o canal esta em execucao:
+Verify the channel is running:
 
 ```bash
 opencraft channels status
-# Deve mostrar: Google Chat default: enabled, configured, ...
+# Should show: Google Chat default: enabled, configured, ...
 ```
 
-### Outros problemas
+### Other issues
 
-- Verifique `opencraft channels status --probe` para erros de autenticacao ou configuracao de audiencia ausente.
-- Se nenhuma mensagem chegar, confirme a URL do Webhook + inscricoes de eventos do app do Chat.
-- Se o controle por mencao bloquear respostas, defina `botUser` para o nome do recurso de usuario do app e verifique `requireMention`.
-- Use `opencraft logs --follow` enquanto envia uma mensagem de teste para ver se as requisicoes chegam ao Gateway.
+- Check `opencraft channels status --probe` for auth errors or missing audience config.
+- If no messages arrive, confirm the Chat app's webhook URL + event subscriptions.
+- If mention gating blocks replies, set `botUser` to the app's user resource name and verify `requireMention`.
+- Use `opencraft logs --follow` while sending a test message to see if requests reach the gateway.
 
-Documentacao relacionada:
+Related docs:
 
-- [Configuracao do Gateway](/gateway/configuration)
-- [Seguranca](/gateway/security)
-- [Reacoes](/tools/reactions)
+- [Gateway configuration](/gateway/configuration)
+- [Security](/gateway/security)
+- [Reactions](/tools/reactions)

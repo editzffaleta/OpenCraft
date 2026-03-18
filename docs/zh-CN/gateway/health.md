@@ -23,7 +23,7 @@ x-i18n:
 - `opencraft status --deep` — 还会探测运行中的 Gateway 网关（支持时进行每渠道探测）。
 - `opencraft health --json` — 向运行中的 Gateway 网关请求完整健康快照（仅 WS；不直接访问 Baileys 套接字）。
 - 在 WhatsApp/WebChat 中单独发送 `/status` 消息可获取状态回复，而不调用智能体。
-- 日志：跟踪 `/tmp/editzffaleta/OpenCraft-*.log` 并过滤 `web-heartbeat`、`web-reconnect`、`web-auto-reply`、`web-inbound`。
+- 日志：跟踪 `/tmp/opencraft/opencraft-*.log` 并过滤 `web-heartbeat`、`web-reconnect`、`web-auto-reply`、`web-inbound`。
 
 ## 深度诊断
 

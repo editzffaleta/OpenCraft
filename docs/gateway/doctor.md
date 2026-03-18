@@ -1,295 +1,362 @@
 ---
-summary: "Comando Doctor: verificações de saúde, migrações de config e etapas de reparo"
+summary: "Doctor command: health checks, config migrations, and repair steps"
 read_when:
-  - Adicionando ou modificando migrações do doctor
-  - Introduzindo mudanças de config que quebram compatibilidade
+  - Adding or modifying doctor migrations
+  - Introducing breaking config changes
 title: "Doctor"
 ---
 
 # Doctor
 
-`opencraft doctor` é a ferramenta de reparo + migração do OpenCraft. Ele corrige config/estado obsoletos, verifica saúde e fornece etapas de reparo acionáveis.
+`opencraft doctor` is the repair + migration tool for OpenCraft. It fixes stale
+config/state, checks health, and provides actionable repair steps.
 
-## Início rápido
+## Quick start
 
 ```bash
 opencraft doctor
 ```
 
-### Headless / automação
+### Headless / automation
 
 ```bash
 opencraft doctor --yes
 ```
 
-Aceitar padrões sem solicitar (incluindo etapas de restart/serviço/sandbox quando aplicável).
+Accept defaults without prompting (including restart/service/sandbox repair steps when applicable).
 
 ```bash
 opencraft doctor --repair
 ```
 
-Aplicar reparos recomendados sem solicitar (reparos + restarts quando seguro).
+Apply recommended repairs without prompting (repairs + restarts where safe).
 
 ```bash
 opencraft doctor --repair --force
 ```
 
-Aplicar reparos agressivos também (sobrescreve configs de supervisor customizadas).
+Apply aggressive repairs too (overwrites custom supervisor configs).
 
 ```bash
 opencraft doctor --non-interactive
 ```
 
-Executar sem prompts e aplicar apenas migrações seguras (normalização de config + movimentações de estado em disco). Pula ações de restart/serviço/sandbox que requerem confirmação humana.
-Migrações de estado legado executam automaticamente quando detectadas.
+Run without prompts and only apply safe migrations (config normalization + on-disk state moves). Skips restart/service/sandbox actions that require human confirmation.
+Legacy state migrations run automatically when detected.
 
 ```bash
 opencraft doctor --deep
 ```
 
-Escanear serviços do sistema em busca de instalações extras de gateway (launchd/systemd/schtasks).
+Scan system services for extra gateway installs (launchd/systemd/schtasks).
 
-Se você quiser revisar mudanças antes de escrever, abra o arquivo de config primeiro:
+If you want to review changes before writing, open the config file first:
 
 ```bash
-cat ~/.editzffaleta/OpenCraft.json
+cat ~/.opencraft/opencraft.json
 ```
 
-## O que ele faz (resumo)
+## What it does (summary)
 
-- Atualização pré-voo opcional para instalações git (apenas interativo).
-- Verificação de frescor do protocolo UI (reconstrói Control UI quando o schema de protocolo é mais novo).
-- Verificação de saúde + prompt de restart.
-- Resumo de status de Skills (elegíveis/faltando/bloqueados).
-- Normalização de config para valores legados.
-- Verificações de migração de browser para configs legadas de extensão Chrome e prontidão Chrome MCP.
-- Avisos de override de provider OpenCode (`models.providers.opencode` / `models.providers.opencode-go`).
-- Migração de estado legado em disco (sessões/diretório de agente/auth WhatsApp).
-- Migração de cron store legado (`jobId`, `schedule.cron`, campos de delivery/payload de nível superior, payload `provider`, jobs de fallback webhook simples `notify: true`).
-- Verificações de integridade de estado e permissões (sessões, transcrições, diretório de estado).
-- Verificações de permissão de arquivo de config (chmod 600) ao executar localmente.
-- Saúde de auth de modelo: verifica expiração de OAuth, pode atualizar tokens expirando e reporta estados de cooldown/desabilitado de auth-profile.
-- Detecção de diretório de workspace extra (`~/opencraft`).
-- Reparo de imagem sandbox quando sandboxing está habilitado.
-- Migração de serviço legado e detecção de gateway extra.
-- Verificações de runtime do Gateway (serviço instalado mas não executando; label launchd em cache).
-- Avisos de status de canal (sondados do gateway em execução).
-- Auditoria de config de supervisor (launchd/systemd/schtasks) com reparo opcional.
-- Verificações de boas práticas de runtime do Gateway (Node vs Bun, caminhos de version-manager).
-- Diagnósticos de colisão de porta do Gateway (padrão `18789`).
-- Avisos de segurança para políticas de DM abertas.
-- Verificações de auth do Gateway para modo de token local (oferece geração de token quando nenhuma fonte de token existe; não sobrescreve configs de token SecretRef).
-- Verificação de linger do systemd no Linux.
-- Verificações de instalação via source (mismatch de workspace pnpm, assets UI faltando, binário tsx faltando).
-- Escreve config atualizado + metadados do wizard.
+- Optional pre-flight update for git installs (interactive only).
+- UI protocol freshness check (rebuilds Control UI when the protocol schema is newer).
+- Health check + restart prompt.
+- Skills status summary (eligible/missing/blocked).
+- Config normalization for legacy values.
+- Browser migration checks for legacy Chrome extension configs and Chrome MCP readiness.
+- OpenCode provider override warnings (`models.providers.opencode` / `models.providers.opencode-go`).
+- Legacy on-disk state migration (sessions/agent dir/WhatsApp auth).
+- Legacy cron store migration (`jobId`, `schedule.cron`, top-level delivery/payload fields, payload `provider`, simple `notify: true` webhook fallback jobs).
+- State integrity and permissions checks (sessions, transcripts, state dir).
+- Config file permission checks (chmod 600) when running locally.
+- Model auth health: checks OAuth expiry, can refresh expiring tokens, and reports auth-profile cooldown/disabled states.
+- Extra workspace dir detection (`~/opencraft`).
+- Sandbox image repair when sandboxing is enabled.
+- Legacy service migration and extra gateway detection.
+- Gateway runtime checks (service installed but not running; cached launchd label).
+- Channel status warnings (probed from the running gateway).
+- Supervisor config audit (launchd/systemd/schtasks) with optional repair.
+- Gateway runtime best-practice checks (Node vs Bun, version-manager paths).
+- Gateway port collision diagnostics (default `18789`).
+- Security warnings for open DM policies.
+- Gateway auth checks for local token mode (offers token generation when no token source exists; does not overwrite token SecretRef configs).
+- systemd linger check on Linux.
+- Source install checks (pnpm workspace mismatch, missing UI assets, missing tsx binary).
+- Writes updated config + wizard metadata.
 
-## Comportamento detalhado e justificativa
+## Detailed behavior and rationale
 
-### 0) Atualização opcional (instalações git)
+### 0) Optional update (git installs)
 
-Se for um checkout git e o doctor está executando interativamente, ele oferece atualizar (fetch/rebase/build) antes de executar o doctor.
+If this is a git checkout and doctor is running interactively, it offers to
+update (fetch/rebase/build) before running doctor.
 
-### 1) Normalização de config
+### 1) Config normalization
 
-Se a config contém formas de valores legados (por exemplo `messages.ackReaction` sem override específico de canal), o doctor os normaliza para o schema atual.
+If the config contains legacy value shapes (for example `messages.ackReaction`
+without a channel-specific override), doctor normalizes them into the current
+schema.
 
-### 2) Migrações de chaves de config legadas
+### 2) Legacy config key migrations
 
-Quando a config contém chaves descontinuadas, outros comandos recusam executar e pedem que você execute `opencraft doctor`.
+When the config contains deprecated keys, other commands refuse to run and ask
+you to run `opencraft doctor`.
 
-O Doctor irá:
+Doctor will:
 
-- Explicar quais chaves legadas foram encontradas.
-- Mostrar a migração que aplicou.
-- Reescrever `~/.editzffaleta/OpenCraft.json` com o schema atualizado.
+- Explain which legacy keys were found.
+- Show the migration it applied.
+- Rewrite `~/.opencraft/opencraft.json` with the updated schema.
 
-O Gateway também auto-executa migrações do doctor na inicialização quando detecta um formato de config legado, para que configs obsoletas sejam reparadas sem intervenção manual.
+The Gateway also auto-runs doctor migrations on startup when it detects a
+legacy config format, so stale configs are repaired without manual intervention.
 
-Migrações atuais:
+Current migrations:
 
 - `routing.allowFrom` → `channels.whatsapp.allowFrom`
 - `routing.groupChat.requireMention` → `channels.whatsapp/telegram/imessage.groups."*".requireMention`
 - `routing.groupChat.historyLimit` → `messages.groupChat.historyLimit`
 - `routing.groupChat.mentionPatterns` → `messages.groupChat.mentionPatterns`
 - `routing.queue` → `messages.queue`
-- `routing.bindings` → `bindings` de nível superior
+- `routing.bindings` → top-level `bindings`
 - `routing.agents`/`routing.defaultAgentId` → `agents.list` + `agents.list[].default`
 - `routing.agentToAgent` → `tools.agentToAgent`
 - `routing.transcribeAudio` → `tools.media.audio.models`
 - `bindings[].match.accountID` → `bindings[].match.accountId`
-- Para canais com `accounts` nomeadas mas sem `accounts.default`, mover valores de canal de conta única de nível superior com escopo de conta para `channels.<channel>.accounts.default` quando presentes
+- For channels with named `accounts` but missing `accounts.default`, move account-scoped top-level single-account channel values into `channels.<channel>.accounts.default` when present
 - `identity` → `agents.list[].identity`
 - `agent.*` → `agents.defaults` + `tools.*` (tools/elevated/exec/sandbox/subagents)
 - `agent.model`/`allowedModels`/`modelAliases`/`modelFallbacks`/`imageModelFallbacks`
   → `agents.defaults.models` + `agents.defaults.model.primary/fallbacks` + `agents.defaults.imageModel.primary/fallbacks`
 - `browser.ssrfPolicy.allowPrivateNetwork` → `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork`
 - `browser.profiles.*.driver: "extension"` → `"existing-session"`
-- remover `browser.relayBindHost` (configuração legada de relay de extensão)
+- remove `browser.relayBindHost` (legacy extension relay setting)
 
-Avisos do doctor também incluem orientação de account-default para canais multi-conta:
+Doctor warnings also include account-default guidance for multi-account channels:
 
-- Se duas ou mais entradas `channels.<channel>.accounts` estão configuradas sem `channels.<channel>.defaultAccount` ou `accounts.default`, o doctor avisa que o roteamento de fallback pode escolher uma conta inesperada.
-- Se `channels.<channel>.defaultAccount` está definido para um ID de conta desconhecido, o doctor avisa e lista IDs de conta configurados.
+- If two or more `channels.<channel>.accounts` entries are configured without `channels.<channel>.defaultAccount` or `accounts.default`, doctor warns that fallback routing can pick an unexpected account.
+- If `channels.<channel>.defaultAccount` is set to an unknown account ID, doctor warns and lists configured account IDs.
 
-### 2b) Overrides de provider OpenCode
+### 2b) OpenCode provider overrides
 
-Se você adicionou `models.providers.opencode`, `opencode-zen` ou `opencode-go` manualmente, isso sobrescreve o catálogo built-in do OpenCode de `@mariozechner/pi-ai`. Isso pode forçar modelos no API errado ou zerar custos. O doctor avisa para que você possa remover o override e restaurar o roteamento de API por modelo + custos.
+If you’ve added `models.providers.opencode`, `opencode-zen`, or `opencode-go`
+manually, it overrides the built-in OpenCode catalog from `@mariozechner/pi-ai`.
+That can force models onto the wrong API or zero out costs. Doctor warns so you
+can remove the override and restore per-model API routing + costs.
 
-### 2c) Migração de browser e prontidão Chrome MCP
+### 2c) Browser migration and Chrome MCP readiness
 
-Se sua config de browser ainda aponta para o caminho removido da extensão Chrome, o doctor normaliza para o modelo atual de attach Chrome MCP host-local:
+If your browser config still points at the removed Chrome extension path, doctor
+normalizes it to the current host-local Chrome MCP attach model:
 
-- `browser.profiles.*.driver: "extension"` se torna `"existing-session"`
-- `browser.relayBindHost` é removido
+- `browser.profiles.*.driver: "extension"` becomes `"existing-session"`
+- `browser.relayBindHost` is removed
 
-O doctor também audita o caminho Chrome MCP host-local quando você usa `defaultProfile: "user"` ou um perfil configurado `existing-session`:
+Doctor also audits the host-local Chrome MCP path when you use `defaultProfile:
+"user"` or a configured `existing-session` profile:
 
-- verifica se o Google Chrome está instalado no mesmo host para perfis de auto-conexão padrão
-- verifica a versão detectada do Chrome e avisa quando está abaixo do Chrome 144
-- lembra você de habilitar remote debugging na página de inspeção do browser (por exemplo `chrome://inspect/#remote-debugging`, `brave://inspect/#remote-debugging` ou `edge://inspect/#remote-debugging`)
+- checks whether Google Chrome is installed on the same host for default
+  auto-connect profiles
+- checks the detected Chrome version and warns when it is below Chrome 144
+- reminds you to enable remote debugging in the browser inspect page (for
+  example `chrome://inspect/#remote-debugging`, `brave://inspect/#remote-debugging`,
+  or `edge://inspect/#remote-debugging`)
 
-O doctor não pode habilitar a configuração do lado do Chrome para você. Chrome MCP host-local ainda requer:
+Doctor cannot enable the Chrome-side setting for you. Host-local Chrome MCP
+still requires:
 
-- um browser baseado em Chromium 144+ no host do gateway/node
-- o browser executando localmente
-- remote debugging habilitado naquele browser
-- aprovar o primeiro prompt de consentimento de attach no browser
+- a Chromium-based browser 144+ on the gateway/node host
+- the browser running locally
+- remote debugging enabled in that browser
+- approving the first attach consent prompt in the browser
 
-Esta verificação **não** se aplica a Docker, sandbox, remote-browser ou outros fluxos headless. Esses continuam usando CDP bruto.
+This check does **not** apply to Docker, sandbox, remote-browser, or other
+headless flows. Those continue to use raw CDP.
 
-### 3) Migrações de estado legado (layout em disco)
+### 3) Legacy state migrations (disk layout)
 
-O doctor pode migrar layouts em disco mais antigos para a estrutura atual:
+Doctor can migrate older on-disk layouts into the current structure:
 
-- Store de sessões + transcrições:
-  - de `~/.opencraft/sessions/` para `~/.opencraft/agents/<agentId>/sessions/`
-- Diretório de agente:
-  - de `~/.opencraft/agent/` para `~/.opencraft/agents/<agentId>/agent/`
-- Estado de auth WhatsApp (Baileys):
-  - de `~/.opencraft/credentials/*.json` legado (exceto `oauth.json`)
-  - para `~/.opencraft/credentials/whatsapp/<accountId>/...` (id de conta padrão: `default`)
+- Sessions store + transcripts:
+  - from `~/.opencraft/sessions/` to `~/.opencraft/agents/<agentId>/sessions/`
+- Agent dir:
+  - from `~/.opencraft/agent/` to `~/.opencraft/agents/<agentId>/agent/`
+- WhatsApp auth state (Baileys):
+  - from legacy `~/.opencraft/credentials/*.json` (except `oauth.json`)
+  - to `~/.opencraft/credentials/whatsapp/<accountId>/...` (default account id: `default`)
 
-Essas migrações são best-effort e idempotentes; o doctor emitirá avisos quando deixar quaisquer pastas legadas como backups. O Gateway/CLI também auto-migra as sessões legadas + diretório de agente na inicialização para que histórico/auth/modelos cheguem ao caminho por agente sem uma execução manual do doctor. Auth do WhatsApp é intencionalmente migrada apenas via `opencraft doctor`.
+These migrations are best-effort and idempotent; doctor will emit warnings when
+it leaves any legacy folders behind as backups. The Gateway/CLI also auto-migrates
+the legacy sessions + agent dir on startup so history/auth/models land in the
+per-agent path without a manual doctor run. WhatsApp auth is intentionally only
+migrated via `opencraft doctor`.
 
-### 3b) Migrações de cron store legado
+### 3b) Legacy cron store migrations
 
-O doctor também verifica o cron job store (`~/.opencraft/cron/jobs.json` por padrão, ou `cron.store` quando sobrescrito) para formas de job antigas que o scheduler ainda aceita por compatibilidade.
+Doctor also checks the cron job store (`~/.opencraft/cron/jobs.json` by default,
+or `cron.store` when overridden) for old job shapes that the scheduler still
+accepts for compatibility.
 
-Limpezas de cron atuais incluem:
+Current cron cleanups include:
 
 - `jobId` → `id`
 - `schedule.cron` → `schedule.expr`
-- campos de payload de nível superior (`message`, `model`, `thinking`, ...) → `payload`
-- campos de delivery de nível superior (`deliver`, `channel`, `to`, `provider`, ...) → `delivery`
-- aliases de delivery `provider` do payload → `delivery.channel` explícito
-- jobs de fallback webhook legados simples `notify: true` → `delivery.mode="webhook"` explícito com `delivery.to=cron.webhook`
+- top-level payload fields (`message`, `model`, `thinking`, ...) → `payload`
+- top-level delivery fields (`deliver`, `channel`, `to`, `provider`, ...) → `delivery`
+- payload `provider` delivery aliases → explicit `delivery.channel`
+- simple legacy `notify: true` webhook fallback jobs → explicit `delivery.mode="webhook"` with `delivery.to=cron.webhook`
 
-O doctor só auto-migra jobs `notify: true` quando pode fazê-lo sem mudar comportamento. Se um job combina fallback de notify legado com um modo de delivery não-webhook existente, o doctor avisa e deixa esse job para revisão manual.
+Doctor only auto-migrates `notify: true` jobs when it can do so without
+changing behavior. If a job combines legacy notify fallback with an existing
+non-webhook delivery mode, doctor warns and leaves that job for manual review.
 
-### 4) Verificações de integridade de estado (persistência de sessão, roteamento e segurança)
+### 4) State integrity checks (session persistence, routing, and safety)
 
-O diretório de estado é o tronco cerebral operacional. Se ele desaparecer, você perde sessões, credenciais, logs e config (a menos que tenha backups em outro lugar).
+The state directory is the operational brainstem. If it vanishes, you lose
+sessions, credentials, logs, and config (unless you have backups elsewhere).
 
-O doctor verifica:
+Doctor checks:
 
-- **Diretório de estado faltando**: avisa sobre perda catastrófica de estado, solicita recriar o diretório e lembra que não pode recuperar dados faltando.
-- **Permissões do diretório de estado**: verifica escrita; oferece reparar permissões (e emite uma dica de `chown` quando mismatch de proprietário/grupo é detectado).
-- **Diretório de estado macOS sincronizado com nuvem**: avisa quando o estado resolve sob iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs/...`) ou `~/Library/CloudStorage/...` porque caminhos com backup de sincronização podem causar I/O mais lento e corridas de lock/sync.
-- **Diretório de estado Linux em SD ou eMMC**: avisa quando o estado resolve para uma fonte de montagem `mmcblk*`, porque I/O aleatório com backup de SD ou eMMC pode ser mais lento e desgastar mais rápido sob escritas de sessão e credencial.
-- **Diretórios de sessão faltando**: `sessions/` e o diretório do session store são necessários para persistir histórico e evitar crashes `ENOENT`.
-- **Mismatch de transcrição**: avisa quando entradas de sessão recentes têm arquivos de transcrição faltando.
-- **"JSONL de 1 linha" da sessão principal**: sinaliza quando a transcrição principal tem apenas uma linha (histórico não está acumulando).
-- **Múltiplos diretórios de estado**: avisa quando múltiplas pastas `~/.opencraft` existem em diretórios home ou quando `OPENCRAFT_STATE_DIR` aponta para outro lugar (histórico pode se dividir entre instalações).
-- **Lembrete de modo remoto**: se `gateway.mode=remote`, o doctor lembra de executá-lo no host remoto (o estado está lá).
-- **Permissões de arquivo de config**: avisa se `~/.editzffaleta/OpenCraft.json` é legível por grupo/mundo e oferece restringir para `600`.
+- **State dir missing**: warns about catastrophic state loss, prompts to recreate
+  the directory, and reminds you that it cannot recover missing data.
+- **State dir permissions**: verifies writability; offers to repair permissions
+  (and emits a `chown` hint when owner/group mismatch is detected).
+- **macOS cloud-synced state dir**: warns when state resolves under iCloud Drive
+  (`~/Library/Mobile Documents/com~apple~CloudDocs/...`) or
+  `~/Library/CloudStorage/...` because sync-backed paths can cause slower I/O
+  and lock/sync races.
+- **Linux SD or eMMC state dir**: warns when state resolves to an `mmcblk*`
+  mount source, because SD or eMMC-backed random I/O can be slower and wear
+  faster under session and credential writes.
+- **Session dirs missing**: `sessions/` and the session store directory are
+  required to persist history and avoid `ENOENT` crashes.
+- **Transcript mismatch**: warns when recent session entries have missing
+  transcript files.
+- **Main session “1-line JSONL”**: flags when the main transcript has only one
+  line (history is not accumulating).
+- **Multiple state dirs**: warns when multiple `~/.opencraft` folders exist across
+  home directories or when `OPENCRAFT_STATE_DIR` points elsewhere (history can
+  split between installs).
+- **Remote mode reminder**: if `gateway.mode=remote`, doctor reminds you to run
+  it on the remote host (the state lives there).
+- **Config file permissions**: warns if `~/.opencraft/opencraft.json` is
+  group/world readable and offers to tighten to `600`.
 
-### 5) Saúde de auth de modelo (expiração OAuth)
+### 5) Model auth health (OAuth expiry)
 
-O doctor inspeciona perfis OAuth no auth store, avisa quando tokens estão expirando/expirados e pode atualizá-los quando seguro. Se o perfil Anthropic Claude Code está obsoleto, ele sugere executar `claude setup-token` (ou colar um setup-token). Prompts de refresh aparecem apenas quando executando interativamente (TTY); `--non-interactive` pula tentativas de refresh.
+Doctor inspects OAuth profiles in the auth store, warns when tokens are
+expiring/expired, and can refresh them when safe. If the Anthropic Claude Code
+profile is stale, it suggests running `claude setup-token` (or pasting a setup-token).
+Refresh prompts only appear when running interactively (TTY); `--non-interactive`
+skips refresh attempts.
 
-O doctor também reporta perfis de auth que estão temporariamente inutilizáveis devido a:
+Doctor also reports auth profiles that are temporarily unusable due to:
 
-- cooldowns curtos (rate limits/timeouts/falhas de auth)
-- desabilitações mais longas (falhas de billing/crédito)
+- short cooldowns (rate limits/timeouts/auth failures)
+- longer disables (billing/credit failures)
 
-### 6) Validação de modelo de hooks
+### 6) Hooks model validation
 
-Se `hooks.gmail.model` está definido, o doctor valida a referência de modelo contra o catálogo e allowlist e avisa quando não vai resolver ou é bloqueado.
+If `hooks.gmail.model` is set, doctor validates the model reference against the
+catalog and allowlist and warns when it won’t resolve or is disallowed.
 
-### 7) Reparo de imagem sandbox
+### 7) Sandbox image repair
 
-Quando sandboxing está habilitado, o doctor verifica imagens Docker e oferece construir ou trocar para nomes legados se a imagem atual está faltando.
+When sandboxing is enabled, doctor checks Docker images and offers to build or
+switch to legacy names if the current image is missing.
 
-### 8) Migrações de serviço do Gateway e dicas de limpeza
+### 8) Gateway service migrations and cleanup hints
 
-O doctor detecta serviços legados do gateway (launchd/systemd/schtasks) e oferece removê-los e instalar o serviço OpenCraft usando a porta atual do gateway. Ele também pode escanear serviços extras semelhantes a gateway e imprimir dicas de limpeza. Serviços de gateway OpenCraft nomeados por perfil são considerados de primeira classe e não são sinalizados como "extras."
+Doctor detects legacy gateway services (launchd/systemd/schtasks) and
+offers to remove them and install the OpenCraft service using the current gateway
+port. It can also scan for extra gateway-like services and print cleanup hints.
+Profile-named OpenCraft gateway services are considered first-class and are not
+flagged as "extra."
 
-### 9) Avisos de segurança
+### 9) Security warnings
 
-O doctor emite avisos quando um provider está aberto a DMs sem uma allowlist, ou quando uma política está configurada de forma perigosa.
+Doctor emits warnings when a provider is open to DMs without an allowlist, or
+when a policy is configured in a dangerous way.
 
-### 10) linger do systemd (Linux)
+### 10) systemd linger (Linux)
 
-Se executando como serviço de usuário systemd, o doctor garante que lingering está habilitado para que o gateway permaneça ativo após logout.
+If running as a systemd user service, doctor ensures lingering is enabled so the
+gateway stays alive after logout.
 
-### 11) Status de Skills
+### 11) Skills status
 
-O doctor imprime um resumo rápido de skills elegíveis/faltando/bloqueados para o workspace atual.
+Doctor prints a quick summary of eligible/missing/blocked skills for the current
+workspace.
 
-### 12) Verificações de auth do Gateway (token local)
+### 12) Gateway auth checks (local token)
 
-O doctor verifica a prontidão de auth de token local do gateway.
+Doctor checks local gateway token auth readiness.
 
-- Se o modo de token precisa de um token e nenhuma fonte de token existe, o doctor oferece gerar um.
-- Se `gateway.auth.token` é gerenciado por SecretRef mas indisponível, o doctor avisa e não o sobrescreve com texto puro.
-- `opencraft doctor --generate-gateway-token` força geração apenas quando nenhum token SecretRef está configurado.
+- If token mode needs a token and no token source exists, doctor offers to generate one.
+- If `gateway.auth.token` is SecretRef-managed but unavailable, doctor warns and does not overwrite it with plaintext.
+- `opencraft doctor --generate-gateway-token` forces generation only when no token SecretRef is configured.
 
-### 12b) Reparos SecretRef-aware somente leitura
+### 12b) Read-only SecretRef-aware repairs
 
-Alguns fluxos de reparo precisam inspecionar credenciais configuradas sem enfraquecer o comportamento fail-fast de runtime.
+Some repair flows need to inspect configured credentials without weakening runtime fail-fast behavior.
 
-- `opencraft doctor --fix` agora usa o mesmo modelo de resumo SecretRef somente leitura que comandos da família status para reparos de config direcionados.
-- Exemplo: reparo de `allowFrom` / `groupAllowFrom` do Telegram com `@username` tenta usar credenciais de bot configuradas quando disponíveis.
-- Se o token do bot Telegram está configurado via SecretRef mas indisponível no caminho de comando atual, o doctor reporta que a credencial está configurada-mas-indisponível e pula auto-resolução em vez de crashar ou reportar incorretamente o token como faltando.
+- `opencraft doctor --fix` now uses the same read-only SecretRef summary model as status-family commands for targeted config repairs.
+- Example: Telegram `allowFrom` / `groupAllowFrom` `@username` repair tries to use configured bot credentials when available.
+- If the Telegram bot token is configured via SecretRef but unavailable in the current command path, doctor reports that the credential is configured-but-unavailable and skips auto-resolution instead of crashing or misreporting the token as missing.
 
-### 13) Verificação de saúde do Gateway + restart
+### 13) Gateway health check + restart
 
-O doctor executa uma verificação de saúde e oferece reiniciar o gateway quando ele parece não saudável.
+Doctor runs a health check and offers to restart the gateway when it looks
+unhealthy.
 
-### 14) Avisos de status de canal
+### 14) Channel status warnings
 
-Se o gateway está saudável, o doctor executa uma sonda de status de canal e reporta avisos com correções sugeridas.
+If the gateway is healthy, doctor runs a channel status probe and reports
+warnings with suggested fixes.
 
-### 15) Auditoria de config de supervisor + reparo
+### 15) Supervisor config audit + repair
 
-O doctor verifica a config de supervisor instalada (launchd/systemd/schtasks) para padrões faltando ou desatualizados (ex. dependências de network-online do systemd e delay de restart). Quando encontra um mismatch, ele recomenda uma atualização e pode reescrever o arquivo de serviço/tarefa para os padrões atuais.
+Doctor checks the installed supervisor config (launchd/systemd/schtasks) for
+missing or outdated defaults (e.g., systemd network-online dependencies and
+restart delay). When it finds a mismatch, it recommends an update and can
+rewrite the service file/task to the current defaults.
 
-Notas:
+Notes:
 
-- `opencraft doctor` solicita antes de reescrever config de supervisor.
-- `opencraft doctor --yes` aceita os prompts de reparo padrão.
-- `opencraft doctor --repair` aplica correções recomendadas sem prompts.
-- `opencraft doctor --repair --force` sobrescreve configs de supervisor customizadas.
-- Se auth de token requer um token e `gateway.auth.token` é gerenciado por SecretRef, o fluxo de install/reparo do serviço do doctor valida o SecretRef mas não persiste valores de token em texto puro resolvidos nos metadados de ambiente do serviço supervisor.
-- Se auth de token requer um token e o SecretRef de token configurado não está resolvido, o doctor bloqueia o caminho de install/reparo com orientação acionável.
-- Se tanto `gateway.auth.token` quanto `gateway.auth.password` estão configurados e `gateway.auth.mode` não está definido, o doctor bloqueia install/reparo até que o modo seja definido explicitamente.
-- Para units de usuário-systemd Linux, verificações de drift de token do doctor agora incluem tanto fontes `Environment=` quanto `EnvironmentFile=` ao comparar metadados de auth do serviço.
-- Você sempre pode forçar uma reescrita completa via `opencraft gateway install --force`.
+- `opencraft doctor` prompts before rewriting supervisor config.
+- `opencraft doctor --yes` accepts the default repair prompts.
+- `opencraft doctor --repair` applies recommended fixes without prompts.
+- `opencraft doctor --repair --force` overwrites custom supervisor configs.
+- If token auth requires a token and `gateway.auth.token` is SecretRef-managed, doctor service install/repair validates the SecretRef but does not persist resolved plaintext token values into supervisor service environment metadata.
+- If token auth requires a token and the configured token SecretRef is unresolved, doctor blocks the install/repair path with actionable guidance.
+- If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, doctor blocks install/repair until mode is set explicitly.
+- For Linux user-systemd units, doctor token drift checks now include both `Environment=` and `EnvironmentFile=` sources when comparing service auth metadata.
+- You can always force a full rewrite via `opencraft gateway install --force`.
 
-### 16) Diagnósticos de runtime + porta do Gateway
+### 16) Gateway runtime + port diagnostics
 
-O doctor inspeciona o runtime do serviço (PID, último status de saída) e avisa quando o serviço está instalado mas na verdade não está executando. Ele também verifica colisões de porta na porta do gateway (padrão `18789`) e reporta causas prováveis (gateway já executando, SSH tunnel).
+Doctor inspects the service runtime (PID, last exit status) and warns when the
+service is installed but not actually running. It also checks for port collisions
+on the gateway port (default `18789`) and reports likely causes (gateway already
+running, SSH tunnel).
 
-### 17) Boas práticas de runtime do Gateway
+### 17) Gateway runtime best practices
 
-O doctor avisa quando o serviço do gateway executa em Bun ou um caminho Node de version-manager (`nvm`, `fnm`, `volta`, `asdf`, etc.). Canais WhatsApp + Telegram requerem Node, e caminhos de version-manager podem quebrar após upgrades porque o serviço não carrega seu shell init. O doctor oferece migrar para uma instalação Node do sistema quando disponível (Homebrew/apt/choco).
+Doctor warns when the gateway service runs on Bun or a version-managed Node path
+(`nvm`, `fnm`, `volta`, `asdf`, etc.). WhatsApp + Telegram channels require Node,
+and version-manager paths can break after upgrades because the service does not
+load your shell init. Doctor offers to migrate to a system Node install when
+available (Homebrew/apt/choco).
 
-### 18) Escrita de config + metadados do wizard
+### 18) Config write + wizard metadata
 
-O doctor persiste quaisquer mudanças de config e carimba metadados do wizard para registrar a execução do doctor.
+Doctor persists any config changes and stamps wizard metadata to record the
+doctor run.
 
-### 19) Dicas de workspace (backup + sistema de memória)
+### 19) Workspace tips (backup + memory system)
 
-O doctor sugere um sistema de memória do workspace quando faltando e imprime uma dica de backup se o workspace ainda não está sob git.
+Doctor suggests a workspace memory system when missing and prints a backup tip
+if the workspace is not already under git.
 
-Veja [/concepts/agent-workspace](/concepts/agent-workspace) para um guia completo de estrutura de workspace e backup git (recomendado GitHub ou GitLab privado).
+See [/concepts/agent-workspace](/concepts/agent-workspace) for a full guide to
+workspace structure and git backup (recommended private GitHub or GitLab).

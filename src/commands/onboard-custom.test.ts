@@ -145,7 +145,7 @@ describe("promptCustomApiConfig", () => {
 
     expect(prompter.text).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: "URL Base da API",
+        message: "API Base URL",
         initialValue: OLLAMA_DEFAULT_BASE_URL,
       }),
     );
@@ -259,8 +259,8 @@ describe("promptCustomApiConfig", () => {
     await runPromptCustomApi(prompter);
 
     expect(prompter.note).toHaveBeenCalledWith(
-      expect.stringContaining("não respondeu"),
-      "Detecção de endpoint",
+      expect.stringContaining("did not respond"),
+      "Endpoint detection",
     );
   });
 
@@ -416,8 +416,7 @@ describe("applyCustomApiConfig", () => {
         modelId: "foo-large",
         compatibility: "invalid" as unknown as "openai",
       },
-      expectedMessage:
-        'A compatibilidade do provedor personalizado deve ser "openai" ou "anthropic".',
+      expectedMessage: 'Custom provider compatibility must be "openai" or "anthropic".',
     },
     {
       name: "explicit provider ids that normalize to empty",
@@ -457,8 +456,7 @@ describe("parseNonInteractiveCustomApiFlags", () => {
     {
       name: "missing required flags",
       flags: { baseUrl: "https://llm.example.com/v1" },
-      expectedMessage:
-        'A escolha de autenticação "custom-api-key" requer uma URL base e um ID de modelo.',
+      expectedMessage: 'Auth choice "custom-api-key" requires a base URL and model ID.',
     },
     {
       name: "invalid compatibility values",

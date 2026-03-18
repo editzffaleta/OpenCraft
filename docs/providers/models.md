@@ -1,20 +1,20 @@
 ---
-summary: "Providers de modelo (LLMs) suportados pelo OpenCraft"
+summary: "Model providers (LLMs) supported by OpenCraft"
 read_when:
-  - Você quer escolher um provider de modelo
-  - Você quer exemplos rápidos de configuração de autenticação de LLM + seleção de modelo
-title: "Início Rápido de Providers de Modelo"
+  - You want to choose a model provider
+  - You want quick setup examples for LLM auth + model selection
+title: "Model Provider Quickstart"
 ---
 
-# Providers de Modelo
+# Model Providers
 
-O OpenCraft pode usar diversos providers de LLM. Escolha um, autentique-se e defina o modelo
-padrão como `provider/model`.
+OpenCraft can use many LLM providers. Pick one, authenticate, then set the default
+model as `provider/model`.
 
-## Início rápido (dois passos)
+## Quick start (two steps)
 
-1. Autentique-se com o provider (geralmente via `opencraft onboard`).
-2. Defina o modelo padrão:
+1. Authenticate with the provider (usually via `opencraft onboard`).
+2. Set the default model:
 
 ```json5
 {
@@ -22,7 +22,7 @@ padrão como `provider/model`.
 }
 ```
 
-## Providers suportados (conjunto inicial)
+## Supported providers (starter set)
 
 - [OpenAI (API + Codex)](/providers/openai)
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
@@ -34,11 +34,11 @@ padrão como `provider/model`.
 - [Synthetic](/providers/synthetic)
 - [OpenCode (Zen + Go)](/providers/opencode)
 - [Z.AI](/providers/zai)
-- [Modelos GLM](/providers/glm)
+- [GLM models](/providers/glm)
 - [MiniMax](/providers/minimax)
 - [Venice (Venice AI)](/providers/venice)
 - [Amazon Bedrock](/providers/bedrock)
 - [Qianfan](/providers/qianfan)
 
-Para o catálogo completo de providers (xAI, Groq, Mistral, etc.) e configuração avançada,
-veja [Providers de modelo](/concepts/model-providers).
+For the full provider catalog (xAI, Groq, Mistral, etc.) and advanced configuration,
+see [Model providers](/concepts/model-providers).

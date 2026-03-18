@@ -47,8 +47,8 @@
 /docs/reference/secretref-user-supplied-credentials-matrix.json @opencraft/secops
 
 # Release workflow and its supporting release-path checks.
-/.github/workflows/opencraft-npm-release.yml @editzffaleta/OpenCraft-release-managers
-/docs/reference/RELEASING.md @editzffaleta/OpenCraft-release-managers
-/scripts/opencraft-npm-publish.sh @editzffaleta/OpenCraft-release-managers
-/scripts/opencraft-npm-release-check.ts @editzffaleta/OpenCraft-release-managers
-/scripts/release-check.ts @editzffaleta/OpenCraft-release-managers
+/.github/workflows/opencraft-npm-release.yml @opencraft/opencraft-release-managers
+/docs/reference/RELEASING.md @opencraft/opencraft-release-managers
+/scripts/opencraft-npm-publish.sh @opencraft/opencraft-release-managers
+/scripts/opencraft-npm-release-check.ts @opencraft/opencraft-release-managers
+/scripts/release-check.ts @opencraft/opencraft-release-managers

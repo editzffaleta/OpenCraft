@@ -1,21 +1,21 @@
 ---
-summary: "Agent tool surface para OpenCraft (browser, canvas, nodes, message, cron) substituindo legacy `opencraft-*` skills"
+summary: "Agent tool surface for OpenCraft (browser, canvas, nodes, message, cron) replacing legacy `opencraft-*` skills"
 read_when:
-  - Adicionando ou modificando agent tools
-  - Retiring ou mudando `opencraft-*` skills
+  - Adding or modifying agent tools
+  - Retiring or changing `opencraft-*` skills
 title: "Tools"
 ---
 
 # Tools (OpenCraft)
 
-OpenCraft expõe **first-class agent tools** para browser, canvas, nodes e cron.
-Estes substituem os antigos `opencraft-*` skills: os tools são typed, sem shelling,
-e o agente deve confiar neles diretamente.
+OpenCraft exposes **first-class agent tools** for browser, canvas, nodes, and cron.
+These replace the old `opencraft-*` skills: the tools are typed, no shelling,
+and the agent should rely on them directly.
 
-## Desabilitando tools
+## Disabling tools
 
-Você pode globalmente permitir/negar tools via `tools.allow` / `tools.deny` em `opencraft.json`
-(deny vence). Isto previne tools desallowados de serem enviados a model providers.
+You can globally allow/deny tools via `tools.allow` / `tools.deny` in `opencraft.json`
+(deny wins). This prevents disallowed tools from being sent to model providers.
 
 ```json5
 {
@@ -23,25 +23,25 @@ Você pode globalmente permitir/negar tools via `tools.allow` / `tools.deny` em 
 }
 ```
 
-Notas:
+Notes:
 
-- Matching é case-insensitive.
-- Wildcards `*` são suportados (`"*"` significa todos os tools).
-- Se `tools.allow` apenas referencia unknown ou unloaded plugin tool names, OpenCraft loga um warning e ignora o allowlist para core tools permanecerem disponíveis.
+- Matching is case-insensitive.
+- `*` wildcards are supported (`"*"` means all tools).
+- If `tools.allow` only references unknown or unloaded plugin tool names, OpenCraft logs a warning and ignores the allowlist so core tools stay available.
 
 ## Tool profiles (base allowlist)
 
-`tools.profile` define um **base tool allowlist** antes de `tools.allow`/`tools.deny`.
-Override per-agent: `agents.list[].tools.profile`.
+`tools.profile` sets a **base tool allowlist** before `tools.allow`/`tools.deny`.
+Per-agent override: `agents.list[].tools.profile`.
 
 Profiles:
 
-- `minimal`: `session_status` apenas
+- `minimal`: `session_status` only
 - `coding`: `group:fs`, `group:runtime`, `group:sessions`, `group:memory`, `image`
 - `messaging`: `group:messaging`, `sessions_list`, `sessions_history`, `sessions_send`, `session_status`
-- `full`: sem restrição (mesmo que unset)
+- `full`: no restriction (same as unset)
 
-Exemplo (messaging-only por padrão, permitir Slack + Discord tools também):
+Example (messaging-only by default, allow Slack + Discord tools too):
 
 ```json5
 {
@@ -52,7 +52,7 @@ Exemplo (messaging-only por padrão, permitir Slack + Discord tools também):
 }
 ```
 
-Exemplo (coding profile, mas negar exec/process em todos):
+Example (coding profile, but deny exec/process everywhere):
 
 ```json5
 {
@@ -63,7 +63,7 @@ Exemplo (coding profile, mas negar exec/process em todos):
 }
 ```
 
-Exemplo (global coding profile, messaging-only support agent):
+Example (global coding profile, messaging-only support agent):
 
 ```json5
 {
@@ -81,16 +81,16 @@ Exemplo (global coding profile, messaging-only support agent):
 
 ## Provider-specific tool policy
 
-Use `tools.byProvider` para **ainda mais restringir** tools para providers específicos
-(ou um único `provider/model`) sem mudar seus defaults globais.
-Override per-agent: `agents.list[].tools.byProvider`.
+Use `tools.byProvider` to **further restrict** tools for specific providers
+(or a single `provider/model`) without changing your global defaults.
+Per-agent override: `agents.list[].tools.byProvider`.
 
-Isto é aplicado **depois** do base tool profile e **antes** de allow/deny lists,
-então pode apenas estreitar o tool set.
-Provider keys aceitam either `provider` (ex. `google-antigravity`) ou
-`provider/model` (ex. `openai/gpt-5.2`).
+This is applied **after** the base tool profile and **before** allow/deny lists,
+so it can only narrow the tool set.
+Provider keys accept either `provider` (e.g. `google-antigravity`) or
+`provider/model` (e.g. `openai/gpt-5.2`).
 
-Exemplo (manter global coding profile, mas minimal tools para Google Antigravity):
+Example (keep global coding profile, but minimal tools for Google Antigravity):
 
 ```json5
 {
@@ -103,7 +103,7 @@ Exemplo (manter global coding profile, mas minimal tools para Google Antigravity
 }
 ```
 
-Exemplo (provider/model-specific allowlist para um endpoint flaky):
+Example (provider/model-specific allowlist for a flaky endpoint):
 
 ```json5
 {
@@ -116,7 +116,7 @@ Exemplo (provider/model-specific allowlist para um endpoint flaky):
 }
 ```
 
-Exemplo (agent-specific override para um provider único):
+Example (agent-specific override for a single provider):
 
 ```json5
 {
@@ -137,10 +137,10 @@ Exemplo (agent-specific override para um provider único):
 
 ## Tool groups (shorthands)
 
-Tool policies (global, agent, sandbox) suportam entradas `group:*` que expandem para múltiplos tools.
-Use estes em `tools.allow` / `tools.deny`.
+Tool policies (global, agent, sandbox) support `group:*` entries that expand to multiple tools.
+Use these in `tools.allow` / `tools.deny`.
 
-Grupos disponíveis:
+Available groups:
 
 - `group:runtime`: `exec`, `bash`, `process`
 - `group:fs`: `read`, `write`, `edit`, `apply_patch`
@@ -151,9 +151,9 @@ Grupos disponíveis:
 - `group:automation`: `cron`, `gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:opencraft`: todos os built-in OpenCraft tools (exclui provider plugins)
+- `group:opencraft`: all built-in OpenCraft tools (excludes provider plugins)
 
-Exemplo (permitir apenas file tools + browser):
+Example (allow only file tools + browser):
 
 ```json5
 {
@@ -165,70 +165,70 @@ Exemplo (permitir apenas file tools + browser):
 
 ## Plugins + tools
 
-Plugins podem registrar **tools adicionais** (e CLI commands) além do core set.
-Veja [Plugins](/tools/plugin) para install + config, e [Skills](/tools/skills) para como
-tool usage guidance é injetado em prompts. Alguns plugins vêm com seus próprios skills
-ao lado dos tools (por exemplo, o voice-call plugin).
+Plugins can register **additional tools** (and CLI commands) beyond the core set.
+See [Plugins](/tools/plugin) for install + config, and [Skills](/tools/skills) for how
+tool usage guidance is injected into prompts. Some plugins ship their own skills
+alongside tools (for example, the voice-call plugin).
 
-Plugin tools opcionais:
+Optional plugin tools:
 
-- [Lobster](/tools/lobster): typed workflow runtime com resumable approvals (requer Lobster CLI no host gateway).
-- [LLM Task](/tools/llm-task): JSON-only LLM step para structured workflow output (optional schema validation).
-- [Diffs](/tools/diffs): read-only diff viewer e PNG ou PDF file renderer para before/after text ou unified patches.
+- [Lobster](/tools/lobster): typed workflow runtime with resumable approvals (requires the Lobster CLI on the gateway host).
+- [LLM Task](/tools/llm-task): JSON-only LLM step for structured workflow output (optional schema validation).
+- [Diffs](/tools/diffs): read-only diff viewer and PNG or PDF file renderer for before/after text or unified patches.
 
-## Inventário de tools
+## Tool inventory
 
 ### `apply_patch`
 
-Aplique structured patches através um ou mais arquivos. Use para multi-hunk edits.
-Experimental: habilite via `tools.exec.applyPatch.enabled` (OpenAI models apenas).
-`tools.exec.applyPatch.workspaceOnly` padrão é `true` (workspace-contained). Defina para `false` apenas se você intencionalmente quer `apply_patch` write/delete fora do diretório workspace.
+Apply structured patches across one or more files. Use for multi-hunk edits.
+Experimental: enable via `tools.exec.applyPatch.enabled` (OpenAI models only).
+`tools.exec.applyPatch.workspaceOnly` defaults to `true` (workspace-contained). Set it to `false` only if you intentionally want `apply_patch` to write/delete outside the workspace directory.
 
 ### `exec`
 
-Execute comandos shell no workspace.
+Run shell commands in the workspace.
 
-Parâmetros principais:
+Core parameters:
 
 - `command` (required)
-- `yieldMs` (auto-background após timeout, padrão 10000)
+- `yieldMs` (auto-background after timeout, default 10000)
 - `background` (immediate background)
-- `timeout` (segundos; mata o processo se excedido, padrão 1800)
-- `elevated` (bool; execute no host se elevated mode está habilitado/permitido; apenas muda comportamento quando o agente é sandboxed)
+- `timeout` (seconds; kills the process if exceeded, default 1800)
+- `elevated` (bool; run on host if elevated mode is enabled/allowed; only changes behavior when the agent is sandboxed)
 - `host` (`sandbox | gateway | node`)
 - `security` (`deny | allowlist | full`)
 - `ask` (`off | on-miss | always`)
-- `node` (node id/name para `host=node`)
-- Precisa de real TTY? Defina `pty: true`.
+- `node` (node id/name for `host=node`)
+- Need a real TTY? Set `pty: true`.
 
-Notas:
+Notes:
 
-- Retorna `status: "running"` com um `sessionId` quando backgrounded.
-- Use `process` para poll/log/write/kill/clear background sessions.
-- Se `process` é disallowed, `exec` executa synchronously e ignora `yieldMs`/`background`.
-- `elevated` é gated por `tools.elevated` mais qualquer override `agents.list[].tools.elevated` (ambos devem permitir) e é um alias para `host=gateway` + `security=full`.
-- `elevated` apenas muda comportamento quando o agente é sandboxed (de outra forma é um no-op).
-- `host=node` pode alvejar um macOS companion app ou um headless node host (`opencraft node run`).
-- gateway/node approvals e allowlists: [Exec approvals](/tools/exec-approvals).
+- Returns `status: "running"` with a `sessionId` when backgrounded.
+- Use `process` to poll/log/write/kill/clear background sessions.
+- If `process` is disallowed, `exec` runs synchronously and ignores `yieldMs`/`background`.
+- `elevated` is gated by `tools.elevated` plus any `agents.list[].tools.elevated` override (both must allow) and is an alias for `host=gateway` + `security=full`.
+- `elevated` only changes behavior when the agent is sandboxed (otherwise it’s a no-op).
+- `host=node` can target a macOS companion app or a headless node host (`opencraft node run`).
+- gateway/node approvals and allowlists: [Exec approvals](/tools/exec-approvals).
 
 ### `process`
 
-Gerencie background exec sessions.
+Manage background exec sessions.
 
-Ações principais:
+Core actions:
 
 - `list`, `poll`, `log`, `write`, `kill`, `clear`, `remove`
 
-Notas:
+Notes:
 
-- `poll` retorna novo output e exit status quando completo.
-- `log` suporta line-based `offset`/`limit` (omita `offset` para pegar os últimos N lines).
-- `process` é scoped per agente; sessões de outros agentes não são visíveis.
+- `poll` returns new output and exit status when complete.
+- `log` supports line-based `offset`/`limit` (omit `offset` to grab the last N lines).
+- `process` is scoped per agent; sessions from other agents are not visible.
 
 ### `loop-detection` (tool-call loop guardrails)
 
-OpenCraft rastreia recent tool-call history e bloqueia ou avisa quando detecta repetitive no-progress loops.
-Habilite com `tools.loopDetection.enabled: true` (padrão é `false`).
+OpenCraft tracks recent tool-call history and blocks or warns when it detects repetitive no-progress loops.
+Enable with `tools.loopDetection.enabled: true` (default is `false`).
 
 ```json5
 {
@@ -249,110 +249,110 @@ Habilite com `tools.loopDetection.enabled: true` (padrão é `false`).
 }
 ```
 
-- `genericRepeat`: repeated mesmo tool + mesmo params call pattern.
-- `knownPollNoProgress`: repeating poll-like tools com identical outputs.
+- `genericRepeat`: repeated same tool + same params call pattern.
+- `knownPollNoProgress`: repeating poll-like tools with identical outputs.
 - `pingPong`: alternating `A/B/A/B` no-progress patterns.
-- Override per-agent: `agents.list[].tools.loopDetection`.
+- Per-agent override: `agents.list[].tools.loopDetection`.
 
 ### `web_search`
 
-Busque a web usando Brave, Firecrawl, Gemini, Grok, Kimi ou Perplexity.
+Search the web using Brave, Firecrawl, Gemini, Grok, Kimi, or Perplexity.
 
-Parâmetros principais:
+Core parameters:
 
 - `query` (required)
-- `count` (1–10; padrão de `tools.web.search.maxResults`)
+- `count` (1–10; default from `tools.web.search.maxResults`)
 
-Notas:
+Notes:
 
-- Requer API key para o chosen provider (recomendado: `opencraft configure --section web`).
-- Habilite via `tools.web.search.enabled`.
-- Responses são cached (padrão 15 min).
-- Veja [Web tools](/tools/web) para setup.
+- Requires an API key for the chosen provider (recommended: `opencraft configure --section web`).
+- Enable via `tools.web.search.enabled`.
+- Responses are cached (default 15 min).
+- See [Web tools](/tools/web) for setup.
 
 ### `web_fetch`
 
-Busque e extraia conteúdo legível de uma URL (HTML → markdown/text).
+Fetch and extract readable content from a URL (HTML → markdown/text).
 
-Parâmetros principais:
+Core parameters:
 
 - `url` (required)
 - `extractMode` (`markdown` | `text`)
 - `maxChars` (truncate long pages)
 
-Notas:
+Notes:
 
-- Habilite via `tools.web.fetch.enabled`.
-- `maxChars` é clamped por `tools.web.fetch.maxCharsCap` (padrão 50000).
-- Responses são cached (padrão 15 min).
-- Para sites JS-heavy, prefira o browser tool.
-- Veja [Web tools](/tools/web) para setup.
-- Veja [Firecrawl](/tools/firecrawl) para o anti-bot fallback opcional.
+- Enable via `tools.web.fetch.enabled`.
+- `maxChars` is clamped by `tools.web.fetch.maxCharsCap` (default 50000).
+- Responses are cached (default 15 min).
+- For JS-heavy sites, prefer the browser tool.
+- See [Web tools](/tools/web) for setup.
+- See [Firecrawl](/tools/firecrawl) for the optional anti-bot fallback.
 
 ### `browser`
 
-Controle o dedicated OpenCraft-managed browser.
+Control the dedicated OpenCraft-managed browser.
 
-Ações principais:
+Core actions:
 
 - `status`, `start`, `stop`, `tabs`, `open`, `focus`, `close`
 - `snapshot` (aria/ai)
-- `screenshot` (retorna image block + `MEDIA:<path>`)
+- `screenshot` (returns image block + `MEDIA:<path>`)
 - `act` (UI actions: click/type/press/hover/drag/select/fill/resize/wait/evaluate)
 - `navigate`, `console`, `pdf`, `upload`, `dialog`
 
-Gerenciamento de profile:
+Profile management:
 
-- `profiles` — list todos os browser profiles com status
-- `create-profile` — criar novo profile com auto-allocated port (ou `cdpUrl`)
-- `delete-profile` — parar browser, deletar user data, remover da config (local apenas)
-- `reset-profile` — matar orphan process no port do profile (local apenas)
+- `profiles` — list all browser profiles with status
+- `create-profile` — create new profile with auto-allocated port (or `cdpUrl`)
+- `delete-profile` — stop browser, delete user data, remove from config (local only)
+- `reset-profile` — kill orphan process on profile's port (local only)
 
-Parâmetros comuns:
+Common parameters:
 
-- `profile` (opcional; padrão `browser.defaultProfile`)
+- `profile` (optional; defaults to `browser.defaultProfile`)
 - `target` (`sandbox` | `host` | `node`)
-- `node` (opcional; pega um node id/name específico)
-  Notas:
-- Requer `browser.enabled=true` (padrão é `true`; defina `false` para desabilitar).
-- Todas ações aceitam parâmetro opcional `profile` para suporte multi-instância.
-- Omita `profile` para o safe default: isolated OpenCraft-managed browser (`opencraft`).
-- Use `profile="user"` para o real local host browser quando existing logins/cookies importam e o usuário está presente para click/approve qualquer attach prompt.
-- `profile="user"` é host-only; não o combine com sandbox/node targets.
-- Quando `profile` é omitido, usa `browser.defaultProfile` (padrão para `opencraft`).
-- Profile names: lowercase alphanumeric + hyphens apenas (max 64 chars).
+- `node` (optional; picks a specific node id/name)
+  Notes:
+- Requires `browser.enabled=true` (default is `true`; set `false` to disable).
+- All actions accept optional `profile` parameter for multi-instance support.
+- Omit `profile` for the safe default: isolated OpenCraft-managed browser (`opencraft`).
+- Use `profile="user"` for the real local host browser when existing logins/cookies matter and the user is present to click/approve any attach prompt.
+- `profile="user"` is host-only; do not combine it with sandbox/node targets.
+- When `profile` is omitted, uses `browser.defaultProfile` (defaults to `opencraft`).
+- Profile names: lowercase alphanumeric + hyphens only (max 64 chars).
 - Port range: 18800-18899 (~100 profiles max).
-- Remote profiles são attach-only (sem start/stop/reset).
-- Se um browser-capable node está conectado, o tool pode auto-route para ele (a menos que você pin `target`).
-- `snapshot` padrão para `ai` quando Playwright está instalado; use `aria` para a accessibility tree.
-- `snapshot` também suporta role-snapshot options (`interactive`, `compact`, `depth`, `selector`) que retornam refs como `e12`.
-- `act` requer `ref` de `snapshot` (numeric `12` de AI snapshots, ou `e12` de role snapshots); use `evaluate` para rare CSS selector needs.
-- Evite `act` → `wait` por padrão; use-o apenas em casos excepcionais (sem reliable UI state para wait on).
-- `upload` pode opcionalmente passar um `ref` para auto-click depois de arming.
-- `upload` também suporta `inputRef` (aria ref) ou `element` (CSS selector) para definir `<input type="file">` diretamente.
+- Remote profiles are attach-only (no start/stop/reset).
+- If a browser-capable node is connected, the tool may auto-route to it (unless you pin `target`).
+- `snapshot` defaults to `ai` when Playwright is installed; use `aria` for the accessibility tree.
+- `snapshot` also supports role-snapshot options (`interactive`, `compact`, `depth`, `selector`) which return refs like `e12`.
+- `act` requires `ref` from `snapshot` (numeric `12` from AI snapshots, or `e12` from role snapshots); use `evaluate` for rare CSS selector needs.
+- Avoid `act` → `wait` by default; use it only in exceptional cases (no reliable UI state to wait on).
+- `upload` can optionally pass a `ref` to auto-click after arming.
+- `upload` also supports `inputRef` (aria ref) or `element` (CSS selector) to set `<input type="file">` directly.
 
 ### `canvas`
 
-Conduza o node Canvas (present, eval, snapshot, A2UI).
+Drive the node Canvas (present, eval, snapshot, A2UI).
 
-Ações principais:
+Core actions:
 
 - `present`, `hide`, `navigate`, `eval`
-- `snapshot` (retorna image block + `MEDIA:<path>`)
+- `snapshot` (returns image block + `MEDIA:<path>`)
 - `a2ui_push`, `a2ui_reset`
 
-Notas:
+Notes:
 
-- Usa gateway `node.invoke` sob o capô.
-- Se nenhum `node` é fornecido, o tool pega um padrão (single connected node ou local mac node).
-- A2UI é v0.8 apenas (sem `createSurface`); o CLI rejeita v0.9 JSONL com line errors.
+- Uses gateway `node.invoke` under the hood.
+- If no `node` is provided, the tool picks a default (single connected node or local mac node).
+- A2UI is v0.8 only (no `createSurface`); the CLI rejects v0.9 JSONL with line errors.
 - Quick smoke: `opencraft nodes canvas a2ui push --node <id> --text "Hello from A2UI"`.
 
 ### `nodes`
 
-Descubra e alveije paired nodes; envie notificações; capture camera/screen.
+Discover and target paired nodes; send notifications; capture camera/screen.
 
-Ações principais:
+Core actions:
 
 - `status`, `describe`
 - `pending`, `approve`, `reject` (pairing)
@@ -362,15 +362,15 @@ Ações principais:
 - `location_get`, `notifications_list`, `notifications_action`
 - `device_status`, `device_info`, `device_permissions`, `device_health`
 
-Notas:
+Notes:
 
-- Camera/screen commands requerem o node app estar foregrounded.
-- Imagens retornam image blocks + `MEDIA:<path>`.
-- Vídeos retornam `FILE:<path>` (mp4).
-- Location retorna uma JSON payload (lat/lon/accuracy/timestamp).
-- `run` params: `command` argv array; opcional `cwd`, `env` (`KEY=VAL`), `commandTimeoutMs`, `invokeTimeoutMs`, `needsScreenRecording`.
+- Camera/screen commands require the node app to be foregrounded.
+- Images return image blocks + `MEDIA:<path>`.
+- Videos return `FILE:<path>` (mp4).
+- Location returns a JSON payload (lat/lon/accuracy/timestamp).
+- `run` params: `command` argv array; optional `cwd`, `env` (`KEY=VAL`), `commandTimeoutMs`, `invokeTimeoutMs`, `needsScreenRecording`.
 
-Exemplo (`run`):
+Example (`run`):
 
 ```json
 {
@@ -386,33 +386,58 @@ Exemplo (`run`):
 
 ### `image`
 
-Analise uma imagem com o configured image model.
+Analyze an image with the configured image model.
 
-Parâmetros principais:
+Core parameters:
 
-- `image` (required path ou URL)
-- `prompt` (opcional; padrão "Describe the image.")
-- `model` (opcional override)
+- `image` (required path or URL)
+- `prompt` (optional; defaults to "Describe the image.")
+- `model` (optional override)
 - `maxBytesMb` (optional size cap)
 
-Notas:
+Notes:
 
-- Apenas disponível quando `agents.defaults.imageModel` está configurado (primary ou fallbacks), ou quando um implicit image model pode ser inferido de seu default model + configured auth (best-effort pairing).
-- Usa o image model diretamente (independente do chat model principal).
+- Only available when `agents.defaults.imageModel` is configured (primary or fallbacks), or when an implicit image model can be inferred from your default model + configured auth (best-effort pairing).
+- Uses the image model directly (independent of the main chat model).
+
+### `image_generate`
+
+Generate one or more images with the configured or inferred image-generation model.
+
+Core parameters:
+
+- `action` (optional: `generate` or `list`; default `generate`)
+- `prompt` (required)
+- `image` or `images` (optional reference image path/URL for edit mode)
+- `model` (optional provider/model override)
+- `size` (optional size hint)
+- `resolution` (optional `1K|2K|4K` hint)
+- `count` (optional, `1-4`, default `1`)
+
+Notes:
+
+- Available when `agents.defaults.imageGenerationModel` is configured, or when OpenCraft can infer a compatible image-generation default from your enabled providers plus available auth.
+- Explicit `agents.defaults.imageGenerationModel` still wins over any inferred default.
+- Use `action: "list"` to inspect registered providers, default models, supported model ids, sizes, resolutions, and edit support.
+- Returns local `MEDIA:<path>` lines so channels can deliver the generated files directly.
+- Uses the image-generation model directly (independent of the main chat model).
+- Google-backed flows support reference-image edits plus explicit `1K|2K|4K` resolution hints.
+- When editing and `resolution` is omitted, OpenCraft infers a draft/final resolution from the input image size.
+- This is the built-in replacement for the old sample `nano-banana-pro` skill workflow. Use `agents.defaults.imageGenerationModel`, not `skills.entries`, for stock image generation.
 
 ### `pdf`
 
-Analise um ou mais documentos PDF.
+Analyze one or more PDF documents.
 
-Para comportamento completo, limites, config e exemplos, veja [PDF tool](/tools/pdf).
+For full behavior, limits, config, and examples, see [PDF tool](/tools/pdf).
 
 ### `message`
 
-Envie mensagens e channel actions através Discord/Google Chat/Slack/Telegram/WhatsApp/Signal/iMessage/MS Teams.
+Send messages and channel actions across Discord/Google Chat/Slack/Telegram/WhatsApp/Signal/iMessage/MS Teams.
 
-Ações principais:
+Core actions:
 
-- `send` (text + optional media; MS Teams também suporta `card` para Adaptive Cards)
+- `send` (text + optional media; MS Teams also supports `card` for Adaptive Cards)
 - `poll` (WhatsApp/Discord/MS Teams polls)
 - `react` / `reactions` / `read` / `edit` / `delete`
 - `pin` / `unpin` / `list-pins`
@@ -428,112 +453,113 @@ Ações principais:
 - `event-list` / `event-create`
 - `timeout` / `kick` / `ban`
 
-Notas:
+Notes:
 
-- `send` roteia WhatsApp via o Gateway; outros canais vão diretos.
-- `poll` usa o Gateway para WhatsApp e MS Teams; Discord polls vão diretos.
-- Quando uma message tool call está vinculada a uma active chat session, sends são constrangidos ao target daquela session para evitar cross-context leaks.
+- `send` routes WhatsApp via the Gateway; other channels go direct.
+- `poll` uses the Gateway for WhatsApp and MS Teams; Discord polls go direct.
+- When a message tool call is bound to an active chat session, sends are constrained to that session’s target to avoid cross-context leaks.
 
 ### `cron`
 
-Gerencie Gateway cron jobs e wakeups.
+Manage Gateway cron jobs and wakeups.
 
-Ações principais:
+Core actions:
 
 - `status`, `list`
 - `add`, `update`, `remove`, `run`, `runs`
 - `wake` (enqueue system event + optional immediate heartbeat)
 
-Notas:
+Notes:
 
-- `add` espera um full cron job object (mesmo schema que `cron.add` RPC).
-- `update` usa `{ jobId, patch }` (`id` aceito para compatibilidade).
+- `add` expects a full cron job object (same schema as `cron.add` RPC).
+- `update` uses `{ jobId, patch }` (`id` accepted for compatibility).
 
 ### `gateway`
 
-Reinicie ou aplique updates ao running Gateway process (in-place).
+Restart or apply updates to the running Gateway process (in-place).
 
-Ações principais:
+Core actions:
 
-- `restart` (autoriza + envia `SIGUSR1` para in-process restart; `opencraft gateway` restart in-place)
-- `config.schema.lookup` (inspecione um config path por vez sem carregar o schema completo no prompt context)
+- `restart` (authorizes + sends `SIGUSR1` for in-process restart; `opencraft gateway` restart in-place)
+- `config.schema.lookup` (inspect one config path at a time without loading the full schema into prompt context)
 - `config.get`
 - `config.apply` (validate + write config + restart + wake)
 - `config.patch` (merge partial update + restart + wake)
 - `update.run` (run update + restart + wake)
 
-Notas:
+Notes:
 
-- `config.schema.lookup` espera um config path alvo como `gateway.auth` ou `agents.list.*.heartbeat`.
-- Paths podem incluir slash-delimited plugin ids quando endereçando `plugins.entries.<id>`, por exemplo `plugins.entries.pack/one.config`.
-- Use `delayMs` (padrão 2000) para evitar interromper uma reply in-flight.
-- `config.schema` permanece disponível para internal Control UI flows e não é exposto através do agent `gateway` tool.
-- `restart` está habilitado por padrão; defina `commands.restart: false` para desabilitar.
+- `config.schema.lookup` expects a targeted config path such as `gateway.auth` or `agents.list.*.heartbeat`.
+- Paths may include slash-delimited plugin ids when addressing `plugins.entries.<id>`, for example `plugins.entries.pack/one.config`.
+- Use `delayMs` (defaults to 2000) to avoid interrupting an in-flight reply.
+- `config.schema` remains available to internal Control UI flows and is not exposed through the agent `gateway` tool.
+- `restart` is enabled by default; set `commands.restart: false` to disable it.
 
 ### `sessions_list` / `sessions_history` / `sessions_send` / `sessions_spawn` / `session_status`
 
-List sessões, inspecione transcript history ou envie para outra sessão.
+List sessions, inspect transcript history, or send to another session.
 
-Parâmetros principais:
+Core parameters:
 
 - `sessions_list`: `kinds?`, `limit?`, `activeMinutes?`, `messageLimit?` (0 = none)
-- `sessions_history`: `sessionKey` (ou `sessionId`), `limit?`, `includeTools?`
-- `sessions_send`: `sessionKey` (ou `sessionId`), `message`, `timeoutSeconds?` (0 = fire-and-forget)
+- `sessions_history`: `sessionKey` (or `sessionId`), `limit?`, `includeTools?`
+- `sessions_send`: `sessionKey` (or `sessionId`), `message`, `timeoutSeconds?` (0 = fire-and-forget)
 - `sessions_spawn`: `task`, `label?`, `runtime?`, `agentId?`, `model?`, `thinking?`, `cwd?`, `runTimeoutSeconds?`, `thread?`, `mode?`, `cleanup?`, `sandbox?`, `streamTo?`, `attachments?`, `attachAs?`
-- `session_status`: `sessionKey?` (padrão current; aceita `sessionId`), `model?` (`default` clears override)
+- `session_status`: `sessionKey?` (default current; accepts `sessionId`), `model?` (`default` clears override)
 
-Notas:
+Notes:
 
-- `main` é a canonical direct-chat key; global/unknown estão ocultos.
-- `messageLimit > 0` busca últimas N mensagens por sessão (tool messages filtradas).
-- Session targeting é controlado por `tools.sessions.visibility` (padrão `tree`: current session + spawned subagent sessions). Se você executa um agente compartilhado para múltiplos usuários, considere defininir `tools.sessions.visibility: "self"` para prevenir cross-session browsing.
-- `sessions_send` espera final completion quando `timeoutSeconds > 0`.
-- Delivery/announce acontece depois de completion e é best-effort; `status: "ok"` confirma o agent run terminou, não que announce foi delivered.
-- `sessions_spawn` suporta `runtime: "subagent" | "acp"` (`subagent` padrão). Para comportamento de runtime ACP, veja [ACP Agents](/tools/acp-agents).
-- Para ACP runtime, `streamTo: "parent"` roteia initial-run progress summaries de volta para a requester session como system events ao invés de direct child delivery.
-- `sessions_spawn` inicia um sub-agent run e posta um announce reply de volta para o requester chat.
-  - Suporta one-shot mode (`mode: "run"`) e persistent thread-bound mode (`mode: "session"` com `thread: true`).
-  - Se `thread: true` e `mode` está omitido, mode padrão para `session`.
-  - `mode: "session"` requer `thread: true`.
-  - Se `runTimeoutSeconds` está omitido, OpenCraft usa `agents.defaults.subagents.runTimeoutSeconds` quando definido; de outra forma timeout padrão para `0` (sem timeout).
-  - Discord thread-bound flows dependem de `session.threadBindings.*` e `channels.discord.threadBindings.*`.
-  - Reply format inclui `Status`, `Result` e compact stats.
-  - `Result` é o assistant completion text; se faltando, o latest `toolResult` é usado como fallback.
-- Manual completion-mode spawns enviam diretos primeiro, com queue fallback e retry em failures transiêntes (`status: "ok"` significa run terminou, não que announce foi delivered).
-- `sessions_spawn` suporta inline file attachments para subagent runtime apenas (ACP rejeita). Cada attachment tem `name`, `content` e opcional `encoding` (`utf8` ou `base64`) e `mimeType`. Arquivos são materializados no child workspace em `.opencraft/attachments/<uuid>/` com um arquivo `.manifest.json` metadata. O tool retorna um receipt com `count`, `totalBytes`, per file `sha256` e `relDir`. Attachment content é automaticamente redacted de transcript persistence.
+- `main` is the canonical direct-chat key; global/unknown are hidden.
+- `messageLimit > 0` fetches last N messages per session (tool messages filtered).
+- Session targeting is controlled by `tools.sessions.visibility` (default `tree`: current session + spawned subagent sessions). If you run a shared agent for multiple users, consider setting `tools.sessions.visibility: "self"` to prevent cross-session browsing.
+- `sessions_send` waits for final completion when `timeoutSeconds > 0`.
+- Delivery/announce happens after completion and is best-effort; `status: "ok"` confirms the agent run finished, not that the announce was delivered.
+- `sessions_spawn` supports `runtime: "subagent" | "acp"` (`subagent` default). For ACP runtime behavior, see [ACP Agents](/tools/acp-agents).
+- For ACP runtime, `streamTo: "parent"` routes initial-run progress summaries back to the requester session as system events instead of direct child delivery.
+- `sessions_spawn` starts a sub-agent run and posts an announce reply back to the requester chat.
+  - Supports one-shot mode (`mode: "run"`) and persistent thread-bound mode (`mode: "session"` with `thread: true`).
+  - If `thread: true` and `mode` is omitted, mode defaults to `session`.
+  - `mode: "session"` requires `thread: true`.
+  - If `runTimeoutSeconds` is omitted, OpenCraft uses `agents.defaults.subagents.runTimeoutSeconds` when set; otherwise timeout defaults to `0` (no timeout).
+  - Discord thread-bound flows depend on `session.threadBindings.*` and `channels.discord.threadBindings.*`.
+  - Reply format includes `Status`, `Result`, and compact stats.
+  - `Result` is the assistant completion text; if missing, the latest `toolResult` is used as fallback.
+- Manual completion-mode spawns send directly first, with queue fallback and retry on transient failures (`status: "ok"` means run finished, not that announce delivered).
+- `sessions_spawn` supports inline file attachments for subagent runtime only (ACP rejects them). Each attachment has `name`, `content`, and optional `encoding` (`utf8` or `base64`) and `mimeType`. Files are materialized into the child workspace at `.opencraft/attachments/<uuid>/` with a `.manifest.json` metadata file. The tool returns a receipt with `count`, `totalBytes`, per file `sha256`, and `relDir`. Attachment content is automatically redacted from transcript persistence.
   - Configure limits via `tools.sessions_spawn.attachments` (`enabled`, `maxTotalBytes`, `maxFiles`, `maxFileBytes`, `retainOnSessionKeep`).
-  - `attachAs.mountPath` é um reserved hint para future mount implementations.
-- `sessions_spawn` é non-blocking e retorna `status: "accepted"` imediatamente.
-- ACP `streamTo: "parent"` responses podem incluir `streamLogPath` (session-scoped `*.acp-stream.jsonl`) para tailing progress history.
-- `sessions_send` executa um reply-back ping-pong (reply `REPLY_SKIP` para parar; max turns via `session.agentToAgent.maxPingPongTurns`, 0–5).
-- Depois do ping-pong, o target agent executa um **announce step**; reply `ANNOUNCE_SKIP` para suprimir o announcement.
-- Sandbox clamp: quando a current session está sandboxed e `agents.defaults.sandbox.sessionToolsVisibility: "spawned"`, OpenCraft clamps `tools.sessions.visibility` para `tree`.
+  - `attachAs.mountPath` is a reserved hint for future mount implementations.
+- `sessions_spawn` is non-blocking and returns `status: "accepted"` immediately.
+- ACP `streamTo: "parent"` responses may include `streamLogPath` (session-scoped `*.acp-stream.jsonl`) for tailing progress history.
+- `sessions_send` runs a reply‑back ping‑pong (reply `REPLY_SKIP` to stop; max turns via `session.agentToAgent.maxPingPongTurns`, 0–5).
+- After the ping‑pong, the target agent runs an **announce step**; reply `ANNOUNCE_SKIP` to suppress the announcement.
+- Sandbox clamp: when the current session is sandboxed and `agents.defaults.sandbox.sessionToolsVisibility: "spawned"`, OpenCraft clamps `tools.sessions.visibility` to `tree`.
 
 ### `agents_list`
 
-List agent ids que a current session pode alvejar com `sessions_spawn`.
+List agent ids that the current session may target with `sessions_spawn`.
 
-Notas:
+Notes:
 
-- Resultado é restrito a per-agent allowlists (`agents.list[].subagents.allowAgents`).
-- Quando `["*"]` está configurado, o tool inclui todos agentes configurados e marca `allowAny: true`.
+- Result is restricted to per-agent allowlists (`agents.list[].subagents.allowAgents`).
+- When `["*"]` is configured, the tool includes all configured agents and marks `allowAny: true`.
 
-## Parâmetros (comuns)
+## Parameters (common)
 
 Gateway-backed tools (`canvas`, `nodes`, `cron`):
 
-- `gatewayUrl` (padrão `ws://127.0.0.1:18789`)
-- `gatewayToken` (se auth habilitado)
+- `gatewayUrl` (default `ws://127.0.0.1:18789`)
+- `gatewayToken` (if auth enabled)
 - `timeoutMs`
 
-Nota: quando `gatewayUrl` é definido, inclua `gatewayToken` explicitamente. Tools não herdam config ou env credentials para overrides, e missing explicit credentials é um erro.
+Note: when `gatewayUrl` is set, include `gatewayToken` explicitly. Tools do not inherit config
+or environment credentials for overrides, and missing explicit credentials is an error.
 
 Browser tool:
 
-- `profile` (opcional; padrão `browser.defaultProfile`)
+- `profile` (optional; defaults to `browser.defaultProfile`)
 - `target` (`sandbox` | `host` | `node`)
-- `node` (opcional; pin um node id/name específico)
-- Guias de troubleshooting:
+- `node` (optional; pin a specific node id/name)
+- Troubleshooting guides:
   - Linux startup/CDP issues: [Browser troubleshooting (Linux)](/tools/browser-linux-troubleshooting)
   - WSL2 Gateway + Windows remote Chrome CDP: [WSL2 + Windows + remote Chrome CDP troubleshooting](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)
 
@@ -542,33 +568,34 @@ Browser tool:
 Browser automation:
 
 1. `browser` → `status` / `start`
-2. `snapshot` (ai ou aria)
+2. `snapshot` (ai or aria)
 3. `act` (click/type/press)
-4. `screenshot` se você precisa visual confirmation
+4. `screenshot` if you need visual confirmation
 
 Canvas render:
 
 1. `canvas` → `present`
-2. `a2ui_push` (opcional)
+2. `a2ui_push` (optional)
 3. `snapshot`
 
 Node targeting:
 
 1. `nodes` → `status`
-2. `describe` no chosen node
+2. `describe` on the chosen node
 3. `notify` / `run` / `camera_snap` / `screen_record`
 
 ## Safety
 
-- Evite direto `system.run`; use `nodes` → `run` apenas com explicit user consent.
-- Respeite user consent para camera/screen capture.
-- Use `status/describe` para garantir permissões antes de invocar media commands.
+- Avoid direct `system.run`; use `nodes` → `run` only with explicit user consent.
+- Respect user consent for camera/screen capture.
+- Use `status/describe` to ensure permissions before invoking media commands.
 
-## Como tools são apresentados ao agente
+## How tools are presented to the agent
 
-Tools são expostos em dois parallel channels:
+Tools are exposed in two parallel channels:
 
-1. **System prompt text**: uma human-readable list + guidance.
-2. **Tool schema**: as definições estruturadas de função enviadas à model API.
+1. **System prompt text**: a human-readable list + guidance.
+2. **Tool schema**: the structured function definitions sent to the model API.
 
-Isto significa o agente vê ambos "quais tools existem" e "como chamá-los." Se um tool não aparece no system prompt ou o schema, o modelo não pode chamá-lo.
+That means the agent sees both “what tools exist” and “how to call them.” If a tool
+doesn’t appear in the system prompt or the schema, the model cannot call it.

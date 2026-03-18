@@ -370,7 +370,7 @@ describe("gateway server models + voicewake", () => {
 
 describe("gateway server misc", () => {
   test("hello-ok advertises the gateway port for canvas host", async () => {
-    await withEnvAsync({ OPENCLAW_GATEWAY_TOKEN: "secret" }, async () => {
+    await withEnvAsync({ OPENCRAFT_GATEWAY_TOKEN: "secret" }, async () => {
       testTailnetIPv4.value = "100.64.0.1";
       testState.gatewayBind = "lan";
       const canvasPort = await getFreePort();

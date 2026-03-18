@@ -64,7 +64,7 @@ OPENCRAFT_DIAGNOSTICS=0
 标志将日志输出到标准诊断日志文件。默认位置：
 
 ```
-/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log
+/tmp/opencraft/opencraft-YYYY-MM-DD.log
 ```
 
 如果你设置了 `logging.file`，则使用该路径。日志为 JSONL 格式（每行一个 JSON 对象）。脱敏仍然根据 `logging.redactSensitive` 应用。
@@ -74,19 +74,19 @@ OPENCRAFT_DIAGNOSTICS=0
 选择最新的日志文件：
 
 ```bash
-ls -t /tmp/editzffaleta/OpenCraft-*.log | head -n 1
+ls -t /tmp/opencraft/opencraft-*.log | head -n 1
 ```
 
 过滤 Telegram HTTP 诊断：
 
 ```bash
-rg "telegram http error" /tmp/editzffaleta/OpenCraft-*.log
+rg "telegram http error" /tmp/opencraft/opencraft-*.log
 ```
 
 或在复现时使用 tail：
 
 ```bash
-tail -f /tmp/editzffaleta/OpenCraft-$(date +%F).log | rg "telegram http error"
+tail -f /tmp/opencraft/opencraft-$(date +%F).log | rg "telegram http error"
 ```
 
 对于远程 Gateway 网关，你也可以使用 `opencraft logs --follow`（参见 [/cli/logs](/cli/logs)）。

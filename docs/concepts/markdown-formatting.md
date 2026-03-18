@@ -1,50 +1,50 @@
 ---
-summary: "Pipeline de formatação Markdown para canais de saída"
+summary: "Markdown formatting pipeline for outbound channels"
 read_when:
-  - Você está alterando a formatação ou chunking de Markdown para canais de saída
-  - Você está adicionando um novo formatador de canal ou mapeamento de estilo
-  - Você está depurando regressões de formatação entre canais
+  - You are changing markdown formatting or chunking for outbound channels
+  - You are adding a new channel formatter or style mapping
+  - You are debugging formatting regressions across channels
 title: "Markdown Formatting"
 ---
 
-# Formatação Markdown
+# Markdown formatting
 
-O OpenCraft formata Markdown de saída convertendo-o em uma representação intermediária (IR)
-compartilhada antes de renderizar a saída específica do canal. A IR mantém o
-texto-fonte intacto enquanto carrega spans de estilo/link para que o chunking e a renderização possam
-permanecer consistentes entre canais.
+OpenCraft formats outbound Markdown by converting it into a shared intermediate
+representation (IR) before rendering channel-specific output. The IR keeps the
+source text intact while carrying style/link spans so chunking and rendering can
+stay consistent across channels.
 
-## Objetivos
+## Goals
 
-- **Consistência:** uma etapa de parse, múltiplos renderizadores.
-- **Chunking seguro:** dividir o texto antes de renderizar para que a formatação inline nunca
-  quebre entre chunks.
-- **Adequação ao canal:** mapear a mesma IR para Slack mrkdwn, Telegram HTML e Signal
-  style ranges sem re-parse do Markdown.
+- **Consistency:** one parse step, multiple renderers.
+- **Safe chunking:** split text before rendering so inline formatting never
+  breaks across chunks.
+- **Channel fit:** map the same IR to Slack mrkdwn, Telegram HTML, and Signal
+  style ranges without re-parsing Markdown.
 
 ## Pipeline
 
 1. **Parse Markdown -> IR**
-   - IR é texto simples mais spans de estilo (negrito/itálico/riscado/código/spoiler) e spans de link.
-   - Offsets são em unidades de código UTF-16 para que os style ranges do Signal se alinhem com sua API.
-   - Tabelas são parseadas apenas quando um canal opta pela conversão de tabelas.
+   - IR is plain text plus style spans (bold/italic/strike/code/spoiler) and link spans.
+   - Offsets are UTF-16 code units so Signal style ranges align with its API.
+   - Tables are parsed only when a channel opts into table conversion.
 2. **Chunk IR (format-first)**
-   - O chunking acontece no texto da IR antes da renderização.
-   - Formatação inline não se divide entre chunks; spans são fatiados por chunk.
-3. **Renderizar por canal**
-   - **Slack:** tokens mrkdwn (negrito/itálico/riscado/código), links como `<url|label>`.
-   - **Telegram:** tags HTML (`<b>`, `<i>`, `<s>`, `<code>`, `<pre><code>`, `<a href>`).
-   - **Signal:** texto simples + ranges `text-style`; links se tornam `label (url)` quando o label difere.
+   - Chunking happens on the IR text before rendering.
+   - Inline formatting does not split across chunks; spans are sliced per chunk.
+3. **Render per channel**
+   - **Slack:** mrkdwn tokens (bold/italic/strike/code), links as `<url|label>`.
+   - **Telegram:** HTML tags (`<b>`, `<i>`, `<s>`, `<code>`, `<pre><code>`, `<a href>`).
+   - **Signal:** plain text + `text-style` ranges; links become `label (url)` when label differs.
 
-## Exemplo de IR
+## IR example
 
-Markdown de entrada:
+Input Markdown:
 
 ```markdown
 Hello **world** — see [docs](https://docs.opencraft.ai).
 ```
 
-IR (esquemática):
+IR (schematic):
 
 ```json
 {
@@ -54,23 +54,23 @@ IR (esquemática):
 }
 ```
 
-## Onde é usado
+## Where it is used
 
-- Adaptadores de saída do Slack, Telegram e Signal renderizam a partir da IR.
-- Outros canais (WhatsApp, iMessage, MS Teams, Discord) ainda usam texto simples ou
-  suas próprias regras de formatação, com conversão de tabela Markdown aplicada antes
-  do chunking quando habilitada.
+- Slack, Telegram, and Signal outbound adapters render from the IR.
+- Other channels (WhatsApp, iMessage, MS Teams, Discord) still use plain text or
+  their own formatting rules, with Markdown table conversion applied before
+  chunking when enabled.
 
-## Tratamento de tabelas
+## Table handling
 
-Tabelas Markdown não são suportadas de forma consistente entre clientes de chat. Use
-`markdown.tables` para controlar a conversão por canal (e por conta).
+Markdown tables are not consistently supported across chat clients. Use
+`markdown.tables` to control conversion per channel (and per account).
 
-- `code`: renderiza tabelas como blocos de código (padrão para a maioria dos canais).
-- `bullets`: converte cada linha em pontos com marcadores (padrão para Signal + WhatsApp).
-- `off`: desabilita o parse e conversão de tabelas; o texto bruto da tabela passa direto.
+- `code`: render tables as code blocks (default for most channels).
+- `bullets`: convert each row into bullet points (default for Signal + WhatsApp).
+- `off`: disable table parsing and conversion; raw table text passes through.
 
-Chaves de configuração:
+Config keys:
 
 ```yaml
 channels:
@@ -83,48 +83,48 @@ channels:
           tables: off
 ```
 
-## Regras de chunking
+## Chunking rules
 
-- Limites de chunk vêm dos adaptadores/configuração do canal e são aplicados ao texto da IR.
-- Blocos de código cercados são preservados como um único bloco com uma nova linha final para que os canais
-  os renderizem corretamente.
-- Prefixos de lista e prefixos de blockquote fazem parte do texto da IR, então o chunking
-  não divide no meio de um prefixo.
-- Estilos inline (negrito/itálico/riscado/código-inline/spoiler) nunca se dividem entre
-  chunks; o renderizador reabre estilos dentro de cada chunk.
+- Chunk limits come from channel adapters/config and are applied to the IR text.
+- Code fences are preserved as a single block with a trailing newline so channels
+  render them correctly.
+- List prefixes and blockquote prefixes are part of the IR text, so chunking
+  does not split mid-prefix.
+- Inline styles (bold/italic/strike/inline-code/spoiler) are never split across
+  chunks; the renderer reopens styles inside each chunk.
 
-Se você precisa de mais informações sobre o comportamento de chunking entre canais, veja
+If you need more on chunking behavior across channels, see
 [Streaming + chunking](/concepts/streaming).
 
-## Política de links
+## Link policy
 
-- **Slack:** `[label](url)` -> `<url|label>`; URLs sem formatação permanecem assim. Autolink
-  é desabilitado durante o parse para evitar links duplicados.
-- **Telegram:** `[label](url)` -> `<a href="url">label</a>` (modo de parse HTML).
-- **Signal:** `[label](url)` -> `label (url)` a menos que o label corresponda à URL.
+- **Slack:** `[label](url)` -> `<url|label>`; bare URLs remain bare. Autolink
+  is disabled during parse to avoid double-linking.
+- **Telegram:** `[label](url)` -> `<a href="url">label</a>` (HTML parse mode).
+- **Signal:** `[label](url)` -> `label (url)` unless label matches the URL.
 
 ## Spoilers
 
-Marcadores de spoiler (`||spoiler||`) são parseados apenas para Signal, onde mapeiam para
-ranges de estilo SPOILER. Outros canais os tratam como texto simples.
+Spoiler markers (`||spoiler||`) are parsed only for Signal, where they map to
+SPOILER style ranges. Other channels treat them as plain text.
 
-## Como adicionar ou atualizar um formatador de canal
+## How to add or update a channel formatter
 
-1. **Parse uma vez:** use o helper compartilhado `markdownToIR(...)` com opções
-   apropriadas do canal (autolink, estilo de heading, prefixo de blockquote).
-2. **Renderize:** implemente um renderizador com `renderMarkdownWithMarkers(...)` e um
-   mapa de marcadores de estilo (ou Signal style ranges).
-3. **Chunk:** chame `chunkMarkdownIR(...)` antes de renderizar; renderize cada chunk.
-4. **Conecte o adaptador:** atualize o adaptador de saída do canal para usar o novo chunker
-   e renderizador.
-5. **Teste:** adicione ou atualize testes de formato e um teste de entrega de saída se o
-   canal usa chunking.
+1. **Parse once:** use the shared `markdownToIR(...)` helper with channel-appropriate
+   options (autolink, heading style, blockquote prefix).
+2. **Render:** implement a renderer with `renderMarkdownWithMarkers(...)` and a
+   style marker map (or Signal style ranges).
+3. **Chunk:** call `chunkMarkdownIR(...)` before rendering; render each chunk.
+4. **Wire adapter:** update the channel outbound adapter to use the new chunker
+   and renderer.
+5. **Test:** add or update format tests and an outbound delivery test if the
+   channel uses chunking.
 
-## Armadilhas comuns
+## Common gotchas
 
-- Tokens de colchete angular do Slack (`<@U123>`, `<#C123>`, `<https://...>`) devem ser
-  preservados; escape HTML bruto de forma segura.
-- HTML do Telegram requer escape de texto fora de tags para evitar markup quebrado.
-- Ranges de estilo do Signal dependem de offsets UTF-16; não use offsets de code point.
-- Preserve novas linhas finais para blocos de código cercados para que os marcadores de fechamento fiquem em
-  sua própria linha.
+- Slack angle-bracket tokens (`<@U123>`, `<#C123>`, `<https://...>`) must be
+  preserved; escape raw HTML safely.
+- Telegram HTML requires escaping text outside tags to avoid broken markup.
+- Signal style ranges depend on UTF-16 offsets; do not use code point offsets.
+- Preserve trailing newlines for fenced code blocks so closing markers land on
+  their own line.

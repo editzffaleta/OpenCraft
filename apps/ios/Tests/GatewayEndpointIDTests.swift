@@ -1,12 +1,12 @@
-import OpenClawKit
+import OpenCraftKit
 import Network
 import Testing
-@testable import OpenClaw
+@testable import OpenCraft
 
 @Suite struct GatewayEndpointIDTests {
     @Test func stableIDForServiceDecodesAndNormalizesName() {
         let endpoint = NWEndpoint.service(
-            name: "OpenClaw\\032Gateway   \\032  Node\n",
+            name: "OpenCraft\\032Gateway   \\032  Node\n",
             type: "_opencraft-gw._tcp",
             domain: "local.",
             interface: nil)
@@ -21,7 +21,7 @@ import Testing
 
     @Test func prettyDescriptionDecodesBonjourEscapes() {
         let endpoint = NWEndpoint.service(
-            name: "OpenClaw\\032Gateway",
+            name: "OpenCraft\\032Gateway",
             type: "_opencraft-gw._tcp",
             domain: "local.",
             interface: nil)

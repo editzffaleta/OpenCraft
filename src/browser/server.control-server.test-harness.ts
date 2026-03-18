@@ -347,10 +347,10 @@ export async function resetBrowserControlServerTestContext(): Promise<void> {
   process.env.OPENCRAFT_GATEWAY_PORT = String(state.testPort - 2);
   // Avoid flaky auth coupling: some suites temporarily set gateway env auth
   // which would make the browser control server require auth.
-  state.prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-  state.prevGatewayPassword = process.env.OPENCLAW_GATEWAY_PASSWORD;
-  delete process.env.OPENCLAW_GATEWAY_TOKEN;
-  delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+  state.prevGatewayToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+  state.prevGatewayPassword = process.env.OPENCRAFT_GATEWAY_PASSWORD;
+  delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+  delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
 }
 
 export function restoreGatewayAuthEnv(
@@ -358,14 +358,14 @@ export function restoreGatewayAuthEnv(
   prevGatewayPassword: string | undefined,
 ): void {
   if (prevGatewayToken === undefined) {
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
   } else {
-    process.env.OPENCLAW_GATEWAY_TOKEN = prevGatewayToken;
+    process.env.OPENCRAFT_GATEWAY_TOKEN = prevGatewayToken;
   }
   if (prevGatewayPassword === undefined) {
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
   } else {
-    process.env.OPENCLAW_GATEWAY_PASSWORD = prevGatewayPassword;
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = prevGatewayPassword;
   }
 }
 

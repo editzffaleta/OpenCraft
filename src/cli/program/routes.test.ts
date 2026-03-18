@@ -64,10 +64,7 @@ describe("program routes", () => {
   });
 
   it("returns false for gateway status route when option values are missing", async () => {
-    await expectRunFalse(
-      ["gateway", "status"],
-      ["node", "opencraft", "gateway", "status", "--url"],
-    );
+    await expectRunFalse(["gateway", "status"], ["node", "opencraft", "gateway", "status", "--url"]);
     await expectRunFalse(
       ["gateway", "status"],
       ["node", "opencraft", "gateway", "status", "--token"],
@@ -136,9 +133,9 @@ describe("program routes", () => {
 
   it("passes --no-probe through to daemon status", async () => {
     const route = expectRoute(["gateway", "status"]);
-    await expect(
-      route?.run(["node", "opencraft", "gateway", "status", "--no-probe"]),
-    ).resolves.toBe(true);
+    await expect(route?.run(["node", "opencraft", "gateway", "status", "--no-probe"])).resolves.toBe(
+      true,
+    );
 
     expect(runDaemonStatusMock).toHaveBeenCalledWith({
       rpc: {
@@ -264,10 +261,7 @@ describe("program routes", () => {
   });
 
   it("returns false for memory status route when --agent value is missing", async () => {
-    await expectRunFalse(
-      ["memory", "status"],
-      ["node", "opencraft", "memory", "status", "--agent"],
-    );
+    await expectRunFalse(["memory", "status"], ["node", "opencraft", "memory", "status", "--agent"]);
   });
 
   it("returns false for models list route when --provider value is missing", async () => {

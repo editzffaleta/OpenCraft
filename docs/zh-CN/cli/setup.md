@@ -15,7 +15,7 @@ x-i18n:
 
 # `opencraft setup`
 
-初始化 `~/.editzffaleta/OpenCraft.json` 和智能体工作区。
+初始化 `~/.opencraft/opencraft.json` 和智能体工作区。
 
 相关内容：
 

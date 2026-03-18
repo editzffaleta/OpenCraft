@@ -1,99 +1,100 @@
 ---
-summary: "Como o OpenCraft rotaciona perfis de autenticacao e faz fallback entre modelos"
+summary: "How OpenCraft rotates auth profiles and falls back across models"
 read_when:
-  - Diagnosticando rotacao de perfis de autenticacao, cooldowns ou comportamento de fallback de modelos
-  - Atualizando regras de failover para perfis de autenticacao ou modelos
+  - Diagnosing auth profile rotation, cooldowns, or model fallback behavior
+  - Updating failover rules for auth profiles or models
 title: "Model Failover"
 ---
 
-# Failover de modelos
+# Model failover
 
-O OpenCraft lida com falhas em dois estagios:
+OpenCraft handles failures in two stages:
 
-1. **Rotacao de perfil de autenticacao** dentro do provedor atual.
-2. **Fallback de modelo** para o proximo modelo em `agents.defaults.model.fallbacks`.
+1. **Auth profile rotation** within the current provider.
+2. **Model fallback** to the next model in `agents.defaults.model.fallbacks`.
 
-Este documento explica as regras de execucao e os dados que as sustentam.
+This doc explains the runtime rules and the data that backs them.
 
-## Armazenamento de autenticacao (chaves + OAuth)
+## Auth storage (keys + OAuth)
 
-O OpenCraft usa **perfis de autenticacao** tanto para chaves de API quanto para Token OAuth.
+OpenCraft uses **auth profiles** for both API keys and OAuth tokens.
 
-- Os segredos ficam em `~/.opencraft/agents/<agentId>/agent/auth-profiles.json` (legado: `~/.opencraft/agent/auth-profiles.json`).
-- As configuracoes `auth.profiles` / `auth.order` sao **apenas metadados + roteamento** (sem segredos).
-- Arquivo legado somente para importacao OAuth: `~/.opencraft/credentials/oauth.json` (importado para `auth-profiles.json` no primeiro uso).
+- Secrets live in `~/.opencraft/agents/<agentId>/agent/auth-profiles.json` (legacy: `~/.opencraft/agent/auth-profiles.json`).
+- Config `auth.profiles` / `auth.order` are **metadata + routing only** (no secrets).
+- Legacy import-only OAuth file: `~/.opencraft/credentials/oauth.json` (imported into `auth-profiles.json` on first use).
 
-Mais detalhes: [/concepts/oauth](/concepts/oauth)
+More detail: [/concepts/oauth](/concepts/oauth)
 
-Tipos de credenciais:
+Credential types:
 
 - `type: "api_key"` → `{ provider, key }`
-- `type: "oauth"` → `{ provider, access, refresh, expires, email? }` (+ `projectId`/`enterpriseUrl` para alguns provedores)
+- `type: "oauth"` → `{ provider, access, refresh, expires, email? }` (+ `projectId`/`enterpriseUrl` for some providers)
 
-## IDs de perfil
+## Profile IDs
 
-Logins OAuth criam perfis distintos para que multiplas contas possam coexistir.
+OAuth logins create distinct profiles so multiple accounts can coexist.
 
-- Padrao: `provider:default` quando nenhum email esta disponivel.
-- OAuth com email: `provider:<email>` (por exemplo `google-antigravity:user@gmail.com`).
+- Default: `provider:default` when no email is available.
+- OAuth with email: `provider:<email>` (for example `google-antigravity:user@gmail.com`).
 
-Os perfis ficam em `~/.opencraft/agents/<agentId>/agent/auth-profiles.json` sob `profiles`.
+Profiles live in `~/.opencraft/agents/<agentId>/agent/auth-profiles.json` under `profiles`.
 
-## Ordem de rotacao
+## Rotation order
 
-Quando um provedor tem multiplos perfis, o OpenCraft escolhe uma ordem assim:
+When a provider has multiple profiles, OpenCraft chooses an order like this:
 
-1. **Configuracao explicita**: `auth.order[provider]` (se definido).
-2. **Perfis configurados**: `auth.profiles` filtrados por provedor.
-3. **Perfis armazenados**: entradas em `auth-profiles.json` para o provedor.
+1. **Explicit config**: `auth.order[provider]` (if set).
+2. **Configured profiles**: `auth.profiles` filtered by provider.
+3. **Stored profiles**: entries in `auth-profiles.json` for the provider.
 
-Se nenhuma ordem explicita estiver configurada, o OpenCraft usa uma ordem round-robin:
+If no explicit order is configured, OpenCraft uses a round‑robin order:
 
-- **Chave primaria:** tipo de perfil (**OAuth antes de chaves de API**).
-- **Chave secundaria:** `usageStats.lastUsed` (mais antigo primeiro, dentro de cada tipo).
-- **Perfis em cooldown/desabilitados** sao movidos para o final, ordenados pelo vencimento mais proximo.
+- **Primary key:** profile type (**OAuth before API keys**).
+- **Secondary key:** `usageStats.lastUsed` (oldest first, within each type).
+- **Cooldown/disabled profiles** are moved to the end, ordered by soonest expiry.
 
-### Aderencia de sessao (amigavel ao cache)
+### Session stickiness (cache-friendly)
 
-O OpenCraft **fixa o perfil de autenticacao escolhido por sessao** para manter os caches do provedor aquecidos.
-Ele **nao** rotaciona a cada requisicao. O perfil fixado e reutilizado ate que:
+OpenCraft **pins the chosen auth profile per session** to keep provider caches warm.
+It does **not** rotate on every request. The pinned profile is reused until:
 
-- a sessao seja redefinida (`/new` / `/reset`)
-- uma compactacao seja concluida (contador de compactacao incrementa)
-- o perfil esteja em cooldown/desabilitado
+- the session is reset (`/new` / `/reset`)
+- a compaction completes (compaction count increments)
+- the profile is in cooldown/disabled
 
-Selecao manual via `/model …@<profileId>` define uma **substituicao do usuario** para aquela sessao
-e nao e auto-rotacionada ate que uma nova sessao comece.
+Manual selection via `/model …@<profileId>` sets a **user override** for that session
+and is not auto‑rotated until a new session starts.
 
-Perfis fixados automaticamente (selecionados pelo roteador de sessao) sao tratados como uma **preferencia**:
-eles sao tentados primeiro, mas o OpenCraft pode rotacionar para outro perfil em limites de taxa/timeouts.
-Perfis fixados pelo usuario permanecem travados naquele perfil; se falhar e fallbacks de modelo
-estiverem configurados, o OpenCraft move para o proximo modelo em vez de trocar perfis.
+Auto‑pinned profiles (selected by the session router) are treated as a **preference**:
+they are tried first, but OpenCraft may rotate to another profile on rate limits/timeouts.
+User‑pinned profiles stay locked to that profile; if it fails and model fallbacks
+are configured, OpenCraft moves to the next model instead of switching profiles.
 
-### Por que o OAuth pode "parecer perdido"
+### Why OAuth can “look lost”
 
-Se voce tem tanto um perfil OAuth quanto um perfil de chave de API para o mesmo provedor, o round-robin pode alternar entre eles nas mensagens, a menos que esteja fixado. Para forcar um unico perfil:
+If you have both an OAuth profile and an API key profile for the same provider, round‑robin can switch between them across messages unless pinned. To force a single profile:
 
-- Fixe com `auth.order[provider] = ["provider:profileId"]`, ou
-- Use uma substituicao por sessao via `/model …` com uma substituicao de perfil (quando suportado pela sua interface/superficie de chat).
+- Pin with `auth.order[provider] = ["provider:profileId"]`, or
+- Use a per-session override via `/model …` with a profile override (when supported by your UI/chat surface).
 
 ## Cooldowns
 
-Quando um perfil falha devido a erros de autenticacao/limite de taxa (ou um timeout que se parece
-com limitacao de taxa), o OpenCraft o marca em cooldown e move para o proximo perfil.
-Erros de formato/requisicao invalida (por exemplo, falhas de validacao de ID de chamada de ferramenta
-do Cloud Code Assist) sao tratados como dignos de failover e usam os mesmos cooldowns.
-Erros de stop-reason compativeis com OpenAI como `Unhandled stop reason: error`,
-`stop reason: error` e `reason: error` sao classificados como sinais de timeout/failover.
+When a profile fails due to auth/rate‑limit errors (or a timeout that looks
+like rate limiting), OpenCraft marks it in cooldown and moves to the next profile.
+Format/invalid‑request errors (for example Cloud Code Assist tool call ID
+validation failures) are treated as failover‑worthy and use the same cooldowns.
+OpenAI-compatible stop-reason errors such as `Unhandled stop reason: error`,
+`stop reason: error`, and `reason: error` are classified as timeout/failover
+signals.
 
-Cooldowns usam backoff exponencial:
+Cooldowns use exponential backoff:
 
-- 1 minuto
-- 5 minutos
-- 25 minutos
-- 1 hora (limite)
+- 1 minute
+- 5 minutes
+- 25 minutes
+- 1 hour (cap)
 
-O estado e armazenado em `auth-profiles.json` sob `usageStats`:
+State is stored in `auth-profiles.json` under `usageStats`:
 
 ```json
 {
@@ -107,11 +108,11 @@ O estado e armazenado em `auth-profiles.json` sob `usageStats`:
 }
 ```
 
-## Desabilitacoes por cobranca
+## Billing disables
 
-Falhas de cobranca/credito (por exemplo "creditos insuficientes" / "saldo de credito muito baixo") sao tratadas como dignos de failover, mas geralmente nao sao transitorias. Em vez de um cooldown curto, o OpenCraft marca o perfil como **desabilitado** (com um backoff mais longo) e rotaciona para o proximo perfil/provedor.
+Billing/credit failures (for example “insufficient credits” / “credit balance too low”) are treated as failover‑worthy, but they’re usually not transient. Instead of a short cooldown, OpenCraft marks the profile as **disabled** (with a longer backoff) and rotates to the next profile/provider.
 
-O estado e armazenado em `auth-profiles.json`:
+State is stored in `auth-profiles.json`:
 
 ```json
 {
@@ -124,28 +125,28 @@ O estado e armazenado em `auth-profiles.json`:
 }
 ```
 
-Padroes:
+Defaults:
 
-- O backoff de cobranca comeca em **5 horas**, dobra por falha de cobranca e tem limite de **24 horas**.
-- Os contadores de backoff sao resetados se o perfil nao falhou por **24 horas** (configuravel).
+- Billing backoff starts at **5 hours**, doubles per billing failure, and caps at **24 hours**.
+- Backoff counters reset if the profile hasn’t failed for **24 hours** (configurable).
 
-## Fallback de modelo
+## Model fallback
 
-Se todos os perfis de um provedor falharem, o OpenCraft move para o proximo modelo em
-`agents.defaults.model.fallbacks`. Isso se aplica a falhas de autenticacao, limites de taxa e
-timeouts que esgotaram a rotacao de perfis (outros erros nao avancam o fallback).
+If all profiles for a provider fail, OpenCraft moves to the next model in
+`agents.defaults.model.fallbacks`. This applies to auth failures, rate limits, and
+timeouts that exhausted profile rotation (other errors do not advance fallback).
 
-Quando uma execucao comeca com uma substituicao de modelo (hooks ou CLI), os fallbacks ainda terminam em
-`agents.defaults.model.primary` apos tentar quaisquer fallbacks configurados.
+When a run starts with a model override (hooks or CLI), fallbacks still end at
+`agents.defaults.model.primary` after trying any configured fallbacks.
 
-## Configuracao relacionada
+## Related config
 
-Veja [Configuracao do Gateway](/gateway/configuration) para:
+See [Gateway configuration](/gateway/configuration) for:
 
 - `auth.profiles` / `auth.order`
 - `auth.cooldowns.billingBackoffHours` / `auth.cooldowns.billingBackoffHoursByProvider`
 - `auth.cooldowns.billingMaxHours` / `auth.cooldowns.failureWindowHours`
 - `agents.defaults.model.primary` / `agents.defaults.model.fallbacks`
-- Roteamento de `agents.defaults.imageModel`
+- `agents.defaults.imageModel` routing
 
-Veja [Models](/concepts/models) para a visao geral mais ampla de selecao e fallback de modelos.
+See [Models](/concepts/models) for the broader model selection and fallback overview.

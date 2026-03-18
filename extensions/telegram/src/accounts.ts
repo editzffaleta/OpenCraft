@@ -1,24 +1,22 @@
 import util from "node:util";
-import type { TelegramAccountConfig, TelegramActionConfig } from "opencraft/plugin-sdk/telegram";
-import { createAccountActionGate } from "../../../src/channels/plugins/account-action-gate.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { isTruthyEnvValue } from "../../../src/infra/env.js";
-import { createSubsystemLogger } from "../../../src/logging/subsystem.js";
 import {
+  createAccountActionGate,
+  DEFAULT_ACCOUNT_ID,
   listConfiguredAccountIds as listConfiguredAccountIdsFromSection,
+  normalizeAccountId,
+  normalizeOptionalAccountId,
+  resolveAccountEntry,
   resolveAccountWithDefaultFallback,
-} from "../../../src/plugin-sdk/account-resolution.js";
-import { resolveAccountEntry } from "../../../src/routing/account-lookup.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import { isTruthyEnvValue } from "opencraft/plugin-sdk/infra-runtime";
 import {
   listBoundAccountIds,
   resolveDefaultAgentBoundAccountId,
-} from "../../../src/routing/bindings.js";
-import { formatSetExplicitDefaultInstruction } from "../../../src/routing/default-account-warnings.js";
-import {
-  DEFAULT_ACCOUNT_ID,
-  normalizeAccountId,
-  normalizeOptionalAccountId,
-} from "../../../src/routing/session-key.js";
+} from "opencraft/plugin-sdk/routing";
+import { formatSetExplicitDefaultInstruction } from "opencraft/plugin-sdk/routing";
+import { createSubsystemLogger } from "opencraft/plugin-sdk/runtime-env";
+import type { TelegramAccountConfig, TelegramActionConfig } from "opencraft/plugin-sdk/telegram";
 import { resolveTelegramToken } from "./token.js";
 
 let log: ReturnType<typeof createSubsystemLogger> | null = null;
@@ -136,7 +134,7 @@ export function mergeTelegramAccountConfig(
   // this failure disrupts message delivery for *all* accounts.
   // Single-account setups keep backward compat: channel-level groups still
   // applies when the account has no override.
-  // See: https://github.com/editzffaleta/OpenCraft/issues/30673
+  // See: https://github.com/openclaw/openclaw/issues/30673
   const configuredAccountIds = Object.keys(cfg.channels?.telegram?.accounts ?? {});
   const isMultiAccount = configuredAccountIds.length > 1;
   const groups = account.groups ?? (isMultiAccount ? undefined : channelGroups);

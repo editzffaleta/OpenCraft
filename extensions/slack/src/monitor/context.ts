@@ -1,17 +1,17 @@
 import type { App } from "@slack/bolt";
-import type { HistoryEntry } from "../../../../src/auto-reply/reply/history.js";
-import { formatAllowlistMatchMeta } from "../../../../src/channels/allowlist-match.js";
+import { formatAllowlistMatchMeta } from "opencraft/plugin-sdk/channel-runtime";
 import type {
   OpenCraftConfig,
   SlackReactionNotificationMode,
-} from "../../../../src/config/config.js";
-import { resolveSessionKey, type SessionScope } from "../../../../src/config/sessions.js";
-import type { DmPolicy, GroupPolicy } from "../../../../src/config/types.js";
-import { logVerbose } from "../../../../src/globals.js";
-import { createDedupeCache } from "../../../../src/infra/dedupe.js";
-import { getChildLogger } from "../../../../src/logging.js";
-import { resolveAgentRoute } from "../../../../src/routing/resolve-route.js";
-import type { RuntimeEnv } from "../../../../src/runtime.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { resolveSessionKey, type SessionScope } from "opencraft/plugin-sdk/config-runtime";
+import type { DmPolicy, GroupPolicy } from "opencraft/plugin-sdk/config-runtime";
+import { createDedupeCache } from "opencraft/plugin-sdk/infra-runtime";
+import type { HistoryEntry } from "opencraft/plugin-sdk/reply-runtime";
+import { resolveAgentRoute } from "opencraft/plugin-sdk/routing";
+import { logVerbose } from "opencraft/plugin-sdk/runtime-env";
+import { getChildLogger } from "opencraft/plugin-sdk/runtime-env";
+import type { RuntimeEnv } from "opencraft/plugin-sdk/runtime-env";
 import type { SlackMessageEvent } from "../types.js";
 import { normalizeAllowList, normalizeAllowListLower, normalizeSlackSlug } from "./allow-list.js";
 import type { SlackChannelConfigEntries } from "./channel-config.js";
@@ -53,7 +53,7 @@ export type SlackMonitorContext = {
   replyToMode: "off" | "first" | "all";
   threadHistoryScope: "thread" | "channel";
   threadInheritParent: boolean;
-  slashCommand: Required<import("../../../../src/config/config.js").SlackSlashCommandConfig>;
+  slashCommand: Required<import("opencraft/plugin-sdk/config-runtime").SlackSlashCommandConfig>;
   textLimit: number;
   ackReactionScope: string;
   typingReaction: string;

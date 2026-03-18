@@ -1,9 +1,9 @@
 import {
-  collectAllowlistProviderRestrictSendersWarnings,
   createScopedAccountConfigAccessors,
   createScopedChannelConfigBase,
   createScopedDmSecurityResolver,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-config-helpers";
+import { collectAllowlistProviderRestrictSendersWarnings } from "opencraft/plugin-sdk/channel-policy";
 import {
   buildChannelConfigSchema,
   buildComputedAccountStatusSnapshot,
@@ -18,7 +18,7 @@ import {
   type LineConfig,
   type LineChannelData,
   type ResolvedLineAccount,
-} from "opencraft/plugin-sdk/line";
+} from "../api.js";
 import { getLineRuntime } from "./runtime.js";
 import { lineSetupAdapter } from "./setup-core.js";
 import { lineSetupWizard } from "./setup-surface.js";

@@ -53,8 +53,8 @@ function buildConfig(enableNoVnc: boolean): SandboxConfig {
     workspaceAccess: "none",
     workspaceRoot: "/tmp/opencraft-sandboxes",
     docker: {
-      image: "openclaw-sandbox:bookworm-slim",
-      containerPrefix: "openclaw-sbx-",
+      image: "opencraft-sandbox:bookworm-slim",
+      containerPrefix: "opencraft-sbx-",
       workdir: "/workspace",
       readOnlyRoot: true,
       tmpfs: ["/tmp", "/var/tmp", "/run"],
@@ -70,9 +70,9 @@ function buildConfig(enableNoVnc: boolean): SandboxConfig {
     },
     browser: {
       enabled: true,
-      image: "openclaw-sandbox-browser:bookworm-slim",
-      containerPrefix: "openclaw-sbx-browser-",
-      network: "openclaw-sandbox-browser",
+      image: "opencraft-sandbox-browser:bookworm-slim",
+      containerPrefix: "opencraft-sbx-browser-",
+      network: "opencraft-sandbox-browser",
       cdpPort: 9222,
       vncPort: 5900,
       noVncPort: 6080,

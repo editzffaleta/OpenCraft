@@ -1,17 +1,14 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/core";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { signalPlugin } from "./src/channel.js";
 import { setSignalRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { signalPlugin } from "./src/channel.js";
+export { setSignalRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "signal",
   name: "Signal",
   description: "Signal channel plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setSignalRuntime(api.runtime);
-    api.registerChannel({ plugin: signalPlugin });
-  },
-};
-
-export default plugin;
+  plugin: signalPlugin,
+  setRuntime: setSignalRuntime,
+});

@@ -69,7 +69,7 @@ Input safety limits:
 
 ## Plugin Defaults
 
-Set plugin-wide defaults in `~/.editzffaleta/OpenCraft.json`:
+Set plugin-wide defaults in `~/.opencraft/opencraft.json`:
 
 ```json5
 {

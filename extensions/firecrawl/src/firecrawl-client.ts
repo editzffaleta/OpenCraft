@@ -1,5 +1,6 @@
-import { markdownToText, truncateText } from "../../../src/agents/tools/web-fetch-utils.js";
-import { withTrustedWebToolsEndpoint } from "../../../src/agents/tools/web-guarded-fetch.js";
+import { markdownToText, truncateText } from "opencraft/plugin-sdk/agent-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { withTrustedWebToolsEndpoint } from "opencraft/plugin-sdk/provider-web-search";
 import {
   DEFAULT_CACHE_TTL_MINUTES,
   normalizeCacheKey,
@@ -7,9 +8,8 @@ import {
   readResponseText,
   resolveCacheTtlMs,
   writeCache,
-} from "../../../src/agents/tools/web-shared.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { wrapExternalContent, wrapWebContent } from "../../../src/security/external-content.js";
+} from "opencraft/plugin-sdk/provider-web-search";
+import { wrapExternalContent, wrapWebContent } from "opencraft/plugin-sdk/security-runtime";
 import {
   resolveFirecrawlApiKey,
   resolveFirecrawlBaseUrl,

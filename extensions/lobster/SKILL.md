@@ -1,24 +1,24 @@
 # Lobster
 
-O Lobster executa fluxos de trabalho de múltiplas etapas com pontos de verificação de aprovação. Use quando:
+Lobster executes multi-step workflows with approval checkpoints. Use it when:
 
-- O usuário quiser uma automação repetível (triagem, monitoramento, sincronização)
-- Ações precisarem de aprovação humana antes de executar (enviar, publicar, excluir)
-- Múltiplas chamadas de ferramentas devem ser executadas como uma operação determinística
+- User wants a repeatable automation (triage, monitor, sync)
+- Actions need human approval before executing (send, post, delete)
+- Multiple tool calls should run as one deterministic operation
 
-## Quando usar o Lobster
+## When to use Lobster
 
-| Intenção do usuário                                                   | Usar Lobster?                                            |
-| --------------------------------------------------------------------- | -------------------------------------------------------- |
-| "Faça triagem do meu email"                                           | Sim — múltiplas etapas, pode enviar respostas            |
-| "Envie uma mensagem"                                                  | Não — ação única, use a ferramenta message diretamente   |
-| "Verifique meu email toda manhã e pergunte antes de responder"        | Sim — fluxo agendado com aprovação                       |
-| "Como está o tempo?"                                                  | Não — consulta simples                                   |
-| "Monitore este PR e me notifique sobre mudanças"                      | Sim — com estado, recorrente                             |
+| User intent                                            | Use Lobster?                                  |
+| ------------------------------------------------------ | --------------------------------------------- |
+| "Triage my email"                                      | Yes — multi-step, may send replies            |
+| "Send a message"                                       | No — single action, use message tool directly |
+| "Check my email every morning and ask before replying" | Yes — scheduled workflow with approval        |
+| "What's the weather?"                                  | No — simple query                             |
+| "Monitor this PR and notify me of changes"             | Yes — stateful, recurring                     |
 
-## Uso básico
+## Basic usage
 
-### Executar um pipeline
+### Run a pipeline
 
 ```json
 {
@@ -27,7 +27,7 @@ O Lobster executa fluxos de trabalho de múltiplas etapas com pontos de verifica
 }
 ```
 
-Retorna resultado estruturado:
+Returns structured result:
 
 ```json
 {
@@ -39,9 +39,9 @@ Retorna resultado estruturado:
 }
 ```
 
-### Gerenciar aprovação
+### Handle approval
 
-Se o fluxo de trabalho precisar de aprovação:
+If the workflow needs approval:
 
 ```json
 {
@@ -55,7 +55,7 @@ Se o fluxo de trabalho precisar de aprovação:
 }
 ```
 
-Apresente o prompt ao usuário. Se aprovado:
+Present the prompt to the user. If they approve:
 
 ```json
 {
@@ -65,33 +65,33 @@ Apresente o prompt ao usuário. Se aprovado:
 }
 ```
 
-## Exemplos de fluxos de trabalho
+## Example workflows
 
-### Triagem de email
+### Email triage
 
 ```
 gog.gmail.search --query 'newer_than:1d' --max 20 | email.triage
 ```
 
-Busca emails recentes e classifica em categorias (needs_reply, needs_action, fyi).
+Fetches recent emails, classifies into buckets (needs_reply, needs_action, fyi).
 
-### Triagem de email com portão de aprovação
+### Email triage with approval gate
 
 ```
 gog.gmail.search --query 'newer_than:1d' | email.triage | approve --prompt 'Process these?'
 ```
 
-Igual ao anterior, mas aguarda aprovação antes de retornar.
+Same as above, but halts for approval before returning.
 
-## Comportamentos principais
+## Key behaviors
 
-- **Determinístico**: Mesma entrada → mesma saída (sem variação de LLM na execução do pipeline)
-- **Portões de aprovação**: O comando `approve` interrompe a execução e retorna um token
-- **Retomável**: Use a ação `resume` com o token para continuar
-- **Saída estruturada**: Sempre retorna envelope JSON com `protocolVersion`
+- **Deterministic**: Same input → same output (no LLM variance in pipeline execution)
+- **Approval gates**: `approve` command halts execution, returns token
+- **Resumable**: Use `resume` action with token to continue
+- **Structured output**: Always returns JSON envelope with `protocolVersion`
 
-## Não use o Lobster para
+## Don't use Lobster for
 
-- Solicitações simples de ação única (use a ferramenta diretamente)
-- Consultas que precisam de interpretação de LLM no meio do fluxo
-- Tarefas pontuais que não serão repetidas
+- Simple single-action requests (just use the tool directly)
+- Queries that need LLM interpretation mid-flow
+- One-off tasks that won't be repeated

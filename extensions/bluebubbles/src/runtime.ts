@@ -1,5 +1,5 @@
 import type { PluginRuntime } from "opencraft/plugin-sdk/bluebubbles";
-import { createPluginRuntimeStore } from "opencraft/plugin-sdk/compat";
+import { createPluginRuntimeStore } from "opencraft/plugin-sdk/runtime-store";
 
 const runtimeStore = createPluginRuntimeStore<PluginRuntime>("BlueBubbles runtime not initialized");
 type LegacyRuntimeLogShape = { log?: (message: string) => void };

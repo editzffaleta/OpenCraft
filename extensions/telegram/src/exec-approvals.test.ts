@@ -9,9 +9,7 @@ import {
 } from "./exec-approvals.js";
 
 function buildConfig(
-  execApprovals?: NonNullable<
-    NonNullable<OpenCraftConfig["channels"]>["telegram"]
-  >["execApprovals"],
+  execApprovals?: NonNullable<NonNullable<OpenCraftConfig["channels"]>["telegram"]>["execApprovals"],
 ): OpenCraftConfig {
   return {
     channels: {

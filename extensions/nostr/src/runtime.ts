@@ -1,5 +1,5 @@
-import { createPluginRuntimeStore } from "opencraft/plugin-sdk/compat";
-import type { PluginRuntime } from "opencraft/plugin-sdk/nostr";
+import { createPluginRuntimeStore } from "opencraft/plugin-sdk/runtime-store";
+import type { PluginRuntime } from "../api.js";
 
 const { setRuntime: setNostrRuntime, getRuntime: getNostrRuntime } =
   createPluginRuntimeStore<PluginRuntime>("Nostr runtime not initialized");

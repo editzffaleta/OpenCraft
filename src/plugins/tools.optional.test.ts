@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { resolvePluginTools } from "./tools.js";
 
 type MockRegistryToolEntry = {
   pluginId: string;
@@ -13,6 +12,8 @@ const loadOpenCraftPluginsMock = vi.fn();
 vi.mock("./loader.js", () => ({
   loadOpenCraftPlugins: (params: unknown) => loadOpenCraftPluginsMock(params),
 }));
+
+let resolvePluginTools: typeof import("./tools.js").resolvePluginTools;
 
 function makeTool(name: string) {
   return {
@@ -90,8 +91,10 @@ function resolveOptionalDemoTools(toolAllowlist?: string[]) {
 }
 
 describe("resolvePluginTools optional tools", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
     loadOpenCraftPluginsMock.mockClear();
+    ({ resolvePluginTools } = await import("./tools.js"));
   });
 
   it("skips optional tools without explicit allowlist", () => {

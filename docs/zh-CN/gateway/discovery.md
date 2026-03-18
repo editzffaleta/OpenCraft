@@ -78,7 +78,7 @@ Bonjour 是尽力而为的，不会跨网络。它仅用于"同一 LAN"的便利
 禁用/覆盖：
 
 - `OPENCRAFT_DISABLE_BONJOUR=1` 禁用广播。
-- `~/.editzffaleta/OpenCraft.json` 中的 `gateway.bind` 控制 Gateway 网关绑定模式。
+- `~/.opencraft/opencraft.json` 中的 `gateway.bind` 控制 Gateway 网关绑定模式。
 - `OPENCRAFT_SSH_PORT` 覆盖 TXT 中广播的 SSH 端口（默认为 22）。
 - `OPENCRAFT_TAILNET_DNS` 发布 `tailnetDns` 提示（MagicDNS）。
 - `OPENCRAFT_CLI_PATH` 覆盖广播的 CLI 路径。

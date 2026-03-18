@@ -1,26 +1,26 @@
-import { normalizeCommandBody } from "../../../src/auto-reply/commands-registry.js";
-import {
-  formatInboundEnvelope,
-  resolveEnvelopeFormatOptions,
-} from "../../../src/auto-reply/envelope.js";
-import {
-  buildPendingHistoryContextFromMap,
-  type HistoryEntry,
-} from "../../../src/auto-reply/reply/history.js";
-import { finalizeInboundContext } from "../../../src/auto-reply/reply/inbound-context.js";
-import { toLocationContext } from "../../../src/channels/location.js";
-import { recordInboundSession } from "../../../src/channels/session.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { readSessionUpdatedAt, resolveStorePath } from "../../../src/config/sessions.js";
+import { toLocationContext } from "opencraft/plugin-sdk/channel-runtime";
+import { recordInboundSession } from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { readSessionUpdatedAt, resolveStorePath } from "opencraft/plugin-sdk/config-runtime";
 import type {
   TelegramDirectConfig,
   TelegramGroupConfig,
   TelegramTopicConfig,
-} from "../../../src/config/types.js";
-import { logVerbose, shouldLogVerbose } from "../../../src/globals.js";
-import type { ResolvedAgentRoute } from "../../../src/routing/resolve-route.js";
-import { resolveInboundLastRouteSessionKey } from "../../../src/routing/resolve-route.js";
-import { resolvePinnedMainDmOwnerFromAllowlist } from "../../../src/security/dm-policy-shared.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import { normalizeCommandBody } from "opencraft/plugin-sdk/reply-runtime";
+import {
+  formatInboundEnvelope,
+  resolveEnvelopeFormatOptions,
+} from "opencraft/plugin-sdk/reply-runtime";
+import {
+  buildPendingHistoryContextFromMap,
+  type HistoryEntry,
+} from "opencraft/plugin-sdk/reply-runtime";
+import { finalizeInboundContext } from "opencraft/plugin-sdk/reply-runtime";
+import type { ResolvedAgentRoute } from "opencraft/plugin-sdk/routing";
+import { resolveInboundLastRouteSessionKey } from "opencraft/plugin-sdk/routing";
+import { logVerbose, shouldLogVerbose } from "opencraft/plugin-sdk/runtime-env";
+import { resolvePinnedMainDmOwnerFromAllowlist } from "opencraft/plugin-sdk/security-runtime";
 import { normalizeAllowFrom } from "./bot-access.js";
 import type {
   TelegramMediaRef,
@@ -63,7 +63,7 @@ export async function buildTelegramInboundContextPayload(params: {
   stickerCacheHit: boolean;
   effectiveWasMentioned: boolean;
   commandAuthorized: boolean;
-  locationData?: import("../../../src/channels/location.js").NormalizedLocation;
+  locationData?: import("opencraft/plugin-sdk/channel-runtime").NormalizedLocation;
   options?: TelegramMessageContextOptions;
   dmAllowFrom?: Array<string | number>;
 }): Promise<{

@@ -18,8 +18,8 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("../daemon/constants.js", () => ({
-  resolveGatewayLaunchAgentLabel: vi.fn(() => "ai.opencraft.gateway"),
-  resolveNodeLaunchAgentLabel: vi.fn(() => "ai.opencraft.node"),
+  resolveGatewayLaunchAgentLabel: vi.fn(() => "ai.openclaw.gateway"),
+  resolveNodeLaunchAgentLabel: vi.fn(() => "ai.openclaw.node"),
 }));
 
 vi.mock("../daemon/diagnostics.js", () => ({
@@ -154,7 +154,7 @@ describe("maybeRepairGatewayDaemon", () => {
     await maybeRepairGatewayDaemon({
       cfg: { gateway: {} },
       runtime: { log: vi.fn(), error: vi.fn(), exit: vi.fn() },
-      prompter: createPrompter((message) => message === "Reiniciar serviço do Gateway agora?"),
+      prompter: createPrompter((message) => message === "Restart gateway service now?"),
       options: { deep: false },
       gatewayDetailsMessage: "details",
       healthOk: false,
@@ -162,7 +162,7 @@ describe("maybeRepairGatewayDaemon", () => {
 
     expect(service.restart).toHaveBeenCalledTimes(1);
     expect(note).toHaveBeenCalledWith(
-      "reinicialização agendada, gateway será reiniciado em breve",
+      "restart scheduled, gateway will restart momentarily",
       "Gateway",
     );
     expect(sleep).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe("maybeRepairGatewayDaemon", () => {
     await maybeRepairGatewayDaemon({
       cfg: { gateway: {} },
       runtime: { log: vi.fn(), error: vi.fn(), exit: vi.fn() },
-      prompter: createPrompter((message) => message === "Iniciar serviço do Gateway agora?"),
+      prompter: createPrompter((message) => message === "Start gateway service now?"),
       options: { deep: false },
       gatewayDetailsMessage: "details",
       healthOk: false,
@@ -185,7 +185,7 @@ describe("maybeRepairGatewayDaemon", () => {
 
     expect(service.restart).toHaveBeenCalledTimes(1);
     expect(note).toHaveBeenCalledWith(
-      "reinicialização agendada, gateway será reiniciado em breve",
+      "restart scheduled, gateway will restart momentarily",
       "Gateway",
     );
     expect(sleep).not.toHaveBeenCalled();

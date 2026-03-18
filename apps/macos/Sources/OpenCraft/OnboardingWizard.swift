@@ -5,7 +5,7 @@ import OpenCraftProtocol
 import OSLog
 import SwiftUI
 
-private let onboardingWizardLogger = Logger(subsystem: "ai.opencraft", category: "onboarding.wizard")
+private let onboardingWizardLogger = Logger(subsystem: "ai.openclaw", category: "onboarding.wizard")
 
 // MARK: - Swift 6 AnyCodable Bridging Helpers
 

@@ -1,6 +1,9 @@
 import type { OpenCraftConfig, RuntimeEnv } from "opencraft/plugin-sdk/zalo";
 import { describe, expect, it } from "vitest";
-import { createDirectoryTestRuntime, expectDirectorySurface } from "../../test-utils/directory.js";
+import {
+  createDirectoryTestRuntime,
+  expectDirectorySurface,
+} from "../../../test/helpers/extensions/directory.js";
 import { zaloPlugin } from "./channel.js";
 
 describe("zalo directory", () => {

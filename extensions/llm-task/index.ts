@@ -1,6 +1,11 @@
-import type { AnyAgentTool, OpenCraftPluginApi } from "opencraft/plugin-sdk/llm-task";
+import { definePluginEntry, type AnyAgentTool, type OpenCraftPluginApi } from "./api.js";
 import { createLlmTaskTool } from "./src/llm-task-tool.js";
 
-export default function register(api: OpenCraftPluginApi) {
-  api.registerTool(createLlmTaskTool(api) as unknown as AnyAgentTool, { optional: true });
-}
+export default definePluginEntry({
+  id: "llm-task",
+  name: "LLM Task",
+  description: "Optional tool for structured subtask execution",
+  register(api: OpenCraftPluginApi) {
+    api.registerTool(createLlmTaskTool(api) as unknown as AnyAgentTool, { optional: true });
+  },
+});

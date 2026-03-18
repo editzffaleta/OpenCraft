@@ -59,7 +59,7 @@ opencraft doctor --deep
 如果你想在写入前查看更改，请先打开配置文件：
 
 ```bash
-cat ~/.editzffaleta/OpenCraft.json
+cat ~/.opencraft/opencraft.json
 ```
 
 ## 功能概述
@@ -106,7 +106,7 @@ Doctor 将：
 
 - 解释找到了哪些遗留键。
 - 显示它应用的迁移。
-- 使用更新后的 schema 重写 `~/.editzffaleta/OpenCraft.json`。
+- 使用更新后的 schema 重写 `~/.opencraft/opencraft.json`。
 
 Gateway 网关在检测到遗留配置格式时也会在启动时自动运行 doctor 迁移，因此过时的配置无需手动干预即可修复。
 
@@ -158,7 +158,7 @@ Doctor 检查：
 - **主会话"1 行 JSONL"**：当主记录只有一行时标记（历史未累积）。
 - **多个状态目录**：当多个 `~/.opencraft` 文件夹存在于不同 home 目录或当 `OPENCRAFT_STATE_DIR` 指向别处时发出警告（历史可能在安装之间分裂）。
 - **远程模式提醒**：如果 `gateway.mode=remote`，doctor 会提醒你在远程主机上运行它（状态在那里）。
-- **配置文件权限**：当 `~/.editzffaleta/OpenCraft.json` 对组/其他用户可读时发出警告，并提供收紧到 `600` 的选项。
+- **配置文件权限**：当 `~/.opencraft/opencraft.json` 对组/其他用户可读时发出警告，并提供收紧到 `600` 的选项。
 
 ### 5）模型认证健康（OAuth 过期）
 

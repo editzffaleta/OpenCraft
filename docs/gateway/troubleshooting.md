@@ -1,15 +1,15 @@
 ---
-summary: "Runbook aprofundado de solução de problemas para gateway, canais, automação, nodes e browser"
+summary: "Deep troubleshooting runbook for gateway, channels, automation, nodes, and browser"
 read_when:
-  - O hub de solução de problemas direcionou você aqui para diagnóstico mais profundo
-  - Você precisa de seções estáveis de runbook baseadas em sintomas com comandos exatos
+  - The troubleshooting hub pointed you here for deeper diagnosis
+  - You need stable symptom based runbook sections with exact commands
 title: "Troubleshooting"
 ---
 
-# Solução de problemas do Gateway
+# Gateway troubleshooting
 
-Esta página é o runbook aprofundado.
-Comece em [/help/troubleshooting](/help/troubleshooting) se você quer o fluxo de triagem rápida primeiro.
+This page is the deep runbook.
+Start at [/help/troubleshooting](/help/troubleshooting) if you want the fast triage flow first.
 
 ## Command ladder
 
@@ -123,10 +123,10 @@ Use `error.details.code` from the failed `connect` response to pick the next act
 
 | Detail code                  | Meaning                                                  | Recommended action                                                                                                                                                   |
 | ---------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AUTH_TOKEN_MISSING`         | Client did not send a required shared token.             | Paste/set token in the client and retry. For dashboard paths: `opencraft config get gateway.auth.token` then paste into Control UI settings.                         |
+| `AUTH_TOKEN_MISSING`         | Client did not send a required shared token.             | Paste/set token in the client and retry. For dashboard paths: `opencraft config get gateway.auth.token` then paste into Control UI settings.                          |
 | `AUTH_TOKEN_MISMATCH`        | Shared token did not match gateway auth token.           | If `canRetryWithDeviceToken=true`, allow one trusted retry. If still failing, run the [token drift recovery checklist](/cli/devices#token-drift-recovery-checklist). |
 | `AUTH_DEVICE_TOKEN_MISMATCH` | Cached per-device token is stale or revoked.             | Rotate/re-approve device token using [devices CLI](/cli/devices), then reconnect.                                                                                    |
-| `PAIRING_REQUIRED`           | Device identity is known but not approved for this role. | Approve pending request: `opencraft devices list` then `opencraft devices approve <requestId>`.                                                                      |
+| `PAIRING_REQUIRED`           | Device identity is known but not approved for this role. | Approve pending request: `opencraft devices list` then `opencraft devices approve <requestId>`.                                                                        |
 
 Device auth v2 migration check:
 
@@ -169,7 +169,7 @@ Look for:
 
 Common signatures:
 
-- `Gateway start blocked: set gateway.mode=local` → local gateway mode is not enabled. Fix: set `gateway.mode="local"` in your config (or run `opencraft configure`). If you are running OpenCraft via Podman using the dedicated `opencraft` user, the config lives at `~opencraft/.editzffaleta/OpenCraft.json`.
+- `Gateway start blocked: set gateway.mode=local` → local gateway mode is not enabled. Fix: set `gateway.mode="local"` in your config (or run `opencraft configure`). If you are running OpenCraft via Podman using the dedicated `opencraft` user, the config lives at `~opencraft/.opencraft/opencraft.json`.
 - `refusing to bind gateway ... without auth` → non-loopback bind without token/password.
 - `another gateway instance is already listening` / `EADDRINUSE` → port conflict.
 

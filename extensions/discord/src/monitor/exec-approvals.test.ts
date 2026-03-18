@@ -41,9 +41,9 @@ beforeEach(() => {
     }) => {
       const configToken = params.config?.gateway?.auth?.token;
       const configPassword = params.config?.gateway?.auth?.password;
-      const envToken = params.env.OPENCLAW_GATEWAY_TOKEN ?? params.env.CLAWDBOT_GATEWAY_TOKEN;
+      const envToken = params.env.OPENCRAFT_GATEWAY_TOKEN ?? params.env.CLAWDBOT_GATEWAY_TOKEN;
       const envPassword =
-        params.env.OPENCLAW_GATEWAY_PASSWORD ?? params.env.CLAWDBOT_GATEWAY_PASSWORD;
+        params.env.OPENCRAFT_GATEWAY_PASSWORD ?? params.env.CLAWDBOT_GATEWAY_PASSWORD;
       return { token: envToken ?? configToken, password: envPassword ?? configPassword };
     },
   );
@@ -738,8 +738,8 @@ describe("DiscordExecApprovalHandler gateway auth", () => {
     });
   });
 
-  it("prefers OPENCLAW_GATEWAY_TOKEN when config token is missing", async () => {
-    vi.stubEnv("OPENCLAW_GATEWAY_TOKEN", "env-gateway-token");
+  it("prefers OPENCRAFT_GATEWAY_TOKEN when config token is missing", async () => {
+    vi.stubEnv("OPENCRAFT_GATEWAY_TOKEN", "env-gateway-token");
     const handler = new DiscordExecApprovalHandler({
       token: "discord-bot-token",
       accountId: "default",

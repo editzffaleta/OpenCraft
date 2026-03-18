@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_ROOT="$ROOT_DIR/dist/OpenCraft.app"
 BUILD_ROOT="$ROOT_DIR/apps/macos/.build"
 PRODUCT="OpenCraft"
-BUNDLE_ID="${BUNDLE_ID:-ai.opencraft.mac.debug}"
+BUNDLE_ID="${BUNDLE_ID:-ai.openclaw.mac.debug}"
 PKG_VERSION="$(cd "$ROOT_DIR" && node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")"
 BUILD_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT=$(cd "$ROOT_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -30,7 +30,7 @@ fi
 IFS=' ' read -r -a BUILD_ARCHS <<< "$BUILD_ARCHS_VALUE"
 PRIMARY_ARCH="${BUILD_ARCHS[0]}"
 SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-AGCY8w5vHirVfGGDGc8Szc5iuOqupZSh9pMj/Qs67XI=}"
-SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/appcast.xml}"
+SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://raw.githubusercontent.com/opencraft/opencraft/main/appcast.xml}"
 AUTO_CHECKS=true
 if [[ "$BUNDLE_ID" == *.debug ]]; then
   SPARKLE_FEED_URL=""
@@ -242,13 +242,13 @@ else
   echo "WARN: model catalog missing at $MODEL_CATALOG_SRC (continuing)" >&2
 fi
 
-echo "📦 Copying OpenClawKit resources"
-OPENCLAWKIT_BUNDLE="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG/OpenCraftKit_OpenClawKit.bundle"
-if [ -d "$OPENCLAWKIT_BUNDLE" ]; then
-  rm -rf "$APP_ROOT/Contents/Resources/OpenCraftKit_OpenClawKit.bundle"
-  cp -R "$OPENCLAWKIT_BUNDLE" "$APP_ROOT/Contents/Resources/OpenCraftKit_OpenClawKit.bundle"
+echo "📦 Copying OpenCraftKit resources"
+OPENCRAFTKIT_BUNDLE="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG/OpenCraftKit_OpenCraftKit.bundle"
+if [ -d "$OPENCRAFTKIT_BUNDLE" ]; then
+  rm -rf "$APP_ROOT/Contents/Resources/OpenCraftKit_OpenCraftKit.bundle"
+  cp -R "$OPENCRAFTKIT_BUNDLE" "$APP_ROOT/Contents/Resources/OpenCraftKit_OpenCraftKit.bundle"
 else
-  echo "WARN: OpenClawKit resource bundle not found at $OPENCLAWKIT_BUNDLE (continuing)" >&2
+  echo "WARN: OpenCraftKit resource bundle not found at $OPENCRAFTKIT_BUNDLE (continuing)" >&2
 fi
 
 echo "📦 Copying Textual resources"

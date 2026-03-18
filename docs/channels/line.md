@@ -1,5 +1,5 @@
 ---
-summary: "Configuracao, setup e uso do Plugin LINE Messaging API"
+summary: "LINE Messaging API plugin setup, config, and usage"
 read_when:
   - You want to connect OpenCraft to LINE
   - You need LINE webhook + credential setup
@@ -7,54 +7,54 @@ read_when:
 title: LINE
 ---
 
-# LINE (Plugin)
+# LINE (plugin)
 
-LINE se conecta ao OpenCraft via a LINE Messaging API. O Plugin funciona como um receptor
-de Webhook no Gateway e usa seu Token de acesso do canal + segredo do canal para
-autenticacao.
+LINE connects to OpenCraft via the LINE Messaging API. The plugin runs as a webhook
+receiver on the gateway and uses your channel access token + channel secret for
+authentication.
 
-Status: suportado via Plugin. Mensagens diretas, chats em grupo, midia, localizacoes, mensagens
-Flex, mensagens de template e respostas rapidas sao suportados. Reacoes e threads
-nao sao suportados.
+Status: supported via plugin. Direct messages, group chats, media, locations, Flex
+messages, template messages, and quick replies are supported. Reactions and threads
+are not supported.
 
-## Plugin necessario
+## Plugin required
 
-Instale o Plugin LINE:
+Install the LINE plugin:
 
 ```bash
 opencraft plugins install @opencraft/line
 ```
 
-Checkout local (quando executando a partir de um repositorio git):
+Local checkout (when running from a git repo):
 
 ```bash
 opencraft plugins install ./extensions/line
 ```
 
-## Configuracao
+## Setup
 
-1. Crie uma conta LINE Developers e abra o Console:
+1. Create a LINE Developers account and open the Console:
    [https://developers.line.biz/console/](https://developers.line.biz/console/)
-2. Crie (ou escolha) um Provider e adicione um canal **Messaging API**.
-3. Copie o **Channel access token** e o **Channel secret** das configuracoes do canal.
-4. Habilite **Use webhook** nas configuracoes da Messaging API.
-5. Defina a URL do Webhook para o endpoint do seu Gateway (HTTPS necessario):
+2. Create (or pick) a Provider and add a **Messaging API** channel.
+3. Copy the **Channel access token** and **Channel secret** from the channel settings.
+4. Enable **Use webhook** in the Messaging API settings.
+5. Set the webhook URL to your gateway endpoint (HTTPS required):
 
 ```
 https://gateway-host/line/webhook
 ```
 
-O Gateway responde a verificacao de Webhook do LINE (GET) e eventos de entrada (POST).
-Se voce precisar de um caminho personalizado, defina `channels.line.webhookPath` ou
-`channels.line.accounts.<id>.webhookPath` e atualize a URL de acordo.
+The gateway responds to LINE’s webhook verification (GET) and inbound events (POST).
+If you need a custom path, set `channels.line.webhookPath` or
+`channels.line.accounts.<id>.webhookPath` and update the URL accordingly.
 
-Nota de seguranca:
+Security note:
 
-- A verificacao de assinatura do LINE depende do corpo (HMAC sobre o corpo bruto), entao o OpenCraft aplica limites rigorosos de corpo pre-autenticacao e timeout antes da verificacao.
+- LINE signature verification is body-dependent (HMAC over the raw body), so OpenCraft applies strict pre-auth body limits and timeout before verification.
 
-## Configurar
+## Configure
 
-Configuracao minima:
+Minimal config:
 
 ```json5
 {
@@ -69,12 +69,12 @@ Configuracao minima:
 }
 ```
 
-Variaveis de ambiente (somente conta padrao):
+Env vars (default account only):
 
 - `LINE_CHANNEL_ACCESS_TOKEN`
 - `LINE_CHANNEL_SECRET`
 
-Arquivos de Token/segredo:
+Token/secret files:
 
 ```json5
 {
@@ -87,9 +87,9 @@ Arquivos de Token/segredo:
 }
 ```
 
-`tokenFile` e `secretFile` devem apontar para arquivos regulares. Symlinks sao rejeitados.
+`tokenFile` and `secretFile` must point to regular files. Symlinks are rejected.
 
-Multiplas contas:
+Multiple accounts:
 
 ```json5
 {
@@ -107,69 +107,69 @@ Multiplas contas:
 }
 ```
 
-## Controle de acesso
+## Access control
 
-Mensagens diretas usam pareamento por padrao. Remetentes desconhecidos recebem um codigo de pareamento e suas
-mensagens sao ignoradas ate serem aprovadas.
+Direct messages default to pairing. Unknown senders get a pairing code and their
+messages are ignored until approved.
 
 ```bash
 opencraft pairing list line
 opencraft pairing approve line <CODE>
 ```
 
-Listas de permitidos e politicas:
+Allowlists and policies:
 
 - `channels.line.dmPolicy`: `pairing | allowlist | open | disabled`
-- `channels.line.allowFrom`: IDs de usuario LINE permitidos para DMs
+- `channels.line.allowFrom`: allowlisted LINE user IDs for DMs
 - `channels.line.groupPolicy`: `allowlist | open | disabled`
-- `channels.line.groupAllowFrom`: IDs de usuario LINE permitidos para grupos
-- Substituicoes por grupo: `channels.line.groups.<groupId>.allowFrom`
-- Nota de runtime: se `channels.line` estiver completamente ausente, o runtime cai para `groupPolicy="allowlist"` para verificacoes de grupo (mesmo se `channels.defaults.groupPolicy` estiver definido).
+- `channels.line.groupAllowFrom`: allowlisted LINE user IDs for groups
+- Per-group overrides: `channels.line.groups.<groupId>.allowFrom`
+- Runtime note: if `channels.line` is completely missing, runtime falls back to `groupPolicy="allowlist"` for group checks (even if `channels.defaults.groupPolicy` is set).
 
-IDs do LINE sao case-sensitive. IDs validos se parecem com:
+LINE IDs are case-sensitive. Valid IDs look like:
 
-- Usuario: `U` + 32 caracteres hexadecimais
-- Grupo: `C` + 32 caracteres hexadecimais
-- Sala: `R` + 32 caracteres hexadecimais
+- User: `U` + 32 hex chars
+- Group: `C` + 32 hex chars
+- Room: `R` + 32 hex chars
 
-## Comportamento de mensagens
+## Message behavior
 
-- Texto e dividido em blocos de 5000 caracteres.
-- Formatacao Markdown e removida; blocos de codigo e tabelas sao convertidos em cards
-  Flex quando possivel.
-- Respostas em streaming sao armazenadas em buffer; o LINE recebe blocos completos com uma
-  animacao de carregamento enquanto o agente trabalha.
-- Downloads de midia sao limitados por `channels.line.mediaMaxMb` (padrao 10).
+- Text is chunked at 5000 characters.
+- Markdown formatting is stripped; code blocks and tables are converted into Flex
+  cards when possible.
+- Streaming responses are buffered; LINE receives full chunks with a loading
+  animation while the agent works.
+- Media downloads are capped by `channels.line.mediaMaxMb` (default 10).
 
-## Dados do canal (mensagens ricas)
+## Channel data (rich messages)
 
-Use `channelData.line` para enviar respostas rapidas, localizacoes, cards Flex ou mensagens
-de template.
+Use `channelData.line` to send quick replies, locations, Flex cards, or template
+messages.
 
 ```json5
 {
-  text: "Aqui esta",
+  text: "Here you go",
   channelData: {
     line: {
-      quickReplies: ["Status", "Ajuda"],
+      quickReplies: ["Status", "Help"],
       location: {
-        title: "Escritorio",
-        address: "Rua Principal 123",
+        title: "Office",
+        address: "123 Main St",
         latitude: 35.681236,
         longitude: 139.767125,
       },
       flexMessage: {
-        altText: "Card de status",
+        altText: "Status card",
         contents: {
-          /* Payload Flex */
+          /* Flex payload */
         },
       },
       templateMessage: {
         type: "confirm",
-        text: "Continuar?",
-        confirmLabel: "Sim",
+        text: "Proceed?",
+        confirmLabel: "Yes",
         confirmData: "yes",
-        cancelLabel: "Nao",
+        cancelLabel: "No",
         cancelData: "no",
       },
     },
@@ -177,17 +177,17 @@ de template.
 }
 ```
 
-O Plugin LINE tambem fornece um comando `/card` para presets de mensagem Flex:
+The LINE plugin also ships a `/card` command for Flex message presets:
 
 ```
-/card info "Bem-vindo" "Obrigado por participar!"
+/card info "Welcome" "Thanks for joining!"
 ```
 
-## Solucao de problemas
+## Troubleshooting
 
-- **Verificacao de Webhook falha:** certifique-se de que a URL do Webhook e HTTPS e o
-  `channelSecret` corresponde ao console do LINE.
-- **Sem eventos de entrada:** confirme que o caminho do Webhook corresponde a `channels.line.webhookPath`
-  e que o Gateway e acessivel a partir do LINE.
-- **Erros de download de midia:** aumente `channels.line.mediaMaxMb` se a midia exceder o
-  limite padrao.
+- **Webhook verification fails:** ensure the webhook URL is HTTPS and the
+  `channelSecret` matches the LINE console.
+- **No inbound events:** confirm the webhook path matches `channels.line.webhookPath`
+  and that the gateway is reachable from LINE.
+- **Media download errors:** raise `channels.line.mediaMaxMb` if media exceeds the
+  default limit.

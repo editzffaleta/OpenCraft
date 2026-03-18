@@ -1,10 +1,10 @@
 // Default service labels (canonical + legacy compatibility)
-export const GATEWAY_LAUNCH_AGENT_LABEL = "ai.opencraft.gateway";
+export const GATEWAY_LAUNCH_AGENT_LABEL = "ai.openclaw.gateway";
 export const GATEWAY_SYSTEMD_SERVICE_NAME = "opencraft-gateway";
 export const GATEWAY_WINDOWS_TASK_NAME = "OpenCraft Gateway";
 export const GATEWAY_SERVICE_MARKER = "opencraft";
 export const GATEWAY_SERVICE_KIND = "gateway";
-export const NODE_LAUNCH_AGENT_LABEL = "ai.opencraft.node";
+export const NODE_LAUNCH_AGENT_LABEL = "ai.openclaw.node";
 export const NODE_SYSTEMD_SERVICE_NAME = "opencraft-node";
 export const NODE_WINDOWS_TASK_NAME = "OpenCraft Node";
 export const NODE_SERVICE_MARKER = "opencraft";
@@ -35,7 +35,7 @@ export function resolveGatewayLaunchAgentLabel(profile?: string): string {
   if (!normalized) {
     return GATEWAY_LAUNCH_AGENT_LABEL;
   }
-  return `ai.opencraft.${normalized}`;
+  return `ai.openclaw.${normalized}`;
 }
 
 export function resolveLegacyGatewayLaunchAgentLabels(profile?: string): string[] {
@@ -87,8 +87,7 @@ export function resolveGatewayServiceDescription(params: {
     params.description ??
     formatGatewayServiceDescription({
       profile: params.env.OPENCRAFT_PROFILE,
-      version:
-        params.environment?.OPENCRAFT_SERVICE_VERSION ?? params.env.OPENCRAFT_SERVICE_VERSION,
+      version: params.environment?.OPENCRAFT_SERVICE_VERSION ?? params.env.OPENCRAFT_SERVICE_VERSION,
     })
   );
 }

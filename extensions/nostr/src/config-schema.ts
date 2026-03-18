@@ -1,4 +1,4 @@
-import { AllowFromListSchema, DmPolicySchema } from "opencraft/plugin-sdk/compat";
+import { AllowFromListSchema, DmPolicySchema } from "opencraft/plugin-sdk/channel-config-schema";
 import { MarkdownConfigSchema, buildChannelConfigSchema } from "opencraft/plugin-sdk/nostr";
 import { z } from "zod";
 

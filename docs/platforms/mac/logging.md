@@ -1,37 +1,37 @@
 ---
-summary: "Logging do OpenCraft: log de diagnóstico rotativo + flags de privacidade do unified log"
+summary: "OpenCraft logging: rolling diagnostics file log + unified log privacy flags"
 read_when:
-  - Capturando logs do macOS ou investigando logging de dados privados
-  - Depurando problemas de ciclo de vida de Voice Wake/sessão
-title: "Logging no macOS"
+  - Capturing macOS logs or investigating private data logging
+  - Debugging voice wake/session lifecycle issues
+title: "macOS Logging"
 ---
 
 # Logging (macOS)
 
-## Log de diagnóstico rotativo (painel Debug)
+## Rolling diagnostics file log (Debug pane)
 
-O OpenCraft roteia os logs do aplicativo macOS através do swift-log (unified logging por padrão) e pode escrever um log de arquivo local rotativo no disco quando você precisa de uma captura durável.
+OpenCraft routes macOS app logs through swift-log (unified logging by default) and can write a local, rotating file log to disk when you need a durable capture.
 
-- Verbosidade: **Painel Debug → Logs → App logging → Verbosity**
-- Ativar: **Painel Debug → Logs → App logging → "Write rolling diagnostics log (JSONL)"**
-- Localização: `~/Library/Logs/OpenCraft/diagnostics.jsonl` (rotaciona automaticamente; arquivos antigos são sufixados com `.1`, `.2`, ...)
-- Limpar: **Painel Debug → Logs → App logging → "Clear"**
+- Verbosity: **Debug pane → Logs → App logging → Verbosity**
+- Enable: **Debug pane → Logs → App logging → “Write rolling diagnostics log (JSONL)”**
+- Location: `~/Library/Logs/OpenCraft/diagnostics.jsonl` (rotates automatically; old files are suffixed with `.1`, `.2`, …)
+- Clear: **Debug pane → Logs → App logging → “Clear”**
 
-Notas:
+Notes:
 
-- Isso está **desativado por padrão**. Ative apenas enquanto estiver depurando ativamente.
-- Trate o arquivo como sensível; não compartilhe sem revisar.
+- This is **off by default**. Enable only while actively debugging.
+- Treat the file as sensitive; don’t share it without review.
 
-## Dados privados do unified logging no macOS
+## Unified logging private data on macOS
 
-O unified logging redige a maioria dos payloads a menos que um subsistema opte por `privacy -off`. Conforme o artigo de Peter sobre [questões de privacidade de logging](https://steipete.me/posts/2025/logging-privacy-shenanigans) no macOS (2025), isso é controlado por um plist em `/Library/Preferences/Logging/Subsystems/` identificado pelo nome do subsistema. Apenas novas entradas de log captam o flag, então ative antes de reproduzir um problema.
+Unified logging redacts most payloads unless a subsystem opts into `privacy -off`. Per Peter's write-up on macOS [logging privacy shenanigans](https://steipete.me/posts/2025/logging-privacy-shenanigans) (2025) this is controlled by a plist in `/Library/Preferences/Logging/Subsystems/` keyed by the subsystem name. Only new log entries pick up the flag, so enable it before reproducing an issue.
 
-## Ativar para OpenCraft (`ai.opencraft`)
+## Enable for OpenClaw (`ai.openclaw`)
 
-- Escreva o plist em um arquivo temporário primeiro, depois instale atomicamente como root:
+- Write the plist to a temp file first, then install it atomically as root:
 
 ```bash
-cat <<'EOF' >/tmp/ai.opencraft.plist
+cat <<'EOF' >/tmp/ai.openclaw.plist
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -44,14 +44,14 @@ cat <<'EOF' >/tmp/ai.opencraft.plist
 </dict>
 </plist>
 EOF
-sudo install -m 644 -o root -g wheel /tmp/ai.opencraft.plist /Library/Preferences/Logging/Subsystems/ai.opencraft.plist
+sudo install -m 644 -o root -g wheel /tmp/ai.openclaw.plist /Library/Preferences/Logging/Subsystems/ai.openclaw.plist
 ```
 
-- Nenhuma reinicialização é necessária; o logd detecta o arquivo rapidamente, mas apenas novas linhas de log incluirão payloads privados.
-- Visualize a saída mais rica com o auxiliar existente, por exemplo `./scripts/clawlog.sh --category WebChat --last 5m`.
+- No reboot is required; logd notices the file quickly, but only new log lines will include private payloads.
+- View the richer output with the existing helper, e.g. `./scripts/clawlog.sh --category WebChat --last 5m`.
 
-## Desativar após depuração
+## Disable after debugging
 
-- Remova a substituição: `sudo rm /Library/Preferences/Logging/Subsystems/ai.opencraft.plist`.
-- Opcionalmente execute `sudo log config --reload` para forçar o logd a descartar a substituição imediatamente.
-- Lembre-se de que esta superfície pode incluir números de telefone e corpos de mensagens; mantenha o plist no lugar apenas enquanto precisar ativamente do detalhe extra.
+- Remove the override: `sudo rm /Library/Preferences/Logging/Subsystems/ai.openclaw.plist`.
+- Optionally run `sudo log config --reload` to force logd to drop the override immediately.
+- Remember this surface can include phone numbers and message bodies; keep the plist in place only while you actively need the extra detail.

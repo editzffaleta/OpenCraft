@@ -1,6 +1,6 @@
 import Foundation
 import Network
-import OpenClawKit
+import OpenCraftKit
 
 enum A2UIReadyState {
     case ready(String)

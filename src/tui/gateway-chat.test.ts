@@ -86,16 +86,16 @@ describe("resolveGatewayConnection", () => {
   beforeEach(() => {
     envSnapshot = captureEnv([
       "OPENCRAFT_GATEWAY_URL",
-      "OPENCLAW_GATEWAY_TOKEN",
-      "OPENCLAW_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_PASSWORD",
       "CLAWDBOT_GATEWAY_URL",
     ]);
     loadConfig.mockClear();
     resolveGatewayPort.mockClear();
     resolveGatewayPort.mockReturnValue(18789);
     delete process.env.OPENCRAFT_GATEWAY_URL;
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
     delete process.env.CLAWDBOT_GATEWAY_URL;
   });
 
@@ -138,16 +138,16 @@ describe("resolveGatewayConnection", () => {
   it("uses config auth token for local mode when both config and env tokens are set", async () => {
     loadConfig.mockReturnValue({ gateway: { mode: "local", auth: { token: "config-token" } } });
 
-    await withEnvAsync({ OPENCLAW_GATEWAY_TOKEN: "env-token" }, async () => {
+    await withEnvAsync({ OPENCRAFT_GATEWAY_TOKEN: "env-token" }, async () => {
       const result = await resolveGatewayConnection({});
       expect(result.token).toBe("config-token");
     });
   });
 
-  it("falls back to OPENCLAW_GATEWAY_TOKEN when config token is missing", async () => {
+  it("falls back to OPENCRAFT_GATEWAY_TOKEN when config token is missing", async () => {
     loadConfig.mockReturnValue({ gateway: { mode: "local" } });
 
-    await withEnvAsync({ OPENCLAW_GATEWAY_TOKEN: "env-token" }, async () => {
+    await withEnvAsync({ OPENCRAFT_GATEWAY_TOKEN: "env-token" }, async () => {
       const result = await resolveGatewayConnection({});
       expect(result.token).toBe("env-token");
     });
@@ -216,7 +216,7 @@ describe("resolveGatewayConnection", () => {
     );
   });
 
-  it("prefers OPENCLAW_GATEWAY_PASSWORD over remote password fallback", async () => {
+  it("prefers OPENCRAFT_GATEWAY_PASSWORD over remote password fallback", async () => {
     loadConfig.mockReturnValue({
       gateway: {
         mode: "remote",
@@ -224,7 +224,7 @@ describe("resolveGatewayConnection", () => {
       },
     });
 
-    const gatewayPasswordEnv = "OPENCLAW_GATEWAY_PASSWORD"; // pragma: allowlist secret
+    const gatewayPasswordEnv = "OPENCRAFT_GATEWAY_PASSWORD"; // pragma: allowlist secret
     const gatewayPassword = "env-pass"; // pragma: allowlist secret
     await withEnvAsync({ [gatewayPasswordEnv]: gatewayPassword }, async () => {
       const result = await resolveGatewayConnection({});

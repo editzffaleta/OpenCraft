@@ -204,11 +204,7 @@ function replacePluginIdInList(
   return next;
 }
 
-function migratePluginConfigId(
-  cfg: OpenCraftConfig,
-  fromId: string,
-  toId: string,
-): OpenCraftConfig {
+function migratePluginConfigId(cfg: OpenCraftConfig, fromId: string, toId: string): OpenCraftConfig {
   if (fromId === toId) {
     return cfg;
   }

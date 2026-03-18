@@ -1,4 +1,4 @@
-import type { OpenCraftPluginConfigSchema } from "opencraft/plugin-sdk/diffs";
+import type { OpenCraftPluginConfigSchema } from "../api.js";
 import {
   DIFF_IMAGE_QUALITY_PRESETS,
   DIFF_INDICATORS,

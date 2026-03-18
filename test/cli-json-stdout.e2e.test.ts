@@ -23,7 +23,7 @@ describe("cli json stdout contract", () => {
         delete env.OPENCRAFT_CONFIG_PATH;
         delete env.VITEST;
 
-        const entry = path.resolve(process.cwd(), "openclaw.mjs");
+        const entry = path.resolve(process.cwd(), "opencraft.mjs");
         const result = spawnSync(
           process.execPath,
           [entry, "update", "status", "--json", "--timeout", "1"],

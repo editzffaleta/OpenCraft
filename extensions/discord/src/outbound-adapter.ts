@@ -2,11 +2,11 @@ import {
   resolvePayloadMediaUrls,
   sendPayloadMediaSequence,
   sendTextMediaPayload,
-} from "../../../src/channels/plugins/outbound/direct-text-media.js";
-import type { ChannelOutboundAdapter } from "../../../src/channels/plugins/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { OutboundIdentity } from "../../../src/infra/outbound/identity.js";
-import { resolveOutboundSendDep } from "../../../src/infra/outbound/send-deps.js";
+} from "opencraft/plugin-sdk/channel-runtime";
+import type { ChannelOutboundAdapter } from "opencraft/plugin-sdk/channel-runtime";
+import { resolveOutboundSendDep } from "opencraft/plugin-sdk/channel-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { OutboundIdentity } from "opencraft/plugin-sdk/infra-runtime";
 import type { DiscordComponentMessageSpec } from "./components.js";
 import { getThreadBindingManager, type ThreadBindingRecord } from "./monitor/thread-bindings.js";
 import { normalizeDiscordOutboundTarget } from "./normalize.js";

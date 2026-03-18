@@ -3,7 +3,7 @@ import {
   buildCatchallMultiAccountChannelSchema,
   DmPolicySchema,
   GroupPolicySchema,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-config-schema";
 import { MarkdownConfigSchema } from "opencraft/plugin-sdk/zalo";
 import { z } from "zod";
 import { buildSecretInputSchema } from "./secret-input.js";

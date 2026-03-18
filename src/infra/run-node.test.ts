@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { runNodeMain } from "../../scripts/run-node.mjs";
 
 async function withTempDir<T>(run: (dir: string) => Promise<T>): Promise<T> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-run-node-"));
@@ -70,7 +71,6 @@ describe("run-node script", () => {
           };
         };
 
-        const { runNodeMain } = await import("../../scripts/run-node.mjs");
         const exitCode = await runNodeMain({
           cwd: tmp,
           args: ["--version"],
@@ -91,7 +91,7 @@ describe("run-node script", () => {
         await expect(fs.readFile(indexPath, "utf-8")).resolves.toContain("sentinel");
         expect(nodeCalls).toEqual([
           [process.execPath, "scripts/tsdown-build.mjs", "--no-clean"],
-          [process.execPath, "openclaw.mjs", "--version"],
+          [process.execPath, "opencraft.mjs", "--version"],
         ]);
       });
     },
@@ -130,7 +130,6 @@ describe("run-node script", () => {
         return createExitedProcess(0);
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -147,7 +146,7 @@ describe("run-node script", () => {
       expect(exitCode).toBe(0);
       expect(spawnCalls).toEqual([
         expectedBuildSpawn(),
-        [process.execPath, "openclaw.mjs", "status"],
+        [process.execPath, "opencraft.mjs", "status"],
       ]);
 
       await expect(
@@ -205,7 +204,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -220,7 +218,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
     });
   });
 
@@ -233,7 +231,6 @@ describe("run-node script", () => {
         return createExitedProcess(0);
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -282,7 +279,6 @@ describe("run-node script", () => {
       };
       const spawnSync = () => ({ status: 1, stdout: "" });
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -299,7 +295,7 @@ describe("run-node script", () => {
       expect(exitCode).toBe(0);
       expect(spawnCalls).toEqual([
         expectedBuildSpawn(),
-        [process.execPath, "openclaw.mjs", "status"],
+        [process.execPath, "opencraft.mjs", "status"],
       ]);
     });
   });
@@ -354,7 +350,6 @@ describe("run-node script", () => {
       };
       const spawnSync = () => ({ status: 1, stdout: "" });
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -369,7 +364,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
       await expect(fs.readFile(distPackagePath, "utf-8")).resolves.toContain('"./index.js"');
     });
   });
@@ -419,7 +414,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -434,7 +428,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
     });
   });
 
@@ -442,13 +436,7 @@ describe("run-node script", () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
       const manifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
-      const distManifestPath = path.join(
-        tmp,
-        "dist",
-        "extensions",
-        "demo",
-        "opencraft.plugin.json",
-      );
+      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "opencraft.plugin.json");
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
       const tsconfigPath = path.join(tmp, "tsconfig.json");
@@ -496,7 +484,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -511,7 +498,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
       await expect(
         fs.readFile(distManifestPath, "utf-8").then((raw) => JSON.parse(raw)),
       ).resolves.toMatchObject({
@@ -524,13 +511,7 @@ describe("run-node script", () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
       const manifestPath = path.join(tmp, "extensions", "demo", "opencraft.plugin.json");
-      const distManifestPath = path.join(
-        tmp,
-        "dist",
-        "extensions",
-        "demo",
-        "opencraft.plugin.json",
-      );
+      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "opencraft.plugin.json");
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
       const tsconfigPath = path.join(tmp, "tsconfig.json");
@@ -572,7 +553,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -587,7 +567,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
       await expect(
         fs.readFile(distManifestPath, "utf-8").then((raw) => JSON.parse(raw)),
       ).resolves.toMatchObject({
@@ -600,13 +580,7 @@ describe("run-node script", () => {
     await withTempDir(async (tmp) => {
       const srcPath = path.join(tmp, "src", "index.ts");
       const extensionDir = path.join(tmp, "extensions", "demo");
-      const distManifestPath = path.join(
-        tmp,
-        "dist",
-        "extensions",
-        "demo",
-        "opencraft.plugin.json",
-      );
+      const distManifestPath = path.join(tmp, "dist", "extensions", "demo", "opencraft.plugin.json");
       const distPackagePath = path.join(tmp, "dist", "extensions", "demo", "package.json");
       const distEntryPath = path.join(tmp, "dist", "entry.js");
       const buildStampPath = path.join(tmp, "dist", ".buildstamp");
@@ -654,7 +628,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -669,7 +642,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
       await expect(fs.access(distManifestPath)).rejects.toThrow();
       await expect(fs.access(distPackagePath)).rejects.toThrow();
     });
@@ -714,7 +687,6 @@ describe("run-node script", () => {
       };
       const spawnSync = () => ({ status: 1, stdout: "" });
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -729,7 +701,7 @@ describe("run-node script", () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(spawnCalls).toEqual([[process.execPath, "openclaw.mjs", "status"]]);
+      expect(spawnCalls).toEqual([[process.execPath, "opencraft.mjs", "status"]]);
     });
   });
 
@@ -776,7 +748,6 @@ describe("run-node script", () => {
         return { status: 1, stdout: "" };
       };
 
-      const { runNodeMain } = await import("../../scripts/run-node.mjs");
       const exitCode = await runNodeMain({
         cwd: tmp,
         args: ["status"],
@@ -793,7 +764,7 @@ describe("run-node script", () => {
       expect(exitCode).toBe(0);
       expect(spawnCalls).toEqual([
         expectedBuildSpawn(),
-        [process.execPath, "openclaw.mjs", "status"],
+        [process.execPath, "opencraft.mjs", "status"],
       ]);
     });
   });

@@ -224,7 +224,7 @@ function Install-OpenCraftGit {
     
     if (!(Test-Path $RepoDir)) {
         Write-Host "  Cloning repository..." -Level info
-        git clone https://github.com/editzffaleta/OpenCraft.git $RepoDir 2>&1
+        git clone https://github.com/openclaw/openclaw.git $RepoDir 2>&1
     } elseif ($Update) {
         Write-Host "  Updating repository..." -Level info
         git -C $RepoDir pull --rebase 2>&1
@@ -279,7 +279,7 @@ function Resolve-PackageInstallSpec {
         return "opencraft@latest"
     }
     if ($trimmed.ToLowerInvariant() -eq "main") {
-        return "github:editzffaleta/OpenCraft#main"
+        return "github:opencraft/opencraft#main"
     }
     if (Test-ExplicitPackageInstallSpec -Target $trimmed) {
         return $trimmed

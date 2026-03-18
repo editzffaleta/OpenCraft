@@ -1,26 +1,20 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/mattermost";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/mattermost";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { mattermostPlugin } from "./src/channel.js";
-import { getSlashCommandState, registerSlashCommandRoute } from "./src/mattermost/slash-state.js";
+import { registerSlashCommandRoute } from "./src/mattermost/slash-state.js";
 import { setMattermostRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { mattermostPlugin } from "./src/channel.js";
+export { setMattermostRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "mattermost",
   name: "Mattermost",
   description: "Mattermost channel plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setMattermostRuntime(api.runtime);
-    api.registerChannel({ plugin: mattermostPlugin });
-    if (api.registrationMode !== "full") {
-      return;
-    }
-
-    // Register the HTTP route for slash command callbacks.
-    // The actual command registration with MM happens in the monitor
-    // after the bot connects and we know the team ID.
+  plugin: mattermostPlugin,
+  setRuntime: setMattermostRuntime,
+  registerFull(api) {
+    // Actual slash-command registration happens after the monitor connects and
+    // knows the team id; the route itself can be wired here.
     registerSlashCommandRoute(api);
   },
-};
-
-export default plugin;
+});

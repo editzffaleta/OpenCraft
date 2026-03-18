@@ -49,7 +49,7 @@ opencraft acp client
 opencraft acp client --server-args --url wss://gateway-host:18789 --token <token>
 
 # Override the server command (default: opencraft)
-opencraft acp client --server "node" --server-args openclaw.mjs acp --url ws://127.0.0.1:19001
+opencraft acp client --server "node" --server-args opencraft.mjs acp --url ws://127.0.0.1:19001
 ```
 
 ## 如何使用

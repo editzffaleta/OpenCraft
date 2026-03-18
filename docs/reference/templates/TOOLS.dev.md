@@ -1,24 +1,24 @@
 ---
-summary: "Notas de ferramentas do agente dev (C-3PO)"
+summary: "Dev agent tools notes (C-3PO)"
 read_when:
-  - Usando os templates do gateway dev
-  - Atualizando a identidade padrão do agente dev
+  - Using the dev gateway templates
+  - Updating the default dev agent identity
 ---
 
-# TOOLS.md - Notas de Ferramentas do Usuário (editável)
+# TOOLS.md - User Tool Notes (editable)
 
-Este arquivo é para _suas_ notas sobre ferramentas externas e convenções.
-Ele não define quais ferramentas existem; o OpenCraft fornece ferramentas internas internamente.
+This file is for _your_ notes about external tools and conventions.
+It does not define which tools exist; OpenCraft provides built-in tools internally.
 
-## Exemplos
+## Examples
 
 ### imsg
 
-- Enviar um iMessage/SMS: descreva para quem/o quê, confirme antes de enviar.
-- Prefira mensagens curtas; evite enviar segredos.
+- Send an iMessage/SMS: describe who/what, confirm before sending.
+- Prefer short messages; avoid sending secrets.
 
 ### sag
 
-- Texto-para-fala: especifique voz, alto-falante/sala alvo, e se deve transmitir em streaming.
+- Text-to-speech: specify voice, target speaker/room, and whether to stream.
 
-Adicione o que mais você quiser que o assistente saiba sobre seu toolchain local.
+Add whatever else you want the assistant to know about your local toolchain.

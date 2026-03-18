@@ -224,8 +224,8 @@ afterAll(async () => {
 });
 
 beforeEach(() => {
-  delete process.env.OPENCLAW_GATEWAY_TOKEN;
-  delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+  delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+  delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
   pluginHttpHandlers = [];
   cfg = {};
   lastCreateOpenCraftToolsContext = undefined;

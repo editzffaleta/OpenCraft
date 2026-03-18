@@ -32,7 +32,7 @@ x-i18n:
 
 ```bash
 # Clone the repo
-git clone https://github.com/editzffaleta/OpenCraft.git
+git clone https://github.com/openclaw/openclaw.git
 cd opencraft
 
 # Create a new Fly app (pick your own name)
@@ -85,19 +85,19 @@ primary_region = "iad"
 
 **关键设置：**
 
-| 设置                            | 原因                                                                       |
-| ------------------------------- | -------------------------------------------------------------------------- |
-| `--bind lan`                    | 绑定到 `0.0.0.0` 以便 Fly 的代理可以访问 Gateway 网关                      |
-| `--allow-unconfigured`          | 无需配置文件启动（你稍后会创建一个）                                       |
-| `internal_port = 3000`          | 必须与 `--port 3000`（或 `OPENCRAFT_GATEWAY_PORT`）匹配以进行 Fly 健康检查 |
-| `memory = "2048mb"`             | 512MB 太小；推荐 2GB                                                       |
-| `OPENCRAFT_STATE_DIR = "/data"` | 在卷上持久化状态                                                           |
+| 设置                           | 原因                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `--bind lan`                   | 绑定到 `0.0.0.0` 以便 Fly 的代理可以访问 Gateway 网关                     |
+| `--allow-unconfigured`         | 无需配置文件启动（你稍后会创建一个）                                      |
+| `internal_port = 3000`         | 必须与 `--port 3000`（或 `OPENCRAFT_GATEWAY_PORT`）匹配以进行 Fly 健康检查 |
+| `memory = "2048mb"`            | 512MB 太小；推荐 2GB                                                      |
+| `OPENCRAFT_STATE_DIR = "/data"` | 在卷上持久化状态                                                          |
 
 ## 3）设置密钥
 
 ```bash
 # Required: Gateway token (for non-loopback binding)
-fly secrets set OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+fly secrets set OPENCRAFT_GATEWAY_TOKEN=$(openssl rand -hex 32)
 
 # Model provider API keys
 fly secrets set ANTHROPIC_API_KEY=sk-ant-...
@@ -112,7 +112,7 @@ fly secrets set DISCORD_BOT_TOKEN=MTQ...
 
 **注意事项：**
 
-- 非 loopback 绑定（`--bind lan`）出于安全需要 `OPENCLAW_GATEWAY_TOKEN`。
+- 非 loopback 绑定（`--bind lan`）出于安全需要 `OPENCRAFT_GATEWAY_TOKEN`。
 - 像对待密码一样对待这些 token。
 - **优先使用环境变量而不是配置文件**来存储所有 API 密钥和 token。这可以避免密钥出现在 `opencraft.json` 中，防止意外暴露或记录。
 
@@ -230,7 +230,7 @@ fly open
 
 或访问 `https://my-opencraft.fly.dev/`
 
-粘贴你的 Gateway 网关 token（来自 `OPENCLAW_GATEWAY_TOKEN` 的那个）进行认证。
+粘贴你的 Gateway 网关 token（来自 `OPENCRAFT_GATEWAY_TOKEN` 的那个）进行认证。
 
 ### 日志
 

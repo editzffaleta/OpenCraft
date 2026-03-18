@@ -138,15 +138,15 @@ PY
     od -An -N32 -tx1 /dev/urandom | tr -d " \n"
     return 0
   fi
-  echo "Missing dependency: need openssl or python3 (or od) to generate OPENCLAW_GATEWAY_TOKEN." >&2
+  echo "Missing dependency: need openssl or python3 (or od) to generate OPENCRAFT_GATEWAY_TOKEN." >&2
   exit 1
 }
 
-if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
-  export OPENCLAW_GATEWAY_TOKEN="$(generate_token_hex_32)"
+if [[ -z "${OPENCRAFT_GATEWAY_TOKEN:-}" ]]; then
+  export OPENCRAFT_GATEWAY_TOKEN="$(generate_token_hex_32)"
   mkdir -p "$(dirname "$ENV_FILE")"
-  upsert_env_var "$ENV_FILE" "OPENCLAW_GATEWAY_TOKEN" "$OPENCLAW_GATEWAY_TOKEN"
-  echo "Generated OPENCLAW_GATEWAY_TOKEN and wrote it to $ENV_FILE." >&2
+  upsert_env_var "$ENV_FILE" "OPENCRAFT_GATEWAY_TOKEN" "$OPENCRAFT_GATEWAY_TOKEN"
+  echo "Generated OPENCRAFT_GATEWAY_TOKEN and wrote it to $ENV_FILE." >&2
 fi
 
 # The gateway refuses to start unless gateway.mode=local is set in config.
@@ -204,7 +204,7 @@ if [[ "$RUN_SETUP" == true ]]; then
     --init \
     "${USERNS_ARGS[@]}" "${RUN_USER_ARGS[@]}" \
     -e HOME=/home/node -e TERM=xterm-256color -e BROWSER=echo \
-    -e OPENCLAW_GATEWAY_TOKEN="$OPENCLAW_GATEWAY_TOKEN" \
+    -e OPENCRAFT_GATEWAY_TOKEN="$OPENCRAFT_GATEWAY_TOKEN" \
     -v "$CONFIG_DIR:/home/node/.opencraft:rw${SELINUX_MOUNT_OPTS}" \
     -v "$WORKSPACE_DIR:/home/node/.opencraft/workspace:rw${SELINUX_MOUNT_OPTS}" \
     "${ENV_FILE_ARGS[@]}" \
@@ -217,7 +217,7 @@ podman run --pull="$PODMAN_PULL" -d --replace \
   --init \
   "${USERNS_ARGS[@]}" "${RUN_USER_ARGS[@]}" \
   -e HOME=/home/node -e TERM=xterm-256color \
-  -e OPENCLAW_GATEWAY_TOKEN="$OPENCLAW_GATEWAY_TOKEN" \
+  -e OPENCRAFT_GATEWAY_TOKEN="$OPENCRAFT_GATEWAY_TOKEN" \
   "${ENV_FILE_ARGS[@]}" \
   -v "$CONFIG_DIR:/home/node/.opencraft:rw${SELINUX_MOUNT_OPTS}" \
   -v "$WORKSPACE_DIR:/home/node/.opencraft/workspace:rw${SELINUX_MOUNT_OPTS}" \

@@ -1,6 +1,6 @@
 ---
 name: gog
-description: CLI do Google Workspace para Gmail, Calendar, Drive, Contacts, Sheets e Docs.
+description: Google Workspace CLI for Gmail, Calendar, Drive, Contacts, Sheets, and Docs.
 homepage: https://gogcli.sh
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/gogcli",
               "bins": ["gog"],
-              "label": "Instalar gog (brew)",
+              "label": "Install gog (brew)",
             },
           ],
       },
@@ -24,45 +24,45 @@ metadata:
 
 # gog
 
-Use `gog` para Gmail/Calendar/Drive/Contacts/Sheets/Docs. Requer configuração OAuth.
+Use `gog` for Gmail/Calendar/Drive/Contacts/Sheets/Docs. Requires OAuth setup.
 
-Configuração (uma vez)
+Setup (once)
 
 - `gog auth credentials /path/to/client_secret.json`
 - `gog auth add you@gmail.com --services gmail,calendar,drive,contacts,docs,sheets`
 - `gog auth list`
 
-Comandos comuns
+Common commands
 
-- Pesquisar Gmail: `gog gmail search 'newer_than:7d' --max 10`
-- Pesquisar mensagens Gmail (por e-mail, ignora threads): `gog gmail messages search "in:inbox from:ryanair.com" --max 20 --account you@example.com`
-- Enviar Gmail (texto simples): `gog gmail send --to a@b.com --subject "Hi" --body "Hello"`
-- Enviar Gmail (múltiplas linhas): `gog gmail send --to a@b.com --subject "Hi" --body-file ./message.txt`
-- Enviar Gmail (stdin): `gog gmail send --to a@b.com --subject "Hi" --body-file -`
-- Enviar Gmail (HTML): `gog gmail send --to a@b.com --subject "Hi" --body-html "<p>Hello</p>"`
-- Rascunho Gmail: `gog gmail drafts create --to a@b.com --subject "Hi" --body-file ./message.txt`
-- Enviar rascunho Gmail: `gog gmail drafts send <draftId>`
-- Responder Gmail: `gog gmail send --to a@b.com --subject "Re: Hi" --body "Reply" --reply-to-message-id <msgId>`
-- Listar eventos do Calendar: `gog calendar events <calendarId> --from <iso> --to <iso>`
-- Criar evento no Calendar: `gog calendar create <calendarId> --summary "Title" --from <iso> --to <iso>`
-- Criar evento com cor: `gog calendar create <calendarId> --summary "Title" --from <iso> --to <iso> --event-color 7`
-- Atualizar evento no Calendar: `gog calendar update <calendarId> <eventId> --summary "New Title" --event-color 4`
-- Exibir cores do Calendar: `gog calendar colors`
-- Pesquisar Drive: `gog drive search "query" --max 10`
+- Gmail search: `gog gmail search 'newer_than:7d' --max 10`
+- Gmail messages search (per email, ignores threading): `gog gmail messages search "in:inbox from:ryanair.com" --max 20 --account you@example.com`
+- Gmail send (plain): `gog gmail send --to a@b.com --subject "Hi" --body "Hello"`
+- Gmail send (multi-line): `gog gmail send --to a@b.com --subject "Hi" --body-file ./message.txt`
+- Gmail send (stdin): `gog gmail send --to a@b.com --subject "Hi" --body-file -`
+- Gmail send (HTML): `gog gmail send --to a@b.com --subject "Hi" --body-html "<p>Hello</p>"`
+- Gmail draft: `gog gmail drafts create --to a@b.com --subject "Hi" --body-file ./message.txt`
+- Gmail send draft: `gog gmail drafts send <draftId>`
+- Gmail reply: `gog gmail send --to a@b.com --subject "Re: Hi" --body "Reply" --reply-to-message-id <msgId>`
+- Calendar list events: `gog calendar events <calendarId> --from <iso> --to <iso>`
+- Calendar create event: `gog calendar create <calendarId> --summary "Title" --from <iso> --to <iso>`
+- Calendar create with color: `gog calendar create <calendarId> --summary "Title" --from <iso> --to <iso> --event-color 7`
+- Calendar update event: `gog calendar update <calendarId> <eventId> --summary "New Title" --event-color 4`
+- Calendar show colors: `gog calendar colors`
+- Drive search: `gog drive search "query" --max 10`
 - Contacts: `gog contacts list --max 20`
-- Obter Sheets: `gog sheets get <sheetId> "Tab!A1:D10" --json`
-- Atualizar Sheets: `gog sheets update <sheetId> "Tab!A1:B2" --values-json '[["A","B"],["1","2"]]' --input USER_ENTERED`
-- Acrescentar ao Sheets: `gog sheets append <sheetId> "Tab!A:C" --values-json '[["x","y","z"]]' --insert INSERT_ROWS`
-- Limpar Sheets: `gog sheets clear <sheetId> "Tab!A2:Z"`
-- Metadados do Sheets: `gog sheets metadata <sheetId> --json`
-- Exportar Docs: `gog docs export <docId> --format txt --out /tmp/doc.txt`
-- Exibir Docs: `gog docs cat <docId>`
+- Sheets get: `gog sheets get <sheetId> "Tab!A1:D10" --json`
+- Sheets update: `gog sheets update <sheetId> "Tab!A1:B2" --values-json '[["A","B"],["1","2"]]' --input USER_ENTERED`
+- Sheets append: `gog sheets append <sheetId> "Tab!A:C" --values-json '[["x","y","z"]]' --insert INSERT_ROWS`
+- Sheets clear: `gog sheets clear <sheetId> "Tab!A2:Z"`
+- Sheets metadata: `gog sheets metadata <sheetId> --json`
+- Docs export: `gog docs export <docId> --format txt --out /tmp/doc.txt`
+- Docs cat: `gog docs cat <docId>`
 
-Cores do Calendar
+Calendar Colors
 
-- Use `gog calendar colors` para ver todas as cores de evento disponíveis (IDs 1-11)
-- Adicione cores a eventos com a flag `--event-color <id>`
-- IDs de cores de evento (da saída de `gog calendar colors`):
+- Use `gog calendar colors` to see all available event colors (IDs 1-11)
+- Add colors to events with `--event-color <id>` flag
+- Event color IDs (from `gog calendar colors` output):
   - 1: #a4bdfc
   - 2: #7ae7bf
   - 3: #dbadff
@@ -75,14 +75,14 @@ Cores do Calendar
   - 10: #51b749
   - 11: #dc2127
 
-Formatação de E-mail
+Email Formatting
 
-- Prefira texto simples. Use `--body-file` para mensagens com múltiplos parágrafos (ou `--body-file -` para stdin).
-- O mesmo padrão `--body-file` funciona para rascunhos e respostas.
-- `--body` não faz unescape de `\n`. Se precisar de quebras de linha inline, use um heredoc ou `$'Linha 1\n\nLinha 2'`.
-- Use `--body-html` apenas quando precisar de formatação rica.
-- Tags HTML: `<p>` para parágrafos, `<br>` para quebras de linha, `<strong>` para negrito, `<em>` para itálico, `<a href="url">` para links, `<ul>`/`<li>` para listas.
-- Exemplo (texto simples via stdin):
+- Prefer plain text. Use `--body-file` for multi-paragraph messages (or `--body-file -` for stdin).
+- Same `--body-file` pattern works for drafts and replies.
+- `--body` does not unescape `\n`. If you need inline newlines, use a heredoc or `$'Line 1\n\nLine 2'`.
+- Use `--body-html` only when you need rich formatting.
+- HTML tags: `<p>` for paragraphs, `<br>` for line breaks, `<strong>` for bold, `<em>` for italic, `<a href="url">` for links, `<ul>`/`<li>` for lists.
+- Example (plain text via stdin):
 
   ```bash
   gog gmail send --to recipient@example.com \
@@ -99,18 +99,18 @@ Formatação de E-mail
   EOF
   ```
 
-- Exemplo (lista HTML):
+- Example (HTML list):
   ```bash
   gog gmail send --to recipient@example.com \
     --subject "Meeting Follow-up" \
     --body-html "<p>Hi Name,</p><p>Thanks for meeting today. Here are the next steps:</p><ul><li>Item one</li><li>Item two</li></ul><p>Best regards,<br>Your Name</p>"
   ```
 
-Observações
+Notes
 
-- Defina `GOG_ACCOUNT=you@gmail.com` para evitar repetir `--account`.
-- Para scripts, prefira `--json` junto com `--no-input`.
-- Valores do Sheets podem ser passados via `--values-json` (recomendado) ou como linhas inline.
-- Docs suporta export/cat/copy. Edições no local requerem um cliente da API Docs (não disponível no gog).
-- Confirme antes de enviar e-mails ou criar eventos.
-- `gog gmail search` retorna uma linha por thread; use `gog gmail messages search` quando precisar que cada e-mail seja retornado individualmente.
+- Set `GOG_ACCOUNT=you@gmail.com` to avoid repeating `--account`.
+- For scripting, prefer `--json` plus `--no-input`.
+- Sheets values can be passed via `--values-json` (recommended) or as inline rows.
+- Docs supports export/cat/copy. In-place edits require a Docs API client (not in gog).
+- Confirm before sending mail or creating events.
+- `gog gmail search` returns one row per thread; use `gog gmail messages search` when you need every individual email returned separately.

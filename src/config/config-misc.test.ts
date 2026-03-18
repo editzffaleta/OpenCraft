@@ -6,11 +6,7 @@ import {
   unsetConfigValueAtPath,
 } from "./config-paths.js";
 import { readConfigFileSnapshot, validateConfigObject } from "./config.js";
-import {
-  buildWebSearchProviderConfig,
-  withTempHome,
-  writeOpenCraftConfig,
-} from "./test-helpers.js";
+import { buildWebSearchProviderConfig, withTempHome, writeOpenCraftConfig } from "./test-helpers.js";
 import { OpenCraftSchema } from "./zod-schema.js";
 
 describe("$schema key in config (#14998)", () => {
@@ -88,6 +84,40 @@ describe("plugins.entries.*.hooks.allowPromptInjection", () => {
           "voice-call": {
             hooks: {
               allowPromptInjection: "no",
+            },
+          },
+        },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("plugins.entries.*.subagent", () => {
+  it("accepts trusted subagent override settings", () => {
+    const result = OpenCraftSchema.safeParse({
+      plugins: {
+        entries: {
+          "voice-call": {
+            subagent: {
+              allowModelOverride: true,
+              allowedModels: ["anthropic/claude-haiku-4-5"],
+            },
+          },
+        },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid trusted subagent override settings", () => {
+    const result = OpenCraftSchema.safeParse({
+      plugins: {
+        entries: {
+          "voice-call": {
+            subagent: {
+              allowModelOverride: "yes",
+              allowedModels: [1],
             },
           },
         },

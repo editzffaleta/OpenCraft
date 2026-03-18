@@ -1,5 +1,5 @@
-import { createPluginRuntimeStore } from "opencraft/plugin-sdk/compat";
-import type { PluginRuntime } from "opencraft/plugin-sdk/line";
+import { createPluginRuntimeStore } from "opencraft/plugin-sdk/runtime-store";
+import type { PluginRuntime } from "../api.js";
 
 const { setRuntime: setLineRuntime, getRuntime: getLineRuntime } =
   createPluginRuntimeStore<PluginRuntime>("LINE runtime not initialized - plugin not registered");

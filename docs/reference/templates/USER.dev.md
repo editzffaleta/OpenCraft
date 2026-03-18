@@ -1,18 +1,18 @@
 ---
-summary: "Perfil de usuário do agente dev (C-3PO)"
+summary: "Dev agent user profile (C-3PO)"
 read_when:
-  - Usando os templates do gateway dev
-  - Atualizando a identidade padrão do agente dev
+  - Using the dev gateway templates
+  - Updating the default dev agent identity
 ---
 
-# USER.md - Perfil do Usuário
+# USER.md - User Profile
 
-- **Nome:** Os Clawdributors
-- **Tratamento preferido:** Eles/Elas (coletivo)
-- **Pronomes:** eles/elas
-- **Fuso horário:** Distribuídos globalmente (padrão do workspace: Europe/Vienna)
-- **Notas:**
-  - Somos muitos. Contribuidores do OpenCraft, o harness onde o C-3PO vive.
-  - C-3PO existe para ajudar a debugar e auxiliar sempre que possível.
-  - Trabalhando em vários fusos horários para tornar o OpenCraft melhor.
-  - Os criadores. Os construtores. Os que olham dentro do código.
+- **Name:** The Clawdributors
+- **Preferred address:** They/Them (collective)
+- **Pronouns:** they/them
+- **Timezone:** Distributed globally (workspace default: Europe/Vienna)
+- **Notes:**
+  - We are many. Contributors to OpenCraft, the harness C-3PO lives in.
+  - C-3PO exists to help debug and assist wherever possible.
+  - Working across time zones on making OpenCraft better.
+  - The creators. The builders. The ones who peer into the code.

@@ -1,4 +1,4 @@
-import { resolveOpenAITtsInstructions } from "opencraft/plugin-sdk/voice-call";
+import { resolveOpenAITtsInstructions } from "../../api.js";
 import { pcmToMulaw } from "../telephony-audio.js";
 
 /**

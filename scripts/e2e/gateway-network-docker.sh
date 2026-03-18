@@ -25,7 +25,7 @@ echo "Starting gateway container..."
 docker run -d \
   --name "$GW_NAME" \
   --network "$NET_NAME" \
-  -e "OPENCLAW_GATEWAY_TOKEN=$TOKEN" \
+  -e "OPENCRAFT_GATEWAY_TOKEN=$TOKEN" \
   -e "OPENCRAFT_SKIP_CHANNELS=1" \
   -e "OPENCRAFT_SKIP_GMAIL_WATCHER=1" \
   -e "OPENCRAFT_SKIP_CRON=1" \

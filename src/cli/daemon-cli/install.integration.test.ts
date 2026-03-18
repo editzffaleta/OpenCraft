@@ -51,9 +51,9 @@ describe("runDaemonInstall integration", () => {
       "HOME",
       "OPENCRAFT_STATE_DIR",
       "OPENCRAFT_CONFIG_PATH",
-      "OPENCLAW_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_TOKEN",
       "CLAWDBOT_GATEWAY_TOKEN",
-      "OPENCLAW_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_PASSWORD",
       "CLAWDBOT_GATEWAY_PASSWORD",
     ]);
     tempHome = await makeTempWorkspace("opencraft-daemon-install-int-");
@@ -73,9 +73,9 @@ describe("runDaemonInstall integration", () => {
     runtimeErrors.length = 0;
     vi.clearAllMocks();
     // Keep these defined-but-empty so dotenv won't repopulate from local .env.
-    process.env.OPENCLAW_GATEWAY_TOKEN = "";
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "";
     process.env.CLAWDBOT_GATEWAY_TOKEN = "";
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "";
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "";
     process.env.CLAWDBOT_GATEWAY_PASSWORD = "";
     serviceMock.isLoaded.mockResolvedValue(false);
     await fs.writeFile(configPath, JSON.stringify({}, null, 2));
@@ -143,6 +143,6 @@ describe("runDaemonInstall integration", () => {
     expect((persistedToken ?? "").length).toBeGreaterThan(0);
 
     const installEnv = serviceMock.install.mock.calls[0]?.[0]?.environment;
-    expect(installEnv?.OPENCLAW_GATEWAY_TOKEN).toBeUndefined();
+    expect(installEnv?.OPENCRAFT_GATEWAY_TOKEN).toBeUndefined();
   });
 });

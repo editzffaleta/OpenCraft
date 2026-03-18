@@ -1,81 +1,83 @@
 ---
-summary: "CLI de Models: list, set, aliases, fallbacks, scan, status"
+summary: "Models CLI: list, set, aliases, fallbacks, scan, status"
 read_when:
-  - Adicionando ou modificando CLI de modelos (models list/set/scan/aliases/fallbacks)
-  - Alterando comportamento de fallback de modelo ou UX de selecao
-  - Atualizando sondas de scan de modelo (ferramentas/imagens)
+  - Adding or modifying models CLI (models list/set/scan/aliases/fallbacks)
+  - Changing model fallback behavior or selection UX
+  - Updating model scan probes (tools/images)
 title: "Models CLI"
 ---
 
-# CLI de Models
+# Models CLI
 
-Veja [/concepts/model-failover](/concepts/model-failover) para rotacao de perfil de autenticacao,
-cooldowns e como isso interage com fallbacks.
-Visao geral rapida de provedores + exemplos: [/concepts/model-providers](/concepts/model-providers).
+See [/concepts/model-failover](/concepts/model-failover) for auth profile
+rotation, cooldowns, and how that interacts with fallbacks.
+Quick provider overview + examples: [/concepts/model-providers](/concepts/model-providers).
 
-## Como funciona a selecao de modelo
+## How model selection works
 
-O OpenCraft seleciona modelos nesta ordem:
+OpenCraft selects models in this order:
 
-1. Modelo **primario** (`agents.defaults.model.primary` ou `agents.defaults.model`).
-2. **Fallbacks** em `agents.defaults.model.fallbacks` (em ordem).
-3. **Failover de autenticacao do provedor** acontece dentro de um provedor antes de mover para o
-   proximo modelo.
+1. **Primary** model (`agents.defaults.model.primary` or `agents.defaults.model`).
+2. **Fallbacks** in `agents.defaults.model.fallbacks` (in order).
+3. **Provider auth failover** happens inside a provider before moving to the
+   next model.
 
-Relacionado:
+Related:
 
-- `agents.defaults.models` e a lista de permissoes/catalogo de modelos que o OpenCraft pode usar (mais aliases).
-- `agents.defaults.imageModel` e usado **somente quando** o modelo primario nao aceita imagens.
-- Padroes por agente podem substituir `agents.defaults.model` via `agents.list[].model` mais bindings (veja [/concepts/multi-agent](/concepts/multi-agent)).
+- `agents.defaults.models` is the allowlist/catalog of models OpenCraft can use (plus aliases).
+- `agents.defaults.imageModel` is used **only when** the primary model can’t accept images.
+- `agents.defaults.imageGenerationModel` is used by the shared image-generation capability. If omitted, `image_generate` can still infer a provider default from compatible auth-backed image-generation plugins.
+- Per-agent defaults can override `agents.defaults.model` via `agents.list[].model` plus bindings (see [/concepts/multi-agent](/concepts/multi-agent)).
 
-## Politica rapida de modelos
+## Quick model policy
 
-- Defina seu primario como o modelo mais forte da geracao mais recente disponivel para voce.
-- Use fallbacks para tarefas sensiveis a custo/latencia e chats de menor importancia.
-- Para agentes habilitados com ferramentas ou entradas nao confiaveis, evite niveis de modelo mais antigos/fracos.
+- Set your primary to the strongest latest-generation model available to you.
+- Use fallbacks for cost/latency-sensitive tasks and lower-stakes chat.
+- For tool-enabled agents or untrusted inputs, avoid older/weaker model tiers.
 
-## Onboarding (recomendado)
+## Onboarding (recommended)
 
-Se voce nao quer editar a configuracao manualmente, execute o onboarding:
+If you don’t want to hand-edit config, run onboarding:
 
 ```bash
 opencraft onboard
 ```
 
-Ele pode configurar modelo + autenticacao para provedores comuns, incluindo **assinatura OpenAI Code (Codex)**
-(OAuth) e **Anthropic** (chave de API ou `claude setup-token`).
+It can set up model + auth for common providers, including **OpenAI Code (Codex)
+subscription** (OAuth) and **Anthropic** (API key or `claude setup-token`).
 
-## Chaves de configuracao (visao geral)
+## Config keys (overview)
 
-- `agents.defaults.model.primary` e `agents.defaults.model.fallbacks`
-- `agents.defaults.imageModel.primary` e `agents.defaults.imageModel.fallbacks`
-- `agents.defaults.models` (lista de permissoes + aliases + parametros do provedor)
-- `models.providers` (provedores personalizados gravados em `models.json`)
+- `agents.defaults.model.primary` and `agents.defaults.model.fallbacks`
+- `agents.defaults.imageModel.primary` and `agents.defaults.imageModel.fallbacks`
+- `agents.defaults.imageGenerationModel.primary` and `agents.defaults.imageGenerationModel.fallbacks`
+- `agents.defaults.models` (allowlist + aliases + provider params)
+- `models.providers` (custom providers written into `models.json`)
 
-Refs de modelo sao normalizadas para minusculas. Aliases de provedor como `z.ai/*` normalizam
-para `zai/*`.
+Model refs are normalized to lowercase. Provider aliases like `z.ai/*` normalize
+to `zai/*`.
 
-Exemplos de configuracao de provedor (incluindo OpenCode) estao em
+Provider configuration examples (including OpenCode) live in
 [/gateway/configuration](/gateway/configuration#opencode).
 
-## "Model is not allowed" (e por que as respostas param)
+## “Model is not allowed” (and why replies stop)
 
-Se `agents.defaults.models` estiver definido, ele se torna a **lista de permissoes** para `/model` e para
-substituicoes de sessao. Quando um usuario seleciona um modelo que nao esta nessa lista de permissoes,
-o OpenCraft retorna:
+If `agents.defaults.models` is set, it becomes the **allowlist** for `/model` and for
+session overrides. When a user selects a model that isn’t in that allowlist,
+OpenCraft returns:
 
 ```
 Model "provider/model" is not allowed. Use /model to list available models.
 ```
 
-Isso acontece **antes** de uma resposta normal ser gerada, entao a mensagem pode parecer
-que "nao respondeu". A correcao e:
+This happens **before** a normal reply is generated, so the message can feel
+like it “didn’t respond.” The fix is to either:
 
-- Adicionar o modelo a `agents.defaults.models`, ou
-- Limpar a lista de permissoes (remover `agents.defaults.models`), ou
-- Escolher um modelo de `/model list`.
+- Add the model to `agents.defaults.models`, or
+- Clear the allowlist (remove `agents.defaults.models`), or
+- Pick a model from `/model list`.
 
-Exemplo de configuracao de lista de permissoes:
+Example allowlist config:
 
 ```json5
 {
@@ -89,9 +91,9 @@ Exemplo de configuracao de lista de permissoes:
 }
 ```
 
-## Trocando modelos no chat (`/model`)
+## Switching models in chat (`/model`)
 
-Voce pode trocar modelos para a sessao atual sem reiniciar:
+You can switch models for the current session without restarting:
 
 ```
 /model
@@ -101,19 +103,19 @@ Voce pode trocar modelos para a sessao atual sem reiniciar:
 /model status
 ```
 
-Notas:
+Notes:
 
-- `/model` (e `/model list`) e um seletor compacto e numerado (familia de modelo + provedores disponiveis).
-- No Discord, `/model` e `/models` abrem um seletor interativo com dropdowns de provedor e modelo mais uma etapa de Enviar.
-- `/model <#>` seleciona daquele seletor.
-- `/model status` e a visualizacao detalhada (candidatos de autenticacao e, quando configurado, `baseUrl` do endpoint do provedor + modo `api`).
-- Refs de modelo sao analisadas dividindo no **primeiro** `/`. Use `provider/model` ao digitar `/model <ref>`.
-- Se o ID do modelo contem `/` (estilo OpenRouter), voce deve incluir o prefixo do provedor (exemplo: `/model openrouter/moonshotai/kimi-k2`).
-- Se voce omitir o provedor, o OpenCraft trata a entrada como um alias ou um modelo para o **provedor padrao** (so funciona quando nao ha `/` no ID do modelo).
+- `/model` (and `/model list`) is a compact, numbered picker (model family + available providers).
+- On Discord, `/model` and `/models` open an interactive picker with provider and model dropdowns plus a Submit step.
+- `/model <#>` selects from that picker.
+- `/model status` is the detailed view (auth candidates and, when configured, provider endpoint `baseUrl` + `api` mode).
+- Model refs are parsed by splitting on the **first** `/`. Use `provider/model` when typing `/model <ref>`.
+- If the model ID itself contains `/` (OpenRouter-style), you must include the provider prefix (example: `/model openrouter/moonshotai/kimi-k2`).
+- If you omit the provider, OpenCraft treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
 
-Comportamento/configuracao completa do comando: [Comandos slash](/tools/slash-commands).
+Full command behavior/config: [Slash commands](/tools/slash-commands).
 
-## Comandos CLI
+## CLI commands
 
 ```bash
 opencraft models list
@@ -136,88 +138,88 @@ opencraft models image-fallbacks remove <provider/model>
 opencraft models image-fallbacks clear
 ```
 
-`opencraft models` (sem subcomando) e um atalho para `models status`.
+`opencraft models` (no subcommand) is a shortcut for `models status`.
 
 ### `models list`
 
-Mostra modelos configurados por padrao. Flags uteis:
+Shows configured models by default. Useful flags:
 
-- `--all`: catalogo completo
-- `--local`: apenas provedores locais
-- `--provider <name>`: filtrar por provedor
-- `--plain`: um modelo por linha
-- `--json`: saida legivel por maquina
+- `--all`: full catalog
+- `--local`: local providers only
+- `--provider <name>`: filter by provider
+- `--plain`: one model per line
+- `--json`: machine‑readable output
 
 ### `models status`
 
-Mostra o modelo primario resolvido, fallbacks, modelo de imagem e uma visao geral de autenticacao
-dos provedores configurados. Tambem exibe o status de expiracao OAuth para perfis encontrados
-no armazenamento de autenticacao (avisa dentro de 24h por padrao). `--plain` imprime apenas o
-modelo primario resolvido.
-O status OAuth e sempre exibido (e incluido na saida `--json`). Se um provedor configurado
-nao tem credenciais, `models status` imprime uma secao **Autenticacao ausente**.
-JSON inclui `auth.oauth` (janela de aviso + perfis) e `auth.providers`
-(autenticacao efetiva por provedor).
-Use `--check` para automacao (sai com `1` quando ausente/expirado, `2` quando expirando).
+Shows the resolved primary model, fallbacks, image model, and an auth overview
+of configured providers. It also surfaces OAuth expiry status for profiles found
+in the auth store (warns within 24h by default). `--plain` prints only the
+resolved primary model.
+OAuth status is always shown (and included in `--json` output). If a configured
+provider has no credentials, `models status` prints a **Missing auth** section.
+JSON includes `auth.oauth` (warn window + profiles) and `auth.providers`
+(effective auth per provider).
+Use `--check` for automation (exit `1` when missing/expired, `2` when expiring).
 
-A escolha de autenticacao depende do provedor/conta. Para hosts de Gateway sempre ativos, chaves de API geralmente sao mais previsiveis; fluxos de Token de assinatura tambem sao suportados.
+Auth choice is provider/account dependent. For always-on gateway hosts, API keys are usually the most predictable; subscription token flows are also supported.
 
-Exemplo (setup-token Anthropic):
+Example (Anthropic setup-token):
 
 ```bash
 claude setup-token
 opencraft models status
 ```
 
-## Escaneamento (modelos gratuitos OpenRouter)
+## Scanning (OpenRouter free models)
 
-`opencraft models scan` inspeciona o **catalogo de modelos gratuitos** do OpenRouter e pode
-opcionalmente sondar modelos para suporte a ferramentas e imagens.
+`opencraft models scan` inspects OpenRouter’s **free model catalog** and can
+optionally probe models for tool and image support.
 
-Flags principais:
+Key flags:
 
-- `--no-probe`: pular sondas ao vivo (apenas metadados)
-- `--min-params <b>`: tamanho minimo de parametros (bilhoes)
-- `--max-age-days <days>`: pular modelos mais antigos
-- `--provider <name>`: filtro de prefixo de provedor
-- `--max-candidates <n>`: tamanho da lista de fallback
-- `--set-default`: definir `agents.defaults.model.primary` para a primeira selecao
-- `--set-image`: definir `agents.defaults.imageModel.primary` para a primeira selecao de imagem
+- `--no-probe`: skip live probes (metadata only)
+- `--min-params <b>`: minimum parameter size (billions)
+- `--max-age-days <days>`: skip older models
+- `--provider <name>`: provider prefix filter
+- `--max-candidates <n>`: fallback list size
+- `--set-default`: set `agents.defaults.model.primary` to the first selection
+- `--set-image`: set `agents.defaults.imageModel.primary` to the first image selection
 
-A sondagem requer uma chave de API do OpenRouter (de perfis de autenticacao ou
-`OPENROUTER_API_KEY`). Sem uma chave, use `--no-probe` para listar apenas candidatos.
+Probing requires an OpenRouter API key (from auth profiles or
+`OPENROUTER_API_KEY`). Without a key, use `--no-probe` to list candidates only.
 
-Os resultados do scan sao classificados por:
+Scan results are ranked by:
 
-1. Suporte a imagens
-2. Latencia de ferramentas
-3. Tamanho do contexto
-4. Contagem de parametros
+1. Image support
+2. Tool latency
+3. Context size
+4. Parameter count
 
-Entrada
+Input
 
-- Lista `/models` do OpenRouter (filtro `:free`)
-- Requer chave de API do OpenRouter de perfis de autenticacao ou `OPENROUTER_API_KEY` (veja [/environment](/help/environment))
-- Filtros opcionais: `--max-age-days`, `--min-params`, `--provider`, `--max-candidates`
-- Controles de sondagem: `--timeout`, `--concurrency`
+- OpenRouter `/models` list (filter `:free`)
+- Requires OpenRouter API key from auth profiles or `OPENROUTER_API_KEY` (see [/environment](/help/environment))
+- Optional filters: `--max-age-days`, `--min-params`, `--provider`, `--max-candidates`
+- Probe controls: `--timeout`, `--concurrency`
 
-Quando executado em um TTY, voce pode selecionar fallbacks interativamente. No modo nao interativo,
-passe `--yes` para aceitar os padroes.
+When run in a TTY, you can select fallbacks interactively. In non‑interactive
+mode, pass `--yes` to accept defaults.
 
-## Registro de modelos (`models.json`)
+## Models registry (`models.json`)
 
-Provedores personalizados em `models.providers` sao gravados em `models.json` sob o
-diretorio do agente (padrao `~/.opencraft/agents/<agentId>/agent/models.json`). Este arquivo
-e mesclado por padrao, a menos que `models.mode` esteja definido como `replace`.
+Custom providers in `models.providers` are written into `models.json` under the
+agent directory (default `~/.opencraft/agents/<agentId>/agent/models.json`). This file
+is merged by default unless `models.mode` is set to `replace`.
 
-Precedencia do modo de mesclagem para IDs de provedor correspondentes:
+Merge mode precedence for matching provider IDs:
 
-- `baseUrl` nao vazio ja presente no `models.json` do agente vence.
-- `apiKey` nao vazio no `models.json` do agente vence apenas quando aquele provedor nao e gerenciado por SecretRef no contexto atual de configuracao/perfil de autenticacao.
-- Valores de `apiKey` de provedores gerenciados por SecretRef sao atualizados a partir de marcadores de origem (`ENV_VAR_NAME` para refs de env, `secretref-managed` para refs de arquivo/exec) em vez de persistir segredos resolvidos.
-- Valores de cabecalho de provedores gerenciados por SecretRef sao atualizados a partir de marcadores de origem (`secretref-env:ENV_VAR_NAME` para refs de env, `secretref-managed` para refs de arquivo/exec).
-- `apiKey`/`baseUrl` vazios ou ausentes do agente recorrem ao `models.providers` da configuracao.
-- Outros campos do provedor sao atualizados a partir da configuracao e dados normalizados do catalogo.
+- Non-empty `baseUrl` already present in the agent `models.json` wins.
+- Non-empty `apiKey` in the agent `models.json` wins only when that provider is not SecretRef-managed in current config/auth-profile context.
+- SecretRef-managed provider `apiKey` values are refreshed from source markers (`ENV_VAR_NAME` for env refs, `secretref-managed` for file/exec refs) instead of persisting resolved secrets.
+- SecretRef-managed provider header values are refreshed from source markers (`secretref-env:ENV_VAR_NAME` for env refs, `secretref-managed` for file/exec refs).
+- Empty or missing agent `apiKey`/`baseUrl` fall back to config `models.providers`.
+- Other provider fields are refreshed from config and normalized catalog data.
 
-A persistencia de marcadores e autoritativa pela origem: o OpenCraft grava marcadores a partir do snapshot de configuracao de origem ativa (pre-resolucao), nao de valores de segredo de runtime resolvidos.
-Isso se aplica sempre que o OpenCraft regenera `models.json`, incluindo caminhos orientados por comando como `opencraft agent`.
+Marker persistence is source-authoritative: OpenCraft writes markers from the active source config snapshot (pre-resolution), not from resolved runtime secret values.
+This applies whenever OpenCraft regenerates `models.json`, including command-driven paths like `opencraft agent`.

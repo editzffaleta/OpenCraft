@@ -157,9 +157,7 @@ describe("assertCanonicalPathWithinBase", () => {
     "rejects symlinked candidate directories that escape the base",
     async () => {
       const baseDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-install-safe-"));
-      const outsideDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), "opencraft-install-safe-outside-"),
-      );
+      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-install-safe-outside-"));
       try {
         const linkDir = path.join(baseDir, "alias");
         await fs.symlink(outsideDir, linkDir);

@@ -1,14 +1,11 @@
-import type {
-  OpenCraftConfig,
-  DiscordAccountConfig,
-  DiscordActionConfig,
-} from "opencraft/plugin-sdk/discord";
 import {
   createAccountActionGate,
   createAccountListHelpers,
   normalizeAccountId,
   resolveAccountEntry,
-} from "../../../src/plugin-sdk-internal/accounts.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import type { DiscordAccountConfig, DiscordActionConfig } from "opencraft/plugin-sdk/discord";
 import { resolveDiscordToken } from "./token.js";
 
 export type ResolvedDiscordAccount = {

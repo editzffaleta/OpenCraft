@@ -454,7 +454,7 @@ describe("createOpenCraftCodingTools", () => {
     }
   });
   it("applies sandbox path guards to file_path alias", async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-sbx-"));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-sbx-"));
     const outsidePath = path.join(os.tmpdir(), "opencraft-outside.txt");
     await fs.writeFile(outsidePath, "outside", "utf8");
     try {

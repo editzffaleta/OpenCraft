@@ -1,48 +1,48 @@
 ---
-summary: "Plano: um SDK de Plugin limpo + runtime para todos os conectores de mensagens"
+summary: "Plan: one clean plugin SDK + runtime for all messaging connectors"
 read_when:
-  - Definindo ou refatorando a arquitetura de Plugin
-  - Migrando conectores de canal para o SDK/runtime de Plugin
+  - Defining or refactoring the plugin architecture
+  - Migrating channel connectors to the plugin SDK/runtime
 title: "Plugin SDK Refactor"
 ---
 
-# Plano de Refatoração do Plugin SDK + Runtime
+# Plugin SDK + Runtime Refactor Plan
 
-Objetivo: todo conector de mensagens é um Plugin (bundled ou externo) usando uma API estável.
-Nenhum Plugin importa de `src/**` diretamente. Todas as dependências passam pelo SDK ou runtime.
+Goal: every messaging connector is a plugin (bundled or external) using one stable API.
+No plugin imports from `src/**` directly. All dependencies go through the SDK or runtime.
 
-## Por que agora
+## Why now
 
-- Conectores atuais misturam padrões: importações diretas do core, bridges somente de dist e helpers personalizados.
-- Isso torna upgrades frágeis e bloqueia uma superfície limpa de Plugin externo.
+- Current connectors mix patterns: direct core imports, dist-only bridges, and custom helpers.
+- This makes upgrades brittle and blocks a clean external plugin surface.
 
-## Arquitetura alvo (duas camadas)
+## Target architecture (two layers)
 
-### 1) Plugin SDK (compile-time, estável, publicável)
+### 1) Plugin SDK (compile-time, stable, publishable)
 
-Escopo: tipos, helpers e utilitários de configuração. Sem estado de runtime, sem efeitos colaterais.
+Scope: types, helpers, and config utilities. No runtime state, no side effects.
 
-Conteúdos (exemplos):
+Contents (examples):
 
-- Tipos: `ChannelPlugin`, adaptadores, `ChannelMeta`, `ChannelCapabilities`, `ChannelDirectoryEntry`.
-- Helpers de configuração: `buildChannelConfigSchema`, `setAccountEnabledInConfigSection`, `deleteAccountFromConfigSection`,
+- Types: `ChannelPlugin`, adapters, `ChannelMeta`, `ChannelCapabilities`, `ChannelDirectoryEntry`.
+- Config helpers: `buildChannelConfigSchema`, `setAccountEnabledInConfigSection`, `deleteAccountFromConfigSection`,
   `applyAccountNameToChannelSection`.
-- Helpers de pareamento: `PAIRING_APPROVED_MESSAGE`, `formatPairingApproveHint`.
-- Pontos de entrada de setup: `setup` + `setupWizard` de propriedade do host; evitar helpers amplos de onboarding público.
-- Helpers de parâmetros de ferramenta: `createActionGate`, `readStringParam`, `readNumberParam`, `readReactionParams`, `jsonResult`.
-- Helper de link de documentação: `formatDocsLink`.
+- Pairing helpers: `PAIRING_APPROVED_MESSAGE`, `formatPairingApproveHint`.
+- Setup entry points: host-owned `setup` + `setupWizard`; avoid broad public onboarding helpers.
+- Tool param helpers: `createActionGate`, `readStringParam`, `readNumberParam`, `readReactionParams`, `jsonResult`.
+- Docs link helper: `formatDocsLink`.
 
-Entrega:
+Delivery:
 
-- Publicar como `opencraft/plugin-sdk` (ou exportar do core sob `opencraft/plugin-sdk`).
-- Semver com garantias explícitas de estabilidade.
+- Publish as `opencraft/plugin-sdk` (or export from core under `opencraft/plugin-sdk`).
+- Semver with explicit stability guarantees.
 
-### 2) Plugin Runtime (superfície de execução, injetado)
+### 2) Plugin Runtime (execution surface, injected)
 
-Escopo: tudo que toca comportamento de runtime do core.
-Acessado via `OpenCraftPluginApi.runtime` para que Plugins nunca importem `src/**`.
+Scope: everything that touches core runtime behavior.
+Accessed via `OpenCraftPluginApi.runtime` so plugins never import `src/**`.
 
-Superfície proposta (mínima mas completa):
+Proposed surface (minimal but complete):
 
 ```ts
 export type PluginRuntime = {
@@ -65,7 +65,7 @@ export type PluginRuntime = {
           onError?: (err: unknown, info: { kind: string }) => void;
         };
       }): Promise<void>;
-      createReplyDispatcherWithTyping?: unknown; // adaptador para fluxos estilo Teams
+      createReplyDispatcherWithTyping?: unknown; // adapter for Teams-style flows
     };
     routing: {
       resolveAgentRoute(params: {
@@ -144,95 +144,121 @@ export type PluginRuntime = {
 };
 ```
 
-Notas:
+Notes:
 
-- Runtime é a única forma de acessar comportamento do core.
-- SDK é intencionalmente pequeno e estável.
-- Cada método do runtime mapeia para uma implementação core existente (sem duplicação).
+- Runtime is the only way to access core behavior.
+- SDK is intentionally small and stable.
+- Each runtime method maps to an existing core implementation (no duplication).
 
-## Plano de migração (faseado, seguro)
+## Migration plan (phased, safe)
 
-### Fase 0: scaffolding
+### Phase 0: scaffolding
 
-- Introduzir `opencraft/plugin-sdk`.
-- Adicionar `api.runtime` ao `OpenCraftPluginApi` com a superfície acima.
-- Manter importações existentes durante uma janela de transição (avisos de depreciação).
+- Introduce `opencraft/plugin-sdk`.
+- Add `api.runtime` to `OpenCraftPluginApi` with the surface above.
+- Maintain existing imports during a transition window (deprecation warnings).
 
-### Fase 1: limpeza de bridges (baixo risco)
+### Phase 1: bridge cleanup (low risk)
 
-- Substituir `core-bridge.ts` por extensão com `api.runtime`.
-- Migrar BlueBubbles, Zalo, Zalo Personal primeiro (já próximos).
-- Remover código de bridge duplicado.
+- Replace per-extension `core-bridge.ts` with `api.runtime`.
+- Migrate BlueBubbles, Zalo, Zalo Personal first (already close).
+- Remove duplicated bridge code.
 
-### Fase 2: Plugins de importação direta leves
+### Phase 2: light direct-import plugins
 
-- Migrar Matrix para SDK + runtime.
-- Validar onboarding, diretório, lógica de menção de grupo.
+- Migrate Matrix to SDK + runtime.
+- Validate onboarding, directory, group mention logic.
 
-### Fase 3: Plugins de importação direta pesados
+### Phase 3: heavy direct-import plugins
 
-- Migrar MS Teams (maior conjunto de helpers de runtime).
-- Garantir que semânticas de resposta/digitação correspondam ao comportamento atual.
+- Migrate MS Teams (largest set of runtime helpers).
+- Ensure reply/typing semantics match current behavior.
 
-### Fase 4: pluginização do iMessage
+### Phase 4: iMessage pluginization
 
-- Mover iMessage para `extensions/imessage`.
-- Substituir chamadas diretas ao core com `api.runtime`.
-- Manter chaves de configuração, comportamento do CLI e documentação intactos.
+- Move iMessage into `extensions/imessage`.
+- Replace direct core calls with `api.runtime`.
+- Keep config keys, CLI behavior, and docs intact.
 
-### Fase 5: imposição
+### Phase 5: enforcement
 
-- Adicionar regra de lint / verificação de CI: nenhuma importação de `extensions/**` de `src/**`.
-- Adicionar verificações de compatibilidade de SDK/versão do Plugin (semver runtime + SDK).
+- Add lint rule / CI check: no `extensions/**` imports from `src/**`.
+- Add plugin SDK/version compatibility checks (runtime + SDK semver).
 
-## Compatibilidade e versionamento
+## Compatibility and versioning
 
-- SDK: semver, publicado, mudanças documentadas.
-- Runtime: versionado por release do core. Adicionar `api.runtime.version`.
-- Plugins declaram range de runtime obrigatório (ex., `opencraftRuntime: ">=2026.2.0"`).
+- SDK: semver, published, documented changes.
+- Runtime: versioned per core release. Add `api.runtime.version`.
+- Plugins declare a required runtime range (e.g., `opencraftRuntime: ">=2026.2.0"`).
 
-## Estratégia de testes
+## Testing strategy
 
-- Testes unitários a nível de adaptador (funções de runtime exercitadas com implementação real do core).
-- Testes golden por Plugin: garantir nenhuma divergência de comportamento (roteamento, pareamento, lista de permissão, gating de menção).
-- Uma única amostra de Plugin ponta a ponta usada no CI (instalar + executar + fumaça).
+- Adapter-level unit tests (runtime functions exercised with real core implementation).
+- Golden tests per plugin: ensure no behavior drift (routing, pairing, allowlist, mention gating).
+- A single end-to-end plugin sample used in CI (install + run + smoke).
 
-## Perguntas em aberto
+## Open questions
 
-- Onde hospedar tipos do SDK: pacote separado ou export do core?
-- Distribuição de tipos de runtime: no SDK (somente tipos) ou no core?
-- Como expor links de documentação para Plugins bundled vs externos?
-- Permitimos importações diretas limitadas do core para Plugins in-repo durante a transição?
+- Where to host SDK types: separate package or core export?
+- Runtime type distribution: in SDK (types only) or in core?
+- How to expose docs links for bundled vs external plugins?
+- Do we allow limited direct core imports for in-repo plugins during transition?
 
-## Critérios de sucesso
+## Success criteria
 
-- Todos os conectores de canal são Plugins usando SDK + runtime.
-- Nenhuma importação de `extensions/**` de `src/**`.
-- Templates de novos conectores dependem somente de SDK + runtime.
-- Plugins externos podem ser desenvolvidos e atualizados sem acesso ao código-fonte do core.
+- All channel connectors are plugins using SDK + runtime.
+- No `extensions/**` imports from `src/**`.
+- New connector templates depend only on SDK + runtime.
+- External plugins can be developed and updated without core source access.
 
-Documentação relacionada: [Plugins](/tools/plugin), [Canais](/channels/index), [Configuração](/gateway/configuration).
+Related docs: [Plugins](/tools/plugin), [Channels](/channels/index), [Configuration](/gateway/configuration).
 
-## Costuras implementadas de propriedade do canal
+## Capability plan alignment
 
-Trabalho recente de refatoração ampliou o contrato de Plugin de canal para que o core possa parar de ser
-dono de UX e comportamento de roteamento específicos de canal:
+The plugin SDK refactor now aligns with the public capability model documented
+in [Plugins](/tools/plugin#public-capability-model).
 
-- `messaging.buildCrossContextComponents`: marcadores de UI cross-context de propriedade do canal
-  (por exemplo containers de componentes v2 do Discord)
-- `messaging.enableInteractiveReplies`: toggles de normalização de resposta de propriedade do canal
-  (por exemplo respostas interativas do Slack)
-- `messaging.resolveOutboundSessionRoute`: roteamento de sessão de saída de propriedade do canal
-- `status.formatCapabilitiesProbe` / `status.buildCapabilitiesDiagnostics`: display de probe de
-  `/channels capabilities` de propriedade do canal e auditorias/escopos extras
-- `threading.resolveAutoThreadId`: auto-threading de mesma conversa de propriedade do canal
-- `threading.resolveReplyTransport`: mapeamento de entrega reply-vs-thread de propriedade do canal
-- `actions.requiresTrustedRequesterSender`: portões de confiança de ação privilegiada de propriedade do canal
-- `execApprovals.*`: estado de superfície de aprovação exec de propriedade do canal, supressão de encaminhamento,
-  UX de payload pendente e hooks pré-entrega
-- `lifecycle.onAccountConfigChanged` / `lifecycle.onAccountRemoved`: limpeza de propriedade do canal em
-  mutação/remoção de configuração
-- `allowlist.supportsScope`: anúncio de escopo de lista de permissão de propriedade do canal
+Key decisions:
 
-Esses hooks devem ser preferidos sobre novos branches `channel === "discord"` / `telegram`
-em fluxos core compartilhados.
+- Capabilities are the public plugin model. Registration is explicit and typed.
+- Legacy hook-only plugins remain supported without migration.
+- Plugin shapes (plain-capability, hybrid-capability, hook-only, non-capability)
+  are classified from actual registration behavior.
+- `opencraft plugins inspect` provides canonical deep introspection for any
+  loaded plugin, showing shape, capabilities, hooks, tools, and diagnostics.
+- Export boundary: export capabilities, not implementation convenience. Trim
+  non-contract helper exports.
+
+Required test matrix for the capability model:
+
+- hook-only legacy plugin fixture
+- plain capability plugin fixture
+- hybrid capability plugin fixture
+- real-world legacy hook-style plugin fixture
+- `before_agent_start` still works
+- typed hooks remain additive
+- capability usage and plugin shape are inspectable
+
+## Implemented channel-owned capabilities
+
+Recent refactor work widened the channel plugin contract so core can stop owning
+channel-specific UX and routing behavior:
+
+- `messaging.buildCrossContextComponents`: channel-owned cross-context UI markers
+  (for example Discord components v2 containers)
+- `messaging.enableInteractiveReplies`: channel-owned reply normalization toggles
+  (for example Slack interactive replies)
+- `messaging.resolveOutboundSessionRoute`: channel-owned outbound session routing
+- `status.formatCapabilitiesProbe` / `status.buildCapabilitiesDiagnostics`: channel-owned
+  `/channels capabilities` probe display and extra audits/scopes
+- `threading.resolveAutoThreadId`: channel-owned same-conversation auto-threading
+- `threading.resolveReplyTransport`: channel-owned reply-vs-thread delivery mapping
+- `actions.requiresTrustedRequesterSender`: channel-owned privileged action trust gates
+- `execApprovals.*`: channel-owned exec approval surface state, forwarding suppression,
+  pending payload UX, and pre-delivery hooks
+- `lifecycle.onAccountConfigChanged` / `lifecycle.onAccountRemoved`: channel-owned cleanup on
+  config mutation/removal
+- `allowlist.supportsScope`: channel-owned allowlist scope advertisement
+
+These capabilities should be preferred over new `channel === "discord"` /
+`telegram` branches in shared core flows.

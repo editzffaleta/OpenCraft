@@ -18,7 +18,7 @@ type NodeListNode = NonNullable<NodeListPayload["nodes"]>[number];
 const { get: getArg, has: hasFlag } = createArgReader();
 
 const urlRaw = getArg("--url") ?? process.env.OPENCRAFT_GATEWAY_URL;
-const token = getArg("--token") ?? process.env.OPENCLAW_GATEWAY_TOKEN;
+const token = getArg("--token") ?? process.env.OPENCRAFT_GATEWAY_TOKEN;
 const nodeHint = getArg("--node");
 const dangerous = hasFlag("--dangerous") || process.env.OPENCRAFT_RUN_DANGEROUS === "1";
 const jsonOut = hasFlag("--json");
@@ -27,7 +27,7 @@ if (!urlRaw || !token) {
   // eslint-disable-next-line no-console
   console.error(
     "Usage: bun scripts/dev/ios-node-e2e.ts --url <wss://host[:port]> --token <gateway.auth.token> [--node <id|name-substring>] [--dangerous] [--json]\n" +
-      "Or set env: OPENCRAFT_GATEWAY_URL / OPENCLAW_GATEWAY_TOKEN",
+      "Or set env: OPENCRAFT_GATEWAY_URL / OPENCRAFT_GATEWAY_TOKEN",
   );
   process.exit(1);
 }

@@ -1,4 +1,4 @@
-module github.com/editzffaleta/OpenCraft/scripts/docs-i18n
+module github.com/opencraft/opencraft/scripts/docs-i18n
 
 go 1.24.0
 

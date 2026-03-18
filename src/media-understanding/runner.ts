@@ -75,8 +75,9 @@ export type RunCapabilityResult = {
 
 export function buildProviderRegistry(
   overrides?: Record<string, MediaUnderstandingProvider>,
+  cfg?: OpenCraftConfig,
 ): ProviderRegistry {
-  return buildMediaUnderstandingRegistry(overrides);
+  return buildMediaUnderstandingRegistry(overrides, cfg);
 }
 
 export function normalizeMediaAttachments(ctx: MsgContext): MediaAttachment[] {

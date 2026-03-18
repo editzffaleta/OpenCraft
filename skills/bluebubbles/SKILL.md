@@ -1,27 +1,27 @@
 ---
 name: bluebubbles
-description: Use quando precisar enviar ou gerenciar iMessages via BlueBubbles (integração iMessage recomendada). As chamadas passam pela ferramenta genérica de mensagens com channel="bluebubbles".
+description: Use when you need to send or manage iMessages via BlueBubbles (recommended iMessage integration). Calls go through the generic message tool with channel="bluebubbles".
 metadata: { "opencraft": { "emoji": "🫧", "requires": { "config": ["channels.bluebubbles"] } } }
 ---
 
-# Ações do BlueBubbles
+# BlueBubbles Actions
 
-## Visão Geral
+## Overview
 
-O BlueBubbles é a integração iMessage recomendada do OpenCraft. Use a ferramenta `message` com `channel: "bluebubbles"` para enviar mensagens e gerenciar conversas do iMessage: enviar textos e anexos, reagir (tapbacks), editar/cancelar envio, responder em threads e gerenciar participantes/nomes/ícones de grupos.
+BlueBubbles is OpenCraft’s recommended iMessage integration. Use the `message` tool with `channel: "bluebubbles"` to send messages and manage iMessage conversations: send texts and attachments, react (tapbacks), edit/unsend, reply in threads, and manage group participants/names/icons.
 
-## Dados a coletar
+## Inputs to collect
 
-- `target` (prefira `chat_guid:...`; também aceita `+15551234567` em formato E.164 ou `user@example.com`)
-- texto da `message` para envio/edição/resposta
-- `messageId` para reagir/editar/cancelar envio/responder
-- `path` do anexo para arquivos locais, ou `buffer` + `filename` para base64
+- `target` (prefer `chat_guid:...`; also `+15551234567` in E.164 or `user@example.com`)
+- `message` text for send/edit/reply
+- `messageId` for react/edit/unsend/reply
+- Attachment `path` for local files, or `buffer` + `filename` for base64
 
-Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do destinatário ou o guid do chat e o conteúdo exato da mensagem.
+If the user is vague ("text my mom"), ask for the recipient handle or chat guid and the exact message content.
 
-## Ações
+## Actions
 
-### Enviar uma mensagem
+### Send a message
 
 ```json
 {
@@ -32,7 +32,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Reagir (tapback)
+### React (tapback)
 
 ```json
 {
@@ -44,7 +44,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Remover uma reação
+### Remove a reaction
 
 ```json
 {
@@ -57,7 +57,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Editar uma mensagem enviada anteriormente
+### Edit a previously sent message
 
 ```json
 {
@@ -69,7 +69,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Cancelar envio de uma mensagem
+### Unsend a message
 
 ```json
 {
@@ -80,7 +80,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Responder a uma mensagem específica
+### Reply to a specific message
 
 ```json
 {
@@ -92,7 +92,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Enviar um anexo
+### Send an attachment
 
 ```json
 {
@@ -104,7 +104,7 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-### Enviar com um efeito do iMessage
+### Send with an iMessage effect
 
 ```json
 {
@@ -116,16 +116,16 @@ Se o usuário for vago ("manda mensagem para a minha mãe"), peça o handle do d
 }
 ```
 
-## Observações
+## Notes
 
-- Requer configuração de gateway `channels.bluebubbles` (serverUrl/password/webhookPath).
-- Prefira alvos `chat_guid` quando disponíveis (especialmente para chats em grupo).
-- O BlueBubbles suporta ações avançadas, mas algumas dependem da versão do macOS (por exemplo, editar pode estar quebrado no macOS 26 Tahoe).
-- O gateway pode expor tanto IDs curtos quanto completos de mensagens; IDs completos são mais duráveis entre reinicializações.
-- A referência para desenvolvedores do plugin subjacente está em `extensions/bluebubbles/README.md`.
+- Requires gateway config `channels.bluebubbles` (serverUrl/password/webhookPath).
+- Prefer `chat_guid` targets when you have them (especially for group chats).
+- BlueBubbles supports rich actions, but some are macOS-version dependent (for example, edit may be broken on macOS 26 Tahoe).
+- The gateway may expose both short and full message ids; full ids are more durable across restarts.
+- Developer reference for the underlying plugin lives in `extensions/bluebubbles/README.md`.
 
-## Ideias para experimentar
+## Ideas to try
 
-- Reagir com um tapback para confirmar uma solicitação.
-- Responder em thread quando um usuário referencia uma mensagem específica.
-- Enviar um anexo de arquivo com uma legenda curta.
+- React with a tapback to acknowledge a request.
+- Reply in-thread when a user references a specific message.
+- Send a file attachment with a short caption.

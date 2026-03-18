@@ -81,14 +81,14 @@ opencraft node run --host <gateway-host> --port 18789 --display-name "Build Node
 ssh -N -L 18790:127.0.0.1:18789 user@gateway-host
 
 # 终端 B：导出 Gateway 网关令牌并通过隧道连接
-export OPENCLAW_GATEWAY_TOKEN="<gateway-token>"
+export OPENCRAFT_GATEWAY_TOKEN="<gateway-token>"
 opencraft node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 ```
 
 注意事项：
 
-- 令牌是 Gateway 网关配置中的 `gateway.auth.token`（Gateway 网关主机上的 `~/.editzffaleta/OpenCraft.json`）。
-- `opencraft node run` 读取 `OPENCLAW_GATEWAY_TOKEN` 进行认证。
+- 令牌是 Gateway 网关配置中的 `gateway.auth.token`（Gateway 网关主机上的 `~/.opencraft/opencraft.json`）。
+- `opencraft node run` 读取 `OPENCRAFT_GATEWAY_TOKEN` 进行认证。
 
 ### 启动节点主机（服务）
 

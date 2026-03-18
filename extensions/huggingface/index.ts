@@ -1,19 +1,15 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import {
-  applyHuggingfaceConfig,
-  HUGGINGFACE_DEFAULT_MODEL_REF,
-} from "../../src/commands/onboard-auth.js";
-import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { createProviderApiKeyAuthMethod } from "opencraft/plugin-sdk/provider-auth";
+import { applyHuggingfaceConfig, HUGGINGFACE_DEFAULT_MODEL_REF } from "./onboard.js";
 import { buildHuggingfaceProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "huggingface";
 
-const huggingfacePlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Hugging Face Provider",
   description: "Bundled Hugging Face provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Hugging Face",
@@ -59,6 +55,4 @@ const huggingfacePlugin = {
       },
     });
   },
-};
-
-export default huggingfacePlugin;
+});

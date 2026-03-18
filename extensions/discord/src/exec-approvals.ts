@@ -1,6 +1,6 @@
-import type { ReplyPayload } from "../../../src/auto-reply/types.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { getExecApprovalReplyMetadata } from "../../../src/infra/exec-approval-reply.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { getExecApprovalReplyMetadata } from "opencraft/plugin-sdk/infra-runtime";
+import type { ReplyPayload } from "opencraft/plugin-sdk/reply-runtime";
 import { resolveDiscordAccount } from "./accounts.js";
 
 export function isDiscordExecApprovalClientEnabled(params: {

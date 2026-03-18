@@ -27,11 +27,11 @@ OpenCraft 在两个地方记录日志：
 
 默认情况下，Gateway 网关在以下位置写入滚动日志文件：
 
-`/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log`
+`/tmp/opencraft/opencraft-YYYY-MM-DD.log`
 
 日期使用 Gateway 网关主机的本地时区。
 
-你可以在 `~/.editzffaleta/OpenCraft.json` 中覆盖此设置：
+你可以在 `~/.opencraft/opencraft.json` 中覆盖此设置：
 
 ```json
 {
@@ -103,13 +103,13 @@ opencraft channels logs --channel whatsapp
 
 ## 配置日志
 
-所有日志配置都在 `~/.editzffaleta/OpenCraft.json` 的 `logging` 下。
+所有日志配置都在 `~/.opencraft/opencraft.json` 的 `logging` 下。
 
 ```json
 {
   "logging": {
     "level": "info",
-    "file": "/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log",
+    "file": "/tmp/opencraft/opencraft-YYYY-MM-DD.log",
     "consoleLevel": "info",
     "consoleStyle": "pretty",
     "redactSensitive": "tools",

@@ -1,6 +1,6 @@
 ---
 name: ordercli
-description: CLI exclusivo para Foodora para verificar pedidos anteriores e status de pedidos ativos (Deliveroo em desenvolvimento).
+description: Foodora-only CLI for checking past orders and active order status (Deliveroo WIP).
 homepage: https://ordercli.sh
 metadata:
   {
@@ -15,14 +15,14 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/ordercli",
               "bins": ["ordercli"],
-              "label": "Instalar ordercli (brew)",
+              "label": "Install ordercli (brew)",
             },
             {
               "id": "go",
               "kind": "go",
               "module": "github.com/steipete/ordercli/cmd/ordercli@latest",
               "bins": ["ordercli"],
-              "label": "Instalar ordercli (go)",
+              "label": "Install ordercli (go)",
             },
           ],
       },
@@ -31,9 +31,9 @@ metadata:
 
 # ordercli
 
-Use `ordercli` para verificar pedidos anteriores e acompanhar o status de pedidos ativos (apenas Foodora por enquanto).
+Use `ordercli` to check past orders and track active order status (Foodora only right now).
 
-Início rápido (Foodora)
+Quick start (Foodora)
 
 - `ordercli foodora countries`
 - `ordercli foodora config set --country AT`
@@ -42,37 +42,37 @@ Início rápido (Foodora)
 - `ordercli foodora history --limit 20`
 - `ordercli foodora history show <orderCode>`
 
-Pedidos
+Orders
 
-- Lista ativa (chegada/status): `ordercli foodora orders`
-- Monitorar: `ordercli foodora orders --watch`
-- Detalhes do pedido ativo: `ordercli foodora order <orderCode>`
-- Detalhes do histórico em JSON: `ordercli foodora history show <orderCode> --json`
+- Active list (arrival/status): `ordercli foodora orders`
+- Watch: `ordercli foodora orders --watch`
+- Active order detail: `ordercli foodora order <orderCode>`
+- History detail JSON: `ordercli foodora history show <orderCode> --json`
 
-Refazer pedido (adiciona ao carrinho)
+Reorder (adds to cart)
 
-- Visualizar: `ordercli foodora reorder <orderCode>`
-- Confirmar: `ordercli foodora reorder <orderCode> --confirm`
-- Endereço: `ordercli foodora reorder <orderCode> --confirm --address-id <id>`
+- Preview: `ordercli foodora reorder <orderCode>`
+- Confirm: `ordercli foodora reorder <orderCode> --confirm`
+- Address: `ordercli foodora reorder <orderCode> --confirm --address-id <id>`
 
-Cloudflare / proteção contra bots
+Cloudflare / bot protection
 
-- Login pelo navegador: `ordercli foodora login --email you@example.com --password-stdin --browser`
-- Reutilizar perfil: `--browser-profile "$HOME/Library/Application Support/ordercli/browser-profile"`
-- Importar cookies do Chrome: `ordercli foodora cookies chrome --profile "Default"`
+- Browser login: `ordercli foodora login --email you@example.com --password-stdin --browser`
+- Reuse profile: `--browser-profile "$HOME/Library/Application Support/ordercli/browser-profile"`
+- Import Chrome cookies: `ordercli foodora cookies chrome --profile "Default"`
 
-Importação de sessão (sem senha)
+Session import (no password)
 
 - `ordercli foodora session chrome --url https://www.foodora.at/ --profile "Default"`
 - `ordercli foodora session refresh --client-id android`
 
-Deliveroo (em desenvolvimento, ainda não funciona)
+Deliveroo (WIP, not working yet)
 
-- Requer `DELIVEROO_BEARER_TOKEN` (`DELIVEROO_COOKIE` opcional).
+- Requires `DELIVEROO_BEARER_TOKEN` (optional `DELIVEROO_COOKIE`).
 - `ordercli deliveroo config set --market uk`
 - `ordercli deliveroo history`
 
-Observações
+Notes
 
-- Use `--config /tmp/ordercli.json` para testes.
-- Confirme antes de qualquer ação de refazer pedido ou alteração de carrinho.
+- Use `--config /tmp/ordercli.json` for testing.
+- Confirm before any reorder or cart-changing action.

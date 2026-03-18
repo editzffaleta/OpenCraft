@@ -1,17 +1,17 @@
 ---
 title: "Configuration Reference"
-description: "Referência completa campo a campo para ~/.editzffaleta/OpenCraft.json"
-summary: "Referência completa para toda chave de config do OpenCraft, padrões e configurações de canal"
+description: "Complete field-by-field reference for ~/.opencraft/opencraft.json"
+summary: "Complete reference for every OpenCraft config key, defaults, and channel settings"
 read_when:
-  - Você precisa de semântica exata de config no nível de campo ou padrões
-  - Você está validando blocos de config de canal, modelo, gateway ou ferramenta
+  - You need exact field-level config semantics or defaults
+  - You are validating channel, model, gateway, or tool config blocks
 ---
 
-# Referência de Configuração
+# Configuration Reference
 
-Todos os campos disponíveis em `~/.editzffaleta/OpenCraft.json`. Para uma visão geral orientada a tarefas, veja [Configuration](/gateway/configuration).
+Every field available in `~/.opencraft/opencraft.json`. For a task-oriented overview, see [Configuration](/gateway/configuration).
 
-O formato de config é **JSON5** (comentários + trailing commas permitidos). Todos os campos são opcionais — OpenCraft usa padrões seguros quando omitidos.
+Config format is **JSON5** (comments + trailing commas allowed). All fields are optional — OpenCraft uses safe defaults when omitted.
 
 ---
 
@@ -875,6 +875,10 @@ Time format in system prompt. Default: `auto` (OS preference).
         primary: "openrouter/qwen/qwen-2.5-vl-72b-instruct:free",
         fallbacks: ["openrouter/google/gemini-2.0-flash-vision:free"],
       },
+      imageGenerationModel: {
+        primary: "openai/gpt-image-1",
+        fallbacks: ["google/gemini-3.1-flash-image-preview"],
+      },
       pdfModel: {
         primary: "anthropic/claude-opus-4-6",
         fallbacks: ["openai/gpt-5-mini"],
@@ -899,6 +903,9 @@ Time format in system prompt. Default: `auto` (OS preference).
 - `imageModel`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
   - Used by the `image` tool path as its vision-model config.
   - Also used as fallback routing when the selected/default model cannot accept image input.
+- `imageGenerationModel`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
+  - Used by the shared image-generation capability and any future tool/plugin surface that generates images.
+  - If omitted, `image_generate` can still infer a best-effort provider default from compatible auth-backed image-generation providers.
 - `pdfModel`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
   - Used by the `pdf` tool for model routing.
   - If omitted, the PDF tool falls back to `imageModel`, then to best-effort provider defaults.
@@ -1130,8 +1137,8 @@ Optional sandboxing for the embedded agent. See [Sandboxing](/gateway/sandboxing
         workspaceAccess: "none", // none | ro | rw
         workspaceRoot: "~/.opencraft/sandboxes",
         docker: {
-          image: "openclaw-sandbox:bookworm-slim",
-          containerPrefix: "openclaw-sbx-",
+          image: "opencraft-sandbox:bookworm-slim",
+          containerPrefix: "opencraft-sbx-",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp", "/var/tmp", "/run"],
@@ -1149,7 +1156,7 @@ Optional sandboxing for the embedded agent. See [Sandboxing](/gateway/sandboxing
             nproc: 256,
           },
           seccompProfile: "/path/to/seccomp.json",
-          apparmorProfile: "openclaw-sandbox",
+          apparmorProfile: "opencraft-sandbox",
           dns: ["1.1.1.1", "8.8.8.8"],
           extraHosts: ["internal.service:10.0.0.5"],
           binds: ["/home/user/source:/source:rw"],
@@ -1170,8 +1177,8 @@ Optional sandboxing for the embedded agent. See [Sandboxing](/gateway/sandboxing
         },
         browser: {
           enabled: false,
-          image: "openclaw-sandbox-browser:bookworm-slim",
-          network: "openclaw-sandbox-browser",
+          image: "opencraft-sandbox-browser:bookworm-slim",
+          network: "opencraft-sandbox-browser",
           cdpPort: 9222,
           cdpSourceRange: "172.21.0.1/32",
           vncPort: 5900,
@@ -1307,7 +1314,7 @@ Transport is SSH into the OpenShell sandbox, but the plugin owns sandbox lifecyc
 noVNC observer access uses VNC auth by default and OpenCraft emits a short-lived token URL (instead of exposing the password in the shared URL).
 
 - `allowHostControl: false` (default) blocks sandboxed sessions from targeting the host browser.
-- `network` defaults to `openclaw-sandbox-browser` (dedicated bridge network). Set to `bridge` only when you explicitly want global bridge connectivity.
+- `network` defaults to `opencraft-sandbox-browser` (dedicated bridge network). Set to `bridge` only when you explicitly want global bridge connectivity.
 - `cdpSourceRange` optionally restricts CDP ingress at the container edge to a CIDR range (for example `172.21.0.1/32`).
 - `sandbox.browser.binds` mounts additional host directories into the sandbox browser container only. When set (including `[]`), it replaces `docker.binds` for the browser container.
 - Launch defaults are defined in `scripts/sandbox-browser-entrypoint.sh` and tuned for container hosts:
@@ -1793,7 +1800,7 @@ Local onboarding defaults new local configs to `tools.profile: "coding"` when un
 | `group:automation` | `cron`, `gateway`                                                                        |
 | `group:messaging`  | `message`                                                                                |
 | `group:nodes`      | `nodes`                                                                                  |
-| `group:opencraft`  | All built-in tools (excludes provider plugins)                                           |
+| `group:opencraft`   | All built-in tools (excludes provider plugins)                                           |
 
 ### `tools.allow` / `tools.deny`
 
@@ -2365,7 +2372,7 @@ See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio
       nodeManager: "npm", // npm | pnpm | yarn
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // or plaintext string
         env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" },
       },
@@ -2413,6 +2420,8 @@ See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio
 - `plugins.entries.<id>.apiKey`: plugin-level API key convenience field (when supported by the plugin).
 - `plugins.entries.<id>.env`: plugin-scoped env var map.
 - `plugins.entries.<id>.hooks.allowPromptInjection`: when `false`, core blocks `before_prompt_build` and ignores prompt-mutating fields from legacy `before_agent_start`, while preserving legacy `modelOverride` and `providerOverride`. Applies to native plugin hooks and supported bundle-provided hook directories.
+- `plugins.entries.<id>.subagent.allowModelOverride`: explicitly trust this plugin to request per-run `provider` and `model` overrides for background subagent runs.
+- `plugins.entries.<id>.subagent.allowedModels`: optional allowlist of canonical `provider/model` targets for trusted subagent overrides. Use `"*"` only when you intentionally want to allow any model.
 - `plugins.entries.<id>.config`: plugin-defined config object (validated by native OpenCraft plugin schema when available).
 - Enabled Claude bundle plugins can also contribute embedded Pi defaults from `settings.json`; OpenCraft applies those as sanitized agent settings, not as raw OpenCraft config patches.
 - `plugins.slots.memory`: pick the active memory plugin id, or `"none"` to disable memory plugins.
@@ -2508,7 +2517,7 @@ See [Plugins](/tools/plugin).
     auth: {
       mode: "token", // none | token | password | trusted-proxy
       token: "your-token",
-      // password: "your-password", // or OPENCLAW_GATEWAY_PASSWORD
+      // password: "your-password", // or OPENCRAFT_GATEWAY_PASSWORD
       // trustedProxy: { userHeader: "x-forwarded-user" }, // for mode=trusted-proxy; see /gateway/trusted-proxy-auth
       allowTailscale: true,
       rateLimit: {
@@ -2606,6 +2615,8 @@ See [Plugins](/tools/plugin).
   - `gateway.http.endpoints.responses.maxUrlParts`
   - `gateway.http.endpoints.responses.files.urlAllowlist`
   - `gateway.http.endpoints.responses.images.urlAllowlist`
+    Empty allowlists are treated as unset; use `gateway.http.endpoints.responses.files.allowUrl=false`
+    and/or `gateway.http.endpoints.responses.images.allowUrl=false` to disable URL fetching.
 - Optional response hardening header:
   - `gateway.http.securityHeaders.strictTransportSecurity` (set only for HTTPS origins you control; see [Trusted Proxy Auth](/gateway/trusted-proxy-auth#tls-termination-and-hsts))
 
@@ -2804,7 +2815,7 @@ Reference env vars in any config string with `${VAR_NAME}`:
 ```json5
 {
   gateway: {
-    auth: { token: "${OPENCLAW_GATEWAY_TOKEN}" },
+    auth: { token: "${OPENCRAFT_GATEWAY_TOKEN}" },
   },
 }
 ```
@@ -2913,7 +2924,7 @@ Notes:
 {
   logging: {
     level: "info",
-    file: "/tmp/editzffaleta/OpenCraft.log",
+    file: "/tmp/opencraft/opencraft.log",
     consoleLevel: "info",
     consoleStyle: "pretty", // pretty | compact | json
     redactSensitive: "tools", // off | tools
@@ -2922,7 +2933,7 @@ Notes:
 }
 ```
 
-- Default log file: `/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log`.
+- Default log file: `/tmp/opencraft/opencraft-YYYY-MM-DD.log`.
 - Set `logging.file` for a stable path.
 - `consoleLevel` bumps to `debug` when `--verbose`.
 
@@ -3080,7 +3091,7 @@ Template placeholders expanded in `tools.media.models[].args`:
 Split config into multiple files:
 
 ```json5
-// ~/.editzffaleta/OpenCraft.json
+// ~/.opencraft/opencraft.json
 {
   gateway: { port: 18789 },
   agents: { $include: "./agents.json5" },

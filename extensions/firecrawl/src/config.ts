@@ -1,6 +1,6 @@
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import { normalizeResolvedSecretInputString } from "../../../src/config/types.secrets.js";
-import { normalizeSecretInput } from "../../../src/utils/normalize-secret-input.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeResolvedSecretInputString } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeSecretInput } from "opencraft/plugin-sdk/provider-auth";
 
 export const DEFAULT_FIRECRAWL_BASE_URL = "https://api.firecrawl.dev";
 export const DEFAULT_FIRECRAWL_SEARCH_TIMEOUT_SECONDS = 30;
@@ -107,10 +107,7 @@ export function resolveFirecrawlBaseUrl(cfg?: OpenCraftConfig): string {
   return configured || DEFAULT_FIRECRAWL_BASE_URL;
 }
 
-export function resolveFirecrawlOnlyMainContent(
-  cfg?: OpenCraftConfig,
-  override?: boolean,
-): boolean {
+export function resolveFirecrawlOnlyMainContent(cfg?: OpenCraftConfig, override?: boolean): boolean {
   if (typeof override === "boolean") {
     return override;
   }

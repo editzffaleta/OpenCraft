@@ -1,55 +1,56 @@
 ---
-summary: "O que o system prompt do OpenCraft contém e como ele é montado"
+summary: "What the OpenCraft system prompt contains and how it is assembled"
 read_when:
-  - Editando texto do system prompt, lista de ferramentas ou seções de hora/heartbeat
-  - Alterando o bootstrap do workspace ou comportamento de injeção de skills
+  - Editing system prompt text, tools list, or time/heartbeat sections
+  - Changing workspace bootstrap or skills injection behavior
 title: "System Prompt"
 ---
 
 # System Prompt
 
-O OpenCraft constrói um system prompt personalizado para cada execução de agente. O prompt é **de propriedade do OpenCraft** e não usa o prompt padrão do pi-coding-agent.
+OpenCraft builds a custom system prompt for every agent run. The prompt is **OpenCraft-owned** and does not use the pi-coding-agent default prompt.
 
-O prompt é montado pelo OpenCraft e injetado em cada execução de agente.
+The prompt is assembled by OpenCraft and injected into each agent run.
 
-## Estrutura
+## Structure
 
-O prompt é intencionalmente compacto e usa seções fixas:
+The prompt is intentionally compact and uses fixed sections:
 
-- **Ferramentas**: lista de ferramentas atual + descrições curtas.
-- **Segurança**: lembrete curto de proteção para evitar comportamento de busca de poder ou contornar supervisão.
-- **Skills** (quando disponíveis): informa ao modelo como carregar instruções de Skill sob demanda.
-- **Auto-atualização do OpenCraft**: como executar `config.apply` e `update.run`.
-- **Workspace**: diretório de trabalho (`agents.defaults.workspace`).
-- **Documentação**: caminho local para os docs do OpenCraft (repositório ou pacote npm) e quando consultá-los.
-- **Arquivos do Workspace (injetados)**: indica que arquivos de bootstrap estão incluídos abaixo.
-- **Sandbox** (quando habilitado): indica runtime sandboxed, caminhos de sandbox e se exec elevado está disponível.
-- **Data e Hora Atual**: hora local do usuário, fuso horário e formato de hora.
-- **Reply Tags**: sintaxe opcional de tags de resposta para provedores suportados.
-- **Heartbeats**: prompt de heartbeat e comportamento de confirmação.
-- **Runtime**: host, SO, node, modelo, raiz do repositório (quando detectado), nível de thinking (uma linha).
-- **Raciocínio**: nível de visibilidade atual + dica de alternância /reasoning.
+- **Tooling**: current tool list + short descriptions.
+- **Safety**: short guardrail reminder to avoid power-seeking behavior or bypassing oversight.
+- **Skills** (when available): tells the model how to load skill instructions on demand.
+- **OpenCraft Self-Update**: how to run `config.apply` and `update.run`.
+- **Workspace**: working directory (`agents.defaults.workspace`).
+- **Documentation**: local path to OpenCraft docs (repo or npm package) and when to read them.
+- **Workspace Files (injected)**: indicates bootstrap files are included below.
+- **Sandbox** (when enabled): indicates sandboxed runtime, sandbox paths, and whether elevated exec is available.
+- **Current Date & Time**: user-local time, timezone, and time format.
+- **Reply Tags**: optional reply tag syntax for supported providers.
+- **Heartbeats**: heartbeat prompt and ack behavior.
+- **Runtime**: host, OS, node, model, repo root (when detected), thinking level (one line).
+- **Reasoning**: current visibility level + /reasoning toggle hint.
 
-As proteções de segurança no system prompt são consultivas. Elas guiam o comportamento do modelo, mas não aplicam políticas. Use política de ferramentas, aprovações de exec, sandboxing e listas de permissão de canais para aplicação rígida; operadores podem desabilitar isso por design.
+Safety guardrails in the system prompt are advisory. They guide model behavior but do not enforce policy. Use tool policy, exec approvals, sandboxing, and channel allowlists for hard enforcement; operators can disable these by design.
 
-## Modos de prompt
+## Prompt modes
 
-O OpenCraft pode renderizar system prompts menores para sub-agentes. O runtime define um
-`promptMode` para cada execução (não é uma configuração voltada ao usuário):
+OpenCraft can render smaller system prompts for sub-agents. The runtime sets a
+`promptMode` for each run (not a user-facing config):
 
-- `full` (padrão): inclui todas as seções acima.
-- `minimal`: usado para sub-agentes; omite **Skills**, **Memory Recall**, **Auto-atualização do OpenCraft**, **Model Aliases**, **Identidade do Usuário**, **Reply Tags**,
-  **Mensagens**, **Respostas Silenciosas** e **Heartbeats**. Ferramentas, **Segurança**,
-  Workspace, Sandbox, Data e Hora Atual (quando conhecida), Runtime e contexto
-  injetado permanecem disponíveis.
-- `none`: retorna apenas a linha de identidade base.
+- `full` (default): includes all sections above.
+- `minimal`: used for sub-agents; omits **Skills**, **Memory Recall**, **OpenCraft
+  Self-Update**, **Model Aliases**, **User Identity**, **Reply Tags**,
+  **Messaging**, **Silent Replies**, and **Heartbeats**. Tooling, **Safety**,
+  Workspace, Sandbox, Current Date & Time (when known), Runtime, and injected
+  context stay available.
+- `none`: returns only the base identity line.
 
-Quando `promptMode=minimal`, prompts injetados extras são rotulados como **Contexto de
-Sub-agente** em vez de **Contexto de Chat em Grupo**.
+When `promptMode=minimal`, extra injected prompts are labeled **Subagent
+Context** instead of **Group Chat Context**.
 
-## Injeção de bootstrap do workspace
+## Workspace bootstrap injection
 
-Arquivos de bootstrap são recortados e adicionados em **Contexto do Projeto** para que o modelo veja o contexto de identidade e perfil sem precisar de leituras explícitas:
+Bootstrap files are trimmed and appended under **Project Context** so the model sees identity and profile context without needing explicit reads:
 
 - `AGENTS.md`
 - `SOUL.md`
@@ -57,57 +58,57 @@ Arquivos de bootstrap são recortados e adicionados em **Contexto do Projeto** p
 - `IDENTITY.md`
 - `USER.md`
 - `HEARTBEAT.md`
-- `BOOTSTRAP.md` (apenas em workspaces novos)
-- `MEMORY.md` quando presente, caso contrário `memory.md` como fallback em minúsculas
+- `BOOTSTRAP.md` (only on brand-new workspaces)
+- `MEMORY.md` when present, otherwise `memory.md` as a lowercase fallback
 
-Todos esses arquivos são **injetados na janela de contexto** a cada turno, o que
-significa que eles consomem Token. Mantenha-os concisos — especialmente `MEMORY.md`, que pode
-crescer ao longo do tempo e levar a uso de contexto inesperadamente alto e compactação mais
-frequente.
+All of these files are **injected into the context window** on every turn, which
+means they consume tokens. Keep them concise — especially `MEMORY.md`, which can
+grow over time and lead to unexpectedly high context usage and more frequent
+compaction.
 
-> **Nota:** arquivos diários `memory/*.md` **não** são injetados automaticamente. Eles
-> são acessados sob demanda via as ferramentas `memory_search` e `memory_get`, então não
-> contam contra a janela de contexto a menos que o modelo os leia explicitamente.
+> **Note:** `memory/*.md` daily files are **not** injected automatically. They
+> are accessed on demand via the `memory_search` and `memory_get` tools, so they
+> do not count against the context window unless the model explicitly reads them.
 
-Arquivos grandes são truncados com um marcador. O tamanho máximo por arquivo é controlado por
-`agents.defaults.bootstrapMaxChars` (padrão: 20000). O conteúdo total de bootstrap
-injetado entre todos os arquivos é limitado por `agents.defaults.bootstrapTotalMaxChars`
-(padrão: 150000). Arquivos ausentes injetam um marcador curto de arquivo ausente. Quando ocorre
-truncamento, o OpenCraft pode injetar um bloco de aviso no Contexto do Projeto; controle isso com
+Large files are truncated with a marker. The max per-file size is controlled by
+`agents.defaults.bootstrapMaxChars` (default: 20000). Total injected bootstrap
+content across files is capped by `agents.defaults.bootstrapTotalMaxChars`
+(default: 150000). Missing files inject a short missing-file marker. When truncation
+occurs, OpenCraft can inject a warning block in Project Context; control this with
 `agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`;
-padrão: `once`).
+default: `once`).
 
-Sessões de sub-agente injetam apenas `AGENTS.md` e `TOOLS.md` (outros arquivos de bootstrap
-são filtrados para manter o contexto do sub-agente pequeno).
+Sub-agent sessions only inject `AGENTS.md` and `TOOLS.md` (other bootstrap files
+are filtered out to keep the sub-agent context small).
 
-Hooks internos podem interceptar esta etapa via `agent:bootstrap` para mutar ou substituir
-os arquivos de bootstrap injetados (por exemplo, trocar `SOUL.md` por uma persona alternativa).
+Internal hooks can intercept this step via `agent:bootstrap` to mutate or replace
+the injected bootstrap files (for example swapping `SOUL.md` for an alternate persona).
 
-Para inspecionar quanto cada arquivo injetado contribui (bruto vs injetado, truncamento, mais overhead de schema de ferramentas), use `/context list` ou `/context detail`. Veja [Context](/concepts/context).
+To inspect how much each injected file contributes (raw vs injected, truncation, plus tool schema overhead), use `/context list` or `/context detail`. See [Context](/concepts/context).
 
-## Tratamento de hora
+## Time handling
 
-O system prompt inclui uma seção dedicada **Data e Hora Atual** quando o
-fuso horário do usuário é conhecido. Para manter o cache do prompt estável, ele agora inclui
-apenas o **fuso horário** (sem relógio dinâmico ou formato de hora).
+The system prompt includes a dedicated **Current Date & Time** section when the
+user timezone is known. To keep the prompt cache-stable, it now only includes
+the **time zone** (no dynamic clock or time format).
 
-Use `session_status` quando o agente precisar da hora atual; o cartão de status
-inclui uma linha de timestamp.
+Use `session_status` when the agent needs the current time; the status card
+includes a timestamp line.
 
-Configure com:
+Configure with:
 
 - `agents.defaults.userTimezone`
 - `agents.defaults.timeFormat` (`auto` | `12` | `24`)
 
-Veja [Date & Time](/date-time) para detalhes completos do comportamento.
+See [Date & Time](/date-time) for full behavior details.
 
 ## Skills
 
-Quando Skills elegíveis existem, o OpenCraft injeta uma lista compacta de **skills disponíveis**
-(`formatSkillsForPrompt`) que inclui o **caminho do arquivo** para cada Skill. O
-prompt instrui o modelo a usar `read` para carregar o SKILL.md na localização
-listada (workspace, gerenciado ou integrado). Se nenhuma Skill for elegível, a
-seção de Skills é omitida.
+When eligible skills exist, OpenCraft injects a compact **available skills list**
+(`formatSkillsForPrompt`) that includes the **file path** for each skill. The
+prompt instructs the model to use `read` to load the SKILL.md at the listed
+location (workspace, managed, or bundled). If no skills are eligible, the
+Skills section is omitted.
 
 ```
 <available_skills>
@@ -119,13 +120,13 @@ seção de Skills é omitida.
 </available_skills>
 ```
 
-Isso mantém o prompt base pequeno enquanto ainda habilita o uso direcionado de Skills.
+This keeps the base prompt small while still enabling targeted skill usage.
 
-## Documentação
+## Documentation
 
-Quando disponível, o system prompt inclui uma seção de **Documentação** que aponta para o
-diretório local de docs do OpenCraft (seja `docs/` no workspace do repositório ou os docs do
-pacote npm integrado) e também menciona o espelho público, repositório fonte, Discord da comunidade e
-ClawHub ([https://clawhub.com](https://clawhub.com)) para descoberta de Skills. O prompt instrui o modelo a consultar os docs locais primeiro
-para comportamento, comandos, configuração ou arquitetura do OpenCraft, e a executar
-`opencraft status` por conta própria quando possível (perguntando ao usuário apenas quando não tem acesso).
+When available, the system prompt includes a **Documentation** section that points to the
+local OpenCraft docs directory (either `docs/` in the repo workspace or the bundled npm
+package docs) and also notes the public mirror, source repo, community Discord, and
+ClawHub ([https://clawhub.com](https://clawhub.com)) for skills discovery. The prompt instructs the model to consult local docs first
+for OpenCraft behavior, commands, configuration, or architecture, and to run
+`opencraft status` itself when possible (asking the user only when it lacks access).

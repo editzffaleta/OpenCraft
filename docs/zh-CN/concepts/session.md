@@ -108,7 +108,7 @@ OpenCraft 将**每个智能体的一个直接聊天会话**视为主会话。直
 ## 配置（可选重命名示例）
 
 ```json5
-// ~/.editzffaleta/OpenCraft.json
+// ~/.opencraft/opencraft.json
 {
   session: {
     scope: "per-sender", // keep group keys separate

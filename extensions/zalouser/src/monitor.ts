@@ -1,13 +1,15 @@
 import {
   DM_GROUP_ACCESS_REASON,
+  resolveDmGroupAccessWithLists,
+} from "opencraft/plugin-sdk/channel-policy";
+import { KeyedAsyncQueue } from "opencraft/plugin-sdk/keyed-async-queue";
+import {
   DEFAULT_GROUP_HISTORY_LIMIT,
   type HistoryEntry,
-  KeyedAsyncQueue,
   buildPendingHistoryContextFromMap,
   clearHistoryEntriesIfEnabled,
   recordPendingHistoryEntryIfEnabled,
-  resolveDmGroupAccessWithLists,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/reply-history";
 import type {
   MarkdownTableMode,
   OpenCraftConfig,

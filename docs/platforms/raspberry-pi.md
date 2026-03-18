@@ -1,203 +1,203 @@
 ---
-summary: "OpenCraft no Raspberry Pi (configuração auto-hospedada econômica)"
+summary: "OpenCraft on Raspberry Pi (budget self-hosted setup)"
 read_when:
-  - Configurando OpenCraft em um Raspberry Pi
-  - Executando OpenCraft em dispositivos ARM
-  - Construindo uma IA pessoal sempre ligada e barata
+  - Setting up OpenCraft on a Raspberry Pi
+  - Running OpenCraft on ARM devices
+  - Building a cheap always-on personal AI
 title: "Raspberry Pi"
 ---
 
-# OpenCraft no Raspberry Pi
+# OpenCraft on Raspberry Pi
 
-## Objetivo
+## Goal
 
-Execute um Gateway OpenCraft persistente e sempre ligado em um Raspberry Pi por **~$35-80** de custo único (sem taxas mensais).
+Run a persistent, always-on OpenCraft Gateway on a Raspberry Pi for **~$35-80** one-time cost (no monthly fees).
 
-Perfeito para:
+Perfect for:
 
-- Assistente pessoal de IA 24/7
-- Hub de automação residencial
-- Bot de Telegram/WhatsApp sempre disponível e de baixo consumo
+- 24/7 personal AI assistant
+- Home automation hub
+- Low-power, always-available Telegram/WhatsApp bot
 
-## Requisitos de hardware
+## Hardware Requirements
 
-| Modelo do Pi    | RAM     | Funciona? | Notas                              |
-| --------------- | ------- | --------- | ---------------------------------- |
-| **Pi 5**        | 4GB/8GB | ✅ Melhor | Mais rápido, recomendado           |
-| **Pi 4**        | 4GB     | ✅ Bom    | Ponto ideal para a maioria         |
-| **Pi 4**        | 2GB     | ✅ OK     | Funciona, adicione swap            |
-| **Pi 4**        | 1GB     | ⚠️ Apertado | Possível com swap, config mínima |
-| **Pi 3B+**      | 1GB     | ⚠️ Lento | Funciona mas é lento               |
-| **Pi Zero 2 W** | 512MB   | ❌        | Não recomendado                    |
+| Pi Model        | RAM     | Works?   | Notes                              |
+| --------------- | ------- | -------- | ---------------------------------- |
+| **Pi 5**        | 4GB/8GB | ✅ Best  | Fastest, recommended               |
+| **Pi 4**        | 4GB     | ✅ Good  | Sweet spot for most users          |
+| **Pi 4**        | 2GB     | ✅ OK    | Works, add swap                    |
+| **Pi 4**        | 1GB     | ⚠️ Tight | Possible with swap, minimal config |
+| **Pi 3B+**      | 1GB     | ⚠️ Slow  | Works but sluggish                 |
+| **Pi Zero 2 W** | 512MB   | ❌       | Not recommended                    |
 
-**Especificações mínimas:** 1GB RAM, 1 núcleo, 500MB de disco
-**Recomendado:** 2GB+ RAM, SO 64-bit, cartão SD 16GB+ (ou SSD USB)
+**Minimum specs:** 1GB RAM, 1 core, 500MB disk  
+**Recommended:** 2GB+ RAM, 64-bit OS, 16GB+ SD card (or USB SSD)
 
-## O que você vai precisar
+## What You'll Need
 
-- Raspberry Pi 4 ou 5 (2GB+ recomendado)
-- Cartão MicroSD (16GB+) ou SSD USB (melhor desempenho)
-- Fonte de alimentação (fonte oficial do Pi recomendada)
-- Conexão de rede (Ethernet ou WiFi)
-- ~30 minutos
+- Raspberry Pi 4 or 5 (2GB+ recommended)
+- MicroSD card (16GB+) or USB SSD (better performance)
+- Power supply (official Pi PSU recommended)
+- Network connection (Ethernet or WiFi)
+- ~30 minutes
 
-## 1) Grave o SO
+## 1) Flash the OS
 
-Use **Raspberry Pi OS Lite (64-bit)** — sem desktop necessário para um servidor headless.
+Use **Raspberry Pi OS Lite (64-bit)** — no desktop needed for a headless server.
 
-1. Baixe o [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
-2. Escolha o SO: **Raspberry Pi OS Lite (64-bit)**
-3. Clique no ícone de engrenagem (⚙️) para pré-configurar:
-   - Defina hostname: `gateway-host`
-   - Ative SSH
-   - Defina nome de usuário/senha
-   - Configure WiFi (se não estiver usando Ethernet)
-4. Grave no cartão SD / drive USB
-5. Insira e ligue o Pi
+1. Download [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
+2. Choose OS: **Raspberry Pi OS Lite (64-bit)**
+3. Click the gear icon (⚙️) to pre-configure:
+   - Set hostname: `gateway-host`
+   - Enable SSH
+   - Set username/password
+   - Configure WiFi (if not using Ethernet)
+4. Flash to your SD card / USB drive
+5. Insert and boot the Pi
 
-## 2) Conecte via SSH
+## 2) Connect via SSH
 
 ```bash
 ssh user@gateway-host
-# ou use o endereço IP
+# or use the IP address
 ssh user@192.168.x.x
 ```
 
-## 3) Configuração do sistema
+## 3) System Setup
 
 ```bash
-# Atualize o sistema
+# Update system
 sudo apt update && sudo apt upgrade -y
 
-# Instale pacotes essenciais
+# Install essential packages
 sudo apt install -y git curl build-essential
 
-# Defina o fuso horário (importante para cron/lembretes)
-sudo timedatectl set-timezone America/Sao_Paulo  # Altere para seu fuso horário
+# Set timezone (important for cron/reminders)
+sudo timedatectl set-timezone America/Chicago  # Change to your timezone
 ```
 
-## 4) Instale Node.js 24 (ARM64)
+## 4) Install Node.js 24 (ARM64)
 
 ```bash
-# Instale Node.js via NodeSource
+# Install Node.js via NodeSource
 curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs
 
-# Verifique
-node --version  # Deve mostrar v24.x.x
+# Verify
+node --version  # Should show v24.x.x
 npm --version
 ```
 
-## 5) Adicione swap (importante para 2GB ou menos)
+## 5) Add Swap (Important for 2GB or less)
 
-O swap previne crashes por falta de memória:
+Swap prevents out-of-memory crashes:
 
 ```bash
-# Crie um arquivo swap de 2GB
+# Create 2GB swap file
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 
-# Torne permanente
+# Make permanent
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
-# Otimize para pouca RAM (reduza swappiness)
+# Optimize for low RAM (reduce swappiness)
 echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
-## 6) Instale o OpenCraft
+## 6) Install OpenCraft
 
-### Opção A: Instalação padrão (recomendada)
+### Option A: Standard Install (Recommended)
 
 ```bash
 curl -fsSL https://opencraft.ai/install.sh | bash
 ```
 
-### Opção B: Instalação hackeável (para experimentar)
+### Option B: Hackable Install (For tinkering)
 
 ```bash
-git clone https://github.com/editzffaleta/OpenCraft.git
+git clone https://github.com/openclaw/openclaw.git
 cd opencraft
 npm install
 npm run build
 npm link
 ```
 
-A instalação hackeável oferece acesso direto a logs e código — útil para depurar problemas específicos de ARM.
+The hackable install gives you direct access to logs and code — useful for debugging ARM-specific issues.
 
-## 7) Execute o onboarding
+## 7) Run Onboarding
 
 ```bash
 opencraft onboard --install-daemon
 ```
 
-Siga o assistente:
+Follow the wizard:
 
-1. **Modo do Gateway:** Local
-2. **Autenticação:** Chaves API recomendadas (OAuth pode ser complicado em Pi headless)
-3. **Canais:** Telegram é o mais fácil para começar
-4. **Daemon:** Sim (systemd)
+1. **Gateway mode:** Local
+2. **Auth:** API keys recommended (OAuth can be finicky on headless Pi)
+3. **Channels:** Telegram is easiest to start with
+4. **Daemon:** Yes (systemd)
 
-## 8) Verifique a instalação
+## 8) Verify Installation
 
 ```bash
-# Verifique o status
+# Check status
 opencraft status
 
-# Verifique o serviço
+# Check service
 sudo systemctl status opencraft
 
-# Veja os logs
+# View logs
 journalctl -u opencraft -f
 ```
 
-## 9) Acesse o painel de controle do OpenCraft
+## 9) Access the OpenCraft Dashboard
 
-Substitua `user@gateway-host` pelo nome de usuário e hostname ou endereço IP do seu Pi.
+Replace `user@gateway-host` with your Pi username and hostname or IP address.
 
-No seu computador, peça ao Pi para imprimir uma URL nova do painel:
+On your computer, ask the Pi to print a fresh dashboard URL:
 
 ```bash
 ssh user@gateway-host 'opencraft dashboard --no-open'
 ```
 
-O comando imprime `Dashboard URL:`. Dependendo de como `gateway.auth.token`
-está configurado, a URL pode ser um link simples `http://127.0.0.1:18789/` ou um que
-inclui `#token=...`.
+The command prints `Dashboard URL:`. Depending on how `gateway.auth.token`
+is configured, the URL may be a plain `http://127.0.0.1:18789/` link or one
+that includes `#token=...`.
 
-Em outro terminal no seu computador, crie o túnel SSH:
+In another terminal on your computer, create the SSH tunnel:
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 user@gateway-host
 ```
 
-Depois abra a URL do painel impressa no seu navegador local.
+Then open the printed Dashboard URL in your local browser.
 
-Se a UI pedir autenticação, cole o token de `gateway.auth.token`
-(ou `OPENCLAW_GATEWAY_TOKEN`) nas configurações da Control UI.
+If the UI asks for auth, paste the token from `gateway.auth.token`
+(or `OPENCRAFT_GATEWAY_TOKEN`) into Control UI settings.
 
-Para acesso remoto sempre ativo, veja [Tailscale](/gateway/tailscale).
+For always-on remote access, see [Tailscale](/gateway/tailscale).
 
 ---
 
-## Otimizações de desempenho
+## Performance Optimizations
 
-### Use um SSD USB (melhoria enorme)
+### Use a USB SSD (Huge Improvement)
 
-Cartões SD são lentos e se desgastam. Um SSD USB melhora dramaticamente o desempenho:
+SD cards are slow and wear out. A USB SSD dramatically improves performance:
 
 ```bash
-# Verifique se está bootando via USB
+# Check if booting from USB
 lsblk
 ```
 
-Veja o [guia de boot USB do Pi](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#usb-mass-storage-boot) para configuração.
+See [Pi USB boot guide](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#usb-mass-storage-boot) for setup.
 
-### Acelere a inicialização da CLI (cache de compilação de módulos)
+### Speed up CLI startup (module compile cache)
 
-Em hosts Pi de menor potência, ative o cache de compilação de módulos do Node para que execuções repetidas da CLI sejam mais rápidas:
+On lower-power Pi hosts, enable Node's module compile cache so repeated CLI runs are faster:
 
 ```bash
 grep -q 'NODE_COMPILE_CACHE=/var/tmp/opencraft-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF' # pragma: allowlist secret
@@ -208,17 +208,17 @@ EOF
 source ~/.bashrc
 ```
 
-Notas:
+Notes:
 
-- `NODE_COMPILE_CACHE` acelera execuções subsequentes (`status`, `health`, `--help`).
-- `/var/tmp` sobrevive a reinicializações melhor que `/tmp`.
-- `OPENCRAFT_NO_RESPAWN=1` evita custo extra de inicialização do auto-respawn da CLI.
-- A primeira execução aquece o cache; execuções posteriores se beneficiam mais.
+- `NODE_COMPILE_CACHE` speeds up subsequent runs (`status`, `health`, `--help`).
+- `/var/tmp` survives reboots better than `/tmp`.
+- `OPENCRAFT_NO_RESPAWN=1` avoids extra startup cost from CLI self-respawn.
+- First run warms the cache; later runs benefit most.
 
-### Ajuste de inicialização do systemd (opcional)
+### systemd startup tuning (optional)
 
-Se este Pi está principalmente executando OpenCraft, adicione um drop-in de serviço para reduzir
-jitter de reinicialização e manter o ambiente de inicialização estável:
+If this Pi is mostly running OpenCraft, add a service drop-in to reduce restart
+jitter and keep startup env stable:
 
 ```bash
 sudo systemctl edit opencraft
@@ -233,74 +233,74 @@ RestartSec=2
 TimeoutStartSec=90
 ```
 
-Depois aplique:
+Then apply:
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart opencraft
 ```
 
-Se possível, mantenha o estado/cache do OpenCraft em armazenamento com SSD para evitar
-gargalos de I/O aleatório do cartão SD durante inicializações a frio.
+If possible, keep OpenCraft state/cache on SSD-backed storage to avoid SD-card
+random-I/O bottlenecks during cold starts.
 
-Como as políticas de `Restart=` ajudam na recuperação automatizada:
-[o systemd pode automatizar a recuperação de serviços](https://www.redhat.com/en/blog/systemd-automate-recovery).
+How `Restart=` policies help automated recovery:
+[systemd can automate service recovery](https://www.redhat.com/en/blog/systemd-automate-recovery).
 
-### Reduza o uso de memória
+### Reduce Memory Usage
 
 ```bash
-# Desative alocação de memória GPU (headless)
+# Disable GPU memory allocation (headless)
 echo 'gpu_mem=16' | sudo tee -a /boot/config.txt
 
-# Desative Bluetooth se não precisar
+# Disable Bluetooth if not needed
 sudo systemctl disable bluetooth
 ```
 
-### Monitore os recursos
+### Monitor Resources
 
 ```bash
-# Verifique a memória
+# Check memory
 free -h
 
-# Verifique a temperatura da CPU
+# Check CPU temperature
 vcgencmd measure_temp
 
-# Monitoramento ao vivo
+# Live monitoring
 htop
 ```
 
 ---
 
-## Notas específicas de ARM
+## ARM-Specific Notes
 
-### Compatibilidade de binários
+### Binary Compatibility
 
-A maioria dos recursos do OpenCraft funciona em ARM64, mas alguns binários externos podem precisar de builds ARM:
+Most OpenCraft features work on ARM64, but some external binaries may need ARM builds:
 
-| Ferramenta         | Status ARM64 | Notas                               |
+| Tool               | ARM64 Status | Notes                               |
 | ------------------ | ------------ | ----------------------------------- |
-| Node.js            | ✅           | Funciona muito bem                  |
-| WhatsApp (Baileys) | ✅           | JS puro, sem problemas              |
-| Telegram           | ✅           | JS puro, sem problemas              |
-| gog (Gmail CLI)    | ⚠️           | Verifique se há release ARM         |
+| Node.js            | ✅           | Works great                         |
+| WhatsApp (Baileys) | ✅           | Pure JS, no issues                  |
+| Telegram           | ✅           | Pure JS, no issues                  |
+| gog (Gmail CLI)    | ⚠️           | Check for ARM release               |
 | Chromium (browser) | ✅           | `sudo apt install chromium-browser` |
 
-Se uma Skill falhar, verifique se seu binário tem um build ARM. Muitas ferramentas Go/Rust têm; algumas não.
+If a skill fails, check if its binary has an ARM build. Many Go/Rust tools do; some don't.
 
 ### 32-bit vs 64-bit
 
-**Sempre use SO 64-bit.** Node.js e muitas ferramentas modernas o exigem. Verifique com:
+**Always use 64-bit OS.** Node.js and many modern tools require it. Check with:
 
 ```bash
 uname -m
-# Deve mostrar: aarch64 (64-bit) não armv7l (32-bit)
+# Should show: aarch64 (64-bit) not armv7l (32-bit)
 ```
 
 ---
 
-## Configuração de modelo recomendada
+## Recommended Model Setup
 
-Como o Pi é apenas o Gateway (modelos rodam na nuvem), use modelos baseados em API:
+Since the Pi is just the Gateway (models run in the cloud), use API-based models:
 
 ```json
 {
@@ -315,98 +315,98 @@ Como o Pi é apenas o Gateway (modelos rodam na nuvem), use modelos baseados em 
 }
 ```
 
-**Não tente rodar LLMs locais em um Pi** — até modelos pequenos são muito lentos. Deixe o Claude/GPT fazer o trabalho pesado.
+**Don't try to run local LLMs on a Pi** — even small models are too slow. Let Claude/GPT do the heavy lifting.
 
 ---
 
-## Inicialização automática no boot
+## Auto-Start on Boot
 
-O onboarding configura isso, mas para verificar:
+Onboarding sets this up, but to verify:
 
 ```bash
-# Verifique se o serviço está habilitado
+# Check service is enabled
 sudo systemctl is-enabled opencraft
 
-# Habilite se não estiver
+# Enable if not
 sudo systemctl enable opencraft
 
-# Inicie no boot
+# Start on boot
 sudo systemctl start opencraft
 ```
 
 ---
 
-## Solução de problemas
+## Troubleshooting
 
-### Falta de memória (OOM)
+### Out of Memory (OOM)
 
 ```bash
-# Verifique a memória
+# Check memory
 free -h
 
-# Adicione mais swap (veja a Etapa 5)
-# Ou reduza serviços em execução no Pi
+# Add more swap (see Step 5)
+# Or reduce services running on the Pi
 ```
 
-### Desempenho lento
+### Slow Performance
 
-- Use SSD USB em vez de cartão SD
-- Desative serviços não usados: `sudo systemctl disable cups bluetooth avahi-daemon`
-- Verifique throttling da CPU: `vcgencmd get_throttled` (deve retornar `0x0`)
+- Use USB SSD instead of SD card
+- Disable unused services: `sudo systemctl disable cups bluetooth avahi-daemon`
+- Check CPU throttling: `vcgencmd get_throttled` (should return `0x0`)
 
-### Serviço não inicia
+### Service Won't Start
 
 ```bash
-# Verifique os logs
+# Check logs
 journalctl -u opencraft --no-pager -n 100
 
-# Correção comum: recompile
-cd ~/opencraft  # se usar instalação hackeável
+# Common fix: rebuild
+cd ~/opencraft  # if using hackable install
 npm run build
 sudo systemctl restart opencraft
 ```
 
-### Problemas com binários ARM
+### ARM Binary Issues
 
-Se uma Skill falhar com "exec format error":
+If a skill fails with "exec format error":
 
-1. Verifique se o binário tem um build ARM64
-2. Tente compilar a partir do código-fonte
-3. Ou use um container Docker com suporte ARM
+1. Check if the binary has an ARM64 build
+2. Try building from source
+3. Or use a Docker container with ARM support
 
-### Quedas de WiFi
+### WiFi Drops
 
-Para Pis headless em WiFi:
+For headless Pis on WiFi:
 
 ```bash
-# Desative gerenciamento de energia do WiFi
+# Disable WiFi power management
 sudo iwconfig wlan0 power off
 
-# Torne permanente
+# Make permanent
 echo 'wireless-power off' | sudo tee -a /etc/network/interfaces
 ```
 
 ---
 
-## Comparação de custos
+## Cost Comparison
 
-| Configuração   | Custo único   | Custo mensal | Notas                     |
+| Setup          | One-Time Cost | Monthly Cost | Notes                     |
 | -------------- | ------------- | ------------ | ------------------------- |
-| **Pi 4 (2GB)** | ~$45          | $0           | + energia (~$5/ano)       |
-| **Pi 4 (4GB)** | ~$55          | $0           | Recomendado               |
-| **Pi 5 (4GB)** | ~$60          | $0           | Melhor desempenho         |
-| **Pi 5 (8GB)** | ~$80          | $0           | Exagero mas à prova de futuro |
-| DigitalOcean   | $0            | $6/mês       | $72/ano                   |
-| Hetzner        | $0            | €3,79/mês    | ~$50/ano                  |
+| **Pi 4 (2GB)** | ~$45          | $0           | + power (~$5/yr)          |
+| **Pi 4 (4GB)** | ~$55          | $0           | Recommended               |
+| **Pi 5 (4GB)** | ~$60          | $0           | Best performance          |
+| **Pi 5 (8GB)** | ~$80          | $0           | Overkill but future-proof |
+| DigitalOcean   | $0            | $6/mo        | $72/year                  |
+| Hetzner        | $0            | €3.79/mo     | ~$50/year                 |
 
-**Ponto de equilíbrio:** Um Pi se paga em ~6-12 meses versus VPS na nuvem.
+**Break-even:** A Pi pays for itself in ~6-12 months vs cloud VPS.
 
 ---
 
-## Veja também
+## See Also
 
-- [Guia do Linux](/platforms/linux) — configuração geral do Linux
-- [Guia do DigitalOcean](/platforms/digitalocean) — alternativa na nuvem
-- [Guia do Hetzner](/install/hetzner) — configuração com Docker
-- [Tailscale](/gateway/tailscale) — acesso remoto
-- [Nós](/nodes) — emparelhe seu laptop/telefone com o Gateway do Pi
+- [Linux guide](/platforms/linux) — general Linux setup
+- [DigitalOcean guide](/platforms/digitalocean) — cloud alternative
+- [Hetzner guide](/install/hetzner) — Docker setup
+- [Tailscale](/gateway/tailscale) — remote access
+- [Nodes](/nodes) — pair your laptop/phone with the Pi gateway

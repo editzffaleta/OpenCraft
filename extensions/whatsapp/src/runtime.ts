@@ -1,5 +1,5 @@
-import { createPluginRuntimeStore } from "opencraft/plugin-sdk/compat";
 import type { PluginRuntime } from "opencraft/plugin-sdk/core";
+import { createPluginRuntimeStore } from "opencraft/plugin-sdk/runtime-store";
 
 const { setRuntime: setWhatsAppRuntime, getRuntime: getWhatsAppRuntime } =
   createPluginRuntimeStore<PluginRuntime>("WhatsApp runtime not initialized");

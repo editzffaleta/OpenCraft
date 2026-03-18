@@ -1,16 +1,16 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { applyQianfanConfig, QIANFAN_DEFAULT_MODEL_REF } from "../../src/commands/onboard-auth.js";
-import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { createProviderApiKeyAuthMethod } from "opencraft/plugin-sdk/provider-auth";
+import { buildSingleProviderApiKeyCatalog } from "opencraft/plugin-sdk/provider-catalog";
+import { applyQianfanConfig, QIANFAN_DEFAULT_MODEL_REF } from "./onboard.js";
 import { buildQianfanProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "qianfan";
 
-const qianfanPlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Qianfan Provider",
   description: "Bundled Qianfan provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Qianfan",
@@ -40,21 +40,13 @@ const qianfanPlugin = {
       ],
       catalog: {
         order: "simple",
-        run: async (ctx) => {
-          const apiKey = ctx.resolveProviderApiKey(PROVIDER_ID).apiKey;
-          if (!apiKey) {
-            return null;
-          }
-          return {
-            provider: {
-              ...buildQianfanProvider(),
-              apiKey,
-            },
-          };
-        },
+        run: (ctx) =>
+          buildSingleProviderApiKeyCatalog({
+            ctx,
+            providerId: PROVIDER_ID,
+            buildProvider: buildQianfanProvider,
+          }),
       },
     });
   },
-};
-
-export default qianfanPlugin;
+});

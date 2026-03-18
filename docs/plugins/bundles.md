@@ -1,184 +1,191 @@
 ---
-summary: "Guia do formato de bundles unificado para bundles Codex, Claude e Cursor no OpenCraft"
+summary: "Unified bundle format guide for Codex, Claude, and Cursor bundles in OpenCraft"
 read_when:
-  - Você quer instalar ou depurar um bundle compatível com Codex, Claude ou Cursor
-  - Você precisa entender como o OpenCraft mapeia o conteúdo de bundles para recursos nativos
-  - Você está documentando compatibilidade de bundles ou limites de suporte atuais
-title: "Bundles de Plugins"
+  - You want to install or debug a Codex, Claude, or Cursor-compatible bundle
+  - You need to understand how OpenCraft maps bundle content into native features
+  - You are documenting bundle compatibility or current support limits
+title: "Plugin Bundles"
 ---
 
-# Bundles de plugins
+# Plugin bundles
 
-O OpenCraft suporta uma classe compartilhada de pacote de plugin externo: **plugins de bundle**.
+OpenCraft supports one shared class of external plugin package: **bundle
+plugins**.
 
-Hoje, isso significa três ecossistemas relacionados:
+Today that means three closely related ecosystems:
 
-- Bundles Codex
-- Bundles Claude
-- Bundles Cursor
+- Codex bundles
+- Claude bundles
+- Cursor bundles
 
-O OpenCraft mostra todos eles como `Format: bundle` em `opencraft plugins list`.
-A saída detalhada e `opencraft plugins info <id>` também mostram o subtipo
-(`codex`, `claude` ou `cursor`).
+OpenCraft shows all of them as `Format: bundle` in `opencraft plugins list`.
+Verbose output and `opencraft plugins inspect <id>` also show the subtype
+(`codex`, `claude`, or `cursor`).
 
-Relacionados:
+Related:
 
-- Visão geral do sistema de plugins: [Plugins](/tools/plugin)
-- Fluxos de instalação/listagem do CLI: [plugins](/cli/plugins)
-- Esquema do manifesto nativo: [Manifesto de plugins](/plugins/manifest)
+- Plugin system overview: [Plugins](/tools/plugin)
+- CLI install/list flows: [plugins](/cli/plugins)
+- Native manifest schema: [Plugin manifest](/plugins/manifest)
 
-## O que é um bundle
+## What a bundle is
 
-Um bundle é um **pacote de conteúdo/metadados**, não um plugin nativo do OpenCraft executado em processo.
+A bundle is a **content/metadata pack**, not a native in-process OpenCraft
+plugin.
 
-Hoje, o OpenCraft **não** executa código de runtime de bundles em processo. Em vez disso,
-ele detecta arquivos de bundle conhecidos, lê os metadados e mapeia o conteúdo suportado
-para superfícies nativas do OpenCraft, como habilidades, pacotes de hooks, configuração MCP
-e configurações Pi embutidas.
+Today, OpenCraft does **not** execute bundle runtime code in-process. Instead,
+it detects known bundle files, reads the metadata, and maps supported bundle
+content into native OpenCraft surfaces such as skills, hook packs, MCP config,
+and embedded Pi settings.
 
-Essa é a principal fronteira de confiança:
+That is the main trust boundary:
 
-- plugin nativo OpenCraft: módulo de runtime executado em processo
-- bundle: pacote de metadados/conteúdo, com mapeamento seletivo de recursos
+- native OpenCraft plugin: runtime module executes in-process
+- bundle: metadata/content pack, with selective feature mapping
 
-## Modelo de bundle compartilhado
+## Shared bundle model
 
-Bundles Codex, Claude e Cursor são similares o suficiente para o OpenCraft tratá-los
-como um modelo normalizado.
+Codex, Claude, and Cursor bundles are similar enough that OpenCraft treats them
+as one normalized model.
 
-Ideia compartilhada:
+Shared idea:
 
-- um arquivo de manifesto pequeno, ou um layout de diretório padrão
-- uma ou mais raízes de conteúdo como `skills/` ou `commands/`
-- metadados opcionais de ferramenta/runtime como MCP, hooks, agentes ou LSP
-- instalação como diretório ou arquivo, depois ativação na lista de plugins normal
+- a small manifest file, or a default directory layout
+- one or more content roots such as `skills/` or `commands/`
+- optional tool/runtime metadata such as MCP, hooks, agents, or LSP
+- install as a directory or archive, then enable in the normal plugin list
 
-Comportamento comum do OpenCraft:
+Common OpenCraft behavior:
 
-- detectar o subtipo do bundle
-- normalizá-lo em um registro de bundle interno
-- mapear as partes suportadas para recursos nativos do OpenCraft
-- reportar partes não suportadas como capacidades detectadas-mas-não-conectadas
+- detect the bundle subtype
+- normalize it into one internal bundle record
+- map supported parts into native OpenCraft features
+- report unsupported parts as detected-but-not-wired capabilities
 
-Na prática, a maioria dos usuários não precisa pensar primeiro no formato específico do fornecedor.
-A pergunta mais útil é: quais superfícies de bundle o OpenCraft mapeia hoje?
+In practice, most users do not need to think about the vendor-specific format
+first. The more useful question is: which bundle surfaces does OpenCraft map
+today?
 
-## Ordem de detecção
+## Detection order
 
-O OpenCraft prefere layouts nativos de plugin/pacote OpenCraft antes do tratamento de bundles.
+OpenCraft prefers native OpenCraft plugin/package layouts before bundle handling.
 
-Efeito prático:
+Practical effect:
 
-- `opencraft.plugin.json` tem prioridade sobre a detecção de bundles
-- instalações de pacotes com `package.json` + `opencraft.extensions` válidos usam o
-  caminho de instalação nativo
-- se um diretório contém metadados nativos e de bundle, o OpenCraft trata como nativo primeiro
+- `opencraft.plugin.json` wins over bundle detection
+- package installs with valid `package.json` + `opencraft.extensions` use the
+  native install path
+- if a directory contains both native and bundle metadata, OpenCraft treats it
+  as native first
 
-Isso evita instalar parcialmente um pacote de formato duplo como bundle e depois
-carregá-lo como plugin nativo.
+That avoids partially installing a dual-format package as a bundle and then
+loading it later as a native plugin.
 
-## O que funciona hoje
+## What works today
 
-O OpenCraft normaliza metadados de bundles em um registro de bundle interno e depois
-mapeia superfícies suportadas para comportamento nativo existente.
+OpenCraft normalizes bundle metadata into one internal bundle record, then maps
+supported surfaces into existing native behavior.
 
-### Suportado agora
+### Supported now
 
-#### Conteúdo de habilidades
+#### Skill content
 
-- raízes de habilidades do bundle carregam como raízes de habilidades normais do OpenCraft
-- raízes `commands` do Claude são tratadas como raízes de habilidades adicionais
-- raízes `.cursor/commands` do Cursor são tratadas como raízes de habilidades adicionais
+- bundle skill roots load as normal OpenCraft skill roots
+- Claude `commands` roots are treated as additional skill roots
+- Cursor `.cursor/commands` roots are treated as additional skill roots
 
-Isso significa que arquivos de comando markdown do Claude funcionam através do
-carregador normal de habilidades do OpenCraft. Comandos markdown do Cursor funcionam
-pelo mesmo caminho.
+This means Claude markdown command files work through the normal OpenCraft skill
+loader. Cursor command markdown works through the same path.
 
-#### Pacotes de hooks
+#### Hook packs
 
-- raízes de hooks de bundles funcionam **apenas** quando usam o layout normal de
-  hook-pack do OpenCraft. Hoje isso é principalmente o caso compatível com Codex:
+- bundle hook roots work **only** when they use the normal OpenCraft hook-pack
+  layout. Today this is primarily the Codex-compatible case:
   - `HOOK.md`
-  - `handler.ts` ou `handler.js`
+  - `handler.ts` or `handler.js`
 
-#### MCP para backends CLI
+#### MCP for Pi
 
-- bundles habilitados podem contribuir com configuração de servidor MCP
-- o mapeamento de runtime atual é usado pelo backend `claude-cli`
-- o OpenCraft mescla a configuração MCP do bundle no arquivo `--mcp-config` do backend
+- enabled bundles can contribute MCP server config
+- OpenCraft merges bundle MCP config into the effective embedded Pi settings as
+  `mcpServers`
+- OpenCraft also exposes supported bundle MCP tools during embedded Pi agent
+  turns by launching supported stdio MCP servers as subprocesses
+- project-local Pi settings still apply after bundle defaults, so workspace
+  settings can override bundle MCP entries when needed
 
-#### Configurações Pi embutidas
+#### Embedded Pi settings
 
-- `settings.json` do Claude é importado como configurações Pi embutidas padrão quando
-  o bundle está habilitado
-- o OpenCraft sanitiza chaves de substituição de shell antes de aplicá-las
+- Claude `settings.json` is imported as default embedded Pi settings when the
+  bundle is enabled
+- OpenCraft sanitizes shell override keys before applying them
 
-Chaves sanitizadas:
+Sanitized keys:
 
 - `shellPath`
 - `shellCommandPrefix`
 
-### Detectado, mas não executado
+### Detected but not executed
 
-Essas superfícies são detectadas, mostradas nas capacidades do bundle e podem aparecer
-na saída de diagnóstico/info, mas o OpenCraft ainda não as executa:
+These surfaces are detected, shown in bundle capabilities, and may appear in
+diagnostics/info output, but OpenCraft does not run them yet:
 
-- `agents` do Claude
-- automação `hooks.json` do Claude
-- `lspServers` do Claude
-- `outputStyles` do Claude
-- `.cursor/agents` do Cursor
-- `.cursor/hooks.json` do Cursor
-- `.cursor/rules` do Cursor
-- `mcpServers` do Cursor fora dos caminhos de runtime mapeados
-- metadados inline/app do Codex além do relatório de capacidades
+- Claude `agents`
+- Claude `hooks.json` automation
+- Claude `lspServers`
+- Claude `outputStyles`
+- Cursor `.cursor/agents`
+- Cursor `.cursor/hooks.json`
+- Cursor `.cursor/rules`
+- Codex inline/app metadata beyond capability reporting
 
-## Relatório de capacidades
+## Capability reporting
 
-`opencraft plugins info <id>` mostra as capacidades do bundle a partir do registro
-de bundle normalizado.
+`opencraft plugins inspect <id>` shows bundle capabilities from the normalized
+bundle record.
 
-Capacidades suportadas são carregadas silenciosamente. Capacidades não suportadas
-produzem um aviso como:
+Supported capabilities are loaded quietly. Unsupported capabilities produce a
+warning such as:
 
 ```text
 bundle capability detected but not wired into OpenCraft yet: agents
 ```
 
-Exceções atuais:
+Current exceptions:
 
-- `commands` do Claude é considerado suportado porque mapeia para habilidades
-- `settings` do Claude é considerado suportado porque mapeia para configurações Pi embutidas
-- `commands` do Cursor é considerado suportado porque mapeia para habilidades
-- MCP de bundle é considerado suportado onde o OpenCraft realmente o importa
-- `hooks` do Codex é considerado suportado apenas para layouts de hook-pack do OpenCraft
+- Claude `commands` is considered supported because it maps to skills
+- Claude `settings` is considered supported because it maps to embedded Pi settings
+- Cursor `commands` is considered supported because it maps to skills
+- bundle MCP is considered supported because it maps into embedded Pi settings
+  and exposes supported stdio tools to embedded Pi
+- Codex `hooks` is considered supported only for OpenCraft hook-pack layouts
 
-## Diferenças de formato
+## Format differences
 
-Os formatos são próximos, mas não idênticos. Estas são as diferenças práticas
-que importam no OpenCraft.
+The formats are close, but not byte-for-byte identical. These are the practical
+differences that matter in OpenCraft.
 
 ### Codex
 
-Marcadores típicos:
+Typical markers:
 
 - `.codex-plugin/plugin.json`
-- `skills/` opcional
-- `hooks/` opcional
-- `.mcp.json` opcional
-- `.app.json` opcional
+- optional `skills/`
+- optional `hooks/`
+- optional `.mcp.json`
+- optional `.app.json`
 
-Bundles Codex se encaixam melhor no OpenCraft quando usam raízes de habilidades
-e diretórios de hook-pack no estilo OpenCraft.
+Codex bundles fit OpenCraft best when they use skill roots and OpenCraft-style
+hook-pack directories.
 
 ### Claude
 
-O OpenCraft suporta tanto:
+OpenCraft supports both:
 
-- bundles Claude baseados em manifesto: `.claude-plugin/plugin.json`
-- bundles Claude sem manifesto que usam o layout padrão do Claude
+- manifest-based Claude bundles: `.claude-plugin/plugin.json`
+- manifestless Claude bundles that use the default Claude layout
 
-Marcadores do layout padrão do Claude que o OpenCraft reconhece:
+Default Claude layout markers OpenCraft recognizes:
 
 - `skills/`
 - `commands/`
@@ -188,35 +195,38 @@ Marcadores do layout padrão do Claude que o OpenCraft reconhece:
 - `.lsp.json`
 - `settings.json`
 
-Notas específicas do Claude:
+Claude-specific notes:
 
-- `commands/` é tratado como conteúdo de habilidades
-- `settings.json` é importado para configurações Pi embutidas
-- `hooks/hooks.json` é detectado, mas não executado como automação Claude
+- `commands/` is treated like skill content
+- `settings.json` is imported into embedded Pi settings
+- `.mcp.json` and manifest `mcpServers` can expose supported stdio tools to
+  embedded Pi
+- `hooks/hooks.json` is detected, but not executed as Claude automation
 
 ### Cursor
 
-Marcadores típicos:
+Typical markers:
 
 - `.cursor-plugin/plugin.json`
-- `skills/` opcional
-- `.cursor/commands/` opcional
-- `.cursor/agents/` opcional
-- `.cursor/rules/` opcional
-- `.cursor/hooks.json` opcional
-- `.mcp.json` opcional
+- optional `skills/`
+- optional `.cursor/commands/`
+- optional `.cursor/agents/`
+- optional `.cursor/rules/`
+- optional `.cursor/hooks.json`
+- optional `.mcp.json`
 
-Notas específicas do Cursor:
+Cursor-specific notes:
 
-- `.cursor/commands/` é tratado como conteúdo de habilidades
-- `.cursor/rules/`, `.cursor/agents/` e `.cursor/hooks.json` são somente detectados hoje
+- `.cursor/commands/` is treated like skill content
+- `.cursor/rules/`, `.cursor/agents/`, and `.cursor/hooks.json` are
+  detect-only today
 
-## Caminhos personalizados do Claude
+## Claude custom paths
 
-Manifestos de bundle Claude podem declarar caminhos de componentes personalizados.
-O OpenCraft trata esses caminhos como **aditivos**, não substituindo os padrões.
+Claude bundle manifests can declare custom component paths. OpenCraft treats
+those paths as **additive**, not replacing defaults.
 
-Chaves de caminho personalizadas reconhecidas atualmente:
+Currently recognized custom path keys:
 
 - `skills`
 - `commands`
@@ -226,71 +236,72 @@ Chaves de caminho personalizadas reconhecidas atualmente:
 - `lspServers`
 - `outputStyles`
 
-Exemplos:
+Examples:
 
-- `commands/` padrão mais manifesto `commands: "extra-commands"` =>
-  o OpenCraft escaneia ambos
-- `skills/` padrão mais manifesto `skills: ["team-skills"]` =>
-  o OpenCraft escaneia ambos
+- default `commands/` plus manifest `commands: "extra-commands"` =>
+  OpenCraft scans both
+- default `skills/` plus manifest `skills: ["team-skills"]` =>
+  OpenCraft scans both
 
-## Modelo de segurança
+## Security model
 
-O suporte a bundles é intencionalmente mais restrito que o suporte a plugins nativos.
+Bundle support is intentionally narrower than native plugin support.
 
-Comportamento atual:
+Current behavior:
 
-- a descoberta de bundles lê arquivos dentro da raiz do plugin com verificações de limite
-- caminhos de habilidades e hook-pack devem ficar dentro da raiz do plugin
-- arquivos de configurações do bundle são lidos com as mesmas verificações de limite
-- o OpenCraft não executa código de runtime arbitrário de bundles em processo
+- bundle discovery reads files inside the plugin root with boundary checks
+- skills and hook-pack paths must stay inside the plugin root
+- bundle settings files are read with the same boundary checks
+- supported stdio bundle MCP servers may be launched as subprocesses for
+  embedded Pi tool calls
+- OpenCraft does not load arbitrary bundle runtime modules in-process
 
-Isso torna o suporte a bundles mais seguro por padrão que módulos de plugins nativos,
-mas você ainda deve tratar bundles de terceiros como conteúdo confiável para os
-recursos que eles expõem.
+This makes bundle support safer by default than native plugin modules, but you
+should still treat third-party bundles as trusted content for the features they
+do expose.
 
-## Exemplos de instalação
+## Install examples
 
 ```bash
-opencraft plugins install ./meu-bundle-codex
-opencraft plugins install ./meu-bundle-claude
-opencraft plugins install ./meu-bundle-cursor
-opencraft plugins install ./meu-bundle.tgz
-opencraft plugins marketplace list <nome-marketplace>
-opencraft plugins install <nome-plugin>@<nome-marketplace>
-opencraft plugins info meu-bundle
+opencraft plugins install ./my-codex-bundle
+opencraft plugins install ./my-claude-bundle
+opencraft plugins install ./my-cursor-bundle
+opencraft plugins install ./my-bundle.tgz
+opencraft plugins marketplace list <marketplace-name>
+opencraft plugins install <plugin-name>@<marketplace-name>
+opencraft plugins inspect my-bundle
 ```
 
-Se o diretório for um plugin/pacote nativo do OpenCraft, o caminho de instalação
-nativo ainda terá prioridade.
+If the directory is a native OpenCraft plugin/package, the native install path
+still wins.
 
-Para nomes de marketplace do Claude, o OpenCraft lê o registro local de marketplaces
-conhecidos em `~/.claude/plugins/known_marketplaces.json`. Entradas de marketplace
-podem resolver para diretórios/arquivos compatíveis com bundles ou para fontes de
-plugins nativos; após a resolução, as regras normais de instalação ainda se aplicam.
+For Claude marketplace names, OpenCraft reads the local Claude known-marketplace
+registry at `~/.claude/plugins/known_marketplaces.json`. Marketplace entries
+can resolve to bundle-compatible directories/archives or to native plugin
+sources; after resolution, the normal install rules still apply.
 
-## Solução de problemas
+## Troubleshooting
 
-### Bundle detectado, mas capacidades não executam
+### Bundle is detected but capabilities do not run
 
-Verifique `opencraft plugins info <id>`.
+Check `opencraft plugins inspect <id>`.
 
-Se a capacidade estiver listada mas o OpenCraft disser que ainda não está conectada,
-esse é um limite real do produto, não uma instalação quebrada.
+If the capability is listed but OpenCraft says it is not wired yet, that is a
+real product limit, not a broken install.
 
-### Arquivos de comando Claude não aparecem
+### Claude command files do not appear
 
-Certifique-se de que o bundle está habilitado e os arquivos markdown estão dentro
-de uma raiz `commands` ou `skills` detectada.
+Make sure the bundle is enabled and the markdown files are inside a detected
+`commands` root or `skills` root.
 
-### Configurações Claude não se aplicam
+### Claude settings do not apply
 
-O suporte atual está limitado a configurações Pi embutidas do `settings.json`.
-O OpenCraft não trata configurações de bundle como patches de configuração brutos.
+Current support is limited to embedded Pi settings from `settings.json`.
+OpenCraft does not treat bundle settings as raw OpenCraft config patches.
 
-### Hooks Claude não executam
+### Claude hooks do not execute
 
-`hooks/hooks.json` é apenas detectado hoje.
+`hooks/hooks.json` is only detected today.
 
-Se você precisar de hooks de bundle executáveis hoje, use o layout normal de
-hook-pack do OpenCraft através de uma raiz de hook Codex suportada ou envie
-um plugin nativo do OpenCraft.
+If you need runnable bundle hooks today, use the normal OpenCraft hook-pack
+layout through a supported Codex hook root or ship a native OpenCraft plugin.

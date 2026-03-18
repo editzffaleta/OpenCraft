@@ -1,35 +1,35 @@
 ---
-summary: "Superfícies de rastreamento de uso e requisitos de credenciais"
+summary: "Usage tracking surfaces and credential requirements"
 read_when:
-  - Você está conectando superfícies de uso/cota de provedores
-  - Você precisa explicar o comportamento de rastreamento de uso ou requisitos de autenticação
+  - You are wiring provider usage/quota surfaces
+  - You need to explain usage tracking behavior or auth requirements
 title: "Usage Tracking"
 ---
 
-# Rastreamento de uso
+# Usage tracking
 
-## O que é
+## What it is
 
-- Obtém uso/cota do provedor diretamente dos seus endpoints de uso.
-- Sem custos estimados; apenas as janelas reportadas pelo provedor.
+- Pulls provider usage/quota directly from their usage endpoints.
+- No estimated costs; only the provider-reported windows.
 
-## Onde aparece
+## Where it shows up
 
-- `/status` em chats: cartão de status rico em emojis com Token de sessão + custo estimado (apenas API key). Uso do provedor é exibido para o **provedor do modelo atual** quando disponível.
-- `/usage off|tokens|full` em chats: rodapé de uso por resposta (OAuth mostra apenas Token).
-- `/usage cost` em chats: resumo de custos local agregado dos logs de sessão do OpenCraft.
-- CLI: `opencraft status --usage` imprime um detalhamento completo por provedor.
-- CLI: `opencraft channels list` imprime o mesmo snapshot de uso junto com a configuração do provedor (use `--no-usage` para pular).
-- Barra de menu do macOS: seção "Usage" em Contexto (apenas se disponível).
+- `/status` in chats: emoji‑rich status card with session tokens + estimated cost (API key only). Provider usage shows for the **current model provider** when available.
+- `/usage off|tokens|full` in chats: per-response usage footer (OAuth shows tokens only).
+- `/usage cost` in chats: local cost summary aggregated from OpenCraft session logs.
+- CLI: `opencraft status --usage` prints a full per-provider breakdown.
+- CLI: `opencraft channels list` prints the same usage snapshot alongside provider config (use `--no-usage` to skip).
+- macOS menu bar: “Usage” section under Context (only if available).
 
-## Provedores + credenciais
+## Providers + credentials
 
-- **Anthropic (Claude)**: Token OAuth em perfis de autenticação.
-- **GitHub Copilot**: Token OAuth em perfis de autenticação.
-- **Gemini CLI**: Token OAuth em perfis de autenticação.
-- **Antigravity**: Token OAuth em perfis de autenticação.
-- **OpenAI Codex**: Token OAuth em perfis de autenticação (accountId usado quando presente).
-- **MiniMax**: API key (chave de plano de codificação; `MINIMAX_CODE_PLAN_KEY` ou `MINIMAX_API_KEY`); usa a janela de plano de codificação de 5 horas.
+- **Anthropic (Claude)**: OAuth tokens in auth profiles.
+- **GitHub Copilot**: OAuth tokens in auth profiles.
+- **Gemini CLI**: OAuth tokens in auth profiles.
+- **Antigravity**: OAuth tokens in auth profiles.
+- **OpenAI Codex**: OAuth tokens in auth profiles (accountId used when present).
+- **MiniMax**: API key (coding plan key; `MINIMAX_CODE_PLAN_KEY` or `MINIMAX_API_KEY`); uses the 5‑hour coding plan window.
 - **z.ai**: API key via env/config/auth store.
 
-O uso é ocultado se não existirem credenciais OAuth/API key correspondentes.
+Usage is hidden if no matching OAuth/API credentials exist.

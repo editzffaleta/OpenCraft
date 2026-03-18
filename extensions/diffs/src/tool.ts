@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import { Static, Type } from "@sinclair/typebox";
-import type { AnyAgentTool, OpenCraftPluginApi } from "opencraft/plugin-sdk/diffs";
+import type { AnyAgentTool, OpenCraftPluginApi } from "../api.js";
 import { PlaywrightDiffScreenshotter, type DiffScreenshotter } from "./browser.js";
 import { resolveDiffImageRenderOptions } from "./config.js";
 import { renderDiffDocument } from "./render.js";

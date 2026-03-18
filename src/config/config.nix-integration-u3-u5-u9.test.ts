@@ -70,7 +70,7 @@ describe("Nix integration (U3, U5, U9)", () => {
       ).toBe(path.join(path.resolve(customHome), ".opencraft"));
     });
 
-    it("CONFIG_PATH defaults to OPENCRAFT_HOME/.editzffaleta/OpenCraft.json", () => {
+    it("CONFIG_PATH defaults to OPENCRAFT_HOME/.opencraft/opencraft.json", () => {
       const customHome = path.join(path.sep, "custom", "home");
       expect(
         resolveConfigPathCandidate(
@@ -83,7 +83,7 @@ describe("Nix integration (U3, U5, U9)", () => {
       ).toBe(path.join(path.resolve(customHome), ".opencraft", "opencraft.json"));
     });
 
-    it("CONFIG_PATH defaults to ~/.editzffaleta/OpenCraft.json when env not set", () => {
+    it("CONFIG_PATH defaults to ~/.opencraft/opencraft.json when env not set", () => {
       expect(
         resolveConfigPathCandidate(
           envWith({ OPENCRAFT_CONFIG_PATH: undefined, OPENCRAFT_STATE_DIR: undefined }),

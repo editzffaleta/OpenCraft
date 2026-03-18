@@ -1,17 +1,15 @@
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
 import {
   createPluginBackedWebSearchProvider,
   getScopedCredentialValue,
   setScopedCredentialValue,
-} from "../../src/agents/tools/web-search-plugin-factory.js";
-import { emptyPluginConfigSchema } from "../../src/plugins/config-schema.js";
-import type { OpenCraftPluginApi } from "../../src/plugins/types.js";
+} from "opencraft/plugin-sdk/provider-web-search";
 
-const perplexityPlugin = {
+export default definePluginEntry({
   id: "perplexity",
   name: "Perplexity Plugin",
   description: "Bundled Perplexity plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerWebSearchProvider(
       createPluginBackedWebSearchProvider({
         id: "perplexity",
@@ -28,6 +26,4 @@ const perplexityPlugin = {
       }),
     );
   },
-};
-
-export default perplexityPlugin;
+});

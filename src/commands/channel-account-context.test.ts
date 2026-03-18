@@ -60,9 +60,9 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    await expect(
-      resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig),
-    ).rejects.toThrow(/missing secret/i);
+    await expect(resolveDefaultChannelAccountContext(plugin, {} as OpenCraftConfig)).rejects.toThrow(
+      /missing secret/i,
+    );
   });
 
   it("degrades safely in read_only mode when resolveAccount throws", async () => {

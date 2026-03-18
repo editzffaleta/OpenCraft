@@ -1,10 +1,10 @@
+import { formatNormalizedAllowFromEntries } from "opencraft/plugin-sdk/allow-from";
+import { createScopedAccountConfigAccessors } from "opencraft/plugin-sdk/channel-config-helpers";
 import {
   buildAccountScopedDmSecurityPolicy,
   buildOpenGroupPolicyWarning,
   collectAllowlistProviderGroupPolicyWarnings,
-  createScopedAccountConfigAccessors,
-  formatNormalizedAllowFromEntries,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-policy";
 import {
   buildBaseAccountStatusSnapshot,
   buildBaseChannelStatusSummary,

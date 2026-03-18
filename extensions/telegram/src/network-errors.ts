@@ -3,7 +3,7 @@ import {
   extractErrorCode,
   formatErrorMessage,
   readErrorName,
-} from "../../../src/infra/errors.js";
+} from "opencraft/plugin-sdk/infra-runtime";
 
 const TELEGRAM_NETWORK_ORIGIN = Symbol("opencraft.telegram.network-origin");
 

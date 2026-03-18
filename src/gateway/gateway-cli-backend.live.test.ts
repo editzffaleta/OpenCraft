@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseModelRef } from "../agents/model-selection.js";
-import { loadConfig } from "../config/config.js";
+import { clearRuntimeConfigSnapshot, loadConfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { getFreePortBlockWithPermissionFallback } from "../test-utils/ports.js";
 import { GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
@@ -13,8 +13,7 @@ import { renderCatNoncePngBase64 } from "./live-image-probe.js";
 import { startGatewayServer } from "./server.js";
 import { extractPayloadText } from "./test-helpers.agent-results.js";
 
-const LIVE =
-  isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.OPENCRAFT_LIVE_TEST);
+const LIVE = isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.OPENCRAFT_LIVE_TEST);
 const CLI_LIVE = isTruthyEnvValue(process.env.OPENCRAFT_LIVE_CLI_BACKEND);
 const CLI_IMAGE = isTruthyEnvValue(process.env.OPENCRAFT_LIVE_CLI_BACKEND_IMAGE_PROBE);
 const CLI_RESUME = isTruthyEnvValue(process.env.OPENCRAFT_LIVE_CLI_BACKEND_RESUME_PROBE);
@@ -167,9 +166,10 @@ async function connectClient(params: { url: string; token: string }) {
 
 describeLive("gateway live (cli backend)", () => {
   it("runs the agent pipeline against the local CLI backend", async () => {
+    clearRuntimeConfigSnapshot();
     const previous = {
       configPath: process.env.OPENCRAFT_CONFIG_PATH,
-      token: process.env.OPENCLAW_GATEWAY_TOKEN,
+      token: process.env.OPENCRAFT_GATEWAY_TOKEN,
       skipChannels: process.env.OPENCRAFT_SKIP_CHANNELS,
       skipGmail: process.env.OPENCRAFT_SKIP_GMAIL_WATCHER,
       skipCron: process.env.OPENCRAFT_SKIP_CRON,
@@ -186,7 +186,7 @@ describeLive("gateway live (cli backend)", () => {
     delete process.env.ANTHROPIC_API_KEY_OLD;
 
     const token = `test-${randomUUID()}`;
-    process.env.OPENCLAW_GATEWAY_TOKEN = token;
+    process.env.OPENCRAFT_GATEWAY_TOKEN = token;
 
     const rawModel = process.env.OPENCRAFT_LIVE_CLI_BACKEND_MODEL ?? DEFAULT_MODEL;
     const parsed = parseModelRef(rawModel, "claude-cli");
@@ -385,6 +385,7 @@ describeLive("gateway live (cli backend)", () => {
         }
       }
     } finally {
+      clearRuntimeConfigSnapshot();
       client.stop();
       await server.close();
       await fs.rm(tempDir, { recursive: true, force: true });
@@ -394,9 +395,9 @@ describeLive("gateway live (cli backend)", () => {
         process.env.OPENCRAFT_CONFIG_PATH = previous.configPath;
       }
       if (previous.token === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.OPENCRAFT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = previous.token;
+        process.env.OPENCRAFT_GATEWAY_TOKEN = previous.token;
       }
       if (previous.skipChannels === undefined) {
         delete process.env.OPENCRAFT_SKIP_CHANNELS;

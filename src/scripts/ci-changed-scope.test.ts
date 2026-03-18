@@ -65,7 +65,7 @@ describe("detectChangedScope", () => {
       runWindows: false,
       runSkillsPython: false,
     });
-    expect(detectChangedScope(["apps/shared/OpenClawKit/Sources/Foo.swift"])).toEqual({
+    expect(detectChangedScope(["apps/shared/OpenCraftKit/Sources/Foo.swift"])).toEqual({
       runNode: false,
       runMacos: true,
       runAndroid: true,
@@ -75,7 +75,7 @@ describe("detectChangedScope", () => {
   });
 
   it("does not force macOS for generated protocol model-only changes", () => {
-    expect(detectChangedScope(["apps/macos/Sources/OpenClawProtocol/GatewayModels.swift"])).toEqual(
+    expect(detectChangedScope(["apps/macos/Sources/OpenCraftProtocol/GatewayModels.swift"])).toEqual(
       {
         runNode: false,
         runMacos: false,

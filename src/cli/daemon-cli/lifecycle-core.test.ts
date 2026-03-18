@@ -62,7 +62,7 @@ describe("runServiceRestart token drift", () => {
     resetLifecycleServiceMocks();
     service.readCommand.mockResolvedValue({
       programArguments: [],
-      environment: { OPENCLAW_GATEWAY_TOKEN: "service-token" },
+      environment: { OPENCRAFT_GATEWAY_TOKEN: "service-token" },
     });
     stubEmptyGatewayEnv();
   });
@@ -87,9 +87,9 @@ describe("runServiceRestart token drift", () => {
     });
     service.readCommand.mockResolvedValue({
       programArguments: [],
-      environment: { OPENCLAW_GATEWAY_TOKEN: "env-token" },
+      environment: { OPENCRAFT_GATEWAY_TOKEN: "env-token" },
     });
-    vi.stubEnv("OPENCLAW_GATEWAY_TOKEN", "env-token");
+    vi.stubEnv("OPENCRAFT_GATEWAY_TOKEN", "env-token");
 
     await runServiceRestart(createServiceRunArgs(true));
 
@@ -172,7 +172,7 @@ describe("runServiceRestart token drift", () => {
     expect(postRestartCheck).not.toHaveBeenCalled();
     const payload = readJsonLog<{ result?: string; message?: string }>();
     expect(payload.result).toBe("scheduled");
-    expect(payload.message).toBe("reinicialização agendada, gateway será reiniciado em breve");
+    expect(payload.message).toBe("restart scheduled, gateway will restart momentarily");
   });
 
   it("emits scheduled when service start routes through a scheduled restart", async () => {
@@ -188,6 +188,6 @@ describe("runServiceRestart token drift", () => {
     expect(service.isLoaded).toHaveBeenCalledTimes(1);
     const payload = readJsonLog<{ result?: string; message?: string }>();
     expect(payload.result).toBe("scheduled");
-    expect(payload.message).toBe("reinicialização agendada, gateway será reiniciado em breve");
+    expect(payload.message).toBe("restart scheduled, gateway will restart momentarily");
   });
 });

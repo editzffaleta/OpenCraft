@@ -36,7 +36,7 @@ describe("gateway e2e", () => {
       const envSnapshot = captureEnv([
         "HOME",
         "OPENCRAFT_CONFIG_PATH",
-        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCRAFT_GATEWAY_TOKEN",
         "OPENCRAFT_SKIP_CHANNELS",
         "OPENCRAFT_SKIP_GMAIL_WATCHER",
         "OPENCRAFT_SKIP_CRON",
@@ -55,7 +55,7 @@ describe("gateway e2e", () => {
       process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
 
       const token = nextGatewayId("test-token");
-      process.env.OPENCLAW_GATEWAY_TOKEN = token;
+      process.env.OPENCRAFT_GATEWAY_TOKEN = token;
 
       const workspaceDir = path.join(tempHome, "opencraft");
       await fs.mkdir(workspaceDir, { recursive: true });
@@ -135,7 +135,7 @@ describe("gateway e2e", () => {
         "HOME",
         "OPENCRAFT_STATE_DIR",
         "OPENCRAFT_CONFIG_PATH",
-        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCRAFT_GATEWAY_TOKEN",
         "OPENCRAFT_SKIP_CHANNELS",
         "OPENCRAFT_SKIP_GMAIL_WATCHER",
         "OPENCRAFT_SKIP_CRON",
@@ -148,7 +148,7 @@ describe("gateway e2e", () => {
       process.env.OPENCRAFT_SKIP_CRON = "1";
       process.env.OPENCRAFT_SKIP_CANVAS_HOST = "1";
       process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
-      delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      delete process.env.OPENCRAFT_GATEWAY_TOKEN;
 
       const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "opencraft-wizard-home-"));
       process.env.HOME = tempHome;

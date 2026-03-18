@@ -1,64 +1,64 @@
-# Padrões do Codebase OpenCraft
+# OpenCraft Codebase Patterns
 
-**Sempre reutilize código existente — sem redundância!**
+**Always reuse existing code - no redundancy!**
 
-## Stack de Tecnologia
+## Tech Stack
 
-- **Runtime**: Node 22+ (Bun também suportado para dev/scripts)
-- **Linguagem**: TypeScript (ESM, modo strict)
-- **Gerenciador de Pacotes**: pnpm (mantenha `pnpm-lock.yaml` sincronizado)
+- **Runtime**: Node 22+ (Bun also supported for dev/scripts)
+- **Language**: TypeScript (ESM, strict mode)
+- **Package Manager**: pnpm (keep `pnpm-lock.yaml` in sync)
 - **Lint/Format**: Oxlint, Oxfmt (`pnpm check`)
-- **Testes**: Vitest com cobertura V8
+- **Tests**: Vitest with V8 coverage
 - **CLI Framework**: Commander + clack/prompts
-- **Build**: tsdown (saída em `dist/`)
+- **Build**: tsdown (outputs to `dist/`)
 
-## Regras Anti-Redundância
+## Anti-Redundancy Rules
 
-- Evite arquivos que apenas re-exportam de outro arquivo. Importe diretamente da fonte original.
-- Se uma função já existe, importe-a — NÃO crie uma duplicata em outro arquivo.
-- Antes de criar qualquer formatador, utilitário ou helper, procure implementações existentes primeiro.
+- Avoid files that just re-export from another file. Import directly from the original source.
+- If a function already exists, import it - do NOT create a duplicate in another file.
+- Before creating any formatter, utility, or helper, search for existing implementations first.
 
-## Locais de Fonte de Verdade
+## Source of Truth Locations
 
-### Utilitários de Formatação (`src/infra/`)
+### Formatting Utilities (`src/infra/`)
 
-- **Formatação de tempo**: `src\infra\format-time`
+- **Time formatting**: `src\infra\format-time`
 
-**NUNCA crie funções locais `formatAge`, `formatDuration`, `formatElapsedTime` — importe dos módulos centralizados.**
+**NEVER create local `formatAge`, `formatDuration`, `formatElapsedTime` functions - import from centralized modules.**
 
-### Saída de Terminal (`src/terminal/`)
+### Terminal Output (`src/terminal/`)
 
-- Tabelas: `src/terminal/table.ts` (`renderTable`)
-- Temas/cores: `src/terminal/theme.ts` (`theme.success`, `theme.muted`, etc.)
-- Progresso: `src/cli/progress.ts` (spinners, barras de progresso)
+- Tables: `src/terminal/table.ts` (`renderTable`)
+- Themes/colors: `src/terminal/theme.ts` (`theme.success`, `theme.muted`, etc.)
+- Progress: `src/cli/progress.ts` (spinners, progress bars)
 
-### Padrões de CLI
+### CLI Patterns
 
-- Wiring de opções CLI: `src/cli/`
-- Comandos: `src/commands/`
-- Injeção de dependências via `createDefaultDeps`
+- CLI option wiring: `src/cli/`
+- Commands: `src/commands/`
+- Dependency injection via `createDefaultDeps`
 
-## Convenções de Import
+## Import Conventions
 
-- Use extensão `.js` para imports entre pacotes (ESM)
-- Apenas imports diretos — sem arquivos wrapper de re-export
-- Tipos: `import type { X }` para imports apenas de tipo
+- Use `.js` extension for cross-package imports (ESM)
+- Direct imports only - no re-export wrapper files
+- Types: `import type { X }` for type-only imports
 
-## Qualidade de Código
+## Code Quality
 
-- TypeScript (ESM), tipagem estrita, evite `any`
-- Mantenha arquivos abaixo de ~700 LOC — extraia helpers quando maior
-- Testes colocados junto ao código: `*.test.ts` ao lado dos arquivos fonte
-- Execute `pnpm check` antes de commits (lint + format)
-- Execute `pnpm tsgo` para verificação de tipos
+- TypeScript (ESM), strict typing, avoid `any`
+- Keep files under ~700 LOC - extract helpers when larger
+- Colocated tests: `*.test.ts` next to source files
+- Run `pnpm check` before commits (lint + format)
+- Run `pnpm tsgo` for type checking
 
-## Stack e Comandos
+## Stack & Commands
 
-- **Gerenciador de pacotes**: pnpm (`pnpm install`)
-- **Dev**: `pnpm opencraft ...` ou `pnpm dev`
-- **Verificação de tipos**: `pnpm tsgo`
+- **Package manager**: pnpm (`pnpm install`)
+- **Dev**: `pnpm opencraft ...` or `pnpm dev`
+- **Type-check**: `pnpm tsgo`
 - **Lint/format**: `pnpm check`
-- **Testes**: `pnpm test`
+- **Tests**: `pnpm test`
 - **Build**: `pnpm build`
 
-Se você estiver codificando junto com um humano, NÃO use scripts/committer, mas git diretamente e execute os comandos acima manualmente para garantir qualidade.
+If you are coding together with a human, do NOT use scripts/committer, but git directly and run the above commands manually to ensure quality.

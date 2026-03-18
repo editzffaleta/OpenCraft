@@ -1,44 +1,44 @@
 ---
-summary: "Politica de retry para chamadas de saida a provedores"
+summary: "Retry policy for outbound provider calls"
 read_when:
-  - Atualizando comportamento de retry de provedor ou padroes
-  - Depurando erros de envio de provedor ou limites de taxa
+  - Updating provider retry behavior or defaults
+  - Debugging provider send errors or rate limits
 title: "Retry Policy"
 ---
 
-# Politica de retry
+# Retry policy
 
-## Objetivos
+## Goals
 
-- Retry por requisicao HTTP, nao por fluxo de multiplas etapas.
-- Preservar a ordenacao tentando novamente apenas a etapa atual.
-- Evitar duplicacao de operacoes nao idempotentes.
+- Retry per HTTP request, not per multi-step flow.
+- Preserve ordering by retrying only the current step.
+- Avoid duplicating non-idempotent operations.
 
-## Padroes
+## Defaults
 
-- Tentativas: 3
-- Limite maximo de atraso: 30000 ms
-- Jitter: 0.1 (10 por cento)
-- Padroes por provedor:
-  - Atraso minimo Telegram: 400 ms
-  - Atraso minimo Discord: 500 ms
+- Attempts: 3
+- Max delay cap: 30000 ms
+- Jitter: 0.1 (10 percent)
+- Provider defaults:
+  - Telegram min delay: 400 ms
+  - Discord min delay: 500 ms
 
-## Comportamento
+## Behavior
 
 ### Discord
 
-- Tenta novamente apenas em erros de limite de taxa (HTTP 429).
-- Usa `retry_after` do Discord quando disponivel, caso contrario backoff exponencial.
+- Retries only on rate-limit errors (HTTP 429).
+- Uses Discord `retry_after` when available, otherwise exponential backoff.
 
 ### Telegram
 
-- Tenta novamente em erros transitorios (429, timeout, connect/reset/closed, temporariamente indisponivel).
-- Usa `retry_after` quando disponivel, caso contrario backoff exponencial.
-- Erros de parse de Markdown nao sao tentados novamente; eles recorrem a texto simples.
+- Retries on transient errors (429, timeout, connect/reset/closed, temporarily unavailable).
+- Uses `retry_after` when available, otherwise exponential backoff.
+- Markdown parse errors are not retried; they fall back to plain text.
 
-## Configuracao
+## Configuration
 
-Defina a politica de retry por provedor em `~/.editzffaleta/OpenCraft.json`:
+Set retry policy per provider in `~/.opencraft/opencraft.json`:
 
 ```json5
 {
@@ -63,7 +63,7 @@ Defina a politica de retry por provedor em `~/.editzffaleta/OpenCraft.json`:
 }
 ```
 
-## Notas
+## Notes
 
-- Retries se aplicam por requisicao (envio de mensagem, upload de midia, reacao, enquete, sticker).
-- Fluxos compostos nao tentam novamente etapas ja concluidas.
+- Retries apply per request (message send, media upload, reaction, poll, sticker).
+- Composite flows do not retry completed steps.

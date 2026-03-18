@@ -1,13 +1,12 @@
+import { ensureAuthProfileStore, listProfilesForProvider } from "opencraft/plugin-sdk/agent-runtime";
+import { QWEN_OAUTH_MARKER } from "opencraft/plugin-sdk/agent-runtime";
 import {
   buildOauthProviderAuthResult,
-  emptyPluginConfigSchema,
-  type OpenCraftPluginApi,
+  definePluginEntry,
   type ProviderAuthContext,
   type ProviderCatalogContext,
 } from "opencraft/plugin-sdk/qwen-portal-auth";
-import { ensureAuthProfileStore, listProfilesForProvider } from "../../src/agents/auth-profiles.js";
-import { QWEN_OAUTH_MARKER } from "../../src/agents/model-auth-markers.js";
-import { refreshQwenPortalCredentials } from "../../src/providers/qwen-portal-oauth.js";
+import { refreshQwenPortalCredentials } from "opencraft/plugin-sdk/qwen-portal-auth";
 import { loginQwenPortalOAuth } from "./oauth.js";
 import { buildQwenPortalProvider, QWEN_PORTAL_BASE_URL } from "./provider-catalog.js";
 
@@ -55,12 +54,11 @@ function resolveCatalog(ctx: ProviderCatalogContext) {
   };
 }
 
-const qwenPortalPlugin = {
+export default definePluginEntry({
   id: "qwen-portal-auth",
   name: "Qwen OAuth",
   description: "OAuth flow for Qwen (free-tier) models",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: PROVIDER_LABEL,
@@ -146,6 +144,4 @@ const qwenPortalPlugin = {
       }),
     });
   },
-};
-
-export default qwenPortalPlugin;
+});

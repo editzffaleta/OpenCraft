@@ -1,18 +1,19 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import { buildOpenAISpeechProvider } from "../../src/tts/providers/openai.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { buildOpenAIImageGenerationProvider } from "opencraft/plugin-sdk/image-generation";
+import { buildOpenAISpeechProvider } from "opencraft/plugin-sdk/speech";
+import { openaiMediaUnderstandingProvider } from "./media-understanding-provider.js";
 import { buildOpenAICodexProviderPlugin } from "./openai-codex-provider.js";
 import { buildOpenAIProvider } from "./openai-provider.js";
 
-const openAIPlugin = {
+export default definePluginEntry({
   id: "openai",
   name: "OpenAI Provider",
   description: "Bundled OpenAI provider plugins",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider(buildOpenAIProvider());
     api.registerProvider(buildOpenAICodexProviderPlugin());
     api.registerSpeechProvider(buildOpenAISpeechProvider());
+    api.registerMediaUnderstandingProvider(openaiMediaUnderstandingProvider);
+    api.registerImageGenerationProvider(buildOpenAIImageGenerationProvider());
   },
-};
-
-export default openAIPlugin;
+});

@@ -35,6 +35,35 @@ export type RunSshSandboxCommandParams = {
   tty?: boolean;
 };
 
+function normalizeInlineSshMaterial(contents: string, filename: string): string {
+  const withoutBom = contents.replace(/^\uFEFF/, "");
+  const normalizedNewlines = withoutBom.replace(/\r\n?/g, "\n");
+  const normalizedEscapedNewlines = normalizedNewlines
+    .replace(/\\r\\n/g, "\\n")
+    .replace(/\\r/g, "\\n");
+  const expanded =
+    filename === "identity" || filename === "certificate.pub"
+      ? normalizedEscapedNewlines.replace(/\\n/g, "\n")
+      : normalizedEscapedNewlines;
+  return expanded.endsWith("\n") ? expanded : `${expanded}\n`;
+}
+
+function buildSshFailureMessage(stderr: string, exitCode?: number): string {
+  const trimmed = stderr.trim();
+  if (
+    trimmed.includes("error in libcrypto") &&
+    (trimmed.includes('Load key "') || trimmed.includes("Permission denied (publickey)"))
+  ) {
+    return `${trimmed}\nSSH sandbox failed to load the configured identity. The private key contents may be malformed (for example CRLF or escaped newlines). Prefer identityFile when possible.`;
+  }
+  return (
+    trimmed ||
+    (exitCode !== undefined
+      ? `ssh exited with code ${exitCode}`
+      : "ssh exited with a non-zero status")
+  );
+}
+
 export function shellEscape(value: string): string {
   return `'${value.replaceAll("'", `'"'"'`)}'`;
 }
@@ -90,7 +119,7 @@ export async function createSshSandboxSessionFromConfigText(params: {
   if (!host) {
     throw new Error("Failed to parse SSH config output.");
   }
-  const configDir = await fs.mkdtemp(path.join(resolveSshTmpRoot(), "openclaw-sandbox-ssh-"));
+  const configDir = await fs.mkdtemp(path.join(resolveSshTmpRoot(), "opencraft-sandbox-ssh-"));
   const configPath = path.join(configDir, "config");
   await fs.writeFile(configPath, params.configText, { encoding: "utf8", mode: 0o600 });
   await fs.chmod(configPath, 0o600);
@@ -109,7 +138,7 @@ export async function createSshSandboxSessionFromSettings(
     throw new Error(`Invalid sandbox SSH target: ${settings.target}`);
   }
 
-  const configDir = await fs.mkdtemp(path.join(resolveSshTmpRoot(), "openclaw-sandbox-ssh-"));
+  const configDir = await fs.mkdtemp(path.join(resolveSshTmpRoot(), "opencraft-sandbox-ssh-"));
   try {
     const materializedIdentity = settings.identityData
       ? await writeSecretMaterial(configDir, "identity", settings.identityData)
@@ -125,7 +154,7 @@ export async function createSshSandboxSessionFromSettings(
       materializedCertificate ?? resolveOptionalLocalPath(settings.certificateFile);
     const knownHostsFile =
       materializedKnownHosts ?? resolveOptionalLocalPath(settings.knownHostsFile);
-    const hostAlias = "openclaw-sandbox";
+    const hostAlias = "opencraft-sandbox";
     const configPath = path.join(configDir, "config");
     const lines = [
       `Host ${hostAlias}`,
@@ -201,14 +230,11 @@ export async function runSshSandboxCommand(
       const exitCode = code ?? 0;
       if (exitCode !== 0 && !params.allowFailure) {
         reject(
-          Object.assign(
-            new Error(stderr.toString("utf8").trim() || `ssh exited with code ${exitCode}`),
-            {
-              code: exitCode,
-              stdout,
-              stderr,
-            },
-          ),
+          Object.assign(new Error(buildSshFailureMessage(stderr.toString("utf8"), exitCode)), {
+            code: exitCode,
+            stdout,
+            stderr,
+          }),
         );
         return;
       }
@@ -233,7 +259,7 @@ export async function uploadDirectoryToSshTarget(params: {
     "/bin/sh",
     "-c",
     'mkdir -p -- "$1" && tar -xf - -C "$1"',
-    "openclaw-sandbox-upload",
+    "opencraft-sandbox-upload",
     params.remoteDir,
   ]);
   const sshArgv = buildSshSandboxArgv({
@@ -328,7 +354,10 @@ async function writeSecretMaterial(
   contents: string,
 ): Promise<string> {
   const pathname = path.join(dir, filename);
-  await fs.writeFile(pathname, contents, { encoding: "utf8", mode: 0o600 });
+  await fs.writeFile(pathname, normalizeInlineSshMaterial(contents, filename), {
+    encoding: "utf8",
+    mode: 0o600,
+  });
   await fs.chmod(pathname, 0o600);
   return pathname;
 }

@@ -86,7 +86,7 @@ function isOpenCraftGatewayLaunchdService(label: string, contents: string): bool
   if (!lowerContents.includes("gateway")) {
     return false;
   }
-  return label.startsWith("ai.opencraft.");
+  return label.startsWith("ai.openclaw.");
 }
 
 function isOpenCraftGatewaySystemdService(name: string, contents: string): boolean {

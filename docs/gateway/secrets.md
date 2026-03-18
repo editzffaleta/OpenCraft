@@ -1,84 +1,84 @@
 ---
-summary: "Gerenciamento de secrets: contrato SecretRef, comportamento de snapshot em runtime e scrubbing seguro unidirecional"
+summary: "Secrets management: SecretRef contract, runtime snapshot behavior, and safe one-way scrubbing"
 read_when:
-  - Configurando SecretRefs para credenciais de provider e refs de `auth-profiles.json`
-  - Operando reload, auditoria, configuração e apply de secrets com segurança em produção
-  - Entendendo comportamento de fail-fast na inicialização, filtragem de superfície inativa e last-known-good
+  - Configuring SecretRefs for provider credentials and `auth-profiles.json` refs
+  - Operating secrets reload, audit, configure, and apply safely in production
+  - Understanding startup fail-fast, inactive-surface filtering, and last-known-good behavior
 title: "Secrets Management"
 ---
 
-# Gerenciamento de secrets
+# Secrets management
 
-OpenCraft suporta SecretRefs aditivos para que credenciais suportadas não precisem ser armazenadas como texto puro na configuração.
+OpenCraft supports additive SecretRefs so supported credentials do not need to be stored as plaintext in configuration.
 
-Texto puro ainda funciona. SecretRefs são opt-in por credencial.
+Plaintext still works. SecretRefs are opt-in per credential.
 
-## Objetivos e modelo de runtime
+## Goals and runtime model
 
-Secrets são resolvidos em um snapshot de runtime em memória.
+Secrets are resolved into an in-memory runtime snapshot.
 
-- A resolução é eager durante a ativação, não lazy nos caminhos de requisição.
-- A inicialização falha rápido quando um SecretRef efetivamente ativo não pode ser resolvido.
-- O reload usa troca atômica: sucesso total, ou mantém o snapshot last-known-good.
-- Requisições em runtime leem apenas do snapshot ativo em memória.
-- Caminhos de entrega de saída também leem desse snapshot ativo (por exemplo entrega de resposta/thread do Discord e envios de ação do Telegram); eles não re-resolvem SecretRefs a cada envio.
+- Resolution is eager during activation, not lazy on request paths.
+- Startup fails fast when an effectively active SecretRef cannot be resolved.
+- Reload uses atomic swap: full success, or keep the last-known-good snapshot.
+- Runtime requests read from the active in-memory snapshot only.
+- Outbound delivery paths also read from that active snapshot (for example Discord reply/thread delivery and Telegram action sends); they do not re-resolve SecretRefs on each send.
 
-Isso mantém indisponibilidades de provedores de secrets fora dos caminhos quentes de requisição.
+This keeps secret-provider outages off hot request paths.
 
-## Filtragem de superfície ativa
+## Active-surface filtering
 
-SecretRefs são validados apenas em superfícies efetivamente ativas.
+SecretRefs are validated only on effectively active surfaces.
 
-- Superfícies habilitadas: refs não resolvidos bloqueiam inicialização/reload.
-- Superfícies inativas: refs não resolvidos não bloqueiam inicialização/reload.
-- Refs inativos emitem diagnósticos não fatais com código `SECRETS_REF_IGNORED_INACTIVE_SURFACE`.
+- Enabled surfaces: unresolved refs block startup/reload.
+- Inactive surfaces: unresolved refs do not block startup/reload.
+- Inactive refs emit non-fatal diagnostics with code `SECRETS_REF_IGNORED_INACTIVE_SURFACE`.
 
-Exemplos de superfícies inativas:
+Examples of inactive surfaces:
 
-- Entradas de canal/conta desabilitadas.
-- Credenciais de canal de nível superior que nenhuma conta habilitada herda.
-- Superfícies de ferramenta/funcionalidade desabilitadas.
-- Chaves específicas de provedor de busca web que não estão selecionadas por `tools.web.search.provider`.
-  No modo auto (provider não definido), as chaves são consultadas por precedência para auto-detecção de provider até uma resolver.
-  Após a seleção, chaves de providers não selecionados são tratadas como inativas até serem selecionadas.
-- Material de autenticação SSH de sandbox (`agents.defaults.sandbox.ssh.identityData`,
-  `certificateData`, `knownHostsData`, mais overrides por agente) é ativo apenas
-  quando o backend de sandbox efetivo é `ssh` para o agente padrão ou um agente habilitado.
-- SecretRefs de `gateway.remote.token` / `gateway.remote.password` são ativos se uma destas condições for verdadeira:
+- Disabled channel/account entries.
+- Top-level channel credentials that no enabled account inherits.
+- Disabled tool/feature surfaces.
+- Web search provider-specific keys that are not selected by `tools.web.search.provider`.
+  In auto mode (provider unset), keys are consulted by precedence for provider auto-detection until one resolves.
+  After selection, non-selected provider keys are treated as inactive until selected.
+- Sandbox SSH auth material (`agents.defaults.sandbox.ssh.identityData`,
+  `certificateData`, `knownHostsData`, plus per-agent overrides) is active only
+  when the effective sandbox backend is `ssh` for the default agent or an enabled agent.
+- `gateway.remote.token` / `gateway.remote.password` SecretRefs are active if one of these is true:
   - `gateway.mode=remote`
-  - `gateway.remote.url` está configurada
-  - `gateway.tailscale.mode` é `serve` ou `funnel`
-  - No modo local sem essas superfícies remotas:
-    - `gateway.remote.token` é ativo quando a autenticação por token pode vencer e nenhum token de env/auth está configurado.
-    - `gateway.remote.password` é ativo apenas quando a autenticação por password pode vencer e nenhum password de env/auth está configurado.
-- O SecretRef de `gateway.auth.token` é inativo para resolução de auth na inicialização quando `OPENCLAW_GATEWAY_TOKEN` (ou `CLAWDBOT_GATEWAY_TOKEN`) está definido, porque a entrada de token via env vence para esse runtime.
+  - `gateway.remote.url` is configured
+  - `gateway.tailscale.mode` is `serve` or `funnel`
+  - In local mode without those remote surfaces:
+    - `gateway.remote.token` is active when token auth can win and no env/auth token is configured.
+    - `gateway.remote.password` is active only when password auth can win and no env/auth password is configured.
+- `gateway.auth.token` SecretRef is inactive for startup auth resolution when `OPENCRAFT_GATEWAY_TOKEN` (or `CLAWDBOT_GATEWAY_TOKEN`) is set, because env token input wins for that runtime.
 
-## Diagnósticos de superfície de auth do Gateway
+## Gateway auth surface diagnostics
 
-Quando um SecretRef é configurado em `gateway.auth.token`, `gateway.auth.password`,
-`gateway.remote.token` ou `gateway.remote.password`, a inicialização/reload do gateway registra o
-estado da superfície explicitamente:
+When a SecretRef is configured on `gateway.auth.token`, `gateway.auth.password`,
+`gateway.remote.token`, or `gateway.remote.password`, gateway startup/reload logs the
+surface state explicitly:
 
-- `active`: o SecretRef faz parte da superfície de auth efetiva e deve resolver.
-- `inactive`: o SecretRef é ignorado para este runtime porque outra superfície de auth vence, ou
-  porque auth remoto está desabilitado/não ativo.
+- `active`: the SecretRef is part of the effective auth surface and must resolve.
+- `inactive`: the SecretRef is ignored for this runtime because another auth surface wins, or
+  because remote auth is disabled/not active.
 
-Essas entradas são registradas com `SECRETS_GATEWAY_AUTH_SURFACE` e incluem a razão usada pela
-política de superfície ativa, para que você possa ver por que uma credencial foi tratada como ativa ou inativa.
+These entries are logged with `SECRETS_GATEWAY_AUTH_SURFACE` and include the reason used by the
+active-surface policy, so you can see why a credential was treated as active or inactive.
 
-## Preflight de referência de onboarding
+## Onboarding reference preflight
 
-Quando o onboarding executa em modo interativo e você escolhe armazenamento SecretRef, o OpenCraft executa validação de preflight antes de salvar:
+When onboarding runs in interactive mode and you choose SecretRef storage, OpenCraft runs preflight validation before saving:
 
-- Refs de env: valida o nome da variável de ambiente e confirma que um valor não vazio está visível durante o setup.
-- Refs de provider (`file` ou `exec`): valida a seleção de provider, resolve `id` e verifica o tipo do valor resolvido.
-- Caminho de reutilização quickstart: quando `gateway.auth.token` já é um SecretRef, o onboarding resolve-o antes do bootstrap de probe/dashboard (para refs `env`, `file` e `exec`) usando o mesmo gate fail-fast.
+- Env refs: validates env var name and confirms a non-empty value is visible during setup.
+- Provider refs (`file` or `exec`): validates provider selection, resolves `id`, and checks resolved value type.
+- Quickstart reuse path: when `gateway.auth.token` is already a SecretRef, onboarding resolves it before probe/dashboard bootstrap (for `env`, `file`, and `exec` refs) using the same fail-fast gate.
 
-Se a validação falhar, o onboarding mostra o erro e permite que você tente novamente.
+If validation fails, onboarding shows the error and lets you retry.
 
-## Contrato SecretRef
+## SecretRef contract
 
-Use um formato de objeto em todos os lugares:
+Use one object shape everywhere:
 
 ```json5
 { source: "env" | "file" | "exec", provider: "default", id: "..." }
@@ -90,10 +90,10 @@ Use um formato de objeto em todos os lugares:
 { source: "env", provider: "default", id: "OPENAI_API_KEY" }
 ```
 
-Validação:
+Validation:
 
-- `provider` deve corresponder a `^[a-z][a-z0-9_-]{0,63}$`
-- `id` deve corresponder a `^[A-Z][A-Z0-9_]{0,127}$`
+- `provider` must match `^[a-z][a-z0-9_-]{0,63}$`
+- `id` must match `^[A-Z][A-Z0-9_]{0,127}$`
 
 ### `source: "file"`
 
@@ -101,11 +101,11 @@ Validação:
 { source: "file", provider: "filemain", id: "/providers/openai/apiKey" }
 ```
 
-Validação:
+Validation:
 
-- `provider` deve corresponder a `^[a-z][a-z0-9_-]{0,63}$`
-- `id` deve ser um ponteiro JSON absoluto (`/...`)
-- Escape RFC6901 em segmentos: `~` => `~0`, `/` => `~1`
+- `provider` must match `^[a-z][a-z0-9_-]{0,63}$`
+- `id` must be an absolute JSON pointer (`/...`)
+- RFC6901 escaping in segments: `~` => `~0`, `/` => `~1`
 
 ### `source: "exec"`
 
@@ -113,15 +113,15 @@ Validação:
 { source: "exec", provider: "vault", id: "providers/openai/apiKey" }
 ```
 
-Validação:
+Validation:
 
-- `provider` deve corresponder a `^[a-z][a-z0-9_-]{0,63}$`
-- `id` deve corresponder a `^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
-- `id` não deve conter `.` ou `..` como segmentos de caminho delimitados por barra (por exemplo `a/../b` é rejeitado)
+- `provider` must match `^[a-z][a-z0-9_-]{0,63}$`
+- `id` must match `^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
+- `id` must not contain `.` or `..` as slash-delimited path segments (for example `a/../b` is rejected)
 
-## Configuração de provider
+## Provider config
 
-Defina providers em `secrets.providers`:
+Define providers under `secrets.providers`:
 
 ```json5
 {
@@ -131,7 +131,7 @@ Defina providers em `secrets.providers`:
       filemain: {
         source: "file",
         path: "~/.opencraft/secrets.json",
-        mode: "json", // ou "singleValue"
+        mode: "json", // or "singleValue"
       },
       vault: {
         source: "exec",
@@ -155,41 +155,41 @@ Defina providers em `secrets.providers`:
 }
 ```
 
-### Provider de env
+### Env provider
 
-- Allowlist opcional via `allowlist`.
-- Valores de env ausentes/vazios falham na resolução.
+- Optional allowlist via `allowlist`.
+- Missing/empty env values fail resolution.
 
-### Provider de file
+### File provider
 
-- Lê arquivo local de `path`.
-- `mode: "json"` espera payload de objeto JSON e resolve `id` como ponteiro.
-- `mode: "singleValue"` espera ref id `"value"` e retorna o conteúdo do arquivo.
-- O caminho deve passar verificações de propriedade/permissão.
-- Nota de fail-closed no Windows: se a verificação de ACL não estiver disponível para um caminho, a resolução falha. Para caminhos confiáveis apenas, defina `allowInsecurePath: true` nesse provider para ignorar verificações de segurança de caminho.
+- Reads local file from `path`.
+- `mode: "json"` expects JSON object payload and resolves `id` as pointer.
+- `mode: "singleValue"` expects ref id `"value"` and returns file contents.
+- Path must pass ownership/permission checks.
+- Windows fail-closed note: if ACL verification is unavailable for a path, resolution fails. For trusted paths only, set `allowInsecurePath: true` on that provider to bypass path security checks.
 
-### Provider de exec
+### Exec provider
 
-- Executa o binário de caminho absoluto configurado, sem shell.
-- Por padrão, `command` deve apontar para um arquivo regular (não um symlink).
-- Defina `allowSymlinkCommand: true` para permitir caminhos de comando symlink (por exemplo shims do Homebrew). O OpenCraft valida o caminho alvo resolvido.
-- Combine `allowSymlinkCommand` com `trustedDirs` para caminhos de gerenciadores de pacotes (por exemplo `["/opt/homebrew"]`).
-- Suporta timeout, timeout de sem saída, limites de bytes de saída, allowlist de env e diretórios confiáveis.
-- Nota de fail-closed no Windows: se a verificação de ACL não estiver disponível para o caminho do comando, a resolução falha. Para caminhos confiáveis apenas, defina `allowInsecurePath: true` nesse provider para ignorar verificações de segurança de caminho.
+- Runs configured absolute binary path, no shell.
+- By default, `command` must point to a regular file (not a symlink).
+- Set `allowSymlinkCommand: true` to allow symlink command paths (for example Homebrew shims). OpenCraft validates the resolved target path.
+- Pair `allowSymlinkCommand` with `trustedDirs` for package-manager paths (for example `["/opt/homebrew"]`).
+- Supports timeout, no-output timeout, output byte limits, env allowlist, and trusted dirs.
+- Windows fail-closed note: if ACL verification is unavailable for the command path, resolution fails. For trusted paths only, set `allowInsecurePath: true` on that provider to bypass path security checks.
 
-Payload de requisição (stdin):
+Request payload (stdin):
 
 ```json
 { "protocolVersion": 1, "provider": "vault", "ids": ["providers/openai/apiKey"] }
 ```
 
-Payload de resposta (stdout):
+Response payload (stdout):
 
 ```jsonc
 { "protocolVersion": 1, "values": { "providers/openai/apiKey": "<openai-api-key>" } } // pragma: allowlist secret
 ```
 
-Erros opcionais por id:
+Optional per-id errors:
 
 ```json
 {
@@ -199,7 +199,7 @@ Erros opcionais por id:
 }
 ```
 
-## Exemplos de integração exec
+## Exec integration examples
 
 ### 1Password CLI
 
@@ -210,7 +210,7 @@ Erros opcionais por id:
       onepassword_openai: {
         source: "exec",
         command: "/opt/homebrew/bin/op",
-        allowSymlinkCommand: true, // necessário para binários com symlink do Homebrew
+        allowSymlinkCommand: true, // required for Homebrew symlinked binaries
         trustedDirs: ["/opt/homebrew"],
         args: ["read", "op://Personal/OpenCraft QA API Key/password"],
         passEnv: ["HOME"],
@@ -239,7 +239,7 @@ Erros opcionais por id:
       vault_openai: {
         source: "exec",
         command: "/opt/homebrew/bin/vault",
-        allowSymlinkCommand: true, // necessário para binários com symlink do Homebrew
+        allowSymlinkCommand: true, // required for Homebrew symlinked binaries
         trustedDirs: ["/opt/homebrew"],
         args: ["kv", "get", "-field=OPENAI_API_KEY", "secret/opencraft"],
         passEnv: ["VAULT_ADDR", "VAULT_TOKEN"],
@@ -268,7 +268,7 @@ Erros opcionais por id:
       sops_openai: {
         source: "exec",
         command: "/opt/homebrew/bin/sops",
-        allowSymlinkCommand: true, // necessário para binários com symlink do Homebrew
+        allowSymlinkCommand: true, // required for Homebrew symlinked binaries
         trustedDirs: ["/opt/homebrew"],
         args: ["-d", "--extract", '["providers"]["openai"]["apiKey"]', "/path/to/secrets.enc.json"],
         passEnv: ["SOPS_AGE_KEY_FILE"],
@@ -288,9 +288,9 @@ Erros opcionais por id:
 }
 ```
 
-## Material de autenticação SSH do sandbox
+## Sandbox SSH auth material
 
-O backend de sandbox `ssh` central também suporta SecretRefs para material de autenticação SSH:
+The core `ssh` sandbox backend also supports SecretRefs for SSH auth material:
 
 ```json5
 {
@@ -311,92 +311,92 @@ O backend de sandbox `ssh` central também suporta SecretRefs para material de a
 }
 ```
 
-Comportamento em runtime:
+Runtime behavior:
 
-- O OpenCraft resolve esses refs durante a ativação do sandbox, não de forma lazy durante cada chamada SSH.
-- Valores resolvidos são escritos em arquivos temporários com permissões restritivas e usados na configuração SSH gerada.
-- Se o backend de sandbox efetivo não for `ssh`, esses refs permanecem inativos e não bloqueiam a inicialização.
+- OpenCraft resolves these refs during sandbox activation, not lazily during each SSH call.
+- Resolved values are written to temp files with restrictive permissions and used in generated SSH config.
+- If the effective sandbox backend is not `ssh`, these refs stay inactive and do not block startup.
 
-## Superfície de credenciais suportada
+## Supported credential surface
 
-Credenciais suportadas e não suportadas canônicas estão listadas em:
+Canonical supported and unsupported credentials are listed in:
 
-- [Superfície de Credenciais SecretRef](/reference/secretref-credential-surface)
+- [SecretRef Credential Surface](/reference/secretref-credential-surface)
 
-Credenciais geradas em runtime ou rotacionadas e material de refresh OAuth são intencionalmente excluídos da resolução SecretRef somente leitura.
+Runtime-minted or rotating credentials and OAuth refresh material are intentionally excluded from read-only SecretRef resolution.
 
-## Comportamento obrigatório e precedência
+## Required behavior and precedence
 
-- Campo sem ref: inalterado.
-- Campo com ref: obrigatório em superfícies ativas durante a ativação.
-- Se tanto texto puro quanto ref estiverem presentes, ref tem precedência nos caminhos de precedência suportados.
+- Field without a ref: unchanged.
+- Field with a ref: required on active surfaces during activation.
+- If both plaintext and ref are present, ref takes precedence on supported precedence paths.
 
-Sinais de aviso e auditoria:
+Warning and audit signals:
 
-- `SECRETS_REF_OVERRIDES_PLAINTEXT` (aviso de runtime)
-- `REF_SHADOWED` (achado de auditoria quando credenciais de `auth-profiles.json` têm precedência sobre refs de `opencraft.json`)
+- `SECRETS_REF_OVERRIDES_PLAINTEXT` (runtime warning)
+- `REF_SHADOWED` (audit finding when `auth-profiles.json` credentials take precedence over `opencraft.json` refs)
 
-Comportamento de compatibilidade do Google Chat:
+Google Chat compatibility behavior:
 
-- `serviceAccountRef` tem precedência sobre `serviceAccount` em texto puro.
-- O valor em texto puro é ignorado quando o ref irmão está definido.
+- `serviceAccountRef` takes precedence over plaintext `serviceAccount`.
+- Plaintext value is ignored when sibling ref is set.
 
-## Gatilhos de ativação
+## Activation triggers
 
-A ativação de secrets executa em:
+Secret activation runs on:
 
-- Inicialização (preflight mais ativação final)
-- Caminho de hot-apply de reload de config
-- Caminho de restart-check de reload de config
-- Reload manual via `secrets.reload`
+- Startup (preflight plus final activation)
+- Config reload hot-apply path
+- Config reload restart-check path
+- Manual reload via `secrets.reload`
 
-Contrato de ativação:
+Activation contract:
 
-- Sucesso troca o snapshot atomicamente.
-- Falha na inicialização aborta o startup do gateway.
-- Falha no reload em runtime mantém o snapshot last-known-good.
-- Fornecer um token de canal explícito por chamada a um helper/ferramenta de saída não aciona ativação de SecretRef; os pontos de ativação permanecem inicialização, reload e `secrets.reload` explícito.
+- Success swaps the snapshot atomically.
+- Startup failure aborts gateway startup.
+- Runtime reload failure keeps the last-known-good snapshot.
+- Providing an explicit per-call channel token to an outbound helper/tool call does not trigger SecretRef activation; activation points remain startup, reload, and explicit `secrets.reload`.
 
-## Sinais de degradado e recuperado
+## Degraded and recovered signals
 
-Quando a ativação em tempo de reload falha após um estado saudável, o OpenCraft entra em estado degradado de secrets.
+When reload-time activation fails after a healthy state, OpenCraft enters degraded secrets state.
 
-Códigos de log e eventos de sistema one-shot:
+One-shot system event and log codes:
 
 - `SECRETS_RELOADER_DEGRADED`
 - `SECRETS_RELOADER_RECOVERED`
 
-Comportamento:
+Behavior:
 
-- Degradado: runtime mantém o snapshot last-known-good.
-- Recuperado: emitido uma vez após a próxima ativação bem-sucedida.
-- Falhas repetidas enquanto já degradado registram avisos mas não geram spam de eventos.
-- Fail-fast na inicialização não emite eventos degradados porque o runtime nunca ficou ativo.
+- Degraded: runtime keeps last-known-good snapshot.
+- Recovered: emitted once after the next successful activation.
+- Repeated failures while already degraded log warnings but do not spam events.
+- Startup fail-fast does not emit degraded events because runtime never became active.
 
-## Resolução em caminhos de comando
+## Command-path resolution
 
-Caminhos de comando podem optar por resolução SecretRef suportada via RPC de snapshot do gateway.
+Command paths can opt into supported SecretRef resolution via gateway snapshot RPC.
 
-Existem dois comportamentos amplos:
+There are two broad behaviors:
 
-- Caminhos de comando estritos (por exemplo caminhos remote-memory de `opencraft memory` e `opencraft qr --remote`) leem do snapshot ativo e falham rápido quando um SecretRef obrigatório não está disponível.
-- Caminhos de comando somente leitura (por exemplo `opencraft status`, `opencraft status --all`, `opencraft channels status`, `opencraft channels resolve`, `opencraft security audit` e fluxos somente leitura de doctor/config repair) também preferem o snapshot ativo, mas degradam em vez de abortar quando um SecretRef direcionado não está disponível nesse caminho de comando.
+- Strict command paths (for example `opencraft memory` remote-memory paths and `opencraft qr --remote`) read from the active snapshot and fail fast when a required SecretRef is unavailable.
+- Read-only command paths (for example `opencraft status`, `opencraft status --all`, `opencraft channels status`, `opencraft channels resolve`, `opencraft security audit`, and read-only doctor/config repair flows) also prefer the active snapshot, but degrade instead of aborting when a targeted SecretRef is unavailable in that command path.
 
-Comportamento somente leitura:
+Read-only behavior:
 
-- Quando o gateway está executando, esses comandos leem primeiro do snapshot ativo.
-- Se a resolução do gateway estiver incompleta ou o gateway não estiver disponível, eles tentam fallback local direcionado para a superfície específica do comando.
-- Se um SecretRef direcionado ainda não estiver disponível, o comando continua com saída somente leitura degradada e diagnósticos explícitos como "configurado mas indisponível neste caminho de comando".
-- Esse comportamento degradado é apenas local ao comando. Ele não enfraquece caminhos de inicialização, reload ou envio/auth em runtime.
+- When the gateway is running, these commands read from the active snapshot first.
+- If gateway resolution is incomplete or the gateway is unavailable, they attempt targeted local fallback for the specific command surface.
+- If a targeted SecretRef is still unavailable, the command continues with degraded read-only output and explicit diagnostics such as “configured but unavailable in this command path”.
+- This degraded behavior is command-local only. It does not weaken runtime startup, reload, or send/auth paths.
 
-Outras notas:
+Other notes:
 
-- A atualização do snapshot após rotação de secrets no backend é feita por `opencraft secrets reload`.
-- Método RPC do gateway usado por esses caminhos de comando: `secrets.resolve`.
+- Snapshot refresh after backend secret rotation is handled by `opencraft secrets reload`.
+- Gateway RPC method used by these command paths: `secrets.resolve`.
 
-## Fluxo de auditoria e configuração
+## Audit and configure workflow
 
-Fluxo padrão do operador:
+Default operator flow:
 
 ```bash
 opencraft secrets audit --check
@@ -406,81 +406,81 @@ opencraft secrets audit --check
 
 ### `secrets audit`
 
-Achados incluem:
+Findings include:
 
-- valores em texto puro em repouso (`opencraft.json`, `auth-profiles.json`, `.env` e `agents/*/agent/models.json` gerado)
-- resíduos de headers sensíveis de provider em texto puro em entradas `models.json` geradas
-- refs não resolvidos
-- sombreamento de precedência (`auth-profiles.json` tendo prioridade sobre refs de `opencraft.json`)
-- resíduos legados (`auth.json`, lembretes OAuth)
+- plaintext values at rest (`opencraft.json`, `auth-profiles.json`, `.env`, and generated `agents/*/agent/models.json`)
+- plaintext sensitive provider header residues in generated `models.json` entries
+- unresolved refs
+- precedence shadowing (`auth-profiles.json` taking priority over `opencraft.json` refs)
+- legacy residues (`auth.json`, OAuth reminders)
 
-Nota sobre resíduos de header:
+Header residue note:
 
-- A detecção de headers sensíveis de provider é baseada em heurística de nome (nomes e fragmentos comuns de headers de auth/credencial como `authorization`, `x-api-key`, `token`, `secret`, `password` e `credential`).
+- Sensitive provider header detection is name-heuristic based (common auth/credential header names and fragments such as `authorization`, `x-api-key`, `token`, `secret`, `password`, and `credential`).
 
 ### `secrets configure`
 
-Helper interativo que:
+Interactive helper that:
 
-- configura `secrets.providers` primeiro (`env`/`file`/`exec`, adicionar/editar/remover)
-- permite selecionar campos suportados que contêm secrets em `opencraft.json` mais `auth-profiles.json` para um escopo de agente
-- pode criar um novo mapeamento de `auth-profiles.json` diretamente no seletor de alvo
-- captura detalhes do SecretRef (`source`, `provider`, `id`)
-- executa resolução de preflight
-- pode aplicar imediatamente
+- configures `secrets.providers` first (`env`/`file`/`exec`, add/edit/remove)
+- lets you select supported secret-bearing fields in `opencraft.json` plus `auth-profiles.json` for one agent scope
+- can create a new `auth-profiles.json` mapping directly in the target picker
+- captures SecretRef details (`source`, `provider`, `id`)
+- runs preflight resolution
+- can apply immediately
 
-Modos úteis:
+Helpful modes:
 
 - `opencraft secrets configure --providers-only`
 - `opencraft secrets configure --skip-provider-setup`
 - `opencraft secrets configure --agent <id>`
 
-Padrões de apply do `configure`:
+`configure` apply defaults:
 
-- limpa credenciais estáticas correspondentes de `auth-profiles.json` para providers direcionados
-- limpa entradas estáticas legadas de `api_key` de `auth.json`
-- limpa linhas de secrets conhecidas correspondentes de `<config-dir>/.env`
+- scrub matching static credentials from `auth-profiles.json` for targeted providers
+- scrub legacy static `api_key` entries from `auth.json`
+- scrub matching known secret lines from `<config-dir>/.env`
 
 ### `secrets apply`
 
-Aplicar um plano salvo:
+Apply a saved plan:
 
 ```bash
 opencraft secrets apply --from /tmp/opencraft-secrets-plan.json
 opencraft secrets apply --from /tmp/opencraft-secrets-plan.json --dry-run
 ```
 
-Para detalhes estritos de contrato de alvo/caminho e regras exatas de rejeição, veja:
+For strict target/path contract details and exact rejection rules, see:
 
-- [Contrato de Plano de Secrets Apply](/gateway/secrets-plan-contract)
+- [Secrets Apply Plan Contract](/gateway/secrets-plan-contract)
 
-## Política de segurança unidirecional
+## One-way safety policy
 
-O OpenCraft intencionalmente não escreve backups de rollback contendo valores históricos de secrets em texto puro.
+OpenCraft intentionally does not write rollback backups containing historical plaintext secret values.
 
-Modelo de segurança:
+Safety model:
 
-- preflight deve ter sucesso antes do modo de escrita
-- ativação em runtime é validada antes do commit
-- apply atualiza arquivos usando substituição atômica de arquivo e restauração best-effort em caso de falha
+- preflight must succeed before write mode
+- runtime activation is validated before commit
+- apply updates files using atomic file replacement and best-effort restore on failure
 
-## Notas de compatibilidade de auth legado
+## Legacy auth compatibility notes
 
-Para credenciais estáticas, o runtime não depende mais de armazenamento de auth legado em texto puro.
+For static credentials, runtime no longer depends on plaintext legacy auth storage.
 
-- A fonte de credenciais em runtime é o snapshot resolvido em memória.
-- Entradas estáticas legadas de `api_key` são limpas quando descobertas.
-- Comportamento de compatibilidade relacionado a OAuth permanece separado.
+- Runtime credential source is the resolved in-memory snapshot.
+- Legacy static `api_key` entries are scrubbed when discovered.
+- OAuth-related compatibility behavior remains separate.
 
-## Nota sobre Web UI
+## Web UI note
 
-Algumas uniões SecretInput são mais fáceis de configurar no modo de editor raw do que no modo de formulário.
+Some SecretInput unions are easier to configure in raw editor mode than in form mode.
 
-## Documentação relacionada
+## Related docs
 
-- Comandos CLI: [secrets](/cli/secrets)
-- Detalhes de contrato de plano: [Contrato de Plano de Secrets Apply](/gateway/secrets-plan-contract)
-- Superfície de credenciais: [Superfície de Credenciais SecretRef](/reference/secretref-credential-surface)
-- Setup de autenticação: [Autenticação](/gateway/authentication)
-- Postura de segurança: [Segurança](/gateway/security)
-- Precedência de variáveis de ambiente: [Variáveis de Ambiente](/help/environment)
+- CLI commands: [secrets](/cli/secrets)
+- Plan contract details: [Secrets Apply Plan Contract](/gateway/secrets-plan-contract)
+- Credential surface: [SecretRef Credential Surface](/reference/secretref-credential-surface)
+- Auth setup: [Authentication](/gateway/authentication)
+- Security posture: [Security](/gateway/security)
+- Environment precedence: [Environment Variables](/help/environment)

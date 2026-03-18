@@ -1,33 +1,33 @@
 ---
-summary: "Visão geral da família de modelos GLM + como usar no OpenCraft"
+summary: "GLM model family overview + how to use it in OpenCraft"
 read_when:
-  - Você quer modelos GLM no OpenCraft
-  - Você precisa da convenção de nomenclatura e configuração dos modelos
-title: "Modelos GLM"
+  - You want GLM models in OpenCraft
+  - You need the model naming convention and setup
+title: "GLM Models"
 ---
 
-# Modelos GLM
+# GLM models
 
-GLM é uma **família de modelos** (não uma empresa) disponível através da plataforma Z.AI. No OpenCraft, os modelos
-GLM são acessados via o provider `zai` e IDs de modelo como `zai/glm-5`.
+GLM is a **model family** (not a company) available through the Z.AI platform. In OpenCraft, GLM
+models are accessed via the `zai` provider and model IDs like `zai/glm-5`.
 
-## Configuração via CLI
+## CLI setup
 
 ```bash
-# Coding Plan Global, recomendado para usuários do Coding Plan
+# Coding Plan Global, recommended for Coding Plan users
 opencraft onboard --auth-choice zai-coding-global
 
-# Coding Plan CN (região China), recomendado para usuários do Coding Plan
+# Coding Plan CN (China region), recommended for Coding Plan users
 opencraft onboard --auth-choice zai-coding-cn
 
-# API Geral
+# General API
 opencraft onboard --auth-choice zai-global
 
-# API Geral CN (região China)
+# General API CN (China region)
 opencraft onboard --auth-choice zai-cn
 ```
 
-## Trecho de configuração
+## Config snippet
 
 ```json5
 {
@@ -36,8 +36,8 @@ opencraft onboard --auth-choice zai-cn
 }
 ```
 
-## Notas
+## Notes
 
-- As versões e disponibilidade do GLM podem mudar; verifique a documentação do Z.AI para as mais recentes.
-- Exemplos de IDs de modelo incluem `glm-5`, `glm-4.7` e `glm-4.6`.
-- Para detalhes do provider, veja [/providers/zai](/providers/zai).
+- GLM versions and availability can change; check Z.AI's docs for the latest.
+- Example model IDs include `glm-5`, `glm-4.7`, and `glm-4.6`.
+- For provider details, see [/providers/zai](/providers/zai).

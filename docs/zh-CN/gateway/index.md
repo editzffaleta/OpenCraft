@@ -34,7 +34,7 @@ opencraft gateway --force
 pnpm gateway:watch
 ```
 
-- 配置热重载监视 `~/.editzffaleta/OpenCraft.json`（或 `OPENCRAFT_CONFIG_PATH`）。
+- 配置热重载监视 `~/.opencraft/opencraft.json`（或 `OPENCRAFT_CONFIG_PATH`）。
   - 默认模式：`gateway.reload.mode="hybrid"`（热应用安全更改，关键更改时重启）。
   - 热重载在需要时通过 **SIGUSR1** 使用进程内重启。
   - 使用 `gateway.reload.mode="off"` 禁用。
@@ -49,7 +49,7 @@ pnpm gateway:watch
 - `--force` 使用 `lsof` 查找所选端口上的监听器，发送 SIGTERM，记录它终止了什么，然后启动 Gateway 网关（如果缺少 `lsof` 则快速失败）。
 - 如果你在 supervisor（launchd/systemd/mac 应用子进程模式）下运行，stop/restart 通常发送 **SIGTERM**；旧版本可能将其显示为 `pnpm` `ELIFECYCLE` 退出码 **143**（SIGTERM），这是正常关闭，不是崩溃。
 - **SIGUSR1** 在授权时触发进程内重启（Gateway 网关工具/配置应用/更新，或启用 `commands.restart` 以进行手动重启）。
-- 默认需要 Gateway 网关认证：设置 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）或 `gateway.auth.password`。客户端必须发送 `connect.params.auth.token/password`，除非使用 Tailscale Serve 身份。
+- 默认需要 Gateway 网关认证：设置 `gateway.auth.token`（或 `OPENCRAFT_GATEWAY_TOKEN`）或 `gateway.auth.password`。客户端必须发送 `connect.params.auth.token/password`，除非使用 Tailscale Serve 身份。
 - 向导现在默认生成令牌，即使在 loopback 上也是如此。
 - 端口优先级：`--port` > `OPENCRAFT_GATEWAY_PORT` > `gateway.port` > 默认 `18789`。
 
@@ -273,7 +273,7 @@ Wants=network-online.target
 ExecStart=/usr/local/bin/opencraft gateway --port 18789
 Restart=always
 RestartSec=5
-Environment=OPENCLAW_GATEWAY_TOKEN=
+Environment=OPENCRAFT_GATEWAY_TOKEN=
 WorkingDirectory=/home/youruser
 
 [Install]

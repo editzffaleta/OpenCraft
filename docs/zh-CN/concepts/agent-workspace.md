@@ -26,7 +26,7 @@ x-i18n:
 - 默认值：`~/.opencraft/workspace`
 - 如果设置了 `OPENCRAFT_PROFILE` 且其值不是 `"default"`，默认值将变为
   `~/.opencraft/workspace-<profile>`。
-- 在 `~/.editzffaleta/OpenCraft.json` 中覆盖：
+- 在 `~/.opencraft/opencraft.json` 中覆盖：
 
 ```json5
 {
@@ -117,7 +117,7 @@ x-i18n:
 
 这些内容位于 `~/.opencraft/` 下，**不应**提交到工作区仓库：
 
-- `~/.editzffaleta/OpenCraft.json`（配置）
+- `~/.opencraft/opencraft.json`（配置）
 - `~/.opencraft/credentials/`（OAuth 令牌、API 密钥）
 - `~/.opencraft/agents/<agentId>/sessions/`（会话记录和元数据）
 - `~/.opencraft/skills/`（托管 Skills）
@@ -208,7 +208,7 @@ git push
 ## 将工作区迁移到新机器
 
 1. 将仓库克隆到所需路径（默认是 `~/.opencraft/workspace`）。
-2. 在 `~/.editzffaleta/OpenCraft.json` 中将 `agents.defaults.workspace` 设置为该路径。
+2. 在 `~/.opencraft/opencraft.json` 中将 `agents.defaults.workspace` 设置为该路径。
 3. 运行 `opencraft setup --workspace <path>` 以植入任何缺失的文件。
 4. 如果你需要会话，请将旧机器上的 `~/.opencraft/agents/<agentId>/sessions/` 单独复制过来。
 

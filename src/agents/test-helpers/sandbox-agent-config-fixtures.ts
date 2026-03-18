@@ -1,8 +1,6 @@
 import type { OpenCraftConfig } from "../../config/config.js";
 
-type AgentToolsConfig = NonNullable<
-  NonNullable<OpenCraftConfig["agents"]>["list"]
->[number]["tools"];
+type AgentToolsConfig = NonNullable<NonNullable<OpenCraftConfig["agents"]>["list"]>[number]["tools"];
 type SandboxToolsConfig = {
   allow?: string[];
   deny?: string[];

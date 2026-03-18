@@ -1,19 +1,19 @@
 ---
-summary: "Exemplos de configuração precisos em relação ao schema para setups comuns do OpenCraft"
+summary: "Schema-accurate configuration examples for common OpenCraft setups"
 read_when:
-  - Aprendendo como configurar o OpenCraft
-  - Procurando exemplos de configuração
-  - Configurando o OpenCraft pela primeira vez
+  - Learning how to configure OpenCraft
+  - Looking for configuration examples
+  - Setting up OpenCraft for the first time
 title: "Configuration Examples"
 ---
 
-# Exemplos de Configuração
+# Configuration Examples
 
-Os exemplos abaixo estão alinhados com o schema de config atual. Para a referência exaustiva e notas por campo, veja [Configuration](/gateway/configuration).
+Examples below are aligned with the current config schema. For the exhaustive reference and per-field notes, see [Configuration](/gateway/configuration).
 
-## Início rápido
+## Quick start
 
-### Mínimo absoluto
+### Absolute minimum
 
 ```json5
 {
@@ -22,9 +22,9 @@ Os exemplos abaixo estão alinhados com o schema de config atual. Para a referê
 }
 ```
 
-Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir desse número.
+Save to `~/.opencraft/opencraft.json` and you can DM the bot from that number.
 
-### Starter recomendado
+### Recommended starter
 
 ```json5
 {
@@ -46,13 +46,13 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
 }
 ```
 
-## Exemplo expandido (opções principais)
+## Expanded example (major options)
 
-> JSON5 permite usar comentários e trailing commas. JSON regular também funciona.
+> JSON5 lets you use comments and trailing commas. Regular JSON works too.
 
 ```json5
 {
-  // Ambiente + shell
+  // Environment + shell
   env: {
     OPENROUTER_API_KEY: "sk-or-...",
     vars: {
@@ -64,7 +64,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Metadados de perfil de auth (secrets ficam em auth-profiles.json)
+  // Auth profile metadata (secrets live in auth-profiles.json)
   auth: {
     profiles: {
       "anthropic:me@example.com": {
@@ -83,7 +83,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Identidade
+  // Identity
   identity: {
     name: "Samantha",
     theme: "helpful sloth",
@@ -93,13 +93,13 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
   // Logging
   logging: {
     level: "info",
-    file: "/tmp/editzffaleta/OpenCraft.log",
+    file: "/tmp/opencraft/opencraft.log",
     consoleLevel: "info",
     consoleStyle: "pretty",
     redactSensitive: "tools",
   },
 
-  // Formatação de mensagens
+  // Message formatting
   messages: {
     messagePrefix: "[opencraft]",
     responsePrefix: ">",
@@ -107,7 +107,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     ackReactionScope: "group-mentions",
   },
 
-  // Roteamento + fila
+  // Routing + queue
   routing: {
     groupChat: {
       mentionPatterns: ["@opencraft", "opencraft"],
@@ -130,7 +130,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Ferramentas
+  // Tooling
   tools: {
     media: {
       audio: {
@@ -138,7 +138,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // Fallback de CLI opcional (binário Whisper):
+          // Optional CLI fallback (Whisper binary):
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -151,7 +151,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Comportamento de sessão
+  // Session behavior
   session: {
     scope: "per-sender",
     reset: {
@@ -169,9 +169,9 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
       pruneAfter: "30d",
       maxEntries: 500,
       rotateBytes: "10mb",
-      resetArchiveRetention: "30d", // duration ou false
-      maxDiskBytes: "500mb", // opcional
-      highWaterBytes: "400mb", // opcional (padrão 80% de maxDiskBytes)
+      resetArchiveRetention: "30d", // duration or false
+      maxDiskBytes: "500mb", // optional
+      highWaterBytes: "400mb", // optional (defaults to 80% of maxDiskBytes)
     },
     typingIntervalSeconds: 5,
     sendPolicy: {
@@ -180,7 +180,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Canais
+  // Channels
   channels: {
     whatsapp: {
       dmPolicy: "pairing",
@@ -232,7 +232,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Runtime do agente
+  // Agent runtime
   agents: {
     defaults: {
       workspace: "~/.opencraft/workspace",
@@ -273,7 +273,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
         every: "30m",
         model: "anthropic/claude-sonnet-4-5",
         target: "last",
-        directPolicy: "allow", // allow (padrão) | block
+        directPolicy: "allow", // allow (default) | block
         to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
@@ -291,7 +291,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
         perSession: true,
         workspaceRoot: "~/.opencraft/sandboxes",
         docker: {
-          image: "openclaw-sandbox:bookworm-slim",
+          image: "opencraft-sandbox:bookworm-slim",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp", "/var/tmp", "/run"],
@@ -327,7 +327,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
     },
   },
 
-  // Providers de modelo customizados
+  // Custom model providers
   models: {
     mode: "merge",
     providers: {
@@ -434,7 +434,7 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
       nodeManager: "npm",
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
         apiKey: "GEMINI_KEY_HERE",
         env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" },
@@ -445,9 +445,9 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
 }
 ```
 
-## Padrões comuns
+## Common patterns
 
-### Setup multi-plataforma
+### Multi-platform setup
 
 ```json5
 {
@@ -468,23 +468,23 @@ Salve em `~/.editzffaleta/OpenCraft.json` e você pode enviar DM ao bot a partir
 }
 ```
 
-### Modo DM seguro (inbox compartilhada / DMs multi-usuário)
+### Secure DM mode (shared inbox / multi-user DMs)
 
-Se mais de uma pessoa pode enviar DM ao seu bot (múltiplas entradas em `allowFrom`, aprovações de pairing para múltiplas pessoas, ou `dmPolicy: "open"`), habilite o **modo DM seguro** para que DMs de diferentes remetentes não compartilhem um contexto por padrão:
+If more than one person can DM your bot (multiple entries in `allowFrom`, pairing approvals for multiple people, or `dmPolicy: "open"`), enable **secure DM mode** so DMs from different senders don’t share one context by default:
 
 ```json5
 {
-  // Modo DM seguro (recomendado para agentes multi-usuário ou DMs sensíveis)
+  // Secure DM mode (recommended for multi-user or sensitive DM agents)
   session: { dmScope: "per-channel-peer" },
 
   channels: {
-    // Exemplo: inbox WhatsApp multi-usuário
+    // Example: WhatsApp multi-user inbox
     whatsapp: {
       dmPolicy: "allowlist",
       allowFrom: ["+15555550123", "+15555550124"],
     },
 
-    // Exemplo: inbox Discord multi-usuário
+    // Example: Discord multi-user inbox
     discord: {
       enabled: true,
       token: "YOUR_DISCORD_BOT_TOKEN",
@@ -494,10 +494,10 @@ Se mais de uma pessoa pode enviar DM ao seu bot (múltiplas entradas em `allowFr
 }
 ```
 
-Para Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, a autorização do remetente é baseada em ID por padrão.
-Apenas habilite correspondência direta por nome/email/nick mutável com `dangerouslyAllowNameMatching: true` de cada canal se você aceitar explicitamente esse risco.
+For Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, sender authorization is ID-first by default.
+Only enable direct mutable name/email/nick matching with each channel's `dangerouslyAllowNameMatching: true` if you explicitly accept that risk.
 
-### OAuth com failover de API key
+### OAuth with API key failover
 
 ```json5
 {
@@ -527,10 +527,12 @@ Apenas habilite correspondência direta por nome/email/nick mutável com `danger
 }
 ```
 
-### Anthropic setup-token + API key, fallback MiniMax
+### Anthropic setup-token + API key, MiniMax fallback
 
 <Warning>
-O uso de setup-token Anthropic fora do Claude Code foi restrito para alguns usuários no passado. Trate isso como risco de escolha do usuário e verifique os termos atuais da Anthropic antes de depender de auth por assinatura.
+Anthropic setup-token usage outside Claude Code has been restricted for some
+users in the past. Treat this as user-choice risk and verify current Anthropic
+terms before depending on subscription auth.
 </Warning>
 
 ```json5
@@ -570,7 +572,7 @@ O uso de setup-token Anthropic fora do Claude Code foi restrito para alguns usu�
 }
 ```
 
-### Bot de trabalho (acesso restrito)
+### Work bot (restricted access)
 
 ```json5
 {
@@ -595,7 +597,7 @@ O uso de setup-token Anthropic fora do Claude Code foi restrito para alguns usu�
 }
 ```
 
-### Apenas modelos locais
+### Local models only
 
 ```json5
 {
@@ -627,9 +629,9 @@ O uso de setup-token Anthropic fora do Claude Code foi restrito para alguns usu�
 }
 ```
 
-## Dicas
+## Tips
 
-- Se você definir `dmPolicy: "open"`, a lista `allowFrom` correspondente deve incluir `"*"`.
-- IDs de provider diferem (números de telefone, IDs de usuário, IDs de canal). Use a documentação do provider para confirmar o formato.
-- Seções opcionais para adicionar depois: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
-- Veja [Providers](/providers) e [Troubleshooting](/gateway/troubleshooting) para notas de setup mais detalhadas.
+- If you set `dmPolicy: "open"`, the matching `allowFrom` list must include `"*"`.
+- Provider IDs differ (phone numbers, user IDs, channel IDs). Use the provider docs to confirm the format.
+- Optional sections to add later: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
+- See [Providers](/providers) and [Troubleshooting](/gateway/troubleshooting) for deeper setup notes.

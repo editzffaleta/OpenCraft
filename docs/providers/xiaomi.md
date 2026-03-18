@@ -1,33 +1,33 @@
 ---
-summary: "Use o Xiaomi MiMo (mimo-v2-flash) com o OpenCraft"
+summary: "Use Xiaomi MiMo (mimo-v2-flash) with OpenCraft"
 read_when:
-  - Você quer modelos Xiaomi MiMo no OpenCraft
-  - Você precisa configurar XIAOMI_API_KEY
+  - You want Xiaomi MiMo models in OpenCraft
+  - You need XIAOMI_API_KEY setup
 title: "Xiaomi MiMo"
 ---
 
 # Xiaomi MiMo
 
-Xiaomi MiMo é a plataforma de API para modelos **MiMo**. Ela fornece APIs REST compatíveis com os
-formatos OpenAI e Anthropic e usa API keys para autenticação. Crie sua API key no
-[console Xiaomi MiMo](https://platform.xiaomimimo.com/#/console/api-keys). O OpenCraft usa
-o provider `xiaomi` com uma API key Xiaomi MiMo.
+Xiaomi MiMo is the API platform for **MiMo** models. It provides REST APIs compatible with
+OpenAI and Anthropic formats and uses API keys for authentication. Create your API key in
+the [Xiaomi MiMo console](https://platform.xiaomimimo.com/#/console/api-keys). OpenCraft uses
+the `xiaomi` provider with a Xiaomi MiMo API key.
 
-## Visão geral do modelo
+## Model overview
 
-- **mimo-v2-flash**: janela de contexto de 262144 Token, compatível com a API Anthropic Messages.
-- URL base: `https://api.xiaomimimo.com/anthropic`
-- Autorização: `Bearer $XIAOMI_API_KEY`
+- **mimo-v2-flash**: 262144-token context window, Anthropic Messages API compatible.
+- Base URL: `https://api.xiaomimimo.com/anthropic`
+- Authorization: `Bearer $XIAOMI_API_KEY`
 
-## Configuração via CLI
+## CLI setup
 
 ```bash
 opencraft onboard --auth-choice xiaomi-api-key
-# ou não interativo
+# or non-interactive
 opencraft onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
 ```
 
-## Trecho de config
+## Config snippet
 
 ```json5
 {
@@ -57,8 +57,8 @@ opencraft onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY
 }
 ```
 
-## Notas
+## Notes
 
-- Referência de modelo: `xiaomi/mimo-v2-flash`.
-- O provider é injetado automaticamente quando `XIAOMI_API_KEY` está definido (ou existe um perfil de autenticação).
-- Veja [/concepts/model-providers](/concepts/model-providers) para regras de provider.
+- Model ref: `xiaomi/mimo-v2-flash`.
+- The provider is injected automatically when `XIAOMI_API_KEY` is set (or an auth profile exists).
+- See [/concepts/model-providers](/concepts/model-providers) for provider rules.

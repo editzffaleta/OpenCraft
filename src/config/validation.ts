@@ -24,9 +24,7 @@ import { findLegacyConfigIssues } from "./legacy.js";
 import type { OpenCraftConfig, ConfigValidationIssue } from "./types.js";
 import { OpenCraftSchema } from "./zod-schema.js";
 
-// google-gemini-cli-auth is still an active extension in this fork, so only
-// google-antigravity-auth is treated as a legacy removed id.
-const LEGACY_REMOVED_PLUGIN_IDS = new Set(["google-antigravity-auth"]);
+const LEGACY_REMOVED_PLUGIN_IDS = new Set(["google-antigravity-auth", "google-gemini-cli-auth"]);
 
 type UnknownIssueRecord = Record<string, unknown>;
 type AllowedValuesCollection = {
@@ -264,9 +262,7 @@ export function validateConfigObjectRaw(
   if (avatarIssues.length > 0) {
     return { ok: false, issues: avatarIssues };
   }
-  const gatewayTailscaleBindIssues = validateGatewayTailscaleBind(
-    validated.data as OpenCraftConfig,
-  );
+  const gatewayTailscaleBindIssues = validateGatewayTailscaleBind(validated.data as OpenCraftConfig);
   if (gatewayTailscaleBindIssues.length > 0) {
     return { ok: false, issues: gatewayTailscaleBindIssues };
   }

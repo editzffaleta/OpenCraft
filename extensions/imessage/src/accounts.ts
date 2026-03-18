@@ -1,10 +1,10 @@
-import type { IMessageAccountConfig } from "opencraft/plugin-sdk/imessage";
 import {
-  type OpenCraftConfig,
   createAccountListHelpers,
   normalizeAccountId,
   resolveAccountEntry,
-} from "../../../src/plugin-sdk-internal/accounts.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import type { IMessageAccountConfig } from "opencraft/plugin-sdk/imessage";
 
 export type ResolvedIMessageAccount = {
   accountId: string;
@@ -25,10 +25,7 @@ function resolveAccountConfig(
   return resolveAccountEntry(cfg.channels?.imessage?.accounts, accountId);
 }
 
-function mergeIMessageAccountConfig(
-  cfg: OpenCraftConfig,
-  accountId: string,
-): IMessageAccountConfig {
+function mergeIMessageAccountConfig(cfg: OpenCraftConfig, accountId: string): IMessageAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.imessage ??
     {}) as IMessageAccountConfig & { accounts?: unknown };
   const account = resolveAccountConfig(cfg, accountId) ?? {};

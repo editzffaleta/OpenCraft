@@ -194,7 +194,7 @@ exec ssh -T bot@mac-mini.tailnet-1234.ts.net imsg "$@"
 - 使用 SSH 密钥使 `ssh bot@mac-mini.tailnet-1234.ts.net` 无需提示即可工作。
 - `remoteHost` 应与 SSH 目标匹配，以便 SCP 可以获取附件。
 
-多账户支持：使用 `channels.imessage.accounts` 配置每个账户及可选的 `name`。参见 [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) 了解共享模式。不要提交 `~/.editzffaleta/OpenCraft.json`（它通常包含令牌）。
+多账户支持：使用 `channels.imessage.accounts` 配置每个账户及可选的 `name`。参见 [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) 了解共享模式。不要提交 `~/.opencraft/opencraft.json`（它通常包含令牌）。
 
 ## 访问控制（私信 + 群组）
 

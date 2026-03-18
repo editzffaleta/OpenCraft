@@ -135,16 +135,16 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       "OPENCRAFT_SKIP_CRON",
       "OPENCRAFT_SKIP_CANVAS_HOST",
       "OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER",
-      "OPENCLAW_GATEWAY_TOKEN",
-      "OPENCLAW_GATEWAY_PASSWORD",
+      "OPENCRAFT_GATEWAY_TOKEN",
+      "OPENCRAFT_GATEWAY_PASSWORD",
     ]);
     process.env.OPENCRAFT_SKIP_CHANNELS = "1";
     process.env.OPENCRAFT_SKIP_GMAIL_WATCHER = "1";
     process.env.OPENCRAFT_SKIP_CRON = "1";
     process.env.OPENCRAFT_SKIP_CANVAS_HOST = "1";
     process.env.OPENCRAFT_SKIP_BROWSER_CONTROL_SERVER = "1";
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
-    delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
 
     tempHome = await makeTempWorkspace("opencraft-onboard-");
     process.env.HOME = tempHome;
@@ -200,12 +200,12 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     });
   }, 60_000);
 
-  it("uses OPENCLAW_GATEWAY_TOKEN when --gateway-token is omitted", async () => {
+  it("uses OPENCRAFT_GATEWAY_TOKEN when --gateway-token is omitted", async () => {
     await withStateDir("state-env-token-", async (stateDir) => {
       const envToken = "tok_env_fallback_123";
       const workspace = path.join(stateDir, "opencraft");
-      const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-      process.env.OPENCLAW_GATEWAY_TOKEN = envToken;
+      const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+      process.env.OPENCRAFT_GATEWAY_TOKEN = envToken;
 
       try {
         await runNonInteractiveSetup(
@@ -232,9 +232,9 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         expect(cfg?.gateway?.auth?.token).toBe(envToken);
       } finally {
         if (prevToken === undefined) {
-          delete process.env.OPENCLAW_GATEWAY_TOKEN;
+          delete process.env.OPENCRAFT_GATEWAY_TOKEN;
         } else {
-          process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
+          process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
         }
       }
     });
@@ -244,8 +244,8 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     await withStateDir("state-env-token-ref-", async (stateDir) => {
       const envToken = "tok_env_ref_123";
       const workspace = path.join(stateDir, "opencraft");
-      const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-      process.env.OPENCLAW_GATEWAY_TOKEN = envToken;
+      const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+      process.env.OPENCRAFT_GATEWAY_TOKEN = envToken;
 
       try {
         await runNonInteractiveSetup(
@@ -259,7 +259,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
             installDaemon: false,
             gatewayBind: "loopback",
             gatewayAuth: "token",
-            gatewayTokenRefEnv: "OPENCLAW_GATEWAY_TOKEN",
+            gatewayTokenRefEnv: "OPENCRAFT_GATEWAY_TOKEN",
           },
           runtime,
         );
@@ -273,13 +273,13 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         expect(cfg?.gateway?.auth?.token).toEqual({
           source: "env",
           provider: "default",
-          id: "OPENCLAW_GATEWAY_TOKEN",
+          id: "OPENCRAFT_GATEWAY_TOKEN",
         });
       } finally {
         if (prevToken === undefined) {
-          delete process.env.OPENCLAW_GATEWAY_TOKEN;
+          delete process.env.OPENCRAFT_GATEWAY_TOKEN;
         } else {
-          process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
+          process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
         }
       }
     });

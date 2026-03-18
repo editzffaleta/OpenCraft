@@ -1,19 +1,16 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
-import {
-  applyVercelAiGatewayConfig,
-  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
-} from "../../src/commands/onboard-auth.js";
-import { createProviderApiKeyAuthMethod } from "../../src/plugins/provider-api-key-auth.js";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
+import { createProviderApiKeyAuthMethod } from "opencraft/plugin-sdk/provider-auth";
+import { buildSingleProviderApiKeyCatalog } from "opencraft/plugin-sdk/provider-catalog";
+import { applyVercelAiGatewayConfig, VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF } from "./onboard.js";
 import { buildVercelAiGatewayProvider } from "./provider-catalog.js";
 
 const PROVIDER_ID = "vercel-ai-gateway";
 
-const vercelAiGatewayPlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Vercel AI Gateway Provider",
   description: "Bundled Vercel AI Gateway provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Vercel AI Gateway",
@@ -43,21 +40,13 @@ const vercelAiGatewayPlugin = {
       ],
       catalog: {
         order: "simple",
-        run: async (ctx) => {
-          const apiKey = ctx.resolveProviderApiKey(PROVIDER_ID).apiKey;
-          if (!apiKey) {
-            return null;
-          }
-          return {
-            provider: {
-              ...(await buildVercelAiGatewayProvider()),
-              apiKey,
-            },
-          };
-        },
+        run: (ctx) =>
+          buildSingleProviderApiKeyCatalog({
+            ctx,
+            providerId: PROVIDER_ID,
+            buildProvider: buildVercelAiGatewayProvider,
+          }),
       },
     });
   },
-};
-
-export default vercelAiGatewayPlugin;
+});

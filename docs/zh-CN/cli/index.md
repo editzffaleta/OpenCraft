@@ -1027,7 +1027,7 @@ heartbeat 控制（Gateway 网关 RPC）。
 
 认证说明：
 
-- `node` 从环境 / 配置解析 gateway 认证（不支持 `--token`/`--password` 标志）：`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`，然后是 `gateway.auth.*`。在本地模式下，node host 会有意忽略 `gateway.remote.*`；在 `gateway.mode=remote` 时，`gateway.remote.*` 会根据远程优先级规则参与解析。
+- `node` 从环境 / 配置解析 gateway 认证（不支持 `--token`/`--password` 标志）：`OPENCRAFT_GATEWAY_TOKEN` / `OPENCRAFT_GATEWAY_PASSWORD`，然后是 `gateway.auth.*`。在本地模式下，node host 会有意忽略 `gateway.remote.*`；在 `gateway.mode=remote` 时，`gateway.remote.*` 会根据远程优先级规则参与解析。
 - 旧版 `CLAWDBOT_GATEWAY_*` 环境变量会被有意忽略，不用于 node-host 认证解析。
 
 ## Nodes

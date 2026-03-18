@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # Configuration
-SUBSYSTEM="ai.opencraft"
+SUBSYSTEM="ai.openclaw"
 DEFAULT_LEVEL="info"
 
 # Colors for output
@@ -59,7 +59,7 @@ DESCRIPTION:
     Requires sudo access configured for /usr/bin/log command.
 
 LOG FLOW ARCHITECTURE:
-    OpenCraft logs flow through the macOS unified log (subsystem: ai.opencraft).
+    OpenClaw logs flow through the macOS unified log (subsystem: ai.openclaw).
 
 LOG CATEGORIES (examples):
     • voicewake           - Voice wake detection/test harness

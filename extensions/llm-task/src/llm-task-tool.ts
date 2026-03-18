@@ -8,8 +8,8 @@ import {
   normalizeThinkLevel,
   resolvePreferredOpenCraftTmpDir,
   supportsXHighThinking,
-} from "opencraft/plugin-sdk/llm-task";
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/llm-task";
+} from "../api.js";
+import type { OpenCraftPluginApi } from "../api.js";
 
 function stripCodeFences(s: string): string {
   const trimmed = s.trim();

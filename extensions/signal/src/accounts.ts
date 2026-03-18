@@ -1,10 +1,10 @@
-import type { SignalAccountConfig } from "opencraft/plugin-sdk/signal";
 import {
-  type OpenCraftConfig,
   createAccountListHelpers,
   normalizeAccountId,
   resolveAccountEntry,
-} from "../../../src/plugin-sdk-internal/accounts.js";
+  type OpenCraftConfig,
+} from "opencraft/plugin-sdk/account-resolution";
+import type { SignalAccountConfig } from "opencraft/plugin-sdk/signal";
 
 export type ResolvedSignalAccount = {
   accountId: string;

@@ -40,7 +40,7 @@ const finalizeSetupWizard = vi.hoisted(() =>
     }
 
     const hatch = await options.prompter.select({
-      message: "Como você quer inicializar seu bot?",
+      message: "How do you want to hatch your bot?",
       options: [],
     });
     if (hatch !== "tui") {
@@ -70,7 +70,7 @@ const ensureWorkspaceAndSessions = vi.hoisted(() => vi.fn(async () => {}));
 const writeConfigFile = vi.hoisted(() => vi.fn(async () => {}));
 const readConfigFileSnapshot = vi.hoisted(() =>
   vi.fn(async () => ({
-    path: "/tmp/.editzffaleta/OpenCraft.json",
+    path: "/tmp/.opencraft/opencraft.json",
     exists: false,
     raw: null as string | null,
     parsed: {},
@@ -236,7 +236,7 @@ describe("runSetupWizard", () => {
 
   it("exits when config is invalid", async () => {
     readConfigFileSnapshot.mockResolvedValueOnce({
-      path: "/tmp/.editzffaleta/OpenCraft.json",
+      path: "/tmp/.opencraft/opencraft.json",
       exists: true,
       raw: "{}",
       parsed: {},
@@ -319,7 +319,7 @@ describe("runSetupWizard", () => {
     }
 
     const select = vi.fn(async (opts: WizardSelectParams<unknown>) => {
-      if (opts.message === "Como você quer inicializar seu bot?") {
+      if (opts.message === "How do you want to hatch your bot?") {
         return "tui";
       }
       return "quickstart";
@@ -399,11 +399,11 @@ describe("runSetupWizard", () => {
   });
 
   it("resolves gateway.auth.password SecretRef for local setup probe", async () => {
-    const previous = process.env.OPENCLAW_GATEWAY_PASSWORD;
-    process.env.OPENCLAW_GATEWAY_PASSWORD = "gateway-ref-password"; // pragma: allowlist secret
+    const previous = process.env.OPENCRAFT_GATEWAY_PASSWORD;
+    process.env.OPENCRAFT_GATEWAY_PASSWORD = "gateway-ref-password"; // pragma: allowlist secret
     probeGatewayReachable.mockClear();
     readConfigFileSnapshot.mockResolvedValueOnce({
-      path: "/tmp/.editzffaleta/OpenCraft.json",
+      path: "/tmp/.opencraft/opencraft.json",
       exists: true,
       raw: "{}",
       parsed: {},
@@ -416,7 +416,7 @@ describe("runSetupWizard", () => {
             password: {
               source: "env",
               provider: "default",
-              id: "OPENCLAW_GATEWAY_PASSWORD",
+              id: "OPENCRAFT_GATEWAY_PASSWORD",
             },
           },
         },
@@ -426,7 +426,7 @@ describe("runSetupWizard", () => {
       legacyIssues: [],
     });
     const select = vi.fn(async (opts: WizardSelectParams<unknown>) => {
-      if (opts.message === "Gerenciamento de configuração") {
+      if (opts.message === "Config handling") {
         return "keep";
       }
       return "quickstart";
@@ -453,9 +453,9 @@ describe("runSetupWizard", () => {
       );
     } finally {
       if (previous === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+        delete process.env.OPENCRAFT_GATEWAY_PASSWORD;
       } else {
-        process.env.OPENCLAW_GATEWAY_PASSWORD = previous;
+        process.env.OPENCRAFT_GATEWAY_PASSWORD = previous;
       }
     }
 

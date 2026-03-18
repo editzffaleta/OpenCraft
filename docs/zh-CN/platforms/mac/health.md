@@ -38,4 +38,4 @@ x-i18n:
 
 ## 有疑问时
 
-- 你仍然可以使用 [Gateway 网关健康](/gateway/health) 中的 CLI 流程（`opencraft status`、`opencraft status --deep`、`opencraft health --json`），并在 `/tmp/editzffaleta/OpenCraft-*.log` 中跟踪 `web-heartbeat` / `web-reconnect`。
+- 你仍然可以使用 [Gateway 网关健康](/gateway/health) 中的 CLI 流程（`opencraft status`、`opencraft status --deep`、`opencraft health --json`），并在 `/tmp/opencraft/opencraft-*.log` 中跟踪 `web-heartbeat` / `web-reconnect`。

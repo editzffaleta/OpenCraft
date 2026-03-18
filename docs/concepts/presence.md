@@ -1,102 +1,102 @@
 ---
-summary: "Como as entradas de presenca do OpenCraft sao produzidas, mescladas e exibidas"
+summary: "How OpenCraft presence entries are produced, merged, and displayed"
 read_when:
-  - Depurando a aba Instancias
-  - Investigando linhas de instancia duplicadas ou obsoletas
-  - Alterando beacons de conexao WS do Gateway ou eventos de sistema
+  - Debugging the Instances tab
+  - Investigating duplicate or stale instance rows
+  - Changing gateway WS connect or system-event beacons
 title: "Presence"
 ---
 
-# Presenca
+# Presence
 
-A "presenca" do OpenCraft e uma visao leve e de melhor esforco de:
+OpenCraft “presence” is a lightweight, best‑effort view of:
 
-- o proprio **Gateway**, e
-- **clientes conectados ao Gateway** (aplicativo macOS, WebChat, CLI, etc.)
+- the **Gateway** itself, and
+- **clients connected to the Gateway** (mac app, WebChat, CLI, etc.)
 
-A presenca e usada principalmente para renderizar a aba **Instancias** do aplicativo macOS e para
-fornecer visibilidade rapida ao operador.
+Presence is used primarily to render the macOS app’s **Instances** tab and to
+provide quick operator visibility.
 
-## Campos de presenca (o que aparece)
+## Presence fields (what shows up)
 
-As entradas de presenca sao objetos estruturados com campos como:
+Presence entries are structured objects with fields like:
 
-- `instanceId` (opcional mas fortemente recomendado): identidade estavel do cliente (geralmente `connect.client.instanceId`)
-- `host`: nome de host amigavel
-- `ip`: endereco IP de melhor esforco
-- `version`: string de versao do cliente
-- `deviceFamily` / `modelIdentifier`: dicas de hardware
+- `instanceId` (optional but strongly recommended): stable client identity (usually `connect.client.instanceId`)
+- `host`: human‑friendly host name
+- `ip`: best‑effort IP address
+- `version`: client version string
+- `deviceFamily` / `modelIdentifier`: hardware hints
 - `mode`: `ui`, `webchat`, `cli`, `backend`, `probe`, `test`, `node`, ...
-- `lastInputSeconds`: "segundos desde a ultima entrada do usuario" (se conhecido)
+- `lastInputSeconds`: “seconds since last user input” (if known)
 - `reason`: `self`, `connect`, `node-connected`, `periodic`, ...
-- `ts`: timestamp da ultima atualizacao (ms desde a epoca)
+- `ts`: last update timestamp (ms since epoch)
 
-## Produtores (de onde vem a presenca)
+## Producers (where presence comes from)
 
-As entradas de presenca sao produzidas por multiplas fontes e **mescladas**.
+Presence entries are produced by multiple sources and **merged**.
 
-### 1) Entrada propria do Gateway
+### 1) Gateway self entry
 
-O Gateway sempre cria uma entrada "self" na inicializacao para que as UIs mostrem o host do Gateway
-mesmo antes de qualquer cliente se conectar.
+The Gateway always seeds a “self” entry at startup so UIs show the gateway host
+even before any clients connect.
 
-### 2) Conexao WebSocket
+### 2) WebSocket connect
 
-Todo cliente WS comeca com uma requisicao `connect`. Apos o handshake bem-sucedido, o
-Gateway insere/atualiza uma entrada de presenca para aquela conexao.
+Every WS client begins with a `connect` request. On successful handshake the
+Gateway upserts a presence entry for that connection.
 
-#### Por que comandos unicos do CLI nao aparecem
+#### Why one‑off CLI commands don’t show up
 
-O CLI frequentemente se conecta para comandos curtos e unicos. Para evitar poluir a
-lista de Instancias, `client.mode === "cli"` **nao** e transformado em uma entrada de presenca.
+The CLI often connects for short, one‑off commands. To avoid spamming the
+Instances list, `client.mode === "cli"` is **not** turned into a presence entry.
 
-### 3) Beacons `system-event`
+### 3) `system-event` beacons
 
-Clientes podem enviar beacons periodicos mais ricos via o metodo `system-event`. O aplicativo
-macOS usa isso para reportar nome do host, IP e `lastInputSeconds`.
+Clients can send richer periodic beacons via the `system-event` method. The mac
+app uses this to report host name, IP, and `lastInputSeconds`.
 
-### 4) Conexoes de Node (role: node)
+### 4) Node connects (role: node)
 
-Quando um node se conecta pelo WebSocket do Gateway com `role: node`, o Gateway
-insere/atualiza uma entrada de presenca para aquele node (mesmo fluxo que outros clientes WS).
+When a node connects over the Gateway WebSocket with `role: node`, the Gateway
+upserts a presence entry for that node (same flow as other WS clients).
 
-## Regras de mesclagem + deduplicacao (por que `instanceId` importa)
+## Merge + dedupe rules (why `instanceId` matters)
 
-As entradas de presenca sao armazenadas em um unico mapa em memoria:
+Presence entries are stored in a single in‑memory map:
 
-- As entradas sao chaveadas por uma **chave de presenca**.
-- A melhor chave e um `instanceId` estavel (de `connect.client.instanceId`) que sobrevive a reinicializacoes.
-- As chaves sao insensíveis a maiusculas/minusculas.
+- Entries are keyed by a **presence key**.
+- The best key is a stable `instanceId` (from `connect.client.instanceId`) that survives restarts.
+- Keys are case‑insensitive.
 
-Se um cliente se reconectar sem um `instanceId` estavel, ele pode aparecer como uma
-linha **duplicada**.
+If a client reconnects without a stable `instanceId`, it may show up as a
+**duplicate** row.
 
-## TTL e tamanho limitado
+## TTL and bounded size
 
-A presenca e intencionalmente efemera:
+Presence is intentionally ephemeral:
 
-- **TTL:** entradas mais antigas que 5 minutos sao removidas
-- **Maximo de entradas:** 200 (mais antigas removidas primeiro)
+- **TTL:** entries older than 5 minutes are pruned
+- **Max entries:** 200 (oldest dropped first)
 
-Isso mantem a lista atualizada e evita crescimento ilimitado de memoria.
+This keeps the list fresh and avoids unbounded memory growth.
 
-## Ressalva de remoto/tunel (IPs de loopback)
+## Remote/tunnel caveat (loopback IPs)
 
-Quando um cliente se conecta por um tunel SSH / redirecionamento de porta local, o Gateway pode
-ver o endereco remoto como `127.0.0.1`. Para evitar sobrescrever um bom IP
-reportado pelo cliente, enderecos remotos de loopback sao ignorados.
+When a client connects over an SSH tunnel / local port forward, the Gateway may
+see the remote address as `127.0.0.1`. To avoid overwriting a good client‑reported
+IP, loopback remote addresses are ignored.
 
-## Consumidores
+## Consumers
 
-### Aba Instancias do macOS
+### macOS Instances tab
 
-O aplicativo macOS renderiza a saida de `system-presence` e aplica um pequeno indicador de
-status (Ativo/Ocioso/Obsoleto) baseado na idade da ultima atualizacao.
+The macOS app renders the output of `system-presence` and applies a small status
+indicator (Active/Idle/Stale) based on the age of the last update.
 
-## Dicas de depuracao
+## Debugging tips
 
-- Para ver a lista bruta, chame `system-presence` contra o Gateway.
-- Se voce vir duplicatas:
-  - confirme que os clientes enviam um `client.instanceId` estavel no handshake
-  - confirme que beacons periodicos usam o mesmo `instanceId`
-  - verifique se a entrada derivada da conexao esta sem `instanceId` (duplicatas sao esperadas)
+- To see the raw list, call `system-presence` against the Gateway.
+- If you see duplicates:
+  - confirm clients send a stable `client.instanceId` in the handshake
+  - confirm periodic beacons use the same `instanceId`
+  - check whether the connection‑derived entry is missing `instanceId` (duplicates are expected)

@@ -33,9 +33,7 @@ export {
   syncSkillsToWorkspace,
 } from "./skills/workspace.js";
 
-export function resolveSkillsInstallPreferences(
-  config?: OpenCraftConfig,
-): SkillsInstallPreferences {
+export function resolveSkillsInstallPreferences(config?: OpenCraftConfig): SkillsInstallPreferences {
   const raw = config?.skills?.install;
   const preferBrew = raw?.preferBrew ?? true;
   const managerRaw = typeof raw?.nodeManager === "string" ? raw.nodeManager.trim() : "";

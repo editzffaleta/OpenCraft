@@ -98,7 +98,7 @@ _apply_secret() {
 
   if kubectl get secret opencraft-secrets -n "$NS" &>/dev/null; then
     EXISTING_SECRET=true
-    EXISTING_TOKEN="$(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d)"
+    EXISTING_TOKEN="$(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.OPENCRAFT_GATEWAY_TOKEN}' | base64 -d)"
     ANTHROPIC_VALUE="$(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.ANTHROPIC_API_KEY}' 2>/dev/null | base64 -d)"
     OPENAI_VALUE="$(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.OPENAI_API_KEY}' 2>/dev/null | base64 -d)"
     GEMINI_VALUE="$(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.GEMINI_API_KEY}' 2>/dev/null | base64 -d)"
@@ -113,13 +113,13 @@ _apply_secret() {
   SECRET_MANIFEST="$TMP_DIR/secrets.yaml"
 
   # Write secret material to temp files so kubectl handles encoding safely.
-  printf '%s' "$TOKEN" > "$TMP_DIR/OPENCLAW_GATEWAY_TOKEN"
+  printf '%s' "$TOKEN" > "$TMP_DIR/OPENCRAFT_GATEWAY_TOKEN"
   printf '%s' "$ANTHROPIC_VALUE" > "$TMP_DIR/ANTHROPIC_API_KEY"
   printf '%s' "$OPENAI_VALUE" > "$TMP_DIR/OPENAI_API_KEY"
   printf '%s' "$GEMINI_VALUE" > "$TMP_DIR/GEMINI_API_KEY"
   printf '%s' "$OPENROUTER_VALUE" > "$TMP_DIR/OPENROUTER_API_KEY"
   chmod 600 \
-    "$TMP_DIR/OPENCLAW_GATEWAY_TOKEN" \
+    "$TMP_DIR/OPENCRAFT_GATEWAY_TOKEN" \
     "$TMP_DIR/ANTHROPIC_API_KEY" \
     "$TMP_DIR/OPENAI_API_KEY" \
     "$TMP_DIR/GEMINI_API_KEY" \
@@ -127,7 +127,7 @@ _apply_secret() {
 
   kubectl create secret generic opencraft-secrets \
     -n "$NS" \
-    --from-file=OPENCLAW_GATEWAY_TOKEN="$TMP_DIR/OPENCLAW_GATEWAY_TOKEN" \
+    --from-file=OPENCRAFT_GATEWAY_TOKEN="$TMP_DIR/OPENCRAFT_GATEWAY_TOKEN" \
     --from-file=ANTHROPIC_API_KEY="$TMP_DIR/ANTHROPIC_API_KEY" \
     --from-file=OPENAI_API_KEY="$TMP_DIR/OPENAI_API_KEY" \
     --from-file=GEMINI_API_KEY="$TMP_DIR/GEMINI_API_KEY" \
@@ -154,7 +154,7 @@ _apply_secret() {
   else
     echo "Gateway token stored in Secret only."
     echo "Retrieve it with:"
-    echo "  kubectl get secret opencraft-secrets -n $NS -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d && echo"
+    echo "  kubectl get secret opencraft-secrets -n $NS -o jsonpath='{.data.OPENCRAFT_GATEWAY_TOKEN}' | base64 -d && echo"
   fi
 }
 
@@ -224,8 +224,8 @@ echo "  open http://localhost:18789"
 echo ""
 if $SHOW_TOKEN; then
   echo "Gateway token (paste into Control UI):"
-  echo "  $(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d)"
+  echo "  $(kubectl get secret opencraft-secrets -n "$NS" -o jsonpath='{.data.OPENCRAFT_GATEWAY_TOKEN}' | base64 -d)"
 echo ""
 fi
 echo "Retrieve the gateway token with:"
-echo "  kubectl get secret opencraft-secrets -n $NS -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d && echo"
+echo "  kubectl get secret opencraft-secrets -n $NS -o jsonpath='{.data.OPENCRAFT_GATEWAY_TOKEN}' | base64 -d && echo"

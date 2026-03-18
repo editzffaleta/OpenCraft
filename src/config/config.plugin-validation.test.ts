@@ -281,23 +281,44 @@ describe("config plugin validation", () => {
     }
   });
 
-  it("treats google-gemini-cli-auth as a known plugin (still active in this fork)", async () => {
-    // google-gemini-cli-auth is still an active extension in the OpenCraft fork,
-    // so it registers as a known plugin id and produces no stale-entry warnings.
-    const pluginId = "google-gemini-cli-auth";
+  it("warns for removed google gemini auth plugin ids instead of failing validation", async () => {
+    const removedId = "google-gemini-cli-auth";
     const res = validateInSuite({
       agents: { list: [{ id: "pi" }] },
       plugins: {
         enabled: false,
-        entries: { [pluginId]: { enabled: true } },
-        allow: [pluginId],
-        deny: [pluginId],
-        slots: { memory: pluginId },
+        entries: { [removedId]: { enabled: true } },
+        allow: [removedId],
+        deny: [removedId],
+        slots: { memory: removedId },
       },
     });
     expect(res.ok).toBe(true);
     if (res.ok) {
-      expect(res.warnings.some((w) => w.message.includes("google-gemini-cli-auth"))).toBe(false);
+      expect(res.warnings).toEqual(
+        expect.arrayContaining([
+          {
+            path: `plugins.entries.${removedId}`,
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.allow",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.deny",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+          {
+            path: "plugins.slots.memory",
+            message:
+              "plugin removed: google-gemini-cli-auth (stale config entry ignored; remove it from plugins config)",
+          },
+        ]),
+      );
     }
   });
 

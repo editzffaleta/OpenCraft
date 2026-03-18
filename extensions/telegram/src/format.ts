@@ -1,11 +1,11 @@
-import type { MarkdownTableMode } from "../../../src/config/types.base.js";
+import type { MarkdownTableMode } from "opencraft/plugin-sdk/config-runtime";
 import {
   chunkMarkdownIR,
   markdownToIR,
   type MarkdownLinkSpan,
   type MarkdownIR,
-} from "../../../src/markdown/ir.js";
-import { renderMarkdownWithMarkers } from "../../../src/markdown/render.js";
+} from "opencraft/plugin-sdk/text-runtime";
+import { renderMarkdownWithMarkers } from "opencraft/plugin-sdk/text-runtime";
 
 export type TelegramFormattedChunk = {
   html: string;

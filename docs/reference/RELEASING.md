@@ -1,41 +1,42 @@
 ---
-title: "Política de Lançamento"
-summary: "Canais de lançamento públicos, nomenclatura de versões e cadência"
+title: "Release Policy"
+summary: "Public release channels, version naming, and cadence"
 read_when:
-  - Procurando definições de canais de lançamento públicos
-  - Procurando nomenclatura de versões e cadência
+  - Looking for public release channel definitions
+  - Looking for version naming and cadence
 ---
 
-# Política de Lançamento
+# Release Policy
 
-O OpenCraft tem três faixas de lançamento públicas:
+OpenCraft has three public release lanes:
 
-- stable: lançamentos marcados com tag que publicam no npm `latest`
-- beta: tags de pré-lançamento que publicam no npm `beta`
-- dev: o head em movimento do `main`
+- stable: tagged releases that publish to npm `latest`
+- beta: prerelease tags that publish to npm `beta`
+- dev: the moving head of `main`
 
-## Nomenclatura de versões
+## Version naming
 
-- Versão de lançamento stable: `YYYY.M.D`
-  - Tag Git: `vYYYY.M.D`
-- Versão de pré-lançamento beta: `YYYY.M.D-beta.N`
-  - Tag Git: `vYYYY.M.D-beta.N`
-- Não use zero à esquerda no mês ou dia
-- `latest` significa o lançamento stable atual no npm
-- `beta` significa o pré-lançamento atual no npm
-- Lançamentos beta podem ser publicados antes que o app macOS esteja atualizado
+- Stable release version: `YYYY.M.D`
+  - Git tag: `vYYYY.M.D`
+- Beta prerelease version: `YYYY.M.D-beta.N`
+  - Git tag: `vYYYY.M.D-beta.N`
+- Do not zero-pad month or day
+- `latest` means the current stable npm release
+- `beta` means the current prerelease npm release
+- Beta releases may ship before the macOS app catches up
 
-## Cadência de lançamento
+## Release cadence
 
-- Lançamentos seguem o fluxo beta-primeiro
-- Stable só segue depois que o último beta é validado
-- Procedimento detalhado de lançamento, aprovações, credenciais e notas de recuperação são exclusivos para mantenedores
+- Releases move beta-first
+- Stable follows only after the latest beta is validated
+- Detailed release procedure, approvals, credentials, and recovery notes are
+  maintainer-only
 
-## Referências públicas
+## Public references
 
-- [`.github/workflows/opencraft-npm-release.yml`](https://github.com/editzffaleta/OpenCraft/blob/main/.github/workflows/opencraft-npm-release.yml)
-- [`scripts/opencraft-npm-release-check.ts`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/opencraft-npm-release-check.ts)
+- [`.github/workflows/openclaw-npm-release.yml`](https://github.com/openclaw/openclaw/blob/main/.github/workflows/openclaw-npm-release.yml)
+- [`scripts/openclaw-npm-release-check.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/openclaw-npm-release-check.ts)
 
-Mantenedores usam a documentação privada de lançamento em
+Maintainers use the private release docs in
 [`opencraft/maintainers/release/README.md`](https://github.com/opencraft/maintainers/blob/main/release/README.md)
-para o runbook real.
+for the actual runbook.

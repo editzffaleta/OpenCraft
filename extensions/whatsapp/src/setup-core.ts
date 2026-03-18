@@ -3,7 +3,7 @@ import {
   type ChannelSetupAdapter,
   migrateBaseNameToDefaultAccount,
   normalizeAccountId,
-} from "../../../src/plugin-sdk-internal/setup.js";
+} from "opencraft/plugin-sdk/setup";
 
 const channel = "whatsapp" as const;
 

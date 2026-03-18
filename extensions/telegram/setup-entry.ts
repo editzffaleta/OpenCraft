@@ -1,3 +1,6 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { telegramSetupPlugin } from "./src/channel.setup.js";
 
-export default { plugin: telegramSetupPlugin };
+export { telegramSetupPlugin } from "./src/channel.setup.js";
+
+export default defineSetupPluginEntry(telegramSetupPlugin);

@@ -1,105 +1,116 @@
 ---
-summary: "Skills: managed vs workspace, gating rules e config/env wiring"
+summary: "Skills: managed vs workspace, gating rules, and config/env wiring"
 read_when:
-  - Adicionando ou modificando skills
-  - Mudando skill gating ou load rules
+  - Adding or modifying skills
+  - Changing skill gating or load rules
 title: "Skills"
 ---
 
 # Skills (OpenCraft)
 
-OpenCraft usa **[AgentSkills](https://agentskills.io)-compatível** skill folders para ensinar o agente como usar tools. Cada skill é um diretório contendo um `SKILL.md` com YAML frontmatter e instruções. OpenCraft carrega **bundled skills** mais local overrides opcionais e filtra eles em load time baseado em environment, config e binary presence.
+OpenCraft uses **[AgentSkills](https://agentskills.io)-compatible** skill folders to teach the agent how to use tools. Each skill is a directory containing a `SKILL.md` with YAML frontmatter and instructions. OpenCraft loads **bundled skills** plus optional local overrides, and filters them at load time based on environment, config, and binary presence.
 
-## Localizações e precedência
+## Locations and precedence
 
-Skills são carregadas de **três** lugares:
+Skills are loaded from **three** places:
 
-1. **Bundled skills**: shipped com o install (npm package ou OpenCraft.app)
+1. **Bundled skills**: shipped with the install (npm package or OpenCraft.app)
 2. **Managed/local skills**: `~/.opencraft/skills`
 3. **Workspace skills**: `<workspace>/skills`
 
-Se um nome de skill conflita, precedência é:
+If a skill name conflicts, precedence is:
 
-`<workspace>/skills` (mais alto) → `~/.opencraft/skills` → bundled skills (mais baixo)
+`<workspace>/skills` (highest) → `~/.opencraft/skills` → bundled skills (lowest)
 
-Adicionalmente, você pode configurar extra skill folders (mais baixa precedência) via
-`skills.load.extraDirs` em `~/.editzffaleta/OpenCraft.json`.
+Additionally, you can configure extra skill folders (lowest precedence) via
+`skills.load.extraDirs` in `~/.opencraft/opencraft.json`.
 
 ## Per-agent vs shared skills
 
-Em setups **multi-agent**, cada agente tem seu próprio workspace. Isto significa:
+In **multi-agent** setups, each agent has its own workspace. That means:
 
-- **Per-agent skills** vivem em `<workspace>/skills` para apenas aquele agente.
-- **Shared skills** vivem em `~/.opencraft/skills` (managed/local) e são visíveis para **todos agentes** na mesma máquina.
-- **Shared folders** também podem ser adicionadas via `skills.load.extraDirs` (mais baixa precedência) se você quer um common skills pack usado por múltiplos agentes.
+- **Per-agent skills** live in `<workspace>/skills` for that agent only.
+- **Shared skills** live in `~/.opencraft/skills` (managed/local) and are visible
+  to **all agents** on the same machine.
+- **Shared folders** can also be added via `skills.load.extraDirs` (lowest
+  precedence) if you want a common skills pack used by multiple agents.
 
-Se o mesmo nome de skill existe em mais de um lugar, a usual precedência se aplica: workspace wins, depois managed/local, depois bundled.
+If the same skill name exists in more than one place, the usual precedence
+applies: workspace wins, then managed/local, then bundled.
 
 ## Plugins + skills
 
-Plugins podem ship seus próprios skills listando diretórios `skills` em `opencraft.plugin.json` (paths relativos ao plugin root). Plugin skills carregam quando o plugin está habilitado e participam das normal skill precedence rules.
-Você pode gateá-los via `metadata.opencraft.requires.config` na plugin's config entry. Veja [Plugins](/tools/plugin) para discovery/config e [Tools](/tools) para a tool surface aqueles skills ensinam.
+Plugins can ship their own skills by listing `skills` directories in
+`opencraft.plugin.json` (paths relative to the plugin root). Plugin skills load
+when the plugin is enabled and participate in the normal skill precedence rules.
+You can gate them via `metadata.opencraft.requires.config` on the plugin’s config
+entry. See [Plugins](/tools/plugin) for discovery/config and [Tools](/tools) for the
+tool surface those skills teach.
 
 ## ClawHub (install + sync)
 
-ClawHub é o public skills registry para OpenCraft. Navegue em [https://clawhub.com](https://clawhub.com). Use-o para descobrir, instalar, atualizar e fazer backup de skills.
-Guia completo: [ClawHub](/tools/clawhub).
+ClawHub is the public skills registry for OpenCraft. Browse at
+[https://clawhub.com](https://clawhub.com). Use it to discover, install, update, and back up skills.
+Full guide: [ClawHub](/tools/clawhub).
 
-Fluxos comuns:
+Common flows:
 
-- Instale um skill em seu workspace:
+- Install a skill into your workspace:
   - `clawhub install <skill-slug>`
-- Atualize todos os installed skills:
+- Update all installed skills:
   - `clawhub update --all`
 - Sync (scan + publish updates):
   - `clawhub sync --all`
 
-Por padrão, `clawhub` instala em `./skills` sob seu diretório de trabalho atual (ou cai para o OpenCraft workspace configurado). OpenCraft pega aquilo como `<workspace>/skills` na próxima sessão.
+By default, `clawhub` installs into `./skills` under your current working
+directory (or falls back to the configured OpenCraft workspace). OpenCraft picks
+that up as `<workspace>/skills` on the next session.
 
-## Notas de segurança
+## Security notes
 
-- Trate third-party skills como **código não confiável**. Leia eles antes de habilitar.
-- Prefira runs sandboxed para inputs não confiáveis e tools risky. Veja [Sandboxing](/gateway/sandboxing).
-- Workspace e extra-dir skill discovery apenas aceitam skill roots e arquivos `SKILL.md` cujo resolved realpath fica dentro do configured root.
-- `skills.entries.*.env` e `skills.entries.*.apiKey` injetam secrets no **host** process para aquele agent turn (não o sandbox). Mantenha secrets fora de prompts e logs.
-- Para um broader threat model e checklists, veja [Security](/gateway/security).
+- Treat third-party skills as **untrusted code**. Read them before enabling.
+- Prefer sandboxed runs for untrusted inputs and risky tools. See [Sandboxing](/gateway/sandboxing).
+- Workspace and extra-dir skill discovery only accepts skill roots and `SKILL.md` files whose resolved realpath stays inside the configured root.
+- `skills.entries.*.env` and `skills.entries.*.apiKey` inject secrets into the **host** process
+  for that agent turn (not the sandbox). Keep secrets out of prompts and logs.
+- For a broader threat model and checklists, see [Security](/gateway/security).
 
-## Format (AgentSkills + Pi-compatível)
+## Format (AgentSkills + Pi-compatible)
 
-`SKILL.md` deve incluir pelo menos:
+`SKILL.md` must include at least:
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 ---
 ```
 
-Notas:
+Notes:
 
-- Nós seguimos o AgentSkills spec para layout/intent.
-- O parser usado pelo embedded agent suporta **single-line** frontmatter keys apenas.
-- `metadata` deve ser um **single-line JSON object**.
-- Use `{baseDir}` em instruções para referenciar o skill folder path.
-- Frontmatter keys opcionais:
-  - `homepage` — URL surfaced como "Website" na macOS Skills UI (também suportado via `metadata.opencraft.homepage`).
-  - `user-invocable` — `true|false` (padrão: `true`). Quando `true`, o skill é exposto como um user slash command.
-  - `disable-model-invocation` — `true|false` (padrão: `false`). Quando `true`, o skill é excluído do model prompt (ainda disponível via user invocation).
-  - `command-dispatch` — `tool` (opcional). Quando definido para `tool`, o slash command bypassa o model e dispatch diretamente a um tool.
-  - `command-tool` — tool name para invocar quando `command-dispatch: tool` está definido.
-  - `command-arg-mode` — `raw` (padrão). Para tool dispatch, forward os raw args string ao tool (sem core parsing).
+- We follow the AgentSkills spec for layout/intent.
+- The parser used by the embedded agent supports **single-line** frontmatter keys only.
+- `metadata` should be a **single-line JSON object**.
+- Use `{baseDir}` in instructions to reference the skill folder path.
+- Optional frontmatter keys:
+  - `homepage` — URL surfaced as “Website” in the macOS Skills UI (also supported via `metadata.opencraft.homepage`).
+  - `user-invocable` — `true|false` (default: `true`). When `true`, the skill is exposed as a user slash command.
+  - `disable-model-invocation` — `true|false` (default: `false`). When `true`, the skill is excluded from the model prompt (still available via user invocation).
+  - `command-dispatch` — `tool` (optional). When set to `tool`, the slash command bypasses the model and dispatches directly to a tool.
+  - `command-tool` — tool name to invoke when `command-dispatch: tool` is set.
+  - `command-arg-mode` — `raw` (default). For tool dispatch, forwards the raw args string to the tool (no core parsing).
 
-    O tool é invocado com params:
+    The tool is invoked with params:
     `{ command: "<raw args>", commandName: "<slash command>", skillName: "<skill name>" }`.
 
 ## Gating (load-time filters)
 
-OpenCraft **filtra skills em load time** usando `metadata` (single-line JSON):
+OpenCraft **filters skills at load time** using `metadata` (single-line JSON):
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 metadata:
   {
     "opencraft":
@@ -111,30 +122,30 @@ metadata:
 ---
 ```
 
-Fields sob `metadata.opencraft`:
+Fields under `metadata.opencraft`:
 
-- `always: true` — sempre inclua o skill (pule outros gates).
-- `emoji` — opcional emoji usado pela macOS Skills UI.
-- `homepage` — opcional URL mostrado como "Website" na macOS Skills UI.
-- `os` — optional list de platforms (`darwin`, `linux`, `win32`). Se definido, o skill é apenas elegível em aqueles OSes.
-- `requires.bins` — list; cada um deve existir em `PATH`.
-- `requires.anyBins` — list; pelo menos um deve existir em `PATH`.
-- `requires.env` — list; env var deve existir **ou** ser fornecido em config.
-- `requires.config` — list de `opencraft.json` paths que devem ser truthy.
-- `primaryEnv` — env var name associado com `skills.entries.<name>.apiKey`.
-- `install` — optional array de installer specs usado pela macOS Skills UI (brew/node/go/uv/download).
+- `always: true` — always include the skill (skip other gates).
+- `emoji` — optional emoji used by the macOS Skills UI.
+- `homepage` — optional URL shown as “Website” in the macOS Skills UI.
+- `os` — optional list of platforms (`darwin`, `linux`, `win32`). If set, the skill is only eligible on those OSes.
+- `requires.bins` — list; each must exist on `PATH`.
+- `requires.anyBins` — list; at least one must exist on `PATH`.
+- `requires.env` — list; env var must exist **or** be provided in config.
+- `requires.config` — list of `opencraft.json` paths that must be truthy.
+- `primaryEnv` — env var name associated with `skills.entries.<name>.apiKey`.
+- `install` — optional array of installer specs used by the macOS Skills UI (brew/node/go/uv/download).
 
-Nota no sandboxing:
+Note on sandboxing:
 
-- `requires.bins` é checado no **host** em skill load time.
-- Se um agente é sandboxed, o binário deve também existir **dentro do container**.
-  Instale-o via `agents.defaults.sandbox.docker.setupCommand` (ou uma imagem custom).
-  `setupCommand` executa uma vez depois que o container é criado.
-  Package installs também requerem network egress, um writable root FS e um root user no sandbox.
-  Exemplo: o `summarize` skill (`skills/summarize/SKILL.md`) precisa do `summarize` CLI
-  no sandbox container para rodar lá.
+- `requires.bins` is checked on the **host** at skill load time.
+- If an agent is sandboxed, the binary must also exist **inside the container**.
+  Install it via `agents.defaults.sandbox.docker.setupCommand` (or a custom image).
+  `setupCommand` runs once after the container is created.
+  Package installs also require network egress, a writable root FS, and a root user in the sandbox.
+  Example: the `summarize` skill (`skills/summarize/SKILL.md`) needs the `summarize` CLI
+  in the sandbox container to run there.
 
-Exemplo de installer:
+Installer example:
 
 ```markdown
 ---
@@ -161,29 +172,31 @@ metadata:
 ---
 ```
 
-Notas:
+Notes:
 
-- Se múltiplos installers estão listados, o gateway pega uma **única** opção preferida (brew quando disponível, de outra forma node).
-- Se todos installers são `download`, OpenCraft lista cada entrada então você pode ver os artifacts disponíveis.
-- Installer specs podem incluir `os: ["darwin"|"linux"|"win32"]` para filtrar opções por platform.
-- Node installs honram `skills.install.nodeManager` em `opencraft.json` (padrão: npm; opções: npm/pnpm/yarn/bun).
-  Isto apenas afeta **skill installs**; o Gateway runtime deve ainda ser Node (Bun não é recomendado para WhatsApp/Telegram).
-- Go installs: se `go` está faltando e `brew` está disponível, o gateway instala Go via Homebrew primeiro e define `GOBIN` para Homebrew's `bin` quando possível.
-- Download installs: `url` (required), `archive` (`tar.gz` | `tar.bz2` | `zip`), `extract` (padrão: auto quando archive detectado), `stripComponents`, `targetDir` (padrão: `~/.opencraft/tools/<skillKey>`).
+- If multiple installers are listed, the gateway picks a **single** preferred option (brew when available, otherwise node).
+- If all installers are `download`, OpenCraft lists each entry so you can see the available artifacts.
+- Installer specs can include `os: ["darwin"|"linux"|"win32"]` to filter options by platform.
+- Node installs honor `skills.install.nodeManager` in `opencraft.json` (default: npm; options: npm/pnpm/yarn/bun).
+  This only affects **skill installs**; the Gateway runtime should still be Node
+  (Bun is not recommended for WhatsApp/Telegram).
+- Go installs: if `go` is missing and `brew` is available, the gateway installs Go via Homebrew first and sets `GOBIN` to Homebrew’s `bin` when possible.
+- Download installs: `url` (required), `archive` (`tar.gz` | `tar.bz2` | `zip`), `extract` (default: auto when archive detected), `stripComponents`, `targetDir` (default: `~/.opencraft/tools/<skillKey>`).
 
-Se nenhum `metadata.opencraft` está presente, o skill é sempre elegível (a menos que desabilitado em config ou bloqueado por `skills.allowBundled` para bundled skills).
+If no `metadata.opencraft` is present, the skill is always eligible (unless
+disabled in config or blocked by `skills.allowBundled` for bundled skills).
 
-## Config overrides (`~/.editzffaleta/OpenCraft.json`)
+## Config overrides (`~/.opencraft/opencraft.json`)
 
-Bundled/managed skills podem ser toggled e fornecidos com env values:
+Bundled/managed skills can be toggled and supplied with env values:
 
 ```json5
 {
   skills: {
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
-        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // ou plaintext string
+        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // or plaintext string
         env: {
           GEMINI_API_KEY: "GEMINI_KEY_HERE",
         },
@@ -199,45 +212,52 @@ Bundled/managed skills podem ser toggled e fornecidos com env values:
 }
 ```
 
-Nota: se o nome de skill contém hyphens, quote a chave (JSON5 permite quoted keys).
+Note: if the skill name contains hyphens, quote the key (JSON5 allows quoted keys).
 
-Config keys correspondem ao **skill name** por padrão. Se um skill define `metadata.opencraft.skillKey`, use aquela chave sob `skills.entries`.
+If you want stock image generation/editing inside OpenCraft itself, use the core
+`image_generate` tool with `agents.defaults.imageGenerationModel` instead of a
+bundled skill. Skill examples here are for custom or third-party workflows.
 
-Regras:
+Config keys match the **skill name** by default. If a skill defines
+`metadata.opencraft.skillKey`, use that key under `skills.entries`.
 
-- `enabled: false` desabilita o skill mesmo que ele seja bundled/installed.
-- `env`: injetado **apenas se** a variável não está já definida no processo.
-- `apiKey`: conveniência para skills que declaram `metadata.opencraft.primaryEnv`.
-  Suporta plaintext string ou SecretRef object (`{ source, provider, id }`).
-- `config`: optional bag para custom per-skill fields; custom keys devem ficar aqui.
-- `allowBundled`: optional allowlist para **bundled** skills apenas. Se definido, apenas bundled skills na list são elegíveis (managed/workspace skills não afetados).
+Rules:
 
-## Injeção de ambiente (per agent run)
+- `enabled: false` disables the skill even if it’s bundled/installed.
+- `env`: injected **only if** the variable isn’t already set in the process.
+- `apiKey`: convenience for skills that declare `metadata.opencraft.primaryEnv`.
+  Supports plaintext string or SecretRef object (`{ source, provider, id }`).
+- `config`: optional bag for custom per-skill fields; custom keys must live here.
+- `allowBundled`: optional allowlist for **bundled** skills only. If set, only
+  bundled skills in the list are eligible (managed/workspace skills unaffected).
 
-Quando um agent run começa, OpenCraft:
+## Environment injection (per agent run)
 
-1. Lê skill metadata.
-2. Aplica qualquer `skills.entries.<key>.env` ou `skills.entries.<key>.apiKey` para `process.env`.
-3. Constrói o system prompt com **elegível** skills.
-4. Restaura o environment original depois que o run termina.
+When an agent run starts, OpenCraft:
 
-Isto é **scoped para o agent run**, não um global shell environment.
+1. Reads skill metadata.
+2. Applies any `skills.entries.<key>.env` or `skills.entries.<key>.apiKey` to
+   `process.env`.
+3. Builds the system prompt with **eligible** skills.
+4. Restores the original environment after the run ends.
+
+This is **scoped to the agent run**, not a global shell environment.
 
 ## Session snapshot (performance)
 
-OpenCraft snapshots o **elegível** skills quando uma sessão começa e reutiliza aquela list para turns subsequentes na mesma sessão. Mudanças para skills ou config entram em efeito na próxima nova sessão.
+OpenCraft snapshots the eligible skills **when a session starts** and reuses that list for subsequent turns in the same session. Changes to skills or config take effect on the next new session.
 
-Skills também podem refresh mid-session quando o skills watcher está habilitado ou quando um novo remote node elegível aparece (veja abaixo). Pense nisto como um **hot reload**: a list atualizada é pega no próximo agent turn.
+Skills can also refresh mid-session when the skills watcher is enabled or when a new eligible remote node appears (see below). Think of this as a **hot reload**: the refreshed list is picked up on the next agent turn.
 
 ## Remote macOS nodes (Linux gateway)
 
-Se o Gateway está rodando em Linux mas um **macOS node** está conectado **com `system.run` permitido** (Exec approvals security não definido para `deny`), OpenCraft pode tratar macOS-only skills como elegíveis quando os binários requeridos estão presentes naquele node. O agente deve executar aqueles skills via o `nodes` tool (tipicamente `nodes.run`).
+If the Gateway is running on Linux but a **macOS node** is connected **with `system.run` allowed** (Exec approvals security not set to `deny`), OpenCraft can treat macOS-only skills as eligible when the required binaries are present on that node. The agent should execute those skills via the `nodes` tool (typically `nodes.run`).
 
-Isto depende do node reportando seu command support e em uma bin probe via `system.run`. Se o macOS node fica offline depois, as skills permanecem visíveis; invocações podem falhar até que o node reconecte.
+This relies on the node reporting its command support and on a bin probe via `system.run`. If the macOS node goes offline later, the skills remain visible; invocations may fail until the node reconnects.
 
 ## Skills watcher (auto-refresh)
 
-Por padrão, OpenCraft observa skill folders e bumps o skills snapshot quando arquivos `SKILL.md` mudam. Configure isto sob `skills.load`:
+By default, OpenCraft watches skill folders and bumps the skills snapshot when `SKILL.md` files change. Configure this under `skills.load`:
 
 ```json5
 {
@@ -250,34 +270,37 @@ Por padrão, OpenCraft observa skill folders e bumps o skills snapshot quando ar
 }
 ```
 
-## Impacto de token (skills list)
+## Token impact (skills list)
 
-Quando skills estão elegíveis, OpenCraft injeta uma compact XML list de available skills no system prompt (via `formatSkillsForPrompt` em `pi-coding-agent`). O custo é determinístico:
+When skills are eligible, OpenCraft injects a compact XML list of available skills into the system prompt (via `formatSkillsForPrompt` in `pi-coding-agent`). The cost is deterministic:
 
-- **Base overhead (apenas quando ≥1 skill):** 195 caracteres.
-- **Per skill:** 97 caracteres + o comprimento de XML-escaped `<name>`, `<description>` e `<location>` values.
+- **Base overhead (only when ≥1 skill):** 195 characters.
+- **Per skill:** 97 characters + the length of the XML-escaped `<name>`, `<description>`, and `<location>` values.
 
-Fórmula (caracteres):
+Formula (characters):
 
 ```
 total = 195 + Σ (97 + len(name_escaped) + len(description_escaped) + len(location_escaped))
 ```
 
-Notas:
+Notes:
 
-- XML escaping expande `& < > " '` em entities (`&amp;`, `&lt;`, etc.), aumentando comprimento.
-- Token counts variam por model tokenizer. Uma rough OpenAI-style estimate é ~4 chars/token, então **97 chars ≈ 24 tokens** per skill mais seus field lengths atuais.
+- XML escaping expands `& < > " '` into entities (`&amp;`, `&lt;`, etc.), increasing length.
+- Token counts vary by model tokenizer. A rough OpenAI-style estimate is ~4 chars/token, so **97 chars ≈ 24 tokens** per skill plus your actual field lengths.
 
 ## Managed skills lifecycle
 
-OpenCraft ships um baseline set de skills como **bundled skills** como parte do install (npm package ou OpenCraft.app). `~/.opencraft/skills` existe para local overrides (por exemplo, pinning/patching um skill sem mudar o bundled copy). Workspace skills são user-owned e override ambos em name conflicts.
+OpenCraft ships a baseline set of skills as **bundled skills** as part of the
+install (npm package or OpenCraft.app). `~/.opencraft/skills` exists for local
+overrides (for example, pinning/patching a skill without changing the bundled
+copy). Workspace skills are user-owned and override both on name conflicts.
 
 ## Config reference
 
-Veja [Skills config](/tools/skills-config) para o schema de configuração completo.
+See [Skills config](/tools/skills-config) for the full configuration schema.
 
-## Procurando mais skills?
+## Looking for more skills?
 
-Navegue [https://clawhub.com](https://clawhub.com).
+Browse [https://clawhub.com](https://clawhub.com).
 
 ---

@@ -1,4 +1,4 @@
-import type { LineChannelData, OpenCraftPluginApi, ReplyPayload } from "opencraft/plugin-sdk/line";
+import type { LineChannelData, OpenCraftPluginApi, ReplyPayload } from "../api.js";
 import {
   createActionCard,
   createImageCard,
@@ -7,7 +7,7 @@ import {
   createReceiptCard,
   type CardAction,
   type ListItem,
-} from "opencraft/plugin-sdk/line";
+} from "../api.js";
 
 const CARD_USAGE = `Usage: /card <type> "title" "body" [options]
 

@@ -2,12 +2,12 @@ import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
   type OpenCraftConfig,
-  type DiscordAccountConfig,
-} from "opencraft/plugin-sdk/discord";
+} from "opencraft/plugin-sdk/account-resolution";
 import {
   hasConfiguredSecretInput,
   normalizeSecretInputString,
-} from "../../../src/config/types.secrets.js";
+} from "opencraft/plugin-sdk/config-runtime";
+import type { DiscordAccountConfig } from "opencraft/plugin-sdk/discord";
 import {
   mergeDiscordAccountConfig,
   resolveDefaultDiscordAccountId,

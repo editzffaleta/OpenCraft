@@ -1,14 +1,13 @@
-import { emptyPluginConfigSchema, type OpenCraftPluginApi } from "opencraft/plugin-sdk/core";
+import { definePluginEntry } from "opencraft/plugin-sdk/core";
 
 const PROVIDER_ID = "amazon-bedrock";
 const CLAUDE_46_MODEL_RE = /claude-(?:opus|sonnet)-4(?:\.|-)6(?:$|[-.])/i;
 
-const amazonBedrockPlugin = {
+export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Amazon Bedrock Provider",
   description: "Bundled Amazon Bedrock provider policy plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
+  register(api) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Amazon Bedrock",
@@ -18,6 +17,4 @@ const amazonBedrockPlugin = {
         CLAUDE_46_MODEL_RE.test(modelId.trim()) ? "adaptive" : undefined,
     });
   },
-};
-
-export default amazonBedrockPlugin;
+});

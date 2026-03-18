@@ -2,8 +2,8 @@
  * Signal reactions via signal-cli JSON-RPC API
  */
 
-import { loadConfig } from "../../../src/config/config.js";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
+import { loadConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
 import { resolveSignalAccount } from "./accounts.js";
 import { signalRpcRequest } from "./client.js";
 import { resolveSignalRpcContext } from "./rpc-context.js";

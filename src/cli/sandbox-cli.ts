@@ -29,10 +29,7 @@ const SANDBOX_EXAMPLES = {
   recreate: [
     ["opencraft sandbox recreate --all", "Recreate all containers."],
     ["opencraft sandbox recreate --session main", "Recreate a specific session."],
-    [
-      "opencraft sandbox recreate --agent mybot",
-      "Recreate a specific agent (includes sub-agents).",
-    ],
+    ["opencraft sandbox recreate --agent mybot", "Recreate a specific agent (includes sub-agents)."],
     ["opencraft sandbox recreate --browser --all", "Recreate only browser containers."],
     ["opencraft sandbox recreate --all --force", "Skip confirmation."],
   ],

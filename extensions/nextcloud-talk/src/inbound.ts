@@ -14,7 +14,7 @@ import {
   type OutboundReplyPayload,
   type OpenCraftConfig,
   type RuntimeEnv,
-} from "opencraft/plugin-sdk/nextcloud-talk";
+} from "../runtime-api.js";
 import type { ResolvedNextcloudTalkAccount } from "./accounts.js";
 import {
   normalizeNextcloudTalkAllowlist,
@@ -243,9 +243,7 @@ export async function handleNextcloudTalkInbound(params: {
       agentId: route.agentId,
     },
   );
-  const envelopeOptions = core.channel.reply.resolveEnvelopeFormatOptions(
-    config as OpenCraftConfig,
-  );
+  const envelopeOptions = core.channel.reply.resolveEnvelopeFormatOptions(config as OpenCraftConfig);
   const previousTimestamp = core.channel.session.readSessionUpdatedAt({
     storePath,
     sessionKey: route.sessionKey,

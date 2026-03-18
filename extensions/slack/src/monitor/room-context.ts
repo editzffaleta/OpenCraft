@@ -1,4 +1,4 @@
-import { buildUntrustedChannelMetadata } from "../../../../src/security/channel-metadata.js";
+import { buildUntrustedChannelMetadata } from "opencraft/plugin-sdk/security-runtime";
 
 export function resolveSlackRoomContextHints(params: {
   isRoomish: boolean;

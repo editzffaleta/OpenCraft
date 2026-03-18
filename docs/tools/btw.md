@@ -1,125 +1,125 @@
 ---
-summary: "Perguntas paralelas efêmeras com /btw"
+summary: "Ephemeral side questions with /btw"
 read_when:
-  - Você quer fazer uma pergunta rápida paralela sobre a sessão atual
-  - Você está implementando ou depurando comportamento do BTW entre clientes
-title: "Perguntas Paralelas BTW"
+  - You want to ask a quick side question about the current session
+  - You are implementing or debugging BTW behavior across clients
+title: "BTW Side Questions"
 ---
 
-# Perguntas Paralelas BTW
+# BTW Side Questions
 
-`/btw` permite que você faça uma pergunta rápida paralela sobre a **sessão atual** sem
-transformar essa pergunta em histórico normal de conversa.
+`/btw` lets you ask a quick side question about the **current session** without
+turning that question into normal conversation history.
 
-É modelado após o comportamento `/btw` do Claude Code, mas adaptado à arquitetura
-de Gateway e multi-canal do OpenCraft.
+It is modeled after Claude Code's `/btw` behavior, but adapted to OpenCraft's
+Gateway and multi-channel architecture.
 
-## O que faz
+## What it does
 
-Quando você envia:
+When you send:
 
 ```text
 /btw what changed?
 ```
 
-O OpenCraft:
+OpenCraft:
 
-1. captura o contexto da sessão atual,
-2. executa uma chamada de modelo separada **sem ferramentas**,
-3. responde apenas a pergunta paralela,
-4. deixa a execução principal em paz,
-5. **não** escreve a pergunta ou resposta BTW no histórico da sessão,
-6. emite a resposta como um **resultado paralelo ao vivo** em vez de uma mensagem normal do assistente.
+1. snapshots the current session context,
+2. runs a separate **tool-less** model call,
+3. answers only the side question,
+4. leaves the main run alone,
+5. does **not** write the BTW question or answer to session history,
+6. emits the answer as a **live side result** rather than a normal assistant message.
 
-O modelo mental importante é:
+The important mental model is:
 
-- mesmo contexto de sessão
-- consulta paralela única separada
-- sem chamadas de ferramenta
-- sem poluição de contexto futuro
-- sem persistência de transcrição
+- same session context
+- separate one-shot side query
+- no tool calls
+- no future context pollution
+- no transcript persistence
 
-## O que não faz
+## What it does not do
 
-`/btw` **não**:
+`/btw` does **not**:
 
-- cria uma nova sessão durável,
-- continua a tarefa principal inacabada,
-- executa ferramentas ou loops de ferramenta do agente,
-- escreve dados de pergunta/resposta BTW no histórico de transcrição,
-- aparece em `chat.history`,
-- sobrevive a um reload.
+- create a new durable session,
+- continue the unfinished main task,
+- run tools or agent tool loops,
+- write BTW question/answer data to transcript history,
+- appear in `chat.history`,
+- survive a reload.
 
-É intencionalmente **efêmero**.
+It is intentionally **ephemeral**.
 
-## Como o contexto funciona
+## How context works
 
-BTW usa a sessão atual como **contexto de fundo apenas**.
+BTW uses the current session as **background context only**.
 
-Se a execução principal está atualmente ativa, o OpenCraft captura o estado atual da mensagem
-e inclui o prompt principal em andamento como contexto de fundo, enquanto
-explicitamente diz ao modelo:
+If the main run is currently active, OpenCraft snapshots the current message
+state and includes the in-flight main prompt as background context, while
+explicitly telling the model:
 
-- responda apenas a pergunta paralela,
-- não retome nem complete a tarefa principal inacabada,
-- não emita chamadas de ferramenta ou pseudo-chamadas de ferramenta.
+- answer only the side question,
+- do not resume or complete the unfinished main task,
+- do not emit tool calls or pseudo-tool calls.
 
-Isso mantém o BTW isolado da execução principal enquanto ainda o torna ciente
-do que a sessão se trata.
+That keeps BTW isolated from the main run while still making it aware of what
+the session is about.
 
-## Modelo de entrega
+## Delivery model
 
-BTW **não** é entregue como uma mensagem normal de transcrição do assistente.
+BTW is **not** delivered as a normal assistant transcript message.
 
-No nível do protocolo do Gateway:
+At the Gateway protocol level:
 
-- chat normal do assistente usa o evento `chat`
-- BTW usa o evento `chat.side_result`
+- normal assistant chat uses the `chat` event
+- BTW uses the `chat.side_result` event
 
-Essa separação é intencional. Se o BTW reutilizasse o caminho normal do evento `chat`,
-os clientes o tratariam como histórico regular de conversa.
+This separation is intentional. If BTW reused the normal `chat` event path,
+clients would treat it like regular conversation history.
 
-Como o BTW usa um evento ao vivo separado e não é reproduzido do
-`chat.history`, ele desaparece após o reload.
+Because BTW uses a separate live event and is not replayed from
+`chat.history`, it disappears after reload.
 
-## Comportamento na superfície
+## Surface behavior
 
 ### TUI
 
-Na TUI, o BTW é renderizado inline na visão da sessão atual, mas permanece
-efêmero:
+In TUI, BTW is rendered inline in the current session view, but it remains
+ephemeral:
 
-- visivelmente distinto de uma resposta normal do assistente
-- dispensável com `Enter` ou `Esc`
-- não reproduzido no reload
+- visibly distinct from a normal assistant reply
+- dismissible with `Enter` or `Esc`
+- not replayed on reload
 
-### Canais externos
+### External channels
 
-Em canais como Telegram, WhatsApp e Discord, o BTW é entregue como uma
-resposta única claramente identificada porque essas superfícies não têm conceito
-de overlay efêmero local.
+On channels like Telegram, WhatsApp, and Discord, BTW is delivered as a
+clearly labeled one-off reply because those surfaces do not have a local
+ephemeral overlay concept.
 
-A resposta ainda é tratada como resultado paralelo, não histórico normal da sessão.
+The answer is still treated as a side result, not normal session history.
 
 ### Control UI / web
 
-O Gateway emite o BTW corretamente como `chat.side_result`, e o BTW não é incluído
-no `chat.history`, então o contrato de persistência já está correto para web.
+The Gateway emits BTW correctly as `chat.side_result`, and BTW is not included
+in `chat.history`, so the persistence contract is already correct for web.
 
-A Control UI atual ainda precisa de um consumidor dedicado de `chat.side_result` para
-renderizar o BTW ao vivo no browser. Até que esse suporte do lado do cliente chegue, o BTW é uma
-funcionalidade no nível do Gateway com comportamento completo na TUI e canais externos, mas ainda
-não é uma UX completa no browser.
+The current Control UI still needs a dedicated `chat.side_result` consumer to
+render BTW live in the browser. Until that client-side support lands, BTW is a
+Gateway-level feature with full TUI and external-channel behavior, but not yet
+a complete browser UX.
 
-## Quando usar BTW
+## When to use BTW
 
-Use `/btw` quando quiser:
+Use `/btw` when you want:
 
-- uma esclarecimento rápido sobre o trabalho atual,
-- uma resposta factual enquanto uma execução longa ainda está em progresso,
-- uma resposta temporária que não deve se tornar parte do contexto futuro da sessão.
+- a quick clarification about the current work,
+- a factual side answer while a long run is still in progress,
+- a temporary answer that should not become part of future session context.
 
-Exemplos:
+Examples:
 
 ```text
 /btw what file are we editing?
@@ -128,15 +128,15 @@ Exemplos:
 /btw what is 17 * 19?
 ```
 
-## Quando não usar BTW
+## When not to use BTW
 
-Não use `/btw` quando quiser que a resposta se torne parte do
-contexto de trabalho futuro da sessão.
+Do not use `/btw` when you want the answer to become part of the session's
+future working context.
 
-Nesse caso, pergunte normalmente na sessão principal em vez de usar BTW.
+In that case, ask normally in the main session instead of using BTW.
 
-## Relacionado
+## Related
 
 - [Slash commands](/tools/slash-commands)
-- [Níveis de Thinking](/tools/thinking)
-- [Sessão](/concepts/session)
+- [Thinking Levels](/tools/thinking)
+- [Session](/concepts/session)

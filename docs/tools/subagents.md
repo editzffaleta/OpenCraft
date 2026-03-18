@@ -1,19 +1,19 @@
 ---
-summary: "Sub-agents: gerando execuções isoladas de agente que anunciam resultados de volta ao chat solicitante"
+summary: "Sub-agents: spawning isolated agent runs that announce results back to the requester chat"
 read_when:
-  - Você quer trabalho em segundo plano/paralelo via agente
-  - Você está alterando sessions_spawn ou política de ferramenta de subagent
-  - Você está implementando ou solucionando problemas de sessões de subagent vinculadas a thread
+  - You want background/parallel work via the agent
+  - You are changing sessions_spawn or sub-agent tool policy
+  - You are implementing or troubleshooting thread-bound subagent sessions
 title: "Sub-Agents"
 ---
 
 # Sub-agents
 
-Sub-agents são execuções de agente em segundo plano geradas a partir de uma execução de agente existente. Eles rodam em sua própria sessão (`agent:<agentId>:subagent:<uuid>`) e, quando terminam, **anunciam** seu resultado de volta ao canal de chat solicitante.
+Sub-agents are background agent runs spawned from an existing agent run. They run in their own session (`agent:<agentId>:subagent:<uuid>`) and, when finished, **announce** their result back to the requester chat channel.
 
 ## Slash command
 
-Use `/subagents` para inspecionar ou controlar execuções de subagent para a **sessão atual**:
+Use `/subagents` to inspect or control sub-agent runs for the **current session**:
 
 - `/subagents list`
 - `/subagents kill <id|#|all>`
@@ -23,9 +23,9 @@ Use `/subagents` para inspecionar ou controlar execuções de subagent para a **
 - `/subagents steer <id|#> <message>`
 - `/subagents spawn <agentId> <task> [--model <model>] [--thinking <level>]`
 
-Controles de vínculo de thread:
+Thread binding controls:
 
-Esses comandos funcionam em canais que suportam vínculos persistentes de thread. Veja **Canais com suporte a threads** abaixo.
+These commands work on channels that support persistent thread bindings. See **Thread supporting channels** below.
 
 - `/focus <subagent-label|session-key|session-id|session-label>`
 - `/unfocus`
@@ -33,223 +33,223 @@ Esses comandos funcionam em canais que suportam vínculos persistentes de thread
 - `/session idle <duration|off>`
 - `/session max-age <duration|off>`
 
-`/subagents info` mostra metadados da execução (status, timestamps, id da sessão, caminho da transcrição, limpeza).
+`/subagents info` shows run metadata (status, timestamps, session id, transcript path, cleanup).
 
-### Comportamento de spawn
+### Spawn behavior
 
-`/subagents spawn` inicia um subagent em segundo plano como comando de usuário, não um relay interno, e envia uma atualização final de conclusão de volta ao chat solicitante quando a execução termina.
+`/subagents spawn` starts a background sub-agent as a user command, not an internal relay, and it sends one final completion update back to the requester chat when the run finishes.
 
-- O comando spawn é não-bloqueante; retorna um id de execução imediatamente.
-- Na conclusão, o subagent anuncia uma mensagem de resumo/resultado de volta ao canal de chat solicitante.
-- Para spawns manuais, a entrega é resiliente:
-  - O OpenCraft tenta entrega direta `agent` primeiro com uma chave de idempotência estável.
-  - Se a entrega direta falhar, recorre ao roteamento por fila.
-  - Se o roteamento por fila ainda não estiver disponível, o anúncio é retentado com backoff exponencial curto antes de desistir.
-- O handoff de conclusão para a sessão solicitante é contexto interno gerado pelo runtime (não texto de autoria do usuário) e inclui:
-  - `Result` (texto de resposta do `assistant`, ou último `toolResult` se a resposta do assistente estiver vazia)
+- The spawn command is non-blocking; it returns a run id immediately.
+- On completion, the sub-agent announces a summary/result message back to the requester chat channel.
+- For manual spawns, delivery is resilient:
+  - OpenCraft tries direct `agent` delivery first with a stable idempotency key.
+  - If direct delivery fails, it falls back to queue routing.
+  - If queue routing is still not available, the announce is retried with a short exponential backoff before final give-up.
+- The completion handoff to the requester session is runtime-generated internal context (not user-authored text) and includes:
+  - `Result` (`assistant` reply text, or latest `toolResult` if the assistant reply is empty)
   - `Status` (`completed successfully` / `failed` / `timed out` / `unknown`)
-  - estatísticas compactas de runtime/Token
-  - uma instrução de entrega dizendo ao agente solicitante para reescrever em voz normal de assistente (não encaminhar metadados internos brutos)
-- `--model` e `--thinking` substituem padrões para aquela execução específica.
-- Use `info`/`log` para inspecionar detalhes e saída após conclusão.
-- `/subagents spawn` é modo único (`mode: "run"`). Para sessões persistentes vinculadas a thread, use `sessions_spawn` com `thread: true` e `mode: "session"`.
-- Para sessões de harness ACP (Codex, Claude Code, Gemini CLI), use `sessions_spawn` com `runtime: "acp"` e veja [ACP Agents](/tools/acp-agents).
+  - compact runtime/token stats
+  - a delivery instruction telling the requester agent to rewrite in normal assistant voice (not forward raw internal metadata)
+- `--model` and `--thinking` override defaults for that specific run.
+- Use `info`/`log` to inspect details and output after completion.
+- `/subagents spawn` is one-shot mode (`mode: "run"`). For persistent thread-bound sessions, use `sessions_spawn` with `thread: true` and `mode: "session"`.
+- For ACP harness sessions (Codex, Claude Code, Gemini CLI), use `sessions_spawn` with `runtime: "acp"` and see [ACP Agents](/tools/acp-agents).
 
-Objetivos principais:
+Primary goals:
 
-- Paralelizar trabalho de "pesquisa / tarefa longa / ferramenta lenta" sem bloquear a execução principal.
-- Manter sub-agents isolados por padrão (separação de sessão + sandbox opcional).
-- Manter a superfície de ferramentas difícil de usar de forma incorreta: sub-agents **não** recebem ferramentas de sessão por padrão.
-- Suportar profundidade de aninhamento configurável para padrões de orquestrador.
+- Parallelize "research / long task / slow tool" work without blocking the main run.
+- Keep sub-agents isolated by default (session separation + optional sandboxing).
+- Keep the tool surface hard to misuse: sub-agents do **not** get session tools by default.
+- Support configurable nesting depth for orchestrator patterns.
 
-Nota de custo: cada subagent tem seu **próprio** contexto e uso de Token. Para tarefas pesadas ou repetitivas,
-defina um modelo mais barato para sub-agents e mantenha seu agente principal em um modelo de maior qualidade.
-Você pode configurar isso via `agents.defaults.subagents.model` ou substituições por agente.
+Cost note: each sub-agent has its **own** context and token usage. For heavy or repetitive
+tasks, set a cheaper model for sub-agents and keep your main agent on a higher-quality model.
+You can configure this via `agents.defaults.subagents.model` or per-agent overrides.
 
-## Ferramenta
+## Tool
 
 Use `sessions_spawn`:
 
-- Inicia uma execução de subagent (`deliver: false`, lane global: `subagent`)
-- Depois executa uma etapa de anúncio e posta a resposta de anúncio no canal de chat solicitante
-- Modelo padrão: herda do chamador a menos que você defina `agents.defaults.subagents.model` (ou por agente `agents.list[].subagents.model`); um `sessions_spawn.model` explícito ainda vence.
-- Thinking padrão: herda do chamador a menos que você defina `agents.defaults.subagents.thinking` (ou por agente `agents.list[].subagents.thinking`); um `sessions_spawn.thinking` explícito ainda vence.
-- Timeout padrão de execução: se `sessions_spawn.runTimeoutSeconds` for omitido, o OpenCraft usa `agents.defaults.subagents.runTimeoutSeconds` quando definido; caso contrário recorre a `0` (sem timeout).
+- Starts a sub-agent run (`deliver: false`, global lane: `subagent`)
+- Then runs an announce step and posts the announce reply to the requester chat channel
+- Default model: inherits the caller unless you set `agents.defaults.subagents.model` (or per-agent `agents.list[].subagents.model`); an explicit `sessions_spawn.model` still wins.
+- Default thinking: inherits the caller unless you set `agents.defaults.subagents.thinking` (or per-agent `agents.list[].subagents.thinking`); an explicit `sessions_spawn.thinking` still wins.
+- Default run timeout: if `sessions_spawn.runTimeoutSeconds` is omitted, OpenCraft uses `agents.defaults.subagents.runTimeoutSeconds` when set; otherwise it falls back to `0` (no timeout).
 
-Parâmetros da ferramenta:
+Tool params:
 
-- `task` (obrigatório)
-- `label?` (opcional)
-- `agentId?` (opcional; gerar sob outro id de agente se permitido)
-- `model?` (opcional; substitui o modelo do subagent; valores inválidos são pulados e o subagent roda no modelo padrão com um aviso no resultado da ferramenta)
-- `thinking?` (opcional; substitui nível de thinking para a execução do subagent)
-- `runTimeoutSeconds?` (padrão é `agents.defaults.subagents.runTimeoutSeconds` quando definido, caso contrário `0`; quando definido, a execução do subagent é abortada após N segundos)
-- `thread?` (padrão `false`; quando `true`, solicita vínculo de thread do canal para esta sessão de subagent)
+- `task` (required)
+- `label?` (optional)
+- `agentId?` (optional; spawn under another agent id if allowed)
+- `model?` (optional; overrides the sub-agent model; invalid values are skipped and the sub-agent runs on the default model with a warning in the tool result)
+- `thinking?` (optional; overrides thinking level for the sub-agent run)
+- `runTimeoutSeconds?` (defaults to `agents.defaults.subagents.runTimeoutSeconds` when set, otherwise `0`; when set, the sub-agent run is aborted after N seconds)
+- `thread?` (default `false`; when `true`, requests channel thread binding for this sub-agent session)
 - `mode?` (`run|session`)
-  - padrão é `run`
-  - se `thread: true` e `mode` omitido, padrão se torna `session`
-  - `mode: "session"` requer `thread: true`
-- `cleanup?` (`delete|keep`, padrão `keep`)
-- `sandbox?` (`inherit|require`, padrão `inherit`; `require` rejeita spawn a menos que o runtime filho alvo esteja em sandbox)
-- `sessions_spawn` **não** aceita parâmetros de entrega de canal (`target`, `channel`, `to`, `threadId`, `replyTo`, `transport`). Para entrega, use `message`/`sessions_send` da execução gerada.
+  - default is `run`
+  - if `thread: true` and `mode` omitted, default becomes `session`
+  - `mode: "session"` requires `thread: true`
+- `cleanup?` (`delete|keep`, default `keep`)
+- `sandbox?` (`inherit|require`, default `inherit`; `require` rejects spawn unless target child runtime is sandboxed)
+- `sessions_spawn` does **not** accept channel-delivery params (`target`, `channel`, `to`, `threadId`, `replyTo`, `transport`). For delivery, use `message`/`sessions_send` from the spawned run.
 
-## Sessões vinculadas a thread
+## Thread-bound sessions
 
-Quando vínculos de thread estão habilitados para um canal, um subagent pode permanecer vinculado a uma thread para que mensagens subsequentes do usuário naquela thread continuem sendo roteadas para a mesma sessão de subagent.
+When thread bindings are enabled for a channel, a sub-agent can stay bound to a thread so follow-up user messages in that thread keep routing to the same sub-agent session.
 
-### Canais com suporte a threads
+### Thread supporting channels
 
-- Discord (atualmente o único canal suportado): suporta sessões persistentes de subagent vinculadas a thread (`sessions_spawn` com `thread: true`), controles manuais de thread (`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`), e chaves de adaptador `channels.discord.threadBindings.enabled`, `channels.discord.threadBindings.idleHours`, `channels.discord.threadBindings.maxAgeHours` e `channels.discord.threadBindings.spawnSubagentSessions`.
+- Discord (currently the only supported channel): supports persistent thread-bound subagent sessions (`sessions_spawn` with `thread: true`), manual thread controls (`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`), and adapter keys `channels.discord.threadBindings.enabled`, `channels.discord.threadBindings.idleHours`, `channels.discord.threadBindings.maxAgeHours`, and `channels.discord.threadBindings.spawnSubagentSessions`.
 
-Fluxo rápido:
+Quick flow:
 
-1. Gere com `sessions_spawn` usando `thread: true` (e opcionalmente `mode: "session"`).
-2. O OpenCraft cria ou vincula uma thread àquele alvo de sessão no canal ativo.
-3. Respostas e mensagens subsequentes naquela thread são roteadas para a sessão vinculada.
-4. Use `/session idle` para inspecionar/atualizar auto-desvínculo por inatividade e `/session max-age` para controlar o limite rígido.
-5. Use `/unfocus` para desvincular manualmente.
+1. Spawn with `sessions_spawn` using `thread: true` (and optionally `mode: "session"`).
+2. OpenCraft creates or binds a thread to that session target in the active channel.
+3. Replies and follow-up messages in that thread route to the bound session.
+4. Use `/session idle` to inspect/update inactivity auto-unfocus and `/session max-age` to control the hard cap.
+5. Use `/unfocus` to detach manually.
 
-Controles manuais:
+Manual controls:
 
-- `/focus <target>` vincula a thread atual (ou cria uma) a um alvo de subagent/sessão.
-- `/unfocus` remove o vínculo da thread vinculada atual.
-- `/agents` lista execuções ativas e estado de vínculo (`thread:<id>` ou `unbound`).
-- `/session idle` e `/session max-age` funcionam apenas para threads vinculadas focadas.
+- `/focus <target>` binds the current thread (or creates one) to a sub-agent/session target.
+- `/unfocus` removes the binding for the current bound thread.
+- `/agents` lists active runs and binding state (`thread:<id>` or `unbound`).
+- `/session idle` and `/session max-age` only work for focused bound threads.
 
-Switches de config:
+Config switches:
 
-- Padrão global: `session.threadBindings.enabled`, `session.threadBindings.idleHours`, `session.threadBindings.maxAgeHours`
-- Substituição de canal e chaves de auto-vínculo de spawn são específicas do adaptador. Veja **Canais com suporte a threads** acima.
+- Global default: `session.threadBindings.enabled`, `session.threadBindings.idleHours`, `session.threadBindings.maxAgeHours`
+- Channel override and spawn auto-bind keys are adapter-specific. See **Thread supporting channels** above.
 
-Veja [Referência de Configuração](/gateway/configuration-reference) e [Slash commands](/tools/slash-commands) para detalhes atuais do adaptador.
+See [Configuration Reference](/gateway/configuration-reference) and [Slash commands](/tools/slash-commands) for current adapter details.
 
 Allowlist:
 
-- `agents.list[].subagents.allowAgents`: lista de ids de agente que podem ser alvo via `agentId` (`["*"]` para permitir qualquer). Padrão: apenas o agente solicitante.
-- Proteção de herança de sandbox: se a sessão solicitante estiver em sandbox, `sessions_spawn` rejeita alvos que rodariam sem sandbox.
+- `agents.list[].subagents.allowAgents`: list of agent ids that can be targeted via `agentId` (`["*"]` to allow any). Default: only the requester agent.
+- Sandbox inheritance guard: if the requester session is sandboxed, `sessions_spawn` rejects targets that would run unsandboxed.
 
-Descoberta:
+Discovery:
 
-- Use `agents_list` para ver quais ids de agente são permitidos atualmente para `sessions_spawn`.
+- Use `agents_list` to see which agent ids are currently allowed for `sessions_spawn`.
 
-Auto-arquivamento:
+Auto-archive:
 
-- Sessões de subagent são automaticamente arquivadas após `agents.defaults.subagents.archiveAfterMinutes` (padrão: 60).
-- Arquivamento usa `sessions.delete` e renomeia a transcrição para `*.deleted.<timestamp>` (mesma pasta).
-- `cleanup: "delete"` arquiva imediatamente após anúncio (ainda mantém a transcrição via renomeação).
-- Auto-arquivamento é melhor esforço; timers pendentes são perdidos se o Gateway reiniciar.
-- `runTimeoutSeconds` **não** auto-arquiva; apenas para a execução. A sessão permanece até o auto-arquivamento.
-- Auto-arquivamento se aplica igualmente a sessões de profundidade 1 e profundidade 2.
+- Sub-agent sessions are automatically archived after `agents.defaults.subagents.archiveAfterMinutes` (default: 60).
+- Archive uses `sessions.delete` and renames the transcript to `*.deleted.<timestamp>` (same folder).
+- `cleanup: "delete"` archives immediately after announce (still keeps the transcript via rename).
+- Auto-archive is best-effort; pending timers are lost if the gateway restarts.
+- `runTimeoutSeconds` does **not** auto-archive; it only stops the run. The session remains until auto-archive.
+- Auto-archive applies equally to depth-1 and depth-2 sessions.
 
-## Sub-Agents Aninhados
+## Nested Sub-Agents
 
-Por padrão, sub-agents não podem gerar seus próprios sub-agents (`maxSpawnDepth: 1`). Você pode habilitar um nível de aninhamento definindo `maxSpawnDepth: 2`, que permite o **padrão orquestrador**: principal -> subagent orquestrador -> sub-sub-agents trabalhadores.
+By default, sub-agents cannot spawn their own sub-agents (`maxSpawnDepth: 1`). You can enable one level of nesting by setting `maxSpawnDepth: 2`, which allows the **orchestrator pattern**: main → orchestrator sub-agent → worker sub-sub-agents.
 
-### Como habilitar
+### How to enable
 
 ```json5
 {
   agents: {
     defaults: {
       subagents: {
-        maxSpawnDepth: 2, // permitir sub-agents gerarem filhos (padrão: 1)
-        maxChildrenPerAgent: 5, // máximo de filhos ativos por sessão de agente (padrão: 5)
-        maxConcurrent: 8, // limite global de concorrência (padrão: 8)
-        runTimeoutSeconds: 900, // timeout padrão para sessions_spawn quando omitido (0 = sem timeout)
+        maxSpawnDepth: 2, // allow sub-agents to spawn children (default: 1)
+        maxChildrenPerAgent: 5, // max active children per agent session (default: 5)
+        maxConcurrent: 8, // global concurrency lane cap (default: 8)
+        runTimeoutSeconds: 900, // default timeout for sessions_spawn when omitted (0 = no timeout)
       },
     },
   },
 }
 ```
 
-### Níveis de profundidade
+### Depth levels
 
-| Profundidade | Formato da chave de sessão                   | Papel                                                   | Pode gerar?                    |
-| ------------ | -------------------------------------------- | ------------------------------------------------------- | ------------------------------ |
-| 0            | `agent:<id>:main`                            | Agente principal                                        | Sempre                         |
-| 1            | `agent:<id>:subagent:<uuid>`                 | Subagent (orquestrador quando profundidade 2 permitida) | Apenas se `maxSpawnDepth >= 2` |
-| 2            | `agent:<id>:subagent:<uuid>:subagent:<uuid>` | Sub-sub-agente (trabalhador folha)                      | Nunca                          |
+| Depth | Session key shape                            | Role                                          | Can spawn?                   |
+| ----- | -------------------------------------------- | --------------------------------------------- | ---------------------------- |
+| 0     | `agent:<id>:main`                            | Main agent                                    | Always                       |
+| 1     | `agent:<id>:subagent:<uuid>`                 | Sub-agent (orchestrator when depth 2 allowed) | Only if `maxSpawnDepth >= 2` |
+| 2     | `agent:<id>:subagent:<uuid>:subagent:<uuid>` | Sub-sub-agent (leaf worker)                   | Never                        |
 
-### Cadeia de anúncio
+### Announce chain
 
-Resultados fluem de volta pela cadeia:
+Results flow back up the chain:
 
-1. Trabalhador profundidade 2 termina -> anuncia para seu pai (orquestrador profundidade 1)
-2. Orquestrador profundidade 1 recebe o anúncio, sintetiza resultados, termina -> anuncia para o principal
-3. Agente principal recebe o anúncio e entrega ao usuário
+1. Depth-2 worker finishes → announces to its parent (depth-1 orchestrator)
+2. Depth-1 orchestrator receives the announce, synthesizes results, finishes → announces to main
+3. Main agent receives the announce and delivers to the user
 
-Cada nível só vê anúncios de seus filhos diretos.
+Each level only sees announces from its direct children.
 
-### Política de ferramenta por profundidade
+### Tool policy by depth
 
-- Papel e escopo de controle são escritos nos metadados da sessão no momento do spawn. Isso mantém chaves de sessão planas ou restauradas de reganharem acidentalmente privilégios de orquestrador.
-- **Profundidade 1 (orquestrador, quando `maxSpawnDepth >= 2`)**: Recebe `sessions_spawn`, `subagents`, `sessions_list`, `sessions_history` para poder gerenciar seus filhos. Outras ferramentas de sessão/sistema permanecem negadas.
-- **Profundidade 1 (folha, quando `maxSpawnDepth == 1`)**: Sem ferramentas de sessão (comportamento padrão atual).
-- **Profundidade 2 (trabalhador folha)**: Sem ferramentas de sessão -- `sessions_spawn` é sempre negado na profundidade 2. Não pode gerar mais filhos.
+- Role and control scope are written into session metadata at spawn time. That keeps flat or restored session keys from accidentally regaining orchestrator privileges.
+- **Depth 1 (orchestrator, when `maxSpawnDepth >= 2`)**: Gets `sessions_spawn`, `subagents`, `sessions_list`, `sessions_history` so it can manage its children. Other session/system tools remain denied.
+- **Depth 1 (leaf, when `maxSpawnDepth == 1`)**: No session tools (current default behavior).
+- **Depth 2 (leaf worker)**: No session tools — `sessions_spawn` is always denied at depth 2. Cannot spawn further children.
 
-### Limite de spawn por agente
+### Per-agent spawn limit
 
-Cada sessão de agente (em qualquer profundidade) pode ter no máximo `maxChildrenPerAgent` (padrão: 5) filhos ativos por vez. Isso previne fan-out descontrolado de um único orquestrador.
+Each agent session (at any depth) can have at most `maxChildrenPerAgent` (default: 5) active children at a time. This prevents runaway fan-out from a single orchestrator.
 
-### Parada em cascata
+### Cascade stop
 
-Parar um orquestrador profundidade 1 automaticamente para todos os seus filhos profundidade 2:
+Stopping a depth-1 orchestrator automatically stops all its depth-2 children:
 
-- `/stop` no chat principal para todos os agentes profundidade 1 e cascateia para seus filhos profundidade 2.
-- `/subagents kill <id>` para um subagent específico e cascateia para seus filhos.
-- `/subagents kill all` para todos os sub-agents do solicitante e cascateia.
+- `/stop` in the main chat stops all depth-1 agents and cascades to their depth-2 children.
+- `/subagents kill <id>` stops a specific sub-agent and cascades to its children.
+- `/subagents kill all` stops all sub-agents for the requester and cascades.
 
-## Autenticação
+## Authentication
 
-Autenticação de subagent é resolvida por **id de agente**, não por tipo de sessão:
+Sub-agent auth is resolved by **agent id**, not by session type:
 
-- A chave de sessão do subagent é `agent:<agentId>:subagent:<uuid>`.
-- O armazenamento de autenticação é carregado do `agentDir` daquele agente.
-- Os perfis de autenticação do agente principal são mesclados como **fallback**; perfis do agente substituem perfis principais em conflitos.
+- The sub-agent session key is `agent:<agentId>:subagent:<uuid>`.
+- The auth store is loaded from that agent's `agentDir`.
+- The main agent's auth profiles are merged in as a **fallback**; agent profiles override main profiles on conflicts.
 
-Nota: a mesclagem é aditiva, então perfis principais sempre estão disponíveis como fallbacks. Autenticação totalmente isolada por agente ainda não é suportada.
+Note: the merge is additive, so main profiles are always available as fallbacks. Fully isolated auth per agent is not supported yet.
 
-## Anúncio
+## Announce
 
-Sub-agents reportam de volta via uma etapa de anúncio:
+Sub-agents report back via an announce step:
 
-- A etapa de anúncio roda dentro da sessão do subagent (não da sessão solicitante).
-- Se o subagent responder exatamente `ANNOUNCE_SKIP`, nada é postado.
-- Caso contrário, a entrega depende da profundidade do solicitante:
-  - sessões solicitantes de nível superior usam uma chamada `agent` de acompanhamento com entrega externa (`deliver=true`)
-  - sessões solicitantes de subagent aninhadas recebem uma injeção de acompanhamento interna (`deliver=false`) para que o orquestrador possa sintetizar resultados dos filhos na sessão
-  - se uma sessão solicitante de subagent aninhada não existir mais, o OpenCraft recorre ao solicitante daquela sessão quando disponível
-- Agregação de conclusão de filhos é escopada à execução atual do solicitante ao construir descobertas de conclusão aninhadas, prevenindo saídas obsoletas de filhos de execuções anteriores de vazar para o anúncio atual.
-- Respostas de anúncio preservam roteamento de thread/tópico quando disponível em adaptadores de canal.
-- Contexto de anúncio é normalizado para um bloco de evento interno estável:
-  - fonte (`subagent` ou `cron`)
-  - chave/id de sessão filho
-  - tipo de anúncio + rótulo da tarefa
-  - linha de status derivada do resultado do runtime (`success`, `error`, `timeout` ou `unknown`)
-  - conteúdo do resultado da etapa de anúncio (ou `(no output)` se ausente)
-  - uma instrução de acompanhamento descrevendo quando responder vs. ficar em silêncio
-- `Status` não é inferido da saída do modelo; vem de sinais de resultado do runtime.
+- The announce step runs inside the sub-agent session (not the requester session).
+- If the sub-agent replies exactly `ANNOUNCE_SKIP`, nothing is posted.
+- Otherwise delivery depends on requester depth:
+  - top-level requester sessions use a follow-up `agent` call with external delivery (`deliver=true`)
+  - nested requester subagent sessions receive an internal follow-up injection (`deliver=false`) so the orchestrator can synthesize child results in-session
+  - if a nested requester subagent session is gone, OpenCraft falls back to that session's requester when available
+- Child completion aggregation is scoped to the current requester run when building nested completion findings, preventing stale prior-run child outputs from leaking into the current announce.
+- Announce replies preserve thread/topic routing when available on channel adapters.
+- Announce context is normalized to a stable internal event block:
+  - source (`subagent` or `cron`)
+  - child session key/id
+  - announce type + task label
+  - status line derived from runtime outcome (`success`, `error`, `timeout`, or `unknown`)
+  - result content from the announce step (or `(no output)` if missing)
+  - a follow-up instruction describing when to reply vs. stay silent
+- `Status` is not inferred from model output; it comes from runtime outcome signals.
 
-Payloads de anúncio incluem uma linha de estatísticas no final (mesmo quando encapsulados):
+Announce payloads include a stats line at the end (even when wrapped):
 
-- Runtime (ex., `runtime 5m12s`)
-- Uso de Token (entrada/saída/total)
-- Custo estimado quando preço do modelo está configurado (`models.providers.*.models[].cost`)
-- `sessionKey`, `sessionId` e caminho da transcrição (para que o agente principal possa buscar histórico via `sessions_history` ou inspecionar o arquivo em disco)
-- Metadados internos são destinados apenas à orquestração; respostas voltadas ao usuário devem ser reescritas em voz normal de assistente.
+- Runtime (e.g., `runtime 5m12s`)
+- Token usage (input/output/total)
+- Estimated cost when model pricing is configured (`models.providers.*.models[].cost`)
+- `sessionKey`, `sessionId`, and transcript path (so the main agent can fetch history via `sessions_history` or inspect the file on disk)
+- Internal metadata is meant for orchestration only; user-facing replies should be rewritten in normal assistant voice.
 
-## Política de Ferramenta (ferramentas de subagent)
+## Tool Policy (sub-agent tools)
 
-Por padrão, sub-agents recebem **todas as ferramentas exceto ferramentas de sessão** e ferramentas de sistema:
+By default, sub-agents get **all tools except session tools** and system tools:
 
 - `sessions_list`
 - `sessions_history`
 - `sessions_send`
 - `sessions_spawn`
 
-Quando `maxSpawnDepth >= 2`, sub-agents orquestradores de profundidade 1 recebem adicionalmente `sessions_spawn`, `subagents`, `sessions_list` e `sessions_history` para poderem gerenciar seus filhos.
+When `maxSpawnDepth >= 2`, depth-1 orchestrator sub-agents additionally receive `sessions_spawn`, `subagents`, `sessions_list`, and `sessions_history` so they can manage their children.
 
-Substituir via config:
+Override via config:
 
 ```json5
 {
@@ -263,9 +263,9 @@ Substituir via config:
   tools: {
     subagents: {
       tools: {
-        // deny vence
+        // deny wins
         deny: ["gateway", "cron"],
-        // se allow for definido, torna-se apenas allow (deny ainda vence)
+        // if allow is set, it becomes allow-only (deny still wins)
         // allow: ["read", "exec", "process"]
       },
     },
@@ -273,23 +273,23 @@ Substituir via config:
 }
 ```
 
-## Concorrência
+## Concurrency
 
-Sub-agents usam uma lane dedicada de fila em processo:
+Sub-agents use a dedicated in-process queue lane:
 
-- Nome da lane: `subagent`
-- Concorrência: `agents.defaults.subagents.maxConcurrent` (padrão `8`)
+- Lane name: `subagent`
+- Concurrency: `agents.defaults.subagents.maxConcurrent` (default `8`)
 
-## Parando
+## Stopping
 
-- Enviar `/stop` no chat solicitante aborta a sessão solicitante e para qualquer execução ativa de subagent gerada a partir dela, cascateando para filhos aninhados.
-- `/subagents kill <id>` para um subagent específico e cascateia para seus filhos.
+- Sending `/stop` in the requester chat aborts the requester session and stops any active sub-agent runs spawned from it, cascading to nested children.
+- `/subagents kill <id>` stops a specific sub-agent and cascades to its children.
 
-## Limitações
+## Limitations
 
-- Anúncio de subagent é **melhor esforço**. Se o Gateway reiniciar, trabalho de "anunciar de volta" pendente é perdido.
-- Sub-agents ainda compartilham os mesmos recursos de processo do Gateway; trate `maxConcurrent` como uma válvula de segurança.
-- `sessions_spawn` é sempre não-bloqueante: retorna `{ status: "accepted", runId, childSessionKey }` imediatamente.
-- Contexto de subagent injeta apenas `AGENTS.md` + `TOOLS.md` (sem `SOUL.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md` ou `BOOTSTRAP.md`).
-- Profundidade máxima de aninhamento é 5 (faixa de `maxSpawnDepth`: 1-5). Profundidade 2 é recomendada para a maioria dos casos de uso.
-- `maxChildrenPerAgent` limita filhos ativos por sessão (padrão: 5, faixa: 1-20).
+- Sub-agent announce is **best-effort**. If the gateway restarts, pending "announce back" work is lost.
+- Sub-agents still share the same gateway process resources; treat `maxConcurrent` as a safety valve.
+- `sessions_spawn` is always non-blocking: it returns `{ status: "accepted", runId, childSessionKey }` immediately.
+- Sub-agent context only injects `AGENTS.md` + `TOOLS.md` (no `SOUL.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, or `BOOTSTRAP.md`).
+- Maximum nesting depth is 5 (`maxSpawnDepth` range: 1–5). Depth 2 is recommended for most use cases.
+- `maxChildrenPerAgent` caps active children per session (default: 5, range: 1–20).

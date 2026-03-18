@@ -1,43 +1,43 @@
 ---
-summary: "Adaptadores RPC para CLIs externos (signal-cli, imsg legado) e padrões de gateway"
+summary: "RPC adapters for external CLIs (signal-cli, legacy imsg) and gateway patterns"
 read_when:
-  - Adicionando ou alterando integrações de CLI externo
-  - Depurando adaptadores RPC (signal-cli, imsg)
-title: "Adaptadores RPC"
+  - Adding or changing external CLI integrations
+  - Debugging RPC adapters (signal-cli, imsg)
+title: "RPC Adapters"
 ---
 
-# Adaptadores RPC
+# RPC adapters
 
-O OpenCraft integra CLIs externos via JSON-RPC. Dois padrões são usados hoje.
+OpenCraft integrates external CLIs via JSON-RPC. Two patterns are used today.
 
-## Padrão A: Daemon HTTP (signal-cli)
+## Pattern A: HTTP daemon (signal-cli)
 
-- `signal-cli` executa como daemon com JSON-RPC sobre HTTP.
-- Stream de eventos é SSE (`/api/v1/events`).
-- Probe de saúde: `/api/v1/check`.
-- O OpenCraft gerencia o ciclo de vida quando `channels.signal.autoStart=true`.
+- `signal-cli` runs as a daemon with JSON-RPC over HTTP.
+- Event stream is SSE (`/api/v1/events`).
+- Health probe: `/api/v1/check`.
+- OpenCraft owns lifecycle when `channels.signal.autoStart=true`.
 
-Veja [Signal](/channels/signal) para configuração e endpoints.
+See [Signal](/channels/signal) for setup and endpoints.
 
-## Padrão B: Processo filho stdio (legado: imsg)
+## Pattern B: stdio child process (legacy: imsg)
 
-> **Nota:** Para novas configurações de iMessage, use [BlueBubbles](/channels/bluebubbles) em vez disso.
+> **Note:** For new iMessage setups, use [BlueBubbles](/channels/bluebubbles) instead.
 
-- O OpenCraft inicia `imsg rpc` como processo filho (integração legada de iMessage).
-- JSON-RPC é delimitado por linha sobre stdin/stdout (um objeto JSON por linha).
-- Sem porta TCP, sem daemon necessário.
+- OpenCraft spawns `imsg rpc` as a child process (legacy iMessage integration).
+- JSON-RPC is line-delimited over stdin/stdout (one JSON object per line).
+- No TCP port, no daemon required.
 
-Métodos principais usados:
+Core methods used:
 
-- `watch.subscribe` → notificações (`method: "message"`)
+- `watch.subscribe` → notifications (`method: "message"`)
 - `watch.unsubscribe`
 - `send`
-- `chats.list` (probe/diagnósticos)
+- `chats.list` (probe/diagnostics)
 
-Veja [iMessage](/channels/imessage) para configuração legada e endereçamento (`chat_id` preferido).
+See [iMessage](/channels/imessage) for legacy setup and addressing (`chat_id` preferred).
 
-## Diretrizes para adaptadores
+## Adapter guidelines
 
-- O Gateway gerencia o processo (início/parada vinculados ao ciclo de vida do provedor).
-- Mantenha clientes RPC resilientes: timeouts, reinício ao sair.
-- Prefira IDs estáveis (ex.: `chat_id`) em vez de strings de exibição.
+- Gateway owns the process (start/stop tied to provider lifecycle).
+- Keep RPC clients resilient: timeouts, restart on exit.
+- Prefer stable IDs (e.g., `chat_id`) over display strings.

@@ -123,9 +123,7 @@ describe("shell env fallback", () => {
 
   it("uses the same truthy env parsing for deferred fallback", () => {
     expect(shouldDeferShellEnvFallback({} as NodeJS.ProcessEnv)).toBe(false);
-    expect(shouldDeferShellEnvFallback({ OPENCRAFT_DEFER_SHELL_ENV_FALLBACK: "false" })).toBe(
-      false,
-    );
+    expect(shouldDeferShellEnvFallback({ OPENCRAFT_DEFER_SHELL_ENV_FALLBACK: "false" })).toBe(false);
     expect(shouldDeferShellEnvFallback({ OPENCRAFT_DEFER_SHELL_ENV_FALLBACK: "yes" })).toBe(true);
   });
 

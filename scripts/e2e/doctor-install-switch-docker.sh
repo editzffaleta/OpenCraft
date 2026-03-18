@@ -75,7 +75,7 @@ LOGINCTL
 
   # Install the npm-global variant from the local /app source.
   # `npm pack` can emit script output; keep only the tarball name.
-  pkg_tgz="$(npm pack --silent /app | tail -n 1 | tr -d '\r')"
+  pkg_tgz="$(npm pack --ignore-scripts --silent /app | tail -n 1 | tr -d '\r')"
   if [ ! -f "/app/$pkg_tgz" ]; then
     echo "npm pack failed (expected /app/$pkg_tgz)"
     exit 1
@@ -95,7 +95,7 @@ LOGINCTL
 	  else
 	    git_entry="/app/dist/index.js"
 	  fi
-	  git_cli="/app/openclaw.mjs"
+	  git_cli="/app/opencraft.mjs"
 
   assert_entrypoint() {
     local unit_path="$1"

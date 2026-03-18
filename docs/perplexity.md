@@ -70,7 +70,7 @@ Optional legacy controls:
 ## Where to set the key
 
 **Via config:** run `opencraft configure --section web`. It stores the key in
-`~/.editzffaleta/OpenCraft.json` under `tools.web.search.perplexity.apiKey`.
+`~/.opencraft/opencraft.json` under `tools.web.search.perplexity.apiKey`.
 That field also accepts SecretRef objects.
 
 **Via environment:** set `PERPLEXITY_API_KEY` or `OPENROUTER_API_KEY`

@@ -1,18 +1,18 @@
-# Skill Canvas
+# Canvas Skill
 
-Exiba conteúdo HTML em nós conectados do OpenCraft (app Mac, iOS, Android).
+Display HTML content on connected OpenCraft nodes (Mac app, iOS, Android).
 
-## Visão Geral
+## Overview
 
-A ferramenta canvas permite apresentar conteúdo web na visualização canvas de qualquer nó conectado. Ótimo para:
+The canvas tool lets you present web content on any connected node's canvas view. Great for:
 
-- Exibir jogos, visualizações, dashboards
-- Mostrar conteúdo HTML gerado
-- Demos interativos
+- Displaying games, visualizations, dashboards
+- Showing generated HTML content
+- Interactive demos
 
-## Como Funciona
+## How It Works
 
-### Arquitetura
+### Architecture
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐
@@ -22,42 +22,42 @@ A ferramenta canvas permite apresentar conteúdo web na visualização canvas de
 └─────────────────┘     └──────────────────┘     └─────────────┘
 ```
 
-1. **Canvas Host Server**: Serve arquivos estáticos HTML/CSS/JS do diretório `canvasHost.root`
-2. **Node Bridge**: Comunica URLs do canvas para os nós conectados
-3. **Node Apps**: Renderiza o conteúdo em uma WebView
+1. **Canvas Host Server**: Serves static HTML/CSS/JS files from `canvasHost.root` directory
+2. **Node Bridge**: Communicates canvas URLs to connected nodes
+3. **Node Apps**: Render the content in a WebView
 
-### Integração com Tailscale
+### Tailscale Integration
 
-O servidor canvas host faz bind baseado na configuração `gateway.bind`:
+The canvas host server binds based on `gateway.bind` setting:
 
-| Modo de Bind | Servidor faz Bind em | URL do Canvas usa           |
-| ------------ | ------------------- | -------------------------- |
-| `loopback`   | 127.0.0.1           | localhost (apenas local)   |
-| `lan`        | Interface LAN       | Endereço IP da LAN         |
-| `tailnet`    | Interface Tailscale | Hostname do Tailscale      |
-| `auto`       | Melhor disponível   | Tailscale > LAN > loopback |
+| Bind Mode  | Server Binds To     | Canvas URL Uses            |
+| ---------- | ------------------- | -------------------------- |
+| `loopback` | 127.0.0.1           | localhost (local only)     |
+| `lan`      | LAN interface       | LAN IP address             |
+| `tailnet`  | Tailscale interface | Tailscale hostname         |
+| `auto`     | Best available      | Tailscale > LAN > loopback |
 
-**Ponto importante:** O `canvasHostHostForBridge` é derivado do `bridgeHost`. Quando vinculado ao Tailscale, os nós recebem URLs como:
+**Key insight:** The `canvasHostHostForBridge` is derived from `bridgeHost`. When bound to Tailscale, nodes receive URLs like:
 
 ```
 http://<tailscale-hostname>:18793/__opencraft__/canvas/<file>.html
 ```
 
-Por isso URLs de localhost não funcionam — o nó recebe o hostname do Tailscale pelo bridge!
+This is why localhost URLs don't work - the node receives the Tailscale hostname from the bridge!
 
-## Ações
+## Actions
 
-| Ação       | Descrição                                        |
-| ---------- | ------------------------------------------------ |
-| `present`  | Exibir canvas com URL alvo opcional              |
-| `hide`     | Ocultar o canvas                                 |
-| `navigate` | Navegar para uma nova URL                        |
-| `eval`     | Executar JavaScript no canvas                    |
-| `snapshot` | Capturar screenshot do canvas                    |
+| Action     | Description                          |
+| ---------- | ------------------------------------ |
+| `present`  | Show canvas with optional target URL |
+| `hide`     | Hide the canvas                      |
+| `navigate` | Navigate to a new URL                |
+| `eval`     | Execute JavaScript in the canvas     |
+| `snapshot` | Capture screenshot of canvas         |
 
-## Configuração
+## Configuration
 
-Em `~/.editzffaleta/OpenCraft.json`:
+In `~/.opencraft/opencraft.json`:
 
 ```json
 {
@@ -73,21 +73,21 @@ Em `~/.editzffaleta/OpenCraft.json`:
 }
 ```
 
-### Recarga Automática
+### Live Reload
 
-Quando `liveReload: true` (padrão), o canvas host:
+When `liveReload: true` (default), the canvas host:
 
-- Monitora o diretório raiz por alterações (via chokidar)
-- Injeta um cliente WebSocket nos arquivos HTML
-- Recarrega automaticamente os canvases conectados quando os arquivos mudam
+- Watches the root directory for changes (via chokidar)
+- Injects a WebSocket client into HTML files
+- Automatically reloads connected canvases when files change
 
-Ótimo para desenvolvimento!
+Great for development!
 
-## Fluxo de Trabalho
+## Workflow
 
-### 1. Criar conteúdo HTML
+### 1. Create HTML content
 
-Coloque os arquivos no diretório raiz do canvas (padrão: `~/clawd/canvas/`):
+Place files in the canvas root directory (default `~/clawd/canvas/`):
 
 ```bash
 cat > ~/clawd/canvas/my-game.html << 'HTML'
@@ -101,46 +101,46 @@ cat > ~/clawd/canvas/my-game.html << 'HTML'
 HTML
 ```
 
-### 2. Encontrar a URL do canvas host
+### 2. Find your canvas host URL
 
-Verifique como seu gateway está vinculado:
+Check how your gateway is bound:
 
 ```bash
-cat ~/.editzffaleta/OpenCraft.json | jq '.gateway.bind'
+cat ~/.opencraft/opencraft.json | jq '.gateway.bind'
 ```
 
-Depois construa a URL:
+Then construct the URL:
 
 - **loopback**: `http://127.0.0.1:18793/__opencraft__/canvas/<file>.html`
 - **lan/tailnet/auto**: `http://<hostname>:18793/__opencraft__/canvas/<file>.html`
 
-Encontre seu hostname do Tailscale:
+Find your Tailscale hostname:
 
 ```bash
 tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//'
 ```
 
-### 3. Encontrar nós conectados
+### 3. Find connected nodes
 
 ```bash
 opencraft nodes list
 ```
 
-Procure por nós Mac/iOS/Android com capacidade de canvas.
+Look for Mac/iOS/Android nodes with canvas capability.
 
-### 4. Apresentar conteúdo
+### 4. Present content
 
 ```
 canvas action:present node:<node-id> target:<full-url>
 ```
 
-**Exemplo:**
+**Example:**
 
 ```
 canvas action:present node:mac-63599bc4-b54d-4392-9048-b97abd58343a target:http://peters-mac-studio-1.sheep-coho.ts.net:18793/__opencraft__/canvas/snake.html
 ```
 
-### 5. Navegar, tirar screenshot ou ocultar
+### 5. Navigate, snapshot, or hide
 
 ```
 canvas action:navigate node:<node-id> url:<new-url>
@@ -148,51 +148,51 @@ canvas action:snapshot node:<node-id>
 canvas action:hide node:<node-id>
 ```
 
-## Depuração
+## Debugging
 
-### Tela branca / conteúdo não carrega
+### White screen / content not loading
 
-**Causa:** Incompatibilidade de URL entre o bind do servidor e a expectativa do nó.
+**Cause:** URL mismatch between server bind and node expectation.
 
-**Passos de depuração:**
+**Debug steps:**
 
-1. Verifique o bind do servidor: `cat ~/.editzffaleta/OpenCraft.json | jq '.gateway.bind'`
-2. Verifique em qual porta o canvas está: `lsof -i :18793`
-3. Teste a URL diretamente: `curl http://<hostname>:18793/__opencraft__/canvas/<file>.html`
+1. Check server bind: `cat ~/.opencraft/opencraft.json | jq '.gateway.bind'`
+2. Check what port canvas is on: `lsof -i :18793`
+3. Test URL directly: `curl http://<hostname>:18793/__opencraft__/canvas/<file>.html`
 
-**Solução:** Use o hostname completo correspondente ao seu modo de bind, não localhost.
+**Solution:** Use the full hostname matching your bind mode, not localhost.
 
-### Erro "node required"
+### "node required" error
 
-Sempre especifique o parâmetro `node:<node-id>`.
+Always specify `node:<node-id>` parameter.
 
-### Erro "node not connected"
+### "node not connected" error
 
-O nó está offline. Use `opencraft nodes list` para encontrar nós online.
+Node is offline. Use `opencraft nodes list` to find online nodes.
 
-### Conteúdo não atualiza
+### Content not updating
 
-Se a recarga automática não estiver funcionando:
+If live reload isn't working:
 
-1. Verifique `liveReload: true` na configuração
-2. Certifique-se de que o arquivo está no diretório raiz do canvas
-3. Verifique erros do watcher nos logs
+1. Check `liveReload: true` in config
+2. Ensure file is in the canvas root directory
+3. Check for watcher errors in logs
 
-## Estrutura de Caminho da URL
+## URL Path Structure
 
-O canvas host serve a partir do prefixo `/__opencraft__/canvas/`:
+The canvas host serves from `/__opencraft__/canvas/` prefix:
 
 ```
 http://<host>:18793/__opencraft__/canvas/index.html  → ~/clawd/canvas/index.html
 http://<host>:18793/__opencraft__/canvas/games/snake.html → ~/clawd/canvas/games/snake.html
 ```
 
-O prefixo `/__opencraft__/canvas/` é definido pela constante `CANVAS_HOST_PATH`.
+The `/__opencraft__/canvas/` prefix is defined by `CANVAS_HOST_PATH` constant.
 
-## Dicas
+## Tips
 
-- Mantenha o HTML autocontido (CSS/JS inline) para melhores resultados
-- Use o index.html padrão como página de teste (tem diagnósticos do bridge)
-- O canvas persiste até você ocultá-lo ou navegar para outro lugar
-- A recarga automática torna o desenvolvimento rápido — basta salvar e ele atualiza!
-- O push JSON A2UI está em desenvolvimento — use arquivos HTML por enquanto
+- Keep HTML self-contained (inline CSS/JS) for best results
+- Use the default index.html as a test page (has bridge diagnostics)
+- The canvas persists until you `hide` it or navigate away
+- Live reload makes development fast - just save and it updates!
+- A2UI JSON push is WIP - use HTML files for now

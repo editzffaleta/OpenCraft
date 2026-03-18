@@ -97,11 +97,7 @@ function mockReadGatewayServiceFile(
 }
 
 async function expectExecStartWithoutEnvironment(envFileLine: string) {
-  mockReadGatewayServiceFile([
-    "[Service]",
-    "ExecStart=/usr/bin/opencraft gateway run",
-    envFileLine,
-  ]);
+  mockReadGatewayServiceFile(["[Service]", "ExecStart=/usr/bin/opencraft gateway run", envFileLine]);
 
   const command = await readSystemdServiceExecStart({ HOME: TEST_SERVICE_HOME });
   expect(command?.programArguments).toEqual(["/usr/bin/opencraft", "gateway", "run"]);
@@ -482,18 +478,14 @@ describe("readSystemdServiceExecStart", () => {
     vi.restoreAllMocks();
   });
 
-  it("loads OPENCLAW_GATEWAY_TOKEN from EnvironmentFile", async () => {
+  it("loads OPENCRAFT_GATEWAY_TOKEN from EnvironmentFile", async () => {
     const readFileSpy = mockReadGatewayServiceFile(
-      [
-        "[Service]",
-        "ExecStart=/usr/bin/opencraft gateway run",
-        "EnvironmentFile=%h/.opencraft/.env",
-      ],
-      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
+      ["[Service]", "ExecStart=/usr/bin/opencraft gateway run", "EnvironmentFile=%h/.opencraft/.env"],
+      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCRAFT_GATEWAY_TOKEN=env-file-token\n" },
     );
 
     const command = await readSystemdServiceExecStart({ HOME: TEST_SERVICE_HOME });
-    expect(command?.environment?.OPENCLAW_GATEWAY_TOKEN).toBe("env-file-token");
+    expect(command?.environment?.OPENCRAFT_GATEWAY_TOKEN).toBe("env-file-token");
     expect(readFileSpy).toHaveBeenCalledTimes(2);
   });
 
@@ -503,14 +495,14 @@ describe("readSystemdServiceExecStart", () => {
         "[Service]",
         "ExecStart=/usr/bin/opencraft gateway run",
         "EnvironmentFile=%h/.opencraft/.env",
-        'Environment="OPENCLAW_GATEWAY_TOKEN=inline-token"',
+        'Environment="OPENCRAFT_GATEWAY_TOKEN=inline-token"',
       ],
-      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCLAW_GATEWAY_TOKEN=env-file-token\n" },
+      { [`${TEST_SERVICE_HOME}/.opencraft/.env`]: "OPENCRAFT_GATEWAY_TOKEN=env-file-token\n" },
     );
 
     const command = await readSystemdServiceExecStart({ HOME: TEST_SERVICE_HOME });
-    expect(command?.environment?.OPENCLAW_GATEWAY_TOKEN).toBe("env-file-token");
-    expect(command?.environmentValueSources?.OPENCLAW_GATEWAY_TOKEN).toBe("file");
+    expect(command?.environment?.OPENCRAFT_GATEWAY_TOKEN).toBe("env-file-token");
+    expect(command?.environmentValueSources?.OPENCRAFT_GATEWAY_TOKEN).toBe("file");
   });
 
   it("ignores missing optional EnvironmentFile entries", async () => {
@@ -532,18 +524,18 @@ describe("readSystemdServiceExecStart", () => {
         ].join("\n");
       }
       if (pathValue === "/home/test/.opencraft/first.env") {
-        return "OPENCLAW_GATEWAY_TOKEN=first-token\n"; // pragma: allowlist secret
+        return "OPENCRAFT_GATEWAY_TOKEN=first-token\n"; // pragma: allowlist secret
       }
       if (pathValue === "/home/test/.opencraft/second env.env") {
-        return 'OPENCLAW_GATEWAY_PASSWORD="second password"\n'; // pragma: allowlist secret
+        return 'OPENCRAFT_GATEWAY_PASSWORD="second password"\n'; // pragma: allowlist secret
       }
       throw new Error(`unexpected readFile path: ${pathValue}`);
     });
 
     const command = await readSystemdServiceExecStart({ HOME: "/home/test" });
     expect(command?.environment).toEqual({
-      OPENCLAW_GATEWAY_TOKEN: "first-token",
-      OPENCLAW_GATEWAY_PASSWORD: "second password", // pragma: allowlist secret
+      OPENCRAFT_GATEWAY_TOKEN: "first-token",
+      OPENCRAFT_GATEWAY_PASSWORD: "second password", // pragma: allowlist secret
     });
   });
 
@@ -559,20 +551,20 @@ describe("readSystemdServiceExecStart", () => {
       }
       if (pathValue.endsWith("/.config/systemd/user/gateway.env")) {
         return [
-          "OPENCLAW_GATEWAY_TOKEN=relative-token", // pragma: allowlist secret
-          "OPENCLAW_GATEWAY_PASSWORD=relative-password", // pragma: allowlist secret
+          "OPENCRAFT_GATEWAY_TOKEN=relative-token", // pragma: allowlist secret
+          "OPENCRAFT_GATEWAY_PASSWORD=relative-password", // pragma: allowlist secret
         ].join("\n");
       }
       if (pathValue.endsWith("/.config/systemd/user/override.env")) {
-        return "OPENCLAW_GATEWAY_TOKEN=override-token\n"; // pragma: allowlist secret
+        return "OPENCRAFT_GATEWAY_TOKEN=override-token\n"; // pragma: allowlist secret
       }
       throw new Error(`unexpected readFile path: ${pathValue}`);
     });
 
     const command = await readSystemdServiceExecStart({ HOME: "/home/test" });
     expect(command?.environment).toEqual({
-      OPENCLAW_GATEWAY_TOKEN: "override-token",
-      OPENCLAW_GATEWAY_PASSWORD: "relative-password", // pragma: allowlist secret
+      OPENCRAFT_GATEWAY_TOKEN: "override-token",
+      OPENCRAFT_GATEWAY_PASSWORD: "relative-password", // pragma: allowlist secret
     });
   });
 
@@ -590,8 +582,8 @@ describe("readSystemdServiceExecStart", () => {
         return [
           "# comment",
           "; another comment",
-          'OPENCLAW_GATEWAY_TOKEN="quoted token"', // pragma: allowlist secret
-          "OPENCLAW_GATEWAY_PASSWORD=quoted-password", // pragma: allowlist secret
+          'OPENCRAFT_GATEWAY_TOKEN="quoted token"', // pragma: allowlist secret
+          "OPENCRAFT_GATEWAY_PASSWORD=quoted-password", // pragma: allowlist secret
         ].join("\n");
       }
       throw new Error(`unexpected readFile path: ${pathValue}`);
@@ -599,12 +591,12 @@ describe("readSystemdServiceExecStart", () => {
 
     const command = await readSystemdServiceExecStart({ HOME: "/home/test" });
     expect(command?.environment).toEqual({
-      OPENCLAW_GATEWAY_TOKEN: "quoted token",
-      OPENCLAW_GATEWAY_PASSWORD: "quoted-password", // pragma: allowlist secret
+      OPENCRAFT_GATEWAY_TOKEN: "quoted token",
+      OPENCRAFT_GATEWAY_PASSWORD: "quoted-password", // pragma: allowlist secret
     });
     expect(command?.environmentValueSources).toEqual({
-      OPENCLAW_GATEWAY_TOKEN: "file",
-      OPENCLAW_GATEWAY_PASSWORD: "file", // pragma: allowlist secret
+      OPENCRAFT_GATEWAY_TOKEN: "file",
+      OPENCRAFT_GATEWAY_PASSWORD: "file", // pragma: allowlist secret
     });
   });
 });

@@ -54,9 +54,9 @@ repos:
           - --exclude-lines
           - 'API key rotation \(provider-specific\): set `\*_API_KEYS`'
           - --exclude-lines
-          - 'password: `OPENCLAW_GATEWAY_PASSWORD` -> `gateway\.auth\.password` -> `gateway\.remote\.password`'
+          - 'password: `OPENCRAFT_GATEWAY_PASSWORD` -> `gateway\.auth\.password` -> `gateway\.remote\.password`'
           - --exclude-lines
-          - 'password: `OPENCLAW_GATEWAY_PASSWORD` -> `gateway\.remote\.password` -> `gateway\.auth\.password`'
+          - 'password: `OPENCRAFT_GATEWAY_PASSWORD` -> `gateway\.remote\.password` -> `gateway\.auth\.password`'
           - --exclude-files
           - '^src/gateway/client\.watchdog\.test\.ts$'
           - --exclude-lines

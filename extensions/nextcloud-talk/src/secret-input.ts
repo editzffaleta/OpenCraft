@@ -3,7 +3,7 @@ import {
   hasConfiguredSecretInput,
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
-} from "opencraft/plugin-sdk/nextcloud-talk";
+} from "../runtime-api.js";
 
 export {
   buildSecretInputSchema,

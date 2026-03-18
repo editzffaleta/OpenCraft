@@ -123,7 +123,7 @@ Moltbot 说起来总是不太顺口。于是，在格林威治时间凌晨 4 点
 
 仅用 3 小时：
 
-- GitHub 更名：`github.com/editzffaleta/OpenCraft` ✅
+- GitHub 更名：`github.com/opencraft/opencraft` ✅
 - X 账号 `@opencraft` 获得金色认证标记 💰
 - npm 包以新名称发布
 - 文档迁移到 `docs.opencraft.ai`
@@ -137,7 +137,7 @@ Moltbot 说起来总是不太顺口。于是，在格林威治时间凌晨 4 点
 - **Shadow** 获取了 Discord 自定义链接，清除了恶意软件
 - **整个 Claw Crew** 通宵工作
 
-**骗子速通：** 加密货币骗子在几分钟内就在 Pump.fun 上发布了 $OPENCLAW 代币。他们窃取了 20 分钟前刚创作的艺术作品。经过商业认证的账户推送骗局。这种厚颜无耻几乎令人印象深刻。
+**骗子速通：** 加密货币骗子在几分钟内就在 Pump.fun 上发布了 $OPENCRAFT 代币。他们窃取了 20 分钟前刚创作的艺术作品。经过商业认证的账户推送骗局。这种厚颜无耻几乎令人印象深刻。
 
 **新传统诞生：**
 

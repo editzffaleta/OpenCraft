@@ -29,7 +29,7 @@ x-i18n:
 }
 ```
 
-保存到 `~/.editzffaleta/OpenCraft.json`，你就可以从该号码私信机器人了。
+保存到 `~/.opencraft/opencraft.json`，你就可以从该号码私信机器人了。
 
 ### 推荐的入门配置
 
@@ -96,7 +96,7 @@ x-i18n:
   // 日志
   logging: {
     level: "info",
-    file: "/tmp/editzffaleta/OpenCraft.log",
+    file: "/tmp/opencraft/opencraft.log",
     consoleLevel: "info",
     consoleStyle: "pretty",
     redactSensitive: "tools",
@@ -284,7 +284,7 @@ x-i18n:
         perSession: true,
         workspaceRoot: "~/.opencraft/sandboxes",
         docker: {
-          image: "openclaw-sandbox:bookworm-slim",
+          image: "opencraft-sandbox:bookworm-slim",
           workdir: "/workspace",
           readOnlyRoot: true,
           tmpfs: ["/tmp", "/var/tmp", "/run"],

@@ -1,8 +1,4 @@
-import type {
-  ChannelDirectoryEntry,
-  OpenCraftConfig,
-  RuntimeEnv,
-} from "opencraft/plugin-sdk/mattermost";
+import type { ChannelDirectoryEntry, OpenCraftConfig, RuntimeEnv } from "../runtime-api.js";
 import { listMattermostAccountIds, resolveMattermostAccount } from "./accounts.js";
 import {
   createMattermostClient,

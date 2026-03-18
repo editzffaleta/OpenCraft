@@ -55,7 +55,7 @@ opencraft browser --browser-profile opencraft snapshot
 
 ## 配置
 
-浏览器设置位于 `~/.editzffaleta/OpenCraft.json`。
+浏览器设置位于 `~/.opencraft/opencraft.json`。
 
 ```json5
 {

@@ -25,7 +25,7 @@ Inspired by Simon Willison's [Running OpenCraft in Docker](https://til.simonwill
 **Install:**
 
 ```bash
-mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/editzffaleta/OpenCraft/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
+mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/opencraft/opencraft/main/scripts/shell-helpers/clawdock-helpers.sh -o ~/.clawdock/clawdock-helpers.sh
 ```
 
 ```bash
@@ -87,7 +87,7 @@ clawdock-approve <request-id>
 | Command                   | Description                                    |
 | ------------------------- | ---------------------------------------------- |
 | `clawdock-shell`          | Interactive shell inside the gateway container |
-| `clawdock-cli <command>`  | Run OpenCraft CLI commands                     |
+| `clawdock-cli <command>`  | Run OpenCraft CLI commands                      |
 | `clawdock-exec <command>` | Execute arbitrary commands in the container    |
 
 ### Web UI & Devices
@@ -117,8 +117,8 @@ clawdock-approve <request-id>
 | -------------------- | ----------------------------------------- |
 | `clawdock-health`    | Run gateway health check                  |
 | `clawdock-token`     | Display the gateway authentication token  |
-| `clawdock-cd`        | Jump to the OpenCraft project directory   |
-| `clawdock-config`    | Open the OpenCraft config directory       |
+| `clawdock-cd`        | Jump to the OpenCraft project directory    |
+| `clawdock-config`    | Open the OpenCraft config directory        |
 | `clawdock-workspace` | Open the workspace directory              |
 | `clawdock-help`      | Show all available commands with examples |
 

@@ -1,11 +1,11 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import type { OpenCraftConfig } from "../runtime-api.js";
 import {
   evaluateSenderGroupAccessForPolicy,
   isDangerousNameMatchingEnabled,
   resolveAllowlistMatchSimple,
   resolveControlCommandGate,
   resolveEffectiveAllowFromLists,
-} from "opencraft/plugin-sdk/mattermost";
+} from "../runtime-api.js";
 import type { ResolvedMattermostAccount } from "./accounts.js";
 import type { MattermostChannel } from "./client.js";
 

@@ -1,198 +1,208 @@
 ---
-summary: "Referência CLI para `opencraft message` (envio + ações de canal)"
+summary: "CLI reference for `opencraft message` (send + channel actions)"
 read_when:
-  - Adicionando ou modificando ações CLI de mensagem
-  - Alterando comportamento de canal de saída
+  - Adding or modifying message CLI actions
+  - Changing outbound channel behavior
 title: "message"
 ---
 
 # `opencraft message`
 
-Comando único de saída para enviar mensagens e ações de canal
-(Discord/Google Chat/Slack/Mattermost (Plugin)/Telegram/WhatsApp/Signal/iMessage/MS Teams).
+Single outbound command for sending messages and channel actions
+(Discord/Google Chat/Slack/Mattermost (plugin)/Telegram/WhatsApp/Signal/iMessage/MS Teams).
 
-## Uso
+## Usage
 
 ```
 opencraft message <subcommand> [flags]
 ```
 
-Seleção de canal:
+Channel selection:
 
-- `--channel` obrigatório se mais de um canal estiver configurado.
-- Se exatamente um canal estiver configurado, ele se torna o padrão.
-- Valores: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams` (Mattermost requer Plugin)
+- `--channel` required if more than one channel is configured.
+- If exactly one channel is configured, it becomes the default.
+- Values: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams` (Mattermost requires plugin)
 
-Formatos de destino (`--target`):
+Target formats (`--target`):
 
-- WhatsApp: E.164 ou JID de grupo
-- Telegram: id do chat ou `@username`
-- Discord: `channel:<id>` ou `user:<id>` (ou menção `<@id>`; ids numéricos puros são tratados como canais)
-- Google Chat: `spaces/<spaceId>` ou `users/<userId>`
-- Slack: `channel:<id>` ou `user:<id>` (id de canal puro é aceito)
-- Mattermost (Plugin): `channel:<id>`, `user:<id>`, ou `@username` (ids puros são tratados como canais)
-- Signal: `+E.164`, `group:<id>`, `signal:+E.164`, `signal:group:<id>`, ou `username:<name>`/`u:<name>`
-- iMessage: handle, `chat_id:<id>`, `chat_guid:<guid>`, ou `chat_identifier:<id>`
-- MS Teams: id de conversa (`19:...@thread.tacv2`) ou `conversation:<id>` ou `user:<aad-object-id>`
+- WhatsApp: E.164 or group JID
+- Telegram: chat id or `@username`
+- Discord: `channel:<id>` or `user:<id>` (or `<@id>` mention; raw numeric ids are treated as channels)
+- Google Chat: `spaces/<spaceId>` or `users/<userId>`
+- Slack: `channel:<id>` or `user:<id>` (raw channel id is accepted)
+- Mattermost (plugin): `channel:<id>`, `user:<id>`, or `@username` (bare ids are treated as channels)
+- Signal: `+E.164`, `group:<id>`, `signal:+E.164`, `signal:group:<id>`, or `username:<name>`/`u:<name>`
+- iMessage: handle, `chat_id:<id>`, `chat_guid:<guid>`, or `chat_identifier:<id>`
+- MS Teams: conversation id (`19:...@thread.tacv2`) or `conversation:<id>` or `user:<aad-object-id>`
 
-Busca por nome:
+Name lookup:
 
-- Para provedores suportados (Discord/Slack/etc), nomes de canal como `Help` ou `#help` são resolvidos via cache de diretório.
-- Em caso de cache miss, o OpenCraft tentará uma busca ao vivo no diretório quando o provedor suportar.
+- For supported providers (Discord/Slack/etc), channel names like `Help` or `#help` are resolved via the directory cache.
+- On cache miss, OpenCraft will attempt a live directory lookup when the provider supports it.
 
-## Flags comuns
+## Common flags
 
 - `--channel <name>`
 - `--account <id>`
-- `--target <dest>` (canal ou usuário de destino para send/poll/read/etc)
-- `--targets <name>` (repetível; apenas broadcast)
+- `--target <dest>` (target channel or user for send/poll/read/etc)
+- `--targets <name>` (repeat; broadcast only)
 - `--json`
 - `--dry-run`
 - `--verbose`
 
-## Ações
+## SecretRef behavior
 
-### Principais
+- `opencraft message` resolves supported channel SecretRefs before running the selected action.
+- Resolution is scoped to the active action target when possible:
+  - channel-scoped when `--channel` is set (or inferred from prefixed targets like `discord:...`)
+  - account-scoped when `--account` is set (channel globals + selected account surfaces)
+  - when `--account` is omitted, OpenCraft does not force a `default` account SecretRef scope
+- Unresolved SecretRefs on unrelated channels do not block a targeted message action.
+- If the selected channel/account SecretRef is unresolved, the command fails closed for that action.
+
+## Actions
+
+### Core
 
 - `send`
-  - Canais: WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (Plugin)/Signal/iMessage/MS Teams
-  - Obrigatório: `--target`, mais `--message` ou `--media`
-  - Opcional: `--media`, `--reply-to`, `--thread-id`, `--gif-playback`
-  - Apenas Telegram: `--buttons` (requer `channels.telegram.capabilities.inlineButtons` para permitir)
-  - Apenas Telegram: `--force-document` (enviar imagens e GIFs como documentos para evitar compressão do Telegram)
-  - Apenas Telegram: `--thread-id` (id do tópico do fórum)
-  - Apenas Slack: `--thread-id` (timestamp da thread; `--reply-to` usa o mesmo campo)
-  - Apenas WhatsApp: `--gif-playback`
+  - Channels: WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage/MS Teams
+  - Required: `--target`, plus `--message` or `--media`
+  - Optional: `--media`, `--reply-to`, `--thread-id`, `--gif-playback`
+  - Telegram only: `--buttons` (requires `channels.telegram.capabilities.inlineButtons` to allow it)
+  - Telegram only: `--force-document` (send images and GIFs as documents to avoid Telegram compression)
+  - Telegram only: `--thread-id` (forum topic id)
+  - Slack only: `--thread-id` (thread timestamp; `--reply-to` uses the same field)
+  - WhatsApp only: `--gif-playback`
 
 - `poll`
-  - Canais: WhatsApp/Telegram/Discord/Matrix/MS Teams
-  - Obrigatório: `--target`, `--poll-question`, `--poll-option` (repetível)
-  - Opcional: `--poll-multi`
-  - Apenas Discord: `--poll-duration-hours`, `--silent`, `--message`
-  - Apenas Telegram: `--poll-duration-seconds` (5-600), `--silent`, `--poll-anonymous` / `--poll-public`, `--thread-id`
+  - Channels: WhatsApp/Telegram/Discord/Matrix/MS Teams
+  - Required: `--target`, `--poll-question`, `--poll-option` (repeat)
+  - Optional: `--poll-multi`
+  - Discord only: `--poll-duration-hours`, `--silent`, `--message`
+  - Telegram only: `--poll-duration-seconds` (5-600), `--silent`, `--poll-anonymous` / `--poll-public`, `--thread-id`
 
 - `react`
-  - Canais: Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
-  - Obrigatório: `--message-id`, `--target`
-  - Opcional: `--emoji`, `--remove`, `--participant`, `--from-me`, `--target-author`, `--target-author-uuid`
-  - Nota: `--remove` requer `--emoji` (omita `--emoji` para limpar suas próprias reações onde suportado; veja /tools/reactions)
-  - Apenas WhatsApp: `--participant`, `--from-me`
-  - Reações em grupo Signal: `--target-author` ou `--target-author-uuid` obrigatório
+  - Channels: Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
+  - Required: `--message-id`, `--target`
+  - Optional: `--emoji`, `--remove`, `--participant`, `--from-me`, `--target-author`, `--target-author-uuid`
+  - Note: `--remove` requires `--emoji` (omit `--emoji` to clear own reactions where supported; see /tools/reactions)
+  - WhatsApp only: `--participant`, `--from-me`
+  - Signal group reactions: `--target-author` or `--target-author-uuid` required
 
 - `reactions`
-  - Canais: Discord/Google Chat/Slack
-  - Obrigatório: `--message-id`, `--target`
-  - Opcional: `--limit`
+  - Channels: Discord/Google Chat/Slack
+  - Required: `--message-id`, `--target`
+  - Optional: `--limit`
 
 - `read`
-  - Canais: Discord/Slack
-  - Obrigatório: `--target`
-  - Opcional: `--limit`, `--before`, `--after`
-  - Apenas Discord: `--around`
+  - Channels: Discord/Slack
+  - Required: `--target`
+  - Optional: `--limit`, `--before`, `--after`
+  - Discord only: `--around`
 
 - `edit`
-  - Canais: Discord/Slack
-  - Obrigatório: `--message-id`, `--message`, `--target`
+  - Channels: Discord/Slack
+  - Required: `--message-id`, `--message`, `--target`
 
 - `delete`
-  - Canais: Discord/Slack/Telegram
-  - Obrigatório: `--message-id`, `--target`
+  - Channels: Discord/Slack/Telegram
+  - Required: `--message-id`, `--target`
 
 - `pin` / `unpin`
-  - Canais: Discord/Slack
-  - Obrigatório: `--message-id`, `--target`
+  - Channels: Discord/Slack
+  - Required: `--message-id`, `--target`
 
-- `pins` (listar)
-  - Canais: Discord/Slack
-  - Obrigatório: `--target`
+- `pins` (list)
+  - Channels: Discord/Slack
+  - Required: `--target`
 
 - `permissions`
-  - Canais: Discord
-  - Obrigatório: `--target`
+  - Channels: Discord
+  - Required: `--target`
 
 - `search`
-  - Canais: Discord
-  - Obrigatório: `--guild-id`, `--query`
-  - Opcional: `--channel-id`, `--channel-ids` (repetível), `--author-id`, `--author-ids` (repetível), `--limit`
+  - Channels: Discord
+  - Required: `--guild-id`, `--query`
+  - Optional: `--channel-id`, `--channel-ids` (repeat), `--author-id`, `--author-ids` (repeat), `--limit`
 
 ### Threads
 
 - `thread create`
-  - Canais: Discord
-  - Obrigatório: `--thread-name`, `--target` (id do canal)
-  - Opcional: `--message-id`, `--message`, `--auto-archive-min`
+  - Channels: Discord
+  - Required: `--thread-name`, `--target` (channel id)
+  - Optional: `--message-id`, `--message`, `--auto-archive-min`
 
 - `thread list`
-  - Canais: Discord
-  - Obrigatório: `--guild-id`
-  - Opcional: `--channel-id`, `--include-archived`, `--before`, `--limit`
+  - Channels: Discord
+  - Required: `--guild-id`
+  - Optional: `--channel-id`, `--include-archived`, `--before`, `--limit`
 
 - `thread reply`
-  - Canais: Discord
-  - Obrigatório: `--target` (id da thread), `--message`
-  - Opcional: `--media`, `--reply-to`
+  - Channels: Discord
+  - Required: `--target` (thread id), `--message`
+  - Optional: `--media`, `--reply-to`
 
 ### Emojis
 
 - `emoji list`
   - Discord: `--guild-id`
-  - Slack: sem flags extras
+  - Slack: no extra flags
 
 - `emoji upload`
-  - Canais: Discord
-  - Obrigatório: `--guild-id`, `--emoji-name`, `--media`
-  - Opcional: `--role-ids` (repetível)
+  - Channels: Discord
+  - Required: `--guild-id`, `--emoji-name`, `--media`
+  - Optional: `--role-ids` (repeat)
 
 ### Stickers
 
 - `sticker send`
-  - Canais: Discord
-  - Obrigatório: `--target`, `--sticker-id` (repetível)
-  - Opcional: `--message`
+  - Channels: Discord
+  - Required: `--target`, `--sticker-id` (repeat)
+  - Optional: `--message`
 
 - `sticker upload`
-  - Canais: Discord
-  - Obrigatório: `--guild-id`, `--sticker-name`, `--sticker-desc`, `--sticker-tags`, `--media`
+  - Channels: Discord
+  - Required: `--guild-id`, `--sticker-name`, `--sticker-desc`, `--sticker-tags`, `--media`
 
-### Cargos / Canais / Membros / Voz
+### Roles / Channels / Members / Voice
 
 - `role info` (Discord): `--guild-id`
 - `role add` / `role remove` (Discord): `--guild-id`, `--user-id`, `--role-id`
 - `channel info` (Discord): `--target`
 - `channel list` (Discord): `--guild-id`
-- `member info` (Discord/Slack): `--user-id` (+ `--guild-id` para Discord)
+- `member info` (Discord/Slack): `--user-id` (+ `--guild-id` for Discord)
 - `voice status` (Discord): `--guild-id`, `--user-id`
 
-### Eventos
+### Events
 
 - `event list` (Discord): `--guild-id`
 - `event create` (Discord): `--guild-id`, `--event-name`, `--start-time`
-  - Opcional: `--end-time`, `--desc`, `--channel-id`, `--location`, `--event-type`
+  - Optional: `--end-time`, `--desc`, `--channel-id`, `--location`, `--event-type`
 
-### Moderação (Discord)
+### Moderation (Discord)
 
-- `timeout`: `--guild-id`, `--user-id` (opcional `--duration-min` ou `--until`; omita ambos para limpar timeout)
+- `timeout`: `--guild-id`, `--user-id` (optional `--duration-min` or `--until`; omit both to clear timeout)
 - `kick`: `--guild-id`, `--user-id` (+ `--reason`)
 - `ban`: `--guild-id`, `--user-id` (+ `--delete-days`, `--reason`)
-  - `timeout` também suporta `--reason`
+  - `timeout` also supports `--reason`
 
 ### Broadcast
 
 - `broadcast`
-  - Canais: qualquer canal configurado; use `--channel all` para direcionar todos os provedores
-  - Obrigatório: `--targets` (repetível)
-  - Opcional: `--message`, `--media`, `--dry-run`
+  - Channels: any configured channel; use `--channel all` to target all providers
+  - Required: `--targets` (repeat)
+  - Optional: `--message`, `--media`, `--dry-run`
 
-## Exemplos
+## Examples
 
-Enviar uma resposta no Discord:
+Send a Discord reply:
 
 ```
 opencraft message send --channel discord \
   --target channel:123 --message "hi" --reply-to 456
 ```
 
-Enviar uma mensagem no Discord com componentes:
+Send a Discord message with components:
 
 ```
 opencraft message send --channel discord \
@@ -200,9 +210,9 @@ opencraft message send --channel discord \
   --components '{"text":"Choose a path","blocks":[{"type":"actions","buttons":[{"label":"Approve","style":"success"},{"label":"Decline","style":"danger"}]}]}'
 ```
 
-Veja [Componentes Discord](/channels/discord#interactive-components) para o esquema completo.
+See [Discord components](/channels/discord#interactive-components) for the full schema.
 
-Criar uma enquete no Discord:
+Create a Discord poll:
 
 ```
 opencraft message poll --channel discord \
@@ -212,7 +222,7 @@ opencraft message poll --channel discord \
   --poll-multi --poll-duration-hours 48
 ```
 
-Criar uma enquete no Telegram (encerramento automático em 2 minutos):
+Create a Telegram poll (auto-close in 2 minutes):
 
 ```
 opencraft message poll --channel telegram \
@@ -222,14 +232,14 @@ opencraft message poll --channel telegram \
   --poll-duration-seconds 120 --silent
 ```
 
-Enviar uma mensagem proativa no Teams:
+Send a Teams proactive message:
 
 ```
 opencraft message send --channel msteams \
   --target conversation:19:abc@thread.tacv2 --message "hi"
 ```
 
-Criar uma enquete no Teams:
+Create a Teams poll:
 
 ```
 opencraft message poll --channel msteams \
@@ -238,14 +248,14 @@ opencraft message poll --channel msteams \
   --poll-option Pizza --poll-option Sushi
 ```
 
-Reagir no Slack:
+React in Slack:
 
 ```
 opencraft message react --channel slack \
   --target C123 --message-id 456 --emoji "✅"
 ```
 
-Reagir em um grupo Signal:
+React in a Signal group:
 
 ```
 opencraft message react --channel signal \
@@ -253,14 +263,14 @@ opencraft message react --channel signal \
   --emoji "✅" --target-author-uuid 123e4567-e89b-12d3-a456-426614174000
 ```
 
-Enviar botões inline no Telegram:
+Send Telegram inline buttons:
 
 ```
 opencraft message send --channel telegram --target @mychat --message "Choose:" \
   --buttons '[ [{"text":"Yes","callback_data":"cmd:yes"}], [{"text":"No","callback_data":"cmd:no"}] ]'
 ```
 
-Enviar uma imagem do Telegram como documento para evitar compressão:
+Send a Telegram image as a document to avoid compression:
 
 ```bash
 opencraft message send --channel telegram --target @mychat \

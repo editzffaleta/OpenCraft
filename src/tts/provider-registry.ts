@@ -7,14 +7,11 @@ import { buildElevenLabsSpeechProvider } from "./providers/elevenlabs.js";
 import { buildMicrosoftSpeechProvider } from "./providers/microsoft.js";
 import { buildOpenAISpeechProvider } from "./providers/openai.js";
 
-// Lazy to avoid calling builders at module load time during CJS circular-dep init.
-function getBuiltinSpeechProviders(): readonly SpeechProviderPlugin[] {
-  return [
-    buildOpenAISpeechProvider(),
-    buildElevenLabsSpeechProvider(),
-    buildMicrosoftSpeechProvider(),
-  ];
-}
+const BUILTIN_SPEECH_PROVIDER_BUILDERS = [
+  buildOpenAISpeechProvider,
+  buildElevenLabsSpeechProvider,
+  buildMicrosoftSpeechProvider,
+] as const satisfies readonly (() => SpeechProviderPlugin)[];
 
 function trimToUndefined(value: string | undefined): string | undefined {
   const trimmed = value?.trim().toLowerCase();
@@ -61,8 +58,8 @@ function buildProviderMaps(cfg?: OpenCraftConfig): {
     }
   };
 
-  for (const provider of getBuiltinSpeechProviders()) {
-    register(provider);
+  for (const buildProvider of BUILTIN_SPEECH_PROVIDER_BUILDERS) {
+    register(buildProvider());
   }
   for (const provider of resolveSpeechProviderPluginEntries(cfg)) {
     register(provider);

@@ -140,7 +140,7 @@ opencraft hooks disable command-logger
 
 ## Configuration
 
-Hooks can be configured in `~/.editzffaleta/OpenCraft.json`:
+Hooks can be configured in `~/.opencraft/opencraft.json`:
 
 ```json
 {

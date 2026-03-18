@@ -1,89 +1,89 @@
 ---
-summary: "Proposta: modelo de autorização de comando de longo prazo para conversas vinculadas a ACP"
+summary: "Proposal: long-term command authorization model for ACP-bound conversations"
 read_when:
-  - Projetando comportamento nativo de autenticação de comando em canais/tópicos vinculados a ACP do Telegram/Discord
+  - Designing native command auth behavior in Telegram/Discord ACP-bound channels/topics
 title: "ACP Bound Command Authorization (Proposal)"
 ---
 
-# Autorização de Comando Vinculado a ACP (Proposta)
+# ACP Bound Command Authorization (Proposal)
 
-Status: Proposto, **ainda não implementado**.
+Status: Proposed, **not implemented yet**.
 
-Este documento descreve um modelo de autorização de longo prazo para comandos nativos em
-conversas vinculadas a ACP. É uma proposta experimental e não substitui
-o comportamento atual de produção.
+This document describes a long-term authorization model for native commands in
+ACP-bound conversations. It is an experiments proposal and does not replace
+current production behavior.
 
-Para o comportamento implementado, leia o código-fonte e testes em:
+For implemented behavior, read source and tests in:
 
 - `src/telegram/bot-native-commands.ts`
 - `src/discord/monitor/native-command.ts`
 - `src/auto-reply/reply/commands-core.ts`
 
-## Problema
+## Problem
 
-Hoje temos verificações específicas por comando (por exemplo `/new` e `/reset`) que
-precisam funcionar dentro de canais/tópicos vinculados a ACP mesmo quando listas de permissão estão vazias.
-Isso resolve a dor imediata de UX, mas exceções baseadas em nome de comando não escalam.
+Today we have command-specific checks (for example `/new` and `/reset`) that
+need to work inside ACP-bound channels/topics even when allowlists are empty.
+This solves immediate UX pain, but command-name-based exceptions do not scale.
 
-## Formato de longo prazo
+## Long-term shape
 
-Mover autorização de comando de lógica ad-hoc de handler para metadados de comando mais um
-avaliador de política compartilhado.
+Move command authorization from ad-hoc handler logic to command metadata plus a
+shared policy evaluator.
 
-### 1) Adicionar metadados de política de autenticação às definições de comando
+### 1) Add auth policy metadata to command definitions
 
-Cada definição de comando deve declarar uma política de autenticação. Formato exemplo:
+Each command definition should declare an auth policy. Example shape:
 
 ```ts
 type CommandAuthPolicy =
-  | { mode: "owner_or_allowlist" } // padrão, comportamento estrito atual
-  | { mode: "bound_acp_or_owner_or_allowlist" } // permitir em conversas ACP explicitamente vinculadas
+  | { mode: "owner_or_allowlist" } // default, current strict behavior
+  | { mode: "bound_acp_or_owner_or_allowlist" } // allow in explicitly bound ACP conversations
   | { mode: "owner_only" };
 ```
 
-`/new` e `/reset` usariam `bound_acp_or_owner_or_allowlist`.
-A maioria dos outros comandos permaneceria `owner_or_allowlist`.
+`/new` and `/reset` would use `bound_acp_or_owner_or_allowlist`.
+Most other commands would remain `owner_or_allowlist`.
 
-### 2) Compartilhar um avaliador entre canais
+### 2) Share one evaluator across channels
 
-Introduzir um helper que avalia autenticação de comando usando:
+Introduce one helper that evaluates command auth using:
 
-- metadados de política do comando
-- estado de autorização do remetente
-- estado de vinculação de conversa resolvido
+- command policy metadata
+- sender authorization state
+- resolved conversation binding state
 
-Tanto handlers nativos do Telegram quanto do Discord devem chamar o mesmo helper para evitar
-divergência de comportamento.
+Both Telegram and Discord native handlers should call the same helper to avoid
+behavior drift.
 
-### 3) Usar correspondência de vinculação como fronteira de bypass
+### 3) Use binding-match as the bypass boundary
 
-Quando a política permite bypass de ACP vinculado, autorizar somente se uma correspondência de vinculação
-configurada foi resolvida para a conversa atual (não apenas porque a chave de sessão atual
-parece ser ACP).
+When policy allows bound ACP bypass, authorize only if a configured binding
+match was resolved for the current conversation (not just because current
+session key looks ACP-like).
 
-Isso mantém a fronteira explícita e minimiza ampliação acidental.
+This keeps the boundary explicit and minimizes accidental widening.
 
-## Por que isso é melhor
+## Why this is better
 
-- Escala para futuros comandos sem adicionar mais condicionais de nome de comando.
-- Mantém comportamento consistente entre canais.
-- Preserva o modelo de segurança atual exigindo correspondência explícita de vinculação.
-- Mantém listas de permissão como endurecimento opcional em vez de requisito universal.
+- Scales to future commands without adding more command-name conditionals.
+- Keeps behavior consistent across channels.
+- Preserves current security model by requiring explicit binding match.
+- Keeps allowlists optional hardening instead of a universal requirement.
 
-## Plano de rollout (futuro)
+## Rollout plan (future)
 
-1. Adicionar campo de política de autenticação de comando aos tipos e dados do registro de comandos.
-2. Implementar avaliador compartilhado e migrar handlers nativos de Telegram + Discord.
-3. Mover `/new` e `/reset` para política orientada a metadados.
-4. Adicionar testes por modo de política e superfície de canal.
+1. Add command auth policy field to command registry types and command data.
+2. Implement shared evaluator and migrate Telegram + Discord native handlers.
+3. Move `/new` and `/reset` to metadata-driven policy.
+4. Add tests per policy mode and channel surface.
 
-## Não-objetivos
+## Non-goals
 
-- Esta proposta não altera o comportamento de ciclo de vida de sessão ACP.
-- Esta proposta não exige listas de permissão para todos os comandos vinculados a ACP.
-- Esta proposta não altera semânticas existentes de vinculação de rota.
+- This proposal does not change ACP session lifecycle behavior.
+- This proposal does not require allowlists for all ACP-bound commands.
+- This proposal does not change existing route binding semantics.
 
-## Nota
+## Note
 
-Esta proposta é intencionalmente aditiva e não deleta ou substitui documentos
-experimentais existentes.
+This proposal is intentionally additive and does not delete or replace existing
+experiments documents.

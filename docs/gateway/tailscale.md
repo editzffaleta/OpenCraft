@@ -1,14 +1,16 @@
 ---
-summary: "Tailscale Serve/Funnel integrado para o dashboard do Gateway"
+summary: "Integrated Tailscale Serve/Funnel for the Gateway dashboard"
 read_when:
-  - Expondo a Control UI do Gateway fora do localhost
-  - Automatizando acesso ao dashboard via tailnet ou público
+  - Exposing the Gateway Control UI outside localhost
+  - Automating tailnet or public dashboard access
 title: "Tailscale"
 ---
 
-# Tailscale (dashboard do Gateway)
+# Tailscale (Gateway dashboard)
 
-OpenCraft pode auto-configurar Tailscale **Serve** (tailnet) ou **Funnel** (público) para o dashboard do Gateway e porta WebSocket. Isso mantém o Gateway vinculado a loopback enquanto Tailscale fornece HTTPS, roteamento e (para Serve) headers de identidade.
+OpenCraft can auto-configure Tailscale **Serve** (tailnet) or **Funnel** (public) for the
+Gateway dashboard and WebSocket port. This keeps the Gateway bound to loopback while
+Tailscale provides HTTPS, routing, and (for Serve) identity headers.
 
 ## Modes
 
@@ -20,8 +22,8 @@ OpenCraft pode auto-configurar Tailscale **Serve** (tailnet) ou **Funnel** (púb
 
 Set `gateway.auth.mode` to control the handshake:
 
-- `token` (default when `OPENCLAW_GATEWAY_TOKEN` is set)
-- `password` (shared secret via `OPENCLAW_GATEWAY_PASSWORD` or config)
+- `token` (default when `OPENCRAFT_GATEWAY_TOKEN` is set)
+- `password` (shared secret via `OPENCRAFT_GATEWAY_PASSWORD` or config)
 
 When `tailscale.mode = "serve"` and `gateway.auth.allowTailscale` is `true`,
 Control UI/WebSocket auth can use Tailscale identity headers
@@ -86,7 +88,7 @@ Note: loopback (`http://127.0.0.1:18789`) will **not** work in this mode.
 }
 ```
 
-Prefer `OPENCLAW_GATEWAY_PASSWORD` over committing a password to disk.
+Prefer `OPENCRAFT_GATEWAY_PASSWORD` over committing a password to disk.
 
 ## CLI examples
 

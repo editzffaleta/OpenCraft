@@ -1,4 +1,4 @@
-import type { OpenCraftConfig } from "opencraft/plugin-sdk/mattermost";
+import type { OpenCraftConfig } from "../runtime-api.js";
 import { resolveMattermostAccount } from "./accounts.js";
 import {
   createMattermostClient,

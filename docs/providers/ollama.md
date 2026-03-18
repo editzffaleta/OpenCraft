@@ -1,38 +1,38 @@
 ---
-summary: "Execute o OpenCraft com Ollama (modelos na nuvem e locais)"
+summary: "Run OpenCraft with Ollama (cloud and local models)"
 read_when:
-  - Você quer executar o OpenCraft com modelos na nuvem ou locais via Ollama
-  - Você precisa de orientação para configuração do Ollama
+  - You want to run OpenCraft with cloud or local models via Ollama
+  - You need Ollama setup and configuration guidance
 title: "Ollama"
 ---
 
 # Ollama
 
-Ollama é um runtime de LLM local que facilita a execução de modelos open-source na sua máquina. O OpenCraft se integra com a API nativa do Ollama (`/api/chat`), suporta streaming e chamada de ferramentas, e pode descobrir automaticamente modelos Ollama locais quando você opta por usar `OLLAMA_API_KEY` (ou um perfil de autenticação) e não define uma entrada explícita em `models.providers.ollama`.
+Ollama is a local LLM runtime that makes it easy to run open-source models on your machine. OpenCraft integrates with Ollama's native API (`/api/chat`), supports streaming and tool calling, and can auto-discover local Ollama models when you opt in with `OLLAMA_API_KEY` (or an auth profile) and do not define an explicit `models.providers.ollama` entry.
 
 <Warning>
-**Usuários de Ollama remoto**: Não use a URL compatível com OpenAI `/v1` (`http://host:11434/v1`) com o OpenCraft. Isso quebra a chamada de ferramentas e os modelos podem gerar JSON de ferramentas como texto simples. Use a URL nativa da API do Ollama: `baseUrl: "http://host:11434"` (sem `/v1`).
+**Remote Ollama users**: Do not use the `/v1` OpenAI-compatible URL (`http://host:11434/v1`) with OpenCraft. This breaks tool calling and models may output raw tool JSON as plain text. Use the native Ollama API URL instead: `baseUrl: "http://host:11434"` (no `/v1`).
 </Warning>
 
-## Início rápido
+## Quick start
 
-### Onboarding (recomendado)
+### Onboarding (recommended)
 
-A maneira mais rápida de configurar o Ollama é através do onboarding:
+The fastest way to set up Ollama is through onboarding:
 
 ```bash
 opencraft onboard
 ```
 
-Selecione **Ollama** na lista de providers. O onboarding irá:
+Select **Ollama** from the provider list. Onboarding will:
 
-1. Solicitar a URL base do Ollama onde sua instância pode ser acessada (padrão `http://127.0.0.1:11434`).
-2. Permitir que você escolha **Cloud + Local** (modelos na nuvem e locais) ou **Local** (apenas modelos locais).
-3. Abrir um fluxo de login no navegador se você escolher **Cloud + Local** e não estiver logado no ollama.com.
-4. Descobrir modelos disponíveis e sugerir padrões.
-5. Baixar automaticamente o modelo selecionado se ele não estiver disponível localmente.
+1. Ask for the Ollama base URL where your instance can be reached (default `http://127.0.0.1:11434`).
+2. Let you choose **Cloud + Local** (cloud models and local models) or **Local** (local models only).
+3. Open a browser sign-in flow if you choose **Cloud + Local** and are not signed in to ollama.com.
+4. Discover available models and suggest defaults.
+5. Auto-pull the selected model if it is not available locally.
 
-O modo não interativo também é suportado:
+Non-interactive mode is also supported:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -40,7 +40,7 @@ opencraft onboard --non-interactive \
   --accept-risk
 ```
 
-Opcionalmente, especifique uma URL base personalizada ou modelo:
+Optionally specify a custom base URL or model:
 
 ```bash
 opencraft onboard --non-interactive \
@@ -50,59 +50,59 @@ opencraft onboard --non-interactive \
   --accept-risk
 ```
 
-### Configuração manual
+### Manual setup
 
-1. Instale o Ollama: [https://ollama.com/download](https://ollama.com/download)
+1. Install Ollama: [https://ollama.com/download](https://ollama.com/download)
 
-2. Baixe um modelo local se quiser inferência local:
+2. Pull a local model if you want local inference:
 
 ```bash
 ollama pull glm-4.7-flash
-# ou
+# or
 ollama pull gpt-oss:20b
-# ou
+# or
 ollama pull llama3.3
 ```
 
-3. Se você também quiser modelos na nuvem, faça login:
+3. If you want cloud models too, sign in:
 
 ```bash
 ollama signin
 ```
 
-4. Execute o onboarding e escolha `Ollama`:
+4. Run onboarding and choose `Ollama`:
 
 ```bash
 opencraft onboard
 ```
 
-- `Local`: apenas modelos locais
-- `Cloud + Local`: modelos locais mais modelos na nuvem
-- Modelos na nuvem como `kimi-k2.5:cloud`, `minimax-m2.5:cloud` e `glm-5:cloud` **não** requerem `ollama pull` local
+- `Local`: local models only
+- `Cloud + Local`: local models plus cloud models
+- Cloud models such as `kimi-k2.5:cloud`, `minimax-m2.5:cloud`, and `glm-5:cloud` do **not** require a local `ollama pull`
 
-O OpenCraft atualmente sugere:
+OpenCraft currently suggests:
 
-- padrão local: `glm-4.7-flash`
-- padrões na nuvem: `kimi-k2.5:cloud`, `minimax-m2.5:cloud`, `glm-5:cloud`
+- local default: `glm-4.7-flash`
+- cloud defaults: `kimi-k2.5:cloud`, `minimax-m2.5:cloud`, `glm-5:cloud`
 
-5. Se preferir configuração manual, habilite o Ollama para o OpenCraft diretamente (qualquer valor funciona; o Ollama não requer uma chave real):
+5. If you prefer manual setup, enable Ollama for OpenCraft directly (any value works; Ollama doesn't require a real key):
 
 ```bash
-# Defina a variável de ambiente
+# Set environment variable
 export OLLAMA_API_KEY="ollama-local"
 
-# Ou configure no seu arquivo de config
+# Or configure in your config file
 opencraft config set models.providers.ollama.apiKey "ollama-local"
 ```
 
-6. Inspecione ou alterne modelos:
+6. Inspect or switch models:
 
 ```bash
 opencraft models list
 opencraft models set ollama/glm-4.7-flash
 ```
 
-7. Ou defina o padrão no config:
+7. Or set the default in config:
 
 ```json5
 {
@@ -114,52 +114,52 @@ opencraft models set ollama/glm-4.7-flash
 }
 ```
 
-## Descoberta de modelos (provider implícito)
+## Model discovery (implicit provider)
 
-Quando você define `OLLAMA_API_KEY` (ou um perfil de autenticação) e **não** define `models.providers.ollama`, o OpenCraft descobre modelos da instância local do Ollama em `http://127.0.0.1:11434`:
+When you set `OLLAMA_API_KEY` (or an auth profile) and **do not** define `models.providers.ollama`, OpenCraft discovers models from the local Ollama instance at `http://127.0.0.1:11434`:
 
-- Consulta `/api/tags`
-- Usa consultas `/api/show` com melhor esforço para ler `contextWindow` quando disponível
-- Marca `reasoning` com uma heurística de nome de modelo (`r1`, `reasoning`, `think`)
-- Define `maxTokens` com o limite padrão de Token máximo do Ollama usado pelo OpenCraft
-- Define todos os custos como `0`
+- Queries `/api/tags`
+- Uses best-effort `/api/show` lookups to read `contextWindow` when available
+- Marks `reasoning` with a model-name heuristic (`r1`, `reasoning`, `think`)
+- Sets `maxTokens` to the default Ollama max-token cap used by OpenCraft
+- Sets all costs to `0`
 
-Isso evita entradas manuais de modelos mantendo o catálogo alinhado com a instância local do Ollama.
+This avoids manual model entries while keeping the catalog aligned with the local Ollama instance.
 
-Para ver quais modelos estão disponíveis:
+To see what models are available:
 
 ```bash
 ollama list
 opencraft models list
 ```
 
-Para adicionar um novo modelo, simplesmente baixe-o com o Ollama:
+To add a new model, simply pull it with Ollama:
 
 ```bash
 ollama pull mistral
 ```
 
-O novo modelo será automaticamente descoberto e disponível para uso.
+The new model will be automatically discovered and available to use.
 
-Se você definir `models.providers.ollama` explicitamente, a descoberta automática é ignorada e você deve definir os modelos manualmente (veja abaixo).
+If you set `models.providers.ollama` explicitly, auto-discovery is skipped and you must define models manually (see below).
 
-## Configuração
+## Configuration
 
-### Configuração básica (descoberta implícita)
+### Basic setup (implicit discovery)
 
-A maneira mais simples de habilitar o Ollama é via variável de ambiente:
+The simplest way to enable Ollama is via environment variable:
 
 ```bash
 export OLLAMA_API_KEY="ollama-local"
 ```
 
-### Configuração explícita (modelos manuais)
+### Explicit setup (manual models)
 
-Use config explícito quando:
+Use explicit config when:
 
-- O Ollama roda em outro host/porta.
-- Você quer forçar janelas de contexto ou listas de modelos específicas.
-- Você quer definições de modelos totalmente manuais.
+- Ollama runs on another host/port.
+- You want to force specific context windows or model lists.
+- You want fully manual model definitions.
 
 ```json5
 {
@@ -186,11 +186,11 @@ Use config explícito quando:
 }
 ```
 
-Se `OLLAMA_API_KEY` estiver definido, você pode omitir `apiKey` na entrada do provider e o OpenCraft preencherá para verificações de disponibilidade.
+If `OLLAMA_API_KEY` is set, you can omit `apiKey` in the provider entry and OpenCraft will fill it for availability checks.
 
-### URL base personalizada (config explícito)
+### Custom base URL (explicit config)
 
-Se o Ollama estiver rodando em um host ou porta diferente (config explícito desabilita a descoberta automática, então defina os modelos manualmente):
+If Ollama is running on a different host or port (explicit config disables auto-discovery, so define models manually):
 
 ```json5
 {
@@ -198,8 +198,8 @@ Se o Ollama estiver rodando em um host ou porta diferente (config explícito des
     providers: {
       ollama: {
         apiKey: "ollama-local",
-        baseUrl: "http://ollama-host:11434", // Sem /v1 - use a URL nativa da API do Ollama
-        api: "ollama", // Defina explicitamente para garantir comportamento nativo de chamada de ferramentas
+        baseUrl: "http://ollama-host:11434", // No /v1 - use native Ollama API URL
+        api: "ollama", // Set explicitly to guarantee native tool-calling behavior
       },
     },
   },
@@ -207,12 +207,12 @@ Se o Ollama estiver rodando em um host ou porta diferente (config explícito des
 ```
 
 <Warning>
-Não adicione `/v1` à URL. O caminho `/v1` usa o modo compatível com OpenAI, onde a chamada de ferramentas não é confiável. Use a URL base do Ollama sem sufixo de caminho.
+Do not add `/v1` to the URL. The `/v1` path uses OpenAI-compatible mode, where tool calling is not reliable. Use the base Ollama URL without a path suffix.
 </Warning>
 
-### Seleção de modelo
+### Model selection
 
-Uma vez configurado, todos os seus modelos Ollama estão disponíveis:
+Once configured, all your Ollama models are available:
 
 ```json5
 {
@@ -227,39 +227,39 @@ Uma vez configurado, todos os seus modelos Ollama estão disponíveis:
 }
 ```
 
-## Modelos na nuvem
+## Cloud models
 
-Os modelos na nuvem permitem que você execute modelos hospedados na nuvem (por exemplo `kimi-k2.5:cloud`, `minimax-m2.5:cloud`, `glm-5:cloud`) junto com seus modelos locais.
+Cloud models let you run cloud-hosted models (for example `kimi-k2.5:cloud`, `minimax-m2.5:cloud`, `glm-5:cloud`) alongside your local models.
 
-Para usar modelos na nuvem, selecione o modo **Cloud + Local** durante a configuração. O assistente verifica se você está logado e abre um fluxo de login no navegador quando necessário. Se a autenticação não puder ser verificada, o assistente volta aos padrões de modelos locais.
+To use cloud models, select **Cloud + Local** mode during setup. The wizard checks whether you are signed in and opens a browser sign-in flow when needed. If authentication cannot be verified, the wizard falls back to local model defaults.
 
-Você também pode fazer login diretamente em [ollama.com/signin](https://ollama.com/signin).
+You can also sign in directly at [ollama.com/signin](https://ollama.com/signin).
 
-## Avançado
+## Advanced
 
-### Modelos de raciocínio
+### Reasoning models
 
-O OpenCraft trata modelos com nomes como `deepseek-r1`, `reasoning` ou `think` como capazes de raciocínio por padrão:
+OpenCraft treats models with names such as `deepseek-r1`, `reasoning`, or `think` as reasoning-capable by default:
 
 ```bash
 ollama pull deepseek-r1:32b
 ```
 
-### Custos de modelo
+### Model Costs
 
-O Ollama é gratuito e roda localmente, então todos os custos de modelo são definidos como $0.
+Ollama is free and runs locally, so all model costs are set to $0.
 
-### Configuração de streaming
+### Streaming Configuration
 
-A integração do OpenCraft com o Ollama usa a **API nativa do Ollama** (`/api/chat`) por padrão, que suporta totalmente streaming e chamada de ferramentas simultaneamente. Nenhuma configuração especial é necessária.
+OpenCraft's Ollama integration uses the **native Ollama API** (`/api/chat`) by default, which fully supports streaming and tool calling simultaneously. No special configuration is needed.
 
-#### Modo legado compatível com OpenAI
+#### Legacy OpenAI-Compatible Mode
 
 <Warning>
-**A chamada de ferramentas não é confiável no modo compatível com OpenAI.** Use este modo apenas se precisar do formato OpenAI para um proxy e não depender do comportamento nativo de chamada de ferramentas.
+**Tool calling is not reliable in OpenAI-compatible mode.** Use this mode only if you need OpenAI format for a proxy and do not depend on native tool calling behavior.
 </Warning>
 
-Se precisar usar o endpoint compatível com OpenAI (por exemplo, atrás de um proxy que suporta apenas o formato OpenAI), defina `api: "openai-completions"` explicitamente:
+If you need to use the OpenAI-compatible endpoint instead (e.g., behind a proxy that only supports OpenAI format), set `api: "openai-completions"` explicitly:
 
 ```json5
 {
@@ -268,7 +268,7 @@ Se precisar usar o endpoint compatível com OpenAI (por exemplo, atrás de um pr
       ollama: {
         baseUrl: "http://ollama-host:11434/v1",
         api: "openai-completions",
-        injectNumCtxForOpenAICompat: true, // padrão: true
+        injectNumCtxForOpenAICompat: true, // default: true
         apiKey: "ollama-local",
         models: [...]
       }
@@ -277,9 +277,9 @@ Se precisar usar o endpoint compatível com OpenAI (por exemplo, atrás de um pr
 }
 ```
 
-Este modo pode não suportar streaming + chamada de ferramentas simultaneamente. Pode ser necessário desabilitar o streaming com `params: { streaming: false }` na config do modelo.
+This mode may not support streaming + tool calling simultaneously. You may need to disable streaming with `params: { streaming: false }` in model config.
 
-Quando `api: "openai-completions"` é usado com o Ollama, o OpenCraft injeta `options.num_ctx` por padrão para que o Ollama não volte silenciosamente para uma janela de contexto de 4096. Se seu proxy/upstream rejeitar campos `options` desconhecidos, desabilite esse comportamento:
+When `api: "openai-completions"` is used with Ollama, OpenCraft injects `options.num_ctx` by default so Ollama does not silently fall back to a 4096 context window. If your proxy/upstream rejects unknown `options` fields, disable this behavior:
 
 ```json5
 {
@@ -297,56 +297,56 @@ Quando `api: "openai-completions"` é usado com o Ollama, o OpenCraft injeta `op
 }
 ```
 
-### Janelas de contexto
+### Context windows
 
-Para modelos descobertos automaticamente, o OpenCraft usa a janela de contexto reportada pelo Ollama quando disponível, caso contrário volta para a janela de contexto padrão do Ollama usada pelo OpenCraft. Você pode sobrescrever `contextWindow` e `maxTokens` na config explícita do provider.
+For auto-discovered models, OpenCraft uses the context window reported by Ollama when available, otherwise it falls back to the default Ollama context window used by OpenCraft. You can override `contextWindow` and `maxTokens` in explicit provider config.
 
-## Solução de problemas
+## Troubleshooting
 
-### Ollama não detectado
+### Ollama not detected
 
-Certifique-se de que o Ollama está em execução e que você definiu `OLLAMA_API_KEY` (ou um perfil de autenticação), e que você **não** definiu uma entrada explícita em `models.providers.ollama`:
+Make sure Ollama is running and that you set `OLLAMA_API_KEY` (or an auth profile), and that you did **not** define an explicit `models.providers.ollama` entry:
 
 ```bash
 ollama serve
 ```
 
-E que a API está acessível:
+And that the API is accessible:
 
 ```bash
 curl http://localhost:11434/api/tags
 ```
 
-### Nenhum modelo disponível
+### No models available
 
-Se seu modelo não está listado, ou:
+If your model is not listed, either:
 
-- Baixe o modelo localmente, ou
-- Defina o modelo explicitamente em `models.providers.ollama`.
+- Pull the model locally, or
+- Define the model explicitly in `models.providers.ollama`.
 
-Para adicionar modelos:
+To add models:
 
 ```bash
-ollama list  # Veja o que está instalado
+ollama list  # See what's installed
 ollama pull glm-4.7-flash
 ollama pull gpt-oss:20b
-ollama pull llama3.3     # Ou outro modelo
+ollama pull llama3.3     # Or another model
 ```
 
-### Conexão recusada
+### Connection refused
 
-Verifique se o Ollama está rodando na porta correta:
+Check that Ollama is running on the correct port:
 
 ```bash
-# Verifique se o Ollama está em execução
+# Check if Ollama is running
 ps aux | grep ollama
 
-# Ou reinicie o Ollama
+# Or restart Ollama
 ollama serve
 ```
 
-## Veja também
+## See Also
 
-- [Providers de modelo](/concepts/model-providers) - Visão geral de todos os providers
-- [Seleção de modelo](/concepts/models) - Como escolher modelos
-- [Configuração](/gateway/configuration) - Referência completa de config
+- [Model Providers](/concepts/model-providers) - Overview of all providers
+- [Model Selection](/concepts/models) - How to choose models
+- [Configuration](/gateway/configuration) - Full config reference

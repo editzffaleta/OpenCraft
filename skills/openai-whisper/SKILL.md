@@ -1,6 +1,6 @@
 ---
 name: openai-whisper
-description: Transcrição de fala para texto local com o CLI Whisper (sem chave de API).
+description: Local speech-to-text with the Whisper CLI (no API key).
 homepage: https://openai.com/research/whisper
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "openai-whisper",
               "bins": ["whisper"],
-              "label": "Instalar OpenAI Whisper (brew)",
+              "label": "Install OpenAI Whisper (brew)",
             },
           ],
       },
@@ -24,15 +24,15 @@ metadata:
 
 # Whisper (CLI)
 
-Use `whisper` para transcrever áudio localmente.
+Use `whisper` to transcribe audio locally.
 
-Início rápido
+Quick start
 
 - `whisper /path/audio.mp3 --model medium --output_format txt --output_dir .`
 - `whisper /path/audio.m4a --task translate --output_format srt`
 
-Observações
+Notes
 
-- Os modelos são baixados para `~/.cache/whisper` na primeira execução.
-- `--model` tem como padrão `turbo` nesta instalação.
-- Use modelos menores para velocidade, maiores para precisão.
+- Models download to `~/.cache/whisper` on first run.
+- `--model` defaults to `turbo` on this install.
+- Use smaller models for speed, larger for accuracy.

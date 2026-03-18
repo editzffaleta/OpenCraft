@@ -90,8 +90,8 @@ read_env_gateway_token() {
   fi
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line%$'\r'}"
-    if [[ "$line" == OPENCLAW_GATEWAY_TOKEN=* ]]; then
-      token="${line#OPENCLAW_GATEWAY_TOKEN=}"
+    if [[ "$line" == OPENCRAFT_GATEWAY_TOKEN=* ]]; then
+      token="${line#OPENCRAFT_GATEWAY_TOKEN=}"
     fi
   done <"$env_path"
   if [[ -n "$token" ]]; then
@@ -250,20 +250,20 @@ if [[ -n "$SANDBOX_ENABLED" && -S "$DOCKER_SOCKET_PATH" ]]; then
 fi
 export DOCKER_GID
 
-if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
+if [[ -z "${OPENCRAFT_GATEWAY_TOKEN:-}" ]]; then
   EXISTING_CONFIG_TOKEN="$(read_config_gateway_token || true)"
   if [[ -n "$EXISTING_CONFIG_TOKEN" ]]; then
-    OPENCLAW_GATEWAY_TOKEN="$EXISTING_CONFIG_TOKEN"
+    OPENCRAFT_GATEWAY_TOKEN="$EXISTING_CONFIG_TOKEN"
     echo "Reusing gateway token from $OPENCRAFT_CONFIG_DIR/opencraft.json"
   else
     DOTENV_GATEWAY_TOKEN="$(read_env_gateway_token "$ROOT_DIR/.env" || true)"
     if [[ -n "$DOTENV_GATEWAY_TOKEN" ]]; then
-      OPENCLAW_GATEWAY_TOKEN="$DOTENV_GATEWAY_TOKEN"
+      OPENCRAFT_GATEWAY_TOKEN="$DOTENV_GATEWAY_TOKEN"
       echo "Reusing gateway token from $ROOT_DIR/.env"
     elif command -v openssl >/dev/null 2>&1; then
-      OPENCLAW_GATEWAY_TOKEN="$(openssl rand -hex 32)"
+      OPENCRAFT_GATEWAY_TOKEN="$(openssl rand -hex 32)"
     else
-      OPENCLAW_GATEWAY_TOKEN="$(python3 - <<'PY'
+      OPENCRAFT_GATEWAY_TOKEN="$(python3 - <<'PY'
 import secrets
 print(secrets.token_hex(32))
 PY
@@ -271,7 +271,7 @@ PY
     fi
   fi
 fi
-export OPENCLAW_GATEWAY_TOKEN
+export OPENCRAFT_GATEWAY_TOKEN
 
 COMPOSE_FILES=("$COMPOSE_FILE")
 COMPOSE_ARGS=()
@@ -416,7 +416,7 @@ upsert_env "$ENV_FILE" \
   OPENCRAFT_GATEWAY_PORT \
   OPENCRAFT_BRIDGE_PORT \
   OPENCRAFT_GATEWAY_BIND \
-  OPENCLAW_GATEWAY_TOKEN \
+  OPENCRAFT_GATEWAY_TOKEN \
   OPENCRAFT_IMAGE \
   OPENCRAFT_EXTRA_MOUNTS \
   OPENCRAFT_HOME_VOLUME \
@@ -467,7 +467,7 @@ echo "==> Onboarding (interactive)"
 echo "Docker setup pins Gateway mode to local."
 echo "Gateway runtime bind comes from OPENCRAFT_GATEWAY_BIND (default: lan)."
 echo "Current runtime bind: $OPENCRAFT_GATEWAY_BIND"
-echo "Gateway token: $OPENCLAW_GATEWAY_TOKEN"
+echo "Gateway token: $OPENCRAFT_GATEWAY_TOKEN"
 echo "Tailscale exposure: Off (use host-level tailnet/Tailscale setup separately)."
 echo "Install Gateway daemon: No (managed by Docker Compose)"
 echo ""
@@ -502,9 +502,9 @@ if [[ -n "$SANDBOX_ENABLED" ]]; then
 
   # Build sandbox image if Dockerfile.sandbox exists.
   if [[ -f "$ROOT_DIR/Dockerfile.sandbox" ]]; then
-    echo "Building sandbox image: openclaw-sandbox:bookworm-slim"
+    echo "Building sandbox image: opencraft-sandbox:bookworm-slim"
     docker build \
-      -t "openclaw-sandbox:bookworm-slim" \
+      -t "opencraft-sandbox:bookworm-slim" \
       -f "$ROOT_DIR/Dockerfile.sandbox" \
       "$ROOT_DIR"
   else
@@ -609,8 +609,8 @@ echo "Gateway running with host port mapping."
 echo "Access from tailnet devices via the host's tailnet IP."
 echo "Config: $OPENCRAFT_CONFIG_DIR"
 echo "Workspace: $OPENCRAFT_WORKSPACE_DIR"
-echo "Token: $OPENCLAW_GATEWAY_TOKEN"
+echo "Token: $OPENCRAFT_GATEWAY_TOKEN"
 echo ""
 echo "Commands:"
 echo "  ${COMPOSE_HINT} logs -f opencraft-gateway"
-echo "  ${COMPOSE_HINT} exec opencraft-gateway node dist/index.js health --token \"$OPENCLAW_GATEWAY_TOKEN\""
+echo "  ${COMPOSE_HINT} exec opencraft-gateway node dist/index.js health --token \"$OPENCRAFT_GATEWAY_TOKEN\""

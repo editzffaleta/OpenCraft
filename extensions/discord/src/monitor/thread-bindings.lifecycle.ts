@@ -1,9 +1,6 @@
-import {
-  readAcpSessionEntry,
-  type AcpSessionStoreEntry,
-} from "../../../../src/acp/runtime/session-meta.js";
-import type { OpenCraftConfig } from "../../../../src/config/config.js";
-import { normalizeAccountId } from "../../../../src/routing/session-key.js";
+import { readAcpSessionEntry, type AcpSessionStoreEntry } from "opencraft/plugin-sdk/acp-runtime";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import { normalizeAccountId } from "opencraft/plugin-sdk/routing";
 import { parseDiscordTarget } from "../targets.js";
 import { resolveChannelIdForBinding } from "./thread-bindings.discord-api.js";
 import { getThreadBindingManager } from "./thread-bindings.manager.js";

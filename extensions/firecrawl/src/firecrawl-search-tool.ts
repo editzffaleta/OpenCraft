@@ -4,8 +4,8 @@ import {
   readNumberParam,
   readStringArrayParam,
   readStringParam,
-} from "../../../src/agents/tools/common.js";
-import type { OpenCraftPluginApi } from "../../../src/plugins/types.js";
+} from "opencraft/plugin-sdk/agent-runtime";
+import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/plugin-runtime";
 import { runFirecrawlSearch } from "./firecrawl-client.js";
 
 const FirecrawlSearchToolSchema = Type.Object(

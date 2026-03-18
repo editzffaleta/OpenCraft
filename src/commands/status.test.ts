@@ -365,7 +365,7 @@ vi.mock("../daemon/service.js", () => ({
     readRuntime: async () => ({ status: "running", pid: 1234 }),
     readCommand: async () => ({
       programArguments: ["node", "dist/entry.js", "gateway"],
-      sourcePath: "/tmp/Library/LaunchAgents/ai.opencraft.gateway.plist",
+      sourcePath: "/tmp/Library/LaunchAgents/ai.openclaw.gateway.plist",
     }),
   }),
 }));
@@ -378,7 +378,7 @@ vi.mock("../daemon/node-service.js", () => ({
     readRuntime: async () => ({ status: "running", pid: 4321 }),
     readCommand: async () => ({
       programArguments: ["node", "dist/entry.js", "node-host"],
-      sourcePath: "/tmp/Library/LaunchAgents/ai.opencraft.node.plist",
+      sourcePath: "/tmp/Library/LaunchAgents/ai.openclaw.node.plist",
     }),
   }),
 }));
@@ -486,7 +486,7 @@ describe("statusCommand", () => {
   });
 
   it("shows gateway auth when reachable", async () => {
-    await withEnvVar("OPENCLAW_GATEWAY_TOKEN", "abcd1234", async () => {
+    await withEnvVar("OPENCRAFT_GATEWAY_TOKEN", "abcd1234", async () => {
       mockProbeGatewayResult({
         ok: true,
         connectLatencyMs: 123,

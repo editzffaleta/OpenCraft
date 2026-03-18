@@ -1,34 +1,34 @@
 ---
-summary: "Como o aplicativo macOS relata estados de integridade do Gateway/Baileys"
+summary: "How the macOS app reports gateway/Baileys health states"
 read_when:
-  - Depurando indicadores de integridade do aplicativo macOS
-title: "Verificações de Integridade"
+  - Debugging mac app health indicators
+title: "Health Checks"
 ---
 
-# Verificações de Integridade no macOS
+# Health Checks on macOS
 
-Como ver se o canal vinculado está saudável a partir do aplicativo da barra de menus.
+How to see whether the linked channel is healthy from the menu bar app.
 
-## Barra de menus
+## Menu bar
 
-- O ponto de status agora reflete a integridade do Baileys:
-  - Verde: vinculado + socket aberto recentemente.
-  - Laranja: conectando/tentando novamente.
-  - Vermelho: desconectado ou sondagem falhou.
-- A linha secundária mostra "linked · auth 12m" ou exibe o motivo da falha.
-- O item de menu "Run Health Check" dispara uma sondagem sob demanda.
+- Status dot now reflects Baileys health:
+  - Green: linked + socket opened recently.
+  - Orange: connecting/retrying.
+  - Red: logged out or probe failed.
+- Secondary line reads "linked · auth 12m" or shows the failure reason.
+- "Run Health Check" menu item triggers an on-demand probe.
 
-## Configurações
+## Settings
 
-- A aba General ganha um card de Integridade mostrando: idade da autenticação vinculada, caminho/contagem do armazenamento de sessão, hora da última verificação, último erro/código de status, e botões para Run Health Check / Reveal Logs.
-- Usa um snapshot em cache para que a UI carregue instantaneamente e funcione graciosamente quando offline.
-- A **aba Channels** exibe status do canal + controles para WhatsApp/Telegram (QR de login, logout, sondagem, última desconexão/erro).
+- General tab gains a Health card showing: linked auth age, session-store path/count, last check time, last error/status code, and buttons for Run Health Check / Reveal Logs.
+- Uses a cached snapshot so the UI loads instantly and falls back gracefully when offline.
+- **Channels tab** surfaces channel status + controls for WhatsApp/Telegram (login QR, logout, probe, last disconnect/error).
 
-## Como a sondagem funciona
+## How the probe works
 
-- O aplicativo executa `opencraft health --json` via `ShellExecutor` a cada ~60s e sob demanda. A sondagem carrega credenciais e relata o status sem enviar mensagens.
-- Faz cache do último snapshot bom e do último erro separadamente para evitar oscilação; mostra o timestamp de cada um.
+- App runs `opencraft health --json` via `ShellExecutor` every ~60s and on demand. The probe loads creds and reports status without sending messages.
+- Cache the last good snapshot and the last error separately to avoid flicker; show the timestamp of each.
 
-## Em caso de dúvida
+## When in doubt
 
-- Você ainda pode usar o fluxo da CLI em [Integridade do Gateway](/gateway/health) (`opencraft status`, `opencraft status --deep`, `opencraft health --json`) e acompanhar `/tmp/editzffaleta/OpenCraft-*.log` para `web-heartbeat` / `web-reconnect`.
+- You can still use the CLI flow in [Gateway health](/gateway/health) (`opencraft status`, `opencraft status --deep`, `opencraft health --json`) and tail `/tmp/opencraft/opencraft-*.log` for `web-heartbeat` / `web-reconnect`.

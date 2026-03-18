@@ -153,7 +153,7 @@ PY
     od -An -N32 -tx1 /dev/urandom | tr -d " \n"
     return 0
   fi
-  echo "Missing dependency: need openssl or python3 (or od) to generate OPENCLAW_GATEWAY_TOKEN." >&2
+  echo "Missing dependency: need openssl or python3 (or od) to generate OPENCRAFT_GATEWAY_TOKEN." >&2
   exit 1
 }
 
@@ -233,15 +233,15 @@ run_as_opencraft chmod 700 "$OPENCRAFT_CONFIG" "$OPENCRAFT_CONFIG/workspace" 2>/
 
 ENV_FILE="$OPENCRAFT_CONFIG/.env"
 if run_as_opencraft test -f "$ENV_FILE"; then
-  if ! run_as_opencraft grep -q '^OPENCLAW_GATEWAY_TOKEN=' "$ENV_FILE" 2>/dev/null; then
+  if ! run_as_opencraft grep -q '^OPENCRAFT_GATEWAY_TOKEN=' "$ENV_FILE" 2>/dev/null; then
     TOKEN="$(generate_token_hex_32)"
-    printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee -a "$ENV_FILE" >/dev/null
-    echo "Added OPENCLAW_GATEWAY_TOKEN to $ENV_FILE."
+    printf 'OPENCRAFT_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee -a "$ENV_FILE" >/dev/null
+    echo "Added OPENCRAFT_GATEWAY_TOKEN to $ENV_FILE."
   fi
   run_as_opencraft chmod 600 "$ENV_FILE" 2>/dev/null || true
 else
   TOKEN="$(generate_token_hex_32)"
-  printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee "$ENV_FILE" >/dev/null
+  printf 'OPENCRAFT_GATEWAY_TOKEN=%s\n' "$TOKEN" | run_as_opencraft tee "$ENV_FILE" >/dev/null
   run_as_opencraft chmod 600 "$ENV_FILE" 2>/dev/null || true
   echo "Created $ENV_FILE with new token."
 fi

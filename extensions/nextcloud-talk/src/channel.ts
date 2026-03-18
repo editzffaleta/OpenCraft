@@ -1,11 +1,12 @@
+import { formatAllowFromLowercase } from "opencraft/plugin-sdk/allow-from";
+import { mapAllowFromEntries } from "opencraft/plugin-sdk/channel-config-helpers";
+import { createAccountStatusSink } from "opencraft/plugin-sdk/channel-lifecycle";
 import {
   buildAccountScopedDmSecurityPolicy,
   collectAllowlistProviderGroupPolicyWarnings,
   collectOpenGroupPolicyRouteAllowlistWarnings,
-  createAccountStatusSink,
-  formatAllowFromLowercase,
-  mapAllowFromEntries,
-} from "opencraft/plugin-sdk/compat";
+} from "opencraft/plugin-sdk/channel-policy";
+import { runStoppablePassiveMonitor } from "../../shared/passive-monitor.js";
 import {
   buildBaseChannelStatusSummary,
   buildChannelConfigSchema,
@@ -16,8 +17,7 @@ import {
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
   type OpenCraftConfig,
-} from "opencraft/plugin-sdk/nextcloud-talk";
-import { runStoppablePassiveMonitor } from "../../shared/passive-monitor.js";
+} from "../runtime-api.js";
 import {
   listNextcloudTalkAccountIds,
   resolveDefaultNextcloudTalkAccountId,

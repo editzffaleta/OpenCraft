@@ -1,64 +1,64 @@
 ---
-summary: "Links curados para as páginas de documentação mais usadas do OpenCraft."
+summary: "Curated links to the most used OpenCraft docs."
 read_when:
-  - Você quer acesso rápido às principais páginas de documentação
-title: "Diretório de documentação"
+  - You want quick access to key docs pages
+title: "Docs directory"
 ---
 
 <Note>
-Esta página é um índice curado. Se você é novo, comece com [Começando](/start/getting-started).
-Para um mapa completo da documentação, veja [Hubs de documentação](/start/hubs).
+This page is a curated index. If you are new, start with [Getting Started](/start/getting-started).
+For a complete map of the docs, see [Docs hubs](/start/hubs).
 </Note>
 
-## Comece aqui
+## Start here
 
-- [Hubs de documentação (todas as páginas linkadas)](/start/hubs)
-- [Ajuda](/help)
-- [Configuração](/gateway/configuration)
-- [Exemplos de configuração](/gateway/configuration-examples)
-- [Comandos slash](/tools/slash-commands)
-- [Roteamento multi-agente](/concepts/multi-agent)
-- [Atualização e rollback](/install/updating)
-- [Pareamento (DM e nodes)](/channels/pairing)
-- [Modo Nix](/install/nix)
-- [Configuração do assistente OpenCraft](/start/opencraft)
+- [Docs hubs (all pages linked)](/start/hubs)
+- [Help](/help)
+- [Configuration](/gateway/configuration)
+- [Configuration examples](/gateway/configuration-examples)
+- [Slash commands](/tools/slash-commands)
+- [Multi-agent routing](/concepts/multi-agent)
+- [Updating and rollback](/install/updating)
+- [Pairing (DM and nodes)](/channels/pairing)
+- [Nix mode](/install/nix)
+- [OpenCraft assistant setup](/start/opencraft)
 - [Skills](/tools/skills)
-- [Configuração de skills](/tools/skills-config)
-- [Templates de espaço de trabalho](/reference/templates/AGENTS)
-- [Adaptadores RPC](/reference/rpc)
-- [Runbook do Gateway](/gateway)
-- [Nodes (iOS e Android)](/nodes)
-- [Superfícies web (Control UI)](/web)
-- [Descoberta e transportes](/gateway/discovery)
-- [Acesso remoto](/gateway/remote)
+- [Skills config](/tools/skills-config)
+- [Workspace templates](/reference/templates/AGENTS)
+- [RPC adapters](/reference/rpc)
+- [Gateway runbook](/gateway)
+- [Nodes (iOS and Android)](/nodes)
+- [Web surfaces (Control UI)](/web)
+- [Discovery and transports](/gateway/discovery)
+- [Remote access](/gateway/remote)
 
-## Provedores e UX
+## Providers and UX
 
 - [WebChat](/web/webchat)
-- [Control UI (navegador)](/web/control-ui)
+- [Control UI (browser)](/web/control-ui)
 - [Telegram](/channels/telegram)
 - [Discord](/channels/discord)
 - [Mattermost (plugin)](/channels/mattermost)
 - [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (legado)](/channels/imessage)
-- [Grupos](/channels/groups)
-- [Mensagens de grupo do WhatsApp](/channels/group-messages)
-- [Mídia de imagens](/nodes/images)
-- [Mídia de áudio](/nodes/audio)
+- [iMessage (legacy)](/channels/imessage)
+- [Groups](/channels/groups)
+- [WhatsApp group messages](/channels/group-messages)
+- [Media images](/nodes/images)
+- [Media audio](/nodes/audio)
 
-## Apps complementares
+## Companion apps
 
-- [App macOS](/platforms/macos)
-- [App iOS](/platforms/ios)
-- [App Android](/platforms/android)
+- [macOS app](/platforms/macos)
+- [iOS app](/platforms/ios)
+- [Android app](/platforms/android)
 - [Windows (WSL2)](/platforms/windows)
-- [App Linux](/platforms/linux)
+- [Linux app](/platforms/linux)
 
-## Operações e segurança
+## Operations and safety
 
-- [Sessões](/concepts/session)
+- [Sessions](/concepts/session)
 - [Cron jobs](/automation/cron-jobs)
 - [Webhooks](/automation/webhook)
-- [Hooks do Gmail (Pub/Sub)](/automation/gmail-pubsub)
-- [Segurança](/gateway/security)
-- [Solução de problemas](/gateway/troubleshooting)
+- [Gmail hooks (Pub/Sub)](/automation/gmail-pubsub)
+- [Security](/gateway/security)
+- [Troubleshooting](/gateway/troubleshooting)

@@ -4,7 +4,7 @@ import OpenCraftKit
 import OpenCraftProtocol
 import OSLog
 
-private let gatewayConnectionLogger = Logger(subsystem: "ai.opencraft", category: "gateway.connection")
+private let gatewayConnectionLogger = Logger(subsystem: "ai.openclaw", category: "gateway.connection")
 
 enum GatewayAgentChannel: String, Codable, CaseIterable {
     case last

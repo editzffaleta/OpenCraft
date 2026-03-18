@@ -24,8 +24,8 @@ x-i18n:
 
 快速分类命令（按顺序）：
 
-| 命令                                | 它告诉你什么                                                                          | 何时使用                              |
-| ----------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
+| 命令                               | 它告诉你什么                                                                          | 何时使用                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
 | `opencraft status`                  | 本地摘要：操作系统 + 更新、Gateway 网关可达性/模式、服务、智能体/会话、提供商配置状态 | 首次检查，快速概览                    |
 | `opencraft status --all`            | 完整本地诊断（只读、可粘贴、相对安全）包括日志尾部                                    | 当你需要分享调试报告时                |
 | `opencraft status --deep`           | 运行 Gateway 网关健康检查（包括提供商探测；需要可达的 Gateway 网关）                  | 当"已配置"不意味着"正常工作"时        |
@@ -119,7 +119,7 @@ Doctor/service 将显示运行时状态（PID/最后退出）和日志提示。
 **日志：**
 
 - 优先：`opencraft logs --follow`
-- 文件日志（始终）：`/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log`（或你配置的 `logging.file`）
+- 文件日志（始终）：`/tmp/opencraft/opencraft-YYYY-MM-DD.log`（或你配置的 `logging.file`）
 - macOS LaunchAgent（如果已安装）：`$OPENCRAFT_STATE_DIR/logs/gateway.log` 和 `gateway.err.log`
 - Linux systemd（如果已安装）：`journalctl --user -u opencraft-gateway[-<profile>].service -n 200 --no-pager`
 - Windows：`schtasks /Query /TN "OpenCraft Gateway (<profile>)" /V /FO LIST`
@@ -215,7 +215,7 @@ Gateway 网关可能拒绝绑定。
 - 如果你设置了 `gateway.mode=remote`，**CLI 默认**使用远程 URL。服务可能仍在本地运行，但你的 CLI 可能在探测错误的位置。使用 `opencraft gateway status` 查看服务解析的端口 + 探测目标（或传递 `--url`）。
 - `opencraft gateway status` 和 `opencraft doctor` 在服务看起来正在运行但端口关闭时会显示日志中的**最后 Gateway 网关错误**。
 - 非本地回环绑定（`lan`/`tailnet`/`custom`，或本地回环不可用时的 `auto`）需要认证：
-  `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）。
+  `gateway.auth.token`（或 `OPENCRAFT_GATEWAY_TOKEN`）。
 - `gateway.remote.token` 仅用于远程 CLI 调用；它**不**启用本地认证。
 - `gateway.token` 被忽略；使用 `gateway.auth.token`。
 
@@ -233,7 +233,7 @@ Gateway 网关可能拒绝绑定。
 **如果 `Last gateway error:` 提到"refusing to bind … without auth"**
 
 - 你将 `gateway.bind` 设置为非本地回环模式（`lan`/`tailnet`/`custom`，或本地回环不可用时的 `auto`）但没有配置认证。
-- 修复：设置 `gateway.auth.mode` + `gateway.auth.token`（或导出 `OPENCLAW_GATEWAY_TOKEN`）并重启服务。
+- 修复：设置 `gateway.auth.mode` + `gateway.auth.token`（或导出 `OPENCRAFT_GATEWAY_TOKEN`）并重启服务。
 
 **如果 `opencraft gateway status` 显示 `bind=tailnet` 但未找到 tailnet 接口**
 
@@ -322,7 +322,7 @@ opencraft status
 # 消息必须匹配 mentionPatterns 或显式提及；默认值在渠道 groups/guilds 中。
 # 多智能体：`agents.list[].groupChat.mentionPatterns` 覆盖全局模式。
 grep -n "agents\\|groupChat\\|mentionPatterns\\|channels\\.whatsapp\\.groups\\|channels\\.telegram\\.groups\\|channels\\.imessage\\.groups\\|channels\\.discord\\.guilds" \
-  "${OPENCRAFT_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json}"
+  "${OPENCRAFT_CONFIG_PATH:-$HOME/.opencraft/opencraft.json}"
 ```
 
 **检查 3：** 检查日志
@@ -330,7 +330,7 @@ grep -n "agents\\|groupChat\\|mentionPatterns\\|channels\\.whatsapp\\.groups\\|c
 ```bash
 opencraft logs --follow
 # 或者如果你想快速过滤：
-tail -f "$(ls -t /tmp/editzffaleta/OpenCraft-*.log | head -1)" | grep "blocked\\|skip\\|unauthorized"
+tail -f "$(ls -t /tmp/opencraft/opencraft-*.log | head -1)" | grep "blocked\\|skip\\|unauthorized"
 ```
 
 ### 配对码未到达
@@ -443,7 +443,7 @@ ls -la /path/to/your/image.jpg
 **检查 3：** 检查媒体日志
 
 ```bash
-grep "media\\|fetch\\|download" "$(ls -t /tmp/editzffaleta/OpenCraft-*.log | head -1)" | tail -20
+grep "media\\|fetch\\|download" "$(ls -t /tmp/opencraft/opencraft-*.log | head -1)" | tail -20
 ```
 
 ### 高内存使用
@@ -631,7 +631,7 @@ tccutil reset All bot.molt.mac.debug
 ```
 
 **修复 2：强制使用新的 Bundle ID**
-如果重置不起作用，在 [`scripts/package-mac-app.sh`](https://github.com/editzffaleta/OpenCraft/blob/main/scripts/package-mac-app.sh) 中更改 `BUNDLE_ID`（例如，添加 `.test` 后缀）并重新构建。这会强制 macOS 将其视为新应用。
+如果重置不起作用，在 [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) 中更改 `BUNDLE_ID`（例如，添加 `.test` 后缀）并重新构建。这会强制 macOS 将其视为新应用。
 
 ### Gateway 网关卡在"Starting..."
 
@@ -674,7 +674,7 @@ npm install -g opencraft@<version>
 
 ```bash
 # 在配置中打开跟踪日志：
-#   ${OPENCRAFT_CONFIG_PATH:-$HOME/.editzffaleta/OpenCraft.json} -> { logging: { level: "trace" } }
+#   ${OPENCRAFT_CONFIG_PATH:-$HOME/.opencraft/opencraft.json} -> { logging: { level: "trace" } }
 #
 # 然后运行详细命令将调试输出镜像到标准输出：
 opencraft gateway --verbose
@@ -683,13 +683,13 @@ opencraft channels login --verbose
 
 ## 日志位置
 
-| 日志                             | 位置                                                                                                                                                                                                                                                                                                                           |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Gateway 网关文件日志（结构化）   | `/tmp/editzffaleta/OpenCraft-YYYY-MM-DD.log`（或 `logging.file`）                                                                                                                                                                                                                                                              |
+| 日志                             | 位置                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gateway 网关文件日志（结构化）   | `/tmp/opencraft/opencraft-YYYY-MM-DD.log`（或 `logging.file`）                                                                                                                                                                                                                                                              |
 | Gateway 网关服务日志（监管程序） | macOS：`$OPENCRAFT_STATE_DIR/logs/gateway.log` + `gateway.err.log`（默认：`~/.opencraft/logs/...`；配置文件使用 `~/.opencraft-<profile>/logs/...`）<br />Linux：`journalctl --user -u opencraft-gateway[-<profile>].service -n 200 --no-pager`<br />Windows：`schtasks /Query /TN "OpenCraft Gateway (<profile>)" /V /FO LIST` |
-| 会话文件                         | `$OPENCRAFT_STATE_DIR/agents/<agentId>/sessions/`                                                                                                                                                                                                                                                                              |
-| 媒体缓存                         | `$OPENCRAFT_STATE_DIR/media/`                                                                                                                                                                                                                                                                                                  |
-| 凭证                             | `$OPENCRAFT_STATE_DIR/credentials/`                                                                                                                                                                                                                                                                                            |
+| 会话文件                         | `$OPENCRAFT_STATE_DIR/agents/<agentId>/sessions/`                                                                                                                                                                                                                                                                          |
+| 媒体缓存                         | `$OPENCRAFT_STATE_DIR/media/`                                                                                                                                                                                                                                                                                              |
+| 凭证                             | `$OPENCRAFT_STATE_DIR/credentials/`                                                                                                                                                                                                                                                                                        |
 
 ## 健康检查
 
@@ -710,7 +710,7 @@ lsof -nP -iTCP:18789 -sTCP:LISTEN
 # 最近活动（RPC 日志尾部）
 opencraft logs --follow
 # 如果 RPC 宕机的备用方案
-tail -20 /tmp/editzffaleta/OpenCraft-*.log
+tail -20 /tmp/opencraft/opencraft-*.log
 ```
 
 ## 重置所有内容

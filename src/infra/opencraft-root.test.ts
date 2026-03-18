@@ -1,6 +1,6 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type FakeFsEntry = { kind: "file"; content: string } | { kind: "dir" };
 
@@ -93,12 +93,10 @@ describe("resolveOpenCraftPackageRoot", () => {
   let resolveOpenCraftPackageRoot: typeof import("./opencraft-root.js").resolveOpenCraftPackageRoot;
   let resolveOpenCraftPackageRootSync: typeof import("./opencraft-root.js").resolveOpenCraftPackageRootSync;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
+    vi.resetModules();
     ({ resolveOpenCraftPackageRoot, resolveOpenCraftPackageRootSync } =
       await import("./opencraft-root.js"));
-  });
-
-  beforeEach(() => {
     state.entries.clear();
     state.realpaths.clear();
     state.realpathErrors.clear();
@@ -117,7 +115,7 @@ describe("resolveOpenCraftPackageRoot", () => {
     const project = fx("symlink-scenario");
     const bin = path.join(project, "bin", "opencraft");
     const realPkg = path.join(project, "real-pkg");
-    state.realpaths.set(abs(bin), abs(path.join(realPkg, "openclaw.mjs")));
+    state.realpaths.set(abs(bin), abs(path.join(realPkg, "opencraft.mjs")));
     setFile(path.join(realPkg, "package.json"), JSON.stringify({ name: "opencraft" }));
 
     expect(resolveOpenCraftPackageRootSync({ argv1: bin })).toBe(realPkg);
@@ -176,7 +174,7 @@ describe("resolveOpenCraftPackageRoot", () => {
   it("falls back from a symlinked argv1 to the node_modules package root", () => {
     const project = fx("symlink-node-modules-fallback");
     const argv1 = path.join(project, "node_modules", ".bin", "opencraft");
-    state.realpaths.set(abs(argv1), abs(path.join(project, "versions", "current", "openclaw.mjs")));
+    state.realpaths.set(abs(argv1), abs(path.join(project, "versions", "current", "opencraft.mjs")));
     const pkgRoot = path.join(project, "node_modules", "opencraft");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "opencraft" }));
 

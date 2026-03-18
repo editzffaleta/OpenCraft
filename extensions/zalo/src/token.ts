@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "opencraft/plugin-sdk/account-id";
-import { tryReadSecretFileSync } from "opencraft/plugin-sdk/core";
+import { tryReadSecretFileSync } from "opencraft/plugin-sdk/infra-runtime";
 import type { BaseTokenResolution } from "opencraft/plugin-sdk/zalo";
 import { normalizeResolvedSecretInputString, normalizeSecretInputString } from "./secret-input.js";
 import type { ZaloConfig } from "./types.js";

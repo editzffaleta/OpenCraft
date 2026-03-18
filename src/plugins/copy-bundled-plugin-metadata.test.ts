@@ -304,14 +304,11 @@ describe("copyBundledPluginMetadata", () => {
       "export default {}\n",
       "utf8",
     );
-    writeJson(
-      path.join(repoRoot, "dist", "extensions", "removed-plugin", "opencraft.plugin.json"),
-      {
-        id: "removed-plugin",
-        configSchema: { type: "object" },
-        skills: ["./bundled-skills/@scope/skill"],
-      },
-    );
+    writeJson(path.join(repoRoot, "dist", "extensions", "removed-plugin", "opencraft.plugin.json"), {
+      id: "removed-plugin",
+      configSchema: { type: "object" },
+      skills: ["./bundled-skills/@scope/skill"],
+    });
     writeJson(path.join(repoRoot, "dist", "extensions", "removed-plugin", "package.json"), {
       name: "@opencraft/removed-plugin",
     });

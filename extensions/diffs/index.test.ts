@@ -1,8 +1,8 @@
 import type { IncomingMessage } from "node:http";
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/diffs";
 import { describe, expect, it, vi } from "vitest";
-import { createMockServerResponse } from "../../src/test-utils/mock-http-response.js";
-import { createTestPluginApi } from "../test-utils/plugin-api.js";
+import { createMockServerResponse } from "../../test/helpers/extensions/mock-http-response.js";
+import { createTestPluginApi } from "../../test/helpers/extensions/plugin-api.js";
+import type { OpenCraftPluginApi } from "./api.js";
 import plugin from "./index.js";
 
 describe("diffs plugin registration", () => {

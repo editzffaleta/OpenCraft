@@ -1,22 +1,16 @@
-import type { OpenCraftPluginApi } from "opencraft/plugin-sdk/line";
-import { emptyPluginConfigSchema } from "opencraft/plugin-sdk/line";
+import { defineChannelPluginEntry } from "opencraft/plugin-sdk/core";
 import { registerLineCardCommand } from "./src/card-command.js";
 import { linePlugin } from "./src/channel.js";
 import { setLineRuntime } from "./src/runtime.js";
 
-const plugin = {
+export { linePlugin } from "./src/channel.js";
+export { setLineRuntime } from "./src/runtime.js";
+
+export default defineChannelPluginEntry({
   id: "line",
   name: "LINE",
   description: "LINE Messaging API channel plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenCraftPluginApi) {
-    setLineRuntime(api.runtime);
-    api.registerChannel({ plugin: linePlugin });
-    if (api.registrationMode !== "full") {
-      return;
-    }
-    registerLineCardCommand(api);
-  },
-};
-
-export default plugin;
+  plugin: linePlugin,
+  setRuntime: setLineRuntime,
+  registerFull: registerLineCardCommand,
+});

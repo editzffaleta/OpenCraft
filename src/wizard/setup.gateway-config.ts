@@ -1,8 +1,4 @@
 import {
-  promptSecretRefForSetup,
-  resolveSecretInputModeForEnvSelection,
-} from "../commands/auth-choice.apply-helpers.js";
-import {
   normalizeGatewayTokenInput,
   randomToken,
   validateGatewayPasswordInput,
@@ -23,6 +19,10 @@ import {
 } from "../gateway/gateway-config-prompts.shared.js";
 import { DEFAULT_DANGEROUS_NODE_COMMANDS } from "../gateway/node-command-policy.js";
 import { findTailscaleBinary } from "../infra/tailscale.js";
+import {
+  promptSecretRefForSetup,
+  resolveSecretInputModeForEnvSelection,
+} from "../plugins/provider-auth-input.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { validateIPv4AddressInput } from "../shared/net/ipv4.js";
 import type { WizardPrompter } from "./prompts.js";
@@ -61,9 +61,9 @@ export async function configureGatewayForSetup(
       : Number.parseInt(
           String(
             await prompter.text({
-              message: "Porta do gateway",
+              message: "Gateway port",
               initialValue: String(localPort),
-              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Porta inválida"),
+              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Invalid port"),
             }),
           ),
           10,
@@ -73,7 +73,7 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.bind
       : await prompter.select<GatewayWizardSettings["bind"]>({
-          message: "Bind do gateway",
+          message: "Gateway bind",
           options: [
             { value: "loopback", label: "Loopback (127.0.0.1)" },
             { value: "lan", label: "LAN (0.0.0.0)" },
@@ -101,12 +101,12 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.authMode
       : ((await prompter.select({
-          message: "Autenticação do gateway",
+          message: "Gateway auth",
           options: [
             {
               value: "token",
               label: "Token",
-              hint: "Padrão recomendado (local + remoto)",
+              hint: "Recommended default (local + remote)",
             },
             { value: "password", label: "Password" },
           ],
@@ -117,7 +117,7 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.tailscaleMode
       : await prompter.select<GatewayWizardSettings["tailscaleMode"]>({
-          message: "Exposição Tailscale",
+          message: "Tailscale exposure",
           options: [...TAILSCALE_EXPOSURE_OPTIONS],
         });
 
@@ -127,7 +127,7 @@ export async function configureGatewayForSetup(
   if (tailscaleMode !== "off") {
     tailscaleBin = await findTailscaleBinary();
     if (!tailscaleBin) {
-      await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Aviso Tailscale");
+      await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale Warning");
     }
   }
 
@@ -136,7 +136,7 @@ export async function configureGatewayForSetup(
     await prompter.note(TAILSCALE_DOCS_LINES.join("\n"), "Tailscale");
     tailscaleResetOnExit = Boolean(
       await prompter.confirm({
-        message: "Redefinir Tailscale serve/funnel ao sair?",
+        message: "Reset Tailscale serve/funnel on exit?",
         initialValue: false,
       }),
     );
@@ -146,13 +146,13 @@ export async function configureGatewayForSetup(
   // - Tailscale wants bind=loopback so we never expose a non-loopback server + tailscale serve/funnel at once.
   // - Funnel requires password auth.
   if (tailscaleMode !== "off" && bind !== "loopback") {
-    await prompter.note("Tailscale requer bind=loopback. Ajustando bind para loopback.", "Nota");
+    await prompter.note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
     bind = "loopback";
     customBindHost = undefined;
   }
 
   if (tailscaleMode === "funnel" && authMode !== "password") {
-    await prompter.note("O Tailscale funnel requer autenticação por senha.", "Nota");
+    await prompter.note("Tailscale funnel requires password auth.", "Note");
     authMode = "password";
   }
 
@@ -173,11 +173,11 @@ export async function configureGatewayForSetup(
             prompter,
             explicitMode: opts.secretInputMode,
             copy: {
-              modeMessage: "Como você quer fornecer o token do gateway?",
-              plaintextLabel: "Gerar/armazenar token em texto simples",
-              plaintextHint: "Padrão",
-              refLabel: "Usar SecretRef",
-              refHint: "Armazenar uma referência em vez de texto simples",
+              modeMessage: "How do you want to provide the gateway token?",
+              plaintextLabel: "Generate/store plaintext token",
+              plaintextHint: "Default",
+              refLabel: "Use SecretRef",
+              refHint: "Store a reference instead of plaintext",
             },
           });
     if (tokenMode === "ref") {
@@ -194,10 +194,10 @@ export async function configureGatewayForSetup(
           provider: "gateway-auth-token",
           config: nextConfig,
           prompter,
-          preferredEnvVar: "OPENCLAW_GATEWAY_TOKEN",
+          preferredEnvVar: "OPENCRAFT_GATEWAY_TOKEN",
           copy: {
-            sourceMessage: "Onde este token do gateway está armazenado?",
-            envVarPlaceholder: "OPENCLAW_GATEWAY_TOKEN",
+            sourceMessage: "Where is this gateway token stored?",
+            envVarPlaceholder: "OPENCRAFT_GATEWAY_TOKEN",
           },
         });
         gatewayTokenInput = resolved.ref;
@@ -205,16 +205,16 @@ export async function configureGatewayForSetup(
       }
     } else if (flow === "quickstart") {
       gatewayToken =
-        (quickstartTokenString ?? normalizeGatewayTokenInput(process.env.OPENCLAW_GATEWAY_TOKEN)) ||
+        (quickstartTokenString ?? normalizeGatewayTokenInput(process.env.OPENCRAFT_GATEWAY_TOKEN)) ||
         randomToken();
       gatewayTokenInput = gatewayToken;
     } else {
       const tokenInput = await prompter.text({
-        message: "Token do gateway (em branco para gerar)",
-        placeholder: "Necessário para acesso em múltiplas máquinas ou não-loopback",
+        message: "Gateway token (blank to generate)",
+        placeholder: "Needed for multi-machine or non-loopback access",
         initialValue:
           quickstartTokenString ??
-          normalizeGatewayTokenInput(process.env.OPENCLAW_GATEWAY_TOKEN) ??
+          normalizeGatewayTokenInput(process.env.OPENCRAFT_GATEWAY_TOKEN) ??
           "",
       });
       gatewayToken = normalizeGatewayTokenInput(tokenInput) || randomToken();
@@ -230,9 +230,9 @@ export async function configureGatewayForSetup(
         prompter,
         explicitMode: opts.secretInputMode,
         copy: {
-          modeMessage: "Como você quer fornecer a senha do gateway?",
-          plaintextLabel: "Inserir senha agora",
-          plaintextHint: "Armazena a senha diretamente na configuração do OpenCraft",
+          modeMessage: "How do you want to provide the gateway password?",
+          plaintextLabel: "Enter password now",
+          plaintextHint: "Stores the password directly in OpenCraft config",
         },
       });
       if (selectedMode === "ref") {
@@ -240,17 +240,17 @@ export async function configureGatewayForSetup(
           provider: "gateway-auth-password",
           config: nextConfig,
           prompter,
-          preferredEnvVar: "OPENCLAW_GATEWAY_PASSWORD",
+          preferredEnvVar: "OPENCRAFT_GATEWAY_PASSWORD",
           copy: {
-            sourceMessage: "Onde esta senha do gateway está armazenada?",
-            envVarPlaceholder: "OPENCLAW_GATEWAY_PASSWORD",
+            sourceMessage: "Where is this gateway password stored?",
+            envVarPlaceholder: "OPENCRAFT_GATEWAY_PASSWORD",
           },
         });
         password = resolved.ref;
       } else {
         password = String(
           (await prompter.text({
-            message: "Senha do gateway",
+            message: "Gateway password",
             validate: validateGatewayPasswordInput,
           })) ?? "",
         ).trim();

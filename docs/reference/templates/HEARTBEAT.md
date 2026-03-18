@@ -1,12 +1,12 @@
 ---
-title: "Template HEARTBEAT.md"
-summary: "Template de workspace para HEARTBEAT.md"
+title: "HEARTBEAT.md Template"
+summary: "Workspace template for HEARTBEAT.md"
 read_when:
-  - Configurando um workspace manualmente
+  - Bootstrapping a workspace manually
 ---
 
 # HEARTBEAT.md
 
-# Mantenha este arquivo vazio (ou apenas com comentários) para pular chamadas de API de heartbeat.
+# Keep this file empty (or with only comments) to skip heartbeat API calls.
 
-# Adicione tarefas abaixo quando quiser que o agente verifique algo periodicamente.
+# Add tasks below when you want the agent to check something periodically.

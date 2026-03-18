@@ -112,11 +112,11 @@ x-i18n:
     想通过包管理器安装当前 GitHub `main` 分支最新版本？
 
     ```bash
-    npm install -g github:editzffaleta/OpenCraft#main
+    npm install -g github:opencraft/opencraft#main
     ```
 
     ```bash
-    pnpm add -g github:editzffaleta/OpenCraft#main
+    pnpm add -g github:opencraft/opencraft#main
     ```
 
   </Accordion>
@@ -126,10 +126,10 @@ x-i18n:
 
     <Steps>
       <Step title="克隆并构建">
-        克隆 [OpenCraft 仓库](https://github.com/editzffaleta/OpenCraft) 并构建：
+        克隆 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 并构建：
 
         ```bash
-        git clone https://github.com/editzffaleta/OpenCraft.git
+        git clone https://github.com/openclaw/openclaw.git
         cd opencraft
         pnpm install
         pnpm ui:build

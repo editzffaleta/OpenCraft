@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { OpenCraftConfig } from "../../../src/config/config.js";
-import type { BackoffPolicy } from "../../../src/infra/backoff.js";
-import { computeBackoff, sleepWithAbort } from "../../../src/infra/backoff.js";
-import { clamp } from "../../../src/utils.js";
+import type { OpenCraftConfig } from "opencraft/plugin-sdk/config-runtime";
+import type { BackoffPolicy } from "opencraft/plugin-sdk/infra-runtime";
+import { computeBackoff, sleepWithAbort } from "opencraft/plugin-sdk/infra-runtime";
+import { clamp } from "opencraft/plugin-sdk/text-runtime";
 
 export type ReconnectPolicy = BackoffPolicy & {
   maxAttempts: number;

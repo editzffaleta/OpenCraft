@@ -1,21 +1,21 @@
 ---
-summary: "Contrato para planos de `secrets apply`: validação de target, correspondência de path e escopo de target `auth-profiles.json`"
+summary: "Contract for `secrets apply` plans: target validation, path matching, and `auth-profiles.json` target scope"
 read_when:
-  - Gerando ou revisando planos de `opencraft secrets apply`
-  - Debugando erros de `Invalid plan target path`
-  - Entendendo comportamento de validação de tipo e path de target
+  - Generating or reviewing `opencraft secrets apply` plans
+  - Debugging `Invalid plan target path` errors
+  - Understanding target type and path validation behavior
 title: "Secrets Apply Plan Contract"
 ---
 
-# Contrato do plano secrets apply
+# Secrets apply plan contract
 
-Esta página define o contrato estrito aplicado por `opencraft secrets apply`.
+This page defines the strict contract enforced by `opencraft secrets apply`.
 
-Se um target não corresponde a essas regras, apply falha antes de mutar a configuração.
+If a target does not match these rules, apply fails before mutating configuration.
 
-## Formato do arquivo de plano
+## Plan file shape
 
-`opencraft secrets apply --from <plan.json>` espera um array `targets` de targets de plano:
+`opencraft secrets apply --from <plan.json>` expects a `targets` array of plan targets:
 
 ```json5
 {
@@ -40,65 +40,65 @@ Se um target não corresponde a essas regras, apply falha antes de mutar a confi
 }
 ```
 
-## Escopo de target suportado
+## Supported target scope
 
-Targets de plano são aceitos para caminhos de credenciais suportados em:
+Plan targets are accepted for supported credential paths in:
 
 - [SecretRef Credential Surface](/reference/secretref-credential-surface)
 
-## Comportamento do tipo de target
+## Target type behavior
 
-Regra geral:
+General rule:
 
-- `target.type` deve ser reconhecido e deve corresponder ao formato normalizado de `target.path`.
+- `target.type` must be recognized and must match the normalized `target.path` shape.
 
-Aliases de compatibilidade permanecem aceitos para planos existentes:
+Compatibility aliases remain accepted for existing plans:
 
 - `models.providers.apiKey`
 - `skills.entries.apiKey`
 - `channels.googlechat.serviceAccount`
 
-## Regras de validação de path
+## Path validation rules
 
-Cada target é validado com todas as seguintes:
+Each target is validated with all of the following:
 
-- `type` deve ser um tipo de target reconhecido.
-- `path` deve ser um dot path não vazio.
-- `pathSegments` pode ser omitido. Se fornecido, deve normalizar para exatamente o mesmo path que `path`.
-- Segmentos proibidos são rejeitados: `__proto__`, `prototype`, `constructor`.
-- O path normalizado deve corresponder ao formato de path registrado para o tipo de target.
-- Se `providerId` ou `accountId` está definido, deve corresponder ao id codificado no path.
-- Targets `auth-profiles.json` requerem `agentId`.
-- Ao criar um novo mapeamento `auth-profiles.json`, inclua `authProfileProvider`.
+- `type` must be a recognized target type.
+- `path` must be a non-empty dot path.
+- `pathSegments` can be omitted. If provided, it must normalize to exactly the same path as `path`.
+- Forbidden segments are rejected: `__proto__`, `prototype`, `constructor`.
+- The normalized path must match the registered path shape for the target type.
+- If `providerId` or `accountId` is set, it must match the id encoded in the path.
+- `auth-profiles.json` targets require `agentId`.
+- When creating a new `auth-profiles.json` mapping, include `authProfileProvider`.
 
-## Comportamento de falha
+## Failure behavior
 
-Se um target falha na validação, apply sai com um erro como:
+If a target fails validation, apply exits with an error like:
 
 ```text
 Invalid plan target path for models.providers.apiKey: models.providers.openai.baseUrl
 ```
 
-Nenhuma escrita é comitada para um plano inválido.
+No writes are committed for an invalid plan.
 
-## Notas de escopo de runtime e auditoria
+## Runtime and audit scope notes
 
-- Entradas `auth-profiles.json` apenas-ref (`keyRef`/`tokenRef`) são incluídas na resolução de runtime e cobertura de auditoria.
-- `secrets apply` escreve targets `opencraft.json` suportados, targets `auth-profiles.json` suportados e targets opcionais de scrub.
+- Ref-only `auth-profiles.json` entries (`keyRef`/`tokenRef`) are included in runtime resolution and audit coverage.
+- `secrets apply` writes supported `opencraft.json` targets, supported `auth-profiles.json` targets, and optional scrub targets.
 
-## Verificações do operador
+## Operator checks
 
 ```bash
-# Validar plano sem escritas
+# Validate plan without writes
 opencraft secrets apply --from /tmp/opencraft-secrets-plan.json --dry-run
 
-# Depois aplicar de verdade
+# Then apply for real
 opencraft secrets apply --from /tmp/opencraft-secrets-plan.json
 ```
 
-Se apply falha com uma mensagem de path de target inválido, regenere o plano com `opencraft secrets configure` ou corrija o path do target para um formato suportado acima.
+If apply fails with an invalid target path message, regenerate the plan with `opencraft secrets configure` or fix the target path to a supported shape above.
 
-## Documentação relacionada
+## Related docs
 
 - [Secrets Management](/gateway/secrets)
 - [CLI `secrets`](/cli/secrets)

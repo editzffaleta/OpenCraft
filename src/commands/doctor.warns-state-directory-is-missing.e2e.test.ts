@@ -64,15 +64,15 @@ describe("doctor command", () => {
     expect(warned).toBe(true);
   });
 
-  it("skips gateway auth warning when OPENCLAW_GATEWAY_TOKEN is set", async () => {
+  it("skips gateway auth warning when OPENCRAFT_GATEWAY_TOKEN is set", async () => {
     mockDoctorConfigSnapshot({
       config: {
         gateway: { mode: "local" },
       },
     });
 
-    const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-    process.env.OPENCLAW_GATEWAY_TOKEN = "env-token-1234567890";
+    const prevToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+    process.env.OPENCRAFT_GATEWAY_TOKEN = "env-token-1234567890";
     note.mockClear();
 
     try {
@@ -82,9 +82,9 @@ describe("doctor command", () => {
       });
     } finally {
       if (prevToken === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.OPENCRAFT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
+        process.env.OPENCRAFT_GATEWAY_TOKEN = prevToken;
       }
     }
 
@@ -133,7 +133,7 @@ describe("doctor command", () => {
             token: {
               source: "env",
               provider: "default",
-              id: "OPENCLAW_GATEWAY_TOKEN",
+              id: "OPENCRAFT_GATEWAY_TOKEN",
             },
           },
         },
@@ -145,8 +145,8 @@ describe("doctor command", () => {
       },
     });
 
-    const previousToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    const previousToken = process.env.OPENCRAFT_GATEWAY_TOKEN;
+    delete process.env.OPENCRAFT_GATEWAY_TOKEN;
     note.mockClear();
     try {
       await doctorCommand(createDoctorRuntime(), {
@@ -155,9 +155,9 @@ describe("doctor command", () => {
       });
     } finally {
       if (previousToken === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.OPENCRAFT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = previousToken;
+        process.env.OPENCRAFT_GATEWAY_TOKEN = previousToken;
       }
     }
 

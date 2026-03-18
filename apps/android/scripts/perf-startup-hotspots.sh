@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ANDROID_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 
-PACKAGE="ai.opencraft.app"
+PACKAGE="ai.openclaw.app"
 ACTIVITY=".MainActivity"
 DURATION_SECONDS="10"
 OUTPUT_PERF_DATA=""

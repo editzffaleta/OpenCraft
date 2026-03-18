@@ -1,5 +1,4 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { nextcloudTalkPlugin } from "./src/channel.js";
 
-export default {
-  plugin: nextcloudTalkPlugin,
-};
+export default defineSetupPluginEntry(nextcloudTalkPlugin);

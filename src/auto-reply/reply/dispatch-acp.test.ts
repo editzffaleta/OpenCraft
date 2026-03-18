@@ -20,12 +20,10 @@ const managerMocks = vi.hoisted(() => ({
 }));
 
 const policyMocks = vi.hoisted(() => ({
-  resolveAcpDispatchPolicyError: vi.fn<(cfg: OpenCraftConfig) => AcpRuntimeError | null>(
+  resolveAcpDispatchPolicyError: vi.fn<(cfg: OpenCraftConfig) => AcpRuntimeError | null>(() => null),
+  resolveAcpAgentPolicyError: vi.fn<(cfg: OpenCraftConfig, agent: string) => AcpRuntimeError | null>(
     () => null,
   ),
-  resolveAcpAgentPolicyError: vi.fn<
-    (cfg: OpenCraftConfig, agent: string) => AcpRuntimeError | null
-  >(() => null),
 }));
 
 const routeMocks = vi.hoisted(() => ({

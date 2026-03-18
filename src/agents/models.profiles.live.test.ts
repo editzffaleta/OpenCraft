@@ -16,8 +16,7 @@ import { ensureOpenCraftModelsJson } from "./models-config.js";
 import { isRateLimitErrorMessage } from "./pi-embedded-helpers/errors.js";
 import { discoverAuthStorage, discoverModels } from "./pi-model-discovery.js";
 
-const LIVE =
-  isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.OPENCRAFT_LIVE_TEST);
+const LIVE = isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.OPENCRAFT_LIVE_TEST);
 const DIRECT_ENABLED = Boolean(process.env.OPENCRAFT_LIVE_MODELS?.trim());
 const REQUIRE_PROFILE_KEYS = isTruthyEnvValue(process.env.OPENCRAFT_LIVE_REQUIRE_PROFILE_KEYS);
 
@@ -116,6 +115,10 @@ describe("isModelNotFoundErrorMessage", () => {
 function isChatGPTUsageLimitErrorMessage(raw: string): boolean {
   const msg = raw.toLowerCase();
   return msg.includes("hit your chatgpt usage limit") && msg.includes("try again in");
+}
+
+function isRefreshTokenReused(raw: string): boolean {
+  return /refresh_token_reused/i.test(raw);
 }
 
 function isInstructionsRequiredError(raw: string): boolean {
@@ -642,6 +645,15 @@ describeLive("live models (profile keys)", () => {
             ) {
               skipped.push({ model: id, reason: message });
               logProgress(`${progressLabel}: skip (rate limit)`);
+              break;
+            }
+            if (
+              allowNotFoundSkip &&
+              model.provider === "openai-codex" &&
+              isRefreshTokenReused(message)
+            ) {
+              skipped.push({ model: id, reason: message });
+              logProgress(`${progressLabel}: skip (codex refresh token reused)`);
               break;
             }
             if (

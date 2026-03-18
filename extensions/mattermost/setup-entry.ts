@@ -1,5 +1,4 @@
+import { defineSetupPluginEntry } from "opencraft/plugin-sdk/core";
 import { mattermostPlugin } from "./src/channel.js";
 
-export default {
-  plugin: mattermostPlugin,
-};
+export default defineSetupPluginEntry(mattermostPlugin);

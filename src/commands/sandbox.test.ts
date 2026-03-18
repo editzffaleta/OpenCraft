@@ -29,7 +29,7 @@ import { sandboxListCommand, sandboxRecreateCommand } from "./sandbox.js";
 const NOW = Date.now();
 
 function createContainer(overrides: Partial<SandboxContainerInfo> = {}): SandboxContainerInfo {
-  const containerName = overrides.containerName ?? "openclaw-sandbox-test";
+  const containerName = overrides.containerName ?? "opencraft-sandbox-test";
   return {
     containerName,
     backendId: "docker",

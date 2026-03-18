@@ -184,10 +184,7 @@ describe("handleControlUiHttpRequest", () => {
       fn: async (tmp) => {
         const { res, end } = makeMockHttpResponse();
         const handled = handleControlUiHttpRequest(
-          {
-            url: `/opencraft${CONTROL_UI_BOOTSTRAP_CONFIG_PATH}`,
-            method: "GET",
-          } as IncomingMessage,
+          { url: `/opencraft${CONTROL_UI_BOOTSTRAP_CONFIG_PATH}`, method: "GET" } as IncomingMessage,
           res,
           {
             basePath: "/opencraft",

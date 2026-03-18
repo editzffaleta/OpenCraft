@@ -32,9 +32,7 @@ describe("resolveProviderAuths key normalization", () => {
   ): Promise<T> {
     const base = path.join(suiteRoot, `case-${++suiteCase}`);
     await fs.mkdir(base, { recursive: true });
-    await fs.mkdir(path.join(base, ".opencraft", "agents", "main", "sessions"), {
-      recursive: true,
-    });
+    await fs.mkdir(path.join(base, ".opencraft", "agents", "main", "sessions"), { recursive: true });
 
     const keysToRestore = new Set<string>([
       "HOME",

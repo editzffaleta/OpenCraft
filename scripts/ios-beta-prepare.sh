@@ -11,7 +11,7 @@ Prepares local beta-release inputs without touching local signing overrides:
 - reads package.json.version and writes apps/ios/build/Version.xcconfig
 - writes apps/ios/build/BetaRelease.xcconfig with canonical bundle IDs
 - configures the beta build for relay-backed APNs registration
-- regenerates apps/ios/OpenClaw.xcodeproj via xcodegen
+- regenerates apps/ios/OpenCraft.xcodeproj via xcodegen
 EOF
 }
 
@@ -142,11 +142,11 @@ write_generated_file "${BETA_XCCONFIG}" <<EOF
 OPENCRAFT_CODE_SIGN_STYLE = Automatic
 OPENCRAFT_DEVELOPMENT_TEAM = ${TEAM_ID}
 OPENCRAFT_IOS_SELECTED_TEAM = ${TEAM_ID}
-OPENCRAFT_APP_BUNDLE_ID = ai.opencraft.client
-OPENCRAFT_SHARE_BUNDLE_ID = ai.opencraft.client.share
-OPENCRAFT_ACTIVITY_WIDGET_BUNDLE_ID = ai.opencraft.client.activitywidget
-OPENCRAFT_WATCH_APP_BUNDLE_ID = ai.opencraft.client.watchkitapp
-OPENCRAFT_WATCH_EXTENSION_BUNDLE_ID = ai.opencraft.client.watchkitapp.extension
+OPENCLAW_APP_BUNDLE_ID = ai.openclaw.client
+OPENCLAW_SHARE_BUNDLE_ID = ai.openclaw.client.share
+OPENCLAW_ACTIVITY_WIDGET_BUNDLE_ID = ai.openclaw.client.activitywidget
+OPENCLAW_WATCH_APP_BUNDLE_ID = ai.openclaw.client.watchkitapp
+OPENCLAW_WATCH_EXTENSION_BUNDLE_ID = ai.openclaw.client.watchkitapp.extension
 OPENCRAFT_APP_PROFILE =
 OPENCRAFT_SHARE_PROFILE =
 OPENCRAFT_PUSH_TRANSPORT = relay

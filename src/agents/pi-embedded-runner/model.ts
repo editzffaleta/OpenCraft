@@ -418,7 +418,7 @@ export async function resolveModelAsync(
  * error.  This detects known providers that require opt-in auth and adds
  * a hint.
  *
- * See: https://github.com/editzffaleta/OpenCraft/issues/17328
+ * See: https://github.com/openclaw/openclaw/issues/17328
  */
 const LOCAL_PROVIDER_HINTS: Record<string, string> = {
   ollama:
