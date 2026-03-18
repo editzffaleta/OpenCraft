@@ -1,144 +1,144 @@
-# OpenProse Help
+# Ajuda do OpenProse
 
-Load this file when a user invokes `prose help` or asks about OpenProse.
-
----
-
-## Welcome
-
-OpenProse is a programming language for AI sessions. You write structured programs that orchestrate AI agents, and the VM (this session) executes them by spawning real subagents.
-
-**A long-running AI session is a Turing-complete computer. OpenProse is a programming language for it.**
+Carregue este arquivo quando um usuário invocar `prose help` ou perguntar sobre o OpenProse.
 
 ---
 
-## What Do You Want to Automate?
+## Bem-vindo
 
-When a user invokes `prose help`, guide them toward defining what they want to build. Use the AskUserQuestion tool:
+OpenProse é uma linguagem de programação para sessões de IA. Você escreve programas estruturados que orquestram agentes de IA, e a VM (esta sessão) os executa criando subagentes reais.
+
+**Uma sessão de IA de longa duração é um computador Turing-completo. OpenProse é uma linguagem de programação para ela.**
+
+---
+
+## O que você quer automatizar?
+
+Quando um usuário invocar `prose help`, guie-o para definir o que deseja construir. Use a ferramenta AskUserQuestion:
 
 ```
-Question: "What would you like to automate with OpenProse?"
-Header: "Goal"
+Question: "O que você gostaria de automatizar com o OpenProse?"
+Header: "Objetivo"
 Options:
-  1. "Run a workflow" - "I have a .prose file to execute"
-  2. "Build something new" - "Help me create a program for a specific task"
-  3. "Learn the syntax" - "Show me examples and explain how it works"
-  4. "Explore possibilities" - "What can OpenProse do?"
+  1. "Executar um workflow" - "Tenho um arquivo .prose para executar"
+  2. "Construir algo novo" - "Me ajude a criar um programa para uma tarefa específica"
+  3. "Aprender a sintaxe" - "Mostre-me exemplos e explique como funciona"
+  4. "Explorar possibilidades" - "O que o OpenProse pode fazer?"
 ```
 
-**After the user responds:**
+**Após o usuário responder:**
 
-- **Run a workflow**: Ask for the file path, then load `prose.md` and execute
-- **Build something new**: Ask them to describe their task, then help write a .prose program (load `guidance/patterns.md`)
-- **Learn the syntax**: Show examples from `examples/`, explain the VM model
-- **Explore possibilities**: Walk through key examples like `37-the-forge.prose` or `28-gas-town.prose`
-
----
-
-## Available Commands
-
-| Command                | What it does                            |
-| ---------------------- | --------------------------------------- |
-| `prose help`           | This help - guides you to what you need |
-| `prose run <file>`     | Execute a .prose program                |
-| `prose compile <file>` | Validate syntax without running         |
-| `prose update`         | Migrate legacy workspace files          |
-| `prose examples`       | Browse and run example programs         |
+- **Executar um workflow**: Peça o caminho do arquivo, depois carregue `prose.md` e execute
+- **Construir algo novo**: Peça que descreva sua tarefa, depois ajude a escrever um programa .prose (carregue `guidance/patterns.md`)
+- **Aprender a sintaxe**: Mostre exemplos de `examples/`, explique o modelo de VM
+- **Explorar possibilidades**: Apresente exemplos principais como `37-the-forge.prose` ou `28-gas-town.prose`
 
 ---
 
-## Quick Start
+## Comandos disponíveis
 
-**Run an example:**
+| Comando                | O que faz                             |
+| ---------------------- | ------------------------------------- |
+| `prose help`           | Esta ajuda - guia você ao que precisa |
+| `prose run <file>`     | Executa um programa .prose            |
+| `prose compile <file>` | Valida a sintaxe sem executar         |
+| `prose update`         | Migra arquivos de workspace legados   |
+| `prose examples`       | Navega e executa programas de exemplo |
+
+---
+
+## Início rápido
+
+**Execute um exemplo:**
 
 ```
 prose run examples/01-hello-world.prose
 ```
 
-**Create your first program:**
+**Crie seu primeiro programa:**
 
 ```
 prose help
-→ Select "Build something new"
-→ Describe what you want to automate
+→ Selecione "Construir algo novo"
+→ Descreva o que você quer automatizar
 ```
 
 ---
 
-## FAQs
+## Perguntas frequentes
 
-### What AI assistants are supported?
+### Quais assistentes de IA são suportados?
 
-Claude Code, OpenCode, and Amp. Any harness that runs a sufficiently intelligent model and supports primitives like subagents are considered "Prose Complete".
+Claude Code, OpenCode e Amp. Qualquer ambiente que execute um modelo suficientemente inteligente e suporte primitivas como subagentes é considerado "Prose Complete".
 
-### How is this a VM?
+### Como isso é uma VM?
 
-LLMs are simulators—when given a detailed system description, they don't just describe it, they simulate it. The `prose.md` spec describes a VM with enough fidelity that reading it induces simulation. But simulation with sufficient fidelity is implementation: each session spawns a real subagent, outputs are real artifacts, state persists in conversation history or files. The simulation is the execution.
+LLMs são simuladores — quando recebem uma descrição detalhada do sistema, eles não apenas a descrevem, eles a simulam. A especificação `prose.md` descreve uma VM com fidelidade suficiente para que lê-la induza a simulação. Mas a simulação com fidelidade suficiente é implementação: cada sessão cria um subagente real, as saídas são artefatos reais, o estado persiste no histórico da conversa ou em arquivos. A simulação é a execução.
 
-### What's "intelligent IoC"?
+### O que é "IoC inteligente"?
 
-Traditional IoC containers (Spring, Guice) wire up dependencies from configuration files. OpenProse's container is an AI session that wires up agents using understanding. It doesn't just match names—it understands context, intent, and can make intelligent decisions about execution.
+Contêineres IoC tradicionais (Spring, Guice) conectam dependências a partir de arquivos de configuração. O contêiner do OpenProse é uma sessão de IA que conecta agentes usando compreensão. Ele não apenas combina nomes — ele entende contexto, intenção e pode tomar decisões inteligentes sobre a execução.
 
-### This looks like Python.
+### Isso parece Python.
 
-The syntax is intentionally familiar—Python's indentation-based structure is readable and self-evident. But the semantics are entirely different. OpenProse has no functions, no classes, no general-purpose computation. It has agents, sessions, and control flow. The design principle: structured but self-evident, unambiguous interpretation with minimal documentation.
+A sintaxe é intencionalmente familiar — a estrutura baseada em indentação do Python é legível e autoexplicativa. Mas a semântica é completamente diferente. O OpenProse não tem funções, classes nem computação de propósito geral. Tem agentes, sessões e fluxo de controle. O princípio de design: estruturado mas autoevidente, interpretação não ambígua com documentação mínima.
 
-### Why not English?
+### Por que não inglês simples?
 
-English is already an agent framework—we're not replacing it, we're structuring it. Plain English doesn't distinguish sequential from parallel, doesn't specify retry counts, doesn't scope variables. OpenProse uses English exactly where ambiguity is a feature (inside `**...**`), and structure everywhere else. The fourth wall syntax lets you lean on AI judgment precisely when you want to.
+O inglês já é um framework de agentes — não estamos substituindo-o, estamos estruturando-o. O inglês simples não distingue sequencial de paralelo, não especifica contagens de tentativas, não escopa variáveis. O OpenProse usa inglês exatamente onde a ambiguidade é uma funcionalidade (dentro de `**...**`), e estrutura em todo o resto. A sintaxe de quarta parede permite que você confie no julgamento da IA precisamente quando quiser.
 
-### Why not YAML?
+### Por que não YAML?
 
-We started with YAML. The problem: loops, conditionals, and variable declarations aren't self-evident in YAML—and when you try to make them self-evident, it gets verbose and ugly. More fundamentally, YAML optimizes for machine parseability. OpenProse optimizes for intelligent machine legibility. It doesn't need to be parsed—it needs to be understood. That's a different design target entirely.
+Começamos com YAML. O problema: loops, condicionais e declarações de variáveis não são autoexplicativos em YAML — e quando você tenta torná-los autoexplicativos, fica verboso e feio. Mais fundamentalmente, o YAML otimiza para parseabilidade por máquina. O OpenProse otimiza para legibilidade inteligente por máquina. Ele não precisa ser analisado — precisa ser compreendido. Esse é um objetivo de design completamente diferente.
 
-### Why not LangChain/CrewAI/AutoGen?
+### Por que não LangChain/CrewAI/AutoGen?
 
-Those are orchestration libraries—they coordinate agents from outside. OpenProse runs inside the agent session—the session itself is the IoC container. This means zero external dependencies and portability across any AI assistant. Switch from Claude Code to Codex? Your .prose files still work.
+Essas são bibliotecas de orquestração — elas coordenam agentes de fora. O OpenProse executa dentro da sessão do agente — a própria sessão é o contêiner IoC. Isso significa zero dependências externas e portabilidade em qualquer assistente de IA. Mudou do Claude Code para o Codex? Seus arquivos .prose ainda funcionam.
 
 ---
 
-## Syntax at a Glance
+## Sintaxe em resumo
 
 ```prose
-session "prompt"              # Spawn subagent
-agent name:                   # Define agent template
-let x = session "..."         # Capture result
-parallel:                     # Concurrent execution
-repeat N:                     # Fixed loop
-for x in items:               # Iteration
-loop until **condition**:     # AI-evaluated loop
-try: ... catch: ...           # Error handling
-if **condition**: ...         # Conditional
-choice **criteria**: option   # AI-selected branch
-block name(params):           # Reusable block
-do blockname(args)            # Invoke block
+session "prompt"              # Cria subagente
+agent name:                   # Define template de agente
+let x = session "..."         # Captura resultado
+parallel:                     # Execução concorrente
+repeat N:                     # Loop fixo
+for x in items:               # Iteração
+loop until **condição**:      # Loop avaliado por IA
+try: ... catch: ...           # Tratamento de erros
+if **condição**: ...          # Condicional
+choice **critério**: option   # Ramificação selecionada por IA
+block name(params):           # Bloco reutilizável
+do blockname(args)            # Invoca bloco
 items | map: ...              # Pipeline
 ```
 
-For complete syntax and validation rules, see `compiler.md`.
+Para sintaxe completa e regras de validação, consulte `compiler.md`.
 
 ---
 
-## Examples
+## Exemplos
 
-The `examples/` directory contains 37 example programs:
+O diretório `examples/` contém 37 programas de exemplo:
 
-| Range | Category                                                                          |
-| ----- | --------------------------------------------------------------------------------- |
-| 01-08 | Basics (hello world, research, code review, debugging)                            |
-| 09-12 | Agents and skills                                                                 |
-| 13-15 | Variables and composition                                                         |
-| 16-19 | Parallel execution                                                                |
-| 20-21 | Loops and pipelines                                                               |
-| 22-23 | Error handling                                                                    |
-| 24-27 | Advanced (choice, conditionals, blocks, interpolation)                            |
-| 28    | Gas Town (multi-agent orchestration)                                              |
-| 29-31 | Captain's chair pattern (persistent orchestrator)                                 |
-| 33-36 | Production workflows (PR auto-fix, content pipeline, feature factory, bug hunter) |
-| 37    | The Forge (build a browser from scratch)                                          |
+| Intervalo | Categoria                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| 01-08     | Básicos (hello world, pesquisa, revisão de código, depuração)                                          |
+| 09-12     | Agentes e skills                                                                                       |
+| 13-15     | Variáveis e composição                                                                                 |
+| 16-19     | Execução paralela                                                                                      |
+| 20-21     | Loops e pipelines                                                                                      |
+| 22-23     | Tratamento de erros                                                                                    |
+| 24-27     | Avançado (choice, condicionais, blocos, interpolação)                                                  |
+| 28        | Gas Town (orquestração multi-agente)                                                                   |
+| 29-31     | Padrão da cadeira do capitão (orquestrador persistente)                                                |
+| 33-36     | Workflows de produção (PR auto-fix, pipeline de conteúdo, fábrica de funcionalidades, caçador de bugs) |
+| 37        | The Forge (construir um navegador do zero)                                                             |
 
-**Recommended starting points:**
+**Pontos de partida recomendados:**
 
-- `01-hello-world.prose` - Simplest possible program
-- `16-parallel-reviews.prose` - See parallel execution
-- `37-the-forge.prose` - Watch AI build a web browser
+- `01-hello-world.prose` - Programa mais simples possível
+- `16-parallel-reviews.prose` - Veja a execução paralela
+- `37-the-forge.prose` - Assista a IA construir um navegador web

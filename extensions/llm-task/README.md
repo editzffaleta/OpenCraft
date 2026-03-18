@@ -1,14 +1,14 @@
 # LLM Task (plugin)
 
-Adds an **optional** agent tool `llm-task` for running **JSON-only** LLM tasks
-(drafting, summarizing, classifying) with optional JSON Schema validation.
+Adiciona uma ferramenta de agente **opcional** `llm-task` para executar tarefas LLM **somente com JSON**
+(rascunho, resumo, classificação) com validação opcional de JSON Schema.
 
-Designed to be called from workflow engines (for example, Lobster via
-`opencraft.invoke --each`) without adding new OpenCraft code per workflow.
+Projetado para ser chamado a partir de motores de workflow (por exemplo, Lobster via
+`opencraft.invoke --each`) sem adicionar novo código ao OpenCraft por workflow.
 
-## Enable
+## Ativar
 
-1. Enable the plugin:
+1. Ative o plugin:
 
 ```json
 {
@@ -20,7 +20,7 @@ Designed to be called from workflow engines (for example, Lobster via
 }
 ```
 
-2. Allowlist the tool (it is registered with `optional: true`):
+2. Adicione a ferramenta à lista de permitidas (ela é registrada com `optional: true`):
 
 ```json
 {
@@ -35,7 +35,7 @@ Designed to be called from workflow engines (for example, Lobster via
 }
 ```
 
-## Config (optional)
+## Configuração (opcional)
 
 ```json
 {
@@ -57,42 +57,42 @@ Designed to be called from workflow engines (for example, Lobster via
 }
 ```
 
-`allowedModels` is an allowlist of `provider/model` strings. If set, any request
-outside the list is rejected.
+`allowedModels` é uma lista de permissões de strings `provider/model`. Se definida, qualquer requisição
+fora da lista será rejeitada.
 
-## Tool API
+## API da ferramenta
 
-### Parameters
+### Parâmetros
 
-- `prompt` (string, required)
-- `input` (any, optional)
-- `schema` (object, optional JSON Schema)
-- `provider` (string, optional)
-- `model` (string, optional)
-- `thinking` (string, optional)
-- `authProfileId` (string, optional)
-- `temperature` (number, optional)
-- `maxTokens` (number, optional)
-- `timeoutMs` (number, optional)
+- `prompt` (string, obrigatório)
+- `input` (qualquer, opcional)
+- `schema` (objeto, JSON Schema opcional)
+- `provider` (string, opcional)
+- `model` (string, opcional)
+- `thinking` (string, opcional)
+- `authProfileId` (string, opcional)
+- `temperature` (número, opcional)
+- `maxTokens` (número, opcional)
+- `timeoutMs` (número, opcional)
 
-### Output
+### Saída
 
-Returns `details.json` containing the parsed JSON (and validates against
-`schema` when provided).
+Retorna `details.json` contendo o JSON analisado (e valida contra
+`schema` quando fornecido).
 
-## Notes
+## Notas
 
-- The tool is **JSON-only** and instructs the model to output only JSON
-  (no code fences, no commentary).
-- No tools are exposed to the model for this run.
-- Side effects should be handled outside this tool (for example, approvals in
-  Lobster) before calling tools that send messages/emails.
+- A ferramenta é **somente JSON** e instrui o modelo a gerar apenas JSON
+  (sem delimitadores de código, sem comentários).
+- Nenhuma ferramenta é exposta ao modelo nesta execução.
+- Efeitos colaterais devem ser tratados fora desta ferramenta (por exemplo, aprovações no
+  Lobster) antes de chamar ferramentas que enviam mensagens/e-mails.
 
-## Bundled extension note
+## Nota sobre extensão incluída
 
-This extension depends on OpenCraft internal modules (the embedded agent runner).
-It is intended to ship as a **bundled** OpenCraft extension (like `lobster`) and
-be enabled via `plugins.entries` + tool allowlists.
+Esta extensão depende de módulos internos do OpenCraft (o executor de agentes embutido).
+Ela foi projetada para ser distribuída como uma extensão **incluída** do OpenCraft (como o `lobster`) e
+ativada via `plugins.entries` + listas de permissões de ferramentas.
 
-It is **not** currently designed to be copied into
-`~/.opencraft/extensions` as a standalone plugin directory.
+Ela **não** foi projetada para ser copiada para
+`~/.opencraft/extensions` como um diretório de plugin independente.

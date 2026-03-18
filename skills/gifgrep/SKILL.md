@@ -1,6 +1,6 @@
 ---
 name: gifgrep
-description: Search GIF providers with CLI/TUI, download results, and extract stills/sheets.
+description: Pesquise provedores de GIF via CLI/TUI, baixe resultados e extraia frames estáticos/planilhas.
 homepage: https://gifgrep.com
 metadata:
   {
@@ -15,14 +15,14 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/gifgrep",
               "bins": ["gifgrep"],
-              "label": "Install gifgrep (brew)",
+              "label": "Instalar gifgrep (brew)",
             },
             {
               "id": "go",
               "kind": "go",
               "module": "github.com/steipete/gifgrep/cmd/gifgrep@latest",
               "bins": ["gifgrep"],
-              "label": "Install gifgrep (go)",
+              "label": "Instalar gifgrep (go)",
             },
           ],
       },
@@ -31,13 +31,13 @@ metadata:
 
 # gifgrep
 
-Use `gifgrep` to search GIF providers (Tenor/Giphy), browse in a TUI, download results, and extract stills or sheets.
+Use `gifgrep` para pesquisar provedores de GIF (Tenor/Giphy), navegar em uma TUI, baixar resultados e extrair frames estáticos ou planilhas.
 
-GIF-Grab (gifgrep workflow)
+GIF-Grab (fluxo de trabalho do gifgrep)
 
-- Search → preview → download → extract (still/sheet) for fast review and sharing.
+- Pesquisar → visualizar → baixar → extrair (frame estático/planilha) para revisão e compartilhamento rápidos.
 
-Quick start
+Início rápido
 
 - `gifgrep cats --max 5`
 - `gifgrep cats --format url | head -n 5`
@@ -45,35 +45,35 @@ Quick start
 - `gifgrep tui "office handshake"`
 - `gifgrep cats --download --max 1 --format url`
 
-TUI + previews
+TUI + visualizações
 
 - TUI: `gifgrep tui "query"`
-- CLI still previews: `--thumbs` (Kitty/Ghostty only; still frame)
+- Visualizações estáticas via CLI: `--thumbs` (apenas Kitty/Ghostty; frame estático)
 
-Download + reveal
+Download + revelar
 
-- `--download` saves to `~/Downloads`
-- `--reveal` shows the last download in Finder
+- `--download` salva em `~/Downloads`
+- `--reveal` exibe o último download no Finder
 
-Stills + sheets
+Frames estáticos + planilhas
 
 - `gifgrep still ./clip.gif --at 1.5s -o still.png`
 - `gifgrep sheet ./clip.gif --frames 9 --cols 3 -o sheet.png`
-- Sheets = single PNG grid of sampled frames (great for quick review, docs, PRs, chat).
-- Tune: `--frames` (count), `--cols` (grid width), `--padding` (spacing).
+- Planilhas = grade PNG única de frames amostrados (ótimo para revisão rápida, docs, PRs, chat).
+- Ajuste: `--frames` (contagem), `--cols` (largura da grade), `--padding` (espaçamento).
 
-Providers
+Provedores
 
 - `--source auto|tenor|giphy`
-- `GIPHY_API_KEY` required for `--source giphy`
-- `TENOR_API_KEY` optional (Tenor demo key used if unset)
+- `GIPHY_API_KEY` necessário para `--source giphy`
+- `TENOR_API_KEY` opcional (chave demo do Tenor usada se não definida)
 
-Output
+Saída
 
-- `--json` prints an array of results (`id`, `title`, `url`, `preview_url`, `tags`, `width`, `height`)
-- `--format` for pipe-friendly fields (e.g., `url`)
+- `--json` imprime um array de resultados (`id`, `title`, `url`, `preview_url`, `tags`, `width`, `height`)
+- `--format` para campos compatíveis com pipe (ex.: `url`)
 
-Environment tweaks
+Ajustes de ambiente
 
-- `GIFGREP_SOFTWARE_ANIM=1` to force software animation
-- `GIFGREP_CELL_ASPECT=0.5` to tweak preview geometry
+- `GIFGREP_SOFTWARE_ANIM=1` para forçar animação por software
+- `GIFGREP_CELL_ASPECT=0.5` para ajustar a geometria de visualização

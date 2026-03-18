@@ -1,6 +1,6 @@
 ---
 name: video-frames
-description: Extract frames or short clips from videos using ffmpeg.
+description: Extrair frames ou clipes curtos de vídeos usando ffmpeg.
 homepage: https://ffmpeg.org
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "ffmpeg",
               "bins": ["ffmpeg"],
-              "label": "Install ffmpeg (brew)",
+              "label": "Instalar ffmpeg (brew)",
             },
           ],
       },
@@ -24,23 +24,23 @@ metadata:
 
 # Video Frames (ffmpeg)
 
-Extract a single frame from a video, or create quick thumbnails for inspection.
+Extraia um único frame de um vídeo ou crie miniaturas rápidas para inspeção.
 
-## Quick start
+## Início rápido
 
-First frame:
+Primeiro frame:
 
 ```bash
 {baseDir}/scripts/frame.sh /path/to/video.mp4 --out /tmp/frame.jpg
 ```
 
-At a timestamp:
+Em um timestamp específico:
 
 ```bash
 {baseDir}/scripts/frame.sh /path/to/video.mp4 --time 00:00:10 --out /tmp/frame-10s.jpg
 ```
 
-## Notes
+## Observações
 
-- Prefer `--time` for “what is happening around here?”.
-- Use a `.jpg` for quick share; use `.png` for crisp UI frames.
+- Prefira `--time` para "o que está acontecendo por aqui?".
+- Use `.jpg` para compartilhamento rápido; use `.png` para frames de UI nítidos.

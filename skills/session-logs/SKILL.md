@@ -1,37 +1,37 @@
 ---
 name: session-logs
-description: Search and analyze your own session logs (older/parent conversations) using jq.
+description: Pesquise e analise seus próprios logs de sessão (conversas anteriores/pai) usando jq.
 metadata: { "opencraft": { "emoji": "📜", "requires": { "bins": ["jq", "rg"] } } }
 ---
 
 # session-logs
 
-Search your complete conversation history stored in session JSONL files. Use this when a user references older/parent conversations or asks what was said before.
+Pesquise o histórico completo de conversas armazenado em arquivos JSONL de sessão. Use quando um usuário fizer referência a conversas anteriores/pai ou perguntar o que foi dito antes.
 
-## Trigger
+## Gatilho
 
-Use this skill when the user asks about prior chats, parent conversations, or historical context that isn't in memory files.
+Use esta skill quando o usuário perguntar sobre chats anteriores, conversas pai ou contexto histórico que não está nos arquivos de memória.
 
-## Location
+## Localização
 
-Session logs live at: `~/.opencraft/agents/<agentId>/sessions/` (use the `agent=<id>` value from the system prompt Runtime line).
+Os logs de sessão ficam em: `~/.opencraft/agents/<agentId>/sessions/` (use o valor `agent=<id>` da linha Runtime no prompt do sistema).
 
-- **`sessions.json`** - Index mapping session keys to session IDs
-- **`<session-id>.jsonl`** - Full conversation transcript per session
+- **`sessions.json`** - Índice mapeando chaves de sessão para IDs de sessão
+- **`<session-id>.jsonl`** - Transcrição completa da conversa por sessão
 
-## Structure
+## Estrutura
 
-Each `.jsonl` file contains messages with:
+Cada arquivo `.jsonl` contém mensagens com:
 
-- `type`: "session" (metadata) or "message"
-- `timestamp`: ISO timestamp
-- `message.role`: "user", "assistant", or "toolResult"
-- `message.content[]`: Text, thinking, or tool calls (filter `type=="text"` for human-readable content)
-- `message.usage.cost.total`: Cost per response
+- `type`: "session" (metadados) ou "message"
+- `timestamp`: timestamp ISO
+- `message.role`: "user", "assistant" ou "toolResult"
+- `message.content[]`: Texto, thinking ou chamadas de ferramentas (filtre `type=="text"` para conteúdo legível)
+- `message.usage.cost.total`: Custo por resposta
 
-## Common Queries
+## Consultas comuns
 
-### List all sessions by date and size
+### Listar todas as sessões por data e tamanho
 
 ```bash
 for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
@@ -41,7 +41,7 @@ for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
 done | sort -r
 ```
 
-### Find sessions from a specific day
+### Encontrar sessões de um dia específico
 
 ```bash
 for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
@@ -49,25 +49,25 @@ for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
 done
 ```
 
-### Extract user messages from a session
+### Extrair mensagens do usuário de uma sessão
 
 ```bash
 jq -r 'select(.message.role == "user") | .message.content[]? | select(.type == "text") | .text' <session>.jsonl
 ```
 
-### Search for keyword in assistant responses
+### Pesquisar palavra-chave nas respostas do assistente
 
 ```bash
 jq -r 'select(.message.role == "assistant") | .message.content[]? | select(.type == "text") | .text' <session>.jsonl | rg -i "keyword"
 ```
 
-### Get total cost for a session
+### Obter custo total de uma sessão
 
 ```bash
 jq -s '[.[] | .message.usage.cost.total // 0] | add' <session>.jsonl
 ```
 
-### Daily cost summary
+### Resumo de custo diário
 
 ```bash
 for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
@@ -77,7 +77,7 @@ for f in ~/.opencraft/agents/<agentId>/sessions/*.jsonl; do
 done | awk '{a[$1]+=$2} END {for(d in a) print d, "$"a[d]}' | sort -r
 ```
 
-### Count messages and tokens in a session
+### Contar mensagens e tokens em uma sessão
 
 ```bash
 jq -s '{
@@ -89,26 +89,26 @@ jq -s '{
 }' <session>.jsonl
 ```
 
-### Tool usage breakdown
+### Detalhamento do uso de ferramentas
 
 ```bash
 jq -r '.message.content[]? | select(.type == "toolCall") | .name' <session>.jsonl | sort | uniq -c | sort -rn
 ```
 
-### Search across ALL sessions for a phrase
+### Pesquisar em TODAS as sessões por uma frase
 
 ```bash
 rg -l "phrase" ~/.opencraft/agents/<agentId>/sessions/*.jsonl
 ```
 
-## Tips
+## Dicas
 
-- Sessions are append-only JSONL (one JSON object per line)
-- Large sessions can be several MB - use `head`/`tail` for sampling
-- The `sessions.json` index maps chat providers (discord, whatsapp, etc.) to session IDs
-- Deleted sessions have `.deleted.<timestamp>` suffix
+- As sessões são JSONL somente de adição (um objeto JSON por linha)
+- Sessões grandes podem ter vários MB - use `head`/`tail` para amostragem
+- O índice `sessions.json` mapeia provedores de chat (discord, whatsapp, etc.) para IDs de sessão
+- Sessões excluídas têm sufixo `.deleted.<timestamp>`
 
-## Fast text-only hint (low noise)
+## Dica de texto rápido e sem ruído
 
 ```bash
 jq -r 'select(.type=="message") | .message.content[]? | select(.type=="text") | .text' ~/.opencraft/agents/<agentId>/sessions/<id>.jsonl | rg 'keyword'

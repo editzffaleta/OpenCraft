@@ -1,42 +1,42 @@
 ---
 name: node-connect
-description: Diagnose OpenCraft node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.
+description: Diagnostique falhas de conexão e emparelhamento de nós OpenCraft para apps Android, iOS e macOS. Use quando QR/código de configuração/conexão manual falhar, Wi-Fi local funcionar mas VPS/tailnet não, ou erros mencionar emparelhamento necessário, não autorizado, token de bootstrap inválido ou expirado, gateway.bind, gateway.remote.url, Tailscale, ou plugins.entries.device-pair.config.publicUrl.
 ---
 
 # Node Connect
 
-Goal: find the one real route from node -> gateway, verify OpenCraft is advertising that route, then fix pairing/auth.
+Objetivo: encontrar a rota real do nó -> gateway, verificar se o OpenCraft está anunciando essa rota e corrigir o emparelhamento/autenticação.
 
-## Topology first
+## Topologia primeiro
 
-Decide which case you are in before proposing fixes:
+Decida em qual caso você está antes de propor correções:
 
-- same machine / emulator / USB tunnel
-- same LAN / local Wi-Fi
-- same Tailscale tailnet
-- public URL / reverse proxy
+- mesma máquina / emulador / túnel USB
+- mesma LAN / Wi-Fi local
+- mesmo tailnet do Tailscale
+- URL pública / proxy reverso
 
-Do not mix them.
+Não misture-os.
 
-- Local Wi-Fi problem: do not switch to Tailscale unless remote access is actually needed.
-- VPS / remote gateway problem: do not keep debugging `localhost` or LAN IPs.
+- Problema de Wi-Fi local: não mude para o Tailscale a menos que o acesso remoto seja realmente necessário.
+- Problema de VPS / gateway remoto: não continue depurando IPs `localhost` ou de LAN.
 
-## If ambiguous, ask first
+## Se ambíguo, pergunte primeiro
 
-If the setup is unclear or the failure report is vague, ask short clarifying questions before diagnosing.
+Se a configuração não estiver clara ou o relatório de falha for vago, faça perguntas curtas de esclarecimento antes de diagnosticar.
 
-Ask for:
+Pergunte:
 
-- which route they intend: same machine, same LAN, Tailscale tailnet, or public URL
-- whether they used QR/setup code or manual host/port
-- the exact app text/status/error, quoted exactly if possible
-- whether `opencraft devices list` shows a pending pairing request
+- qual rota pretendem usar: mesma máquina, mesma LAN, tailnet do Tailscale ou URL pública
+- se usaram QR/código de configuração ou host/porta manual
+- o texto/status/erro exato do app, citado exatamente se possível
+- se `opencraft devices list` mostra uma solicitação de emparelhamento pendente
 
-Do not guess from `can't connect`.
+Não adivinhe a partir de "não consigo conectar".
 
-## Canonical checks
+## Verificações canônicas
 
-Prefer `opencraft qr --json`. It uses the same setup-code payload Android scans.
+Prefira `opencraft qr --json`. Ele usa o mesmo payload de código de configuração que o Android escaneia.
 
 ```bash
 opencraft config get gateway.mode
@@ -51,92 +51,92 @@ opencraft devices list
 opencraft nodes status
 ```
 
-If this OpenCraft instance is pointed at a remote gateway, also run:
+Se esta instância do OpenCraft estiver apontada para um gateway remoto, execute também:
 
 ```bash
 opencraft qr --remote --json
 ```
 
-If Tailscale is part of the story:
+Se o Tailscale faz parte da situação:
 
 ```bash
 tailscale status --json
 ```
 
-## Read the result, not guesses
+## Leia o resultado, não suposições
 
-`opencraft qr --json` success means:
+Sucesso do `opencraft qr --json` significa:
 
-- `gatewayUrl`: this is the actual endpoint the app should use.
-- `urlSource`: this tells you which config path won.
+- `gatewayUrl`: este é o endpoint real que o app deve usar.
+- `urlSource`: isso indica qual caminho de configuração venceu.
 
-Common good sources:
+Fontes comuns corretas:
 
-- `gateway.bind=lan`: same Wi-Fi / LAN only
-- `gateway.bind=tailnet`: direct tailnet access
-- `gateway.tailscale.mode=serve` or `gateway.tailscale.mode=funnel`: Tailscale route
-- `plugins.entries.device-pair.config.publicUrl`: explicit public/reverse-proxy route
-- `gateway.remote.url`: remote gateway route
+- `gateway.bind=lan`: somente Wi-Fi / LAN local
+- `gateway.bind=tailnet`: acesso direto via tailnet
+- `gateway.tailscale.mode=serve` ou `gateway.tailscale.mode=funnel`: rota Tailscale
+- `plugins.entries.device-pair.config.publicUrl`: rota pública/proxy reverso explícita
+- `gateway.remote.url`: rota de gateway remoto
 
-## Root-cause map
+## Mapa de causa raiz
 
-If `opencraft qr --json` says `Gateway is only bound to loopback`:
+Se `opencraft qr --json` diz `Gateway is only bound to loopback`:
 
-- remote node cannot connect yet
-- fix the route, then generate a fresh setup code
-- `gateway.bind=auto` is not enough if the effective QR route is still loopback
-- same LAN: use `gateway.bind=lan`
-- same tailnet: prefer `gateway.tailscale.mode=serve` or use `gateway.bind=tailnet`
-- public internet: set a real `plugins.entries.device-pair.config.publicUrl` or `gateway.remote.url`
+- o nó remoto ainda não consegue conectar
+- corrija a rota e gere um novo código de configuração
+- `gateway.bind=auto` não é suficiente se a rota QR efetiva ainda for loopback
+- mesma LAN: use `gateway.bind=lan`
+- mesmo tailnet: prefira `gateway.tailscale.mode=serve` ou use `gateway.bind=tailnet`
+- internet pública: defina um `plugins.entries.device-pair.config.publicUrl` ou `gateway.remote.url` real
 
-If `gateway.bind=tailnet set, but no tailnet IP was found`:
+Se `gateway.bind=tailnet set, but no tailnet IP was found`:
 
-- gateway host is not actually on Tailscale
+- o host do gateway não está realmente no Tailscale
 
-If `qr --remote requires gateway.remote.url`:
+Se `qr --remote requires gateway.remote.url`:
 
-- remote-mode config is incomplete
+- a configuração do modo remoto está incompleta
 
-If the app says `pairing required`:
+Se o app diz `pairing required`:
 
-- network route and auth worked
-- approve the pending device
+- a rota de rede e autenticação funcionaram
+- aprove o dispositivo pendente
 
 ```bash
 opencraft devices list
 opencraft devices approve --latest
 ```
 
-If the app says `bootstrap token invalid or expired`:
+Se o app diz `bootstrap token invalid or expired`:
 
-- old setup code
-- generate a fresh one and rescan
-- do this after any URL/auth fix too
+- código de configuração antigo
+- gere um novo e refaça o escaneamento
+- faça isso após qualquer correção de URL/autenticação também
 
-If the app says `unauthorized`:
+Se o app diz `unauthorized`:
 
-- wrong token/password, or wrong Tailscale expectation
-- for Tailscale Serve, `gateway.auth.allowTailscale` must match the intended flow
-- otherwise use explicit token/password
+- token/senha errado, ou expectativa incorreta do Tailscale
+- para o Tailscale Serve, `gateway.auth.allowTailscale` deve corresponder ao fluxo pretendido
+- caso contrário, use token/senha explícito
 
-## Fast heuristics
+## Heurísticas rápidas
 
-- Same Wi-Fi setup + gateway advertises `127.0.0.1`, `localhost`, or loopback-only config: wrong.
-- Remote setup + setup/manual uses private LAN IP: wrong.
-- Tailnet setup + gateway advertises LAN IP instead of MagicDNS / tailnet route: wrong.
-- Public URL set but QR still advertises something else: inspect `urlSource`; config is not what you think.
-- `opencraft devices list` shows pending requests: stop changing network config and approve first.
+- Configuração na mesma Wi-Fi + gateway anuncia `127.0.0.1`, `localhost` ou configuração somente loopback: errado.
+- Configuração remota + configuração/manual usa IP LAN privado: errado.
+- Configuração tailnet + gateway anuncia IP LAN em vez de MagicDNS / rota tailnet: errado.
+- URL pública definida mas QR ainda anuncia outra coisa: inspecione `urlSource`; a configuração não é o que você pensa.
+- `opencraft devices list` mostra solicitações pendentes: pare de alterar a configuração de rede e aprove primeiro.
 
-## Fix style
+## Estilo de correção
 
-Reply with one concrete diagnosis and one route.
+Responda com um diagnóstico concreto e uma rota.
 
-If there is not enough signal yet, ask for setup + exact app text instead of guessing.
+Se não houver sinal suficiente ainda, peça a configuração + texto exato do app em vez de adivinhar.
 
-Good:
+Correto:
 
-- `The gateway is still loopback-only, so a node on another network can never reach it. Enable Tailscale Serve, restart the gateway, run opencraft qr again, rescan, then approve the pending device pairing.`
+- `O gateway ainda está vinculado apenas ao loopback, então um nó em outra rede nunca conseguirá alcançá-lo. Ative o Tailscale Serve, reinicie o gateway, execute opencraft qr novamente, refaça o escaneamento e aprove o emparelhamento de dispositivo pendente.`
 
-Bad:
+Errado:
 
-- `Maybe LAN, maybe Tailscale, maybe port forwarding, maybe public URL.`
+- `Talvez LAN, talvez Tailscale, talvez encaminhamento de porta, talvez URL pública.`

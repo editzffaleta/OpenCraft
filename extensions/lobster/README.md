@@ -1,17 +1,17 @@
 # Lobster (plugin)
 
-Adds the `lobster` agent tool as an **optional** plugin tool.
+Adiciona a ferramenta de agente `lobster` como um plugin de ferramenta **opcional**.
 
-## What this is
+## O que é isso
 
-- Lobster is a standalone workflow shell (typed JSON-first pipelines + approvals/resume).
-- This plugin integrates Lobster with OpenCraft _without core changes_.
+- Lobster é um shell de workflow independente (pipelines JSON tipados + aprovações/retomada).
+- Este plugin integra o Lobster ao OpenCraft _sem alterações no núcleo_.
 
-## Enable
+## Ativar
 
-Because this tool can trigger side effects (via workflows), it is registered with `optional: true`.
+Como esta ferramenta pode desencadear efeitos colaterais (via workflows), ela é registrada com `optional: true`.
 
-Enable it in an agent allowlist:
+Ative-a em uma lista de permissões de agente:
 
 ```json
 {
@@ -21,7 +21,7 @@ Enable it in an agent allowlist:
         "id": "main",
         "tools": {
           "allow": [
-            "lobster" // plugin id (enables all tools from this plugin)
+            "lobster" // id do plugin (ativa todas as ferramentas deste plugin)
           ]
         }
       }
@@ -30,21 +30,21 @@ Enable it in an agent allowlist:
 }
 ```
 
-## Using `opencraft.invoke` (Lobster → OpenCraft tools)
+## Usando `opencraft.invoke` (Lobster → ferramentas OpenCraft)
 
-Some Lobster pipelines may include a `opencraft.invoke` step to call back into OpenCraft tools/plugins (for example: `gog` for Google Workspace, `gh` for GitHub, `message.send`, etc.).
+Alguns pipelines do Lobster podem incluir um passo `opencraft.invoke` para chamar de volta as ferramentas/plugins do OpenCraft (por exemplo: `gog` para Google Workspace, `gh` para GitHub, `message.send`, etc.).
 
-For this to work, the OpenCraft Gateway must expose the tool bridge endpoint and the target tool must be allowed by policy:
+Para que isso funcione, o Gateway do OpenCraft deve expor o endpoint de bridge de ferramentas e a ferramenta alvo deve ser permitida pela política:
 
-- OpenCraft provides an HTTP endpoint: `POST /tools/invoke`.
-- The request is gated by **gateway auth** (e.g. `Authorization: Bearer …` when token auth is enabled).
-- The invoked tool is gated by **tool policy** (global + per-agent + provider + group policy). If the tool is not allowed, OpenCraft returns `404 Tool not available`.
+- O OpenCraft fornece um endpoint HTTP: `POST /tools/invoke`.
+- A requisição é controlada por **autenticação do gateway** (ex.: `Authorization: Bearer …` quando a autenticação por token está ativada).
+- A ferramenta invocada é controlada pela **política de ferramentas** (política global + por agente + por provedor + por grupo). Se a ferramenta não for permitida, o OpenCraft retorna `404 Tool not available`.
 
-### Allowlisting recommended
+### Lista de permissões recomendada
 
-To avoid letting workflows call arbitrary tools, set a tight allowlist on the agent that will be used by `opencraft.invoke`.
+Para evitar que workflows chamem ferramentas arbitrárias, defina uma lista de permissões restrita no agente que será usado pelo `opencraft.invoke`.
 
-Example (allow only a small set of tools):
+Exemplo (permite apenas um pequeno conjunto de ferramentas):
 
 ```jsonc
 {
@@ -62,14 +62,14 @@ Example (allow only a small set of tools):
 }
 ```
 
-Notes:
+Notas:
 
-- If `tools.allow` is omitted or empty, it behaves like "allow everything (except denied)". For a real allowlist, set a **non-empty** `allow`.
-- Tool names depend on which plugins you have installed/enabled.
+- Se `tools.allow` for omitido ou vazio, o comportamento é "permitir tudo (exceto negados)". Para uma lista de permissões real, defina um `allow` **não vazio**.
+- Os nomes das ferramentas dependem de quais plugins você tem instalados/ativados.
 
-## Security
+## Segurança
 
-- Runs the `lobster` executable as a local subprocess.
-- Does not manage OAuth/tokens.
-- Uses timeouts, stdout caps, and strict JSON envelope parsing.
-- Ensure `lobster` is available on `PATH` for the gateway process.
+- Executa o executável `lobster` como um subprocesso local.
+- Não gerencia OAuth/tokens.
+- Usa timeouts, limites de stdout e análise estrita do envelope JSON.
+- Certifique-se de que `lobster` esteja disponível no `PATH` para o processo do gateway.

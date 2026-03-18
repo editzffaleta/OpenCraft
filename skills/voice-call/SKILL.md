@@ -1,6 +1,6 @@
 ---
 name: voice-call
-description: Start voice calls via the OpenCraft voice-call plugin.
+description: Inicie chamadas de voz via plugin voice-call do OpenCraft.
 metadata:
   {
     "opencraft":
@@ -12,9 +12,9 @@ metadata:
   }
 ---
 
-# Voice Call
+# Chamada de Voz
 
-Use the voice-call plugin to start or inspect calls (Twilio, Telnyx, Plivo, or mock).
+Use o plugin voice-call para iniciar ou inspecionar chamadas (Twilio, Telnyx, Plivo ou mock).
 
 ## CLI
 
@@ -23,11 +23,11 @@ opencraft voicecall call --to "+15555550123" --message "Hello from OpenCraft"
 opencraft voicecall status --call-id <id>
 ```
 
-## Tool
+## Ferramenta
 
-Use `voice_call` for agent-initiated calls.
+Use `voice_call` para chamadas iniciadas pelo agente.
 
-Actions:
+Ações:
 
 - `initiate_call` (message, to?, mode?)
 - `continue_call` (callId, message)
@@ -35,11 +35,11 @@ Actions:
 - `end_call` (callId)
 - `get_status` (callId)
 
-Notes:
+Observações:
 
-- Requires the voice-call plugin to be enabled.
-- Plugin config lives under `plugins.entries.voice-call.config`.
-- Twilio config: `provider: "twilio"` + `twilio.accountSid/authToken` + `fromNumber`.
-- Telnyx config: `provider: "telnyx"` + `telnyx.apiKey/connectionId` + `fromNumber`.
-- Plivo config: `provider: "plivo"` + `plivo.authId/authToken` + `fromNumber`.
-- Dev fallback: `provider: "mock"` (no network).
+- Requer que o plugin voice-call esteja habilitado.
+- A configuração do plugin fica em `plugins.entries.voice-call.config`.
+- Configuração Twilio: `provider: "twilio"` + `twilio.accountSid/authToken` + `fromNumber`.
+- Configuração Telnyx: `provider: "telnyx"` + `telnyx.apiKey/connectionId` + `fromNumber`.
+- Configuração Plivo: `provider: "plivo"` + `plivo.authId/authToken` + `fromNumber`.
+- Fallback para desenvolvimento: `provider: "mock"` (sem rede).

@@ -1,6 +1,6 @@
 ---
 name: blogwatcher
-description: Monitor blogs and RSS/Atom feeds for updates using the blogwatcher CLI.
+description: Monitore blogs e feeds RSS/Atom em busca de atualizações usando o CLI blogwatcher.
 homepage: https://github.com/Hyaxia/blogwatcher
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "go",
               "module": "github.com/Hyaxia/blogwatcher/cmd/blogwatcher@latest",
               "bins": ["blogwatcher"],
-              "label": "Install blogwatcher (go)",
+              "label": "Instalar blogwatcher (go)",
             },
           ],
       },
@@ -24,27 +24,27 @@ metadata:
 
 # blogwatcher
 
-Track blog and RSS/Atom feed updates with the `blogwatcher` CLI.
+Acompanhe atualizações de blogs e feeds RSS/Atom com o CLI `blogwatcher`.
 
-Install
+Instalação
 
 - Go: `go install github.com/Hyaxia/blogwatcher/cmd/blogwatcher@latest`
 
-Quick start
+Início rápido
 
 - `blogwatcher --help`
 
-Common commands
+Comandos comuns
 
-- Add a blog: `blogwatcher add "My Blog" https://example.com`
-- List blogs: `blogwatcher blogs`
-- Scan for updates: `blogwatcher scan`
-- List articles: `blogwatcher articles`
-- Mark an article read: `blogwatcher read 1`
-- Mark all articles read: `blogwatcher read-all`
-- Remove a blog: `blogwatcher remove "My Blog"`
+- Adicionar um blog: `blogwatcher add "Meu Blog" https://example.com`
+- Listar blogs: `blogwatcher blogs`
+- Verificar atualizações: `blogwatcher scan`
+- Listar artigos: `blogwatcher articles`
+- Marcar um artigo como lido: `blogwatcher read 1`
+- Marcar todos os artigos como lidos: `blogwatcher read-all`
+- Remover um blog: `blogwatcher remove "Meu Blog"`
 
-Example output
+Exemplo de saída
 
 ```
 $ blogwatcher blogs
@@ -64,6 +64,6 @@ Scanning 1 blog(s)...
 Found 4 new article(s) total!
 ```
 
-Notes
+Observações
 
-- Use `blogwatcher <command> --help` to discover flags and options.
+- Use `blogwatcher <command> --help` para descobrir flags e opções.

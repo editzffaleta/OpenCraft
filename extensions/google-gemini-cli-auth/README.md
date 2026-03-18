@@ -1,41 +1,41 @@
-# Google Gemini CLI Auth (OpenCraft plugin)
+# Google Gemini CLI Auth (plugin OpenCraft)
 
-OAuth provider plugin for **Gemini CLI** (Google Code Assist).
+Plugin de provedor OAuth para o **Gemini CLI** (Google Code Assist).
 
-## Account safety caution
+## Aviso de segurança da conta
 
-- This plugin is an unofficial integration and is not endorsed by Google.
-- Some users have reported account restrictions or suspensions after using third-party Gemini CLI and Antigravity OAuth clients.
-- Use caution, review the applicable Google terms, and avoid using a mission-critical account.
+- Este plugin é uma integração não oficial e não é endossado pelo Google.
+- Alguns usuários relataram restrições ou suspensões de conta após usar clientes OAuth de terceiros do Gemini CLI e Antigravity.
+- Use com cuidado, revise os termos de serviço aplicáveis do Google e evite usar uma conta de missão crítica.
 
-## Enable
+## Ativar
 
-Bundled plugins are disabled by default. Enable this one:
+Plugins incluídos são desativados por padrão. Ative este:
 
 ```bash
 opencraft plugins enable google-gemini-cli-auth
 ```
 
-Restart the Gateway after enabling.
+Reinicie o Gateway após ativar.
 
-## Authenticate
+## Autenticar
 
 ```bash
 opencraft models auth login --provider google-gemini-cli --set-default
 ```
 
-## Requirements
+## Requisitos
 
-Requires the Gemini CLI to be installed (credentials are extracted automatically):
+Requer o Gemini CLI instalado (as credenciais são extraídas automaticamente):
 
 ```bash
 brew install gemini-cli
-# or: npm install -g @google/gemini-cli
+# ou: npm install -g @google/gemini-cli
 ```
 
-## Env vars (optional)
+## Variáveis de ambiente (opcional)
 
-Override auto-detected credentials with:
+Substitua as credenciais detectadas automaticamente com:
 
 - `OPENCRAFT_GEMINI_OAUTH_CLIENT_ID` / `GEMINI_CLI_OAUTH_CLIENT_ID`
 - `OPENCRAFT_GEMINI_OAUTH_CLIENT_SECRET` / `GEMINI_CLI_OAUTH_CLIENT_SECRET`

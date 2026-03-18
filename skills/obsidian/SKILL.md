@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.
+description: Trabalhe com cofres do Obsidian (notas em Markdown simples) e automatize via obsidian-cli.
 homepage: https://help.obsidian.md
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "yakitrak/yakitrak/obsidian-cli",
               "bins": ["obsidian-cli"],
-              "label": "Install obsidian-cli (brew)",
+              "label": "Instalar obsidian-cli (brew)",
             },
           ],
       },
@@ -24,58 +24,58 @@ metadata:
 
 # Obsidian
 
-Obsidian vault = a normal folder on disk.
+Cofre do Obsidian = uma pasta normal no disco.
 
-Vault structure (typical)
+Estrutura do cofre (típica)
 
-- Notes: `*.md` (plain text Markdown; edit with any editor)
-- Config: `.obsidian/` (workspace + plugin settings; usually don’t touch from scripts)
-- Canvases: `*.canvas` (JSON)
-- Attachments: whatever folder you chose in Obsidian settings (images/PDFs/etc.)
+- Notas: `*.md` (Markdown em texto simples; edite com qualquer editor)
+- Configuração: `.obsidian/` (configurações de workspace + plugin; geralmente não altere via scripts)
+- Telas: `*.canvas` (JSON)
+- Anexos: a pasta que você escolheu nas configurações do Obsidian (imagens/PDFs/etc.)
 
-## Find the active vault(s)
+## Encontrar o(s) cofre(s) ativo(s)
 
-Obsidian desktop tracks vaults here (source of truth):
+O Obsidian desktop rastreia os cofres aqui (fonte confiável):
 
 - `~/Library/Application Support/obsidian/obsidian.json`
 
-`obsidian-cli` resolves vaults from that file; vault name is typically the **folder name** (path suffix).
+O `obsidian-cli` resolve os cofres a partir desse arquivo; o nome do cofre é tipicamente o **nome da pasta** (sufixo do caminho).
 
-Fast “what vault is active / where are the notes?”
+Forma rápida de descobrir "qual cofre está ativo / onde estão as notas?"
 
-- If you’ve already set a default: `obsidian-cli print-default --path-only`
-- Otherwise, read `~/Library/Application Support/obsidian/obsidian.json` and use the vault entry with `"open": true`.
+- Se você já definiu um padrão: `obsidian-cli print-default --path-only`
+- Caso contrário, leia `~/Library/Application Support/obsidian/obsidian.json` e use a entrada do cofre com `"open": true`.
 
-Notes
+Observações
 
-- Multiple vaults common (iCloud vs `~/Documents`, work/personal, etc.). Don’t guess; read config.
-- Avoid writing hardcoded vault paths into scripts; prefer reading the config or using `print-default`.
+- Múltiplos cofres são comuns (iCloud vs `~/Documents`, trabalho/pessoal, etc.). Não adivinhe; leia a configuração.
+- Evite escrever caminhos de cofre fixos em scripts; prefira ler a configuração ou usar `print-default`.
 
-## obsidian-cli quick start
+## Início rápido com obsidian-cli
 
-Pick a default vault (once):
+Defina um cofre padrão (uma vez):
 
 - `obsidian-cli set-default "<vault-folder-name>"`
 - `obsidian-cli print-default` / `obsidian-cli print-default --path-only`
 
-Search
+Busca
 
-- `obsidian-cli search "query"` (note names)
-- `obsidian-cli search-content "query"` (inside notes; shows snippets + lines)
+- `obsidian-cli search "query"` (nomes de notas)
+- `obsidian-cli search-content "query"` (dentro das notas; mostra trechos + linhas)
 
-Create
+Criar
 
 - `obsidian-cli create "Folder/New note" --content "..." --open`
-- Requires Obsidian URI handler (`obsidian://…`) working (Obsidian installed).
-- Avoid creating notes under “hidden” dot-folders (e.g. `.something/...`) via URI; Obsidian may refuse.
+- Requer que o manipulador URI do Obsidian (`obsidian://…`) esteja funcionando (Obsidian instalado).
+- Evite criar notas em pastas "ocultas" com ponto (ex.: `.something/...`) via URI; o Obsidian pode recusar.
 
-Move/rename (safe refactor)
+Mover/renomear (refatoração segura)
 
 - `obsidian-cli move "old/path/note" "new/path/note"`
-- Updates `[[wikilinks]]` and common Markdown links across the vault (this is the main win vs `mv`).
+- Atualiza `[[wikilinks]]` e links Markdown comuns em todo o cofre (esta é a principal vantagem em relação ao `mv`).
 
-Delete
+Excluir
 
 - `obsidian-cli delete "path/note"`
 
-Prefer direct edits when appropriate: open the `.md` file and change it; Obsidian will pick it up.
+Prefira edições diretas quando apropriado: abra o arquivo `.md` e altere-o; o Obsidian vai capturar as mudanças.

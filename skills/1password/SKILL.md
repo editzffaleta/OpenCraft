@@ -1,6 +1,6 @@
 ---
 name: 1password
-description: Set up and use 1Password CLI (op). Use when installing the CLI, enabling desktop app integration, signing in (single or multi-account), or reading/injecting/running secrets via op.
+description: Configure e use o CLI do 1Password (op). Use ao instalar o CLI, habilitar a integração com o app desktop, fazer login (conta única ou múltiplas contas), ou ler/injetar/executar segredos via op.
 homepage: https://developer.1password.com/docs/cli/get-started/
 metadata:
   {
@@ -15,37 +15,37 @@ metadata:
               "kind": "brew",
               "formula": "1password-cli",
               "bins": ["op"],
-              "label": "Install 1Password CLI (brew)",
+              "label": "Instalar 1Password CLI (brew)",
             },
           ],
       },
   }
 ---
 
-# 1Password CLI
+# CLI do 1Password
 
-Follow the official CLI get-started steps. Don't guess install commands.
+Siga os passos oficiais de início do CLI. Não adivinhe os comandos de instalação.
 
-## References
+## Referências
 
-- `references/get-started.md` (install + app integration + sign-in flow)
-- `references/cli-examples.md` (real `op` examples)
+- `references/get-started.md` (instalação + integração com app + fluxo de login)
+- `references/cli-examples.md` (exemplos reais de `op`)
 
-## Workflow
+## Fluxo de trabalho
 
-1. Check OS + shell.
-2. Verify CLI present: `op --version`.
-3. Confirm desktop app integration is enabled (per get-started) and the app is unlocked.
-4. REQUIRED: create a fresh tmux session for all `op` commands (no direct `op` calls outside tmux).
-5. Sign in / authorize inside tmux: `op signin` (expect app prompt).
-6. Verify access inside tmux: `op whoami` (must succeed before any secret read).
-7. If multiple accounts: use `--account` or `OP_ACCOUNT`.
+1. Verifique o SO + shell.
+2. Confirme que o CLI está presente: `op --version`.
+3. Confirme que a integração com o app desktop está habilitada (conforme o guia de início) e que o app está desbloqueado.
+4. OBRIGATÓRIO: crie uma sessão tmux nova para todos os comandos `op` (sem chamadas diretas a `op` fora do tmux).
+5. Faça login / autorize dentro do tmux: `op signin` (aguarde o prompt do app).
+6. Verifique o acesso dentro do tmux: `op whoami` (deve ter sucesso antes de qualquer leitura de segredo).
+7. Se houver múltiplas contas: use `--account` ou `OP_ACCOUNT`.
 
-## REQUIRED tmux session (T-Max)
+## Sessão tmux OBRIGATÓRIA (T-Max)
 
-The shell tool uses a fresh TTY per command. To avoid re-prompts and failures, always run `op` inside a dedicated tmux session with a fresh socket/session name.
+A ferramenta shell usa um TTY novo por comando. Para evitar novos prompts e falhas, sempre execute `op` dentro de uma sessão tmux dedicada com um novo socket/nome de sessão.
 
-Example (see `tmux` skill for socket conventions, do not reuse old session names):
+Exemplo (veja a skill `tmux` para convenções de socket; não reutilize nomes de sessão antigos):
 
 ```bash
 SOCKET_DIR="${OPENCRAFT_TMUX_SOCKET_DIR:-${CLAWDBOT_TMUX_SOCKET_DIR:-${TMPDIR:-/tmp}/opencraft-tmux-sockets}}"
@@ -61,10 +61,10 @@ tmux -S "$SOCKET" capture-pane -p -J -t "$SESSION":0.0 -S -200
 tmux -S "$SOCKET" kill-session -t "$SESSION"
 ```
 
-## Guardrails
+## Restrições
 
-- Never paste secrets into logs, chat, or code.
-- Prefer `op run` / `op inject` over writing secrets to disk.
-- If sign-in without app integration is needed, use `op account add`.
-- If a command returns "account is not signed in", re-run `op signin` inside tmux and authorize in the app.
-- Do not run `op` outside tmux; stop and ask if tmux is unavailable.
+- Nunca cole segredos em logs, chats ou código.
+- Prefira `op run` / `op inject` em vez de escrever segredos em disco.
+- Se for necessário fazer login sem integração com o app, use `op account add`.
+- Se um comando retornar "account is not signed in", execute novamente `op signin` dentro do tmux e autorize no app.
+- Não execute `op` fora do tmux; pare e pergunte se o tmux não estiver disponível.

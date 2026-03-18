@@ -1,6 +1,6 @@
 ---
 name: apple-notes
-description: Manage Apple Notes via the `memo` CLI on macOS (create, view, edit, delete, search, move, and export notes). Use when a user asks OpenCraft to add a note, list notes, search notes, or manage note folders.
+description: Gerencie o Apple Notes via CLI `memo` no macOS (criar, visualizar, editar, excluir, pesquisar, mover e exportar notas). Use quando o usuário pedir ao OpenCraft para adicionar uma nota, listar notas, pesquisar notas ou gerenciar pastas de notas.
 homepage: https://github.com/antoniorodr/memo
 metadata:
   {
@@ -16,62 +16,62 @@ metadata:
               "kind": "brew",
               "formula": "antoniorodr/memo/memo",
               "bins": ["memo"],
-              "label": "Install memo via Homebrew",
+              "label": "Instalar memo via Homebrew",
             },
           ],
       },
   }
 ---
 
-# Apple Notes CLI
+# CLI do Apple Notes
 
-Use `memo notes` to manage Apple Notes directly from the terminal. Create, view, edit, delete, search, move notes between folders, and export to HTML/Markdown.
+Use `memo notes` para gerenciar o Apple Notes diretamente do terminal. Crie, visualize, edite, exclua, pesquise, mova notas entre pastas e exporte para HTML/Markdown.
 
-Setup
+Configuração
 
-- Install (Homebrew): `brew tap antoniorodr/memo && brew install antoniorodr/memo/memo`
-- Manual (pip): `pip install .` (after cloning the repo)
-- macOS-only; if prompted, grant Automation access to Notes.app.
+- Instalar (Homebrew): `brew tap antoniorodr/memo && brew install antoniorodr/memo/memo`
+- Manual (pip): `pip install .` (após clonar o repositório)
+- Apenas macOS; se solicitado, conceda acesso de Automação ao Notes.app.
 
-View Notes
+Visualizar Notas
 
-- List all notes: `memo notes`
-- Filter by folder: `memo notes -f "Folder Name"`
-- Search notes (fuzzy): `memo notes -s "query"`
+- Listar todas as notas: `memo notes`
+- Filtrar por pasta: `memo notes -f "Folder Name"`
+- Pesquisar notas (fuzzy): `memo notes -s "query"`
 
-Create Notes
+Criar Notas
 
-- Add a new note: `memo notes -a`
-  - Opens an interactive editor to compose the note.
-- Quick add with title: `memo notes -a "Note Title"`
+- Adicionar uma nova nota: `memo notes -a`
+  - Abre um editor interativo para compor a nota.
+- Adicionar rapidamente com título: `memo notes -a "Note Title"`
 
-Edit Notes
+Editar Notas
 
-- Edit existing note: `memo notes -e`
-  - Interactive selection of note to edit.
+- Editar nota existente: `memo notes -e`
+  - Seleção interativa da nota a ser editada.
 
-Delete Notes
+Excluir Notas
 
-- Delete a note: `memo notes -d`
-  - Interactive selection of note to delete.
+- Excluir uma nota: `memo notes -d`
+  - Seleção interativa da nota a ser excluída.
 
-Move Notes
+Mover Notas
 
-- Move note to folder: `memo notes -m`
-  - Interactive selection of note and destination folder.
+- Mover nota para pasta: `memo notes -m`
+  - Seleção interativa da nota e da pasta de destino.
 
-Export Notes
+Exportar Notas
 
-- Export to HTML/Markdown: `memo notes -ex`
-  - Exports selected note; uses Mistune for markdown processing.
+- Exportar para HTML/Markdown: `memo notes -ex`
+  - Exporta a nota selecionada; usa Mistune para processamento de markdown.
 
-Limitations
+Limitações
 
-- Cannot edit notes containing images or attachments.
-- Interactive prompts may require terminal access.
+- Não é possível editar notas que contenham imagens ou anexos.
+- Prompts interativos podem exigir acesso ao terminal.
 
-Notes
+Observações
 
-- macOS-only.
-- Requires Apple Notes.app to be accessible.
-- For automation, grant permissions in System Settings > Privacy & Security > Automation.
+- Apenas macOS.
+- Requer que o Apple Notes.app esteja acessível.
+- Para automação, conceda permissões em Configurações do Sistema > Privacidade e Segurança > Automação.

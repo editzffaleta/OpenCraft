@@ -1,6 +1,6 @@
 ---
 name: sherpa-onnx-tts
-description: Local text-to-speech via sherpa-onnx (offline, no cloud)
+description: Text-to-speech local via sherpa-onnx (offline, sem nuvem)
 metadata:
   {
     "opencraft":
@@ -19,7 +19,7 @@ metadata:
               "extract": true,
               "stripComponents": 1,
               "targetDir": "runtime",
-              "label": "Download sherpa-onnx runtime (macOS)",
+              "label": "Baixar runtime sherpa-onnx (macOS)",
             },
             {
               "id": "download-runtime-linux-x64",
@@ -30,7 +30,7 @@ metadata:
               "extract": true,
               "stripComponents": 1,
               "targetDir": "runtime",
-              "label": "Download sherpa-onnx runtime (Linux x64)",
+              "label": "Baixar runtime sherpa-onnx (Linux x64)",
             },
             {
               "id": "download-runtime-win-x64",
@@ -41,7 +41,7 @@ metadata:
               "extract": true,
               "stripComponents": 1,
               "targetDir": "runtime",
-              "label": "Download sherpa-onnx runtime (Windows x64)",
+              "label": "Baixar runtime sherpa-onnx (Windows x64)",
             },
             {
               "id": "download-model-lessac",
@@ -50,7 +50,7 @@ metadata:
               "archive": "tar.bz2",
               "extract": true,
               "targetDir": "models",
-              "label": "Download Piper en_US lessac (high)",
+              "label": "Baixar Piper en_US lessac (high)",
             },
           ],
       },
@@ -59,14 +59,14 @@ metadata:
 
 # sherpa-onnx-tts
 
-Local TTS using the sherpa-onnx offline CLI.
+TTS local usando o CLI offline sherpa-onnx.
 
-## Install
+## Instalação
 
-1. Download the runtime for your OS (extracts into `~/.opencraft/tools/sherpa-onnx-tts/runtime`)
-2. Download a voice model (extracts into `~/.opencraft/tools/sherpa-onnx-tts/models`)
+1. Baixe o runtime para o seu sistema operacional (extrai em `~/.opencraft/tools/sherpa-onnx-tts/runtime`)
+2. Baixe um modelo de voz (extrai em `~/.opencraft/tools/sherpa-onnx-tts/models`)
 
-Update `~/.editzffaleta/OpenCraft.json`:
+Atualize `~/.editzffaleta/OpenCraft.json`:
 
 ```json5
 {
@@ -83,21 +83,21 @@ Update `~/.editzffaleta/OpenCraft.json`:
 }
 ```
 
-The wrapper lives in this skill folder. Run it directly, or add the wrapper to PATH:
+O wrapper está na pasta desta skill. Execute-o diretamente ou adicione-o ao PATH:
 
 ```bash
 export PATH="{baseDir}/bin:$PATH"
 ```
 
-## Usage
+## Uso
 
 ```bash
 {baseDir}/bin/sherpa-onnx-tts -o ./tts.wav "Hello from local TTS."
 ```
 
-Notes:
+Observações:
 
-- Pick a different model from the sherpa-onnx `tts-models` release if you want another voice.
-- If the model dir has multiple `.onnx` files, set `SHERPA_ONNX_MODEL_FILE` or pass `--model-file`.
-- You can also pass `--tokens-file` or `--data-dir` to override the defaults.
-- Windows: run `node {baseDir}\\bin\\sherpa-onnx-tts -o tts.wav "Hello from local TTS."`
+- Escolha um modelo diferente nas releases `tts-models` do sherpa-onnx se quiser outra voz.
+- Se o diretório do modelo tiver múltiplos arquivos `.onnx`, defina `SHERPA_ONNX_MODEL_FILE` ou passe `--model-file`.
+- Você também pode passar `--tokens-file` ou `--data-dir` para substituir os padrões.
+- Windows: execute `node {baseDir}\\bin\\sherpa-onnx-tts -o tts.wav "Hello from local TTS."`

@@ -1,45 +1,45 @@
-# BlueBubbles extension (developer reference)
+# Extensão BlueBubbles (referência para desenvolvedores)
 
-This directory contains the **BlueBubbles external channel plugin** for OpenCraft.
+Este diretório contém o **plugin de canal externo BlueBubbles** para o OpenCraft.
 
-If you’re looking for **how to use BlueBubbles as an agent/tool user**, see:
+Se você estiver procurando **como usar o BlueBubbles como usuário de agente/ferramenta**, consulte:
 
 - `skills/bluebubbles/SKILL.md`
 
-## Layout
+## Estrutura
 
-- Extension package: `extensions/bluebubbles/` (entry: `index.ts`).
-- Channel implementation: `extensions/bluebubbles/src/channel.ts`.
-- Webhook handling: `extensions/bluebubbles/src/monitor.ts` (register per-account route via `registerPluginHttpRoute`).
-- REST helpers: `extensions/bluebubbles/src/send.ts` + `extensions/bluebubbles/src/probe.ts`.
-- Runtime bridge: `extensions/bluebubbles/src/runtime.ts` (set via `api.runtime`).
-- Catalog entry for setup selection: `src/channels/plugins/catalog.ts`.
+- Pacote da extensão: `extensions/bluebubbles/` (entrada: `index.ts`).
+- Implementação do canal: `extensions/bluebubbles/src/channel.ts`.
+- Tratamento de webhooks: `extensions/bluebubbles/src/monitor.ts` (registra rota por conta via `registerPluginHttpRoute`).
+- Utilitários REST: `extensions/bluebubbles/src/send.ts` + `extensions/bluebubbles/src/probe.ts`.
+- Bridge de runtime: `extensions/bluebubbles/src/runtime.ts` (definido via `api.runtime`).
+- Entrada no catálogo para seleção de configuração: `src/channels/plugins/catalog.ts`.
 
-## Internal helpers (use these, not raw API calls)
+## Utilitários internos (use estes, não chamadas diretas à API)
 
-- `probeBlueBubbles` in `extensions/bluebubbles/src/probe.ts` for health checks.
-- `sendMessageBlueBubbles` in `extensions/bluebubbles/src/send.ts` for text delivery.
-- `resolveChatGuidForTarget` in `extensions/bluebubbles/src/send.ts` for chat lookup.
-- `sendBlueBubblesReaction` in `extensions/bluebubbles/src/reactions.ts` for tapbacks.
-- `sendBlueBubblesTyping` + `markBlueBubblesChatRead` in `extensions/bluebubbles/src/chat.ts`.
-- `downloadBlueBubblesAttachment` in `extensions/bluebubbles/src/attachments.ts` for inbound media.
-- `buildBlueBubblesApiUrl` + `blueBubblesFetchWithTimeout` in `extensions/bluebubbles/src/types.ts` for shared REST plumbing.
+- `probeBlueBubbles` em `extensions/bluebubbles/src/probe.ts` para verificações de saúde.
+- `sendMessageBlueBubbles` em `extensions/bluebubbles/src/send.ts` para entrega de texto.
+- `resolveChatGuidForTarget` em `extensions/bluebubbles/src/send.ts` para busca de chat.
+- `sendBlueBubblesReaction` em `extensions/bluebubbles/src/reactions.ts` para tapbacks.
+- `sendBlueBubblesTyping` + `markBlueBubblesChatRead` em `extensions/bluebubbles/src/chat.ts`.
+- `downloadBlueBubblesAttachment` em `extensions/bluebubbles/src/attachments.ts` para mídia recebida.
+- `buildBlueBubblesApiUrl` + `blueBubblesFetchWithTimeout` em `extensions/bluebubbles/src/types.ts` para a infraestrutura REST compartilhada.
 
 ## Webhooks
 
-- BlueBubbles posts JSON to the gateway HTTP server.
-- Normalize sender/chat IDs defensively (payloads vary by version).
-- Skip messages marked as from self.
-- Route into core reply pipeline via the plugin runtime (`api.runtime`) and `opencraft/plugin-sdk` helpers.
-- For attachments/stickers, use `<media:...>` placeholders when text is empty and attach media paths via `MediaUrl(s)` in the inbound context.
+- O BlueBubbles envia JSON via POST ao servidor HTTP do gateway.
+- Normalize os IDs de remetente/chat de forma defensiva (os payloads variam por versão).
+- Ignore mensagens marcadas como enviadas por si mesmo.
+- Roteie para o pipeline de resposta principal via o runtime do plugin (`api.runtime`) e os utilitários do `opencraft/plugin-sdk`.
+- Para anexos/stickers, use placeholders `<media:...>` quando o texto estiver vazio e anexe os caminhos de mídia via `MediaUrl(s)` no contexto de entrada.
 
-## Config (core)
+## Configuração (núcleo)
 
-- `channels.bluebubbles.serverUrl` (base URL), `channels.bluebubbles.password`, `channels.bluebubbles.webhookPath`.
-- Action gating: `channels.bluebubbles.actions.reactions` (default true).
+- `channels.bluebubbles.serverUrl` (URL base), `channels.bluebubbles.password`, `channels.bluebubbles.webhookPath`.
+- Controle de ações: `channels.bluebubbles.actions.reactions` (padrão: true).
 
-## Message tool notes
+## Notas sobre a ferramenta de mensagens
 
-- **Reactions:** the `react` action requires a `target` (phone number or chat identifier) in addition to `messageId`.
-  Example:
+- **Reações:** a ação `react` requer um `target` (número de telefone ou identificador de chat) além do `messageId`.
+  Exemplo:
   `action=react target=+15551234567 messageId=ABC123 emoji=❤️`

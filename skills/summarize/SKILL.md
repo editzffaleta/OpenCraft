@@ -1,6 +1,6 @@
 ---
 name: summarize
-description: Summarize or extract text/transcripts from URLs, podcasts, and local files (great fallback for “transcribe this YouTube/video”).
+description: Resumir ou extrair texto/transcrições de URLs, podcasts e arquivos locais (ótima alternativa para "transcrever este YouTube/vídeo").
 homepage: https://summarize.sh
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/summarize",
               "bins": ["summarize"],
-              "label": "Install summarize (brew)",
+              "label": "Instalar summarize (brew)",
             },
           ],
       },
@@ -24,18 +24,18 @@ metadata:
 
 # Summarize
 
-Fast CLI to summarize URLs, local files, and YouTube links.
+CLI rápida para resumir URLs, arquivos locais e links do YouTube.
 
-## When to use (trigger phrases)
+## Quando usar (frases de ativação)
 
-Use this skill immediately when the user asks any of:
+Use esta skill imediatamente quando o usuário perguntar qualquer uma das seguintes:
 
-- “use summarize.sh”
-- “what’s this link/video about?”
-- “summarize this URL/article”
-- “transcribe this YouTube/video” (best-effort transcript extraction; no `yt-dlp` needed)
+- "use summarize.sh"
+- "sobre o que é este link/vídeo?"
+- "resumir esta URL/artigo"
+- "transcrever este YouTube/vídeo" (extração de transcrição com melhor esforço; não é necessário `yt-dlp`)
 
-## Quick start
+## Início rápido
 
 ```bash
 summarize "https://example.com" --model google/gemini-3-flash-preview
@@ -43,45 +43,45 @@ summarize "/path/to/file.pdf" --model google/gemini-3-flash-preview
 summarize "https://youtu.be/dQw4w9WgXcQ" --youtube auto
 ```
 
-## YouTube: summary vs transcript
+## YouTube: resumo vs transcrição
 
-Best-effort transcript (URLs only):
+Transcrição com melhor esforço (apenas URLs):
 
 ```bash
 summarize "https://youtu.be/dQw4w9WgXcQ" --youtube auto --extract-only
 ```
 
-If the user asked for a transcript but it’s huge, return a tight summary first, then ask which section/time range to expand.
+Se o usuário pediu uma transcrição mas ela é muito grande, retorne primeiro um resumo conciso e depois pergunte qual seção/intervalo de tempo expandir.
 
-## Model + keys
+## Modelo e chaves
 
-Set the API key for your chosen provider:
+Defina a chave de API do provedor escolhido:
 
 - OpenAI: `OPENAI_API_KEY`
 - Anthropic: `ANTHROPIC_API_KEY`
 - xAI: `XAI_API_KEY`
 - Google: `GEMINI_API_KEY` (aliases: `GOOGLE_GENERATIVE_AI_API_KEY`, `GOOGLE_API_KEY`)
 
-Default model is `google/gemini-3-flash-preview` if none is set.
+O modelo padrão é `google/gemini-3-flash-preview` se nenhum estiver definido.
 
-## Useful flags
+## Flags úteis
 
 - `--length short|medium|long|xl|xxl|<chars>`
 - `--max-output-tokens <count>`
-- `--extract-only` (URLs only)
-- `--json` (machine readable)
-- `--firecrawl auto|off|always` (fallback extraction)
-- `--youtube auto` (Apify fallback if `APIFY_API_TOKEN` set)
+- `--extract-only` (apenas URLs)
+- `--json` (legível por máquina)
+- `--firecrawl auto|off|always` (extração de fallback)
+- `--youtube auto` (fallback Apify se `APIFY_API_TOKEN` estiver definido)
 
-## Config
+## Configuração
 
-Optional config file: `~/.summarize/config.json`
+Arquivo de configuração opcional: `~/.summarize/config.json`
 
 ```json
 { "model": "openai/gpt-5.2" }
 ```
 
-Optional services:
+Serviços opcionais:
 
-- `FIRECRAWL_API_KEY` for blocked sites
-- `APIFY_API_TOKEN` for YouTube fallback
+- `FIRECRAWL_API_KEY` para sites bloqueados
+- `APIFY_API_TOKEN` para fallback do YouTube

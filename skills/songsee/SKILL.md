@@ -1,6 +1,6 @@
 ---
 name: songsee
-description: Generate spectrograms and feature-panel visualizations from audio with the songsee CLI.
+description: Gere espectrogramas e visualizações de painel de características de áudio com o CLI songsee.
 homepage: https://github.com/steipete/songsee
 metadata:
   {
@@ -15,7 +15,7 @@ metadata:
               "kind": "brew",
               "formula": "steipete/tap/songsee",
               "bins": ["songsee"],
-              "label": "Install songsee (brew)",
+              "label": "Instalar songsee (brew)",
             },
           ],
       },
@@ -24,26 +24,26 @@ metadata:
 
 # songsee
 
-Generate spectrograms + feature panels from audio.
+Gere espectrogramas + painéis de características a partir de áudio.
 
-Quick start
+Início rápido
 
-- Spectrogram: `songsee track.mp3`
-- Multi-panel: `songsee track.mp3 --viz spectrogram,mel,chroma,hpss,selfsim,loudness,tempogram,mfcc,flux`
-- Time slice: `songsee track.mp3 --start 12.5 --duration 8 -o slice.jpg`
+- Espectrograma: `songsee track.mp3`
+- Multi-painel: `songsee track.mp3 --viz spectrogram,mel,chroma,hpss,selfsim,loudness,tempogram,mfcc,flux`
+- Recorte de tempo: `songsee track.mp3 --start 12.5 --duration 8 -o slice.jpg`
 - Stdin: `cat track.mp3 | songsee - --format png -o out.png`
 
-Common flags
+Flags comuns
 
-- `--viz` list (repeatable or comma-separated)
-- `--style` palette (classic, magma, inferno, viridis, gray)
-- `--width` / `--height` output size
-- `--window` / `--hop` FFT settings
-- `--min-freq` / `--max-freq` frequency range
-- `--start` / `--duration` time slice
+- `--viz` lista (repetível ou separada por vírgulas)
+- `--style` paleta (classic, magma, inferno, viridis, gray)
+- `--width` / `--height` tamanho da saída
+- `--window` / `--hop` configurações de FFT
+- `--min-freq` / `--max-freq` faixa de frequência
+- `--start` / `--duration` recorte de tempo
 - `--format` jpg|png
 
-Notes
+Observações
 
-- WAV/MP3 decode native; other formats use ffmpeg if available.
-- Multiple `--viz` renders a grid.
+- WAV/MP3 decodificados nativamente; outros formatos usam ffmpeg se disponível.
+- Múltiplos `--viz` renderizam uma grade.

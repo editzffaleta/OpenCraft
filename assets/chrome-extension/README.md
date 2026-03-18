@@ -1,23 +1,23 @@
-# OpenCraft Chrome Extension (Browser Relay)
+# Extensão Chrome do OpenCraft (Browser Relay)
 
-Purpose: attach OpenCraft to an existing Chrome tab so the Gateway can automate it (via the local CDP relay server).
+Propósito: conectar o OpenCraft a uma aba Chrome existente para que o Gateway possa automatizá-la (via servidor relay CDP local).
 
-## Dev / load unpacked
+## Dev / carregar sem pacote
 
-1. Build/run OpenCraft Gateway with browser control enabled.
-2. Ensure the relay server is reachable at `http://127.0.0.1:18792/` (default).
-3. Install the extension to a stable path:
+1. Construa/execute o OpenCraft Gateway com controle de browser habilitado.
+2. Certifique-se de que o servidor relay está acessível em `http://127.0.0.1:18792/` (padrão).
+3. Instale a extensão em um caminho estável:
 
    ```bash
    opencraft browser extension install
    opencraft browser extension path
    ```
 
-4. Chrome → `chrome://extensions` → enable “Developer mode”.
-5. “Load unpacked” → select the path printed above.
-6. Pin the extension. Click the icon on a tab to attach/detach.
+4. Chrome → `chrome://extensions` → habilite o "Modo do desenvolvedor".
+5. "Carregar sem pacote" → selecione o caminho impresso acima.
+6. Fixe a extensão. Clique no ícone em uma aba para conectar/desconectar.
 
-## Options
+## Opções
 
-- `Relay port`: defaults to `18792`.
-- `Gateway token`: required. Set this to `gateway.auth.token` (or `OPENCLAW_GATEWAY_TOKEN`).
+- `Relay port`: padrão `18792`.
+- `Gateway token`: obrigatório. Defina como `gateway.auth.token` (ou `OPENCLAW_GATEWAY_TOKEN`).
