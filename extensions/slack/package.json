@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft Slack channel plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],

@@ -8,14 +8,14 @@
     "google-auth-library": "^10.6.1"
   },
   "peerDependencies": {
-    "opencraft": ">=2026.3.11"
+    "openclaw": ">=2026.3.11"
   },
   "peerDependenciesMeta": {
-    "opencraft": {
+    "openclaw": {
       "optional": true
     }
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],

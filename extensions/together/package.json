@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft Together provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

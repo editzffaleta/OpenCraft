@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft Amazon Bedrock provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

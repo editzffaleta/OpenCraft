@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft Brave plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

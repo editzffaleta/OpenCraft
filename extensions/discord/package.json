@@ -3,7 +3,7 @@
   "version": "2026.3.14",
   "description": "OpenCraft Discord channel plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ],

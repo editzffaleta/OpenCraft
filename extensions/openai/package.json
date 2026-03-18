@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft OpenAI provider plugins",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

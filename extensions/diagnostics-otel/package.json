@@ -16,7 +16,7 @@
     "@opentelemetry/sdk-trace-base": "^2.6.0",
     "@opentelemetry/semantic-conventions": "^1.40.0"
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

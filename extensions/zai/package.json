@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft Z.AI provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft GitHub Copilot provider plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

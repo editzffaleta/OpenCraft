@@ -9,7 +9,7 @@
     "@sinclair/typebox": "0.34.48",
     "openai": "^6.29.0"
   },
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]

@@ -4,7 +4,7 @@
   "private": true,
   "description": "OpenCraft MiniMax provider and OAuth plugin",
   "type": "module",
-  "opencraft": {
+  "openclaw": {
     "extensions": [
       "./index.ts"
     ]
