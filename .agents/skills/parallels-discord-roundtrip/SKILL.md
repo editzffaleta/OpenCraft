@@ -1,6 +1,6 @@
 ---
 name: parallels-discord-roundtrip
-description: Run the macOS Parallels smoke harness with Discord end-to-end roundtrip verification, including guest send, host verification, host reply, and guest readback.
+description: Executar o harness de smoke do Parallels macOS com verificação de roundtrip ponta a ponta no Discord, incluindo envio pelo convidado, verificação pelo host, resposta do host e leitura de volta pelo convidado.
 ---
 
 # Parallels Discord Roundtrip

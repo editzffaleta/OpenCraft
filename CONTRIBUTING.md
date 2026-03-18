@@ -1,204 +1,205 @@
-# Contributing to OpenCraft
+# Contribuindo com o OpenCraft
 
-Welcome to the lobster tank! 🦞
+Bem-vindo ao tanque de lagostas! 🦞
 
-## Quick Links
+## Links Rápidos
 
 - **GitHub:** https://github.com/openclaw/openclaw
-- **Vision:** [`VISION.md`](VISION.md)
+- **Visão:** [`VISION.md`](VISION.md)
 - **Discord:** https://discord.gg/qkhbAGHRBT
 - **X/Twitter:** [@steipete](https://x.com/steipete) / [@opencraft](https://x.com/opencraft)
 
-## Maintainers
+## Mantenedores
 
-- **Peter Steinberger** - Benevolent Dictator
+- **Peter Steinberger** - Ditador Benevolente
   - GitHub: [@steipete](https://github.com/steipete) · X: [@steipete](https://x.com/steipete)
 
-- **Shadow** - Discord subsystem, Discord admin, Clawhub, all community moderation
+- **Shadow** - Subsistema Discord, admin do Discord, Clawhub, toda moderação da comunidade
   - GitHub: [@thewilloftheshadow](https://github.com/thewilloftheshadow) · X: [@4shadowed](https://x.com/4shadowed)
 
-- **Vignesh** - Memory (QMD), formal modeling, TUI, IRC, and Lobster
+- **Vignesh** - Memória (QMD), modelagem formal, TUI, IRC e Lobster
   - GitHub: [@vignesh07](https://github.com/vignesh07) · X: [@\_vgnsh](https://x.com/_vgnsh)
 
-- **Jos** - Telegram, API, Nix mode
+- **Jos** - Telegram, API, modo Nix
   - GitHub: [@joshp123](https://github.com/joshp123) · X: [@jjpcodes](https://x.com/jjpcodes)
 
-- **Ayaan Zaidi** - Telegram subsystem, Android app
+- **Ayaan Zaidi** - Subsistema Telegram, app Android
   - GitHub: [@obviyus](https://github.com/obviyus) · X: [@0bviyus](https://x.com/0bviyus)
 
-- **Tyler Yust** - Agents/subagents, cron, BlueBubbles, macOS app
+- **Tyler Yust** - Agentes/subagentes, cron, BlueBubbles, app macOS
   - GitHub: [@tyler6204](https://github.com/tyler6204) · X: [@tyleryust](https://x.com/tyleryust)
 
-- **Mariano Belinky** - iOS app, Security
+- **Mariano Belinky** - App iOS, Segurança
   - GitHub: [@mbelinky](https://github.com/mbelinky) · X: [@belimad](https://x.com/belimad)
 
-- **Nimrod Gutman** - iOS app, macOS app and crustacean features
+- **Nimrod Gutman** - App iOS, app macOS e funcionalidades crustáceas
   - GitHub: [@ngutman](https://github.com/ngutman) · X: [@theguti](https://x.com/theguti)
 
-- **Vincent Koc** - Agents, Telemetry, Hooks, Security
+- **Vincent Koc** - Agentes, Telemetria, Hooks, Segurança
   - GitHub: [@vincentkoc](https://github.com/vincentkoc) · X: [@vincent_koc](https://x.com/vincent_koc)
 
-- **Val Alexander** - UI/UX, Docs, and Agent DevX
+- **Val Alexander** - UI/UX, Docs e DevX de Agentes
   - GitHub: [@BunsDev](https://github.com/BunsDev) · X: [@BunsDev](https://x.com/BunsDev)
 
-- **Seb Slight** - Docs, Agent Reliability, Runtime Hardening
+- **Seb Slight** - Docs, Confiabilidade de Agentes, Hardening de Runtime
   - GitHub: [@sebslight](https://github.com/sebslight) · X: [@sebslig](https://x.com/sebslig)
 
-- **Christoph Nakazawa** - JS Infra
+- **Christoph Nakazawa** - Infraestrutura JS
   - GitHub: [@cpojer](https://github.com/cpojer) · X: [@cnakazawa](https://x.com/cnakazawa)
 
-- **Gustavo Madeira Santana** - Multi-agents, CLI, Performance, Plugins, Matrix
+- **Gustavo Madeira Santana** - Multi-agentes, CLI, Performance, Plugins, Matrix
   - GitHub: [@gumadeiras](https://github.com/gumadeiras) · X: [@gumadeiras](https://x.com/gumadeiras)
 
-- **Onur Solmaz** - Agents, dev workflows, ACP integrations, MS Teams
+- **Onur Solmaz** - Agentes, fluxos de dev, integrações ACP, MS Teams
   - GitHub: [@onutc](https://github.com/onutc), [@osolmaz](https://github.com/osolmaz) · X: [@onusoz](https://x.com/onusoz)
 
-- **Josh Avant** - Core, CLI, Gateway, Security, Agents
+- **Josh Avant** - Core, CLI, Gateway, Segurança, Agentes
   - GitHub: [@joshavant](https://github.com/joshavant) · X: [@joshavant](https://x.com/joshavant)
 
-- **Jonathan Taylor** - ACP subsystem, Gateway features/bugs, Gog/Mog/Sog CLI's, SEDMAT
+- **Jonathan Taylor** - Subsistema ACP, funcionalidades/bugs do Gateway, CLIs Gog/Mog/Sog, SEDMAT
   - GitHub [@visionik](https://github.com/visionik) · X: [@visionik](https://x.com/visionik)
-- **Josh Lehman** - Compaction, Tlon/Urbit subsystem
+
+- **Josh Lehman** - Compactação, subsistema Tlon/Urbit
   - GitHub [@jalehman](https://github.com/jalehman) · X: [@jlehman\_](https://x.com/jlehman_)
 
-- **Radek Sienkiewicz** - Docs, Control UI
+- **Radek Sienkiewicz** - Docs, UI de Controle
   - GitHub [@velvet-shark](https://github.com/velvet-shark) · X: [@velvet_shark](https://twitter.com/velvet_shark)
 
 - **Muhammed Mukhthar** - Mattermost, CLI
   - GitHub [@mukhtharcm](https://github.com/mukhtharcm) · X: [@mukhtharcm](https://x.com/mukhtharcm)
 
-- **Altay** - Agents, CLI, error handling
+- **Altay** - Agentes, CLI, tratamento de erros
   - GitHub [@altaywtf](https://github.com/altaywtf) · X: [@altaywtf](https://x.com/altaywtf)
 
-- **Robin Waslander** - Security, PR triage, bug fixes
+- **Robin Waslander** - Segurança, triagem de PRs, correção de bugs
   - GitHub: [@hydro13](https://github.com/hydro13) · X: [@Robin_waslander](https://x.com/Robin_waslander)
 
-- **Tengji (George) Zhang** - Chinese model APIs, cloud, pi
+- **Tengji (George) Zhang** - APIs de modelos chineses, cloud, pi
   - GitHub: [@odysseus0](https://github.com/odysseus0) · X: [@odysseus0z](https://x.com/odysseus0z)
 
-- **Andrew (Bubbles) Demczuk** - Agents/Gateway/TTS/VTT
+- **Andrew (Bubbles) Demczuk** - Agentes/Gateway/TTS/VTT
   - GitHub: [@ademczuk](https://github.com/ademczuk) · X: [@ademczuk](https://x.com/ademczuk)
 
-## How to Contribute
+## Como Contribuir
 
-1. **Bugs & small fixes** → Open a PR!
-2. **New features / architecture** → Start a [GitHub Discussion](https://github.com/openclaw/openclaw/discussions) or ask in Discord first
-3. **Questions** → Discord [#help](https://discord.com/channels/1456350064065904867/1459642797895319552) / [#users-helping-users](https://discord.com/channels/1456350064065904867/1459007081603403828)
+1. **Bugs & pequenas correções** → Abra um PR!
+2. **Novas funcionalidades / arquitetura** → Inicie uma [Discussion no GitHub](https://github.com/openclaw/openclaw/discussions) ou pergunte no Discord primeiro
+3. **Dúvidas** → Discord [#help](https://discord.com/channels/1456350064065904867/1459642797895319552) / [#users-helping-users](https://discord.com/channels/1456350064065904867/1459007081603403828)
 
-## Before You PR
+## Antes de Abrir um PR
 
-- Test locally with your OpenCraft instance
-- Run tests: `pnpm build && pnpm check && pnpm test`
-- For extension/plugin changes, run the fast local lane first:
-  - `pnpm test:extension <extension-name>`
-  - `pnpm test:extension --list` to see valid extension ids
-  - If you changed shared plugin or channel surfaces, run `pnpm test:contracts`
-  - For targeted shared-surface work, use `pnpm test:contracts:channels` or `pnpm test:contracts:plugins`
-  - If you changed broader runtime behavior, still run the relevant wider lanes (`pnpm test:extensions`, `pnpm test:channels`, or `pnpm test`) before asking for review
-- If you have access to Codex, run `codex review --base origin/main` locally before opening or updating your PR. Treat this as the current highest standard of AI review, even if GitHub Codex review also runs.
-- Ensure CI checks pass
-- Keep PRs focused (one thing per PR; do not mix unrelated concerns)
-- Describe what & why
-- Reply to or resolve bot review conversations you addressed before asking for review again
-- **Include screenshots** — one showing the problem/before, one showing the fix/after (for UI or visual changes)
-- Use American English spelling and grammar in code, comments, docs, and UI strings
-- Do not edit files covered by `CODEOWNERS` security ownership unless a listed owner explicitly asked for the change or is already reviewing it with you. Treat those paths as restricted review surfaces, not opportunistic cleanup targets.
+- Teste localmente com sua instância do OpenCraft
+- Execute os testes: `pnpm build && pnpm check && pnpm test`
+- Para mudanças em extensões/plugins, execute a lane local rápida primeiro:
+  - `pnpm test:extension <nome-da-extensao>`
+  - `pnpm test:extension --list` para ver os IDs de extensão válidos
+  - Se você alterou superfícies compartilhadas de plugin ou canal, execute `pnpm test:contracts`
+  - Para trabalho focado em superfícies compartilhadas, use `pnpm test:contracts:channels` ou `pnpm test:contracts:plugins`
+  - Se você alterou comportamentos mais amplos do runtime, ainda execute as lanes mais amplas relevantes (`pnpm test:extensions`, `pnpm test:channels`, ou `pnpm test`) antes de pedir revisão
+- Se você tem acesso ao Codex, execute `codex review --base origin/main` localmente antes de abrir ou atualizar seu PR. Trate isso como o padrão atual mais alto de revisão por IA, mesmo que o GitHub Codex review também rode.
+- Garanta que as verificações de CI passem
+- Mantenha PRs focados (uma coisa por PR; não misture preocupações não relacionadas)
+- Descreva o quê & o porquê
+- Responda ou resolva conversas de revisão de bots que você tratou antes de pedir revisão novamente
+- **Inclua screenshots** — um mostrando o problema/antes, um mostrando a correção/depois (para mudanças de UI ou visuais)
+- Use ortografia e gramática americanas em código, comentários, docs e strings de UI
+- Não edite arquivos cobertos pela propriedade de segurança do `CODEOWNERS` a menos que um proprietário listado tenha pedido explicitamente a mudança ou já esteja revisando com você. Trate esses caminhos como superfícies de revisão restritas, não alvos de limpeza oportunistas.
 
-## Review Conversations Are Author-Owned
+## Conversas de Revisão São de Responsabilidade do Autor
 
-If a review bot leaves review conversations on your PR, you are expected to handle the follow-through:
+Se um bot de revisão deixar conversas de revisão no seu PR, você é responsável pelo acompanhamento:
 
-- Resolve the conversation yourself once the code or explanation fully addresses the bot's concern
-- Reply and leave it open only when you need maintainer or reviewer judgment
-- Do not leave "fixed" bot review conversations for maintainers to clean up for you
-- If Codex leaves comments, address every relevant one or resolve it with a short explanation when it is not applicable to your change
-- If GitHub Codex review does not trigger for some reason, run `codex review --base origin/main` locally anyway and treat that output as required review work
+- Resolva a conversa você mesmo quando o código ou explicação tratar totalmente a preocupação do bot
+- Responda e deixe aberta apenas quando precisar do julgamento de um mantenedor ou revisor
+- Não deixe conversas de revisão de bots "corrigidas" para os mantenedores limparem por você
+- Se o Codex deixar comentários, trate cada um relevante ou resolva com uma explicação curta quando não for aplicável à sua mudança
+- Se o GitHub Codex review não disparar por algum motivo, execute `codex review --base origin/main` localmente de qualquer forma e trate esse output como trabalho de revisão obrigatório
 
-This applies to both human-authored and AI-assisted PRs.
+Isso se aplica tanto a PRs feitos por humanos quanto por IA.
 
-## Control UI Decorators
+## Decoradores da Control UI
 
-The Control UI uses Lit with **legacy** decorators (current Rollup parsing does not support
-`accessor` fields required for standard decorators). When adding reactive fields, keep the
-legacy style:
+A Control UI usa Lit com decoradores **legados** (o parsing atual do Rollup não suporta
+campos `accessor` necessários para decoradores padrão). Ao adicionar campos reativos, mantenha o
+estilo legado:
 
 ```ts
 @state() foo = "bar";
 @property({ type: Number }) count = 0;
 ```
 
-The root `tsconfig.json` is configured for legacy decorators (`experimentalDecorators: true`)
-with `useDefineForClassFields: false`. Avoid flipping these unless you are also updating the UI
-build tooling to support standard decorators.
+O `tsconfig.json` raiz está configurado para decoradores legados (`experimentalDecorators: true`)
+com `useDefineForClassFields: false`. Evite alterar isso a menos que você também esteja atualizando a
+tooling de build da UI para suportar decoradores padrão.
 
-## AI/Vibe-Coded PRs Welcome! 🤖
+## PRs com IA/Vibe-Code São Bem-Vindos! 🤖
 
-Built with Codex, Claude, or other AI tools? **Awesome - just mark it!**
+Construído com Codex, Claude ou outras ferramentas de IA? **Ótimo - apenas marque!**
 
-Please include in your PR:
+Por favor inclua no seu PR:
 
-- [ ] Mark as AI-assisted in the PR title or description
-- [ ] Note the degree of testing (untested / lightly tested / fully tested)
-- [ ] Include prompts or session logs if possible (super helpful!)
-- [ ] Confirm you understand what the code does
-- [ ] If you have access to Codex, run `codex review --base origin/main` locally and address the findings before asking for review
-- [ ] Resolve or reply to bot review conversations after you address them
+- [ ] Marque como assistido por IA no título ou descrição do PR
+- [ ] Indique o grau de testes (não testado / levemente testado / totalmente testado)
+- [ ] Inclua prompts ou logs de sessão se possível (super útil!)
+- [ ] Confirme que você entende o que o código faz
+- [ ] Se você tem acesso ao Codex, execute `codex review --base origin/main` localmente e trate os achados antes de pedir revisão
+- [ ] Resolva ou responda às conversas de revisão de bots após tratá-las
 
-AI PRs are first-class citizens here. We just want transparency so reviewers know what to look for. If you are using an LLM coding agent, instruct it to resolve bot review conversations it has addressed instead of leaving them for maintainers.
+PRs com IA são cidadãos de primeira classe aqui. Queremos apenas transparência para que os revisores saibam o que procurar. Se você estiver usando um agente de codificação LLM, instrua-o a resolver conversas de revisão de bots que ele tratou em vez de deixá-las para os mantenedores.
 
-## Current Focus & Roadmap 🗺
+## Foco Atual & Roadmap 🗺
 
-We are currently prioritizing:
+Atualmente priorizamos:
 
-- **Stability**: Fixing edge cases in channel connections (WhatsApp/Telegram).
-- **UX**: Improving the onboarding wizard and error messages.
-- **Skills**: For skill contributions, head to [ClawHub](https://clawhub.ai/) — the community hub for OpenCraft skills.
-- **Performance**: Optimizing token usage and compaction logic.
+- **Estabilidade**: Correção de casos extremos em conexões de canal (WhatsApp/Telegram).
+- **UX**: Melhoria do wizard de onboarding e mensagens de erro.
+- **Skills**: Para contribuições de skills, acesse o [ClawHub](https://clawhub.ai/) — o hub da comunidade para skills do OpenCraft.
+- **Performance**: Otimização do uso de tokens e lógica de compactação.
 
-Check the [GitHub Issues](https://github.com/openclaw/openclaw/issues) for "good first issue" labels!
+Confira as [Issues do GitHub](https://github.com/openclaw/openclaw/issues) com labels "good first issue"!
 
-## Maintainers
+## Mantenedores
 
-We're selectively expanding the maintainer team.
-If you're an experienced contributor who wants to help shape OpenCraft's direction — whether through code, docs, or community — we'd like to hear from you.
+Estamos expandindo seletivamente a equipe de mantenedores.
+Se você é um contribuidor experiente que quer ajudar a moldar a direção do OpenCraft — seja através de código, docs ou comunidade — gostaríamos de ouvir de você.
 
-Being a maintainer is a responsibility, not an honorary title. We expect active, consistent involvement — triaging issues, reviewing PRs, and helping move the project forward.
+Ser mantenedor é uma responsabilidade, não um título honorário. Esperamos envolvimento ativo e consistente — triagem de issues, revisão de PRs e ajuda para mover o projeto adiante.
 
-Still interested? Email contributing@opencraft.ai with:
+Ainda interessado? Envie um email para contributing@opencraft.ai com:
 
-- Links to your PRs on OpenCraft (if you don't have any, start there first)
-- Links to open source projects you maintain or actively contribute to
-- Your GitHub, Discord, and X/Twitter handles
-- A brief intro: background, experience, and areas of interest
-- Languages you speak and where you're based
-- How much time you can realistically commit
+- Links para seus PRs no OpenCraft (se você não tiver nenhum, comece por aí)
+- Links para projetos open source que você mantém ou contribui ativamente
+- Seus handles no GitHub, Discord e X/Twitter
+- Uma breve introdução: background, experiência e áreas de interesse
+- Idiomas que você fala e onde você está baseado
+- Quanto tempo você pode realisticamente dedicar
 
-We welcome people across all skill sets — engineering, documentation, community management, and more.
-We review every human-only-written application carefully and add maintainers slowly and deliberately.
-Please allow a few weeks for a response.
+Recebemos pessoas de todas as habilidades — engenharia, documentação, gestão de comunidade e mais.
+Revisamos cada candidatura escrita apenas por humanos com cuidado e adicionamos mantenedores de forma lenta e deliberada.
+Por favor, aguarde algumas semanas para uma resposta.
 
-## Report a Vulnerability
+## Reportar uma Vulnerabilidade
 
-We take security reports seriously. Report vulnerabilities directly to the repository where the issue lives:
+Levamos relatórios de segurança a sério. Reporte vulnerabilidades diretamente ao repositório onde o problema está:
 
-- **Core CLI and gateway** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **macOS desktop app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
-- **iOS app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
-- **Android app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
+- **CLI e gateway principal** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
+- **App desktop macOS** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
+- **App iOS** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
+- **App Android** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
 - **ClawHub** — [opencraft/clawhub](https://github.com/opencraft/clawhub)
-- **Trust and threat model** — [opencraft/trust](https://github.com/opencraft/trust)
+- **Modelo de confiança e ameaças** — [opencraft/trust](https://github.com/opencraft/trust)
 
-For issues that don't fit a specific repo, or if you're unsure, email **security@opencraft.ai** and we'll route it.
+Para problemas que não se encaixam em um repositório específico, ou se você não tem certeza, envie email para **security@opencraft.ai** e vamos direcionar.
 
-### Required in Reports
+### Obrigatório nos Relatórios
 
-1. **Title**
-2. **Severity Assessment**
-3. **Impact**
-4. **Affected Component**
-5. **Technical Reproduction**
-6. **Demonstrated Impact**
-7. **Environment**
-8. **Remediation Advice**
+1. **Título**
+2. **Avaliação de Severidade**
+3. **Impacto**
+4. **Componente Afetado**
+5. **Reprodução Técnica**
+6. **Impacto Demonstrado**
+7. **Ambiente**
+8. **Conselho de Remediação**
 
-Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
+Relatórios sem etapas de reprodução, impacto demonstrado e conselho de remediação serão despriorizados. Dado o volume de achados gerados por scanners de IA, precisamos garantir que estamos recebendo relatórios revisados de pesquisadores que entendem os problemas.
