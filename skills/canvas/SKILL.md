@@ -30,12 +30,12 @@ A ferramenta canvas permite apresentar conteúdo web na visualização canvas de
 
 O servidor canvas host faz bind baseado na configuração `gateway.bind`:
 
-| Modo de Bind | Servidor faz Bind em | URL do Canvas usa          |
-| ------------ | -------------------- | -------------------------- |
-| `loopback`   | 127.0.0.1            | localhost (apenas local)   |
-| `lan`        | Interface LAN        | Endereço IP da LAN         |
-| `tailnet`    | Interface Tailscale  | Hostname do Tailscale      |
-| `auto`       | Melhor disponível    | Tailscale > LAN > loopback |
+| Modo de Bind | Servidor faz Bind em | URL do Canvas usa           |
+| ------------ | ------------------- | -------------------------- |
+| `loopback`   | 127.0.0.1           | localhost (apenas local)   |
+| `lan`        | Interface LAN       | Endereço IP da LAN         |
+| `tailnet`    | Interface Tailscale | Hostname do Tailscale      |
+| `auto`       | Melhor disponível   | Tailscale > LAN > loopback |
 
 **Ponto importante:** O `canvasHostHostForBridge` é derivado do `bridgeHost`. Quando vinculado ao Tailscale, os nós recebem URLs como:
 
@@ -47,13 +47,13 @@ Por isso URLs de localhost não funcionam — o nó recebe o hostname do Tailsca
 
 ## Ações
 
-| Ação       | Descrição                           |
-| ---------- | ----------------------------------- |
-| `present`  | Exibir canvas com URL alvo opcional |
-| `hide`     | Ocultar o canvas                    |
-| `navigate` | Navegar para uma nova URL           |
-| `eval`     | Executar JavaScript no canvas       |
-| `snapshot` | Capturar screenshot do canvas       |
+| Ação       | Descrição                                        |
+| ---------- | ------------------------------------------------ |
+| `present`  | Exibir canvas com URL alvo opcional              |
+| `hide`     | Ocultar o canvas                                 |
+| `navigate` | Navegar para uma nova URL                        |
+| `eval`     | Executar JavaScript no canvas                    |
+| `snapshot` | Capturar screenshot do canvas                    |
 
 ## Configuração
 

@@ -41,27 +41,27 @@ Este modelo de ameaças é construído sobre o [MITRE ATLAS](https://atlas.mitre
 
 Cada ameaça recebe um ID como `T-EXEC-003`. As categorias são:
 
-| Código  | Categoria                                 |
-| ------- | ----------------------------------------- |
-| RECON   | Reconhecimento - coleta de informações    |
-| ACCESS  | Acesso inicial - obtenção de entrada      |
-| EXEC    | Execução - realização de ações maliciosas |
-| PERSIST | Persistência - manutenção de acesso       |
-| EVADE   | Evasão de defesa - evitar detecção        |
-| DISC    | Descoberta - aprender sobre o ambiente    |
-| EXFIL   | Exfiltração - roubo de dados              |
-| IMPACT  | Impacto - dano ou interrupção             |
+| Código  | Categoria                                       |
+| ------- | ----------------------------------------------- |
+| RECON   | Reconhecimento - coleta de informações          |
+| ACCESS  | Acesso inicial - obtenção de entrada            |
+| EXEC    | Execução - realização de ações maliciosas       |
+| PERSIST | Persistência - manutenção de acesso             |
+| EVADE   | Evasão de defesa - evitar detecção              |
+| DISC    | Descoberta - aprender sobre o ambiente          |
+| EXFIL   | Exfiltração - roubo de dados                    |
+| IMPACT  | Impacto - dano ou interrupção                   |
 
 Os IDs são atribuídos pelos mantenedores durante a revisão. Você não precisa escolher um.
 
 ### Níveis de Risco
 
-| Nível       | Significado                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| **Crítico** | Comprometimento total do sistema, ou alta probabilidade + impacto crítico |
-| **Alto**    | Dano significativo provável, ou probabilidade média + impacto crítico     |
-| **Médio**   | Risco moderado, ou baixa probabilidade + impacto alto                     |
-| **Baixo**   | Improvável e impacto limitado                                             |
+| Nível        | Significado                                                           |
+| ------------ | --------------------------------------------------------------------- |
+| **Crítico**  | Comprometimento total do sistema, ou alta probabilidade + impacto crítico |
+| **Alto**     | Dano significativo provável, ou probabilidade média + impacto crítico |
+| **Médio**    | Risco moderado, ou baixa probabilidade + impacto alto                 |
+| **Baixo**    | Improvável e impacto limitado                                         |
 
 Se você não tiver certeza sobre o nível de risco, apenas descreva o impacto e nós o avaliaremos.
 

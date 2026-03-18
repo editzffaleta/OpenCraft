@@ -108,47 +108,47 @@ Os tokens são persistidos em `~/.xurl` no formato YAML. Cada app tem seus próp
 
 ## Referência Rápida
 
-| Ação                         | Comando                                                |
-| ---------------------------- | ------------------------------------------------------ |
-| Publicar                     | `xurl post "Hello world!"`                             |
-| Responder                    | `xurl reply POST_ID "Nice post!"`                      |
-| Citar                        | `xurl quote POST_ID "My take"`                         |
-| Excluir post                 | `xurl delete POST_ID`                                  |
-| Ler post                     | `xurl read POST_ID`                                    |
-| Pesquisar posts              | `xurl search "QUERY" -n 10`                            |
-| Quem sou eu                  | `xurl whoami`                                          |
-| Buscar usuário               | `xurl user @handle`                                    |
-| Timeline inicial             | `xurl timeline -n 20`                                  |
-| Menções                      | `xurl mentions -n 10`                                  |
-| Curtir                       | `xurl like POST_ID`                                    |
-| Descurtir                    | `xurl unlike POST_ID`                                  |
-| Repostar                     | `xurl repost POST_ID`                                  |
-| Desfazer repost              | `xurl unrepost POST_ID`                                |
-| Marcar nos favoritos         | `xurl bookmark POST_ID`                                |
-| Remover dos favoritos        | `xurl unbookmark POST_ID`                              |
-| Listar favoritos             | `xurl bookmarks -n 10`                                 |
-| Listar curtidas              | `xurl likes -n 10`                                     |
-| Seguir                       | `xurl follow @handle`                                  |
-| Deixar de seguir             | `xurl unfollow @handle`                                |
-| Listar seguindo              | `xurl following -n 20`                                 |
-| Listar seguidores            | `xurl followers -n 20`                                 |
-| Bloquear                     | `xurl block @handle`                                   |
-| Desbloquear                  | `xurl unblock @handle`                                 |
-| Silenciar                    | `xurl mute @handle`                                    |
-| Deixar de silenciar          | `xurl unmute @handle`                                  |
-| Enviar DM                    | `xurl dm @handle "message"`                            |
-| Listar DMs                   | `xurl dms -n 10`                                       |
-| Fazer upload de mídia        | `xurl media upload path/to/file.mp4`                   |
-| Status de mídia              | `xurl media status MEDIA_ID`                           |
-| **Gerenciamento de Apps**    |                                                        |
-| Registrar app                | Manual, fora do agente (não passe segredos via agente) |
-| Listar apps                  | `xurl auth apps list`                                  |
-| Atualizar credenciais do app | Manual, fora do agente (não passe segredos via agente) |
-| Remover app                  | `xurl auth apps remove NAME`                           |
-| Definir padrão (interativo)  | `xurl auth default`                                    |
-| Definir padrão (comando)     | `xurl auth default APP_NAME [USERNAME]`                |
-| Usar app por requisição      | `xurl --app NAME /2/users/me`                          |
-| Status de autenticação       | `xurl auth status`                                     |
+| Ação                          | Comando                                                       |
+| ----------------------------- | ------------------------------------------------------------- |
+| Publicar                      | `xurl post "Hello world!"`                                    |
+| Responder                     | `xurl reply POST_ID "Nice post!"`                             |
+| Citar                         | `xurl quote POST_ID "My take"`                                |
+| Excluir post                  | `xurl delete POST_ID`                                         |
+| Ler post                      | `xurl read POST_ID`                                           |
+| Pesquisar posts                | `xurl search "QUERY" -n 10`                                   |
+| Quem sou eu                   | `xurl whoami`                                                 |
+| Buscar usuário                | `xurl user @handle`                                           |
+| Timeline inicial              | `xurl timeline -n 20`                                         |
+| Menções                       | `xurl mentions -n 10`                                         |
+| Curtir                        | `xurl like POST_ID`                                           |
+| Descurtir                     | `xurl unlike POST_ID`                                         |
+| Repostar                      | `xurl repost POST_ID`                                         |
+| Desfazer repost               | `xurl unrepost POST_ID`                                       |
+| Marcar nos favoritos          | `xurl bookmark POST_ID`                                       |
+| Remover dos favoritos         | `xurl unbookmark POST_ID`                                     |
+| Listar favoritos              | `xurl bookmarks -n 10`                                        |
+| Listar curtidas               | `xurl likes -n 10`                                            |
+| Seguir                        | `xurl follow @handle`                                         |
+| Deixar de seguir              | `xurl unfollow @handle`                                       |
+| Listar seguindo               | `xurl following -n 20`                                        |
+| Listar seguidores             | `xurl followers -n 20`                                        |
+| Bloquear                      | `xurl block @handle`                                          |
+| Desbloquear                   | `xurl unblock @handle`                                        |
+| Silenciar                     | `xurl mute @handle`                                           |
+| Deixar de silenciar           | `xurl unmute @handle`                                         |
+| Enviar DM                     | `xurl dm @handle "message"`                                   |
+| Listar DMs                    | `xurl dms -n 10`                                              |
+| Fazer upload de mídia         | `xurl media upload path/to/file.mp4`                          |
+| Status de mídia               | `xurl media status MEDIA_ID`                                  |
+| **Gerenciamento de Apps**     |                                                               |
+| Registrar app                 | Manual, fora do agente (não passe segredos via agente)        |
+| Listar apps                   | `xurl auth apps list`                                         |
+| Atualizar credenciais do app  | Manual, fora do agente (não passe segredos via agente)        |
+| Remover app                   | `xurl auth apps remove NAME`                                  |
+| Definir padrão (interativo)   | `xurl auth default`                                           |
+| Definir padrão (comando)      | `xurl auth default APP_NAME [USERNAME]`                       |
+| Usar app por requisição       | `xurl --app NAME /2/users/me`                                 |
+| Status de autenticação        | `xurl auth status`                                            |
 
 > **IDs de post vs URLs:** Em qualquer lugar onde `POST_ID` aparece acima, você também pode colar uma URL completa do post (por exemplo, `https://x.com/user/status/1234567890`) — o xurl extrai o ID automaticamente.
 
@@ -301,13 +301,13 @@ xurl post "lol" --media-id MEDIA_ID
 
 Estas flags funcionam em todos os comandos:
 
-| Flag         | Curta | Descrição                                                                |
-| ------------ | ----- | ------------------------------------------------------------------------ |
-| `--app`      |       | Usa um app registrado específico para esta requisição (substitui padrão) |
-| `--auth`     |       | Força tipo de autenticação: `oauth1`, `oauth2` ou `app`                  |
-| `--username` | `-u`  | Qual conta OAuth2 usar (se você tiver múltiplas)                         |
-| `--verbose`  | `-v`  | Proibido em sessões de agente/LLM (pode vazar cabeçalhos/tokens de auth) |
-| `--trace`    | `-t`  | Adiciona cabeçalho de rastreamento `X-B3-Flags: 1`                       |
+| Flag         | Curta | Descrição                                                               |
+| ------------ | ----- | ----------------------------------------------------------------------- |
+| `--app`      |       | Usa um app registrado específico para esta requisição (substitui padrão)|
+| `--auth`     |       | Força tipo de autenticação: `oauth1`, `oauth2` ou `app`                 |
+| `--username` | `-u`  | Qual conta OAuth2 usar (se você tiver múltiplas)                        |
+| `--verbose`  | `-v`  | Proibido em sessões de agente/LLM (pode vazar cabeçalhos/tokens de auth)|
+| `--trace`    | `-t`  | Adiciona cabeçalho de rastreamento `X-B3-Flags: 1`                      |
 
 ---
 

@@ -8,13 +8,13 @@ O Lobster executa fluxos de trabalho de múltiplas etapas com pontos de verifica
 
 ## Quando usar o Lobster
 
-| Intenção do usuário                                            | Usar Lobster?                                          |
-| -------------------------------------------------------------- | ------------------------------------------------------ |
-| "Faça triagem do meu email"                                    | Sim — múltiplas etapas, pode enviar respostas          |
-| "Envie uma mensagem"                                           | Não — ação única, use a ferramenta message diretamente |
-| "Verifique meu email toda manhã e pergunte antes de responder" | Sim — fluxo agendado com aprovação                     |
-| "Como está o tempo?"                                           | Não — consulta simples                                 |
-| "Monitore este PR e me notifique sobre mudanças"               | Sim — com estado, recorrente                           |
+| Intenção do usuário                                                   | Usar Lobster?                                            |
+| --------------------------------------------------------------------- | -------------------------------------------------------- |
+| "Faça triagem do meu email"                                           | Sim — múltiplas etapas, pode enviar respostas            |
+| "Envie uma mensagem"                                                  | Não — ação única, use a ferramenta message diretamente   |
+| "Verifique meu email toda manhã e pergunte antes de responder"        | Sim — fluxo agendado com aprovação                       |
+| "Como está o tempo?"                                                  | Não — consulta simples                                   |
+| "Monitore este PR e me notifique sobre mudanças"                      | Sim — com estado, recorrente                             |
 
 ## Uso básico
 

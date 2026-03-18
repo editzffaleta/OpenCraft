@@ -22,13 +22,13 @@ As linhas de contexto de mensagens incluem campos `slack message id` e `channel`
 
 ### Grupos de ações
 
-| Grupo de ação | Padrão     | Observações                    |
-| ------------- | ---------- | ------------------------------ |
-| reactions     | habilitado | Reagir + listar reações        |
-| messages      | habilitado | Ler/enviar/editar/excluir      |
-| pins          | habilitado | Fixar/desafixar/listar         |
-| memberInfo    | habilitado | Informações do membro          |
-| emojiList     | habilitado | Lista de emojis personalizados |
+| Grupo de ação | Padrão   | Observações                      |
+| ------------- | -------- | -------------------------------- |
+| reactions     | habilitado | Reagir + listar reações         |
+| messages      | habilitado | Ler/enviar/editar/excluir       |
+| pins          | habilitado | Fixar/desafixar/listar           |
+| memberInfo    | habilitado | Informações do membro            |
+| emojiList     | habilitado | Lista de emojis personalizados   |
 
 ### Reagir a uma mensagem
 

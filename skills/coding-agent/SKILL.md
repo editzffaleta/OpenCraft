@@ -37,27 +37,27 @@ bash pty:true command:"claude --dangerously-skip-permissions 'task'"
 
 ### Parâmetros da ferramenta Bash
 
-| Parâmetro    | Tipo    | Descrição                                                                           |
-| ------------ | ------- | ----------------------------------------------------------------------------------- |
-| `command`    | string  | O comando shell a executar                                                          |
-| `pty`        | boolean | **Use para agentes de programação!** Aloca um pseudo-terminal para CLIs interativos |
-| `workdir`    | string  | Diretório de trabalho (o agente vê apenas o contexto desta pasta)                   |
-| `background` | boolean | Executa em segundo plano, retorna sessionId para monitoramento                      |
-| `timeout`    | number  | Timeout em segundos (mata o processo ao expirar)                                    |
-| `elevated`   | boolean | Executa no host em vez do sandbox (se permitido)                                    |
+| Parâmetro    | Tipo    | Descrição                                                                                   |
+| ------------ | ------- | ------------------------------------------------------------------------------------------- |
+| `command`    | string  | O comando shell a executar                                                                  |
+| `pty`        | boolean | **Use para agentes de programação!** Aloca um pseudo-terminal para CLIs interativos         |
+| `workdir`    | string  | Diretório de trabalho (o agente vê apenas o contexto desta pasta)                           |
+| `background` | boolean | Executa em segundo plano, retorna sessionId para monitoramento                              |
+| `timeout`    | number  | Timeout em segundos (mata o processo ao expirar)                                            |
+| `elevated`   | boolean | Executa no host em vez do sandbox (se permitido)                                            |
 
 ### Ações da ferramenta Process (para sessões em segundo plano)
 
-| Ação        | Descrição                                                  |
-| ----------- | ---------------------------------------------------------- |
-| `list`      | Lista todas as sessões em execução/recentes                |
-| `poll`      | Verifica se a sessão ainda está em execução                |
-| `log`       | Obtém a saída da sessão (com offset/limit opcionais)       |
-| `write`     | Envia dados brutos para stdin                              |
-| `submit`    | Envia dados + nova linha (como digitar e pressionar Enter) |
-| `send-keys` | Envia tokens de tecla ou bytes hex                         |
-| `paste`     | Cola texto (com modo entre colchetes opcional)             |
-| `kill`      | Encerra a sessão                                           |
+| Ação        | Descrição                                                        |
+| ----------- | ---------------------------------------------------------------- |
+| `list`      | Lista todas as sessões em execução/recentes                      |
+| `poll`      | Verifica se a sessão ainda está em execução                      |
+| `log`       | Obtém a saída da sessão (com offset/limit opcionais)             |
+| `write`     | Envia dados brutos para stdin                                    |
+| `submit`    | Envia dados + nova linha (como digitar e pressionar Enter)       |
+| `send-keys` | Envia tokens de tecla ou bytes hex                               |
+| `paste`     | Cola texto (com modo entre colchetes opcional)                   |
+| `kill`      | Encerra a sessão                                                 |
 
 ---
 
@@ -112,11 +112,11 @@ process action:kill sessionId:XXX
 
 ### Flags
 
-| Flag            | Efeito                                                    |
-| --------------- | --------------------------------------------------------- |
-| `exec "prompt"` | Execução única, sai quando concluído                      |
-| `--full-auto`   | Sandbox mas auto-aprova no workspace                      |
-| `--yolo`        | SEM sandbox, SEM aprovações (mais rápido, mais arriscado) |
+| Flag            | Efeito                                                      |
+| --------------- | ----------------------------------------------------------- |
+| `exec "prompt"` | Execução única, sai quando concluído                        |
+| `--full-auto`   | Sandbox mas auto-aprova no workspace                        |
+| `--yolo`        | SEM sandbox, SEM aprovações (mais rápido, mais arriscado)   |
 
 ### Construindo/Criando
 

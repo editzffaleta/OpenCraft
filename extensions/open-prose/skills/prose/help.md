@@ -37,13 +37,13 @@ Options:
 
 ## Comandos disponíveis
 
-| Comando                | O que faz                             |
-| ---------------------- | ------------------------------------- |
-| `prose help`           | Esta ajuda - guia você ao que precisa |
-| `prose run <file>`     | Executa um programa .prose            |
-| `prose compile <file>` | Valida a sintaxe sem executar         |
-| `prose update`         | Migra arquivos de workspace legados   |
-| `prose examples`       | Navega e executa programas de exemplo |
+| Comando                | O que faz                                          |
+| ---------------------- | -------------------------------------------------- |
+| `prose help`           | Esta ajuda - guia você ao que precisa              |
+| `prose run <file>`     | Executa um programa .prose                         |
+| `prose compile <file>` | Valida a sintaxe sem executar                      |
+| `prose update`         | Migra arquivos de workspace legados                |
+| `prose examples`       | Navega e executa programas de exemplo              |
 
 ---
 
@@ -123,19 +123,19 @@ Para sintaxe completa e regras de validação, consulte `compiler.md`.
 
 O diretório `examples/` contém 37 programas de exemplo:
 
-| Intervalo | Categoria                                                                                              |
-| --------- | ------------------------------------------------------------------------------------------------------ |
-| 01-08     | Básicos (hello world, pesquisa, revisão de código, depuração)                                          |
-| 09-12     | Agentes e skills                                                                                       |
-| 13-15     | Variáveis e composição                                                                                 |
-| 16-19     | Execução paralela                                                                                      |
-| 20-21     | Loops e pipelines                                                                                      |
-| 22-23     | Tratamento de erros                                                                                    |
-| 24-27     | Avançado (choice, condicionais, blocos, interpolação)                                                  |
-| 28        | Gas Town (orquestração multi-agente)                                                                   |
-| 29-31     | Padrão da cadeira do capitão (orquestrador persistente)                                                |
+| Intervalo | Categoria                                                                               |
+| --------- | --------------------------------------------------------------------------------------- |
+| 01-08     | Básicos (hello world, pesquisa, revisão de código, depuração)                           |
+| 09-12     | Agentes e skills                                                                        |
+| 13-15     | Variáveis e composição                                                                  |
+| 16-19     | Execução paralela                                                                       |
+| 20-21     | Loops e pipelines                                                                       |
+| 22-23     | Tratamento de erros                                                                     |
+| 24-27     | Avançado (choice, condicionais, blocos, interpolação)                                   |
+| 28        | Gas Town (orquestração multi-agente)                                                    |
+| 29-31     | Padrão da cadeira do capitão (orquestrador persistente)                                 |
 | 33-36     | Workflows de produção (PR auto-fix, pipeline de conteúdo, fábrica de funcionalidades, caçador de bugs) |
-| 37        | The Forge (construir um navegador do zero)                                                             |
+| 37        | The Forge (construir um navegador do zero)                                              |
 
 **Pontos de partida recomendados:**
 

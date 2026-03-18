@@ -17,10 +17,10 @@ Programas principais distribuídos com o OpenProse. Programas de qualidade de pr
 
 ### Memória
 
-| Programa               | Descrição                                   |
-| ---------------------- | ------------------------------------------- |
-| `user-memory.prose`    | Memória pessoal persistente entre projetos  |
-| `project-memory.prose` | Memória institucional com escopo de projeto |
+| Programa               | Descrição                                      |
+| ---------------------- | ---------------------------------------------- |
+| `user-memory.prose`    | Memória pessoal persistente entre projetos     |
+| `project-memory.prose` | Memória institucional com escopo de projeto    |
 
 ## O ciclo de melhoria
 

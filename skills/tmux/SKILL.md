@@ -31,10 +31,10 @@ Controle sessões tmux enviando teclas e lendo a saída. Essencial para gerencia
 
 ## Sessões de Exemplo
 
-| Sessão                  | Finalidade                     |
-| ----------------------- | ------------------------------ |
-| `shared`                | Sessão interativa principal    |
-| `worker-2` - `worker-8` | Sessões de workers em paralelo |
+| Sessão                  | Finalidade                      |
+| ----------------------- | ------------------------------- |
+| `shared`                | Sessão interativa principal     |
+| `worker-2` - `worker-8` | Sessões de workers em paralelo  |
 
 ## Comandos Comuns
 
